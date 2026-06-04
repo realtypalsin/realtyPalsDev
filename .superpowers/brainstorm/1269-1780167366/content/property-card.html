@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Property Card Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f0f0f;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 40px 20px;
+    color: #fff;
+  }
+  h2 {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .sub2 {
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 40px;
+  }
+
+  /* ── Cards grid ── */
+  .cards-grid {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── The Card ── */
+  .property-card {
+    background: #161616;
+    border: 1px solid #242424;
+    border-radius: 20px;
+    overflow: hidden;
+    width: 360px;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+  }
+  .property-card:hover {
+    transform: translateY(-4px);
+    border-color: #333;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .property-card.selected {
+    border-color: #3b7fff;
+    box-shadow: 0 0 0 2px rgba(59,127,255,0.3), 0 20px 60px rgba(59,127,255,0.15);
+  }
+
+  /* Hero image */
+  .card-hero {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: #1a1a1a;
+  }
+  .card-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-hero-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e1e2e 0%, #161628 50%, #1a1a2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: #333;
+    text-transform: uppercase;
+  }
+  /* status badge top-left */
+  .status-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    backdrop-filter: blur(8px);
+  }
+  .status-badge.under-construction {
+    background: rgba(251,146,60,0.15);
+    border: 1px solid rgba(251,146,60,0.35);
+    color: #fb923c;
+  }
+  .status-badge.ready {
+    background: rgba(34,197,94,0.15);
+    border: 1px solid rgba(34,197,94,0.35);
+    color: #22c55e;
+  }
+  /* RERA badge top-right */
+  .rera-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background: rgba(59,127,255,0.15);
+    border: 1px solid rgba(59,127,255,0.35);
+    color: #3b7fff;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .rera-badge::before { content: "✓"; }
+
+  /* Card body */
+  .card-body {
+    padding: 20px;
+  }
+
+  /* Project name + builder row */
+  .card-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .card-project-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .card-meta {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .card-meta span {
+    color: #666;
+  }
+  .dot-sep {
+    margin: 0 5px;
+    color: #333;
+  }
+
+  /* Architect credit */
+  .architect-credit {
+    font-size: 11px;
+    color: #3b7fff;
+    font-weight: 500;
+    margin-bottom: 14px;
+    opacity: 0.8;
+  }
+
+  /* Divider */
+  .card-divider {
+    height: 1px;
+    background: #1e1e1e;
+    margin: 14px 0;
+  }
+
+  /* Unit type chips */
+  .unit-chips-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    margin-bottom: 8px;
+  }
+  .unit-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+  .unit-chip {
+    padding: 6px 11px;
+    background: #1e1e1e;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #ccc;
+    line-height: 1.3;
+    transition: border-color 0.15s;
+  }
+  .unit-chip:hover { border-color: #3b7fff; color: #fff; }
+  .unit-chip .bhk-label { color: #666; font-size: 10px; display: block; margin-bottom: 1px; }
+  .unit-chip .price-label { color: #e0e0e0; font-weight: 600; }
+
+  /* Amenities */
+  .amenities-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .amenity-pill {
+    font-size: 11px;
+    color: #555;
+    background: #1a1a1a;
+    border: 1px solid #222;
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-weight: 500;
+  }
+  .amenity-more {
+    font-size: 11px;
+    color: #3b7fff;
+    font-weight: 600;
+    padding: 3px 0;
+  }
+
+  /* Connectivity */
+  .connectivity-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .conn-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #555;
+    font-weight: 500;
+  }
+  .conn-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #1e1e1e;
+    border: 1px solid #272727;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Land / density row */
+  .stats-row {
+    display: flex;
+    gap: 20px;
+  }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e0e0e0;
+  }
+  .stat-lbl {
+    font-size: 10px;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  /* Selection indicator */
+  .select-ring {
+    display: none;
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    border: 2px solid #3b7fff;
+    pointer-events: none;
+  }
+  .property-card.selected .select-ring { display: block; }
+
+  /* Bottom label */
+  .bottom-label {
+    text-align: center;
+    font-size: 11px;
+    color: #333;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* Helper script bridge */
+</style>
+</head>
+<body>
+
+<h2>RealtyPals · Property Card Design</h2>
+<div class="subtitle">Which card layout feels right?</div>
+<div class="sub2">Click a card to select it. Comparing 3 density levels — same data, different hierarchy.</div>
+
+<div class="cards-grid">
+
+  <!-- ── CARD A: Full density (all sections) ── -->
+  <div class="property-card" data-choice="a" onclick="selectCard(this)">
+    <div class="select-ring"></div>
+    <div class="card-hero">
+      <div class="card-hero-placeholder">Hero Image</div>
+      <div class="status-badge under-construction">Under Construction</div>
+      <div class="rera-badge">RERA</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title-row">
+        <div class="card-project-name">ACE Parkway</div>
+      </div>
+      <div class="card-meta">
+        ACE Group<span class="dot-sep">·</span>Sector 150, Noida<span class="dot-sep">·</span>11 Acres
+      </div>
+      <div class="architect-credit">✦ Designed by Hafeez Contractor × Gauri Khan</div>
+
+      <div class="card-divider"></div>
+
+      <div class="unit-chips-label">Configurations</div>
+      <div class="unit-chips">
+        <div class="unit-chip">
+          <span class="bhk-label">2 BHK</span>
+          <span class="price-label">₹1.52 Cr</span>
+        </div>
+        <div class="unit-chip">
+          <span class="bhk-label">3 BHK</span>
+          <span class="price-label">₹1.95–3.44 Cr</span>
+        </div>
+        <div class="unit-chip">
+          <span class="bhk-label">4 BHK</span>
+          <span class="price-label">₹4.82 Cr</span>
+        </div>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <div class="unit-chips-label">Amenities</div>
+      <div class="amenities-row">
+        <span class="amenity-pill">🏊 Pool</span>
+        <span class="amenity-pill">🎾 Tennis</span>
+        <span class="amenity-pill">🏏 Cricket</span>
+        <span class="amenity-pill">🧘 Yoga</span>
+        <span class="amenity-more">+33 more</span>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <div class="unit-chips-label">Connectivity</div>
+      <div class="connectivity-row">
+        <div class="conn-item">
+          <div class="conn-icon">🚇</div>
+          Sector 148 Metro
+        </div>
+        <div class="conn-item">
+          <div class="conn-icon">🛣️</div>
+          Yamuna Expwy
+        </div>
+        <div class="conn-item">
+          <div class="conn-icon">⛳</div>
+          Golf Course
+        </div>
+      </div>
+    </div>
+    <div class="bottom-label">Option A — Full Detail</div>
+  </div>
+
+  <!-- ── CARD B: Compact premium (no connectivity section, tighter) ── -->
+  <div class="property-card" data-choice="b" onclick="selectCard(this)">
+    <div class="select-ring"></div>
+    <div class="card-hero" style="height:180px;">
+      <div class="card-hero-placeholder">Hero Image</div>
+      <div class="status-badge under-construction">Under Construction</div>
+      <div class="rera-badge">RERA</div>
+    </div>
+    <div class="card-body" style="padding:16px;">
+      <div class="card-project-name" style="font-size:17px;margin-bottom:3px;">ATS Kingston Heath</div>
+      <div class="card-meta" style="margin-bottom:10px;">
+        ATS Infrastructure<span class="dot-sep">·</span>30 Acres<span class="dot-sep">·</span>9 Towers
+      </div>
+
+      <div class="unit-chips" style="margin-bottom:12px;">
+        <div class="unit-chip">
+          <span class="bhk-label">3 BHK + Study</span>
+          <span class="price-label">₹4.23 Cr</span>
+        </div>
+        <div class="unit-chip">
+          <span class="bhk-label">4 BHK</span>
+          <span class="price-label">₹5.94 Cr</span>
+        </div>
+      </div>
+
+      <div class="card-divider" style="margin:10px 0;"></div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div class="stats-row">
+          <div class="stat-item">
+            <span class="stat-val">80%</span>
+            <span class="stat-lbl">Open Area</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val">9-Hole</span>
+            <span class="stat-lbl">Golf Course</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val">Organic</span>
+            <span class="stat-lbl">Farming</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="amenities-row">
+        <span class="amenity-pill">🌿 Wellness Homes</span>
+        <span class="amenity-pill">🧘 Meditation</span>
+        <span class="amenity-pill">🌱 Herb Garden</span>
+        <span class="amenity-more">+14 more</span>
+      </div>
+    </div>
+    <div class="bottom-label">Option B — Stats-Forward</div>
+  </div>
+
+  <!-- ── CARD C: Minimal editorial (like Dezeen/Sothebys) ── -->
+  <div class="property-card" data-choice="c" onclick="selectCard(this)" style="width:360px;">
+    <div class="select-ring"></div>
+    <div class="card-hero" style="height:220px;">
+      <div class="card-hero-placeholder">Hero Image</div>
+      <div class="status-badge under-construction">Under Construction</div>
+    </div>
+    <div class="card-body" style="padding:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div class="card-project-name" style="font-size:19px;">Godrej Palm Retreat</div>
+          <div style="font-size:12px;color:#555;margin-top:3px;">Godrej Properties · Sector 150</div>
+        </div>
+        <span style="font-size:10px;color:#3b7fff;background:rgba(59,127,255,0.1);border:1px solid rgba(59,127,255,0.2);padding:4px 8px;border-radius:6px;font-weight:700;white-space:nowrap;margin-top:2px;">RERA ✓</span>
+      </div>
+
+      <!-- Price range prominent -->
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-0.02em;">₹1.34 – 4.21 Cr</div>
+      <div style="font-size:11px;color:#444;margin-bottom:16px;font-weight:500;">2BHK · 3BHK · 3BHK+Utility · 4BHK+Utility</div>
+
+      <div class="card-divider" style="margin:0 0 14px 0;"></div>
+
+      <!-- Key differentiators as tags -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+        <span style="font-size:11px;color:#aaa;background:#1a1a1a;border:1px solid #222;padding:4px 10px;border-radius:20px;">Low Rise · 5 Towers</span>
+        <span style="font-size:11px;color:#aaa;background:#1a1a1a;border:1px solid #222;padding:4px 10px;border-radius:20px;">20,000 sqm Green</span>
+        <span style="font-size:11px;color:#aaa;background:#1a1a1a;border:1px solid #222;padding:4px 10px;border-radius:20px;">Sky Gardens</span>
+        <span style="font-size:11px;color:#aaa;background:#1a1a1a;border:1px solid #222;padding:4px 10px;border-radius:20px;">Floating Restaurant</span>
+        <span style="font-size:11px;color:#aaa;background:#1a1a1a;border:1px solid #222;padding:4px 10px;border-radius:20px;">Golf Course</span>
+      </div>
+
+      <!-- Connectivity minimal -->
+      <div style="display:flex;gap:16px;">
+        <span style="font-size:11px;color:#444;">🚇 2.1km Metro</span>
+        <span style="font-size:11px;color:#444;">✈️ Jewar Airport</span>
+        <span style="font-size:11px;color:#444;">🛣️ Yamuna Expwy</span>
+      </div>
+    </div>
+    <div class="bottom-label">Option C — Editorial / Minimal</div>
+  </div>
+
+</div>
+
+<div style="text-align:center;margin-top:40px;color:#333;font-size:12px;">
+  Click a card to select. All three use the same real data from your DB.
+</div>
+
+<script>
+  function selectCard(el) {
+    document.querySelectorAll('.property-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    // Bridge to superpowers helper
+    if (window.__sp_select) {
+      window.__sp_select(el.dataset.choice, el.querySelector('.bottom-label')?.textContent || el.dataset.choice);
+    }
+  }
+</script>
+</body>
+</html>
