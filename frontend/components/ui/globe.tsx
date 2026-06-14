@@ -60,6 +60,7 @@ export default function Globe() {
                 location: [location.lat, location.lng],
                 size: location.size,
             })),
+            // @ts-expect-error - onRender is supported by cobe runtime but missing from type definitions
             onRender: (state) => {
                 if (!pointerInteracting.current) {
                     phi += 0.005;
