@@ -1,17 +1,6 @@
 import { prisma } from '@/lib/db'
-import { rerank as jinaRerank } from '@/lib/ai/jina'
-import { cohereRerank } from '@/lib/ai/cohere'
 import { getCached, setCached, makeKey } from '@/lib/redis'
 import type { ProjectCard, ProjectDetail, UnitTypeSummary, AmenitySummary, ConnSummary } from '@/types/project'
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`timeout after ${ms}ms`)), ms)
-    ),
-  ])
-}
 
 const CATEGORY_ORDER = ['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking'] as const
 const CONN_PRIORITY = ['metro', 'airport', 'road'] as const
@@ -46,6 +35,80 @@ function toRerankDoc(p: ProjectCard): string {
     .join('. ')
 }
 
+/**
+ * Deterministic scoring — replaces external Jina/Cohere rerankers.
+ * Scores each property 0–100 based on match quality. No latency, no external deps.
+ *
+ * Scoring factors:
+ *   BHK exact match         +25
+ *   Budget fit              +0–25 (inversely proportional to distance from budget midpoint)
+ *   Ready-to-move bonus     +15 (availability now > waiting)
+ *   Early possession        +0–10 (sooner possession = higher score)
+ *   Has verified price      +10 (price_is_estimated = false)
+ *   Has hero image          +8
+ *   Has RERA number         +7
+ *   Has connectivity data   +5
+ *   Has amenities           +5
+ */
+function scoreProject(p: ProjectCard, filters: SearchFilters): number {
+  let score = 0
+
+  // BHK match
+  if (filters.bhk && p.unit_types.some((u) => u.bhk === filters.bhk)) {
+    score += 25
+  }
+
+  // Budget fit — score based on how well price fits the target range
+  if (p.price_min_cr != null && p.price_max_cr != null) {
+    const budgetMax = filters.budget_max_cr
+    const budgetMin = filters.budget_min_cr
+
+    if (budgetMax != null) {
+      // Ideal: cheapest option is well under budget, leaving headroom
+      const headroomRatio = (budgetMax - p.price_min_cr) / budgetMax
+      score += Math.max(0, Math.min(25, Math.round(headroomRatio * 25)))
+    } else if (budgetMin != null) {
+      score += 15 // has price data, partial match
+    }
+  }
+
+  // Possession status
+  if (p.status === 'ready_to_move') {
+    score += 15
+  } else if (p.possession_date) {
+    // Earlier possession = higher score. Full 10 for <12 months, scaling down to 0 for 48+ months
+    const monthsToPos = (new Date(p.possession_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)
+    if (monthsToPos > 0) {
+      score += Math.max(0, Math.round(10 * (1 - monthsToPos / 48)))
+    }
+  }
+
+  // Data quality signals — projects with complete data rank higher
+  const unitTypes = (p as any).unit_types ?? []
+  const hasVerifiedPrice = unitTypes.length > 0 && unitTypes.some((u: any) => !u.price_is_estimated)
+  if (hasVerifiedPrice) score += 10
+  if (p.hero_image_url) score += 8
+  if (p.rera_number) score += 7
+  if (p.top_connectivity.length > 0) score += 5
+  if (p.top_amenities.length > 0) score += 5
+
+  return score
+}
+
+export function scoreAndRankProjects(
+  cards: ProjectCard[],
+  filters: SearchFilters,
+  _query?: string,
+  topN = 6,
+): ProjectCard[] {
+  if (cards.length <= 1) return cards
+
+  const scored = cards.map((p) => ({ project: p, score: scoreProject(p, filters) }))
+  scored.sort((a, b) => b.score - a.score)
+
+  return scored.slice(0, topN).map((s) => s.project)
+}
+
 function buildCacheKey(filters: SearchFilters, userQuery?: string): string {
   return makeKey(
     'search',
@@ -60,8 +123,7 @@ function buildCacheKey(filters: SearchFilters, userQuery?: string): string {
 }
 
 /**
- * Fast DB query — no reranking. Returns up to 6 results from the DB.
- * Redis-cached per (filters + query). Cache hit = instant return.
+ * Fast DB query with Redis cache. Returns up to 15 raw results for scoring.
  */
 export async function searchProjects(
   filters: SearchFilters,
@@ -105,62 +167,8 @@ export async function searchProjects(
 
   const cards = rows.map(toProjectCard)
 
-  if (cards.length === 0) {
-    await setCached(cacheKey, [], 60 * 30)
-    return []
-  }
-
-  return cards.slice(0, 6)
-}
-
-/**
- * Rerank cards against the user query. Jina (1.5s gate) → Cohere (2s gate) → DB order.
- * Called in parallel with searchProjects from the route — never awaited directly in the search path.
- * Caller applies a time gate via Promise.race.
- * Optionally pass cacheKey to persist the final reranked results to Redis.
- */
-export async function rerankProjects(
-  cards: ProjectCard[],
-  query: string,
-  topN = 6,
-  cacheKey?: string,
-): Promise<ProjectCard[]> {
-  if (cards.length <= 1) return cards
-  const docs = cards.map(toRerankDoc)
-
-  let reranked: ProjectCard[] | null = null
-
-  if (process.env.JINA_API_KEY) {
-    try {
-      const ranked = await withTimeout(jinaRerank(query, docs, topN), 1500)
-      if (ranked.length > 0) {
-        console.log(`[repo] jina rerank succeeded`)
-        reranked = ranked.map((r) => cards[r.index]).filter(Boolean) as ProjectCard[]
-      }
-    } catch (err) {
-      console.warn('[repo] jina rerank skipped:', err instanceof Error ? err.message : err)
-    }
-  }
-
-  if (!reranked && process.env.COHERE_API_KEY) {
-    try {
-      const ranked = await withTimeout(cohereRerank(query, docs, topN), 2000)
-      if (ranked.length > 0) {
-        console.log(`[repo] cohere rerank succeeded`)
-        reranked = ranked.map((r) => cards[r.index]).filter(Boolean) as ProjectCard[]
-      }
-    } catch (err) {
-      console.warn('[repo] cohere rerank skipped:', err instanceof Error ? err.message : err)
-    }
-  }
-
-  const final = reranked ?? cards.slice(0, topN)
-
-  if (cacheKey) {
-    await setCached(cacheKey, final, 60 * 60 * 2)
-  }
-
-  return final
+  await setCached(cacheKey, cards.length > 0 ? cards : [], 60 * 30)
+  return cards
 }
 
 export async function getProjectBySlug(slug: string): Promise<ProjectCard | null> {
@@ -287,6 +295,7 @@ export function toProjectCard(p: any): ProjectCard {
         price_min_cr: u.price_min_cr,
         price_max_cr: u.price_max_cr,
         price_label: u.price_label,
+        price_is_estimated: u.price_is_estimated ?? null,
       }),
     ),
     top_amenities,
@@ -300,3 +309,6 @@ export function toProjectCard(p: any): ProjectCard {
     })) ?? [],
   }
 }
+
+// Keep for backward compatibility — callers that import rerankProjects directly
+export { scoreAndRankProjects as rerankProjects }

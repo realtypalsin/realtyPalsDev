@@ -6,6 +6,14 @@
       "headers": {
         "Authorization": "Bearer sbp_68e1ca284295efd86b4da51929cdd9a6d4817760"
       }
+    },
+    "code-review-graph": {
+      "command": "uvx",
+      "args": [
+        "code-review-graph",
+        "serve"
+      ],
+      "type": "stdio"
     }
   }
 }

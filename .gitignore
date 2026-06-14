@@ -38,3 +38,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .yarn-integrity
+# Added by code-review-graph
+.code-review-graph/
+
+# Agents and workspace configs
+.claude/
+.agents/
+.mcp.json
+
+# Local audits / notes
+audit*.md
+
+# Backup files
+*.bak

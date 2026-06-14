@@ -1,6 +1,16 @@
 {
-  "dependencies": {
-    "baseline-browser-mapping": "^2.10.33",
-    "caniuse-lite": "^1.0.30001793"
+  "name": "realtypals-root",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "db:studio": "cd frontend && npx prisma studio",
+    "db:migrate": "cd frontend && npx prisma migrate dev",
+    "db:push": "cd frontend && npx prisma db push",
+    "db:generate": "cd frontend && npx prisma generate",
+    "db:seed": "cd frontend && npm run db:seed"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
   }
 }

@@ -45,6 +45,7 @@ export interface UnitTypeSummary {
   price_min_cr?: number | null
   price_max_cr?: number | null
   price_label?: string | null
+  price_is_estimated?: boolean | null
 }
 
 export interface AmenitySummary {

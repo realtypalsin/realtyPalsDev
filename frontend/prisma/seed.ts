@@ -1,6 +1,10 @@
 // prisma/seed.ts
 import { PrismaClient, ProjectStatus, AmenityCategory, ConnectivityType, DataSource, ImageType } from '@prisma/client'
 import { BUILDERS, PROJECTS } from './data/seed-data'
+import { NEW_BUILDERS, NEW_PROJECTS } from './data/seed-data-new'
+
+const ALL_BUILDERS = [...BUILDERS, ...NEW_BUILDERS]
+const ALL_PROJECTS = [...PROJECTS, ...NEW_PROJECTS]
 
 const prisma = new PrismaClient()
 
@@ -11,7 +15,7 @@ async function main() {
   console.log('📦 Seeding builders...')
   const builderMap = new Map<string, string>() // slug → id
 
-  for (const b of BUILDERS) {
+  for (const b of ALL_BUILDERS) {
     const builder = await prisma.builder.upsert({
       where: { slug: b.slug },
       update: { ...b },
@@ -24,7 +28,7 @@ async function main() {
   // ── 2. Upsert projects ────────────────────────────────────────────
   console.log('\n🏗️  Seeding projects...')
 
-  for (const p of PROJECTS) {
+  for (const p of ALL_PROJECTS) {
     const builder_id = builderMap.get(p.builder_slug)
     if (!builder_id) {
       console.error(`  ✗ Builder not found for slug: ${p.builder_slug}`)

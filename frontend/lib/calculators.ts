@@ -92,7 +92,7 @@ export function calculateGst(
     return { property_value: value, gst_amount: 0, gst_rate: 0, category: 'ready_to_move',
       note: 'No GST on ready-to-move properties with Occupancy Certificate.' }
   }
-  const isAffordable = price_cr <= 4.5 && carpet_sqm > 0 && carpet_sqm <= 90
+  const isAffordable = price_cr <= 0.45 && carpet_sqm > 0 && carpet_sqm <= 90
   const rate = isAffordable ? 1 : 5
   return {
     property_value: value,

@@ -18,13 +18,17 @@
     "db:enrich-ai": "tsx scripts/auto-enrich.ts",
     "db:re-embed": "tsx scripts/re-embed.ts",
     "db:seed-images": "tsx scripts/seed-images.ts",
+    "test:bedrock": "tsx scripts/test-bedrock.ts",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "prisma": {
+    "schema": "../prisma/schema.prisma",
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^4.0.117",
+    "@ai-sdk/anthropic": "^3.0.81",
     "@ai-sdk/groq": "^3.0.39",
     "@ai-sdk/openai": "^3.0.67",
     "@ai-sdk/react": "^3.0.197",

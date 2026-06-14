@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../frontend/node_modules/.prisma/client"
 }
 
 datasource db {
@@ -121,7 +122,6 @@ model Project {
   marketing_claims   String[]
   ai_search_keywords String[]
   hero_image_url     String?
-  embedding          Unsupported("vector(1024)")?
   created_at         DateTime      @default(now())
   updated_at         DateTime      @updatedAt
 
@@ -154,7 +154,7 @@ model UnitType {
   price_min_cr       Float?
   price_max_cr       Float?
   price_label        String?
-  price_is_estimated Boolean  @default(true)
+  price_is_estimated Boolean  @default(false)
 
   project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
@@ -319,4 +319,20 @@ model ProjectDocument {
 
   @@index([project_slug])
   @@map("project_documents")
+}
+
+model FailedWebhook {
+  id          String   @id @default(uuid())
+  lead_type   String
+  name        String
+  phone       String
+  project_name String?
+  payload     Json
+  error       String?
+  retries     Int      @default(0)
+  resolved    Boolean  @default(false)
+  created_at  DateTime @default(now())
+
+  @@index([resolved, created_at])
+  @@map("failed_webhooks")
 }
