@@ -321,3 +321,28 @@ body { overflow-x: hidden; }
 input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: none;
 }
+
+/* ── iOS input font-size fix: prevents auto-zoom on focus ── */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── Touch-action: eliminates 300ms tap delay on Android ── */
+button, a, [role="button"], input, textarea, select {
+  touch-action: manipulation;
+}
+
+/* ── Prevent text overflow on small screens (320px) ── */
+@media (max-width: 375px) {
+  .text-3xl { font-size: 1.5rem !important; }
+  .text-4xl { font-size: 1.75rem !important; }
+  .text-5xl { font-size: 2rem !important; }
+  .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
+}

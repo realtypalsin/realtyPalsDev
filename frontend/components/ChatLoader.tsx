@@ -47,11 +47,27 @@ const CHIP_STYLE: Record<string, string> = {
   pink:    'bg-pink-50   border-pink-100   text-pink-700   dark:bg-pink-900/30   dark:border-pink-800/60   dark:text-pink-300',
 }
 
-const SEARCH_STEPS  = [
+const SEARCH_STEPS = [
   'Reading your requirements',
   'Scanning Noida inventory',
   'Shortlisting best matches',
   'Preparing recommendations',
+]
+
+const WEB_STEPS = [
+  'Searching the web',
+  'Reading latest news',
+  'Summarising findings',
+]
+
+const COMMUTE_STEPS = [
+  'Calculating route',
+  'Checking traffic conditions',
+]
+
+const RERA_STEPS = [
+  'Connecting to UP-RERA portal',
+  'Verifying registration',
 ]
 
 const GENERAL_STEPS = [
@@ -59,15 +75,26 @@ const GENERAL_STEPS = [
   'Preparing your answer',
 ]
 
+const TOOL_STEPS: Record<string, string[]> = {
+  search_properties: SEARCH_STEPS,
+  search_web: WEB_STEPS,
+  commute: COMMUTE_STEPS,
+  rera: RERA_STEPS,
+}
+
 interface Props {
   userQuery: string
   isSearching: boolean
+  searchingTool?: 'search_properties' | 'search_web' | 'commute' | 'rera'
 }
 
-export default function ChatLoader({ userQuery, isSearching }: Props) {
+export default function ChatLoader({ userQuery, isSearching, searchingTool }: Props) {
   const chips = parseQuery(userQuery)
-  const isPropertySearch = chips.length > 0 || isSearching
-  const steps = isPropertySearch ? SEARCH_STEPS : GENERAL_STEPS
+  const steps = searchingTool && TOOL_STEPS[searchingTool]
+    ? TOOL_STEPS[searchingTool]
+    : chips.length > 0 || isSearching
+    ? SEARCH_STEPS
+    : GENERAL_STEPS
 
   const [activeStep, setActiveStep] = useState(0)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])

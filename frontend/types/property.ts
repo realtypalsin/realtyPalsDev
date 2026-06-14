@@ -80,6 +80,7 @@ export interface ChatMessage {
   showSectorIntelligence?: boolean;
   showComparisonTable?: boolean;
   isSearching?: boolean;
+  searchingTool?: 'search_properties' | 'search_web' | 'commute' | 'rera';
   userQuery?: string;
   timestamp: string;
   intent?: {

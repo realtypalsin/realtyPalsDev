@@ -424,7 +424,7 @@ export const NEW_PROJECTS = [
       { url: '/images/properties/mahagun-medalleo-sector-107-noida/hero.jpg', type: 'hero' as const, caption: 'Mahagun Medalleo', sort_order: 0 },
     ],
     unit_types: [
-      { name: 'Low-Rise Independent Floor', bhk: null, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: [], price_min_cr: 3.00, price_max_cr: 6.00, price_label: '₹3–6 Cr (est.)', price_is_estimated: true },
+      { name: 'Low-Rise Independent Floor', bhk: 4, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 4, utility_room: false, dress_area: false, towers: [], price_min_cr: 3.00, price_max_cr: 6.00, price_label: '₹3–6 Cr (est.)', price_is_estimated: true },
     ],
     amenities: [
       { name: 'Dense Forest Trail', category: 'wellness' as const },
@@ -850,7 +850,7 @@ export const NEW_PROJECTS = [
       { url: '/images/properties/mahagun-manorialle-sector-128-noida/hero.jpg', type: 'hero' as const, caption: 'Mahagun Manorialle', sort_order: 0 },
     ],
     unit_types: [
-      { name: 'Luxury Condominium', bhk: null, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: [], price_min_cr: 5.00, price_max_cr: 15.00, price_label: '₹5–15 Cr (est.)', price_is_estimated: true },
+      { name: 'Luxury Condominium', bhk: 4, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 4, utility_room: false, dress_area: false, towers: [], price_min_cr: 5.00, price_max_cr: 15.00, price_label: '₹5–15 Cr (est.)', price_is_estimated: true },
     ],
     amenities: [
       { name: 'Infinity Pool', category: 'lifestyle' as const },
@@ -903,7 +903,7 @@ export const NEW_PROJECTS = [
       { url: '/images/properties/max-estate-128-sector-128-noida/hero.jpg', type: 'hero' as const, caption: 'Estate 128', sort_order: 0 },
     ],
     unit_types: [
-      { name: 'Luxury Residence', bhk: null, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: ['Tower 1', 'Tower 2', 'Tower 3', 'Tower 4'], price_min_cr: 5.00, price_max_cr: 15.00, price_label: '₹5–15 Cr (est.)', price_is_estimated: true },
+      { name: 'Luxury Residence', bhk: 4, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 4, utility_room: false, dress_area: false, towers: ['Tower 1', 'Tower 2', 'Tower 3', 'Tower 4'], price_min_cr: 5.00, price_max_cr: 15.00, price_label: '₹5–15 Cr (est.)', price_is_estimated: true },
     ],
     amenities: [
       { name: 'The Hub Clubhouse', category: 'lifestyle' as const },

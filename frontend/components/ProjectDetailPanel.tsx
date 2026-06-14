@@ -13,7 +13,7 @@ import {
   Subway, AirplaneTakeoff, Path, Buildings, Heart, Tree,
   SoccerBall, Leaf, Baby, SealCheck, MapTrifold,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Dumbbell, Star as StarPhosphor,
+  Barbell, Star as StarPhosphor,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import { API_BASE } from '@/lib/env'
@@ -34,7 +34,7 @@ interface Props {
 }
 
 const AMENITY_ICONS: Record<string, React.ElementType> = {
-  sports:    Dumbbell,
+  sports:    Barbell,
   lifestyle: StarPhosphor,
   wellness:  Leaf,
   kids:      Baby,

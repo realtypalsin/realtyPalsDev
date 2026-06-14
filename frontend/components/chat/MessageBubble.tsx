@@ -128,7 +128,7 @@ function MessageBubbleInner({
           {!isUser ? (
             <div className="relative z-10">
               {!message.content && !message.properties?.length ? (
-                <ChatLoader userQuery={message.userQuery ?? ''} isSearching={!!message.isSearching} />
+                <ChatLoader userQuery={message.userQuery ?? ''} isSearching={!!message.isSearching} searchingTool={message.searchingTool} />
               ) : message.content ? (
                 <motion.div
                   initial={{ opacity: 0 }}

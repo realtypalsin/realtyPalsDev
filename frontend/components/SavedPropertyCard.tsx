@@ -67,7 +67,7 @@ export default function SavedPropertyCard({
         {/* Top Badges */}
         <div className="absolute top-4 left-4 flex gap-2 z-10">
           <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
-            {property.status === 'ready' ? 'Ready' : 'Under Const.'}
+            {property.status === 'ready_to_move' ? 'Ready to Move' : 'Under Const.'}
           </span>
         </div>
 

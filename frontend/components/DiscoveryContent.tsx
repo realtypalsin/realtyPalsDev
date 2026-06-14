@@ -572,7 +572,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             ));
           } else if (payload.type === 'searching') {
             setChatHistory(prev => prev.map(m =>
-              m.id === streamId ? { ...m, isSearching: true, content: '' } : m
+              m.id === streamId ? { ...m, isSearching: true, searchingTool: payload.tool ?? undefined, content: '' } : m
             ));
           } else if (payload.type === 'properties') {
             // Cards arrive immediately after DB query — render before Groq writes text
@@ -808,11 +808,11 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
       {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}
       <div className={`flex-1 flex flex-col min-h-0 overflow-hidden relative z-10 ${!hasUserReplied ? 'justify-center' : ''}`}>
 
-        {/* Animated Orbs Overlay Background */}
+        {/* Static gradient background — no animation = no repaints */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-blue-400/20 dark:bg-blue-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" />
-          <div className="absolute top-[40%] right-[10%] w-[600px] h-[600px] bg-purple-400/20 dark:bg-purple-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" style={{ animationDelay: "2s" }} />
-          <div className="absolute bottom-[-10%] left-[40%] w-[400px] h-[400px] bg-teal-400/10 dark:bg-teal-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" style={{ animationDelay: "4s" }} />
+          <div className="absolute top-[5%] left-[15%] w-[500px] h-[500px] bg-blue-400/15 dark:bg-blue-600/8 blur-[160px] rounded-full" />
+          <div className="absolute top-[45%] right-[5%] w-[550px] h-[550px] bg-indigo-400/10 dark:bg-purple-600/8 blur-[180px] rounded-full" />
+          <div className="absolute bottom-[0%] left-[35%] w-[400px] h-[400px] bg-teal-400/8 dark:bg-teal-600/8 blur-[140px] rounded-full" />
         </div>
 
         {!hasUserReplied ? (

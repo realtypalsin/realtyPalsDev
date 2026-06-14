@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import {
   ClockCountdown, CheckCircle, SealCheck,
@@ -9,7 +9,7 @@ import {
   MapPin, ArrowRight, Sparkle, BookmarkSimple,
   CaretLeft, CaretRight, Phone,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Dumbbell, Star, Buildings,
+  Barbell, Star, Buildings,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 import { API_BASE } from '@/lib/env'
@@ -25,7 +25,7 @@ interface Props {
 }
 
 const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
-  sports:    Dumbbell,
+  sports:    Barbell,
   lifestyle: Star,
   wellness:  Leaf,
   kids:      Baby,
@@ -50,22 +50,34 @@ const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 )
 
-// Compute lowest price-per-sqft across unit types (displayed as ₹8.5K/sqft)
-function getPricePerSqft(project: ProjectCardType): string | null {
-  const candidates = project.unit_types.filter(
+// Prefer carpet area for ₹/sqft (trust signal: carpet is what buyer gets)
+// Falls back to super area if carpet not available
+function getPricePerSqft(project: ProjectCardType): { label: string; isCarpet: boolean } | null {
+  const carpetCandidates = project.unit_types.filter(
+    (u) => u.price_min_cr && u.carpet_area_sqft && u.carpet_area_sqft > 0,
+  )
+  if (carpetCandidates.length > 0) {
+    const min = Math.min(
+      ...carpetCandidates.map((u) => Math.round((u.price_min_cr! * 1e7) / u.carpet_area_sqft!)),
+    )
+    return { label: `₹${(min / 1000).toFixed(1)}K/sqft`, isCarpet: true }
+  }
+  const superCandidates = project.unit_types.filter(
     (u) => u.price_min_cr && u.super_area_sqft && u.super_area_sqft > 0,
   )
-  if (candidates.length === 0) return null
+  if (superCandidates.length === 0) return null
   const min = Math.min(
-    ...candidates.map((u) => Math.round((u.price_min_cr! * 1e7) / u.super_area_sqft!)),
+    ...superCandidates.map((u) => Math.round((u.price_min_cr! * 1e7) / u.super_area_sqft!)),
   )
-  return `₹${(min / 1000).toFixed(1)}K/sqft`
+  return { label: `₹${(min / 1000).toFixed(1)}K/sqft`, isCarpet: false }
 }
 
 export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onCallback, onToast }: Props) {
   const [imgIdx, setImgIdx] = useState(0)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const visibleRef = useRef(false)
 
   const isRTM = project.status === 'ready_to_move'
   const isNew = project.status === 'new_launch'
@@ -73,7 +85,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
   const StatusIcon = isRTM ? CheckCircle : ClockCountdown
 
   const uniqueBhk = [...new Set(project.unit_types.map((u) => `${u.bhk}BHK`))]
-  const pricePerSqft = getPricePerSqft(project)
+  const sqftInfo = getPricePerSqft(project)
 
   // Build image list: hero first, then other exterior/hero images
   const cardImages = [
@@ -84,11 +96,20 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
   ].filter(Boolean) as string[]
   const hasMultiple = cardImages.length > 1
 
-  // Auto-advance carousel for multi-image cards
+  // Only auto-advance carousel when card is visible (saves CPU for off-screen cards)
   useEffect(() => {
     if (!hasMultiple) return
-    const timer = setInterval(() => setImgIdx((i) => (i + 1) % cardImages.length), 3500)
-    return () => clearInterval(timer)
+    const el = cardRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { visibleRef.current = entry.isIntersecting },
+      { threshold: 0.3 },
+    )
+    observer.observe(el)
+    const timer = setInterval(() => {
+      if (visibleRef.current) setImgIdx((i) => (i + 1) % cardImages.length)
+    }, 3500)
+    return () => { observer.disconnect(); clearInterval(timer) }
   }, [hasMultiple, cardImages.length])
 
   const prevImg = useCallback((e: React.MouseEvent) => {
@@ -144,6 +165,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
 
   return (
     <div
+      ref={cardRef}
       onClick={() => onDetailOpen?.(project)}
       className="group relative w-full rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-100/80 dark:border-gray-700 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
     >
@@ -262,9 +284,13 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
             <p className="text-[22px] font-black text-gray-900 dark:text-white tracking-tight leading-none">
               {project.price_range_label}
             </p>
-            {pricePerSqft && (
-              <span className="text-[10.5px] font-semibold text-gray-400 dark:text-gray-500 mt-1.5 whitespace-nowrap bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2 py-0.5 rounded-full">
-                {pricePerSqft}
+            {sqftInfo && (
+              <span
+                className="text-[10.5px] font-semibold text-gray-400 dark:text-gray-500 mt-1.5 whitespace-nowrap bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2 py-0.5 rounded-full"
+                title={sqftInfo.isCarpet ? 'Price per carpet sq ft' : 'Price per super built-up sq ft'}
+              >
+                {sqftInfo.label}
+                {sqftInfo.isCarpet && <span className="ml-0.5 opacity-60"> carpet</span>}
               </span>
             )}
           </div>

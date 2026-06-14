@@ -108,12 +108,12 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
     ? `${property.size_sqft.toLocaleString('en-IN')} sq.ft`
     : null;
 
-  const statusLabel = property.status === 'ready'
+  const statusLabel = property.status === 'ready_to_move'
     ? 'Ready to Move'
     : property.status === 'under_construction'
     ? 'Under Construction'
     : null;
-  const statusStyle = property.status === 'ready'
+  const statusStyle = property.status === 'ready_to_move'
     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
     : 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800';
 

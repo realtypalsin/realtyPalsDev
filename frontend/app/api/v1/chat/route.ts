@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
                 possession_year_max: z.union([z.number(), z.string()]).optional().describe('Latest possession year e.g. 2026'),
               }),
               execute: async (args) => {
-                send({ type: 'searching' })
+                send({ type: 'searching', tool: 'search_properties' })
                 toolArgsList.push(JSON.stringify(args))
 
                 // Capture signals for memory update
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
                 query: z.string().describe('Specific query e.g. "ATS builder Noida delivery track record complaints 2024"'),
               }),
               execute: async ({ query }) => {
-                send({ type: 'searching' })
+                send({ type: 'searching', tool: 'search_web' })
                 const webCacheKey = makeKey('websearch', query.toLowerCase().slice(0, 120))
                 let webContext = await getCached<string>(webCacheKey)
                 if (!webContext) {
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
                 destination: z.string().describe('Destination, e.g. "Cyber City, Gurgaon"'),
               }),
               execute: async ({ origin, destination }) => {
-                send({ type: 'searching' })
+                send({ type: 'searching', tool: 'commute' })
                 const commuteKey = makeKey('commute', origin.toLowerCase(), destination.toLowerCase())
                 let commuteData = await getCached<object>(commuteKey)
                 if (!commuteData) {
@@ -384,7 +384,7 @@ export async function POST(request: NextRequest) {
                 rera_url: z.string().optional().describe('Direct URL to RERA project page if available'),
               }),
               execute: async ({ rera_number, rera_url }) => {
-                send({ type: 'searching' })
+                send({ type: 'searching', tool: 'rera' })
                 const safeReraUrl = rera_url && rera_url.includes('up-rera.in') ? rera_url : null
                 const url = safeReraUrl || (rera_number ? `https://www.up-rera.in/projects?project_search=${encodeURIComponent(rera_number)}` : 'https://www.up-rera.in')
                 try {

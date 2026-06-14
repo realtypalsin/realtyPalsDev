@@ -15,9 +15,12 @@ interface LeadPayload {
 const RETRY_DELAYS_MS = [0, 2000, 5000] // 3 attempts: immediate, 2s, 5s
 
 async function fireWebhook(url: string, payload: LeadPayload): Promise<void> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const secret = process.env.LEAD_WEBHOOK_SECRET
+  if (secret) headers['x-webhook-secret'] = secret  // only set for Render backend; not needed for Make.com
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(5000),
   })
