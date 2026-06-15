@@ -411,7 +411,7 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
           ? `${API_BASE}/chat/session?id=${sessionFromUrl}`
           : `${API_BASE}/chat/session`
         const res = await fetch(sessionUrl, {
-          headers: { 'X-User-Id': userId },
+          headers: { 'X-User-Id': userId! },
         });
         if (!res.ok) throw new Error('session fetch failed');
         const data = await res.json();
