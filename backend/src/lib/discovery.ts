@@ -18,9 +18,16 @@ export type IntentState = 'COLD' | 'GATHERING' | 'READY_TO_SEARCH' | 'SHORTLISTE
 export function getIntentState(intent: Intent): IntentState {
   const hasBhk = (intent.bhk?.length ?? 0) > 0
   const hasBudget = !!intent.budgetMax
-  if (!hasBhk && !hasBudget) return 'COLD'
-  if (!hasBhk || !hasBudget) return 'GATHERING'
-  return 'READY_TO_SEARCH'
+  const hasSector = !!intent.sector
+  const hasBuilder = !!intent.builderName
+
+  if (!hasBhk && !hasBudget && !hasSector && !hasBuilder) return 'COLD'
+
+  // Any 2 of (BHK, budget, sector) is enough to search — or explicit builder
+  const signals = [hasBhk, hasBudget, hasSector].filter(Boolean).length
+  if (hasBuilder || signals >= 2) return 'READY_TO_SEARCH'
+
+  return 'GATHERING'
 }
 
 export interface UnitTypeSummary {
