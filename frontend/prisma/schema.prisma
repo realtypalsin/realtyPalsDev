@@ -213,6 +213,7 @@ model ChatSession {
   title         String?
   message_count Int       @default(0)
   chat_phase    String    @default("DISCOVERY")
+  summary       String?
   last_projects Json?
   created_at    DateTime  @default(now())
   last_active   DateTime  @updatedAt
@@ -242,7 +243,8 @@ model ChatMessage {
 
 model UserMemory {
   id                       String   @id @default(uuid())
-  user_id                  String   @unique
+  user_id                  String?  @unique
+  guest_token              String?  @unique
   bhk_preference           Int?
   budget_min_cr            Float?
   budget_max_cr            Float?
@@ -291,6 +293,21 @@ model SiteVisitRequest {
 
   @@index([project_slug])
   @@map("site_visit_requests")
+}
+
+model CallbackRequest {
+  id           String   @id @default(uuid())
+  name         String
+  phone        String
+  project_name String?
+  project_slug String?
+  user_id      String?
+  guest_token  String?
+  status       String   @default("new")
+  created_at   DateTime @default(now())
+
+  @@index([project_slug])
+  @@map("callback_requests")
 }
 
 model PriceAlert {
