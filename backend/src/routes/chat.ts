@@ -94,7 +94,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     const { messages: compressedHistory, newSummary } = await maybeCompress(chatHistory, existingSummary)
     const { systemSuffix, messages } = buildContextMessages(message, compressedHistory, newSummary ?? existingSummary, memory)
-    const systemPrompt = buildAdvisorSystemPrompt(intent, projects.length, memory) + systemSuffix
+    const systemPrompt = buildAdvisorSystemPrompt(intent, projects, memory) + systemSuffix
 
     let fullText = ''
     if (process.env.GROQ_API_KEY) {
@@ -148,7 +148,8 @@ router.post('/', async (req: Request, res: Response) => {
             session_id: currentSessionId!,
             role: 'user',
             content: message,
-            intent_snapshot: intent as unknown as Parameters<typeof prisma.chatMessage.createMany>[0]['data'][number]['intent_snapshot'],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            intent_snapshot: intent as any,
           },
           {
             session_id: currentSessionId!,

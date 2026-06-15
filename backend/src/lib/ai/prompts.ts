@@ -1,5 +1,5 @@
 // backend/src/lib/ai/prompts.ts
-import type { Intent } from '../discovery'
+import type { Intent, ScoredProject } from '../discovery'
 
 export const INTENT_EXTRACTION_PROMPT = `You are an intent extractor for a real estate search assistant in India.
 
@@ -43,7 +43,7 @@ Rules:
 
 export function buildAdvisorSystemPrompt(
   intent: Intent,
-  projectCount: number,
+  projects: ScoredProject[],
   memory?: {
     bhk_preference?: number | null
     budget_max_cr?: number | null
@@ -57,11 +57,24 @@ export function buildAdvisorSystemPrompt(
   const contextSuffix = intentSummary || memorySummary
     ? `\n\n## Current Session Context\n${intentSummary}${memorySummary}`
     : ''
-  const resultNote = projectCount > 0
-    ? `\n\nProperty cards are displayed to the user. Write a 2-3 sentence advisory summary (under 100 words). Lead with best-fit and one reason. Note one honest trade-off. Do NOT repeat specs from the cards.`
+  const projectsBlock = projects.length > 0
+    ? `\n\n## Properties Found (show to user as cards, use this data in your response)\n${projects.map((p, i) => {
+        const bhkOptions = [...new Set(p.unit_types.map((u) => `${u.bhk}BHK`))].join(', ')
+        const carpets = p.unit_types.filter((u) => u.carpet_area_sqft).map((u) => u.carpet_area_sqft!)
+        const minC = carpets.length ? Math.min(...carpets) : null
+        const maxC = carpets.length ? Math.max(...carpets) : null
+        const carpetRange = minC != null
+          ? maxC != null && maxC > minC ? `${minC}–${maxC}` : `${minC}`
+          : 'N/A'
+        return `${i + 1}. **${p.name}** — ${p.sector}, ${p.builder.name}
+   BHK: ${bhkOptions || 'N/A'}, Carpet: ${carpetRange} sqft
+   Price: ${p.price_range_label}  |  Status: ${p.status}  |  Possession: ${p.possession_label ?? 'N/A'}
+   RERA: ${p.rera_number ?? 'Not listed'}
+   Match reason: ${p.matchReason}  |  Score: ${p.matchScore}/100`
+      }).join('\n')}`
     : ''
 
-  return BASE_SYSTEM_PROMPT + contextSuffix + resultNote
+  return BASE_SYSTEM_PROMPT + contextSuffix + projectsBlock
 }
 
 function buildIntentSummary(intent: Intent): string {
@@ -115,11 +128,25 @@ DO NOT call when: no location given, pure knowledge questions, follow-ups about 
 NEVER assume a city. If none given → ask "Which city or area are you looking in?"
 Database covers Noida and Greater Noida only.
 
-## After Search
-Write 2-3 sentences MAX (under 100 words):
-- Best-fit property and ONE specific reason
-- ONE honest trade-off
-- End with suggestion: "Want to compare these, check EMI, or book a site visit?"
+## After Search — Response Format
+Write a structured advisory response. Be precise. Use real numbers from the project data above.
+
+Format:
+**[Top project name]** — [Sector] · [Builder]
+- [BHK] · [carpet sqft] sqft · [price]
+- [Status]: [possession label if applicable]
+- RERA: [number or "Verify on UP-RERA"]
+- Why it fits: [specific reason from matchReason]
+- Trade-off: [one honest specific trade-off — price vs budget, possession delay, sector distance, etc.]
+
+If 2+ projects found, list all with the same format.
+End with: "Want to compare EMI for these, check the builder's track record, or book a site visit?"
+
+Rules:
+- NEVER say "priced a bit higher" — say "₹X.XXCr which is ₹YY lakh over your ₹ZCr budget"
+- NEVER say "luxurious amenities" — name specific amenities if available
+- NEVER invent data — use only what's in the project data block above
+- If no projects found, say clearly: "I didn't find any [BHK] options in [sector] within ₹[budget]Cr in our database. [Suggest adjacent sectors or what IS available]"
 
 ## Calculations (use tools, not mental math)
 - EMI: use calculate_emi tool

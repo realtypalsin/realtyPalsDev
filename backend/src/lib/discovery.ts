@@ -23,23 +23,66 @@ export function getIntentState(intent: Intent): IntentState {
   return 'READY_TO_SEARCH'
 }
 
+export interface UnitTypeSummary {
+  name: string
+  bhk: number
+  bathrooms: number | null
+  super_area_sqft?: number | null
+  carpet_area_sqft?: number | null
+  price_min_cr?: number | null
+  price_max_cr?: number | null
+  price_label?: string | null
+}
+
+export interface AmenitySummary {
+  name: string
+  category: string
+}
+
+export interface ConnSummary {
+  type: string
+  name: string
+  distance_km?: number | null
+}
+
 export interface ScoredProject {
   id: string
   slug: string
   name: string
-  builder: string
-  thumbnailUrl: string
-  bhkOptions: string
-  priceRange: string
-  carpetRange: string
-  possessionLabel: string
-  reraNumber: string
-  reraUrl: string
+  tagline?: string | null
+  builder: { name: string; slug: string }
+  rera_number?: string | null
+  rera_url?: string | null
+  lat?: number | null
+  lng?: number | null
+  sector: string
+  city: string
+  address?: string | null
+  land_area_acres?: number | null
+  total_towers?: number | null
+  status: string
+  possession_label?: string | null
+  possession_date: string | null
+  architect?: string | null
+  interior_designer?: string | null
+  design_theme?: string | null
+  marketing_claims: string[]
+  hero_image_url?: string | null
+  price_min_cr?: number | null
+  price_max_cr?: number | null
+  price_range_label: string
+  unit_types: UnitTypeSummary[]
+  top_amenities: AmenitySummary[]
+  top_connectivity: ConnSummary[]
+  images: Array<{
+    id: string
+    url: string
+    type: string
+    caption: string | null
+    sort_order: number
+  }>
   matchScore: number
   matchReason: string
-  sector: string
-  status: string
-  city: string
 }
 
 export async function discoverProjects(intent: Intent): Promise<ScoredProject[]> {
@@ -48,9 +91,11 @@ export async function discoverProjects(intent: Intent): Promise<ScoredProject[]>
       ? { builder: { name: { contains: intent.builderName, mode: 'insensitive' } } }
       : undefined,
     include: {
-      builder: { select: { name: true } },
+      builder: { select: { name: true, slug: true } },
       unit_types: true,
-      images: { where: { type: 'hero' }, take: 1 },
+      images: true,
+      amenities: { take: 5 },
+      connectivity: { take: 5, orderBy: { distance_km: 'asc' } },
     },
   })
 
@@ -61,42 +106,71 @@ export async function discoverProjects(intent: Intent): Promise<ScoredProject[]>
       const score = scoreProject(p, intent)
       if (score < threshold) return null
 
-      const bhkSet = [...new Set(p.unit_types.map((u) => `${u.bhk}BHK`))].join(', ')
       const prices = p.unit_types.filter((u) => u.price_min_cr).map((u) => u.price_min_cr!)
       const maxPrices = p.unit_types.filter((u) => u.price_max_cr).map((u) => u.price_max_cr!)
       const minP = prices.length ? Math.min(...prices) : null
       const maxP = maxPrices.length ? Math.max(...maxPrices) : null
-      const priceRange = minP != null
+      const price_range_label = minP != null
         ? maxP != null && maxP > minP
           ? `₹${minP.toFixed(2)}–${maxP.toFixed(2)}Cr`
           : `₹${minP.toFixed(2)}Cr+`
         : 'Price on request'
 
-      const carpets = p.unit_types.filter((u) => u.carpet_area_sqft).map((u) => u.carpet_area_sqft!)
-      const minC = carpets.length ? Math.min(...carpets) : null
-      const maxC = carpets.length ? Math.max(...carpets) : null
-      const carpetRange = minC != null
-        ? maxC != null && maxC > minC ? `${minC}–${maxC} sqft` : `${minC} sqft`
-        : ''
-
       return {
         id: p.id,
         slug: p.slug,
         name: p.name,
-        builder: p.builder.name,
-        thumbnailUrl: p.images[0]?.url ?? p.hero_image_url ?? '',
-        bhkOptions: bhkSet,
-        priceRange,
-        carpetRange,
-        possessionLabel: p.possession_label ?? '',
-        reraNumber: p.rera_number ?? '',
-        reraUrl: p.rera_url ?? '',
+        tagline: p.tagline ?? null,
+        builder: { name: p.builder.name, slug: p.builder.slug },
+        rera_number: p.rera_number ?? null,
+        rera_url: p.rera_url ?? null,
+        lat: p.lat ?? null,
+        lng: p.lng ?? null,
+        sector: p.sector,
+        city: p.city,
+        address: p.address ?? null,
+        land_area_acres: p.land_area_acres ?? null,
+        total_towers: p.total_towers ?? null,
+        status: p.status as string,
+        possession_label: p.possession_label ?? null,
+        possession_date: p.possession_date ? p.possession_date.toISOString() : null,
+        architect: p.architect ?? null,
+        interior_designer: p.interior_designer ?? null,
+        design_theme: p.design_theme ?? null,
+        marketing_claims: p.marketing_claims,
+        hero_image_url: p.hero_image_url ?? null,
+        price_min_cr: minP,
+        price_max_cr: maxP,
+        price_range_label,
+        unit_types: p.unit_types.map((u) => ({
+          name: u.name,
+          bhk: u.bhk,
+          bathrooms: u.bathrooms ?? null,
+          super_area_sqft: u.super_area_sqft ?? null,
+          carpet_area_sqft: u.carpet_area_sqft ?? null,
+          price_min_cr: u.price_min_cr ?? null,
+          price_max_cr: u.price_max_cr ?? null,
+          price_label: u.price_label ?? null,
+        })),
+        top_amenities: p.amenities.map((a) => ({
+          name: a.name,
+          category: a.category as string,
+        })),
+        top_connectivity: p.connectivity.map((c) => ({
+          type: c.type as string,
+          name: c.name,
+          distance_km: c.distance_km ?? null,
+        })),
+        images: p.images.map((img) => ({
+          id: img.id,
+          url: img.url,
+          type: img.type as string,
+          caption: img.caption ?? null,
+          sort_order: img.sort_order,
+        })),
         matchScore: Math.round(score),
         matchReason: buildMatchReason(p, intent),
-        sector: p.sector,
-        status: p.status as string,
-        city: p.city,
-      } satisfies ScoredProject
+      } as ScoredProject
     })
     .filter((p): p is ScoredProject => p !== null)
 

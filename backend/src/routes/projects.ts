@@ -11,7 +11,8 @@ router.get('/', async (req: Request, res: Response) => {
     where: {
       ...(city && { city: { contains: city, mode: 'insensitive' } }),
       ...(sector && { sector: { contains: sector, mode: 'insensitive' } }),
-      ...(status && { status: status as Parameters<typeof prisma.project.findMany>[0]['where']['status'] }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(status && { status: status as any }),
       ...(bhk && { unit_types: { some: { bhk: parseInt(bhk) } } }),
       ...(budget_max_cr && { unit_types: { some: { price_min_cr: { lte: parseFloat(budget_max_cr) } } } }),
     },

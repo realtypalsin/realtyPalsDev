@@ -3,22 +3,66 @@
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3001'
 
+export interface UnitTypeSummary {
+  name: string
+  bhk: number
+  bathrooms: number | null
+  super_area_sqft?: number | null
+  carpet_area_sqft?: number | null
+  price_min_cr?: number | null
+  price_max_cr?: number | null
+  price_label?: string | null
+}
+
+export interface AmenitySummary {
+  name: string
+  category: string
+}
+
+export interface ConnSummary {
+  type: string
+  name: string
+  distance_km?: number | null
+}
+
 export interface ScoredProject {
   id: string
   slug: string
   name: string
-  builder: string
-  thumbnailUrl: string
-  bhkOptions: string
-  priceRange: string
-  carpetRange: string
-  possessionLabel: string
-  reraNumber: string
+  tagline?: string | null
+  builder: { name: string; slug: string }
+  rera_number?: string | null
+  rera_url?: string | null
+  lat?: number | null
+  lng?: number | null
+  sector: string
+  city: string
+  address?: string | null
+  land_area_acres?: number | null
+  total_towers?: number | null
+  status: string
+  possession_label?: string | null
+  possession_date: string | null
+  architect?: string | null
+  interior_designer?: string | null
+  design_theme?: string | null
+  marketing_claims: string[]
+  hero_image_url?: string | null
+  price_min_cr?: number | null
+  price_max_cr?: number | null
+  price_range_label: string
+  unit_types: UnitTypeSummary[]
+  top_amenities: AmenitySummary[]
+  top_connectivity: ConnSummary[]
+  images: Array<{
+    id: string
+    url: string
+    type: string
+    caption: string | null
+    sort_order: number
+  }>
   matchScore: number
   matchReason: string
-  sector: string
-  status: string
-  city: string
 }
 
 export type SSEEvent =
