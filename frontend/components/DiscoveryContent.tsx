@@ -13,6 +13,9 @@ import Image from 'next/image';
 import Toast from '@/components/Toast';
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics';
+import { streamChat as streamChatBackend } from '@/lib/backend-api'
+import ReEngagementBanner from '@/components/chat/ReEngagementBanner'
+import StatusSteps from '@/components/chat/StatusSteps'
 import Header from '@/components/Header';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import LeadSuccessModal from '@/components/LeadSuccessModal';
@@ -104,9 +107,10 @@ function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => v
 
 interface DiscoveryContentProps {
   userId: string | null;
+  guestToken?: string | null;
 }
 
-export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
+export default function DiscoveryContent({ userId, guestToken }: DiscoveryContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [chatInput, setChatInput] = useState('');
@@ -145,6 +149,9 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
+  const [statusPhase, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
+  const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null)
+  const [showReEngagement, setShowReEngagement] = useState(true)
   const chatEndRef = useRef<HTMLDivElement>(null);
   const streamingMsgIdRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -383,7 +390,19 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
 
   // Initialize: fetch session from server and restore history
   useEffect(() => {
-    if (!userId || isInitialized || searchParams.get('new') === '1') return;
+    if ((!userId && !guestToken) || isInitialized || searchParams.get('new') === '1') return;
+
+    // Guest users skip session restore — show welcome immediately
+    if (!userId && guestToken) {
+      setChatHistory([{
+        id: crypto.randomUUID(),
+        type: 'ai',
+        content: "Hi! I'm RealtyPal — your AI advisor for Noida real estate. What are you looking for?",
+        timestamp: new Date().toISOString(),
+      }]);
+      setIsInitialized(true);
+      return;
+    }
 
     (async () => {
       try {
@@ -494,14 +513,14 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     };
   }, []);
 
-  const streamChat = useCallback(async (userText: string): Promise<void> => {
-    if (!userId || isSubmitting || submitLockRef.current) return;
+  const streamChat = useCallback((userText: string): void => {
+    if ((!userId && !guestToken) || isSubmitting || submitLockRef.current) return;
     submitLockRef.current = true;
     setIsSubmitting(true);
+    setStatusPhase('extracting');
     userScrolledUp.current = false;
-    setChipPicker(null); // close any open picker
+    setChipPicker(null);
 
-    // Add user message
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       type: 'user',
@@ -513,7 +532,6 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     if (chatTurnCount === 0) track('chat_started', { session_id: sessionId })
     setChatInput('');
 
-    // Add streaming placeholder AI message
     const streamId = crypto.randomUUID();
     streamingMsgIdRef.current = streamId;
     setChatHistory(prev => [...prev, {
@@ -525,135 +543,96 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
       timestamp: new Date().toISOString(),
     }]);
 
-    try {
-      abortControllerRef.current?.abort();
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-      const response = await fetch(`${API_BASE}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({ message: userText, session_id: sessionId }),
-        signal: controller.signal,
-      });
+    let localProjects: ProjectCardType[] = [];
 
-      if (response.status === 429) {
-        const retryAfter = parseInt(response.headers.get('Retry-After') ?? '60', 10)
-        setRateLimitUntil(Date.now() + retryAfter * 1000)
-        setChatHistory(prev => prev.filter(m => m.id !== streamId))
-        return
-      }
-      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let localProjects: ProjectCardType[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let payload: any;
-          try { payload = JSON.parse(line.slice(6)); } catch { continue; }
-
-          if (payload.type === 'text') {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, content: m.content + payload.delta, isSearching: false }
-                : m
-            ));
-          } else if (payload.type === 'searching') {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId ? { ...m, isSearching: true, content: '' } : m
-            ));
-          } else if (payload.type === 'properties') {
-            // Cards arrive immediately after DB query — render before Groq writes text
-            const props = payload.data as ProjectCardType[];
-            localProjects = props;
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, isSearching: false, properties: props }
-                : m
-            ));
-            setLastShortlist(props);
-            setShowRecommendations(true);
-            track('recommendation_generated', { count: props.length, session_id: sessionId });
-          } else if (payload.type === 'error') {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, content: payload.message || 'Something went wrong. Please try again.', isSearching: false }
-                : m
-            ));
-          } else if (payload.type === 'done') {
-            const d = payload.data;
-            if (d.session_id) setSessionId(d.session_id);
-            if (d.chatPhase) setChatPhase(d.chatPhase);
-            // Use localProjects (not stale closure) to correctly detect comparison intent
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? {
-                    ...m,
-                    isSearching: false,
-                    showComparisonTable: (
-                      userText.toLowerCase().includes('compare') && localProjects.length >= 2
-                    ),
-                  }
-                : m
-            ));
-            setExpandedShortlists(new Set());
-          }
+    streamChatBackend(userText, {
+      sessionId: sessionId ?? undefined,
+      userId: userId ?? undefined,
+      guestToken: guestToken ?? undefined,
+      intent: currentIntent ?? undefined,
+      signal: controller.signal,
+      onEvent: (event) => {
+        if (event.type === 'intent') {
+          setCurrentIntent(event.intent);
+          setStatusPhase('searching');
+        } else if (event.type === 'properties') {
+          const props = event.projects as unknown as ProjectCardType[];
+          localProjects = props;
+          setStatusPhase('generating');
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? { ...m, isSearching: false, properties: props }
+              : m
+          ));
+          setLastShortlist(props);
+          setShowRecommendations(true);
+          track('recommendation_generated', { count: props.length, session_id: sessionId });
+        } else if (event.type === 'token') {
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? { ...m, content: m.content + event.token, isSearching: false }
+              : m
+          ));
+        } else if (event.type === 'error') {
+          setStatusPhase(null);
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? { ...m, content: event.message || 'Something went wrong. Please try again.', isSearching: false }
+              : m
+          ));
+        } else if (event.type === 'done') {
+          if (event.sessionId) setSessionId(event.sessionId);
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? {
+                  ...m,
+                  isSearching: false,
+                  showComparisonTable: (
+                    userText.toLowerCase().includes('compare') && localProjects.length >= 2
+                  ),
+                }
+              : m
+          ));
+          setExpandedShortlists(new Set());
         }
-      }
+      },
+      onDone: () => {
+        setStatusPhase(null);
+        streamingMsgIdRef.current = null;
+        setIsSubmitting(false);
+        submitLockRef.current = false;
+        if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
+          setHasShownLengthWarning(true);
+          setShowContextWarning(true);
+        }
+      },
+    });
+  }, [userId, guestToken, isSubmitting, sessionId, chatTurnCount, hasShownLengthWarning, currentIntent]);
 
-      // Length warning
-      if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
-        setHasShownLengthWarning(true);
-        setShowContextWarning(true);
-      }
-
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') return;
-      const errorMsg = err instanceof Error ? err.message : '';
-      setChatHistory(prev => prev.map(m =>
-        m.id === streamId
-          ? { ...m, content: `Sorry, something went wrong. ${errorMsg ? `(${errorMsg})` : ''} Please try again.`, isSearching: false }
-          : m
-      ));
-    } finally {
-      streamingMsgIdRef.current = null;
-      setIsSubmitting(false);
-      submitLockRef.current = false;
-    }
-  }, [userId, isSubmitting, sessionId, chatTurnCount, hasShownLengthWarning]);
-
-  const handleChatSubmit = useCallback(async (e: React.FormEvent, textOverride?: string) => {
+  const handleChatSubmit = useCallback((e: React.FormEvent, textOverride?: string) => {
     e.preventDefault();
     const text = (textOverride ?? chatInput).trim();
     if (!text) return;
-    await streamChat(text);
+    streamChat(text);
   }, [chatInput, streamChat]);
 
   // ── Regenerate: re-send the last user message ──
-  const handleRegenerate = useCallback(async (aiMsgIndex: number) => {
+  const handleRegenerate = useCallback((aiMsgIndex: number) => {
     let userMsg = '';
     for (let i = aiMsgIndex - 1; i >= 0; i--) {
       if (chatHistory[i].type === 'user') { userMsg = chatHistory[i].content; break; }
     }
-    if (userMsg) await streamChat(userMsg);
+    if (userMsg) streamChat(userMsg);
   }, [chatHistory, streamChat]);
 
-  const handleQuickReply = useCallback(async (field: string, value: string) => {
+  const handleQuickReply = useCallback((field: string, value: string) => {
     let message = value;
     if (field === 'bhk') message = `${parseInt(value)} BHK`;
-    await streamChat(message);
+    streamChat(message);
   }, [streamChat]);
 
   const stripMarkdown = (text: string): string => {
@@ -721,6 +700,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   // ── Chat input form ──
   const chatInputForm = (
     <div className="w-full">
+      <StatusSteps phase={statusPhase} />
       {rateLimitUntil && (
         <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
       )}
@@ -859,6 +839,17 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
               }}
             >
               <div className="max-w-4xl mx-auto space-y-6">
+                {showReEngagement && (
+                  <ReEngagementBanner
+                    userId={userId ?? undefined}
+                    guestToken={guestToken ?? undefined}
+                    onResume={(sid) => {
+                      setShowReEngagement(false);
+                      router.push(`/discover?session=${sid}`);
+                    }}
+                    onDismiss={() => setShowReEngagement(false)}
+                  />
+                )}
                 {restoreError && (
                   <div className="flex flex-col items-center justify-center flex-1 gap-4 p-8 text-center">
                     <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
