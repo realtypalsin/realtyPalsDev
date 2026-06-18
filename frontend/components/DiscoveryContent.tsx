@@ -6,28 +6,29 @@ import { AnimatePresence, motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { ChatMessage } from '@/types/property';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
-import ProjectDetailPanel from '@/components/ProjectDetailPanel';
-import ThemeToggle from '@/components/ThemeToggle';
-import VisualGuide from './VisualGuide';
 import Image from 'next/image';
 import Toast from '@/components/Toast';
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics';
 import { streamChat as streamChatBackend } from '@/lib/backend-api'
-import ReEngagementBanner from '@/components/chat/ReEngagementBanner'
+import { authHeaders } from '@/lib/authedFetch'
 import StatusSteps from '@/components/chat/StatusSteps'
 import Header from '@/components/Header';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
-import LeadSuccessModal from '@/components/LeadSuccessModal';
 import MessageBubble from '@/components/chat/MessageBubble';
 import type { Chip, ChipPickerState } from '@/components/chat/types';
 import {
   MessageSquare, AlertTriangle, Mic, Plus,
 } from 'lucide-react';
 
-// ── Dynamic imports — modal-gated, excluded from initial bundle ────────────
+// ── Dynamic imports — heavy components excluded from initial bundle ─────────
 const SiteVisitScheduler = dynamic(() => import('@/components/SiteVisitScheduler'), { ssr: false })
 const CalculatorPanel = dynamic(() => import('@/components/CalculatorPanel'), { ssr: false })
+const ProjectDetailPanel = dynamic(() => import('@/components/ProjectDetailPanel'), { ssr: false })
+const VisualGuide = dynamic(() => import('./VisualGuide'), { ssr: false })
+const LeadSuccessModal = dynamic(() => import('@/components/LeadSuccessModal'), { ssr: false })
+const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false })
+const ReEngagementBanner = dynamic(() => import('@/components/chat/ReEngagementBanner'), { ssr: false })
 
 // ── Follow-up chip generator — contextual per phase ───────────────────────
 function getFollowUpChips(
@@ -108,12 +109,16 @@ function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => v
 interface DiscoveryContentProps {
   userId: string | null;
   guestToken?: string | null;
+  onSessionChange?: (sessionId: string | null) => void;
 }
 
-export default function DiscoveryContent({ userId, guestToken }: DiscoveryContentProps) {
+export default function DiscoveryContent({ userId, guestToken, onSessionChange }: DiscoveryContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [chatInput, setChatInput] = useState('');
+  const [chatInput, setChatInput] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem('realtypals_draft') ?? '';
+  });
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [toast, setToast] = useState<{ message: string } | null>(null);
   const [showRecommendations, setShowRecommendations] = useState(false);
@@ -129,6 +134,18 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
   const [sessionId, setSessionId] = useState<string | null>(null);
   // Tracks which ?session= URL param was last fully restored — prevents re-init loops
   const lastRestoredSessionParamRef = useRef<string | null>(null)
+
+  // Notify parent of session changes for sidebar highlighting
+  useEffect(() => { onSessionChange?.(sessionId) }, [sessionId, onSessionChange])
+
+  // Draft persistence — save input to localStorage, clear on submit
+  useEffect(() => {
+    if (chatInput) {
+      localStorage.setItem('realtypals_draft', chatInput);
+    } else {
+      localStorage.removeItem('realtypals_draft');
+    }
+  }, [chatInput]);
   const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
   const openDetailProject = useCallback((project: ProjectCardType | null) => {
     setDetailProject(project)
@@ -144,13 +161,16 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
   const [callbackForm, setCallbackForm] = useState({ name: '', phone: '' });
   const [callbackSubmitting, setCallbackSubmitting] = useState(false);
   const [callbackDone, setCallbackDone] = useState(false);
+  const [callbackError, setCallbackError] = useState<string | null>(null);
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
+  const [quickActionPicker, setQuickActionPicker] = useState<{ action: string, genericText: string, mode: 'single' | 'multi', selected: string[] } | null>(null);
   const [statusPhase, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
   const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null)
+  const [resultCount, setResultCount] = useState<number | null>(null)
   const [showReEngagement, setShowReEngagement] = useState(true)
   const chatEndRef = useRef<HTMLDivElement>(null);
   const streamingMsgIdRef = useRef<string | null>(null);
@@ -361,7 +381,7 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
       try {
         const res = await fetch(`${API_BASE}/chat/intent`, {
           method: 'DELETE',
-          headers: { 'X-User-Id': userId },
+          headers: await authHeaders(),
         });
         const data = await res.json();
         if (data.session_id) setSessionId(data.session_id);
@@ -411,7 +431,7 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
           ? `${API_BASE}/chat/session?id=${sessionFromUrl}`
           : `${API_BASE}/chat/session`
         const res = await fetch(sessionUrl, {
-          headers: { 'X-User-Id': userId! },
+          headers: await authHeaders(),
         });
         if (!res.ok) throw new Error('session fetch failed');
         const data = await res.json();
@@ -560,17 +580,28 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
           setCurrentIntent(event.intent);
           setStatusPhase('searching');
         } else if (event.type === 'properties') {
-          const props = event.projects as unknown as ProjectCardType[];
-          localProjects = props;
+          const exact = event.exactResults as unknown as ProjectCardType[];
+          const nearby = event.nearbyResults as unknown as ProjectCardType[];
+          const expansion = event.expansion;
+          const shortlist = exact.length > 0 ? exact : nearby;
+          localProjects = shortlist;
           setStatusPhase('generating');
+          setResultCount(shortlist.length);
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
-              ? { ...m, isSearching: false, properties: props }
+              ? {
+                  ...m,
+                  isSearching: false,
+                  exactResults: exact,
+                  nearbyResults: nearby,
+                  expansion,
+                  properties: shortlist,
+                }
               : m
           ));
-          setLastShortlist(props);
-          setShowRecommendations(true);
-          track('recommendation_generated', { count: props.length, session_id: sessionId });
+          setLastShortlist(shortlist);
+          setShowRecommendations(shortlist.length > 0);
+          track('recommendation_generated', { count: shortlist.length, session_id: sessionId });
         } else if (event.type === 'token') {
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
@@ -579,12 +610,14 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
           ));
         } else if (event.type === 'error') {
           setStatusPhase(null);
+          setResultCount(null);
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
               ? { ...m, content: event.message || 'Something went wrong. Please try again.', isSearching: false }
               : m
           ));
         } else if (event.type === 'done') {
+          const newSessionId = event.sessionId ?? sessionId
           if (event.sessionId) setSessionId(event.sessionId);
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
@@ -598,10 +631,31 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
               : m
           ));
           setExpandedShortlists(new Set());
+
+          // Auto-generate smart title on first turn
+          if (chatTurnCount === 0 && userId && newSessionId && event.intent) {
+            const intent = event.intent as Record<string, unknown>
+            const parts: string[] = []
+            if (Array.isArray(intent.bhk) && intent.bhk.length > 0) parts.push(`${(intent.bhk as number[]).join('/')} BHK`)
+            if (intent.sector) parts.push(String(intent.sector))
+            if (intent.budgetMax) parts.push(`Under ₹${intent.budgetMax}Cr`)
+            else if (intent.budgetMin) parts.push(`From ₹${intent.budgetMin}Cr`)
+            const smartTitle = parts.length > 0 ? parts.join(' · ') : userText.slice(0, 60)
+            authHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
+              fetch(`${API_BASE}/chat/session/${newSessionId}`, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ title: smartTitle }),
+              })
+            ).then(() => {
+              window.dispatchEvent(new CustomEvent('realtypals:session-updated'))
+            }).catch(() => {})
+          }
         }
       },
       onDone: () => {
         setStatusPhase(null);
+        setResultCount(null);
         streamingMsgIdRef.current = null;
         setIsSubmitting(false);
         submitLockRef.current = false;
@@ -634,6 +688,18 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
     if (field === 'bhk') message = `${parseInt(value)} BHK`;
     streamChat(message);
   }, [streamChat]);
+
+  const handleQuickActionTrigger = useCallback((action: string, genericText: string, mode: 'single' | 'multi') => {
+    if (lastShortlist.length > 0) {
+      if (mode === 'multi' && lastShortlist.length < 2) {
+        handleQuickReply('quick', genericText);
+      } else {
+        setQuickActionPicker({ action, genericText, mode, selected: [] });
+      }
+    } else {
+      handleQuickReply('quick', genericText);
+    }
+  }, [lastShortlist, handleQuickReply]);
 
   const stripMarkdown = (text: string): string => {
     return text
@@ -697,84 +763,117 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
   const handleOpenCalculator = useCallback(() => setShowCalculator(true), [])
   const handleOpenShareSheet = useCallback(() => setShareSheetOpen(true), [])
 
-  // ── Chat input form ──
+  // ── Floating Chat Input Bar (LobeHub Style) ──
   const chatInputForm = (
-    <div className="w-full">
-      <StatusSteps phase={statusPhase} />
-      {rateLimitUntil && (
-        <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
-      )}
-      {isSubmitting && (
-        <div className="flex justify-end mb-2">
-          <button
-            type="button"
-            onClick={() => abortControllerRef.current?.abort()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-red-500 border border-gray-300 dark:border-gray-600 rounded-full transition-colors"
-          >
-            <span className="w-2 h-2 bg-current rounded-sm" />
-            Stop generating
-          </button>
-        </div>
-      )}
-      <div className="relative flex items-center gap-2">
-        {/* Reset / New Chat Button */}
-        <div id="new-chat-guide">
-          <button
-            onClick={performReset}
-            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95 group flex items-center justify-center"
-            title="Reset conversation"
-          >
-            <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
-          </button>
-        </div>
-
-        <div id="chat-input-guide" className="relative flex-1 group">
-          <PlaceholdersAndVanishInput
-            placeholders={
-              chatPhase === 'ADVISOR'
-                ? ['Ask anything about these properties...', 'Any risks associated?', 'Compare prices...']
-                : ["Tell me what you're looking for...", "Find me a 3 BHK in Sector 150...", "Show me properties under 2 Crores..."]
-            }
-            onChange={(e) => setChatInput(e.target.value)}
-            onSubmit={handleChatSubmit}
-            value={chatInput}
-          />
-        </div>
-
-        {/* Voice Input Button */}
-        <button
-          type="button"
-          onClick={toggleVoiceInput}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 touch-target-min ${isListening
-            ? 'text-red-500 animate-pulse scale-105 bg-red-100 dark:bg-red-900/40'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          title="Voice Input"
-        >
-          {isListening ? (
-            <div className="relative flex items-center justify-center">
-              <div className="absolute inset-0 -m-1 rounded-full bg-red-100 dark:bg-red-900/30 animate-ping opacity-50" />
-              <Mic size={18} className="relative text-red-500 fill-current" />
-            </div>
-          ) : (
-            <Mic size={18} className="text-gray-500 dark:text-gray-400" />
+    <div className={`relative w-full transition-all duration-300 ${isInputMinimized ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+      <div className="relative w-full">
+          <StatusSteps phase={statusPhase} intent={currentIntent} resultCount={resultCount} />
+          {rateLimitUntil && (
+            <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
           )}
-        </button>
+          {isSubmitting && (
+            <div className="flex items-center justify-between mb-4 px-2">
+              <div className="flex items-center gap-4">
+                 {/* The AI Orb */}
+                 <div className="relative w-5 h-5">
+                    <div className="absolute -inset-2 rounded-full bg-blue-500/40 blur-md animate-pulse" style={{ animationDuration: '2s' }} />
+                    <div className="absolute -inset-1 rounded-full bg-blue-400/60 blur-sm animate-ping" style={{ animationDuration: '3s' }} />
+                    <div className="absolute inset-0 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)]" />
+                    <div className="absolute inset-1 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,1)]" />
+                 </div>
+                 {/* Thought Stream */}
+                 <span className="text-[11px] font-mono font-medium text-blue-600 dark:text-blue-400 tracking-wider uppercase animate-pulse">
+                   &gt; {statusPhase ? statusPhase.toLowerCase() + '...' : 'processing request...'}
+                 </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => abortControllerRef.current?.abort()}
+                className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 border border-gray-300 dark:border-gray-600 rounded-full transition-all shadow-sm"
+              >
+                <div className="w-2 h-2 bg-current rounded-sm" />
+                Stop
+              </button>
+            </div>
+          )}
+          
+          <div className="relative flex items-center gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-[2rem] border border-gray-200/60 dark:border-gray-700/60 shadow-sm transition-all hover:shadow-md hover:border-blue-200/60 dark:hover:border-blue-900/60">
+            {/* Reset / New Chat Button */}
+            <div id="new-chat-guide">
+              <button
+                onClick={performReset}
+                className="w-12 h-12 rounded-full bg-gray-50/50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95 group flex items-center justify-center border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
+                title="New Chat"
+              >
+                <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
+              </button>
+            </div>
 
-        {/* Help / Guide Button */}
-        <div id="help-guide">
-          <VisualGuide />
+            <div id="chat-input-guide" className="relative flex-1 group">
+              <PlaceholdersAndVanishInput
+                placeholders={
+                  chatPhase === 'ADVISOR'
+                    ? ['Ask anything about these properties...', 'Any risks associated?', 'Compare prices...']
+                    : ["Tell me what you're looking for...", "Find me a 3 BHK in Sector 150...", "Show me properties under 2 Crores..."]
+                }
+                onChange={(e) => setChatInput(e.target.value)}
+                onSubmit={handleChatSubmit}
+                value={chatInput}
+              />
+            </div>
+
+            {/* Voice Input Button */}
+            <button
+              type="button"
+              onClick={toggleVoiceInput}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 touch-target-min border ${isListening
+                ? 'text-red-500 animate-pulse scale-105 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+                : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/20 border-transparent shadow-sm'
+                }`}
+              title="Voice Input"
+            >
+              {isListening ? (
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute inset-0 -m-1 rounded-full bg-red-100 dark:bg-red-900/30 animate-ping opacity-50" />
+                  <Mic size={20} className="relative text-red-500 fill-current" />
+                </div>
+              ) : (
+                <Mic size={20} className="text-white" />
+              )}
+            </button>
+          </div>
+          
+          {/* Quick Action Pills */}
+          <div className="flex items-center justify-center gap-2 mt-4 overflow-x-auto pb-1 scrollbar-hide snap-x">
+            <button
+              type="button"
+              onClick={() => handleQuickActionTrigger('emi', 'Calculate EMI for a property', 'single')}
+              className="flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+            >
+              📱 EMI Calculator
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickActionTrigger('compare', 'Compare top 2 properties', 'multi')}
+              className="flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+            >
+              ⚖️ Compare
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickReply('quick', 'What is the home buying process?')}
+              className="flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+            >
+              📖 Buying Process
+            </button>
+          </div>
+
+          <div className="text-center mt-2 mb-1">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+              AI can make mistakes. Verify important information.
+            </span>
+          </div>
         </div>
-      </div>
-      {isListening && (
-        <div className="flex items-center justify-center gap-2 mt-3">
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-          <span className="text-xs text-red-500 font-medium">Listening... Speak now</span>
-        </div>
-      )}
-      <p className="text-xs text-gray-500 mt-2 text-center">
-        AI can make mistakes. Verify Critical property details.
-      </p>
     </div>
   );
 
@@ -783,7 +882,7 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
       className="flex-1 flex flex-col min-h-0 bg-transparent dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      <Header title="RealtyPal Intelligence Engine™" onToast={(msg: string) => setToast({ message: msg })} />
+      <Header title="RealtyPals Intelligence Engine™" onToast={(msg: string) => setToast({ message: msg })} />
 
       {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}
       <div className={`flex-1 flex flex-col min-h-0 overflow-hidden relative z-10 ${!hasUserReplied ? 'justify-center' : ''}`}>
@@ -797,28 +896,37 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
 
         {!hasUserReplied ? (
           /* Welcome screen */
-          <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative z-10">
-            <div className="text-center mb-10 max-w-lg">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl glass-surface border border-white/50 dark:border-white/10 flex items-center justify-center shadow-lg overflow-hidden">
+          <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10">
+            <div className="text-center mb-8 max-w-lg">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl glass-surface border border-white/50 dark:border-white/10 flex items-center justify-center shadow-xl overflow-hidden">
                 <Image src="/images/logo/realtypals.png" alt="RealtyPal" width={44} height={44} />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
-                Find your perfect property
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
+                Your AI property advisor
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-base">
-                Ask me anything about real estate across India — or pick a suggestion to start.
+              <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
+                Describe what you&apos;re looking for in plain language — budget, area, BHK, lifestyle. I&apos;ll find the best matches and explain the trade-offs.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md w-full mb-10">
-              {suggestionChips.map((chip) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-2xl w-full mb-8">
+              {[
+                { icon: '🏠', title: 'Find properties', desc: '3BHK under 1.5 Cr in Sector 150', color: 'hover:border-blue-200 hover:bg-blue-50/50 dark:hover:border-blue-800 dark:hover:bg-blue-900/20' },
+                { icon: '📊', title: 'Compare projects', desc: 'Compare Sector 150 vs Sector 137', color: 'hover:border-indigo-200 hover:bg-indigo-50/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/20' },
+                { icon: '🏗️', title: 'Builder research', desc: 'Which builders have the best track record?', color: 'hover:border-emerald-200 hover:bg-emerald-50/50 dark:hover:border-emerald-800 dark:hover:bg-emerald-900/20' },
+                { icon: '🧮', title: 'Calculate costs', desc: 'EMI for ₹1.5 Cr at 8.5% for 20 years', color: 'hover:border-violet-200 hover:bg-violet-50/50 dark:hover:border-violet-800 dark:hover:bg-violet-900/20' },
+              ].map((card) => (
                 <button
-                  key={chip}
+                  key={card.title}
                   type="button"
-                  onClick={() => submitMessage(chip)}
-                  className="px-4 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:border-violet-200 dark:hover:border-violet-700 hover:text-violet-700 dark:hover:text-violet-400 transition-all text-left shadow-sm font-medium"
+                  onClick={() => submitMessage(card.desc)}
+                  className={`group flex items-start gap-3.5 px-4 py-3.5 bg-white/80 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl transition-all duration-200 text-left shadow-sm hover:shadow-md ${card.color} active:scale-[0.98]`}
                 >
-                  {chip}
+                  <span className="text-2xl mt-0.5 flex-shrink-0">{card.icon}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-0.5">{card.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug">{card.desc}</p>
+                  </div>
                 </button>
               ))}
             </div>
@@ -832,7 +940,11 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
           <>
             <div
               ref={chatContainerRef}
-              className="flex-1 h-full min-h-0 overflow-y-auto px-4 md:px-8 pt-6 pb-36 relative z-10"
+              role="log"
+              aria-live="polite"
+              aria-relevant="additions text"
+              aria-label="Conversation with RealtyPal advisor"
+              className="flex-1 h-full min-h-0 overflow-y-auto px-4 md:px-8 pt-6 pb-56 relative z-10"
               onScroll={(e) => {
                 const el = e.currentTarget;
                 userScrolledUp.current = (el.scrollHeight - el.scrollTop - el.clientHeight) > 100;
@@ -983,6 +1095,101 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
         />
       )}
 
+      {/* ── Quick Action Picker modal ── */}
+      <AnimatePresence>
+        {quickActionPicker && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) setQuickActionPicker(null) }}
+          >
+            <motion.div
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              className="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-6 pb-safe"
+            >
+              <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-5 sm:hidden" />
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
+                  {quickActionPicker.mode === 'multi' ? 'Select properties to compare' : 'Which property?'}
+                </h3>
+                <button onClick={() => setQuickActionPicker(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none">×</button>
+              </div>
+              <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-1">
+                {lastShortlist.map((p) => {
+                  const isSelected = quickActionPicker.selected.includes(p.slug)
+                  return (
+                    <button
+                      key={p.slug}
+                      onClick={() => {
+                        if (quickActionPicker.mode === 'single') {
+                          setQuickActionPicker(null)
+                          const prompt = quickActionPicker.action === 'emi' ? `What would be the monthly EMI for ${p.name}? Show a breakdown at 8.5% for 20 years.` :
+                            quickActionPicker.action === 'gst' ? `What is the GST applicable on ${p.name}?` :
+                            `${quickActionPicker.genericText} ${p.name}`
+                          handleQuickReply('quick', prompt)
+                        } else {
+                          setQuickActionPicker({
+                            ...quickActionPicker,
+                            selected: isSelected
+                              ? quickActionPicker.selected.filter(s => s !== p.slug)
+                              : quickActionPicker.selected.length < 3 ? [...quickActionPicker.selected, p.slug] : quickActionPicker.selected,
+                          })
+                        }
+                      }}
+                      className={`flex items-center justify-between px-3 py-3 rounded-xl text-sm transition-all border ${
+                        isSelected
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-200'
+                          : 'border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {quickActionPicker.mode === 'multi' && (
+                          <div className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border ${
+                            isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'
+                          }`}>
+                            {isSelected && <span className="text-white text-[10px]">✓</span>}
+                          </div>
+                        )}
+                        <div className="min-w-0 text-left">
+                          <div className="font-semibold text-sm truncate">{p.name}</div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500">{p.price_range_label} · {p.sector}</div>
+                        </div>
+                      </div>
+                      {quickActionPicker.mode === 'single' && (
+                        <span className="text-gray-300 dark:text-gray-600 text-xs ml-2 flex-shrink-0">→</span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              {quickActionPicker.mode === 'multi' && quickActionPicker.selected.length >= 2 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <button
+                    onClick={() => {
+                      const selected = lastShortlist.filter(p => quickActionPicker.selected.includes(p.slug))
+                      const names = selected.map(p => p.name)
+                      setQuickActionPicker(null)
+                      const prompt = names.length === 2
+                        ? `Compare ${names[0]} vs ${names[1]} in detail — price, amenities, builder, location, trade-offs.`
+                        : `Compare ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} in detail.`
+                      handleQuickReply('quick', prompt)
+                    }}
+                    className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-all shadow-md"
+                  >
+                    Compare {quickActionPicker.selected.length} properties →
+                  </button>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Site Visit Scheduler modal ── */}
       <AnimatePresence>
         {siteVisitProject && (
@@ -1066,10 +1273,11 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
                 disabled={!callbackForm.name.trim() || callbackForm.phone.trim().length < 10 || callbackSubmitting}
                 onClick={async () => {
                   setCallbackSubmitting(true)
+                  setCallbackError(null)
                   try {
-                    await fetch(`${API_BASE}/callback`, {
+                    const res = await fetch(`${API_BASE}/callback`, {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: await authHeaders({ 'Content-Type': 'application/json' }),
                       body: JSON.stringify({
                         name: callbackForm.name.trim(),
                         phone: callbackForm.phone.trim(),
@@ -1078,8 +1286,14 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
                         project_name: callbackProject.name,
                       }),
                     })
+                    if (!res.ok) throw new Error('callback request failed')
+                    track('callback_requested', { project_slug: callbackProject.slug, project_name: callbackProject.name })
+                    track('lead_created', { type: 'callback', project_slug: callbackProject.slug })
                     setCallbackDone(true)
-                  } catch { /* silent */ } finally {
+                  } catch {
+                    // Never show a fake success — surface the failure so the lead isn't silently lost.
+                    setCallbackError('Could not send your request. Please check your number and try again.')
+                  } finally {
                     setCallbackSubmitting(false)
                   }
                 }}
@@ -1087,6 +1301,9 @@ export default function DiscoveryContent({ userId, guestToken }: DiscoveryConten
               >
                 {callbackSubmitting ? 'Sending...' : '📞 Request Callback'}
               </button>
+              {callbackError && (
+                <p className="text-[12px] text-red-500 text-center mt-2" role="alert">{callbackError}</p>
+              )}
               <p className="text-[11px] text-gray-400 text-center mt-2">We&apos;ll call within 2 hours · Business hours only</p>
             </motion.div>
           </motion.div>
