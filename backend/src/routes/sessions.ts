@@ -1,37 +1,12 @@
 // backend/src/routes/sessions.ts
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/db'
+import { verifyUser } from '../lib/auth'
 
 const router = Router()
 
-router.get('/', async (req: Request, res: Response) => {
-  const userId = req.headers['x-user-id'] as string | undefined
-  const guestToken = req.query.guestToken as string | undefined
-
-  if (!userId && !guestToken) {
-    res.status(400).json({ error: 'x-user-id or guestToken required' })
-    return
-  }
-
-  const sessions = await prisma.chatSession.findMany({
-    where: userId ? { user_id: userId } : { guest_token: guestToken },
-    orderBy: { last_active: 'desc' },
-    take: 20,
-    select: {
-      id: true,
-      title: true,
-      chat_phase: true,
-      message_count: true,
-      last_active: true,
-      last_projects: true,
-    },
-  })
-
-  res.json({ sessions })
-})
-
 router.get('/re-engagement/latest', async (req: Request, res: Response) => {
-  const userId = req.headers['x-user-id'] as string | undefined
+  const userId = (await verifyUser(req)) ?? undefined
   const guestToken = req.query.guestToken as string | undefined
 
   if (!userId && !guestToken) { res.json({ session: null }); return }
@@ -51,34 +26,12 @@ router.get('/re-engagement/latest', async (req: Request, res: Response) => {
   res.json({ session })
 })
 
-router.get('/:id', async (req: Request, res: Response) => {
-  const userId = req.headers['x-user-id'] as string | undefined
-  const guestToken = req.query.guestToken as string | undefined
-
-  const session = await prisma.chatSession.findUnique({
-    where: { id: req.params.id },
-    include: {
-      messages: {
-        orderBy: { created_at: 'asc' },
-        select: { id: true, role: true, content: true, created_at: true },
-      },
-    },
-  })
-
-  if (!session) { res.status(404).json({ error: 'Session not found' }); return }
-
-  const owned = (userId && session.user_id === userId) || (guestToken && session.guest_token === guestToken)
-  if (!owned) { res.status(403).json({ error: 'Forbidden' }); return }
-
-  res.json({ session })
-})
-
 router.post('/migrate', async (req: Request, res: Response) => {
-  const userId = req.headers['x-user-id'] as string
+  const userId = await verifyUser(req)
   const { guestToken } = req.body as { guestToken: string }
 
   if (!userId || !guestToken) {
-    res.status(400).json({ error: 'x-user-id header and guestToken body required' })
+    res.status(401).json({ error: 'A valid Authorization token and guestToken are required' })
     return
   }
 
