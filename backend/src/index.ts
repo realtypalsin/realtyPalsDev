@@ -10,6 +10,8 @@ import savedRouter from './routes/saved'
 import leadsRouter from './routes/leads'
 import adminRouter from './routes/admin'
 import buildersRouter from './routes/builders'
+import marketComparisonRouter from './routes/marketComparison'
+import priceAlertsRouter from './routes/priceAlerts'
 
 const app = express()
 const PORT = parseInt(process.env.PORT ?? '3001', 10)
@@ -34,6 +36,8 @@ app.use('/api/v1/saved', savedRouter)
 app.use('/api/v1/leads', leadsRouter)
 app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/builders', buildersRouter)
+app.use('/api/v1/market-comparison', marketComparisonRouter)
+app.use('/api/v1/price-alerts', priceAlertsRouter)
 // Additional routers will be mounted here in Task 6
 
 app.listen(PORT, () => {

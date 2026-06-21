@@ -1,49 +1,76 @@
 // backend/src/routes/saved.ts
 import { Router, Request, Response } from 'express'
+import { z } from 'zod'
 import { prisma } from '../lib/db'
+import { verifyUser } from '../lib/auth'
+import { toProjectCard } from '../lib/projectRepository'
 
 const router = Router()
 
-router.get('/', async (req: Request, res: Response) => {
-  const userId = req.headers['x-user-id'] as string
-  if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
-
-  const saved = await prisma.savedProperty.findMany({
-    where: { user_id: userId },
-    include: {
-      project: {
-        include: {
-          builder: { select: { name: true } },
-          images: { where: { type: 'hero' }, take: 1 },
-          unit_types: { select: { bhk: true, price_min_cr: true, price_max_cr: true } },
-        },
-      },
-    },
-    orderBy: { saved_at: 'desc' },
-  })
-
-  res.json({ saved })
+const SaveBodySchema = z.object({
+  project_id: z.string().min(1),
 })
 
-router.post('/', async (req: Request, res: Response) => {
-  const userId = req.headers['x-user-id'] as string
-  const { projectId } = req.body as { projectId: string }
+router.get('/', async (req: Request, res: Response) => {
+  const userId = await verifyUser(req)
   if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
-  if (!projectId) { res.status(400).json({ error: 'projectId required' }); return }
 
   try {
-    const saved = await prisma.savedProperty.create({ data: { user_id: userId, project_id: projectId } })
-    res.status(201).json({ saved })
-  } catch {
-    res.status(409).json({ error: 'Already saved' })
+    const saved = await prisma.savedProperty.findMany({
+      where: { user_id: userId },
+      include: {
+        project: {
+          include: {
+            builder: { select: { name: true, slug: true } },
+            unit_types: { orderBy: { bhk: 'asc' } },
+            amenities: true,
+            connectivity: true,
+            images: { orderBy: { sort_order: 'asc' } },
+          },
+        },
+      },
+      orderBy: { saved_at: 'desc' },
+      take: 20,
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const projects = saved.map((s: any) => toProjectCard(s.project))
+    res.json({ projects, count: projects.length })
+  } catch (err) {
+    console.error('[GET /saved]', err)
+    res.status(500).json({ error: 'Failed to fetch saved' })
   }
 })
 
-router.delete('/:id', async (req: Request, res: Response) => {
-  const userId = req.headers['x-user-id'] as string
+router.post('/', async (req: Request, res: Response) => {
+  const userId = await verifyUser(req)
   if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
 
-  await prisma.savedProperty.deleteMany({ where: { id: req.params.id, user_id: userId } })
+  const parsed = SaveBodySchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: 'project_id required' }); return }
+
+  const { project_id } = parsed.data
+
+  try {
+    await prisma.savedProperty.upsert({
+      where: { user_id_project_id: { user_id: userId, project_id } },
+      create: { user_id: userId, project_id },
+      update: {},
+    })
+    res.status(201).json({ ok: true })
+  } catch (err) {
+    console.error('[POST /saved]', err)
+    res.status(500).json({ error: 'Failed to save' })
+  }
+})
+
+// :id param represents project_id (the foreign key), NOT the saved record's internal id.
+router.delete('/:id', async (req: Request, res: Response) => {
+  const userId = await verifyUser(req)
+  if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
+
+  await prisma.savedProperty.deleteMany({
+    where: { user_id: userId, project_id: req.params.id },
+  })
   res.json({ ok: true })
 })
 
