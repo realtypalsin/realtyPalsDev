@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Plus, Building2, Globe, CheckCircle2, Pencil, X, Save, Loader2, Trash2 } from 'lucide-react'
+import { API_BASE } from '@/lib/env'
 
 interface Builder {
   id: string
@@ -94,7 +95,7 @@ export default function AdminBuilders() {
   const [editSaving, setEditSaving] = useState(false)
 
   useEffect(() => {
-    fetch('/api/v1/admin/builders')
+    fetch(`${API_BASE}/admin/builders`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => { setBuilders(d.builders ?? []); setLoading(false) })
   }, [])
@@ -102,7 +103,8 @@ export default function AdminBuilders() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
-    const res = await fetch('/api/v1/admin/builders', {
+    const res = await fetch(`${API_BASE}/admin/builders`, {
+      credentials: 'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -137,7 +139,8 @@ export default function AdminBuilders() {
 
   async function saveEdit(id: string) {
     setEditSaving(true)
-    const res = await fetch(`/api/v1/admin/builders/${id}`, {
+    const res = await fetch(`${API_BASE}/admin/builders/${id}`, {
+      credentials: 'include',
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

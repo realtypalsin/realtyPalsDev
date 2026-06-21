@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import ProjectForm from '@/components/admin/ProjectForm'
 import ProjectPreview from '@/components/admin/ProjectPreview'
 import { Loader2, LayoutPanelLeft } from 'lucide-react'
+import { API_BASE } from '@/lib/env'
 
 export default function EditProject() {
   const { id } = useParams<{ id: string }>()
@@ -14,7 +15,7 @@ export default function EditProject() {
   const [refreshing, setRefreshing] = useState(false)
 
   async function loadProject() {
-    const res  = await fetch(`/api/v1/admin/projects/${id}`)
+    const res  = await fetch(`${API_BASE}/admin/projects/${id}`, { credentials: 'include' })
     const json = await res.json()
     setData(json.project)
     setPreview(json.project)
@@ -37,7 +38,7 @@ export default function EditProject() {
   // Called after successful save — re-fetch to sync preview with DB
   const handleSaved = useCallback(async () => {
     setRefreshing(true)
-    const res  = await fetch(`/api/v1/admin/projects/${id}`)
+    const res  = await fetch(`${API_BASE}/admin/projects/${id}`, { credentials: 'include' })
     const json = await res.json()
     setData(json.project)
     setPreview(json.project)

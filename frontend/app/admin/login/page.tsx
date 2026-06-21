@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { API_BASE } from '@/lib/env'
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('')
@@ -15,7 +16,8 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const res = await fetch('/api/v1/admin/auth', {
+    const res = await fetch(`${API_BASE}/admin/auth`, {
+      credentials: 'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),

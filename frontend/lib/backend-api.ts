@@ -1,7 +1,10 @@
 // frontend/lib/backend-api.ts
 // Client for the Express backend (http://localhost:3001)
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3001'
+import { authHeaders } from '@/lib/authedFetch'
+
+// Default aligned with backend/.env (PORT=3002). Override via NEXT_PUBLIC_BACKEND_URL.
+const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3002'
 
 export interface UnitTypeSummary {
   name: string
@@ -65,11 +68,17 @@ export interface ScoredProject {
   matchReason: string
 }
 
+export interface NearbyExpansion {
+  requestedSector: string
+  searchedSectors: string[]
+  reason: 'no_results_in_requested_sector'
+}
+
 export type SSEEvent =
   | { type: 'intent'; intent: Record<string, unknown>; intentState: string }
-  | { type: 'properties'; projects: ScoredProject[] }
+  | { type: 'properties'; exactResults: ScoredProject[]; nearbyResults: ScoredProject[]; expansion: NearbyExpansion | null }
   | { type: 'token'; token: string }
-  | { type: 'done'; sessionId: string; intentState: string }
+  | { type: 'done'; sessionId: string; intentState: string; intent?: Record<string, unknown> }
   | { type: 'error'; message: string }
 
 export function streamChat(
@@ -84,12 +93,9 @@ export function streamChat(
     signal?: AbortSignal
   }
 ): void {
-  fetch(`${BACKEND}/api/chat`, {
+  authHeaders({ 'Content-Type': 'application/json' }).then((headers) => fetch(`${BACKEND}/api/v1/chat`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.userId ? { 'x-user-id': options.userId } : {}),
-    },
+    headers,
     body: JSON.stringify({
       message,
       sessionId: options.sessionId,
@@ -97,9 +103,17 @@ export function streamChat(
       intent: options.intent,
     }),
     signal: options.signal,
-  }).then(async (res) => {
+  })).then(async (res) => {
     if (!res.ok || !res.body) {
-      options.onEvent({ type: 'error', message: 'Failed to connect to chat service' })
+      // Surface the real reason (auth/rate-limit/etc.) instead of a generic message.
+      let msg = 'The advisor is having trouble right now. Please try again in a moment.'
+      try {
+        const err = await res.json()
+        if (res.status === 429) msg = 'You’re sending messages a bit fast — give it a few seconds and try again.'
+        else if (res.status === 401 || res.status === 403) msg = 'Your session expired. Please sign in again.'
+        else if (err?.error) msg = err.error
+      } catch { /* non-JSON body */ }
+      options.onEvent({ type: 'error', message: msg })
       options.onDone?.()
       return
     }
@@ -139,11 +153,11 @@ export function streamChat(
 }
 
 export async function getSessions(userId?: string, guestToken?: string) {
-  const url = new URL(`${BACKEND}/api/sessions`)
+  const url = new URL(`${BACKEND}/api/v1/sessions`)
   if (guestToken && !userId) url.searchParams.set('guestToken', guestToken)
 
   const res = await fetch(url.toString(), {
-    headers: userId ? { 'x-user-id': userId } : {},
+    headers: await authHeaders(),
   })
   if (!res.ok) return { sessions: [] as Array<{
     id: string; title: string | null; chat_phase: string;
@@ -156,11 +170,11 @@ export async function getSessions(userId?: string, guestToken?: string) {
 }
 
 export async function getReEngagement(userId?: string, guestToken?: string) {
-  const url = new URL(`${BACKEND}/api/sessions/re-engagement/latest`)
+  const url = new URL(`${BACKEND}/api/v1/sessions/re-engagement/latest`)
   if (guestToken && !userId) url.searchParams.set('guestToken', guestToken)
 
   const res = await fetch(url.toString(), {
-    headers: userId ? { 'x-user-id': userId } : {},
+    headers: await authHeaders(),
   })
   if (!res.ok) return { session: null }
   return res.json() as Promise<{ session: {
@@ -169,9 +183,9 @@ export async function getReEngagement(userId?: string, guestToken?: string) {
 }
 
 export async function migrateSessions(userId: string, guestToken: string) {
-  await fetch(`${BACKEND}/api/sessions/migrate`, {
+  await fetch(`${BACKEND}/api/v1/sessions/migrate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
+    headers: await authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ guestToken }),
   })
 }

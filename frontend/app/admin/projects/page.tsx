@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, Plus, CheckCircle2, Clock, Zap, Pencil, Trash2, ImageOff, ShieldOff, Building2 } from 'lucide-react'
+import { API_BASE } from '@/lib/env'
 
 interface UnitType { bhk: number; price_min_cr: number | null; price_max_cr: number | null }
 
@@ -50,7 +51,7 @@ export default function AdminProjects() {
 
   async function load(q = '') {
     setLoading(true)
-    const res  = await fetch(`/api/v1/admin/projects?q=${encodeURIComponent(q)}`)
+    const res  = await fetch(`${API_BASE}/admin/projects?q=${encodeURIComponent(q)}`, { credentials: 'include' })
     const data = await res.json()
     setProjects(data.projects ?? [])
     setLoading(false)
@@ -65,7 +66,7 @@ export default function AdminProjects() {
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
     setDeleting(id)
-    await fetch(`/api/v1/admin/projects/${id}`, { method: 'DELETE' })
+    await fetch(`${API_BASE}/admin/projects/${id}`, { method: 'DELETE', credentials: 'include' })
     setProjects((p) => p.filter((x) => x.id !== id))
     setDeleting(null)
   }

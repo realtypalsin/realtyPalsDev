@@ -7,6 +7,7 @@ import {
   ImageOff, ShieldOff, ArrowRight, RefreshCw,
   TrendingUp,
 } from 'lucide-react'
+import { API_BASE } from '@/lib/env'
 
 interface Stats {
   total: number
@@ -59,7 +60,7 @@ export default function AdminDashboard() {
 
   async function load() {
     setLoading(true)
-    const res  = await fetch('/api/v1/admin/projects')
+    const res  = await fetch(`${API_BASE}/admin/projects`, { credentials: 'include' })
     const data = await res.json()
     const projects = data.projects ?? []
     setStats({
