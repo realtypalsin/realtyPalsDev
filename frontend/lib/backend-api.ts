@@ -153,7 +153,7 @@ export function streamChat(
 }
 
 export async function getSessions(userId?: string, guestToken?: string) {
-  const url = new URL(`${BACKEND}/api/v1/sessions`)
+  const url = new URL(`${BACKEND}/api/v1/chat/session/list`)
   if (guestToken && !userId) url.searchParams.set('guestToken', guestToken)
 
   const res = await fetch(url.toString(), {

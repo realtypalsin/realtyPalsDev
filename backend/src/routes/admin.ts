@@ -1,23 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
 import multer from 'multer'
-import { createClient } from '@supabase/supabase-js'
 import { prisma } from '../lib/db'
 import { validateAdminToken, makeAdminToken } from '../lib/adminAuth'
+import { supabaseAdmin } from '../lib/supabase'
 
 const router = Router()
-
-// ---------------------------------------------------------------------------
-// Supabase admin client (service role — bypasses RLS)
-// ---------------------------------------------------------------------------
-function getSupabaseAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? ''
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    ''
-  return createClient(url, key)
-}
 
 // ---------------------------------------------------------------------------
 // Multer — memory storage, 10 MB limit
@@ -271,22 +259,40 @@ router.patch('/projects/:id', async (req: Request, res: Response): Promise<void>
     return
   }
   const d = parsed.data
-  const updated = await prisma.project.update({
-    where: { id: req.params.id },
-    data: {
-      ...d,
-      possession_date: d.possession_date ? new Date(d.possession_date) : undefined,
-    },
-  })
-  res.json({ project: updated })
+  try {
+    const updated = await prisma.project.update({
+      where: { id: req.params.id },
+      data: {
+        ...d,
+        possession_date: d.possession_date ? new Date(d.possession_date) : undefined,
+      },
+    })
+    res.json({ project: updated })
+  } catch (err: unknown) {
+    if ((err as { code?: string }).code === 'P2025') {
+      res.status(404).json({ error: 'Not found' })
+      return
+    }
+    console.error('[admin]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
 })
 
 // ---------------------------------------------------------------------------
 // DELETE /projects/:id
 // ---------------------------------------------------------------------------
 router.delete('/projects/:id', async (req: Request, res: Response): Promise<void> => {
-  await prisma.project.delete({ where: { id: req.params.id } })
-  res.json({ ok: true })
+  try {
+    await prisma.project.delete({ where: { id: req.params.id } })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    if ((err as { code?: string }).code === 'P2025') {
+      res.status(404).json({ error: 'Not found' })
+      return
+    }
+    console.error('[admin]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
 })
 
 // ---------------------------------------------------------------------------
@@ -330,19 +336,37 @@ router.patch('/builders/:id', async (req: Request, res: Response): Promise<void>
     res.status(400).json({ error: parsed.error.issues[0].message })
     return
   }
-  const builder = await prisma.builder.update({
-    where: { id: req.params.id },
-    data:  parsed.data,
-  })
-  res.json({ builder })
+  try {
+    const builder = await prisma.builder.update({
+      where: { id: req.params.id },
+      data:  parsed.data,
+    })
+    res.json({ builder })
+  } catch (err: unknown) {
+    if ((err as { code?: string }).code === 'P2025') {
+      res.status(404).json({ error: 'Not found' })
+      return
+    }
+    console.error('[admin]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
 })
 
 // ---------------------------------------------------------------------------
 // DELETE /builders/:id
 // ---------------------------------------------------------------------------
 router.delete('/builders/:id', async (req: Request, res: Response): Promise<void> => {
-  await prisma.builder.delete({ where: { id: req.params.id } })
-  res.json({ ok: true })
+  try {
+    await prisma.builder.delete({ where: { id: req.params.id } })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    if ((err as { code?: string }).code === 'P2025') {
+      res.status(404).json({ error: 'Not found' })
+      return
+    }
+    console.error('[admin]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
 })
 
 // ---------------------------------------------------------------------------
@@ -362,11 +386,10 @@ router.post(
       return
     }
 
-    const ext      = (file.originalname.split('.').pop()?.toLowerCase()) ?? 'jpg'
-    const path     = `projects/${slug}-${Date.now()}.${ext}`
-    const supabase = getSupabaseAdmin()
+    const ext  = (file.originalname.split('.').pop()?.toLowerCase()) ?? 'jpg'
+    const path = `projects/${slug}-${Date.now()}.${ext}`
 
-    const { error: uploadErr } = await supabase.storage
+    const { error: uploadErr } = await supabaseAdmin.storage
       .from(BUCKET)
       .upload(path, file.buffer, { contentType: file.mimetype, upsert: true })
 
@@ -375,7 +398,7 @@ router.post(
       return
     }
 
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
+    const { data } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(path)
     res.json({ url: data.publicUrl })
   },
 )
