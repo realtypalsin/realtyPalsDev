@@ -77,7 +77,7 @@ router.delete('/', async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
   if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
 
-  await prisma.priceAlert.delete({ where: { id, user_id: userId } })
+  await prisma.priceAlert.deleteMany({ where: { id, user_id: userId } })
   res.json({ success: true })
 })
 
