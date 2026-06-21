@@ -3,7 +3,7 @@ import { z } from 'zod'
 import multer from 'multer'
 import { createClient } from '@supabase/supabase-js'
 import { prisma } from '../lib/db'
-import { validateAdminToken } from '../lib/adminAuth'
+import { validateAdminToken, makeAdminToken } from '../lib/adminAuth'
 
 const router = Router()
 
@@ -49,9 +49,7 @@ router.post('/auth', async (req: Request, res: Response): Promise<void> => {
     res.status(401).json({ error: 'Invalid password' })
     return
   }
-  const { createHash } = await import('crypto')
-  const secret = process.env.ADMIN_SECRET ?? 'fallback_secret'
-  const token = createHash('sha256').update(password + secret).digest('hex')
+  const token = makeAdminToken(password)
   const isProduction = process.env.NODE_ENV === 'production'
   res.cookie('admin_token', token, {
     httpOnly: true,

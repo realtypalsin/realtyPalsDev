@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 
-function makeAdminToken(password: string): string {
+export function makeAdminToken(password: string): string {
   const secret = process.env.ADMIN_SECRET ?? 'fallback_secret'
   return createHash('sha256').update(password + secret).digest('hex')
 }
