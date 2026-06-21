@@ -50,23 +50,30 @@ router.post('/ask', async (req: Request, res: Response) => {
 
   const maxContext = doc.content_text.slice(0, 8000)
 
-  const resp = await groq.chat.completions.create({
-    model: GROQ_SMART,
-    messages: [
-      {
-        role: 'system',
-        content: 'You are a real estate document analyst. Answer questions strictly based on the document text provided. If the answer isn\'t in the document, say so clearly. Be concise and precise.',
-      },
-      {
-        role: 'user',
-        content: `DOCUMENT:\n${maxContext}\n\nQUESTION: ${question}`,
-      },
-    ],
-    max_tokens: 600,
-    temperature: 0.1,
-  })
+  let answer: string
+  try {
+    const resp = await groq.chat.completions.create({
+      model: GROQ_SMART,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a real estate document analyst. Answer questions strictly based on the document text provided. If the answer isn\'t in the document, say so clearly. Be concise and precise.',
+        },
+        {
+          role: 'user',
+          content: `DOCUMENT:\n${maxContext}\n\nQUESTION: ${question}`,
+        },
+      ],
+      max_tokens: 600,
+      temperature: 0.1,
+    })
+    answer = resp.choices[0]?.message?.content ?? 'Unable to generate answer.'
+  } catch (err) {
+    console.error('[documents/ask]', err)
+    res.status(502).json({ error: 'AI service unavailable' })
+    return
+  }
 
-  const answer = resp.choices[0]?.message?.content ?? 'Unable to generate answer.'
   res.json({ answer, document_name: doc.name })
 })
 
