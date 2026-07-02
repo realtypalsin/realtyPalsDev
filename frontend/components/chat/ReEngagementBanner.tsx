@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getReEngagement } from '@/lib/backend-api';
+import { MessageSquare, ArrowRight, Plus } from 'lucide-react';
 
 interface Props {
   userId?: string | null;
@@ -48,25 +49,33 @@ export default function ReEngagementBanner({ userId, guestToken, onResume, onDis
   })();
 
   return (
-    <div className="mx-4 mt-3 mb-1 rounded-xl border border-blue-100 bg-blue-50/80 backdrop-blur-sm px-4 py-3 flex items-center gap-3 shadow-sm">
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-blue-900 leading-tight truncate">
-          Welcome back! {session.title ? `"${session.title}"` : 'Continue your search'}
-        </p>
-        <p className="text-xs text-blue-600 mt-0.5">{timeAgo}</p>
+    <div className="mx-4 mt-3 mb-1 rounded-xl border border-blue-200/60 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 backdrop-blur-md p-4 flex items-center gap-4 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="h-10 w-10 rounded-full bg-blue-100/80 flex items-center justify-center shrink-0 text-blue-600">
+        <MessageSquare className="w-5 h-5" />
       </div>
-      <div className="flex gap-2 shrink-0">
-        <button
-          onClick={() => { setVisible(false); onResume(session.id); }}
-          className="text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors"
-        >
-          Continue
-        </button>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-slate-800 leading-tight truncate">
+          Welcome back! {session.title ? <span className="font-medium text-slate-600">&quot;{session.title}&quot;</span> : <span className="font-medium text-slate-600">Continue your search</span>}
+        </p>
+        <p className="text-xs text-slate-500 mt-1 font-medium flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          Last active {timeAgo}
+        </p>
+      </div>
+      <div className="flex gap-2.5 shrink-0">
         <button
           onClick={dismiss}
-          className="text-xs text-blue-500 hover:text-blue-700 px-2 py-1.5"
+          className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 hover:text-slate-900 border border-slate-200 px-3 py-2 rounded-lg transition-all hover:shadow-sm"
         >
-          Dismiss
+          <Plus className="w-3.5 h-3.5" />
+          Start new
+        </button>
+        <button
+          onClick={() => { setVisible(false); onResume(session.id); }}
+          className="flex items-center gap-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3.5 py-2 rounded-lg transition-all hover:shadow-md hover:-translate-y-0.5"
+        >
+          Continue Chat
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

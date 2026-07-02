@@ -2,6 +2,7 @@
 // Client for the Express backend (http://localhost:3001)
 
 import { authHeaders } from '@/lib/authedFetch'
+import type { ConversationAction, ConversationStage, ChipAction } from '@/components/chat/types'
 
 // Default aligned with backend/.env (PORT=3002). Override via NEXT_PUBLIC_BACKEND_URL.
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3002'
@@ -44,6 +45,7 @@ export interface ScoredProject {
   land_area_acres?: number | null
   total_towers?: number | null
   status: string
+  launch_date?: string | null
   possession_label?: string | null
   possession_date: string | null
   architect?: string | null
@@ -62,6 +64,8 @@ export interface ScoredProject {
     url: string
     type: string
     caption: string | null
+    bhk: number | null
+    size_sqft: number | null
     sort_order: number
   }>
   matchScore: number
@@ -78,11 +82,12 @@ export type SSEEvent =
   | { type: 'intent'; intent: Record<string, unknown>; intentState: string }
   | { type: 'properties'; exactResults: ScoredProject[]; nearbyResults: ScoredProject[]; expansion: NearbyExpansion | null }
   | { type: 'token'; token: string }
-  | { type: 'done'; sessionId: string; intentState: string; intent?: Record<string, unknown> }
+  | { type: 'done'; sessionId: string; intentState: string; intent?: Record<string, unknown>; responseMode: 'search' | 'comparison' | 'chat' }
   | { type: 'error'; message: string }
+  | { type: 'ui_state'; stage: ConversationStage; thinking: string; chips: ChipAction[]; missingFields: string[]; confidence: 'HIGH' | 'MEDIUM' | 'LOW' }
 
 export function streamChat(
-  message: string,
+  action: ConversationAction,
   options: {
     sessionId?: string
     userId?: string
@@ -97,7 +102,7 @@ export function streamChat(
     method: 'POST',
     headers,
     body: JSON.stringify({
-      message,
+      action,
       sessionId: options.sessionId,
       guestToken: options.guestToken,
       intent: options.intent,
@@ -160,12 +165,10 @@ export async function getSessions(userId?: string, guestToken?: string) {
     headers: await authHeaders(),
   })
   if (!res.ok) return { sessions: [] as Array<{
-    id: string; title: string | null; chat_phase: string;
-    message_count: number; last_active: string;
+    id: string; label: string; last_active: string;
   }> }
   return res.json() as Promise<{ sessions: Array<{
-    id: string; title: string | null; chat_phase: string;
-    message_count: number; last_active: string;
+    id: string; label: string; last_active: string;
   }> }>
 }
 
@@ -188,4 +191,60 @@ export async function migrateSessions(userId: string, guestToken: string) {
     headers: await authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ guestToken }),
   })
+}
+
+// ─── Intelligence endpoints (lazy, on-demand) ─────────────────────────────────
+
+export async function getPaymentPlan(slug: string): Promise<{
+  available: boolean
+  message?: string
+  plan?: {
+    plan_name: string | null
+    milestones: unknown[]
+    source: string | null
+    verified_at: string | null
+    notes: string | null
+  }
+}> {
+  const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/payment-plan`)
+  if (!res.ok) return { available: false, message: 'Unable to load payment plan.' }
+  return res.json()
+}
+
+export async function getCostSheet(slug: string): Promise<{
+  available: boolean
+  message?: string
+  sheet?: Record<string, unknown>
+  illustration?: Record<string, number | null>
+  illustration_note?: string
+}> {
+  const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/cost-sheet`)
+  if (!res.ok) return { available: false, message: 'Unable to load cost sheet.' }
+  return res.json()
+}
+
+export async function getInvestmentIntelligence(slug: string): Promise<{
+  available: boolean
+  intelligence?: {
+    sector: string
+    status: string
+    investment_thesis: string | null
+    investor_thesis: string | null
+    potential_appreciation: 'Strong' | 'Moderate' | 'Weak' | null
+    data_note: string
+  }
+}> {
+  const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/investment`)
+  if (!res.ok) return { available: false }
+  return res.json()
+}
+
+export async function getBuilderIntelligence(builderSlug: string): Promise<{
+  available: boolean
+  builder?: Record<string, unknown>
+}> {
+  const res = await fetch(`${BACKEND}/api/v1/builders/${builderSlug}`)
+  if (!res.ok) return { available: false }
+  const data = await res.json()
+  return { available: true, builder: data }
 }

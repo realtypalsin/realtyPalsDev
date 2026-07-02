@@ -60,7 +60,7 @@ export default function Globe() {
                 location: [location.lat, location.lng],
                 size: location.size,
             })),
-            onRender: (state) => {
+            onRender: (state: Record<string, any>) => {
                 if (!pointerInteracting.current) {
                     phi += 0.005;
                 }
@@ -68,7 +68,7 @@ export default function Globe() {
                 state.width = width * 2;
                 state.height = width * 2;
             },
-        });
+        } as any);
 
         return () => {
             globe.destroy();

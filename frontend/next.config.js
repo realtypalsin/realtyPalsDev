@@ -2,7 +2,10 @@ const { withSentryConfig } = require('@sentry/nextjs')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: { instrumentationHook: true },
+  experimental: {
+    instrumentationHook: true,
+    optimizePackageImports: ['lucide-react', '@phosphor-icons/react'],
+  },
   transpilePackages: ['leaflet', 'react-leaflet'],
   images: {
     remotePatterns: [

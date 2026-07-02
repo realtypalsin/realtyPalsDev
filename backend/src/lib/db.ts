@@ -10,3 +10,7 @@ export const prisma =
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+export function isPrismaNotFound(err: unknown): boolean {
+  return (err as { code?: string }).code === 'P2025'
+}

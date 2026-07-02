@@ -1,65 +1,43 @@
 'use client'
+import {
+  Building2, CheckCircle2, Clock, LineChart, BedDouble,
+  ExternalLink, X, MapPin, Sparkles, CalendarDays, Bookmark, FileText, IndianRupee, Wallet, Map as MapIcon, File as FileIcon
+} from 'lucide-react'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
-import {
-  X, CheckCircle2, Clock, Shield, MapPin, Building2, Award,
-  Ruler, BedDouble, Bath, ChevronRight, ExternalLink,
-  Sparkles, Star, Trophy, Layers, Phone, TrendingUp, Calendar,
-  FileText, Route, BarChart3, ZoomIn,
-} from 'lucide-react'
-import {
-  Subway, AirplaneTakeoff, Path, Buildings, Heart, Tree,
-  SoccerBall, Leaf, Baby, SealCheck, MapTrifold,
-  Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Dumbbell, Star as StarPhosphor,
-} from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
-import { API_BASE } from '@/lib/env'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
+import { track } from '@/lib/analytics'
+import { authHeaders } from '@/lib/authedFetch'
 import { getAqi, type AqiResult } from '@/lib/waqi'
-import AmenityIcon from '@/components/AmenityIcon'
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
-import BuilderReputationCard from '@/components/BuilderReputationCard'
-import CommuteCalculator from '@/components/CommuteCalculator'
-import MarketComparison from '@/components/MarketComparison'
-import DocumentQA from '@/components/DocumentQA'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
+import OverviewTab from '@/components/property-detail/OverviewTab'
+import IntelligenceTab from '@/components/property-detail/IntelligenceTab'
+import PricingTab from '@/components/property-detail/PricingTab'
+import LocationTab from '@/components/property-detail/LocationTab'
+import DocumentsTab from '@/components/property-detail/DocumentsTab'
+import { API_BASE } from '@/lib/env'
+import { getPaymentPlan, getCostSheet } from '@/lib/backend-api'
+import { resolveImgUrl } from '@/lib/utils'
+
+export interface ProjectDocumentPublic {
+  id: string
+  doc_type: string
+  name: string | null
+  storage_url: string
+  created_at: string
+  file_size_bytes: number | null
+}
 
 interface Props {
   project: ProjectCardType | null
   onClose: () => void
   inline?: boolean
-}
-
-const AMENITY_ICONS: Record<string, React.ElementType> = {
-  sports:    Dumbbell,
-  lifestyle: StarPhosphor,
-  wellness:  Leaf,
-  kids:      Baby,
-  security:  SealCheck,
-  parking:   Car,
-}
-
-const CONN_ICONS: Record<string, React.ElementType> = {
-  metro:      Subway,
-  airport:    AirplaneTakeoff,
-  road:       Path,
-  school:     GraduationCap,
-  hospital:   Heart,
-  mall:       ShoppingBag,
-  landmark:   Bank,
-  university: BookOpen,
-}
-
-const AMENITY_COLORS: Record<string, string> = {
-  sports:    'bg-gray-50 text-gray-500 border-gray-200',
-  lifestyle: 'bg-gray-50 text-gray-500 border-gray-200',
-  wellness:  'bg-gray-50 text-gray-500 border-gray-200',
-  kids:      'bg-gray-50 text-gray-500 border-gray-200',
-  security:  'bg-gray-50 text-gray-500 border-gray-200',
-  parking:   'bg-gray-50 text-gray-500 border-gray-200',
+  initialDetail?: ProjectDetail
+  userId?: string | null
 }
 
 const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
@@ -68,695 +46,909 @@ const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 )
 
-const SECTOR_PRICE_HISTORY: Record<string, {
-  trend: string
-  avgPriceRange: string
-  yoyGrowth: string
-  note: string
-  outlook: string
-}> = {
-  'Sector 150': {
-    trend: 'Strong Appreciation',
-    avgPriceRange: '₹8,000 – 17,000/sqft',
-    yoyGrowth: '+12–18% YoY',
-    note: "Noida Expressway's premium corridor. Metro Phase III proximity, DND access, and branded developer concentration drive above-average appreciation.",
-    outlook: 'Continued outperformance expected. Limited land supply.',
-  },
-  'Sector 137': {
-    trend: 'Steady Growth',
-    avgPriceRange: '₹5,500 – 11,000/sqft',
-    yoyGrowth: '+8–14% YoY',
-    note: 'Established sector with most inventory delivered. Good rental yield driven by IT park proximity (Infosys, TCS campuses nearby).',
-    outlook: 'Stable. Most projects ready-to-move — capital preservation market.',
-  },
-  'Sector 78': {
-    trend: 'Mixed — Luxury Segment Leading',
-    avgPriceRange: '₹5,000 – 18,000/sqft',
-    yoyGrowth: '+6–12% YoY',
-    note: 'Wide price band due to product mix from premium to ultra-luxury. Central Noida location with strong connectivity.',
-    outlook: 'Luxury sub-segment outperforming. Entry-level segment stable.',
-  },
-}
-
-const SECTION_TABS = ['Overview', 'Units', 'Amenities', 'Builder', 'Commute', 'Docs'] as const
+const SECTION_TABS = ['Overview', 'Analysis', 'Residences', 'Pricing', 'Location', 'Documents'] as const
 type Tab = typeof SECTION_TABS[number]
 
-export default function ProjectDetailPanel({ project, onClose, inline }: Props) {
-  const [detail, setDetail] = useState<ProjectDetail | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<Tab>('Overview')
-  const [imgIdx, setImgIdx] = useState(0)
+const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid' }
+
+export default function ProjectDetailPanel({ project, onClose, inline, initialDetail, userId }: Props) {
+  const [detail, setDetail]           = useState<ProjectDetail | null>(initialDetail ?? null)
+  const [documents, setDocuments]     = useState<ProjectDocumentPublic[]>([])
+  const [loading, setLoading]         = useState(false)
+  const [activeTab, setActiveTab]     = useState<Tab>('Overview')
+  // Optimistic-only, same as ProjectCard's save button — no GET check on mount,
+  // so it doesn't reflect a pre-existing saved state, just the current session's action.
+  const [saved, setSaved]             = useState(false)
+  const [saving, setSaving]           = useState(false)
+  const [paymentPlan, setPaymentPlan] = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; message?: string }>({ loaded: false, available: false, data: null })
+  const [costSheet, setCostSheet]     = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; illustration: Record<string, number | null> | null; note?: string; message?: string }>({ loaded: false, available: false, data: null, illustration: null })
+  const [imgIdx, setImgIdx]           = useState(0)
   const [showVisitScheduler, setShowVisitScheduler] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => setIsScrolled(e.currentTarget.scrollTop > 200)
   const [showFloorPlan, setShowFloorPlan] = useState<{ plans: Array<{ id: string; url: string; caption?: string | null }> } | null>(null)
-  const [aqi, setAqi] = useState<AqiResult | null>(null)
+  const [aqi, setAqi]                 = useState<AqiResult | null>(null)
+  const [marketVisible, setMarketVisible] = useState(false)
+  const [isMobile, setIsMobile]       = useState(false)
+  // Per-URL failure tracking (not a single boolean) — one broken candidate
+  // shouldn't permanently blank the hero once a working one is available.
+  const [failedImgUrls, setFailedImgUrls] = useState<Set<string>>(new Set())
+  const markImgFailed = (src: string) => setFailedImgUrls((prev) => (prev.has(src) ? prev : new Set(prev).add(src)))
+  const marketRef                     = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!project) { setDetail(null); return }
-    setLoading(true)
+    const mq = window.matchMedia('(max-width: 767px)')
+    setIsMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  useEffect(() => {
+    const el = marketRef.current
+    if (!el || marketVisible) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setMarketVisible(true); observer.disconnect() } },
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [activeTab, loading, marketVisible])
+
+  useEffect(() => {
+    if (!project) { setDetail(null); setDocuments([]); setLoading(false); return }
     setActiveTab('Overview')
     setImgIdx(0)
+    setFailedImgUrls(new Set())
     setAqi(null)
-    fetch(`${API_BASE}/projects/${project.slug}`)
-      .then((r) => r.json())
-      .then((data) => setDetail(data.project ?? null))
-      .catch(() => setDetail(null))
+    setMarketVisible(false)
+    setDetail(null)
+    setDocuments([])
+    setPaymentPlan({ loaded: false, available: false, data: null })
+    setCostSheet({ loaded: false, available: false, data: null, illustration: null })
+    if (initialDetail?.slug === project.slug) {
+      setDetail(initialDetail)
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    Promise.all([
+      fetch(`${API_BASE}/projects/${project.slug}`).then(r => {
+        console.log('[DETAIL:RESPONSE]', { status: r.status, slug: project.slug, url: r.url })
+        return r.json()
+      }),
+      fetch(`${API_BASE}/projects/${project.slug}/documents`).then(r => r.ok ? r.json() : { documents: [] }),
+    ])
+      .then(([data, docsData]) => {
+        console.log('[DETAIL:PAYLOAD]', {
+          project_name:     data.project?.name                                          ?? 'NULL',
+          rec_tier:         data.project?.recommendation_profile?.tier                 ?? 'MISSING',
+          persona:          data.project?.persona_profile?.primary_persona              ?? 'MISSING',
+          decision_thesis:  data.project?.decision_profile?.decision_thesis?.slice(0, 80) ?? 'MISSING',
+          competitor_count: data.project?.competitors?.length                           ?? 0,
+          doc_count:        docsData.documents?.length                                  ?? 0,
+        })
+        setDetail(data.project ?? null)
+        setDocuments(docsData.documents ?? [])
+      })
+      .catch(() => { setDetail(null); setDocuments([]) })
       .finally(() => setLoading(false))
   }, [project?.slug])
+
+  useEffect(() => {
+    if (!initialDetail || !project) return
+    if (initialDetail.slug !== project.slug) return
+    setDetail(initialDetail)
+    setLoading(false)
+  }, [initialDetail?.slug, project?.slug])
 
   useEffect(() => {
     if (!project) return
     getAqi(project.lat, project.lng, 'noida').then(setAqi).catch(() => {})
   }, [project?.slug])
 
+  // Lazy-load payment plan when 'Costs' or 'Pricing' tab is opened — the Pricing
+  // tab's Financial Snapshot teaser reuses this same fetch/cache instead of a second one.
+  useEffect(() => {
+    if ((activeTab !== 'Costs' && activeTab !== 'Pricing') || !project?.slug || paymentPlan.loaded) return
+    getPaymentPlan(project.slug).then((res) => {
+      setPaymentPlan({ loaded: true, available: res.available, data: res.plan ?? null, message: res.message })
+    }).catch(() => {
+      setPaymentPlan({ loaded: true, available: false, data: null, message: 'Unable to load payment plan.' })
+    })
+  }, [activeTab, project?.slug])
+
+  // Lazy-load cost sheet when 'Costs' or 'Pricing' tab is opened (same reasoning as above)
+  useEffect(() => {
+    if ((activeTab !== 'Costs' && activeTab !== 'Pricing') || !project?.slug || costSheet.loaded) return
+    getCostSheet(project.slug).then((res) => {
+      setCostSheet({ loaded: true, available: res.available, data: res.sheet ?? null, illustration: res.illustration ?? null, note: res.illustration_note, message: res.message })
+    }).catch(() => {
+      setCostSheet({ loaded: true, available: false, data: null, illustration: null, message: 'Unable to load cost sheet.' })
+    })
+  }, [activeTab, project?.slug])
+
+  useEffect(() => {
+    if (inline || !project) return
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', handleKey)
+      document.body.style.overflow = ''
+    }
+  }, [!!project, inline])
+
   const isOpen = !!project
 
-  const heroImages = detail?.images?.filter((i) => i.type === 'hero' || i.type === 'exterior') ?? []
-  const allImages  = detail?.images ?? []
-  const currentImg = allImages[imgIdx]?.url ?? project?.hero_image_url
+  // Same /saved endpoint ProjectCard already calls — reused, not reinvented.
+  const handleSave = async () => {
+    if (!userId || saving || !project) return
+    setSaving(true)
+    const wasSaved = saved
+    setSaved(!wasSaved)
+    try {
+      if (wasSaved) {
+        const res = await fetch(`${API_BASE}/saved/${project.id}`, { method: 'DELETE', headers: await authHeaders() })
+        if (!res.ok) throw new Error('Delete failed')
+      } else {
+        const res = await fetch(`${API_BASE}/saved`, {
+          method: 'POST',
+          headers: await authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ project_id: project.id }),
+        })
+        if (!res.ok) throw new Error('Save failed')
+        track('property_saved', { project_slug: project.slug, project_name: project.name })
+      }
+    } catch {
+      setSaved(wasSaved)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Hero/exterior images lead the carousel — same priority ProjectCard and the
+  // admin previews use — so the cover photo is never a floor plan/amenity shot.
+  // Falls back to `project.images` (already loaded from the search-result card)
+  // while `detail` is still fetching, instead of jumping straight to the legacy
+  // `hero_image_url` column, which can be a stale/deleted local path.
+  const imageTypeRank = (type: string) => (type === 'hero' ? 0 : type === 'exterior' ? 1 : 2)
+  const allImages = [...(detail?.images ?? project?.images ?? [])].sort((a, b) => imageTypeRank(a.type) - imageTypeRank(b.type))
+  const heroCandidates = [
+    ...allImages.map((i) => i.url),
+    ...(allImages.length === 0 && project?.hero_image_url ? [project.hero_image_url] : []),
+  ].filter(Boolean) as string[]
+  const workingHeroCandidates = heroCandidates.filter((src) => !failedImgUrls.has(src))
+  const rawImg = workingHeroCandidates[imgIdx % Math.max(workingHeroCandidates.length, 1)]
+  const currentImg = resolveImgUrl(rawImg)
+  const floorPlanImages = allImages.filter(i => i.type === 'floor_plan')
 
   const d = detail ?? project
 
   const isRTM = d?.status === 'ready_to_move'
   const isNew = d?.status === 'new_launch'
 
-  const PanelWrapper = inline
-    ? ({ children }: { children: React.ReactNode }) => (
-        <div className="bg-[#fafafa] rounded-2xl shadow-sm overflow-hidden flex flex-col">
-          {children}
-        </div>
-      )
-    : ({ children }: { children: React.ReactNode }) => (
-        <motion.div
-          initial={{ x: '100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '100%' }}
-          transition={{ type: 'tween', ease: 'easeOut', duration: 0.28 }}
-          className="fixed right-0 top-0 h-full w-full sm:w-[600px] lg:w-[680px] xl:w-[720px] bg-[#fafafa] shadow-2xl z-50 flex flex-col overflow-hidden"
-        >
-          {children}
-        </motion.div>
-      )
+  const bhkLabel = [...new Set((d?.unit_types ?? []).map((u) => `${u.bhk}BHK`))].join(' · ')
 
-  return (
-    <>
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop — hidden in inline mode */}
-          {!inline && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-              onClick={onClose}
-            />
-          )}
+  const tier          = detail?.recommendation_profile?.tier ?? null
+  // Prefer the deterministic DB score (Overview's own source) so the number and
+  // tier shown together always come from the same computation; fall back to the
+  // chat-computed decision score only when the DB one isn't verified yet.
+  const heroScore     = detail?.recommendation_score?.total ?? project?.decisionIntelligence?.overallScore ?? null
+  const heroTier      = detail?.recommendation_score?.tier ?? project?.decisionIntelligence?.tier ?? tier
+  const persona       = detail?.persona_profile?.primary_persona ?? null
+  const decisionThesis = detail?.decision_profile?.decision_thesis ?? null
+  const whyBuy        = detail?.decision_profile?.why_buy ?? []
+  const whyAvoid      = detail?.decision_profile?.why_avoid ?? []
+  const timelineAdvice     = detail?.recommendation_profile?.timeline_advice ?? null
+  const negotiationLeverage = detail?.recommendation_profile?.negotiation_leverage ?? []
+  const walkAwayConditions  = detail?.recommendation_profile?.walk_away_conditions ?? []
+  const competitors   = detail?.competitors ?? []
 
-          {/* Panel */}
-          <PanelWrapper>
-            {/* Header */}
-            <div className="relative flex-shrink-0">
-              {/* Hero image */}
-              <div className="relative h-72 bg-gray-100 overflow-hidden">
-                {currentImg ? (
-                  <Image src={currentImg} alt={d?.name ?? ''} fill unoptimized className="object-cover" sizes="600px" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-                    <Building2 size={48} className="text-blue-200" />
-                  </div>
+  // ── Tier + persona Notion-style callout (shared mobile/desktop) ─────────────────────
+  const intelligenceChips = (tier || persona) && (
+    <div className="flex items-start gap-3 bg-gray-50/80 border border-gray-200/60 rounded-xl p-3">
+      <Sparkles size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
+      <div>
+        <p className="text-[11px] font-bold text-gray-900 mb-0.5">Investment Thesis</p>
+        <p className="text-[12px] text-gray-600 leading-relaxed">
+          {tier && <span>Rated as <strong className="text-gray-900">{tierLabel[tier] ?? tier}</strong>. </span>}
+          {persona && <span>Ideal for {persona.charAt(0) + persona.slice(1).toLowerCase()}.</span>}
+        </p>
+      </div>
+    </div>
+  )
+
+  // ── Shared tab body ───────────────────────────────────────────────────────
+  // Single tab-switch transition reused by all three render paths below
+  // (inline, desktop modal, mobile sheet) instead of each defining its own.
+  const tabBody = (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+      >
+      {activeTab === 'Overview' && (
+        <OverviewTab
+          project={project}
+          detail={detail}
+          d={d}
+          loading={loading}
+          documents={documents}
+          aqi={aqi}
+          floorPlanImages={floorPlanImages}
+          decisionThesis={decisionThesis}
+          whyBuy={whyBuy}
+          whyAvoid={whyAvoid}
+          onViewFloorPlans={(plans) => setShowFloorPlan({ plans })}
+          onGoToLocation={() => setActiveTab('Location')}
+          onGoToDocuments={() => setActiveTab('Documents')}
+          onGoToPricing={() => setActiveTab('Residences')}
+        />
+      )}
+
+      {activeTab === 'Analysis' && (
+        <IntelligenceTab
+          project={project}
+          detail={detail}
+          d={d}
+          loading={loading}
+          timelineAdvice={timelineAdvice}
+          negotiationLeverage={negotiationLeverage}
+          walkAwayConditions={walkAwayConditions}
+          marketVisible={marketVisible}
+          marketRef={marketRef}
+        />
+      )}
+
+      {activeTab === 'Residences' && (
+        <PricingTab
+          unitTypes={d?.unit_types ?? []}
+          floorPlanImages={floorPlanImages}
+          loading={loading}
+          detail={detail}
+          projectStatus={d?.status}
+          paymentPlan={paymentPlan}
+          costSheet={costSheet}
+          onViewFloorPlans={(plans) => setShowFloorPlan({ plans })}
+          onGoToCosts={() => setActiveTab('Pricing')}
+        />
+      )}
+
+      {activeTab === 'Pricing' && (
+        <div className="p-5 md:p-6 space-y-5">
+          {/* Payment Schedule */}
+          <div>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Payment Schedule</p>
+            {!paymentPlan.loaded ? (
+              <div className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+            ) : !paymentPlan.available ? (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
+                <p className="text-[13px] font-medium text-gray-500">{paymentPlan.message ?? 'Payment schedule not yet verified.'}</p>
+                <p className="text-[11px] text-gray-400 mt-1">Contact the builder for a current payment schedule.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {!!paymentPlan.data?.plan_name && (
+                  <p className="text-[12px] font-semibold text-gray-700">{String(paymentPlan.data.plan_name)}</p>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                {Array.isArray(paymentPlan.data?.milestones) && paymentPlan.data.milestones.map((m: any, i: number) => (
+                  <div key={i} className="flex items-start justify-between gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-gray-800">{m.milestone}</p>
+                      {m.notes && <p className="text-[11px] text-gray-500 mt-0.5">{m.notes}</p>}
+                    </div>
+                    <span className="text-[13px] font-black text-blue-700 flex-shrink-0">{m.percentage}%</span>
+                  </div>
+                ))}
+                {!!paymentPlan.data?.notes && (
+                  <p className="text-[11px] text-gray-400 mt-2">{String(paymentPlan.data.notes)}</p>
+                )}
+              </div>
+            )}
+          </div>
 
-                {/* Image carousel dots */}
-                {allImages.length > 1 && (
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {allImages.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setImgIdx(i)}
-                        className={`w-1.5 h-1.5 rounded-full transition-all ${i === imgIdx ? 'bg-white w-4' : 'bg-white/40'}`}
-                      />
+          {/* Cost Breakdown */}
+          <div>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Cost Breakdown</p>
+            {!costSheet.loaded ? (
+              <div className="h-32 bg-gray-100 rounded-xl animate-pulse" />
+            ) : !costSheet.available ? (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
+                <p className="text-[13px] font-medium text-gray-500">{costSheet.message ?? 'Cost sheet not yet verified.'}</p>
+                <p className="text-[11px] text-gray-400 mt-1">Ask the builder for a detailed cost sheet.</p>
+              </div>
+            ) : costSheet.illustration ? (
+              <div className="space-y-2">
+                {Object.entries(costSheet.illustration).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => (
+                  <div key={k} className={`flex items-center justify-between px-3 py-2.5 rounded-xl ${k === 'total_cost_cr' ? 'bg-gray-900 text-white' : 'bg-gray-50 border border-gray-100'}`}>
+                    <span className={`text-[12px] ${k === 'total_cost_cr' ? 'font-bold text-white' : 'text-gray-600'}`}>
+                      {k.replace(/_/g, ' ').replace(/\bcr\b/g, '').trim().replace(/\b\w/g, c => c.toUpperCase())}
+                    </span>
+                    <span className={`text-[12px] font-black ${k === 'total_cost_cr' ? 'text-white' : 'text-gray-900'}`}>
+                      ₹{Number(v).toFixed(2)} Cr
+                    </span>
+                  </div>
+                ))}
+                {costSheet.note && (
+                  <p className="text-[10px] text-gray-400 leading-relaxed mt-2">{costSheet.note}</p>
+                )}
+                {Array.isArray(costSheet.data?.assumptions) && costSheet.data.assumptions.length > 0 && (
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                    <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1.5">Assumptions</p>
+                    {costSheet.data.assumptions.map((a: string, i: number) => (
+                      <p key={i} className="text-[11px] text-amber-800">· {a}</p>
                     ))}
                   </div>
                 )}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
 
-                {/* Status */}
-                <div className={`absolute top-3 left-3 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg backdrop-blur-sm ${
-                  isRTM ? 'bg-emerald-500/90 text-white' : isNew ? 'bg-blue-500/90 text-white' : 'bg-amber-500/90 text-white'
-                }`}>
-                  {isRTM ? <CheckCircle2 size={10} /> : <Clock size={10} />}
-                  {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
+      {activeTab === 'Location' && (
+        <LocationTab
+          project={project}
+          detail={detail}
+          d={d}
+          projectAddress={`${d?.address ?? d?.name}, ${d?.sector}, ${d?.city}, India`}
+        />
+      )}
+
+      {activeTab === 'Documents' && (
+        <DocumentsTab documents={documents} loading={loading && !detail} projectSlug={(d as any)?.slug} />
+      )}
+      </motion.div>
+    </AnimatePresence>
+  )
+
+  // ── CTA footer ─────────────────────────────────────────────────────────────
+  const ctaFooter = (
+    <div className="flex-shrink-0 border-t border-gray-100 p-4 bg-white space-y-2">
+      <button
+        onClick={() => setShowVisitScheduler(true)}
+        className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl text-[14px] transition-colors flex items-center justify-center gap-2"
+      >
+        <CalendarDays size={16} />
+        Book Site Visit
+      </button>
+      {(() => {
+        const waUrl = d ? buildWhatsAppUrl(d as any, 'panel') : null
+        return waUrl ? (
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track('whatsapp_handoff', { project_slug: (d as any)?.slug, project_name: (d as any)?.name })}
+            className="w-full border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-gray-800 py-3 rounded-2xl text-[13px] transition-colors flex items-center justify-center gap-2"
+          >
+            <WhatsAppIcon size={14} />
+            Ask on WhatsApp
+          </a>
+        ) : null
+      })()}
+    </div>
+  )
+
+  // ── Tab strip ───────────────────────────────────────────────────────────────
+  const tabIcons: Record<Tab, React.ReactNode> = {
+    Overview: <Building2 size={16} />,
+    Analysis: <LineChart size={16} />,
+    Residences: <BedDouble size={16} />,
+    Pricing: <IndianRupee size={16} />,
+    Location: <MapPin size={16} />,
+    Documents: <FileText size={16} />
+  }
+
+  const tabStrip = (
+    <div className="sticky top-0 z-40 flex gap-8 bg-white/95 backdrop-blur-xl px-10 border-b border-gray-100 w-full overflow-x-auto hide-scrollbar">
+      {SECTION_TABS.map((tab) => {
+        const isActive = activeTab === tab;
+        return (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`relative py-4 flex items-center gap-2 text-[14px] font-semibold transition-colors whitespace-nowrap ${
+              isActive
+                ? 'text-blue-600'
+                : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            {tabIcons[tab]}
+            {tab}
+            {isActive && (
+              <motion.div
+                layoutId="activeTabUnderline"
+                className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full"
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+
+  // ── Inline mode (property page) ─────────────────────────────────────────────
+  if (inline) {
+    return (
+      <motion.div
+        className="project-detail-wrapper"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+      >
+        <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-2xl rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col border border-gray-200/50 dark:border-gray-700/50">
+          {/* Cinematic hero */}
+          <div className="relative h-[380px] md:h-[440px] bg-gray-900 overflow-hidden flex-shrink-0">
+            <AnimatePresence mode="wait">
+              {currentImg ? (
+                <motion.div
+                  key={currentImg}
+                  className="absolute inset-0"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                >
+                  <Image
+                    src={currentImg}
+                    alt={d?.name ?? ''}
+                    fill
+                    priority
+                    className="object-cover scale-105 blur-[2px]"
+                    sizes="100vw"
+                    onError={() => markImgFailed(currentImg)}
+                  />
+                </motion.div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                  <Building2 size={56} className="text-slate-600" />
+                </div>
+              )}
+            </AnimatePresence>
+            {/* Cinematic gradient — dark enough at the bottom for white type to sit on, clear at the top for the status/save row */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
+
+            {/* Top row — status badge + save */}
+            <div className="absolute top-5 inset-x-5 flex items-center justify-between">
+              <div className={`flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full backdrop-blur-md border border-white/20 ${isRTM ? 'bg-emerald-500/80 text-white' : isNew ? 'bg-blue-500/80 text-white' : 'bg-amber-500/80 text-white'}`}>
+                {isRTM ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+                {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
+              </div>
+              {userId && (
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleSave}
+                  disabled={saving}
+                  className={`w-9 h-9 rounded-full backdrop-blur-md border flex items-center justify-center transition-colors disabled:opacity-50 ${
+                    saved ? 'bg-white text-gray-900 border-white' : 'bg-black/30 text-white border-white/25 hover:bg-black/50'
+                  }`}
+                  aria-label={saved ? 'Remove from saved' : 'Save property'}
+                >
+                  <Bookmark size={15} className={saved ? 'fill-current' : ''} />
+                </motion.button>
+              )}
+            </div>
+
+            {allImages.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {allImages.map((_, i) => (
+                  <button key={i} onClick={() => setImgIdx(i)}
+                    className={`h-1.5 rounded-full transition-all ${i === imgIdx ? 'bg-white w-4' : 'bg-white/40 w-1.5'}`} />
+                ))}
+              </div>
+            )}
+
+            {/* Identity + score, sitting directly on the image */}
+            <div className="absolute bottom-0 inset-x-0 p-5 md:p-8">
+              <div className="flex items-end justify-between gap-4 flex-wrap mb-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 text-white/70 text-[12px] font-medium mb-2">
+                    <MapPin size={12} className="flex-shrink-0" />
+                    <span className="truncate">{d?.builder?.name} · {d?.sector}, {d?.city}</span>
+                  </div>
+                  <h1 className="text-white text-[28px] md:text-[38px] font-bold tracking-tight leading-[1.08]">{d?.name}</h1>
+                  {d?.tagline && <p className="text-white/75 text-[13px] md:text-[14px] mt-1.5 font-light italic">{d.tagline}</p>}
                 </div>
 
-                {d?.rera_number && (() => {
-                  const reraUrl = d?.rera_url ?? `https://www.up-rera.in/index_ui.aspx#sec/SearchProject?projectname=&rerano=${d.rera_number}`
-                  const content = (
-                    <>
-                      <Shield size={10} />
-                      RERA {d.rera_number}
-                      {reraUrl && <ExternalLink size={8} className="ml-0.5 opacity-80" />}
-                    </>
-                  )
-                  return reraUrl ? (
-                    <a
-                      href={reraUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute top-3 right-12 flex items-center gap-1 text-[10px] font-bold text-white bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-lg hover:bg-blue-500/90 transition-colors cursor-pointer"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {content}
-                    </a>
-                  ) : (
-                    <div className="absolute top-3 right-12 flex items-center gap-1 text-[10px] font-bold text-white bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-lg">
-                      {content}
-                    </div>
-                  )
-                })()}
-
-                {/* Close */}
-                <button
-                  onClick={onClose}
-                  className="absolute top-3 right-3 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* Name bar */}
-              <div className="px-5 pt-4 pb-3 border-b border-gray-100">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight">{d?.name}</h2>
-                    {d?.tagline && <p className="text-[12px] text-blue-600 font-semibold mt-0.5">{d.tagline}</p>}
-                    <div className="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400">
-                      <MapPin size={11} className="text-gray-300" />
-                      {d?.builder.name} · {d?.sector}, {d?.city}
+                {heroScore != null && (
+                  <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-2.5 flex-shrink-0">
+                    <span className="text-white text-[26px] font-bold leading-none tracking-tight">{Math.round(heroScore)}</span>
+                    <div>
+                      <p className="text-white text-[12px] font-bold leading-tight">{heroTier ? (tierLabel[heroTier] ?? heroTier) : '—'}</p>
+                      <p className="text-white/55 text-[9px] font-bold uppercase tracking-widest mt-0.5">Top Recommendation</p>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-[22px] font-black text-gray-900 tracking-tight leading-none">{d?.price_range_label}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{[...new Set(d?.unit_types.map((u) => `${u.bhk}BHK`))].join(' · ')}</p>
+                )}
+              </div>
+
+              {decisionThesis && (
+                <p className="text-white/80 text-[12.5px] leading-relaxed max-w-2xl mb-4 line-clamp-2">{decisionThesis}</p>
+              )}
+
+              <div className="flex items-end justify-between gap-4 pt-4 border-t border-white/15">
+                <div>
+                  <p className="text-white text-[22px] md:text-[26px] font-bold tracking-tight leading-none">{d?.price_range_label}</p>
+                  <p className="text-white/60 text-[11px] mt-1">{bhkLabel}</p>
+                </div>
+                {d?.rera_number && (
+                  <span className="flex items-center gap-1 text-[11px] font-semibold text-white/85 flex-shrink-0">
+                    <CheckCircle2 size={12} />
+                    RERA Verified
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Tab strip — light bar directly under the hero */}
+          <div className="px-5 pt-4 pb-3 border-b border-gray-100">
+            {tabStrip}
+          </div>
+          <div className="flex-1 overflow-y-auto">{tabBody}</div>
+          {ctaFooter}
+        </div>
+
+        <AnimatePresence mode="wait">
+          {showVisitScheduler && project && (
+            <SiteVisitScheduler projectId={project.id} projectSlug={project.slug} projectName={project.name} onClose={() => setShowVisitScheduler(false)} />
+          )}
+        </AnimatePresence>
+        <AnimatePresence mode="wait">
+          {showFloorPlan && (
+            <FloorPlanViewer floorPlans={showFloorPlan.plans} title={`${project?.name} — Floor Plans`} onClose={() => setShowFloorPlan(null)} />
+          )}
+        </AnimatePresence>
+      </motion.div>
+    )
+  }
+
+  // ── Shared: image badges used in mobile bottom sheet ──────────────────────
+  const imageBadges = (
+    <>
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors z-20"
+      >
+        <X size={15} />
+      </button>
+    </>
+  )
+
+  const imageCarouselDots = allImages.length > 1 && (
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+      {allImages.map((_, i) => (
+        <button key={i} onClick={() => setImgIdx(i)}
+          className={`h-1.5 rounded-full transition-all ${i === imgIdx ? 'bg-white w-4' : 'bg-white/40 w-1.5'}`} />
+      ))}
+    </div>
+  )
+
+  // ── Modal ──────────────────────────────────────────────────────────────────
+  return (
+    <div className="project-detail-wrapper">
+      <AnimatePresence mode="wait">
+        {isOpen && (
+          <>
+            {/* Backdrop & Centering Wrapper for Desktop */}
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 bg-black/70 hidden md:flex items-center justify-center p-4 md:p-8"
+              onClick={onClose}
+            >
+              {/* ── Desktop dialog ── */}
+              <motion.div
+                key="dialog-desktop"
+                initial={{ opacity: 0, scale: 0.96, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 10 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="relative flex flex-col w-[95vw] max-w-[1200px] h-[90vh] max-h-[900px]
+                           rounded-3xl bg-gray-50 overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.4)]"
+                onClick={(e) => e.stopPropagation()}
+              >
+              {/* Floating Header */}
+              <AnimatePresence>
+                {isScrolled && (
+                  <motion.div 
+                     initial={{ opacity: 0, y: '-100%' }} 
+                     animate={{ opacity: 1, y: 0 }} 
+                     exit={{ opacity: 0, y: '-100%' }}
+                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                     className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 hidden md:flex pointer-events-auto rounded-t-3xl"
+                  >
+                     <div className="flex items-center gap-3">
+                       <div className={`w-2 h-2 rounded-full shadow-sm ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
+                       <h2 className="text-[15px] font-bold text-gray-900 tracking-tight">{d?.name}</h2>
+                     </div>
+                     <div className="flex items-center gap-4">
+                       <p className="text-[14px] font-bold text-gray-900">{d?.price_range_label}</p>
+                       <button onClick={() => setShowVisitScheduler(true)} className="px-5 py-2 bg-gray-900 hover:bg-black text-white font-semibold rounded-full text-[13px] transition-colors shadow-sm">
+                         Book Visit
+                       </button>
+                     </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto w-full relative pb-24 hide-scrollbar" onScroll={handleScroll}>
+                {/* Hero Section */}
+                <div className="relative w-full h-[450px] bg-gray-900 flex-shrink-0 overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full">
+                    {currentImg ? (
+                      <Image src={currentImg} alt={d?.name ?? ''} fill priority className="object-cover opacity-60" sizes="1200px" onError={() => markImgFailed(currentImg)} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 to-black">
+                        <Building2 size={56} className="text-slate-700" />
+                      </div>
+                    )}
+                  </div>
+                  {/* Gradient Overlay for Text Readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/50 to-transparent" />
+
+                  <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md z-10">
+                    <X size={20} />
+                  </button>
+                  {imageCarouselDots}
+
+                  {/* Hero Content */}
+                  <div className="absolute inset-0 p-10 flex flex-col justify-end max-w-[1200px] mx-auto w-full">
+                    <div className="flex items-end justify-between gap-8">
+                      {/* Left side info */}
+                      <div className="flex-1 min-w-0 pb-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border flex items-center gap-1.5 ${isRTM ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : isNew ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'}`}>
+                            <div className={`w-1.5 h-1.5 rounded-full ${isRTM ? 'bg-emerald-400' : isNew ? 'bg-blue-400' : 'bg-amber-400'}`} />
+                            {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
+                          </div>
+                        </div>
+
+                        <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight font-serif mb-1">{d?.name}</h2>
+                        {d?.tagline && <p className="text-[18px] text-white/80 font-serif italic mb-4">{d.tagline}</p>}
+
+                        <div className="flex items-center gap-2 text-[14px] font-medium text-white/70 mb-6">
+                          <MapPin size={14} />
+                          <span>{d?.sector}, {d?.city}</span>
+                          <span>·</span>
+                          <span className="text-white/90">{d?.builder?.name}</span>
+                          {d?.rera_number && (
+                            <>
+                              <span>·</span>
+                              <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                                <CheckCircle2 size={14} />
+                                RERA Verified
+                              </span>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-6">
+                           <div>
+                             <p className="text-3xl font-bold text-white tracking-tight leading-none">{d?.price_range_label}</p>
+                             <p className="text-[12px] text-white/60 uppercase tracking-wider mt-1.5">Price Range</p>
+                           </div>
+                           <div className="w-px h-10 bg-white/20" />
+                           <div>
+                             <p className="text-[20px] font-bold text-white tracking-tight leading-none">{bhkLabel}</p>
+                             <p className="text-[12px] text-white/60 uppercase tracking-wider mt-1.5">Configurations</p>
+                           </div>
+                        </div>
+
+                        {intelligenceChips && (
+                           <div className="mt-6 inline-block">
+                             <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3">
+                                <Sparkles size={18} className="text-emerald-400 flex-shrink-0" />
+                                <div>
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <p className="text-[12px] font-bold text-white">Investment Thesis</p>
+                                    {tier && <span className="bg-emerald-500/20 text-emerald-300 text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">{tierLabel[tier] ?? tier}</span>}
+                                  </div>
+                                  <p className="text-[12px] text-white/70 line-clamp-1">{decisionThesis || (persona && `Ideal for ${persona.charAt(0) + persona.slice(1).toLowerCase()}.`)}</p>
+                                </div>
+                             </div>
+                           </div>
+                        )}
+                      </div>
+
+                      {/* Right side floating stats card */}
+                      <div className="w-[340px] bg-white rounded-2xl shadow-xl overflow-hidden flex-shrink-0 mb-4 z-10 border border-gray-100">
+                        <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
+                           <div className="p-4 text-center">
+                             <Building2 size={18} className="text-gray-400 mx-auto mb-2" />
+                             <p className="text-[18px] font-bold text-gray-900 leading-none mb-1">{d?.total_towers ? `${d.total_towers}` : '—'}</p>
+                             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Towers</p>
+                           </div>
+                           <div className="p-4 text-center">
+                             <MapIcon size={18} className="text-gray-400 mx-auto mb-2" />
+                             <p className="text-[18px] font-bold text-gray-900 leading-none mb-1">{(detail?.total_units ?? (d as any)?.total_units) ? `${(detail?.total_units ?? (d as any)?.total_units)}` : '—'}</p>
+                             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Units</p>
+                           </div>
+                           <div className="p-4 text-center">
+                             <FileIcon size={18} className="text-gray-400 mx-auto mb-2" />
+                             <p className="text-[18px] font-bold text-gray-900 leading-none mb-1">{d?.land_area_acres ? `${d.land_area_acres} Ac` : '—'}</p>
+                             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Land Area</p>
+                           </div>
+                        </div>
+                        <div className="p-5 flex items-center justify-between">
+                           <div>
+                             <p className="text-[11px] font-bold text-gray-500 mb-1">Recommendation Score</p>
+                             <div className="flex items-baseline gap-1">
+                               <span className="text-4xl font-black text-gray-900 tracking-tight leading-none">{heroScore ? Math.round(heroScore) : '—'}</span>
+                               {heroScore && <span className="text-[14px] text-gray-500 font-medium">/ 100</span>}
+                             </div>
+                           </div>
+                           <div className="text-right">
+                             <div className="flex text-amber-400 mb-1.5 justify-end">
+                               {Array.from({ length: 5 }).map((_, i) => (
+                                 <svg key={i} className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                               ))}
+                             </div>
+                             {heroTier && <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">{tierLabel[heroTier] ?? heroTier}</span>}
+                           </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-0.5 mt-4 bg-gray-100 rounded-xl p-1">
-                  {SECTION_TABS.map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg transition-all ${
-                        activeTab === tab ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-700'
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
+                <div className="bg-white">
+                  {tabStrip}
+                </div>
+
+                {/* Main Content Area */}
+                <div className="p-8 md:p-10 max-w-[1200px] mx-auto">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
+                     {tabBody}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Body — scrollable */}
-            <div className={inline ? 'bg-[#fafafa]' : 'flex-1 overflow-y-auto bg-[#fafafa]'}>
-              {loading && (
-                <div className="p-5 space-y-4 animate-pulse">
-                  {/* Title skeleton */}
-                  <div className="h-4 bg-gray-100 rounded-xl w-3/4" />
-                  <div className="h-3 bg-gray-100 rounded-xl w-1/2" />
-                  {/* Stats skeleton */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="bg-gray-100 rounded-2xl h-20" />
-                    ))}
-                  </div>
-                  {/* Connectivity skeleton */}
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-3 py-1.5">
-                        <div className="w-7 h-7 bg-gray-100 rounded-lg flex-shrink-0" />
-                        <div className="h-3 bg-gray-100 rounded flex-1" />
-                        <div className="h-3 bg-gray-100 rounded w-12" />
-                      </div>
-                    ))}
-                  </div>
-                  {/* Description skeleton */}
-                  <div className="space-y-2">
-                    <div className="h-3 bg-gray-100 rounded w-full" />
-                    <div className="h-3 bg-gray-100 rounded w-4/5" />
-                    <div className="h-3 bg-gray-100 rounded w-3/5" />
-                  </div>
-                </div>
-              )}
-
-              {!loading && activeTab === 'Overview' && (
-                <div className="p-5 space-y-6">
-                  {/* Key stats */}
-                  <div className="grid grid-cols-3 gap-3.5">
-                    {[
-                      { label: 'Towers', value: d?.total_towers ? `${d.total_towers}` : '—' },
-                      { label: 'Units', value: (detail?.total_units ?? (d as any)?.total_units) ? `${(detail?.total_units ?? (d as any)?.total_units)}` : '—' },
-                      { label: 'Land', value: d?.land_area_acres ? `${d.land_area_acres} Ac` : '—' },
-                    ].map((s) => (
-                      <div key={s.label} className="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm">
-                        <p className="text-[20px] font-black text-gray-900">{s.value}</p>
-                        <p className="text-[10px] text-gray-400 font-semibold mt-0.5 uppercase tracking-wider">{s.label}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Design team */}
-                  {(d?.architect || d?.interior_designer) && (
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Design Team</p>
-                      <div className="flex flex-wrap gap-2">
-                        {d.architect && (
-                          <span className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-indigo-100">
-                            <Sparkles size={11} />
-                            {d.architect} (Architect)
-                          </span>
-                        )}
-                        {d.interior_designer && (
-                          <span className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-purple-100">
-                            <Star size={11} />
-                            {d.interior_designer} (Interior)
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Description */}
-                  {(detail?.long_description ?? project?.tagline) && (
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">About</p>
-                      <p className="text-[13px] text-gray-600 leading-relaxed">
-                        {detail?.long_description ?? project?.tagline}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Connectivity */}
-                  {(detail?.all_connectivity ?? d?.top_connectivity ?? []).length > 0 && (
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Connectivity</p>
-                      <div className="space-y-2">
-                        {(detail?.all_connectivity ?? d?.top_connectivity ?? []).map((c: any) => {
-                          const Icon = CONN_ICONS[c.type] ?? Path
-                          return (
-                            <div key={c.name} className="flex items-center gap-3 text-[12px] text-gray-600 py-1.5 border-b border-gray-50 last:border-0">
-                              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                <Icon size={14} weight="duotone" className="text-blue-500" />
-                              </div>
-                              <span className="flex-1">{c.name}</span>
-                              {c.distance_km && <span className="text-gray-400 text-[11px]">{c.distance_km} km</span>}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* USPs */}
-                  {(detail?.marketing_claims ?? (d as any)?.marketing_claims ?? []).length > 0 && (
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Key Highlights</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(detail?.marketing_claims ?? (d as any)?.marketing_claims ?? []).map((c: string) => (
-                          <span key={c} className="flex items-center gap-1 text-[11px] text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full font-medium">
-                            <ChevronRight size={10} />
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Price Trends */}
+              {/* Floating Footer CTA (Pill Dock) */}
+              <div className="absolute bottom-8 inset-x-0 z-50 hidden md:flex justify-center pointer-events-none">
+                <div className="flex gap-3 bg-white/90 backdrop-blur-xl p-2 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-200/50 pointer-events-auto">
+                  <button onClick={() => setShowVisitScheduler(true)} className="px-8 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-full text-[14px] transition-all flex items-center gap-2 shadow-sm">
+                    <CalendarDays size={16} />
+                    Book Site Visit
+                  </button>
                   {(() => {
-                    const sectorKey = d?.sector ?? ''
-                    const priceData = SECTOR_PRICE_HISTORY[sectorKey] ?? null
-                    if (!priceData) return null
-                    return (
-                      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <TrendingUp size={14} className="text-emerald-600" strokeWidth={2} />
-                          </div>
-                          <p className="text-[12px] font-bold text-gray-700">Price Trends — {sectorKey}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          <div className="bg-white rounded-xl p-2.5 border border-emerald-50">
-                            <p className="text-[18px] font-black text-emerald-600">{priceData.yoyGrowth}</p>
-                            <p className="text-[10px] text-gray-400 mt-0.5">Year-on-year</p>
-                          </div>
-                          <div className="bg-white rounded-xl p-2.5 border border-emerald-50">
-                            <p className="text-[13px] font-bold text-gray-900 leading-tight">{priceData.avgPriceRange}</p>
-                            <p className="text-[10px] text-gray-400 mt-0.5">Avg. price/sqft</p>
-                          </div>
-                        </div>
-                        <p className="text-[11px] text-gray-600 leading-relaxed mb-1.5">{priceData.note}</p>
-                        <p className="text-[11px] text-emerald-700 font-semibold">Outlook: {priceData.outlook}</p>
-                        <p className="text-[9px] text-gray-400 mt-2">* Indicative market data. Verify with RERA and registered valuers before purchase decisions.</p>
-                      </div>
-                    )
-                  })()}
-
-                  {/* Air Quality */}
-                  {aqi && (
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 bg-sky-50 dark:bg-sky-900/30 rounded-lg flex items-center justify-center">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-sky-500"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
-                        </div>
-                        <p className="text-[12px] font-bold text-gray-700 dark:text-gray-200">Air Quality Index</p>
-                        <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto">{aqi.station}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <p className={`text-[28px] font-black ${aqi.color}`}>{aqi.aqi}</p>
-                        <div>
-                          <p className={`text-[13px] font-bold ${aqi.color}`}>{aqi.label}</p>
-                          {aqi.dominantPollutant && (
-                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Main: {aqi.dominantPollutant.toUpperCase()}</p>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-1">0–50 Good · 51–100 Moderate · 101–150 Sensitive · 151+ Unhealthy</p>
-                    </div>
-                  )}
-
-                  {/* Quick commute teaser */}
-                  <div
-                    onClick={() => setActiveTab('Commute')}
-                    className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-xl p-3.5 cursor-pointer hover:bg-blue-100 transition-colors"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Route size={16} className="text-blue-500" />
-                      <div>
-                        <p className="text-xs font-semibold text-gray-800">Commute Calculator</p>
-                        <p className="text-[10px] text-gray-400">How long from here to your office?</p>
-                      </div>
-                    </div>
-                    <ChevronRight size={14} className="text-blue-400" />
-                  </div>
-
-                  {/* Market comparison */}
-                  {d?.sector && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <BarChart3 size={14} className="text-blue-500" />
-                        <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">Market Comparison</p>
-                      </div>
-                      <MarketComparison
-                        sector={d.sector}
-                        city={d.city}
-                        projectName={d.name}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!loading && activeTab === 'Units' && (
-                <div className="p-5 space-y-4">
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Unit Configurations</p>
-
-                  {(d?.unit_types ?? []).map((u, i) => (
-                    <div key={i} className="border border-gray-100 rounded-2xl overflow-hidden bg-white shadow-sm">
-                      <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 px-5 py-3 flex items-center justify-between border-b border-gray-100">
-                        <span className="text-[13px] font-bold text-gray-900">{u.name}</span>
-                        <span className="text-[13px] font-black text-blue-600">
-                          {u.price_label ?? (u.price_min_cr != null && u.price_max_cr != null
-                            ? u.price_min_cr === u.price_max_cr
-                              ? `₹${u.price_min_cr.toFixed(2)} Cr`
-                              : `₹${u.price_min_cr.toFixed(2)} – ${u.price_max_cr.toFixed(2)} Cr`
-                            : 'Price on request')}
-                        </span>
-                      </div>
-                      <div className="px-5 py-4 grid grid-cols-2 gap-3">
-                        <div className="flex items-center gap-2 text-[12px] text-gray-600">
-                          <BedDouble size={14} className="text-gray-400" />
-                          <span>{u.bhk} Bedrooms</span>
-                        </div>
-                        {u.super_area_sqft && (
-                          <div className="flex items-center gap-2 text-[12px] text-gray-600">
-                            <Ruler size={14} className="text-gray-400" />
-                            <span>{u.super_area_sqft.toLocaleString()} sqft super</span>
-                          </div>
-                        )}
-                        {u.carpet_area_sqft && (
-                          <div className="flex items-center gap-2 text-[12px] text-gray-600">
-                            <Layers size={14} className="text-gray-400" />
-                            <span>{u.carpet_area_sqft.toLocaleString()} sqft carpet</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Floor plan */}
-                      {(() => {
-                        const allFloorImages = detail?.images?.filter((img) => img.type === 'floor_plan') ?? []
-                        const bhkStr = String(u.bhk)
-                        const matchedFloorImages = allFloorImages.filter((img) => {
-                          const cap = img.caption?.toLowerCase() ?? ''
-                          return cap.includes(`${bhkStr}bhk`) || cap.includes(`${bhkStr} bhk`)
-                        })
-                        const floorImages = matchedFloorImages.length > 0 ? matchedFloorImages : allFloorImages
-                        if (floorImages.length === 0) {
-                          return (
-                            <div className="mx-5 mb-5 rounded-2xl bg-gradient-to-br from-slate-50 via-blue-50/20 to-indigo-50/30 border border-dashed border-blue-100 h-44 flex flex-col items-center justify-center gap-2">
-                              <Layers size={24} className="text-gray-300" />
-                              <p className="text-[11px] text-gray-400 font-medium">Floor Plan</p>
-                              <p className="text-[10px] text-gray-300">Not available yet</p>
-                            </div>
-                          )
-                        }
-                        return (
-                          <div className="mx-5 mb-5 relative cursor-pointer rounded-2xl overflow-hidden group" onClick={() => setShowFloorPlan({ plans: floorImages })}>
-                            <Image src={floorImages[0].url} alt="Floor plan" width={400} height={250} unoptimized className="w-full h-44 object-cover" />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 bg-white/90 rounded-full px-4 py-2 flex items-center gap-2 text-xs font-semibold text-gray-700">
-                                <ZoomIn size={14} /> View Floor Plan
-                              </div>
-                            </div>
-                            {floorImages.length > 1 && (
-                              <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
-                                +{floorImages.length} plans
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })()}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!loading && activeTab === 'Amenities' && (
-                <div className="p-5">
-                  {Object.entries(
-                    ((detail?.all_amenities ?? d?.top_amenities ?? []) as { name: string; category: string }[]).reduce(
-                      (acc, a) => { (acc[a.category] = acc[a.category] ?? []).push(a.name); return acc },
-                      {} as Record<string, string[]>
-                    )
-                  ).map(([cat, names]) => {
-                    const Icon = AMENITY_ICONS[cat] ?? Buildings
-                    const colorClass = AMENITY_COLORS[cat] ?? 'bg-gray-50 text-gray-600 border-gray-100'
-                    const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1)
-                    return (
-                      <div key={cat} className="mb-6">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${colorClass}`}>
-                            <Icon size={13} weight="duotone" />
-                          </div>
-                          <p className="text-[12px] font-bold text-gray-700 uppercase tracking-wider">{catLabel}</p>
-                        </div>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                          {(names as string[]).map((name: string) => (
-                            <AmenityIcon key={name} amenity={name} size="md" showLabel={true} />
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-
-              {!loading && activeTab === 'Builder' && (() => {
-                const b = detail?.builder_detail
-                if (!b) return (
-                  <div className="p-5 text-center text-gray-400 text-sm py-20">Loading builder details...</div>
-                )
-                return (
-                  <div className="p-5 space-y-5">
-                    {/* Builder header */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-100">
-                      <h3 className="text-[18px] font-black text-gray-900">{b.name}</h3>
-                      {b.tagline && <p className="text-[12px] text-blue-600 font-semibold mt-0.5">{b.tagline}</p>}
-                      {b.description && <p className="text-[12px] text-gray-600 mt-2 leading-relaxed">{b.description}</p>}
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {b.founded_year && (
-                        <div className="bg-gray-50 rounded-xl p-3">
-                          <p className="text-[18px] font-black text-gray-900">{b.founded_year}</p>
-                          <p className="text-[10px] text-gray-400 mt-0.5">Founded</p>
-                        </div>
-                      )}
-                      {b.delivered_units && (
-                        <div className="bg-gray-50 rounded-xl p-3">
-                          <p className="text-[18px] font-black text-gray-900">{b.delivered_units.toLocaleString()}+</p>
-                          <p className="text-[10px] text-gray-400 mt-0.5">Delivered Units</p>
-                        </div>
-                      )}
-                      {b.headquarters && (
-                        <div className="bg-gray-50 rounded-xl p-3">
-                          <p className="text-[14px] font-bold text-gray-900">{b.headquarters}</p>
-                          <p className="text-[10px] text-gray-400 mt-0.5">Headquarters</p>
-                        </div>
-                      )}
-                      {b.credai_member && (
-                        <div className="bg-green-50 rounded-xl p-3 border border-green-100">
-                          <div className="flex items-center gap-1.5">
-                            <SealCheck size={16} weight="duotone" className="text-green-600" />
-                            <p className="text-[13px] font-bold text-green-700">CREDAI Member</p>
-                          </div>
-                          <p className="text-[10px] text-green-600 mt-0.5">Verified Developer</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Awards */}
-                    {b.awards.length > 0 && (
-                      <div>
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Awards</p>
-                        <div className="space-y-1.5">
-                          {b.awards.map((a) => (
-                            <div key={a} className="flex items-center gap-2 text-[12px] text-gray-700">
-                              <Trophy size={13} className="text-amber-500 flex-shrink-0" />
-                              {a}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Delivered projects */}
-                    {b.delivered_projects.length > 0 && (
-                      <div>
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Delivered Projects</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {b.delivered_projects.map((p) => (
-                            <span key={p} className="text-[11px] text-green-700 bg-green-50 border border-green-100 px-2.5 py-1 rounded-full font-medium">
-                              {p}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Website */}
-                    {b.website && (
-                      <a
-                        href={b.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-4 py-3 transition-colors group"
-                      >
-                        <span className="text-[12px] font-semibold text-blue-700">Visit Builder Website</span>
-                        <ExternalLink size={14} className="text-blue-400 group-hover:text-blue-600 transition-colors" />
+                    const waUrl = d ? buildWhatsAppUrl(d as any, 'panel') : null
+                    return waUrl ? (
+                      <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                        onClick={() => track('whatsapp_handoff', { project_slug: (d as any)?.slug, project_name: (d as any)?.name })}
+                        className="px-6 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-full text-[14px] transition-all flex items-center gap-2">
+                        <WhatsAppIcon size={16} />
+                        Ask on WhatsApp
                       </a>
-                    )}
-
-                    {/* Builder reputation engine */}
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Online Reputation</p>
-                      <BuilderReputationCard builderName={b.name} />
-                    </div>
-                  </div>
-                )
-              })()}
-            </div>
-
-              {!loading && activeTab === 'Commute' && (
-                <div className="p-5 space-y-6">
-                  {/* Commute calculator */}
-                  <CommuteCalculator
-                    projectAddress={`${d?.address ?? d?.name}, ${d?.sector}, ${d?.city}, India`}
-                  />
+                    ) : null
+                  })()}
                 </div>
-              )}
+              </div>
+            </motion.div>
+            {/* End Backdrop & Centering Wrapper for Desktop */}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-              {!loading && activeTab === 'Docs' && (
-                <div className="p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <FileText size={14} className="text-blue-500" />
-                    <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">Document Q&A</p>
+      {/* Mobile bottom sheet gets its own AnimatePresence */}
+      <AnimatePresence mode="wait">
+        {isOpen && (
+            <motion.div
+              key="dialog-mobile"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="fixed z-50 bottom-0 left-0 right-0 flex flex-col
+                         md:hidden max-h-[92vh]
+                         bg-white rounded-t-[24px] overflow-hidden
+                         shadow-[0_-8px_40px_rgba(0,0,0,0.18)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
+              </div>
+
+              {/* Hero image */}
+              <div className="relative h-56 bg-gray-900 flex-shrink-0 overflow-hidden">
+                {currentImg ? (
+                  <Image src={currentImg} alt={d?.name ?? ''} fill priority className="object-cover" sizes="100vw" onError={() => markImgFailed(currentImg)} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                    <Building2 size={40} className="text-slate-600" />
                   </div>
-                  <p className="text-xs text-gray-400 mb-4 leading-relaxed">
-                    Upload a brochure, allotment letter, or RERA certificate — then ask questions about it. The AI reads the document and answers from it.
-                  </p>
-                  {project && (
-                    <DocumentQA projectId={project.id} projectSlug={project.slug} />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
+                {imageBadges}
+                {imageCarouselDots}
+              </div>
+
+              {/* Name bar */}
+              <div className="px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  {loading && !d?.name ? (
+                    <div className="flex-1 animate-pulse space-y-2">
+                      <div className="h-5 bg-gray-100 rounded w-3/4" />
+                      <div className="h-3 bg-gray-100 rounded w-1/2" />
+                    </div>
+                  ) : (
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h2 className="text-[18px] font-black text-gray-900 tracking-tight leading-tight truncate">{d?.name}</h2>
+                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-gray-500 font-medium">
+                        <MapPin size={10} className="text-gray-400" />
+                        <span>{d?.builder?.name}</span>
+                        <span>·</span>
+                        <span>{d?.sector}</span>
+                        {d?.rera_number && (
+                          <>
+                            <span>·</span>
+                            <span className="flex items-center gap-0.5 text-blue-600 font-semibold">
+                              <CheckCircle2 size={10} />
+                              RERA
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {d?.price_range_label && (
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-[18px] font-black text-gray-900 leading-none">{d.price_range_label}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{bhkLabel}</p>
+                    </div>
                   )}
                 </div>
-              )}
-
-            {/* Footer CTA */}
-            <div className="flex-shrink-0 border-t border-gray-100 p-4 bg-white">
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowVisitScheduler(true)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold py-4 rounded-2xl text-[14px] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
-                >
-                  <Calendar size={16} />
-                  Book Site Visit
-                </button>
-
-                {(() => {
-                  const waUrl = d ? buildWhatsAppUrl(d as any, 'panel') : null
-                  return waUrl ? (
-                    <a
-                      href={waUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 bg-[#25D366] hover:bg-[#1da851] text-white font-bold py-4 rounded-2xl text-[14px] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-green-500/20"
-                    >
-                      <WhatsAppIcon size={16} />
-                      WhatsApp Us
-                    </a>
-                  ) : null
-                })()}
+                {intelligenceChips && <div className="mb-3">{intelligenceChips}</div>}
+                {tabStrip}
               </div>
-            </div>
-          </PanelWrapper>
-        </>
-      )}
-    </AnimatePresence>
 
-    {/* Site visit scheduler modal */}
-    <AnimatePresence>
-      {showVisitScheduler && project && (
-        <SiteVisitScheduler
-          projectId={project.id}
-          projectSlug={project.slug}
-          projectName={project.name}
-          onClose={() => setShowVisitScheduler(false)}
-        />
-      )}
-    </AnimatePresence>
+              {/* Scrollable body */}
+              <div className="flex-1 overflow-y-auto overscroll-contain">
+                {tabBody}
+              </div>
 
-    {/* Floor plan viewer */}
-    <AnimatePresence>
-      {showFloorPlan && (
-        <FloorPlanViewer
-          floorPlans={showFloorPlan.plans}
-          title={`${project?.name} — Floor Plans`}
-          onClose={() => setShowFloorPlan(null)}
-        />
-      )}
-    </AnimatePresence>
-  </>
+              {/* Footer CTA */}
+              {ctaFooter}
+            </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {showVisitScheduler && project && (
+          <SiteVisitScheduler
+            projectId={project.id}
+            projectSlug={project.slug}
+            projectName={project.name}
+            onClose={() => setShowVisitScheduler(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {showFloorPlan && (
+          <FloorPlanViewer
+            floorPlans={showFloorPlan.plans}
+            title={`${project?.name} — Floor Plans`}
+            onClose={() => setShowFloorPlan(null)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

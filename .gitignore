@@ -38,3 +38,58 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .yarn-integrity
+
+# Logs
+logs
+*.log
+dev-debug.log
+# Dependency directories
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/ 
+
+# AI Tools & Agents
+.claude/
+.gemini/
+.grok/
+.playwright-mcp/
+.taskmaster/
+.tokensave/
+.superpowers/
+.agents/
+
+# Databases & Locks
+*.rvf
+*.rvf.lock
+ruvector.db
+
+# Random text logs/outputs/scripts
+backend-err.txt
+backend-out.txt
+old.txt
+1
+assert.equal*
+build-errors.txt
+*.log
+diagnose*.js
+trace*.js
+test_query.js
+test-chat.js
+test-ai.ts
+caveman_install.ps1
+install.ps1
+
+# Misc Images
+image.png
+REimages/

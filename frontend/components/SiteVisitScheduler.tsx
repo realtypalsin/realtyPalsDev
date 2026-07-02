@@ -55,7 +55,7 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
     setSubmitting(true)
     setError(null)
     try {
-      const res = await fetch(`${API_BASE}/site-visit`, {
+      const res = await fetch(`${API_BASE}/leads/site-visit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

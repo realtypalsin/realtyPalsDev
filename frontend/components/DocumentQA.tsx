@@ -84,9 +84,10 @@ export default function DocumentQA({ projectId, projectSlug }: Props) {
         body: JSON.stringify({ document_id: selectedDoc.id, question: q }),
       })
       const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Could not get an answer for this document.')
       setQa((prev) => [...prev, { question: q, answer: data.answer ?? 'No answer.' }])
-    } catch {
-      setQa((prev) => [...prev, { question: q, answer: 'Error — please try again.' }])
+    } catch (e) {
+      setQa((prev) => [...prev, { question: q, answer: `Error — ${(e as Error).message}` }])
     } finally {
       setAsking(false)
     }

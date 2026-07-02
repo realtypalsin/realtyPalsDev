@@ -10,12 +10,14 @@ export function PlaceholdersAndVanishInput({
     onSubmit,
     children,
     value: controlledValue,
+    disabled = false,
 }: {
     placeholders: string[];
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     children?: React.ReactNode;
     value?: string;
+    disabled?: boolean;
 }) {
     const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
 
@@ -162,7 +164,7 @@ export function PlaceholdersAndVanishInput({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" && !animating) {
+        if (e.key === "Enter" && !animating && !disabled) {
             vanishAndSubmit();
         }
     };
@@ -183,13 +185,15 @@ export function PlaceholdersAndVanishInput({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (disabled) return;
         vanishAndSubmit();
         onSubmit && onSubmit(e);
     };
     return (
         <form
             className={cn(
-                "w-full relative max-w-4xl mx-auto bg-gray-100 dark:bg-gray-800 h-12 rounded-full overflow-hidden shadow-sm border-0 transition duration-200"
+                "w-full relative max-w-4xl mx-auto bg-gray-100 dark:bg-gray-800 h-12 rounded-full overflow-hidden shadow-sm border-0 transition duration-200",
+                disabled && "opacity-70 pointer-events-none"
             )}
             onSubmit={handleSubmit}
         >
@@ -211,8 +215,9 @@ export function PlaceholdersAndVanishInput({
                 ref={inputRef}
                 value={value}
                 type="text"
+                disabled={disabled}
                 className={cn(
-                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-6 pr-16 touch-target-min",
+                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-6 pr-16 touch-target-min disabled:cursor-not-allowed",
                     animating && "text-transparent dark:text-transparent"
                 )}
             />
@@ -220,7 +225,7 @@ export function PlaceholdersAndVanishInput({
             <div className="absolute right-2 top-1/2 z-50 -translate-y-1/2 flex items-center gap-2">
                 {children}
                 <button
-                    disabled={!value}
+                    disabled={!value || disabled}
                     type="submit"
                     className="h-8 w-8 rounded-full disabled:bg-gray-300/70 dark:disabled:bg-gray-700 bg-blue-600 dark:bg-blue-600 transition duration-200 flex items-center justify-center touch-target-min"
                 >
@@ -280,7 +285,7 @@ export function PlaceholdersAndVanishInput({
                             }}
                             className="dark:text-zinc-500 text-sm sm:text-base font-normal text-neutral-500 pl-4 sm:pl-12 text-left w-[calc(100%-2rem)] truncate"
                         >
-                            {placeholders[currentPlaceholder]}
+                            {disabled ? "AI is responding..." : placeholders[currentPlaceholder]}
                         </motion.p>
                     )}
                 </AnimatePresence>

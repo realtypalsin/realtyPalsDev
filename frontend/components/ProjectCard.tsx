@@ -5,27 +5,36 @@ import Image from 'next/image'
 import {
   ClockCountdown, CheckCircle, SealCheck,
   Subway, AirplaneTakeoff, Path,
-  SoccerBall, Leaf, Baby, Heart, Tree,
-  MapPin, ArrowRight, Sparkle, BookmarkSimple,
-  CaretLeft, CaretRight, Phone,
+  Leaf, Baby, Heart,
+  MapPin, ArrowRight, BookmarkSimple,
+  CaretLeft, CaretRight,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Dumbbell, Star, Buildings,
+  Barbell, Star, Buildings,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 import { API_BASE } from '@/lib/env'
-import { buildWhatsAppUrl } from '@/lib/whatsapp'
+import { track } from '@/lib/analytics'
+import { authHeaders } from '@/lib/authedFetch'
+import { resolveImgUrl } from '@/lib/utils'
 
 interface Props {
   project: ProjectCardType
   userId: string | null
   index?: number
   onDetailOpen?: (project: ProjectCardType) => void
-  onCallback?: (project: ProjectCardType) => void
   onToast?: (message: string) => void
 }
 
+const tierStyle: Record<string, string> = {
+  STRONG_BUY: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+  BUY: 'bg-blue-50 text-blue-700 border-blue-100',
+  HOLD: 'bg-amber-50 text-amber-700 border-amber-100',
+  WATCH: 'bg-orange-50 text-orange-700 border-orange-100',
+  AVOID: 'bg-red-50 text-red-700 border-red-100',
+}
+
 const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
-  sports:    Dumbbell,
+  sports:    Barbell,
   lifestyle: Star,
   wellness:  Leaf,
   kids:      Baby,
@@ -37,6 +46,7 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
   metro:      Subway,
   airport:    AirplaneTakeoff,
   road:       Path,
+  expressway: Path,
   school:     GraduationCap,
   hospital:   Heart,
   mall:       ShoppingBag,
@@ -44,62 +54,77 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
   university: BookOpen,
 }
 
-const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
-)
-
-// Compute lowest price-per-sqft across unit types (displayed as ₹8.5K/sqft)
-function getPricePerSqft(project: ProjectCardType): string | null {
-  const candidates = project.unit_types.filter(
-    (u) => u.price_min_cr && u.super_area_sqft && u.super_area_sqft > 0,
-  )
-  if (candidates.length === 0) return null
-  const min = Math.min(
-    ...candidates.map((u) => Math.round((u.price_min_cr! * 1e7) / u.super_area_sqft!)),
-  )
-  return `₹${(min / 1000).toFixed(1)}K/sqft`
-}
-
-export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onCallback, onToast }: Props) {
+export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onToast }: Props) {
   const [imgIdx, setImgIdx] = useState(0)
+  // Tracks individual broken image URLs (stale DB refs, 404s) so ONE bad image
+  // in the list doesn't blank the whole card — only shows the placeholder when
+  // every candidate has failed.
+  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set())
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [expandedUnits, setExpandedUnits] = useState(false)
 
   const isRTM = project.status === 'ready_to_move'
   const isNew = project.status === 'new_launch'
   const statusLabel = isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'
   const StatusIcon = isRTM ? CheckCircle : ClockCountdown
 
-  const uniqueBhk = [...new Set(project.unit_types.map((u) => `${u.bhk}BHK`))]
-  const pricePerSqft = getPricePerSqft(project)
+  // Group units for display
+  const unitsByBhk = project.unit_types.reduce((acc, u) => {
+    if (!acc[u.bhk]) acc[u.bhk] = []
+    const area = u.carpet_area_sqft || u.super_area_sqft
+    if (area) acc[u.bhk].push(`${area}sqft`)
+    return acc
+  }, {} as Record<number, string[]>)
 
-  // Build image list: hero first, then other exterior/hero images
+  const bhkGroups = Object.entries(unitsByBhk)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([bhk, areas]) => ({
+      bhk: Number(bhk),
+      areas: [...new Set(areas)].sort((a, b) => parseInt(a) - parseInt(b))
+    }))
+
+  const uniqueBhk = bhkGroups.map(g => `${g.bhk}BHK`)
+
+  // Build image list: new uploaded images first. hero_image_url is a legacy
+  // column that can go stale once real images are uploaded — only fall back
+  // to it when there's nothing else, so a dead legacy path never rides along
+  // next to a perfectly good uploaded image and blanks the card on error.
+  const uploadedImages = (project.images ?? [])
+    .filter((i) => (i.type === 'exterior' || i.type === 'hero'))
+    .map((i) => i.url)
   const cardImages = [
-    ...(project.hero_image_url ? [project.hero_image_url] : []),
-    ...(project.images ?? [])
-      .filter((i) => (i.type === 'exterior' || i.type === 'hero') && i.url !== project.hero_image_url)
-      .map((i) => i.url),
+    ...uploadedImages,
+    ...(uploadedImages.length === 0 && project.hero_image_url ? [project.hero_image_url] : []),
   ].filter(Boolean) as string[]
-  const hasMultiple = cardImages.length > 1
 
-  // Auto-advance carousel for multi-image cards
+  const workingImages = cardImages.filter((src) => !failedUrls.has(src))
+  const allFailed = cardImages.length > 0 && workingImages.length === 0
+  const activeIdx = workingImages.length > 0 ? imgIdx % workingImages.length : 0
+  const hasMultiple = workingImages.length > 1
+
+  // Auto-advance carousel only on pointer devices (desktop). Touch devices rely on
+  // manual swipe/tap — concurrent intervals on mobile grids cause layout jank.
   useEffect(() => {
     if (!hasMultiple) return
-    const timer = setInterval(() => setImgIdx((i) => (i + 1) % cardImages.length), 3500)
+    if (typeof window !== 'undefined' && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    const timer = setInterval(() => setImgIdx((i) => (i + 1) % workingImages.length), 3500)
     return () => clearInterval(timer)
-  }, [hasMultiple, cardImages.length])
+  }, [hasMultiple, workingImages.length])
 
   const prevImg = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    setImgIdx((i) => (i - 1 + cardImages.length) % cardImages.length)
-  }, [cardImages.length])
+    setImgIdx((i) => (i - 1 + workingImages.length) % workingImages.length)
+  }, [workingImages.length])
 
   const nextImg = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    setImgIdx((i) => (i + 1) % cardImages.length)
-  }, [cardImages.length])
+    setImgIdx((i) => (i + 1) % workingImages.length)
+  }, [workingImages.length])
+
+  const markImageFailed = useCallback((src: string) => {
+    setFailedUrls((prev) => (prev.has(src) ? prev : new Set(prev).add(src)))
+  }, [])
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -111,17 +136,18 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
       if (wasSaved) {
         const res = await fetch(`${API_BASE}/saved/${project.id}`, {
           method: 'DELETE',
-          headers: { 'X-User-Id': userId },
+          headers: await authHeaders(),
         })
         if (!res.ok) throw new Error('Delete failed')
         onToast?.('Removed from saved')
       } else {
         const res = await fetch(`${API_BASE}/saved`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
+          headers: await authHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ project_id: project.id }),
         })
         if (!res.ok) throw new Error('Save failed')
+        track('property_saved', { project_slug: project.slug, project_name: project.name })
         onToast?.('Property saved! ✓')
       }
     } catch (err) {
@@ -133,244 +159,244 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
     }
   }
 
-  const handleAskAI = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    window.dispatchEvent(
-      new CustomEvent('realtypals:ask-ai', {
-        detail: { text: `Tell me more about ${project.name} by ${project.builder.name}` },
-      }),
-    )
-  }
+  const intel = project.decisionIntelligence
 
   return (
     <div
       onClick={() => onDetailOpen?.(project)}
-      className="group relative w-full rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-100/80 dark:border-gray-700 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      className="group relative w-full h-full flex flex-col rounded-[24px] overflow-hidden bg-white dark:bg-gray-900 border border-gray-100/80 dark:border-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] md:hover:-translate-y-1 transition-all duration-300 cursor-pointer"
     >
-      {/* ── Hero image carousel ── */}
-      <div className="relative h-[220px] overflow-hidden bg-gray-100 dark:bg-gray-800">
-        {cardImages.length > 0 ? (
-          <>
-            {cardImages.map((src, i) => (
-              <Image
-                key={src}
-                src={src}
-                alt={project.name}
-                fill
-                unoptimized
-                priority={index < 4 && i === 0}
-                className={`object-cover transition-all duration-500 ${
-                  i === imgIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
-                } ${i === imgIdx ? 'group-hover:scale-105' : ''}`}
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            ))}
-          </>
+      {/* ── Mobile Layout (Image Filled Card) ── */}
+      <div className="block md:hidden relative w-full h-[260px] bg-gray-900">
+        {/* Background Image */}
+        {workingImages.length > 0 && !allFailed ? (
+          <Image
+            src={resolveImgUrl(workingImages[activeIdx]) || '/placeholder.png'}
+            alt={project.name}
+            fill
+            onError={() => markImageFailed(workingImages[activeIdx])}
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-            <Buildings size={40} weight="duotone" className="text-blue-200" />
+          <div className="w-full h-full flex items-center justify-center bg-blue-900/40">
+            <Buildings size={48} weight="duotone" className="text-blue-300" />
           </div>
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+        {/* Gradient Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 pointer-events-none" />
 
-        {/* Carousel controls */}
-        {hasMultiple && (
-          <>
-            <button
-              onClick={prevImg}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            >
-              <CaretLeft size={14} weight="bold" />
-            </button>
-            <button
-              onClick={nextImg}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            >
-              <CaretRight size={14} weight="bold" />
-            </button>
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-              {cardImages.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={(e) => { e.stopPropagation(); setImgIdx(i) }}
-                  className={`rounded-full transition-all ${i === imgIdx ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50'}`}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Rank badge — top pick only */}
-        {index === 0 && (
-          <div className="absolute top-3 left-3 z-20 flex items-center gap-1 text-[10px] font-black px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-sm shadow-amber-500/30">
-            ✦ Top Pick
-          </div>
-        )}
-
-        {/* Status badge */}
-        <div className={`absolute ${index === 0 ? 'bottom-3 left-3' : 'top-3 left-3'} flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg backdrop-blur-sm ${
-          isRTM ? 'bg-emerald-500/90 text-white' : isNew ? 'bg-blue-500/90 text-white' : 'bg-amber-500/90 text-white'
-        }`}>
-          <StatusIcon size={10} weight="fill" />
-          {statusLabel}
-        </div>
-
-        {/* RERA + Save */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-          {project.rera_number && (
-            <div className="flex items-center gap-1 text-[10px] font-bold text-white bg-blue-600/90 backdrop-blur-sm px-2 py-1.5 rounded-lg">
-              <SealCheck size={10} weight="fill" />
-              RERA
+        {/* Top Badges */}
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+          {index === 0 && (
+            <div className="flex items-center gap-1 text-[10px] font-black px-2.5 py-1.5 rounded-lg bg-white/20 backdrop-blur-md text-white border border-white/30">
+              ✦ Top Pick
             </div>
           )}
-          <button
-            onClick={handleSave}
-            className={`w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all ${
-              saved ? 'bg-red-500 text-white' : 'bg-black/30 hover:bg-black/50 text-white'
-            }`}
-            title={saved ? 'Unsave' : 'Save property'}
-          >
-            {saved
-              ? <BookmarkSimple size={15} weight="fill" />
-              : <BookmarkSimple size={15} weight="regular" />
-            }
-          </button>
+        </div>
+
+        {/* Save Button */}
+        <button
+          onClick={handleSave}
+          className={`absolute top-3 right-3 w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center transition-all z-10 ${
+            saved ? 'bg-red-500/90 text-white' : 'bg-black/30 border border-white/20 text-white'
+          }`}
+        >
+          {saved
+            ? <BookmarkSimple size={15} weight="fill" />
+            : <BookmarkSimple size={15} weight="regular" />
+          }
+        </button>
+
+        {/* Bottom Text Info */}
+        <div className="absolute bottom-0 left-0 w-full p-4 flex flex-col z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-white text-[22px] font-bold leading-tight tracking-tight drop-shadow-sm truncate">
+              {project.name}
+            </h3>
+            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-400' : isNew ? 'bg-blue-400' : 'bg-amber-400'}`} />
+          </div>
+          <div className="flex items-center gap-1.5 text-white/80 text-[11px] font-medium mb-1 drop-shadow-sm">
+            <MapPin size={11} weight="duotone" />
+            <span>{project.builder.name}</span>
+            <span className="opacity-50">•</span>
+            <span>{project.sector}</span>
+            {project.rera_number && (
+              <>
+                <span className="opacity-50">•</span>
+                <span className="flex items-center gap-0.5 font-semibold text-white/90">
+                  <CheckCircle size={10} weight="fill" />
+                  RERA
+                </span>
+              </>
+            )}
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-white text-[20px] font-black tracking-tight drop-shadow-md">
+              {project.price_range_label}
+            </p>
+            <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-full text-white text-[11px] font-bold">
+              {uniqueBhk.join(' · ')}
+            </div>
+          </div>
+
         </div>
       </div>
 
-      {/* ── Body ── */}
-      <div className="p-5">
-        {/* Name */}
-        <div className="mb-3">
-          <h3 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
-            {project.name}
-          </h3>
-          {project.tagline && (
-            <p className="text-[11px] text-blue-600 font-semibold mt-0.5 line-clamp-1">{project.tagline}</p>
-          )}
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400 dark:text-gray-500">
-            <MapPin size={10} weight="duotone" />
-            <span>{project.builder.name} · {project.sector}, {project.city}</span>
-          </div>
-        </div>
-
-        {/* Price */}
-        <div className="mb-3">
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-[22px] font-black text-gray-900 dark:text-white tracking-tight leading-none">
-              {project.price_range_label}
-            </p>
-            {pricePerSqft && (
-              <span className="text-[10.5px] font-semibold text-gray-400 dark:text-gray-500 mt-1.5 whitespace-nowrap bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2 py-0.5 rounded-full">
-                {pricePerSqft}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 flex-wrap mt-1.5">
-            <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{uniqueBhk.join(' · ')}</span>
-            {isRTM ? (
-              <span className="flex items-center gap-1 text-[10.5px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 px-2 py-0.5 rounded-full">
-                <CheckCircle size={9} weight="fill" />
-                Ready Now
-              </span>
-            ) : project.possession_label ? (
-              <span className="flex items-center gap-1 text-[10.5px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 px-2 py-0.5 rounded-full">
-                <ClockCountdown size={9} weight="fill" />
-                {project.possession_label}
-              </span>
-            ) : null}
-            {project.rera_number && (
-              <span className="flex items-center gap-1 text-[10.5px] font-semibold text-gray-500 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2 py-0.5 rounded-full">
-                <SealCheck size={9} weight="fill" />
-                RERA ✓
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Design credit */}
-        {project.architect && (
-          <p className="text-[10.5px] text-indigo-500 font-semibold mb-3 flex items-center gap-1">
-            <Sparkle size={10} weight="duotone" />
-            {project.architect}{project.interior_designer ? ` × ${project.interior_designer}` : ''}
-          </p>
-        )}
-
-        {/* Amenities */}
-        {project.top_amenities.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {project.top_amenities.slice(0, 5).map((a) => {
-              const Icon = AMENITY_ICONS[a.category] ?? Buildings
-              return (
-                <span key={a.name} className="flex items-center gap-1 text-[10.5px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2 py-1 rounded-full font-medium">
-                  <Icon size={10} weight="duotone" />
-                  {a.name}
-                </span>
-              )
-            })}
-          </div>
-        )}
-
-        {/* Connectivity */}
-        {project.top_connectivity.length > 0 && (
-          <div className="flex flex-wrap gap-3 pb-3 border-b border-gray-50 dark:border-gray-700">
-            {project.top_connectivity.slice(0, 2).map((c) => {
-              const Icon = CONN_ICONS[c.type] ?? Path
-              return (
-                <span key={c.name} className="flex items-center gap-1 text-[10.5px] text-gray-400 dark:text-gray-500">
-                  <Icon size={12} weight="duotone" />
-                  {c.name}
-                </span>
-              )
-            })}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex gap-2 pt-3">
-          <button
-            onClick={() => onDetailOpen?.(project)}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-[12px] font-bold py-2.5 rounded-xl transition-colors"
-          >
-            View Details
-            <ArrowRight size={12} weight="bold" />
-          </button>
-
-          {onCallback && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onCallback(project) }}
-              className="flex items-center justify-center gap-1 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 px-3 py-2.5 rounded-xl transition-colors"
-              title="Request callback"
-            >
-              <Phone size={14} weight="fill" />
-            </button>
+      {/* ── Desktop Layout ── */}
+      <div className="hidden md:flex flex-col flex-1">
+        {/* ── Hero image carousel ── */}
+        <div className="relative h-[220px] overflow-hidden bg-gray-100 dark:bg-gray-800">
+          {workingImages.length > 0 && !allFailed ? (
+            <>
+              {workingImages.map((src, i) => (
+                <Image
+                  key={src}
+                  src={resolveImgUrl(src) || '/placeholder.png'}
+                  alt={project.name}
+                  fill
+                  priority={index < 4 && i === 0}
+                  onError={() => markImageFailed(src)}
+                  className={`object-cover transition-all duration-500 ${
+                    i === activeIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
+                  } ${i === activeIdx ? 'group-hover:scale-105' : ''}`}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              ))}
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+              <Buildings size={40} weight="duotone" className="text-blue-200" />
+            </div>
           )}
 
-          {(() => {
-            const waUrl = buildWhatsAppUrl(project)
-            return waUrl ? (
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center justify-center bg-[#25D366] hover:bg-[#1da851] text-white px-3 py-2.5 rounded-xl transition-colors"
-                title="WhatsApp enquiry"
+          {/* Gradient overlay to fade smoothly into the card body */}
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-gray-900 dark:via-gray-900/40 pointer-events-none" />
+
+          {/* Carousel controls */}
+          {hasMultiple && (
+            <>
+              <button
+                onClick={prevImg}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
               >
-                <WhatsAppIcon size={15} />
-              </a>
-            ) : null
-          })()}
+                <CaretLeft size={14} weight="bold" />
+              </button>
+              <button
+                onClick={nextImg}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              >
+                <CaretRight size={14} weight="bold" />
+              </button>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                {workingImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => { e.stopPropagation(); setImgIdx(i) }}
+                    className={`rounded-full transition-all ${i === activeIdx ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
-          <button
-            onClick={handleAskAI}
-            className="flex items-center justify-center gap-1 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 text-[11px] font-semibold px-3 py-2.5 rounded-xl transition-colors border border-gray-100 dark:border-gray-700 hover:border-blue-100"
-            title="Ask AI about this"
-          >
-            <Sparkle size={14} weight="duotone" />
-          </button>
+          {/* Rank badge — top pick only */}
+          {index === 0 && (
+            <div className="absolute top-3 left-3 z-20 flex items-center gap-1 text-[10px] font-black px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-sm shadow-amber-500/30">
+              ✦ Top Pick
+            </div>
+          )}
+
+          {/* Save button only (removed RERA badge) */}
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+            <button
+              onClick={handleSave}
+              className={`w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all ${
+                saved ? 'bg-red-500 text-white' : 'bg-black/30 hover:bg-black/50 text-white'
+              }`}
+              title={saved ? 'Unsave' : 'Save property'}
+            >
+              {saved
+                ? <BookmarkSimple size={15} weight="fill" />
+                : <BookmarkSimple size={15} weight="regular" />
+              }
+            </button>
+          </div>
+        </div>
+
+        {/* ── Body ── */}
+        <div className="p-5 flex-1 flex flex-col">
+          {/* Name + location */}
+          <div className="mb-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-[17px] font-black text-gray-900 dark:text-white tracking-tight leading-snug truncate">
+                {project.name}
+              </h3>
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-gray-400 dark:text-gray-500">
+              <MapPin size={10} weight="duotone" />
+              <span>{project.builder.name}</span>
+              <span>·</span>
+              <span>{project.sector}, {project.city}</span>
+              {project.rera_number && (
+                <>
+                  <span>·</span>
+                  <span className="flex items-center gap-0.5 text-blue-600 font-semibold">
+                    <CheckCircle size={10} weight="fill" />
+                    RERA
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Price + configs */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[22px] font-black text-gray-900 dark:text-white tracking-tight leading-none">
+                {project.price_range_label}
+              </p>
+
+            </div>
+            <div className="flex flex-col gap-1.5 mt-2">
+              {/* BHK configs with area if available */}
+              {(expandedUnits ? bhkGroups : bhkGroups.slice(0, 2)).map((g) => (
+                <div key={g.bhk} className="text-[11.5px] text-gray-500 dark:text-gray-400 font-medium leading-none">
+                  <strong className="text-gray-700 dark:text-gray-300 mr-1.5">{g.bhk} BHK:</strong>
+                  {g.areas.length > 0 ? g.areas.join(', ') : 'Details on request'}
+                </div>
+              ))}
+              
+              {bhkGroups.length > 2 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setExpandedUnits(prev => !prev); }}
+                  className="self-start text-[10.5px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 hover:underline"
+                >
+                  {expandedUnits ? 'View Less ↑' : `+ ${bhkGroups.length - 2} more configurations`}
+                </button>
+              )}
+
+              {!isRTM && project.possession_label && (
+                <div className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 px-2 py-1 rounded-full self-start">
+                  <ClockCountdown size={10} weight="fill" />
+                  {project.possession_label}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action */}
+          <div className="pt-3 mt-auto">
+            <button
+              onClick={() => onDetailOpen?.(project)}
+              className="w-full flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-[12px] font-bold py-2.5 rounded-xl transition-colors"
+            >
+              View Details
+              <ArrowRight size={12} weight="bold" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

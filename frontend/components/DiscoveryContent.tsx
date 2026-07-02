@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
-import { ChatMessage } from '@/types/property';
+import { ChatMessage, NearbyExpansion } from '@/types/property';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
 import Image from 'next/image';
 import Toast from '@/components/Toast';
@@ -16,10 +16,13 @@ import StatusSteps from '@/components/chat/StatusSteps'
 import Header from '@/components/Header';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import MessageBubble from '@/components/chat/MessageBubble';
-import type { Chip, ChipPickerState } from '@/components/chat/types';
+import ContextRibbon from '@/components/chat/ContextRibbon';
+import type { ChipPickerState } from '@/components/chat/types';
 import {
-  MessageSquare, AlertTriangle, Mic, Plus,
+  MessageSquare, AlertTriangle, Mic, Plus, ArrowUp,
+  Search, Building2, Scale, Calculator
 } from 'lucide-react';
+import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 
 // ── Dynamic imports — heavy components excluded from initial bundle ─────────
 const SiteVisitScheduler = dynamic(() => import('@/components/SiteVisitScheduler'), { ssr: false })
@@ -30,59 +33,6 @@ const LeadSuccessModal = dynamic(() => import('@/components/LeadSuccessModal'), 
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false })
 const ReEngagementBanner = dynamic(() => import('@/components/chat/ReEngagementBanner'), { ssr: false })
 
-// ── Follow-up chip generator — contextual per phase ───────────────────────
-function getFollowUpChips(
-  phase: 'DISCOVERY' | 'ADVISOR',
-  shortlist: ProjectCardType[],
-  turnCount: number,
-): Chip[] {
-  if (phase === 'ADVISOR' && shortlist.length > 0) {
-    const hasUnderConstruction = shortlist.some(
-      (p) => p.status === 'under_construction' || p.status === 'new_launch',
-    )
-    const hasRTM = shortlist.some((p) => p.status === 'ready_to_move')
-    const topProject = shortlist[0]
-
-    return [
-      { emoji: '📅', label: 'Book Site Visit', picker: 'single', pickerAction: 'site_visit', pickerModal: true },
-      { emoji: '📞', label: 'Get Callback', picker: 'single', pickerAction: 'callback', pickerModal: true },
-      { emoji: '📊', label: 'Calculate EMI', picker: 'single', pickerAction: 'emi' },
-      ...(shortlist.length >= 2
-        ? [{ emoji: '⚖️', label: 'Compare', picker: 'multi' as const, pickerAction: 'compare' }]
-        : []),
-      ...(hasUnderConstruction
-        ? [{ emoji: '🏗️', label: 'Builder delivery risk?', picker: 'single' as const, pickerAction: 'risks' }]
-        : []),
-      ...(hasRTM
-        ? [{ emoji: '🔑', label: 'Why still available?', msg: `Why is ${topProject.name} still available as ready-to-move? Is there a catch I should know about?` }]
-        : []),
-      { emoji: '🏗️', label: 'Builder track record', picker: 'single', pickerAction: 'builder' },
-      { emoji: '📍', label: 'Area overview', picker: 'single', pickerAction: 'area' },
-    ]
-  }
-  if (phase === 'DISCOVERY' && turnCount >= 2) {
-    return [
-      { emoji: '🏠', label: 'Show properties', msg: 'Show me available 3BHK properties in Noida Sector 150' },
-      { emoji: '📊', label: 'EMI calculator', msg: 'How do I calculate EMI for a 1.5 Cr flat?' },
-      { emoji: '🏆', label: 'Best sectors', msg: 'Which sectors in Noida have the best appreciation right now?' },
-      { emoji: '📋', label: 'RERA explained', msg: 'What is RERA and how does it protect home buyers?' },
-    ]
-  }
-  return []
-}
-
-const SUGGESTION_POOL = [
-  'Show me 3BHK under 1.5 Cr in Noida',
-  'Best sectors for families',
-  'Compare Sector 150 vs Sector 137',
-  'Builder track records in Noida',
-  'Calculate EMI for 1.2 Cr',
-  'RERA registered projects',
-  'Ready to move under 2 Cr',
-  'Metro-connected properties',
-  'New launches 2024-25',
-  'Properties near good schools',
-];
 
 function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => void }) {
   const [secsLeft, setSecsLeft] = useState(Math.ceil((until - Date.now()) / 1000));
@@ -110,16 +60,17 @@ interface DiscoveryContentProps {
   userId: string | null;
   guestToken?: string | null;
   onSessionChange?: (sessionId: string | null) => void;
+  initialSessionId?: string | null;
 }
 
-export default function DiscoveryContent({ userId, guestToken, onSessionChange }: DiscoveryContentProps) {
+export default function DiscoveryContent({ userId, guestToken, onSessionChange, initialSessionId }: DiscoveryContentProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [chatInput, setChatInput] = useState(() => {
     if (typeof window === 'undefined') return '';
     return localStorage.getItem('realtypals_draft') ?? '';
   });
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [visibleCount, setVisibleCount] = useState(15);
   const [toast, setToast] = useState<{ message: string } | null>(null);
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -127,16 +78,33 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
   const [rateLimitUntil, setRateLimitUntil] = useState<number | null>(null);
+  const [sessionTitle, setSessionTitle] = useState<string | null>(null);
   const [chatTurnCount, setChatTurnCount] = useState(0);
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [showContextWarning, setShowContextWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
   const [sessionId, setSessionId] = useState<string | null>(null);
-  // Tracks which ?session= URL param was last fully restored — prevents re-init loops
-  const lastRestoredSessionParamRef = useRef<string | null>(null)
+  const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
+  const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null);
+  const [conversationState, setConversationState] = useState<import('@/components/chat/types').ConversationState | null>(null);
 
   // Notify parent of session changes for sidebar highlighting
   useEffect(() => { onSessionChange?.(sessionId) }, [sessionId, onSessionChange])
+
+  // Sync state to local session cache so switching chats is seamless
+  useEffect(() => {
+    if (!sessionId || chatHistory.length === 0) return;
+    const cached = LOCAL_SESSION_CACHE.get(sessionId) || {};
+    LOCAL_SESSION_CACHE.set(sessionId, {
+      ...cached,
+      session_id: sessionId,
+      title: sessionTitle,
+      chat_phase: chatPhase,
+      last_intent: currentIntent,
+      last_projects: lastShortlist,
+      restored: chatHistory
+    });
+  }, [chatHistory, sessionId, sessionTitle, chatPhase, currentIntent, lastShortlist]);
 
   // Draft persistence — save input to localStorage, clear on submit
   useEffect(() => {
@@ -151,7 +119,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     setDetailProject(project)
     if (project) track('property_viewed', { project_slug: project.slug, project_name: project.name })
   }, []);
-  const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -166,10 +133,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
   const [shareCopied, setShareCopied] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
-  const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
-  const [quickActionPicker, setQuickActionPicker] = useState<{ action: string, genericText: string, mode: 'single' | 'multi', selected: string[] } | null>(null);
+    const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
   const [statusPhase, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
-  const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null)
   const [resultCount, setResultCount] = useState<number | null>(null)
   const [showReEngagement, setShowReEngagement] = useState(true)
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -178,6 +143,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
   const userScrolledUp = useRef(false);
+  const performResetRef = useRef<() => void>(() => {});
+  // [TIMING] holds in-progress restore stage timestamps; cleared after summary printed
+  const navTimingsRef = useRef<{ restoreStart: number; authMs: number; fetchMs: number; mapperMs: number; setHistoryAt: number } | null>(null);
 
   // ── Image carousel state for in-chat galleries ──
   const [carouselIndexes, setCarouselIndexes] = useState<Record<number, number>>({});
@@ -191,6 +159,35 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // [TIMING] DiscoveryContent mount — distinct from page-mount (page has auth init first)
+  useEffect(() => {
+    const nt = (window as any).__navTimings
+    if (nt && !nt.contentMounted) {
+      nt.contentMounted = performance.now()
+      console.log(`[NAV] 3b. content-mount  +${(nt.contentMounted - nt.t0).toFixed(1)}ms`)
+    }
+
+    // [TIMING] LCP observer — measures when the largest element paints
+    if (typeof PerformanceObserver !== 'undefined') {
+      let lcpEntry: PerformanceEntry | null = null
+      const lcpObs = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) lcpEntry = entry
+      })
+      try {
+        lcpObs.observe({ type: 'largest-contentful-paint', buffered: true })
+      } catch (_) { /* unsupported */ }
+
+      return () => {
+        lcpObs.disconnect()
+        if (lcpEntry && nt) {
+          const lcpMs = (lcpEntry as any).startTime
+          console.log(`[NAV] 10. LCP            +${(lcpMs - nt.t0).toFixed(1)}ms (absolute ${lcpMs.toFixed(0)}ms)`)
+        }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
@@ -266,7 +263,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
         const fd = new FormData();
         fd.append('audio', blob, 'recording.webm');
         try {
-          const res = await fetch('/api/v1/transcribe', { method: 'POST', body: fd });
+          const res = await fetch(`${API_BASE}/transcribe`, { method: 'POST', body: fd });
           const data = await res.json();
           if (data.text) setChatInput(data.text);
         } catch { /* silent */ }
@@ -366,6 +363,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     return () => window.removeEventListener('realtypals:ask-ai', handler);
   }, []);
 
+  // ── Sidebar "New Chat" button triggers reset via CustomEvent ──
+  useEffect(() => {
+    const handler = () => performResetRef.current();
+    window.addEventListener('realtypals:new-chat', handler);
+    return () => window.removeEventListener('realtypals:new-chat', handler);
+  }, []);
+
   const performReset = async () => {
     setChatHistory([]);
     setChatInput('');
@@ -377,6 +381,14 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     setShowContextWarning(false);
     setIsSubmitting(false);
     setCarouselIndexes({});
+    setCurrentIntent(null);
+    setLastShortlist([]);
+    setSessionTitle(null);
+    setStatusPhase(null);
+    setResultCount(null);
+    setDetailProject(null);
+    setExpandedShortlists(new Set());
+    setRateLimitUntil(null);
     if (userId) {
       try {
         const res = await fetch(`${API_BASE}/chat/intent`, {
@@ -392,140 +404,225 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     const welcomeMessage: ChatMessage = {
       id: crypto.randomUUID(),
       type: 'ai',
-      content: "Hi! I'm RealtyPal — your AI advisor for Noida real estate. What are you looking for?",
+      content: "Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.",
       timestamp: new Date().toISOString(),
     };
     setChatHistory([welcomeMessage]);
     setIsInitialized(true);
+    window.history.replaceState({}, '', '/discover');
   };
+  performResetRef.current = performReset;
 
-  // Handle ?new=1
+  // Initialize: restore session from prop or show welcome
   useEffect(() => {
-    if (searchParams.get('new') !== '1' || !userId) return;
-    (async () => {
-      await performReset();
-      router.replace('/discover');
-    })();
-  }, [searchParams, userId]);
+    if ((!userId && !guestToken) || isInitialized) return;
 
-  // Initialize: fetch session from server and restore history
-  useEffect(() => {
-    if ((!userId && !guestToken) || isInitialized || searchParams.get('new') === '1') return;
+    // userId/guestToken can change again (guest → authenticated) while this
+    // effect's own fetch is still in flight, re-triggering it before
+    // `isInitialized` flips true. Without this guard, a stale invocation
+    // resolving after a newer one wins and overwrites a correctly restored
+    // conversation with a blank welcome message.
+    let cancelled = false;
 
-    // Guest users skip session restore — show welcome immediately
-    if (!userId && guestToken) {
+    // No session to restore — new chat
+    // (Guests with a specific initialSessionId fall through to the restore
+    // fetch below, same as authenticated users — the backend supports
+    // guest_token ownership on GET /chat/session.)
+    if (!initialSessionId) {
       setChatHistory([{
         id: crypto.randomUUID(),
         type: 'ai',
-        content: "Hi! I'm RealtyPal — your AI advisor for Noida real estate. What are you looking for?",
+        content: "Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.",
         timestamp: new Date().toISOString(),
       }]);
       setIsInitialized(true);
       return;
     }
 
+    // Restore specific session
     (async () => {
       try {
-        const sessionFromUrl = searchParams.get('session')
-        const sessionUrl = sessionFromUrl
-          ? `${API_BASE}/chat/session?id=${sessionFromUrl}`
-          : `${API_BASE}/chat/session`
+        const cached = LOCAL_SESSION_CACHE.get(initialSessionId);
+        if (cached) {
+          setSessionId(cached.session_id);
+          if (cached.title) setSessionTitle(cached.title);
+          if (cached.chat_phase) setChatPhase(cached.chat_phase);
+          if (cached.last_intent) setCurrentIntent(cached.last_intent);
+          if (cached.ui_state) setConversationState(cached.ui_state);
+          if (cached.last_projects && cached.last_projects.length > 0) {
+            setLastShortlist(cached.last_projects);
+            setShowRecommendations(true);
+          }
+          setChatHistory(cached.restored);
+          setIsInitialized(true);
+          setTimeout(() => scrollToBottom('instant'), 50);
+          return;
+        }
+
+        // [TIMING]
+        const nt = (window as any).__navTimings
+        const restoreStart = performance.now()
+        if (nt) console.log(`[NAV] 4. restore-start    +${(restoreStart - nt.t0).toFixed(1)}ms`)
+
+        const authT0 = performance.now()
+        const headers = await authHeaders()
+        const authMs = performance.now() - authT0
+        if (nt) console.log(`[NAV] 5. authHeaders       +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${authMs.toFixed(1)}ms)`)
+
+        const fetchT0 = performance.now()
+        if (nt) console.log(`[NAV] 6. fetch-start       +${(fetchT0 - nt.t0).toFixed(1)}ms`)
+        const sessionUrl = `${API_BASE}/chat/session?id=${initialSessionId}` + (guestToken && !userId ? `&guestToken=${guestToken}` : '')
         const res = await fetch(sessionUrl, {
-          headers: await authHeaders(),
+          headers,
+          signal: AbortSignal.timeout(8000),
         });
+        const fetchMs = performance.now() - fetchT0
+        if (nt) console.log(`[NAV] 7. fetch-end         +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${fetchMs.toFixed(1)}ms)`)
+
         if (!res.ok) throw new Error('session fetch failed');
         const data = await res.json();
+        if (cancelled) return;
 
         setSessionId(data.session_id);
-        // Clean up ?session= from URL without triggering a navigation
-        const urlSession = searchParams.get('session')
-        if (urlSession) {
-          lastRestoredSessionParamRef.current = urlSession
-          router.replace('/discover', { scroll: false });
+        if (data.title) setSessionTitle(data.title);
+
+        if (data.chat_phase === 'ADVISOR') setChatPhase('ADVISOR');
+
+        if (data.last_intent && typeof data.last_intent === 'object') {
+          setCurrentIntent(data.last_intent as Record<string, unknown>);
         }
 
-        // Restore chat phase
-        if (data.chat_phase === 'ADVISOR') {
-          setChatPhase('ADVISOR');
-        }
+        if (data.ui_state) setConversationState(data.ui_state);
 
-        // Restore last property shortlist (re-surfaces cards after page reload / session resume)
         if (Array.isArray(data.last_projects) && data.last_projects.length > 0) {
           setLastShortlist(data.last_projects);
           setShowRecommendations(true);
         }
 
         if (data.messages && data.messages.length > 0) {
-          const restored: ChatMessage[] = data.messages.map((m: { id: string; role: string; content: string; created_at: string }) => ({
-            id: m.id,
-            type: m.role === 'user' ? 'user' : 'ai',
-            content: m.content,
-            timestamp: m.created_at,
-          }));
+          type RawMessage = {
+            id: string
+            role: string
+            content: string
+            created_at: string
+            artifacts?: Array<{ type: string; [key: string]: unknown }>
+          }
+          const mapperT0 = performance.now()
+          const restored: ChatMessage[] = data.messages.map((m: RawMessage) => {
+            const base: ChatMessage = {
+              id: m.id,
+              type: m.role === 'user' ? 'user' : 'ai',
+              content: m.content,
+              timestamp: m.created_at,
+            }
+            for (const artifact of (m.artifacts ?? [])) {
+              if (artifact.type === 'property_results') {
+                base.exactResults = artifact.exactResults as ProjectCardType[]
+                base.nearbyResults = artifact.nearbyResults as ProjectCardType[]
+                base.expansion = artifact.expansion as NearbyExpansion | null
+                base.responseMode = 'search'
+              }
+              if (artifact.type === 'comparison') {
+                base.showComparisonTable = true
+                base.responseMode = 'comparison'
+                if (Array.isArray(artifact.projects) && artifact.projects.length >= 2) {
+                  // Current format: projects array
+                  base.comparisonProjects = (artifact.projects as ProjectCardType[]).slice(0, 4)
+                } else if (artifact.left && artifact.right) {
+                  // Legacy format: left/right — convert to array, no data loss
+                  base.comparisonProjects = [artifact.left as ProjectCardType, artifact.right as ProjectCardType]
+                }
+              }
+            }
+            return base
+          })
+          const mapperMs = performance.now() - mapperT0
+          if (nt) console.log(`[NAV] 8. mapper            +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${mapperMs.toFixed(1)}ms, ${data.messages.length} msgs)`)
+
+          // [TIMING] store for render-complete detection
+          navTimingsRef.current = { restoreStart, authMs, fetchMs, mapperMs, setHistoryAt: performance.now() }
+          
+          LOCAL_SESSION_CACHE.set(initialSessionId, {
+            session_id: data.session_id,
+            title: data.title,
+            chat_phase: data.chat_phase,
+            last_intent: data.last_intent,
+            last_projects: data.last_projects,
+            ui_state: data.ui_state,
+            restored
+          });
+
           setChatHistory(restored);
           setTimeout(() => scrollToBottom('instant'), 50);
         } else {
           setChatHistory([{
             id: crypto.randomUUID(),
             type: 'ai',
-            content: "Hi! I'm RealtyPal — your AI advisor for Noida real estate. What are you looking for?",
+            content: "Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.",
             timestamp: new Date().toISOString(),
           }]);
         }
       } catch (err) {
+        if (cancelled) return;
         console.error('[session-restore] failed:', err);
-        const sessionFromUrl = searchParams.get('session');
-        if (sessionFromUrl) {
-          setRestoreError(true);
-        } else {
-          setChatHistory([{
-            id: crypto.randomUUID(),
-            type: 'ai',
-            content: "Hi! I'm RealtyPal — your AI advisor for Noida real estate. What are you looking for?",
-            timestamp: new Date().toISOString(),
-          }]);
-        }
+        setRestoreError(true);
       } finally {
-        setIsInitialized(true);
+        if (!cancelled) setIsInitialized(true);
       }
     })();
-  }, [userId, isInitialized, searchParams]);
 
-  // When user clicks a different session from sidebar while already initialized
-  useEffect(() => {
-    const urlSession = searchParams.get('session')
-    if (!userId || !isInitialized) return
-    if (!urlSession) return
-    if (urlSession === lastRestoredSessionParamRef.current) return
-    // Different session requested — reset state and trigger re-initialization
-    setChatHistory([])
-    setLastShortlist([])
-    setShowRecommendations(false)
-    setChatPhase('DISCOVERY')
-    setChatTurnCount(0)
-    setExpandedShortlists(new Set())
-    setIsInitialized(false)
-  }, [userId, isInitialized, searchParams])
+    return () => { cancelled = true; };
+  }, [userId, guestToken, isInitialized, initialSessionId]);
 
-  // Pick up prefill query from compare page (sessionStorage)
+  // [TIMING] detect when setChatHistory from restore has been committed to DOM
   useEffect(() => {
-    if (!isInitialized) return;
-    const prefill = sessionStorage.getItem('rp_prefill_chat');
-    if (prefill) {
-      sessionStorage.removeItem('rp_prefill_chat');
-      setTimeout(() => submitMessage(prefill), 200);
+    const t = navTimingsRef.current
+    if (!t || chatHistory.length === 0) return
+    const renderMs = performance.now() - t.setHistoryAt
+    const nt = (window as any).__navTimings
+    if (nt) {
+      console.log(`[NAV] 9. render-complete   +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${renderMs.toFixed(1)}ms)`)
+      const totalMs = performance.now() - nt.t0
+      const rscMs   = nt.rscEnd     != null ? nt.rscEnd     - nt.t0 : null
+      const mountMs = nt.pageMounted != null ? nt.pageMounted - nt.t0 : null
+      const stages = [
+        { name: 'rsc+compile',  ms: rscMs   ?? 0 },
+        { name: 'authHeaders',  ms: t.authMs },
+        { name: 'fetch',        ms: t.fetchMs },
+        { name: 'mapper',       ms: t.mapperMs },
+        { name: 'render',       ms: renderMs },
+      ].filter(s => s.ms > 0)
+      const slowest = stages.reduce((a, b) => a.ms > b.ms ? a : b)
+      console.log(
+        `[NAV] ━━━ TOTAL ${totalMs.toFixed(0)}ms` +
+        (rscMs   != null ? ` | rsc+compile ${rscMs.toFixed(0)}ms`   : '') +
+        (mountMs != null ? ` | page-mount ${mountMs.toFixed(0)}ms`  : '') +
+        ` | authHeaders ${t.authMs.toFixed(0)}ms` +
+        ` | fetch ${t.fetchMs.toFixed(0)}ms` +
+        ` | mapper ${t.mapperMs.toFixed(0)}ms` +
+        ` | render ${renderMs.toFixed(0)}ms` +
+        ` | ⚠️ BOTTLENECK: ${slowest.name} (${slowest.ms.toFixed(0)}ms)`
+      )
     }
-  }, [isInitialized]);
+    navTimingsRef.current = null // reset so streaming turns don't re-trigger
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatHistory.length])
 
-  // Expose reset function for Sidebar "New Chat"
+  // [TIMING] property cards first visible — fires once when any message has property results
   useEffect(() => {
-    (window as any).__resetDiscoveryChat = async () => {
-      await performReset();
-    };
-    return () => {
-      delete (window as any).__resetDiscoveryChat;
-    };
-  }, [userId]);
+    const nt = (window as any).__navTimings
+    if (!nt || nt.propertyCardsLogged) return
+    const hasCards = chatHistory.some(
+      (m) => (m.exactResults && m.exactResults.length > 0) || (m.nearbyResults && m.nearbyResults.length > 0)
+    )
+    if (hasCards) {
+      nt.propertyCardsLogged = true
+      nt.propertyCards = performance.now()
+      console.log(`[NAV] 9b. property-cards +${(nt.propertyCards - nt.t0).toFixed(1)}ms`)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatHistory])
+
 
   useEffect(() => {
     return () => {
@@ -533,7 +630,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     };
   }, []);
 
-  const streamChat = useCallback((userText: string): void => {
+  const dispatchAction = useCallback((action: import('@/components/chat/types').ConversationAction): void => {
     if ((!userId && !guestToken) || isSubmitting || submitLockRef.current) return;
     submitLockRef.current = true;
     setIsSubmitting(true);
@@ -541,13 +638,21 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     userScrolledUp.current = false;
     setChipPicker(null);
 
+    const isText = action.type === 'TEXT_MESSAGE';
+    const userText = isText ? (action.payload.text as string) : String(action.payload.label ?? action.type);
+
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       type: 'user',
       content: userText,
       timestamp: new Date().toISOString(),
     };
-    setChatHistory(prev => [...prev, userMsg]);
+    
+    // Only add a user message bubble if it's an explicit text message or a selected chip that isn't a silent patch
+    if (isText || action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
+      setChatHistory(prev => [...prev, userMsg]);
+    }
+    
     setChatTurnCount(c => c + 1);
     if (chatTurnCount === 0) track('chat_started', { session_id: sessionId })
     setChatInput('');
@@ -561,6 +666,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
       isSearching: false,
       userQuery: userText,
       timestamp: new Date().toISOString(),
+      streamingPhase: 'extracting',
+      streamingIntent: null,
+      streamingResultCount: null,
     }]);
 
     abortControllerRef.current?.abort();
@@ -569,7 +677,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
 
     let localProjects: ProjectCardType[] = [];
 
-    streamChatBackend(userText, {
+    streamChatBackend(action, {
       sessionId: sessionId ?? undefined,
       userId: userId ?? undefined,
       guestToken: guestToken ?? undefined,
@@ -578,7 +686,20 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
       onEvent: (event) => {
         if (event.type === 'intent') {
           setCurrentIntent(event.intent);
-          setStatusPhase('searching');
+          // Only enter 'searching' when the backend confirmed a property search will
+          // happen. All other intent states (COLD, GATHERING, ADVISORY, unknown) keep
+          // the UI in 'extracting' until tokens arrive.
+          const isSearchState =
+            event.intentState === 'READY_TO_SEARCH' || event.intentState === 'SHORTLISTED'
+          if (isSearchState) setStatusPhase('searching')
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId ? {
+              ...m,
+              streamingPhase: isSearchState ? 'searching' : 'extracting',
+              streamingIntent: event.intent,
+              streamingIntentState: event.intentState,
+            } : m
+          ));
         } else if (event.type === 'properties') {
           const exact = event.exactResults as unknown as ProjectCardType[];
           const nearby = event.nearbyResults as unknown as ProjectCardType[];
@@ -596,6 +717,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
                   nearbyResults: nearby,
                   expansion,
                   properties: shortlist,
+                  streamingPhase: 'generating',
+                  streamingResultCount: shortlist.length,
                 }
               : m
           ));
@@ -608,48 +731,82 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
               ? { ...m, content: m.content + event.token, isSearching: false }
               : m
           ));
+        } else if (event.type === 'ui_state') {
+          // New conversation engine backend state
+          setConversationState({
+            stage: event.stage,
+            thinking: event.thinking,
+            chips: event.chips,
+            missingFields: event.missingFields,
+            confidence: event.confidence
+          });
         } else if (event.type === 'error') {
           setStatusPhase(null);
           setResultCount(null);
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? { ...m, content: event.message || 'Something went wrong. Please try again.', isSearching: false }
-              : m
-          ));
+          if (event.message?.includes('sending messages a bit fast') || event.message?.includes('Too many messages')) {
+            // Rate limit: show countdown banner, remove the AI placeholder
+            setRateLimitUntil(Date.now() + 10_000);
+            setChatHistory(prev => prev.filter(m => m.id !== streamId));
+          } else {
+            setChatHistory(prev => prev.map(m =>
+              m.id === streamId
+                ? { ...m, content: event.message || 'Something went wrong. Please try again.', isSearching: false }
+                : m
+            ));
+          }
         } else if (event.type === 'done') {
           const newSessionId = event.sessionId ?? sessionId
-          if (event.sessionId) setSessionId(event.sessionId);
+          if (event.sessionId) {
+            setSessionId(event.sessionId);
+            // Canonicalize URL on first session creation (new chat → /discover/sessionId)
+            // Uses replaceState to avoid triggering a React navigation/remount
+            if (!initialSessionId && !sessionId) {
+              window.history.replaceState({}, '', `/discover/${event.sessionId}`);
+            }
+          }
+          // Backend owns responseMode — no inference on the frontend.
+          // Falls back to derived value only for old sessions that predate this change.
+          const responseMode: 'search' | 'comparison' | 'chat' =
+            event.responseMode ??
+            (localProjects.length > 0 ? 'search' : 'chat')
+          const isComparison = responseMode === 'comparison'
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
               ? {
                   ...m,
                   isSearching: false,
-                  showComparisonTable: (
-                    userText.toLowerCase().includes('compare') && localProjects.length >= 2
-                  ),
+                  responseMode,
+                  showComparisonTable: isComparison,
+                  ...(isComparison ? {
+                    comparisonProjects: localProjects.slice(0, 4),
+                  } : {}),
                 }
               : m
           ));
           setExpandedShortlists(new Set());
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? { ...m, streamingPhase: null, streamingIntent: null, streamingResultCount: null }
+              : m
+          ));
 
-          // Auto-generate smart title on first turn
-          if (chatTurnCount === 0 && userId && newSessionId && event.intent) {
-            const intent = event.intent as Record<string, unknown>
-            const parts: string[] = []
-            if (Array.isArray(intent.bhk) && intent.bhk.length > 0) parts.push(`${(intent.bhk as number[]).join('/')} BHK`)
-            if (intent.sector) parts.push(String(intent.sector))
-            if (intent.budgetMax) parts.push(`Under ₹${intent.budgetMax}Cr`)
-            else if (intent.budgetMin) parts.push(`From ₹${intent.budgetMin}Cr`)
-            const smartTitle = parts.length > 0 ? parts.join(' · ') : userText.slice(0, 60)
+          // Auto-generate smart title on first turn only
+          if (chatTurnCount === 0 && userId && newSessionId) {
+            const smartTitle = userText.length > 30 ? userText.slice(0, 30) + '...' : userText;
+            setSessionTitle(smartTitle);
+            // Single sidebar refresh after PATCH — fires whether PATCH succeeds or fails.
             authHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
               fetch(`${API_BASE}/chat/session/${newSessionId}`, {
                 method: 'PATCH',
                 headers,
                 body: JSON.stringify({ title: smartTitle }),
               })
-            ).then(() => {
+            ).finally(() => {
               window.dispatchEvent(new CustomEvent('realtypals:session-updated'))
             }).catch(() => {})
+          } else {
+            // All other turns: refresh immediately (no PATCH follows).
+            window.dispatchEvent(new CustomEvent('realtypals:session-updated'));
           }
         }
       },
@@ -659,6 +816,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
         streamingMsgIdRef.current = null;
         setIsSubmitting(false);
         submitLockRef.current = false;
+        if (controller.signal.aborted) {
+          console.log('[CHAT:ABORT] stream aborted by user')
+          setChatHistory(prev => {
+            const next = prev.filter(m => m.id !== streamId)
+            console.log('[CHAT:ABORT_CLEANUP] removed AI placeholder', streamId, 'history length', prev.length, '→', next.length)
+            return next
+          })
+          return
+        }
         if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
           setHasShownLengthWarning(true);
           setShowContextWarning(true);
@@ -667,12 +833,22 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     });
   }, [userId, guestToken, isSubmitting, sessionId, chatTurnCount, hasShownLengthWarning, currentIntent]);
 
+  // Pick up prefill query from compare page (sessionStorage)
+  useEffect(() => {
+    if (!isInitialized) return;
+    const prefill = sessionStorage.getItem('rp_prefill_chat');
+    if (prefill) {
+      sessionStorage.removeItem('rp_prefill_chat');
+      setTimeout(() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: prefill } }), 200);
+    }
+  }, [isInitialized, dispatchAction]);
+
   const handleChatSubmit = useCallback((e: React.FormEvent, textOverride?: string) => {
     e.preventDefault();
     const text = (textOverride ?? chatInput).trim();
     if (!text) return;
-    streamChat(text);
-  }, [chatInput, streamChat]);
+    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text } });
+  }, [chatInput, dispatchAction]);
 
   // ── Regenerate: re-send the last user message ──
   const handleRegenerate = useCallback((aiMsgIndex: number) => {
@@ -680,26 +856,76 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
     for (let i = aiMsgIndex - 1; i >= 0; i--) {
       if (chatHistory[i].type === 'user') { userMsg = chatHistory[i].content; break; }
     }
-    if (userMsg) streamChat(userMsg);
-  }, [chatHistory, streamChat]);
+    if (userMsg) dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: userMsg } });
+  }, [chatHistory, dispatchAction]);
 
-  const handleQuickReply = useCallback((field: string, value: string) => {
-    let message = value;
-    if (field === 'bhk') message = `${parseInt(value)} BHK`;
-    streamChat(message);
-  }, [streamChat]);
-
-  const handleQuickActionTrigger = useCallback((action: string, genericText: string, mode: 'single' | 'multi') => {
-    if (lastShortlist.length > 0) {
-      if (mode === 'multi' && lastShortlist.length < 2) {
-        handleQuickReply('quick', genericText);
-      } else {
-        setQuickActionPicker({ action, genericText, mode, selected: [] });
-      }
-    } else {
-      handleQuickReply('quick', genericText);
+  // ── Unified Chip Action Handler ──
+  const handleChipAction = useCallback((action: import('@/components/chat/types').ChipAction) => {
+    if (action.actionType === 'OPEN_TOOL') {
+      const tool = action.payload.tool as string;
+      if (tool === 'calculator') setShowCalculator(true);
+      if (tool === 'map') setShowMap(true);
+      if (tool === 'share') setShareSheetOpen(true);
+      return;
     }
-  }, [lastShortlist, handleQuickReply]);
+    
+    if (action.actionType === 'COMPARE_PROPERTIES') {
+      if (action.payload.mode === 'direct') {
+        const selectedIds = action.payload.selected as string[];
+        const selected = lastShortlist.filter(p => selectedIds.includes(p.slug));
+        if (selected.length >= 2) {
+          const names = selected.map(p => p.name).join(' and ');
+          dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: `Compare ${names}` } });
+          return;
+        }
+      }
+      
+      if (action.payload.mode === 'multi') {
+        if (lastShortlist.length < 2) {
+          dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: 'Compare projects' } });
+        } else {
+          setChipPicker({
+            mode: 'multi',
+            action: 'compare',
+            label: 'Compare',
+            isModal: false,
+            selected: []
+          });
+        }
+        return;
+      }
+    }
+
+    if (action.actionType === 'CALCULATE_EMI' && action.payload.mode === 'single') {
+       setChipPicker({
+         mode: 'single',
+         action: 'emi',
+         label: 'Calculate EMI',
+         isModal: false,
+         selected: []
+       });
+       return;
+    }
+
+    if (action.actionType === 'BOOK_VISIT' && action.payload.mode === 'single') {
+       setChipPicker({
+         mode: 'single',
+         action: 'visit',
+         label: 'Book Visit',
+         isModal: false,
+         selected: []
+       });
+       return;
+    }
+
+    // For INTENT_PATCH, TEXT_MESSAGE, REMOVE_FILTER, just dispatch to backend
+    dispatchAction({
+      type: action.actionType,
+      payload: action.payload
+    });
+  }, [dispatchAction, lastShortlist.length]);
+
+
 
   const stripMarkdown = (text: string): string => {
     return text
@@ -718,31 +944,16 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
   }, []);
 
   const hasUserReplied = chatHistory.some((m) => m.type === 'user');
+  const headerTitle = sessionTitle ?? (hasUserReplied ? 'RealtyPals' : 'New conversation');
 
   // Index of the last chat message that has property cards — only that one shows full grid
   const lastPropertiesIndex = useMemo(() =>
     chatHistory.reduce((last, msg, i) =>
-      (msg.properties && msg.properties.length > 0 ? i : last), -1
+      ((msg.exactResults?.length ?? 0) > 0 || (msg.nearbyResults?.length ?? 0) > 0 || (msg.properties?.length ?? 0) > 0 ? i : last), -1
     ), [chatHistory]);
 
-  // ── Submit a message programmatically (used by suggestion chips and advisor chips) ──
-  const submitMessage = useCallback((text: string) => {
-    streamChat(text);
-  }, [streamChat]);
 
-  const followUpChips = useMemo(
-    () => getFollowUpChips(chatPhase, lastShortlist, chatTurnCount),
-    [chatPhase, lastShortlist, chatTurnCount],
-  );
 
-  const suggestionChips = useMemo(() => {
-    const offset = sessionId ? (sessionId.charCodeAt(0) % 7) : 0;
-    const chips: string[] = [];
-    for (let i = 0; i < 4; i++) {
-      chips.push(SUGGESTION_POOL[(offset + i) % SUGGESTION_POOL.length]);
-    }
-    return chips;
-  }, [sessionId]);
 
   // ── Stable MessageBubble callbacks ──────────────────────────────────────────
   const handleToggleExpanded = useCallback((id: string) => {
@@ -767,25 +978,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
   const chatInputForm = (
     <div className={`relative w-full transition-all duration-300 ${isInputMinimized ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="relative w-full">
-          <StatusSteps phase={statusPhase} intent={currentIntent} resultCount={resultCount} />
           {rateLimitUntil && (
             <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
           )}
           {isSubmitting && (
-            <div className="flex items-center justify-between mb-4 px-2">
-              <div className="flex items-center gap-4">
-                 {/* The AI Orb */}
-                 <div className="relative w-5 h-5">
-                    <div className="absolute -inset-2 rounded-full bg-blue-500/40 blur-md animate-pulse" style={{ animationDuration: '2s' }} />
-                    <div className="absolute -inset-1 rounded-full bg-blue-400/60 blur-sm animate-ping" style={{ animationDuration: '3s' }} />
-                    <div className="absolute inset-0 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)]" />
-                    <div className="absolute inset-1 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,1)]" />
-                 </div>
-                 {/* Thought Stream */}
-                 <span className="text-[11px] font-mono font-medium text-blue-600 dark:text-blue-400 tracking-wider uppercase animate-pulse">
-                   &gt; {statusPhase ? statusPhase.toLowerCase() + '...' : 'processing request...'}
-                 </span>
-              </div>
+            <div className="flex items-center justify-end mb-4 px-2">
               <button
                 type="button"
                 onClick={() => abortControllerRef.current?.abort()}
@@ -797,95 +994,85 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
             </div>
           )}
           
-          <div className="relative flex items-center gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-[2rem] border border-gray-200/60 dark:border-gray-700/60 shadow-sm transition-all hover:shadow-md hover:border-blue-200/60 dark:hover:border-blue-900/60">
-            {/* Reset / New Chat Button */}
-            <div id="new-chat-guide">
-              <button
-                onClick={performReset}
-                className="w-12 h-12 rounded-full bg-gray-50/50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95 group flex items-center justify-center border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
-                title="New Chat"
-              >
-                <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
-              </button>
-            </div>
-
+          <div className="relative flex items-center gap-1.5 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-gray-200 dark:border-gray-700 p-2 pl-3 rounded-full transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:border-gray-300 dark:hover:border-gray-600 mx-auto w-full">
             <div id="chat-input-guide" className="relative flex-1 group">
               <PlaceholdersAndVanishInput
                 placeholders={
                   chatPhase === 'ADVISOR'
-                    ? ['Ask anything about these properties...', 'Any risks associated?', 'Compare prices...']
-                    : ["Tell me what you're looking for...", "Find me a 3 BHK in Sector 150...", "Show me properties under 2 Crores..."]
+                    ? [
+                        'What are the risks with this property?',
+                        'Compare Godrej Woods vs ATS Pristine...',
+                        'Calculate EMI for 1.5Cr at 8.5%...',
+                        'How far is the nearest metro station?',
+                      ]
+                    : [
+                        'Find a 3 BHK in Sector 150...',
+                        'Which are the best RERA-approved projects?',
+                        'Show me luxury apartments on Noida Expressway...',
+                        'Properties with possession by 2025...',
+                      ]
                 }
                 onChange={(e) => setChatInput(e.target.value)}
                 onSubmit={handleChatSubmit}
                 value={chatInput}
+                disabled={isSubmitting}
               />
             </div>
 
-            {/* Voice Input Button */}
-            <button
-              type="button"
-              onClick={toggleVoiceInput}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 touch-target-min border ${isListening
-                ? 'text-red-500 animate-pulse scale-105 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/20 border-transparent shadow-sm'
-                }`}
-              title="Voice Input"
-            >
-              {isListening ? (
-                <div className="relative flex items-center justify-center">
-                  <div className="absolute inset-0 -m-1 rounded-full bg-red-100 dark:bg-red-900/30 animate-ping opacity-50" />
-                  <Mic size={20} className="relative text-red-500 fill-current" />
-                </div>
-              ) : (
-                <Mic size={20} className="text-white" />
-              )}
-            </button>
+            {/* Send button when text present, Voice button when empty */}
+            {chatInput.trim() ? (
+              <button
+                type="button"
+                onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
+                className="w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-200 bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg active:scale-95"
+                title="Send"
+              >
+                <ArrowUp size={20} className="text-white" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={toggleVoiceInput}
+                className={`w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${isListening
+                  ? 'text-red-500 animate-pulse scale-105 bg-red-50 border border-red-200 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                title="Voice Input"
+              >
+                {isListening ? (
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute inset-0 -m-1 rounded-full bg-red-100 animate-ping opacity-50" />
+                    <Mic size={20} className="relative text-red-500 fill-current" />
+                  </div>
+                ) : (
+                  <Mic size={20} />
+                )}
+              </button>
+            )}
           </div>
           
-          {/* Quick Action Pills */}
-          <div className="flex items-center justify-center gap-2 mt-4 overflow-x-auto pb-1 scrollbar-hide snap-x">
-            <button
-              type="button"
-              onClick={() => handleQuickActionTrigger('emi', 'Calculate EMI for a property', 'single')}
-              className="flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
-            >
-              📱 EMI Calculator
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickActionTrigger('compare', 'Compare top 2 properties', 'multi')}
-              className="flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
-            >
-              ⚖️ Compare
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickReply('quick', 'What is the home buying process?')}
-              className="flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
-            >
-              📖 Buying Process
-            </button>
-          </div>
+          {/* Quick Action Pills Removed */}
 
-          <div className="text-center mt-2 mb-1">
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-              AI can make mistakes. Verify important information.
-            </span>
-          </div>
+          {hasUserReplied && (
+            <div className="text-center mt-2 mb-1">
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                AI can make mistakes. Verify important information.
+              </span>
+            </div>
+          )}
         </div>
     </div>
   );
 
   return (
     <div
-      className="flex-1 flex flex-col min-h-0 bg-transparent dark:bg-gray-900 overflow-hidden"
+      className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      <Header title="RealtyPals Intelligence Engine™" onToast={(msg: string) => setToast({ message: msg })} />
+      <Header title={headerTitle} onToast={(msg: string) => setToast({ message: msg })} />
 
       {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}
-      <div className={`flex-1 flex flex-col min-h-0 overflow-hidden relative z-10 ${!hasUserReplied ? 'justify-center' : ''}`}>
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10">
 
         {/* Animated Orbs Overlay Background */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -894,57 +1081,85 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
           <div className="absolute bottom-[-10%] left-[40%] w-[400px] h-[400px] bg-teal-400/10 dark:bg-teal-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" style={{ animationDelay: "4s" }} />
         </div>
 
-        {!hasUserReplied ? (
+        <ContextRibbon 
+          intent={currentIntent} 
+          onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })} 
+        />
+
+        {(!isInitialized && !!initialSessionId) ? (
+          <div className="flex flex-col items-center justify-center flex-1 gap-3 relative z-10">
+            <div className="w-9 h-9 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+            <p className="text-sm text-gray-400 dark:text-gray-500">Loading conversation…</p>
+          </div>
+        ) : restoreError ? (
+          <div className="flex flex-col items-center justify-center flex-1 gap-4 p-8 text-center relative z-10">
+            <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center">
+              <AlertTriangle size={28} className="text-red-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Could not load this conversation</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">This session may have expired or been deleted. Start a new chat below.</p>
+            </div>
+            <button
+              onClick={() => {
+                window.history.replaceState({}, '', '/discover');
+                setRestoreError(false);
+                setIsInitialized(false);
+              }}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              Start new chat
+            </button>
+          </div>
+        ) : !hasUserReplied ? (
           /* Welcome screen */
-          <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10">
-            <div className="text-center mb-8 max-w-lg">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl glass-surface border border-white/50 dark:border-white/10 flex items-center justify-center shadow-xl overflow-hidden">
-                <Image src="/images/logo/realtypals.png" alt="RealtyPal" width={44} height={44} />
+          <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10 overflow-y-auto">
+            <div className="text-center mb-10 max-w-3xl">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center shadow-sm overflow-hidden">
+                <Image src="/images/logo/realtypals.png" alt="RealtyPal" width={44} height={44} className="block dark:hidden" />
+                <Image src="/images/logo/RealtyPals-logoWhite.png" alt="RealtyPal" width={44} height={44} className="hidden dark:block" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
-                Your AI property advisor
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 tracking-tight uppercase">
+                Your AI Property Advisor
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
-                Describe what you&apos;re looking for in plain language — budget, area, BHK, lifestyle. I&apos;ll find the best matches and explain the trade-offs.
+              <p className="text-gray-500 dark:text-gray-400 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+                Compare projects, verify builder reputation, explore RERA-approved properties, estimate EMIs and discover the best properties, all through a single AI-powered search.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-2xl w-full mb-8">
+            <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-2xl mb-12">
               {[
-                { icon: '🏠', title: 'Find properties', desc: '3BHK under 1.5 Cr in Sector 150', color: 'hover:border-blue-200 hover:bg-blue-50/50 dark:hover:border-blue-800 dark:hover:bg-blue-900/20' },
-                { icon: '📊', title: 'Compare projects', desc: 'Compare Sector 150 vs Sector 137', color: 'hover:border-indigo-200 hover:bg-indigo-50/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/20' },
-                { icon: '🏗️', title: 'Builder research', desc: 'Which builders have the best track record?', color: 'hover:border-emerald-200 hover:bg-emerald-50/50 dark:hover:border-emerald-800 dark:hover:bg-emerald-900/20' },
-                { icon: '🧮', title: 'Calculate costs', desc: 'EMI for ₹1.5 Cr at 8.5% for 20 years', color: 'hover:border-violet-200 hover:bg-violet-50/50 dark:hover:border-violet-800 dark:hover:bg-violet-900/20' },
-              ].map((card) => (
+                { label: 'Best 3 BHK in Noida', icon: '🏠', prompt: 'Show me the best 3 BHK apartments in Noida' },
+                { label: 'Luxury on Expressway', icon: '✨', prompt: 'Show luxury apartments on Noida Expressway' },
+                { label: 'Top investment', icon: '📈', prompt: 'Best areas for property investment in Noida right now' },
+                { label: 'Ready to move', icon: '🔑', prompt: 'Ready to move properties under 2 Cr in Noida' },
+              ].map(chip => (
                 <button
-                  key={card.title}
-                  type="button"
-                  onClick={() => submitMessage(card.desc)}
-                  className={`group flex items-start gap-3.5 px-4 py-3.5 bg-white/80 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl transition-all duration-200 text-left shadow-sm hover:shadow-md ${card.color} active:scale-[0.98]`}
+                  key={chip.label}
+                  onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 text-[14px] text-gray-700 dark:text-gray-300 font-medium rounded-full shadow-sm transition-all"
                 >
-                  <span className="text-2xl mt-0.5 flex-shrink-0">{card.icon}</span>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-0.5">{card.title}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug">{card.desc}</p>
-                  </div>
+                  <span className="text-base">{chip.icon}</span>
+                  <span>{chip.label}</span>
                 </button>
               ))}
             </div>
 
-            <div className="w-full max-w-2xl">
+            <div className="w-full max-w-3xl">
               {chatInputForm}
             </div>
           </div>
         ) : (
           /* Feed layout */
-          <>
+          /* Feed layout */
+          <div className="flex flex-col w-full h-full">
             <div
               ref={chatContainerRef}
               role="log"
               aria-live="polite"
               aria-relevant="additions text"
               aria-label="Conversation with RealtyPal advisor"
-              className="flex-1 h-full min-h-0 overflow-y-auto px-4 md:px-8 pt-6 pb-56 relative z-10"
+              className="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 pt-6 pb-4 relative z-10"
               onScroll={(e) => {
                 const el = e.currentTarget;
                 userScrolledUp.current = (el.scrollHeight - el.scrollTop - el.clientHeight) > 100;
@@ -957,58 +1172,52 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
                     guestToken={guestToken ?? undefined}
                     onResume={(sid) => {
                       setShowReEngagement(false);
-                      router.push(`/discover?session=${sid}`);
+                      router.push(`/discover/${sid}`);
                     }}
                     onDismiss={() => setShowReEngagement(false)}
                   />
-                )}
-                {restoreError && (
-                  <div className="flex flex-col items-center justify-center flex-1 gap-4 p-8 text-center">
-                    <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                      <AlertTriangle size={24} className="text-red-500" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Could not load chat</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">This session may have expired or been deleted.</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setRestoreError(false);
-                        setIsInitialized(false);
-                      }}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      Start new chat
-                    </button>
-                  </div>
                 )}
                 {showContextWarning && (
                   <div className="mx-auto max-w-lg px-4 py-2 my-2 text-xs text-center text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     Long conversation detected. Start a new chat for the best AI responses.
                   </div>
                 )}
-                {chatHistory.map((message, index) => (
+                
+                {chatHistory.length > visibleCount && (
+                  <div className="text-center py-2">
+                    <button 
+                      onClick={() => setVisibleCount(v => v + 15)}
+                      className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium border border-gray-200 dark:border-gray-700 shadow-sm"
+                    >
+                      Load older messages
+                    </button>
+                  </div>
+                )}
+
+                {chatHistory.slice(-visibleCount).map((message, index) => {
+                  const actualIndex = Math.max(0, chatHistory.length - visibleCount) + index;
+                  return (
                   <MessageBubble
                     key={message.id}
                     message={message}
-                    index={index}
-                    isLast={index === chatHistory.length - 1}
+                    index={actualIndex}
+                    isLast={actualIndex === chatHistory.length - 1}
                     isSubmitting={isSubmitting}
                     chatPhase={chatPhase}
-                    isLastProperties={index === lastPropertiesIndex}
+                    isLastProperties={actualIndex === lastPropertiesIndex}
                     isExpanded={expandedShortlists.has(message.id)}
-                    carouselIndex={carouselIndexes[index] ?? 0}
+                    carouselIndex={carouselIndexes[actualIndex] ?? 0}
                     lastShortlist={lastShortlist}
                     showMap={showMap}
                     userId={userId}
                     regeneratingIdx={regeneratingIdx}
                     chipPicker={chipPicker}
-                    followUpChips={followUpChips}
+                    chips={conversationState?.chips ?? []}
                     onCopy={handleCopy}
                     onDetailOpen={openDetailProject}
                     onCallback={setCallbackProject}
                     onRegenerate={handleRegenerate}
-                    onSubmitMessage={submitMessage}
+                    onAction={handleChipAction}
                     onToggleExpanded={handleToggleExpanded}
                     onToggleMap={handleToggleMap}
                     onSetChipPicker={setChipPicker}
@@ -1018,7 +1227,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
                     onOpenShareSheet={handleOpenShareSheet}
                     onToast={handleToast}
                   />
-                ))}
+                  );
+                })}
 
                 <div ref={chatEndRef} />
               </div>
@@ -1060,24 +1270,24 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
               )}
             </div>
 
-            {/* Frosted glass input bar — absolute so it sits flush at the container bottom */}
+            {/* Stable flex-bottom input island */}
             <AnimatePresence initial={false}>
               {!isInputMinimized && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
+                  exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className={`absolute bottom-0 left-0 right-0 w-full z-10 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 dark:to-transparent pt-10 pb-4 ${keyboardOpen ? 'pb-safe' : ''}`}
+                  className={`flex-none w-full z-30 flex justify-center pb-6 md:pb-8 pt-2 ${keyboardOpen ? 'pb-safe' : ''}`}
                   style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
                 >
-                  <div className="px-4 md:px-8 max-w-4xl mx-auto flex flex-col justify-center w-full">
+                  <div className="px-4 w-full max-w-3xl flex flex-col justify-center">
                     {chatInputForm}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </>
+          </div>
         )}
       </div>
 
@@ -1095,103 +1305,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
         />
       )}
 
-      {/* ── Quick Action Picker modal ── */}
-      <AnimatePresence>
-        {quickActionPicker && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
-            onClick={(e) => { if (e.target === e.currentTarget) setQuickActionPicker(null) }}
-          >
-            <motion.div
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 60, opacity: 0 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-6 pb-safe"
-            >
-              <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-5 sm:hidden" />
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
-                  {quickActionPicker.mode === 'multi' ? 'Select properties to compare' : 'Which property?'}
-                </h3>
-                <button onClick={() => setQuickActionPicker(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none">×</button>
-              </div>
-              <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-1">
-                {lastShortlist.map((p) => {
-                  const isSelected = quickActionPicker.selected.includes(p.slug)
-                  return (
-                    <button
-                      key={p.slug}
-                      onClick={() => {
-                        if (quickActionPicker.mode === 'single') {
-                          setQuickActionPicker(null)
-                          const prompt = quickActionPicker.action === 'emi' ? `What would be the monthly EMI for ${p.name}? Show a breakdown at 8.5% for 20 years.` :
-                            quickActionPicker.action === 'gst' ? `What is the GST applicable on ${p.name}?` :
-                            `${quickActionPicker.genericText} ${p.name}`
-                          handleQuickReply('quick', prompt)
-                        } else {
-                          setQuickActionPicker({
-                            ...quickActionPicker,
-                            selected: isSelected
-                              ? quickActionPicker.selected.filter(s => s !== p.slug)
-                              : quickActionPicker.selected.length < 3 ? [...quickActionPicker.selected, p.slug] : quickActionPicker.selected,
-                          })
-                        }
-                      }}
-                      className={`flex items-center justify-between px-3 py-3 rounded-xl text-sm transition-all border ${
-                        isSelected
-                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-200'
-                          : 'border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {quickActionPicker.mode === 'multi' && (
-                          <div className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border ${
-                            isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'
-                          }`}>
-                            {isSelected && <span className="text-white text-[10px]">✓</span>}
-                          </div>
-                        )}
-                        <div className="min-w-0 text-left">
-                          <div className="font-semibold text-sm truncate">{p.name}</div>
-                          <div className="text-xs text-gray-400 dark:text-gray-500">{p.price_range_label} · {p.sector}</div>
-                        </div>
-                      </div>
-                      {quickActionPicker.mode === 'single' && (
-                        <span className="text-gray-300 dark:text-gray-600 text-xs ml-2 flex-shrink-0">→</span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-              {quickActionPicker.mode === 'multi' && quickActionPicker.selected.length >= 2 && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <button
-                    onClick={() => {
-                      const selected = lastShortlist.filter(p => quickActionPicker.selected.includes(p.slug))
-                      const names = selected.map(p => p.name)
-                      setQuickActionPicker(null)
-                      const prompt = names.length === 2
-                        ? `Compare ${names[0]} vs ${names[1]} in detail — price, amenities, builder, location, trade-offs.`
-                        : `Compare ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} in detail.`
-                      handleQuickReply('quick', prompt)
-                    }}
-                    className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-all shadow-md"
-                  >
-                    Compare {quickActionPicker.selected.length} properties →
-                  </button>
-                </motion.div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* ── Site Visit Scheduler modal ── */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {siteVisitProject && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -1219,7 +1334,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
       </AnimatePresence>
 
       {/* ── Callback request modal ── */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {callbackProject && !callbackDone && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -1275,7 +1390,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
                   setCallbackSubmitting(true)
                   setCallbackError(null)
                   try {
-                    const res = await fetch(`${API_BASE}/callback`, {
+                    const res = await fetch(`${API_BASE}/leads/callback`, {
                       method: 'POST',
                       headers: await authHeaders({ 'Content-Type': 'application/json' }),
                       body: JSON.stringify({
@@ -1320,7 +1435,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange }
       )}
 
       {/* ── Share shortlist sheet ── */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {shareSheetOpen && lastShortlist.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}

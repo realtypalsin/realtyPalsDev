@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 interface FloorPlan {
   id: string
@@ -52,7 +52,13 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
   if (!plan) return null
 
   return (
-    <div className="fixed inset-0 z-[70] bg-black/90 flex flex-col">
+    <motion.div
+      className="fixed inset-0 z-[70] bg-black/90 flex flex-col"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div>
@@ -130,6 +136,6 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

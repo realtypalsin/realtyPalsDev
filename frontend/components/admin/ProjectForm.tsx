@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Save, Loader2, Plus, X } from 'lucide-react'
-import ImageUpload from './ImageUpload'
+import { API_BASE } from '@/lib/env'
 
 interface Builder { id: string; name: string }
 
@@ -24,6 +24,7 @@ interface ProjectData {
   total_units: string
   total_towers: string
   land_area_acres: string
+  launch_date: string
   possession_label: string
   possession_date: string
   description: string
@@ -39,7 +40,7 @@ const EMPTY: ProjectData = {
   name: '', slug: '', builder_id: '', sector: '', city: 'Noida',
   status: 'ready_to_move', tagline: '', address: '', lat: '', lng: '',
   rera_number: '', rera_url: '', total_units: '', total_towers: '',
-  land_area_acres: '', possession_label: '', possession_date: '',
+  land_area_acres: '', launch_date: '', possession_label: '', possession_date: '',
   description: '', long_description: '', design_theme: '', architect: '',
   hero_image_url: '', marketing_claims: [], ai_search_keywords: [],
 }
@@ -50,10 +51,10 @@ function toSlug(name: string): string {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="col-span-2 pt-4 mt-2 first:pt-0 first:mt-0">
-      <div className="flex items-center gap-3">
-        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{title}</span>
-        <div className="flex-1 h-px bg-gray-100" />
+    <div className="col-span-2 pt-6 mt-4 first:pt-0 first:mt-0">
+      <div className="flex items-center gap-4">
+        <span className="text-[16px] font-serif font-black text-slate-900 tracking-tight">{title}</span>
+        <div className="flex-1 h-px bg-slate-100" />
       </div>
     </div>
   )
@@ -67,12 +68,12 @@ function Field({ label, children, hint, required }: {
 }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
         {label}
-        {required && <span className="text-red-400 ml-0.5">*</span>}
+        {required && <span className="text-rose-400 ml-1">*</span>}
       </label>
       {children}
-      {hint && <p className="text-[10px] text-gray-400 mt-1">{hint}</p>}
+      {hint && <p className="text-[12px] text-slate-400 mt-2 leading-snug">{hint}</p>}
     </div>
   )
 }
@@ -86,7 +87,7 @@ function Input({ value, onChange, ...rest }: Omit<React.InputHTMLAttributes<HTML
       value={value}
       onChange={(e) => onChange(e.target.value)}
       {...rest}
-      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 bg-white transition-colors"
+      className="w-full bg-slate-50/80 border border-transparent hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3 text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-200 focus:ring-4 focus:ring-slate-100 transition-all duration-200 shadow-sm"
     />
   )
 }
@@ -100,7 +101,7 @@ function Select({ value, onChange, children }: {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 bg-white transition-colors"
+      className="w-full bg-slate-50/80 border border-transparent hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3 text-[14px] text-slate-900 focus:outline-none focus:border-slate-200 focus:ring-4 focus:ring-slate-100 transition-all duration-200 shadow-sm"
     >
       {children}
     </select>
@@ -119,7 +120,7 @@ function Textarea({ value, onChange, rows = 3, placeholder }: {
       onChange={(e) => onChange(e.target.value)}
       rows={rows}
       placeholder={placeholder}
-      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 bg-white resize-none transition-colors"
+      className="w-full bg-slate-50/80 border border-transparent hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3 text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-200 focus:ring-4 focus:ring-slate-100 transition-all duration-200 shadow-sm resize-none"
     />
   )
 }
@@ -140,16 +141,16 @@ function TagInput({ tags, onChange, placeholder }: {
   return (
     <div>
       {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-2">
+        <div className="flex flex-wrap gap-2 mb-2">
           {tags.map((t) => (
-            <span key={t} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full border border-blue-100">
+            <span key={t} className="flex items-center gap-1.5 bg-zinc-100 text-zinc-800 text-[12px] px-2.5 py-1 rounded-lg border border-zinc-200/80 font-medium">
               {t}
               <button
                 type="button"
                 onClick={() => onChange(tags.filter((x) => x !== t))}
-                className="hover:text-blue-900 transition-colors"
+                className="text-zinc-400 hover:text-zinc-900 transition-colors"
               >
-                <X size={10} />
+                <X size={12} />
               </button>
             </span>
           ))}
@@ -163,14 +164,14 @@ function TagInput({ tags, onChange, placeholder }: {
             if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add() }
           }}
           placeholder={placeholder ?? 'Type and press Enter'}
-          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400 transition-colors"
+          className="flex-1 bg-slate-50/80 border border-transparent hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3 text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-200 focus:ring-4 focus:ring-slate-100 transition-all duration-200 shadow-sm"
         />
         <button
           type="button"
           onClick={add}
-          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-600 transition-colors"
+          className="px-4 py-3 bg-slate-900 hover:bg-black rounded-xl text-white shadow-sm transition-all"
         >
-          <Plus size={14} />
+          <Plus size={16} />
         </button>
       </div>
     </div>
@@ -191,7 +192,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
   const prevFormRef = useRef<string>('')
 
   useEffect(() => {
-    fetch('/api/v1/admin/builders')
+    fetch(`${API_BASE}/admin/builders`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => setBuilders(d.builders ?? []))
   }, [])
@@ -230,6 +231,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
       total_units:        form.total_units ? parseInt(form.total_units) : undefined,
       total_towers:       form.total_towers ? parseInt(form.total_towers) : undefined,
       land_area_acres:    form.land_area_acres ? parseFloat(form.land_area_acres) : undefined,
+      launch_date:        form.launch_date || undefined,
       possession_label:   form.possession_label || undefined,
       possession_date:    form.possession_date || undefined,
       description:        form.description || undefined,
@@ -241,10 +243,10 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
       ai_search_keywords: form.ai_search_keywords,
     }
 
-    const url    = projectId ? `/api/v1/admin/projects/${projectId}` : '/api/v1/admin/projects'
+    const url    = projectId ? `${API_BASE}/admin/projects/${projectId}` : `${API_BASE}/admin/projects`
     const method = projectId ? 'PATCH' : 'POST'
 
-    const res  = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    const res  = await fetch(url, { method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     const data = await res.json().catch(() => ({}))
 
     if (!res.ok) {
@@ -262,8 +264,8 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
 
         <SectionHeader title="Core Info" />
 
@@ -348,6 +350,10 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
           <Input value={form.land_area_acres} onChange={set('land_area_acres')} placeholder="12.5" type="number" step="any" />
         </Field>
 
+        <Field label="Launch Date" hint="When the project was/will be launched">
+          <Input value={form.launch_date} onChange={set('launch_date')} type="date" />
+        </Field>
+
         <Field label="Possession Label">
           <Input value={form.possession_label} onChange={set('possession_label')} placeholder="Expected Dec 2026" />
         </Field>
@@ -364,17 +370,6 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
           <Input value={form.architect} onChange={set('architect')} placeholder="Architect firm name" />
         </Field>
 
-        <SectionHeader title="Hero Image" />
-
-        <div className="col-span-2">
-          <Field label="Hero Image" hint="Upload from your computer or paste a URL">
-            <ImageUpload
-              value={form.hero_image_url}
-              onChange={set('hero_image_url')}
-              projectSlug={form.slug}
-            />
-          </Field>
-        </div>
 
         <SectionHeader title="Descriptions" />
 
@@ -430,21 +425,21 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
         </div>
       )}
 
-      <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
+      <div className="flex items-center gap-4 pt-8 mt-4 border-t border-slate-100">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+          className="px-6 py-3 border border-gray-200 bg-white rounded-full text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all shadow-sm"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold disabled:opacity-40 transition-colors"
+          className="flex items-center gap-2 px-8 py-3 bg-slate-900 hover:bg-black text-white rounded-full text-[13px] font-bold shadow-sm disabled:opacity-40 transition-all"
         >
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          {saving ? 'Saving…' : projectId ? 'Save Changes' : 'Create Project'}
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {saving ? 'Saving...' : projectId ? 'Save Changes' : 'Create Project'}
         </button>
       </div>
     </form>

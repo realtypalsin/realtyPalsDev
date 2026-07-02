@@ -1,5 +1,11 @@
 import type { ProjectCard } from './project'
 
+export interface NearbyExpansion {
+  requestedSector: string
+  searchedSectors: string[]
+  reason: 'no_results_in_requested_sector'
+}
+
 export interface Sector {
   id: string;
   city: string;
@@ -11,77 +17,30 @@ export interface Sector {
   volatility_flag: boolean;
 }
 
-export interface PropertyValidation {
-  market_range: { low: number; high: number };
-  verdict: 'Within market' | 'Slightly high' | 'Aggressive' | 'Market range only';
-  risk_flag: 'LOW' | 'MEDIUM' | 'HIGH';
-  confidence_level?: string;
-  reason_codes: string[];
-}
-
-export interface PropertyImage {
-  id: string;
-  image_url: string;
-  image_type: 'exterior' | 'interior' | 'floor_plan' | 'amenity' | 'view';
-  caption?: string | null;
-  sort_order: number;
-}
-
-export interface Property {
-  id: string;
-  sector_id: string;
-  property_type: 'flat' | 'plot';
-  bhk: number;
-  size_sqft: number;
-  price: number;
-  price_per_sqft: number;
-  builder: string;
-  project_name?: string | null;
-  image_url?: string | null;
-  floor: number | null;
-  status: 'under_construction' | 'ready_to_move' | 'new_launch';
-  amenities: string[];
-  bathrooms?: number | null;
-  balconies?: number | null;
-  highlights?: string[];
-  images?: PropertyImage[];
-  sector: Sector;
-  score?: number;
-  match_score?: number;
-  property_index?: number;
-  property_reference?: string;
-  validation?: PropertyValidation | null;
-}
-
-export interface PropertyDetail {
-  id: string;
-  project_name: string;
-  bhk: number;
-  size_sqft: number;
-  price: number;
-  bathrooms?: number;
-  balconies?: number;
-  status: string;
-  builder: string;
-  amenities: string[];
-  highlights: string[];
-  images: { url: string; caption?: string; type: string }[];
-}
-
 export interface ChatMessage {
   id: string;
   type: 'user' | 'ai';
   content: string;
   properties?: ProjectCard[];
+  exactResults?: ProjectCard[];
+  nearbyResults?: ProjectCard[];
+  expansion?: NearbyExpansion | null;
   images?: { url: string; caption?: string; type: string }[];
   highlights?: string[];
   amenities?: string[];
-  propertyDetail?: PropertyDetail;
   showSectorIntelligence?: boolean;
   showComparisonTable?: boolean;
+  comparisonProjects?: ProjectCard[];
   isSearching?: boolean;
   userQuery?: string;
   timestamp: string;
+  // Response mode — drives which UI components render (mutually exclusive)
+  responseMode?: 'search' | 'comparison' | 'chat'
+  // Inline thinking UI — tracks which phase the streaming message is in
+  streamingPhase?: 'extracting' | 'searching' | 'generating' | null;
+  streamingIntent?: Record<string, unknown> | null;
+  streamingIntentState?: string | null;
+  streamingResultCount?: number | null;
   intent?: {
     completenessScore?: number;
     bhk?: number;

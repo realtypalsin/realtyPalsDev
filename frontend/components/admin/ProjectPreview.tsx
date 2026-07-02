@@ -34,6 +34,7 @@ interface ProjectData {
   builder?: { name: string }
   unit_types?: UnitType[]
   amenities?: { name: string; category: string }[]
+  images?: { url: string; type: string }[]
 }
 
 const STATUS_CFG: Record<string, { label: string; cls: string; icon: typeof CheckCircle2 }> = {
@@ -64,6 +65,9 @@ interface Props {
 export default function ProjectPreview({ project, onRefresh, refreshing }: Props) {
   const status = STATUS_CFG[project.status] ?? STATUS_CFG.ready_to_move
   const units  = project.unit_types ?? []
+  const displayImageUrl = project.images?.find(i => i.type === 'hero')?.url || 
+    project.images?.[0]?.url || 
+    project.hero_image_url
 
   return (
     <div className="sticky top-20 space-y-4">
@@ -100,9 +104,9 @@ export default function ProjectPreview({ project, onRefresh, refreshing }: Props
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {/* Hero image */}
         <div className="relative w-full bg-gray-100" style={{ height: 160 }}>
-          {project.hero_image_url ? (
+          {displayImageUrl ? (
             <Image
-              src={project.hero_image_url}
+              src={displayImageUrl}
               alt={project.name}
               fill
               unoptimized

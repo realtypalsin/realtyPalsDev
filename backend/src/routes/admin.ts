@@ -1,9 +1,15 @@
-import { Router, Request, Response, NextFunction } from 'express'
+import { timingSafeEqual, createHash } from 'crypto'
+import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import multer from 'multer'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/db'
-import { validateAdminToken, makeAdminToken } from '../lib/adminAuth'
+import { validateAdminSession, createAdminSession, destroyAdminSession, requireAdmin } from '../lib/adminAuth'
+import { checkRateLimit } from '../lib/cache'
+import { isPrismaNotFound } from '../lib/db'
+import { clientIp } from '../lib/request'
 import { supabaseAdmin } from '../lib/supabase'
+import { computeCompleteness } from '../lib/completeness'
 
 const router = Router()
 
@@ -15,16 +21,8 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
 })
 
-// ---------------------------------------------------------------------------
-// requireAdmin middleware
-// ---------------------------------------------------------------------------
-function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  const token = req.cookies?.admin_token as string | undefined
-  if (!validateAdminToken(token)) {
-    res.status(401).json({ error: 'Unauthorized' })
-    return
-  }
-  next()
+function sha256(value: string): Buffer {
+  return createHash('sha256').update(value).digest()
 }
 
 // ---------------------------------------------------------------------------
@@ -32,12 +30,38 @@ function requireAdmin(req: Request, res: Response, next: NextFunction): void {
 // ---------------------------------------------------------------------------
 router.post('/auth', async (req: Request, res: Response): Promise<void> => {
   const { password } = (req.body ?? {}) as { password?: string }
-  const adminPassword = process.env.ADMIN_PASSWORD
-  if (!adminPassword || password !== adminPassword) {
+  const adminPassword = process.env.ADMIN_PASSWORD ?? ''
+  const ip = clientIp(req)
+
+  const { allowed } = await checkRateLimit(`admin:login:${ip}`, 5, 900)
+  if (!allowed) {
+    console.log(`[admin] login rate-limited ip=${ip}`)
+    res.status(429).json({ error: 'Too many attempts. Try again later.' })
+    return
+  }
+
+  const inputHash    = sha256(password ?? '')
+  const expectedHash = sha256(adminPassword)
+  const match = inputHash.length === expectedHash.length
+    && timingSafeEqual(inputHash, expectedHash)
+
+  if (!adminPassword || !match) {
+    console.log(`[admin] login failed ip=${ip}`)
     res.status(401).json({ error: 'Invalid password' })
     return
   }
-  const token = makeAdminToken(password)
+
+  const userAgent = req.headers['user-agent'] ?? ''
+  let token: string
+  try {
+    token = await createAdminSession(ip, userAgent)
+  } catch (err) {
+    console.error(`[admin] login failed: session persistence error ip=${ip}`, err)
+    res.status(503).json({ error: 'Authentication service temporarily unavailable' })
+    return
+  }
+  console.log(`[admin] login success ip=${ip}`)
+
   const isProduction = process.env.NODE_ENV === 'production'
   res.cookie('admin_token', token, {
     httpOnly: true,
@@ -52,7 +76,12 @@ router.post('/auth', async (req: Request, res: Response): Promise<void> => {
 // ---------------------------------------------------------------------------
 // DELETE /auth — logout (no admin token required)
 // ---------------------------------------------------------------------------
-router.delete('/auth', (_req: Request, res: Response): void => {
+router.delete('/auth', async (req: Request, res: Response): Promise<void> => {
+  const token = req.cookies?.admin_token as string | undefined
+  if (token) {
+    await destroyAdminSession(token)
+    console.log(`[admin] logout ip=${clientIp(req)}`)
+  }
   res.clearCookie('admin_token', { path: '/' })
   res.json({ ok: true })
 })
@@ -105,6 +134,7 @@ const ProjectSchema = z.object({
   total_units:        z.number().int().optional(),
   total_towers:       z.number().int().optional(),
   land_area_acres:    z.number().optional(),
+  launch_date:        z.string().optional(),
   possession_label:   z.string().optional(),
   possession_date:    z.string().optional(),
   description:        z.string().optional(),
@@ -128,6 +158,7 @@ const ProjectPatchSchema = z.object({
   total_units:        z.number().int().optional(),
   total_towers:       z.number().int().optional(),
   land_area_acres:    z.number().optional(),
+  launch_date:        z.string().optional(),
   possession_label:   z.string().optional(),
   possession_date:    z.string().optional(),
   description:        z.string().optional(),
@@ -161,6 +192,131 @@ const BuilderPatchSchema = z.object({
   headquarters:  z.string().nullable().optional(),
   website:       z.string().nullable().optional(),
   credai_member: z.boolean().optional(),
+})
+
+// ── Intelligence Zod Schemas ──────────────────────────────────────────
+
+const IntelligenceStatusEnum = z.enum(['DRAFT', 'IN_REVIEW', 'PUBLISHED'])
+
+// Accepts YYYY-MM-DD from date inputs or full ISO datetime strings
+const dateField = z
+  .string()
+  .nullable()
+  .optional()
+  .transform(v => {
+    if (!v) return v
+    // date-only → append UTC midnight
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return `${v}T00:00:00.000Z`
+    return v
+  })
+
+const DnaPatchSchema = z.object({
+  builder_track_record_score: z.number().int().min(0).max(100).nullable().optional(),
+  builder_track_record_label: z.string().nullable().optional(),
+  price_position_score:       z.number().int().min(0).max(100).nullable().optional(),
+  price_position_label:       z.string().nullable().optional(),
+  locality_score:             z.number().int().min(0).max(100).nullable().optional(),
+  locality_label:             z.string().nullable().optional(),
+  rera_compliance_score:      z.number().int().min(0).max(100).nullable().optional(),
+  rera_compliance_label:      z.string().nullable().optional(),
+  amenity_depth_score:        z.number().int().min(0).max(100).nullable().optional(),
+  amenity_depth_label:        z.string().nullable().optional(),
+  possession_certainty_score: z.number().int().min(0).max(100).nullable().optional(),
+  possession_certainty_label: z.string().nullable().optional(),
+  last_verified_at:           dateField,
+  verified_by:                z.string().nullable().optional(),
+})
+
+const ConfidenceSourceEnum = z.enum(['RERA', 'Project Documents', 'Site Visit', 'Builder Claim', 'Estimated'])
+
+const DecisionProfilePatchSchema = z.object({
+  status:               IntelligenceStatusEnum.optional(),
+  decision_thesis:      z.string().nullable().optional(),
+  why_buy:              z.array(z.string()).max(3).optional(),
+  why_avoid:            z.array(z.string()).max(3).optional(),
+  best_for:             z.string().nullable().optional(),
+  not_ideal_for:        z.string().nullable().optional(),
+  confidence_sources:   z.array(ConfidenceSourceEnum).optional(),
+  recommendation_notes: z.string().nullable().optional(),
+  advisor_notes:        z.string().nullable().optional(),
+  last_verified_at:     dateField,
+  verified_by:          z.string().nullable().optional(),
+})
+
+const PersonaEnum = z.enum(['FAMILY', 'PROFESSIONAL', 'INVESTOR', 'NRI', 'UPGRADER', 'RETIREE'])
+
+const PersonaProfilePatchSchema = z.object({
+  primary_persona:      PersonaEnum.nullable().optional(),
+  secondary_personas:   z.array(PersonaEnum).optional(),
+  persona_descriptions: z.record(z.string()).nullable().optional(),
+  income_range:       z.string().nullable().optional(),
+  family_stage:       z.string().nullable().optional(),
+  work_location:      z.string().nullable().optional(),
+  risk_appetite:      z.enum(['LOW', 'MEDIUM', 'HIGH']).nullable().optional(),
+  timeline_horizon:   z.string().nullable().optional(),
+  motivation_note:    z.string().nullable().optional(),
+  last_verified_at:   dateField,
+  verified_by:        z.string().nullable().optional(),
+})
+
+const RecommendationProfilePatchSchema = z.object({
+  status:               IntelligenceStatusEnum.optional(),
+  tier:                 z.enum(['STRONG_BUY', 'BUY', 'HOLD', 'WATCH', 'AVOID']).nullable().optional(),
+  primary_thesis:       z.string().nullable().optional(),
+  end_use_thesis:       z.string().nullable().optional(),
+  investment_thesis:    z.string().nullable().optional(),
+  family_thesis:        z.string().nullable().optional(),
+  investor_thesis:      z.string().nullable().optional(),
+  luxury_thesis:        z.string().nullable().optional(),
+  risk_thesis:          z.string().nullable().optional(),
+  walk_away_conditions: z.array(z.string()).max(3).optional(),
+  timeline_advice:      z.string().nullable().optional(),
+  negotiation_leverage: z.array(z.string()).max(3).optional(),
+  internal_confidence:  z.enum(['VERIFIED', 'PARTIAL', 'ESTIMATED']).nullable().optional(),
+  admin_notes:          z.string().nullable().optional(),
+  last_verified_at:     dateField,
+  verified_by:          z.string().nullable().optional(),
+})
+
+const CompetitorCreateSchema = z.object({
+  competitor_project_id:  z.string().uuid().nullable().optional(),
+  competitor_name:        z.string().min(1),
+  competitor_slug:        z.string().nullable().optional(),
+  this_project_advantage: z.string().nullable().optional(),
+  competitor_advantage:   z.string().nullable().optional(),
+  verdict:                z.string().nullable().optional(),
+  price_delta_note:       z.string().nullable().optional(),
+  sort_order:             z.number().int().default(0),
+})
+
+const CompetitorPatchSchema = CompetitorCreateSchema.omit({ competitor_name: true }).extend({
+  competitor_name: z.string().min(1).optional(),
+})
+
+const UnitCreateSchema = z.object({
+  name:               z.string().min(1),
+  bhk:                z.number().int().min(0),
+  super_area_sqft:    z.number().int().nullable().optional(),
+  carpet_area_sqft:   z.number().int().nullable().optional(),
+  balcony_area_sqft:  z.number().int().nullable().optional(),
+  bathrooms:          z.number().int().nullable().optional(),
+  price_min_cr:       z.number().nullable().optional(),
+  price_max_cr:       z.number().nullable().optional(),
+  price_label:        z.string().nullable().optional(),
+  price_is_estimated: z.boolean().optional(),
+})
+
+const UnitPatchSchema = z.object({
+  name:               z.string().min(1).optional(),
+  bhk:                z.number().int().min(0).optional(),
+  super_area_sqft:    z.number().int().nullable().optional(),
+  carpet_area_sqft:   z.number().int().nullable().optional(),
+  balcony_area_sqft:  z.number().int().nullable().optional(),
+  bathrooms:          z.number().int().nullable().optional(),
+  price_min_cr:       z.number().nullable().optional(),
+  price_max_cr:       z.number().nullable().optional(),
+  price_label:        z.string().nullable().optional(),
+  price_is_estimated: z.boolean().optional(),
 })
 
 // ---------------------------------------------------------------------------
@@ -214,6 +370,7 @@ router.post('/projects', async (req: Request, res: Response): Promise<void> => {
       total_units:        d.total_units,
       total_towers:       d.total_towers,
       land_area_acres:    d.land_area_acres,
+      launch_date:        d.launch_date ? new Date(d.launch_date) : undefined,
       possession_label:   d.possession_label,
       possession_date:    d.possession_date ? new Date(d.possession_date) : undefined,
       description:        d.description,
@@ -240,6 +397,11 @@ router.get('/projects/:id', async (req: Request, res: Response): Promise<void> =
       images:       { orderBy: { sort_order: 'asc' } },
       amenities:    true,
       connectivity: true,
+      dna:                    true,
+      decision_profile:       true,
+      persona_profile:        true,
+      recommendation_profile: true,
+      competitors:            { orderBy: { sort_order: 'asc' } },
     },
   })
   if (!project) {
@@ -247,6 +409,45 @@ router.get('/projects/:id', async (req: Request, res: Response): Promise<void> =
     return
   }
   res.json({ project })
+})
+
+// ---------------------------------------------------------------------------
+// GET /projects/:id/completeness
+// ---------------------------------------------------------------------------
+router.get('/projects/:id/completeness', async (req: Request, res: Response): Promise<void> => {
+  const project = await prisma.project.findUnique({
+    where: { id: req.params.id },
+    include: {
+      builder:                true,
+      unit_types:             { select: { id: true, price_min_cr: true, super_area_sqft: true, carpet_area_sqft: true } },
+      images:                 { select: { type: true } },
+      amenities:              { select: { id: true } },
+      connectivity:           { select: { id: true } },
+      dna:                    { select: {
+        builder_track_record_score: true,
+        price_position_score:       true,
+        locality_score:             true,
+        rera_compliance_score:      true,
+        amenity_depth_score:        true,
+        possession_certainty_score: true,
+      }},
+      decision_profile:       { select: { decision_thesis: true, why_buy: true, why_avoid: true } },
+      persona_profile:        { select: { primary_persona: true } },
+      recommendation_profile: { select: { tier: true } },
+      competitors:            { select: { id: true } },
+    },
+  })
+  if (!project) {
+    res.status(404).json({ error: 'Not found' })
+    return
+  }
+  // ProjectDocument has no @relation on Project — query separately
+  const docs = await prisma.projectDocument.findMany({
+    where:  { project_id: req.params.id },
+    select: { doc_type: true },
+  })
+  const result = computeCompleteness({ ...project, documents: docs })
+  res.json(result)
 })
 
 // ---------------------------------------------------------------------------
@@ -264,12 +465,13 @@ router.patch('/projects/:id', async (req: Request, res: Response): Promise<void>
       where: { id: req.params.id },
       data: {
         ...d,
+        launch_date: d.launch_date ? new Date(d.launch_date) : undefined,
         possession_date: d.possession_date ? new Date(d.possession_date) : undefined,
       },
     })
     res.json({ project: updated })
   } catch (err: unknown) {
-    if ((err as { code?: string }).code === 'P2025') {
+    if (isPrismaNotFound(err)) {
       res.status(404).json({ error: 'Not found' })
       return
     }
@@ -286,11 +488,494 @@ router.delete('/projects/:id', async (req: Request, res: Response): Promise<void
     await prisma.project.delete({ where: { id: req.params.id } })
     res.json({ ok: true })
   } catch (err: unknown) {
-    if ((err as { code?: string }).code === 'P2025') {
+    if (isPrismaNotFound(err)) {
       res.status(404).json({ error: 'Not found' })
       return
     }
     console.error('[admin]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /projects/:id/dna
+// ---------------------------------------------------------------------------
+router.patch('/projects/:id/dna', async (req: Request, res: Response): Promise<void> => {
+  const parsed = DnaPatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  try {
+    const before = await prisma.projectDna.findUnique({ where: { project_id: req.params.id } })
+    const dna = await prisma.projectDna.upsert({
+      where:  { project_id: req.params.id },
+      create: { project_id: req.params.id, ...parsed.data },
+      update: parsed.data,
+    })
+    await prisma.intelligenceAudit.create({
+      data: {
+        project_id:  req.params.id,
+        section:     'dna',
+        action:      before ? 'update' : 'create',
+        before_data: before as object ?? undefined,
+        after_data:  dna as object,
+      },
+    })
+    res.json({ dna })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] dna patch', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /projects/:id/decision-profile
+// ---------------------------------------------------------------------------
+router.patch('/projects/:id/decision-profile', async (req: Request, res: Response): Promise<void> => {
+  const parsed = DecisionProfilePatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  const d = parsed.data
+  const data = {
+    ...d,
+    why_buy:   d.why_buy?.filter(s => s.trim()) ?? undefined,
+    why_avoid: d.why_avoid?.filter(s => s.trim()) ?? undefined,
+  }
+  try {
+    const before = await prisma.decisionProfile.findUnique({ where: { project_id: req.params.id } })
+    const profile = await prisma.decisionProfile.upsert({
+      where:  { project_id: req.params.id },
+      create: { project_id: req.params.id, ...data },
+      update: data,
+    })
+    await prisma.intelligenceAudit.create({
+      data: {
+        project_id:  req.params.id,
+        section:     'decision_profile',
+        action:      before ? 'update' : 'create',
+        before_data: before as object ?? undefined,
+        after_data:  profile as object,
+      },
+    })
+    res.json({ profile })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] decision-profile patch', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /projects/:id/persona-profile
+// ---------------------------------------------------------------------------
+router.patch('/projects/:id/persona-profile', async (req: Request, res: Response): Promise<void> => {
+  const parsed = PersonaProfilePatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  try {
+    // Prisma's Json fields require the JsonNull sentinel (not a plain `null`) to clear the column.
+    const { persona_descriptions, ...rest } = parsed.data
+    const data = {
+      ...rest,
+      ...(persona_descriptions !== undefined
+        ? { persona_descriptions: persona_descriptions === null ? Prisma.JsonNull : persona_descriptions }
+        : {}),
+    }
+    const before = await prisma.personaProfile.findUnique({ where: { project_id: req.params.id } })
+    const profile = await prisma.personaProfile.upsert({
+      where:  { project_id: req.params.id },
+      create: { project_id: req.params.id, ...data },
+      update: data,
+    })
+    await prisma.intelligenceAudit.create({
+      data: {
+        project_id:  req.params.id,
+        section:     'persona_profile',
+        action:      before ? 'update' : 'create',
+        before_data: before as object ?? undefined,
+        after_data:  profile as object,
+      },
+    })
+    res.json({ profile })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] persona-profile patch', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /projects/:id/recommendation-profile
+// ---------------------------------------------------------------------------
+router.patch('/projects/:id/recommendation-profile', async (req: Request, res: Response): Promise<void> => {
+  const parsed = RecommendationProfilePatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  const d = parsed.data
+  const data = {
+    ...d,
+    walk_away_conditions: d.walk_away_conditions?.filter(s => s.trim()) ?? undefined,
+    negotiation_leverage: d.negotiation_leverage?.filter(s => s.trim()) ?? undefined,
+  }
+  try {
+    const before = await prisma.recommendationProfile.findUnique({ where: { project_id: req.params.id } })
+    const profile = await prisma.recommendationProfile.upsert({
+      where:  { project_id: req.params.id },
+      create: { project_id: req.params.id, ...data },
+      update: data,
+    })
+    await prisma.intelligenceAudit.create({
+      data: {
+        project_id:  req.params.id,
+        section:     'recommendation_profile',
+        action:      before ? 'update' : 'create',
+        before_data: before as object ?? undefined,
+        after_data:  profile as object,
+      },
+    })
+    res.json({ profile })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] recommendation-profile patch', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// POST /projects/:id/competitors
+// ---------------------------------------------------------------------------
+router.post('/projects/:id/competitors', async (req: Request, res: Response): Promise<void> => {
+  const parsed = CompetitorCreateSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  if (parsed.data.competitor_project_id === req.params.id) {
+    res.status(400).json({ error: 'Project cannot compete with itself' }); return
+  }
+  const competitor = await prisma.projectCompetitor.create({
+    data: { project_id: req.params.id, ...parsed.data },
+  })
+  await prisma.intelligenceAudit.create({
+    data: {
+      project_id: req.params.id,
+      section:    'competitor',
+      action:     'create',
+      after_data: competitor as object,
+    },
+  })
+  res.status(201).json({ competitor })
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /competitors/:competitorId
+// ---------------------------------------------------------------------------
+router.patch('/competitors/:competitorId', async (req: Request, res: Response): Promise<void> => {
+  const parsed = CompetitorPatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  try {
+    const before = await prisma.projectCompetitor.findUnique({ where: { id: req.params.competitorId } })
+    const competitor = await prisma.projectCompetitor.update({
+      where: { id: req.params.competitorId },
+      data:  parsed.data,
+    })
+    await prisma.intelligenceAudit.create({
+      data: {
+        project_id:  competitor.project_id,
+        section:     'competitor',
+        action:      'update',
+        before_data: before as object ?? undefined,
+        after_data:  competitor as object,
+      },
+    })
+    res.json({ competitor })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] competitor patch', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// DELETE /competitors/:competitorId
+// ---------------------------------------------------------------------------
+router.delete('/competitors/:competitorId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const before = await prisma.projectCompetitor.findUnique({ where: { id: req.params.competitorId } })
+    await prisma.projectCompetitor.delete({ where: { id: req.params.competitorId } })
+    if (before) {
+      await prisma.intelligenceAudit.create({
+        data: {
+          project_id:  before.project_id,
+          section:     'competitor',
+          action:      'delete',
+          before_data: before as object,
+        },
+      })
+    }
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] competitor delete', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// POST /projects/:id/units
+// ---------------------------------------------------------------------------
+router.post('/projects/:id/units', async (req: Request, res: Response): Promise<void> => {
+  const parsed = UnitCreateSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  const project = await prisma.project.findUnique({ where: { id: req.params.id }, select: { id: true } })
+  if (!project) { res.status(404).json({ error: 'Project not found' }); return }
+  const unit = await prisma.unitType.create({
+    data: { project_id: req.params.id, ...parsed.data },
+  })
+  res.status(201).json({ unit })
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /units/:unitId
+// ---------------------------------------------------------------------------
+router.patch('/units/:unitId', async (req: Request, res: Response): Promise<void> => {
+  const parsed = UnitPatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  try {
+    const unit = await prisma.unitType.update({
+      where: { id: req.params.unitId },
+      data:  parsed.data,
+    })
+    res.json({ unit })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] unit patch', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// DELETE /units/:unitId
+// ---------------------------------------------------------------------------
+router.delete('/units/:unitId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    await prisma.unitType.delete({ where: { id: req.params.unitId } })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] unit delete', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// Zod schemas — Amenity, Connectivity, Image, Document
+// ---------------------------------------------------------------------------
+const AmenityCreateSchema = z.object({
+  name:     z.string().min(1),
+  category: z.enum(['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking']),
+})
+
+const AmenityPatchSchema = z.object({
+  name:     z.string().min(1).optional(),
+  category: z.enum(['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking']).optional(),
+})
+
+const ConnectivityCreateSchema = z.object({
+  type:        z.enum(['metro', 'road', 'expressway', 'school', 'hospital', 'mall', 'landmark', 'airport', 'university']),
+  name:        z.string().min(1),
+  distance_km: z.number().nullable().optional(),
+  data_source: z.enum(['brochure', 'google', 'estimated', 'manual']).optional(),
+  notes:       z.string().nullable().optional(),
+})
+
+const ConnectivityPatchSchema = z.object({
+  type:        z.enum(['metro', 'road', 'expressway', 'school', 'hospital', 'mall', 'landmark', 'airport', 'university']).optional(),
+  name:        z.string().min(1).optional(),
+  distance_km: z.number().nullable().optional(),
+  data_source: z.enum(['brochure', 'google', 'estimated', 'manual']).optional(),
+  notes:       z.string().nullable().optional(),
+})
+
+const ImagePatchSchema = z.object({
+  type:       z.enum(['hero', 'exterior', 'interior', 'floor_plan', 'amenity', 'master_plan', 'clubhouse', 'pool', 'location_map']).optional(),
+  caption:    z.string().nullable().optional(),
+  bhk:        z.number().int().nullable().optional(),
+  size_sqft:  z.number().int().nullable().optional(),
+  sort_order: z.number().int().optional(),
+})
+
+const ImageCreateSchema = z.object({
+  url:        z.string().url(),
+  type:       z.enum(['hero', 'exterior', 'interior', 'floor_plan', 'amenity', 'master_plan', 'clubhouse', 'pool', 'location_map']),
+  caption:    z.string().nullable().optional(),
+  bhk:        z.number().int().nullable().optional(),
+  size_sqft:  z.number().int().nullable().optional(),
+  sort_order: z.number().int().optional(),
+})
+
+// ---------------------------------------------------------------------------
+// POST /projects/:id/amenities
+// ---------------------------------------------------------------------------
+router.post('/projects/:id/amenities', async (req: Request, res: Response): Promise<void> => {
+  const parsed = AmenityCreateSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  const project = await prisma.project.findUnique({ where: { id: req.params.id }, select: { id: true } })
+  if (!project) { res.status(404).json({ error: 'Project not found' }); return }
+  const amenity = await prisma.amenity.create({
+    data: { project_id: req.params.id, ...parsed.data },
+  })
+  res.status(201).json({ amenity })
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /amenities/:amenityId
+// ---------------------------------------------------------------------------
+router.patch('/amenities/:amenityId', async (req: Request, res: Response): Promise<void> => {
+  const parsed = AmenityPatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  try {
+    const amenity = await prisma.amenity.update({ where: { id: req.params.amenityId }, data: parsed.data })
+    res.json({ amenity })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// DELETE /amenities/:amenityId
+// ---------------------------------------------------------------------------
+router.delete('/amenities/:amenityId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    await prisma.amenity.delete({ where: { id: req.params.amenityId } })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// POST /projects/:id/connectivity
+// ---------------------------------------------------------------------------
+router.post('/projects/:id/connectivity', async (req: Request, res: Response): Promise<void> => {
+  const parsed = ConnectivityCreateSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  const project = await prisma.project.findUnique({ where: { id: req.params.id }, select: { id: true } })
+  if (!project) { res.status(404).json({ error: 'Project not found' }); return }
+  const entry = await prisma.connectivity.create({
+    data: { project_id: req.params.id, ...parsed.data },
+  })
+  res.status(201).json({ entry })
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /connectivity/:connId
+// ---------------------------------------------------------------------------
+router.patch('/connectivity/:connId', async (req: Request, res: Response): Promise<void> => {
+  const parsed = ConnectivityPatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  try {
+    const entry = await prisma.connectivity.update({ where: { id: req.params.connId }, data: parsed.data })
+    res.json({ entry })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// DELETE /connectivity/:connId
+// ---------------------------------------------------------------------------
+router.delete('/connectivity/:connId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    await prisma.connectivity.delete({ where: { id: req.params.connId } })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// GET /projects/:id/images
+// ---------------------------------------------------------------------------
+router.get('/projects/:id/images', async (req: Request, res: Response): Promise<void> => {
+  const images = await prisma.projectImage.findMany({
+    where:   { project_id: req.params.id },
+    orderBy: { sort_order: 'asc' },
+  })
+  res.json({ images })
+})
+
+// ---------------------------------------------------------------------------
+// POST /projects/:id/images  (attach an already-uploaded URL to the gallery)
+// ---------------------------------------------------------------------------
+router.post('/projects/:id/images', async (req: Request, res: Response): Promise<void> => {
+  const parsed = ImageCreateSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  const project = await prisma.project.findUnique({ where: { id: req.params.id }, select: { id: true } })
+  if (!project) { res.status(404).json({ error: 'Project not found' }); return }
+  const image = await prisma.projectImage.create({
+    data: { project_id: req.params.id, ...parsed.data },
+  })
+  res.status(201).json({ image })
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /images/:imageId
+// ---------------------------------------------------------------------------
+router.patch('/images/:imageId', async (req: Request, res: Response): Promise<void> => {
+  const parsed = ImagePatchSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return }
+  try {
+    const image = await prisma.projectImage.update({ where: { id: req.params.imageId }, data: parsed.data })
+    res.json({ image })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// DELETE /images/:imageId
+// ---------------------------------------------------------------------------
+router.delete('/images/:imageId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    await prisma.projectImage.delete({ where: { id: req.params.imageId } })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// GET /projects/:id/documents
+// ---------------------------------------------------------------------------
+router.get('/projects/:id/documents', async (req: Request, res: Response): Promise<void> => {
+  const documents = await prisma.projectDocument.findMany({
+    where:   { project_id: req.params.id },
+    orderBy: { created_at: 'desc' },
+  })
+  res.json({ documents })
+})
+
+// ---------------------------------------------------------------------------
+// DELETE /documents/:docId
+// ---------------------------------------------------------------------------
+router.delete('/documents/:docId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const doc = await prisma.projectDocument.findUnique({ where: { id: req.params.docId } })
+    if (!doc) { res.status(404).json({ error: 'Not found' }); return }
+    // Delete from Supabase Storage if URL is a storage URL
+    if (doc.storage_url) {
+      const url = new URL(doc.storage_url)
+      const pathParts = url.pathname.split('/storage/v1/object/public/')
+      if (pathParts.length === 2) {
+        const [bucket, ...rest] = pathParts[1].split('/')
+        await supabaseAdmin.storage.from(bucket).remove([rest.join('/')])
+      }
+    }
+    await prisma.projectDocument.delete({ where: { id: req.params.docId } })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[admin] document delete', err)
     res.status(500).json({ error: 'Internal error' })
   }
 })
@@ -343,7 +1028,7 @@ router.patch('/builders/:id', async (req: Request, res: Response): Promise<void>
     })
     res.json({ builder })
   } catch (err: unknown) {
-    if ((err as { code?: string }).code === 'P2025') {
+    if (isPrismaNotFound(err)) {
       res.status(404).json({ error: 'Not found' })
       return
     }
@@ -360,7 +1045,7 @@ router.delete('/builders/:id', async (req: Request, res: Response): Promise<void
     await prisma.builder.delete({ where: { id: req.params.id } })
     res.json({ ok: true })
   } catch (err: unknown) {
-    if ((err as { code?: string }).code === 'P2025') {
+    if (isPrismaNotFound(err)) {
       res.status(404).json({ error: 'Not found' })
       return
     }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import { Outfit } from "next/font/google";
+import { Outfit, Playfair_Display } from "next/font/google";
 import { PostHogProvider } from "@/components/PostHogProvider";
 
 const outfit = Outfit({
@@ -9,9 +9,20 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+});
+
 export const metadata: Metadata = {
-  title: "RealtyPal - Property Discovery",
-  description: "Chatbot validation and property discovery",
+  title: "RealtyPals — AI Property Advisor for Noida",
+  description: "Find, compare, and evaluate Noida real estate with AI. Get honest project analysis, EMI calculations, and builder track records — in plain language.",
+  keywords: ["Noida real estate", "property advisor", "AI property search", "buy flat Noida", "Sector 150", "RERA registered"],
+  openGraph: {
+    title: "RealtyPals — AI Property Advisor for Noida",
+    description: "Find, compare, and evaluate Noida real estate with AI.",
+    type: "website",
+  },
   icons: {
     icon: "/images/logo/favicon.png",
     shortcut: "/images/logo/favicon.png",
@@ -32,8 +43,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${outfit.variable} font-sans`}>
-      <body className="antialiased glass-app font-sans">
+    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${playfair.variable} font-sans`}>
+      <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#EEEEEE]">
+        <div className="noise-overlay" />
         <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>

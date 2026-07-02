@@ -1,26 +1,38 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { User, RotateCcw, Copy, ChevronDown } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
+import { parseResponseBlocks } from '@/lib/responseParser'
+import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
 import ChatLoader from '@/components/ChatLoader'
 import ProjectCard from '@/components/ProjectCard'
+import AIRecommendationCard from '@/components/chat/AIRecommendationCard'
+import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
-import type { Chip, ChipPickerState } from './types'
+import type { ChipPickerState } from './types'
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function formatStreamingIntent(intent: Record<string, unknown> | null | undefined): string | null {
+  if (!intent) return null
+  const parts: string[] = []
+  if (Array.isArray(intent.bhk) && intent.bhk.length > 0) parts.push(`${(intent.bhk as number[]).join('/')} BHK`)
+  if (typeof intent.sector === 'string') parts.push(intent.sector)
+  if (typeof intent.budgetMax === 'number') parts.push(`under ₹${intent.budgetMax}Cr`)
+  else if (typeof intent.budgetMin === 'number') parts.push(`from ₹${intent.budgetMin}Cr`)
+  return parts.length > 0 ? `Looking for ${parts.join(' · ')}` : 'Scanning available projects…'
+}
+
+import ReactMarkdown from 'react-markdown'
 
 // ── Dynamic imports — excluded from initial JS bundle ──────────────────────
-const ReactMarkdown = dynamic(() => import('react-markdown'), {
-  ssr: false,
-  loading: () => <span className="inline-block w-16 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />,
-})
 
 const SectorMap = dynamic(() => import('@/components/SectorMap'), { ssr: false })
 const ComparisonTable = dynamic(() => import('@/components/ComparisonTable'), { ssr: false })
-const PropertyDetailView = dynamic(() => import('@/components/PropertyDetailView'), { ssr: false })
 
 // ── Props ──────────────────────────────────────────────────────────────────
 export interface MessageBubbleProps {
@@ -37,13 +49,13 @@ export interface MessageBubbleProps {
   userId: string | null
   regeneratingIdx: number | null
   chipPicker: ChipPickerState | null
-  followUpChips: Chip[]
+  chips: import('./types').ChipAction[]
   // Callbacks — all stable (useCallback in parent)
   onCopy: (text: string) => void
   onDetailOpen: (project: ProjectCardType | null) => void
   onCallback: (project: ProjectCardType) => void
   onRegenerate: (index: number) => void
-  onSubmitMessage: (text: string) => void
+  onAction: (action: import('./types').ChipAction) => void
   onToggleExpanded: (messageId: string) => void
   onToggleMap: () => void
   onSetChipPicker: (picker: ChipPickerState | null) => void
@@ -79,12 +91,120 @@ function buildPickerMessage(action: string, selected: ProjectCardType[]): string
   }
 }
 
+// ── Progressive suggestion chip — one visual per Conversation Engine emphasis ─
+// 'primary'/'secondary'/'tertiary' come from the engine's group metadata; chips
+// with no group (every stage besides DISCOVERY today) keep the original
+// priority/actionType-driven styling untouched.
+function renderSuggestionChip(
+  chip: import('./types').ChipAction,
+  chipPicker: ChipPickerState | null,
+  onSetChipPicker: (picker: ChipPickerState | null) => void,
+  onAction: (action: import('./types').ChipAction) => void,
+  emphasis?: 'primary' | 'secondary' | 'tertiary',
+) {
+  const isActive = chipPicker?.label === chip.label
+  const hasDropdown = chip.actionType === 'COMPARE_PROPERTIES' || chip.actionType === 'CALCULATE_EMI' || chip.actionType === 'BOOK_VISIT'
+
+  const activeClass = 'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900 ring-2 ring-blue-600 ring-offset-1 dark:ring-offset-gray-900'
+
+  let sizeClass: string
+  let colorClass: string
+  switch (emphasis) {
+    case 'primary':
+      sizeClass = 'px-5 py-3 text-[14px] font-semibold rounded-2xl'
+      colorClass = 'bg-blue-600 border-blue-600 text-white shadow-sm hover:bg-blue-700 hover:border-blue-700'
+      break
+    case 'tertiary':
+      sizeClass = 'px-2.5 py-1 text-[11px] font-medium rounded-full'
+      colorClass = 'bg-transparent border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300'
+      break
+    case 'secondary':
+      sizeClass = 'px-3.5 py-1.5 sm:px-4 sm:py-2 text-[12px] font-semibold rounded-full'
+      colorClass = 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
+      break
+    default:
+      sizeClass = 'px-3.5 py-1.5 sm:px-4 sm:py-2 text-[12px] font-semibold rounded-full'
+      colorClass =
+        chip.priority === 1 && chip.actionType !== 'TEXT_MESSAGE' && chip.actionType !== 'INTENT_PATCH'
+          ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900 hover:bg-blue-700 hover:border-blue-700'
+          : chip.actionType !== 'TEXT_MESSAGE' && chip.actionType !== 'INTENT_PATCH'
+            ? 'bg-gray-100 dark:bg-gray-800 border-gray-100 dark:border-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-gray-200 dark:hover:border-gray-700'
+            : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
+  }
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.96 }}
+      key={chip.id}
+      onClick={() => {
+        if (isActive) { onSetChipPicker(null); return }
+        onAction(chip)
+      }}
+      className={`flex items-center gap-1.5 transition-all shadow-sm whitespace-nowrap border ${sizeClass} ${isActive ? activeClass : colorClass}`}
+    >
+      {chip.icon && <span>{chip.icon}</span>}
+      {chip.label}
+      {hasDropdown && <span className={`text-[10px] ml-0.5 ${isActive || chip.priority === 1 ? 'text-blue-200' : 'text-gray-400'}`}>▾</span>}
+    </motion.button>
+  )
+}
+
+// ── Suggestion chip groups — shared by in-chat progressive chips and the
+// homepage welcome screen, so there is one chip presentation, not two. ──
+export function SuggestionChipGroups({
+  chips,
+  chipPicker,
+  onSetChipPicker,
+  onAction,
+}: {
+  chips: import('./types').ChipAction[]
+  chipPicker: ChipPickerState | null
+  onSetChipPicker: (picker: ChipPickerState | null) => void
+  onAction: (action: import('./types').ChipAction) => void
+}) {
+  if (chips.length === 0) return null
+
+  if (chips.some((c) => c.group)) {
+    /* Grouped chips (e.g. homepage): engine decides groups/counts, we just render them. */
+    return (
+      <div className="flex flex-col gap-4">
+        {Array.from(
+          chips.reduce((groups, c) => {
+            const key = c.group!.id
+            if (!groups.has(key)) groups.set(key, { group: c.group!, items: [] as typeof chips })
+            groups.get(key)!.items.push(c)
+            return groups
+          }, new Map<string, { group: NonNullable<(typeof chips)[number]['group']>; items: typeof chips }>())
+            .values()
+        ).map(({ group, items }) => (
+          <div key={group.id}>
+            <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
+              {group.label}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {items.map((chip) => renderSuggestionChip(chip, chipPicker, onSetChipPicker, onAction, group.emphasis))}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {chips.map((chip) => renderSuggestionChip(chip, chipPicker, onSetChipPicker, onAction))}
+    </div>
+  )
+}
+
 // ── Custom equality — only the actively-streaming (last) message re-renders ─
 function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
   if (prev.isLast || next.isLast) return false
   return (
     prev.message.content === next.message.content &&
     prev.message.properties === next.message.properties &&
+    prev.message.exactResults === next.message.exactResults &&
+    prev.message.nearbyResults === next.message.nearbyResults &&
     prev.message.isSearching === next.message.isSearching &&
     prev.isExpanded === next.isExpanded &&
     prev.carouselIndex === next.carouselIndex
@@ -95,55 +215,176 @@ function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
 function MessageBubbleInner({
   message, index, isLast, isSubmitting, chatPhase, isLastProperties,
   isExpanded, carouselIndex, lastShortlist, showMap, userId, regeneratingIdx,
-  chipPicker, followUpChips,
-  onCopy, onDetailOpen, onCallback, onRegenerate, onSubmitMessage,
+  chipPicker, chips,
+  onCopy, onDetailOpen, onCallback, onRegenerate, onAction,
   onToggleExpanded, onToggleMap, onSetChipPicker, onSetCarouselIndex,
   onSetSiteVisit, onOpenCalculator, onOpenShareSheet, onToast,
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
 
-  return (
-    <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} animate-message-in group/msg`}>
-      <div className={`flex w-full ${isUser ? 'items-end gap-4 flex-row-reverse' : 'items-start gap-4'}`}>
-        {/* Avatar */}
-        {isUser ? (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <User size={20} className="text-white" />
-          </div>
-        ) : (
-          <div className="w-10 h-10 rounded-full glass-surface flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden border border-white/50 dark:border-white/10">
-            <Image src="/images/logo/realtypals.png" alt="RP" width={36} height={36} />
-          </div>
-        )}
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
+  const touchTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (isUser || !message.content) return;
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isUser || !message.content) return;
+    const touch = e.touches[0];
+    touchTimeout.current = setTimeout(() => {
+      setContextMenu({ x: touch.clientX, y: touch.clientY });
+    }, 500); // 500ms long press
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimeout.current) clearTimeout(touchTimeout.current);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: isUser ? 20 : -20, scale: 0.95 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} group/msg`}
+    >
+      <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}>
         {/* Message bubble */}
         <div
-          className={`rounded-[20px] px-5 py-3.5 shadow-sm transition-all duration-300 ${isUser
-            ? 'max-w-[78%] bg-[#0064E5] text-white shadow-blue-500/10'
-            : 'flex-1 min-w-0 glass-surface text-gray-900 dark:text-gray-100 border border-white/40 dark:border-white/5 relative overflow-hidden shadow-lg'
+          onContextMenu={handleContextMenu}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
+          className={`px-5 py-3.5 transition-all duration-300 ${isUser
+            ? 'max-w-[85%] sm:max-w-[78%] bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md border border-transparent rounded-[24px] rounded-br-[4px]'
+            : 'max-w-[95%] sm:max-w-[85%] bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 relative overflow-hidden rounded-[24px] rounded-tl-[4px] cursor-pointer sm:cursor-default shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-none'
             }`}
         >
           {!isUser && <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] pointer-events-none" />}
 
           {!isUser ? (
             <div className="relative z-10">
-              {!message.content && !message.properties?.length ? (
-                <ChatLoader userQuery={message.userQuery ?? ''} isSearching={!!message.isSearching} />
-              ) : message.content ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.25 }}
-                  className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-blue-700 dark:prose-headings:text-blue-400 prose-a:text-blue-500 prose-strong:text-blue-600 dark:prose-strong:text-blue-400 prose-table:w-full prose-table:text-sm prose-table:my-4 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-100 dark:prose-th:bg-blue-900/40 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-gray-800 dark:prose-th:text-blue-200 prose-th:border prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-gray-200 dark:prose-td:border-gray-700"
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {message.content}
-                  </ReactMarkdown>
-                  {isLast && isSubmitting && message.type === 'ai' && (
-                    <span className="inline-block w-0.5 h-[1em] bg-current animate-pulse ml-0.5 align-middle opacity-70" />
-                  )}
-                </motion.div>
-              ) : null}
+              {(() => {
+                const hasProperties = (message.exactResults?.length ?? 0) > 0 || (message.nearbyResults?.length ?? 0) > 0
+                const phase = message.streamingPhase
+                const intent = message.streamingIntent
+                const resultCount = message.streamingResultCount
+
+                // Stage A: waiting — no properties, no content yet
+                if (!hasProperties && !message.content) {
+                  if (phase === 'extracting' || phase === 'searching') {
+                    const intentLabel = formatStreamingIntent(intent)
+                    const isSearching = phase === 'searching'
+                    return (
+                      <div className="py-2 space-y-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex gap-1">
+                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </div>
+                          <span className="text-[13px] font-medium text-blue-600 dark:text-blue-400">
+                            {isSearching ? 'Searching projects…' : 'Understanding your request…'}
+                          </span>
+                        </div>
+                        {isSearching && intentLabel && (
+                          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3.5 py-2.5 border border-blue-100 dark:border-blue-800/60">
+                            <p className="text-[13px] text-blue-700 dark:text-blue-300 font-medium leading-snug">
+                              {intentLabel}
+                            </p>
+                          </div>
+                        )}
+                        {isSearching && (
+                          <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[0, 1, 2].map(i => (
+                              <div key={i} className="rounded-[24px] overflow-hidden bg-white border border-gray-100/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                                <div className="h-[220px] bg-gray-100 animate-pulse" />
+                                <div className="p-5 space-y-3">
+                                  <div className="h-4 bg-gray-100 rounded-full w-3/4 animate-pulse" />
+                                  <div className="h-3 bg-gray-100 rounded-full w-1/2 animate-pulse" />
+                                  <div className="h-6 bg-gray-100 rounded-full w-1/3 animate-pulse" />
+                                  <div className="flex gap-2 mt-1">
+                                    <div className="h-5 bg-gray-100 rounded-full w-16 animate-pulse" />
+                                    <div className="h-5 bg-gray-100 rounded-full w-20 animate-pulse" />
+                                  </div>
+                                  <div className="h-9 bg-gray-100 rounded-xl w-full animate-pulse mt-1" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+                  // phase = null (aborted before properties) or fallback
+                  return <ChatLoader userQuery={message.userQuery ?? ''} isSearching={false} />
+                }
+
+                // Stage B: properties arrived, AI text not started yet
+                if (hasProperties && !message.content && phase === 'generating') {
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2.5 py-1"
+                    >
+                      <div className="flex gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <span className="text-[12px] text-blue-600 dark:text-blue-400 font-medium">
+                        Analyzing {resultCount != null && resultCount > 0 ? `${resultCount} ${resultCount === 1 ? 'property' : 'properties'}` : 'results'}…
+                      </span>
+                    </motion.div>
+                  )
+                }
+
+                // Stage C: AI text streaming or complete
+                if (message.content) {
+                  const streaming = isLast && isSubmitting
+                  const blocks = streaming ? null : parseResponseBlocks(message.content)
+                  return (
+                    <>
+                      {!hasProperties && (
+                        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100 dark:border-gray-700/60">
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">AI Advisor</span>
+                        </div>
+                      )}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.25 }}
+                        className={blocks ? undefined : "prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-blue-700 dark:prose-headings:text-blue-400 prose-a:text-blue-500 prose-strong:bg-blue-50 dark:prose-strong:bg-blue-900/30 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md prose-strong:text-blue-700 dark:prose-strong:text-blue-300 prose-strong:font-semibold prose-strong:border prose-strong:border-blue-100 dark:prose-strong:border-blue-800/50 prose-table:w-full prose-table:text-sm prose-table:my-4 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-100 dark:prose-th:bg-blue-900/40 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-gray-800 dark:prose-th:text-blue-200 prose-th:border prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-gray-200 dark:prose-td:border-gray-700"}
+                      >
+                        {blocks ? (
+                          <ResponseBlockRenderer blocks={blocks} />
+                        ) : (
+                          <>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {message.content}
+                            </ReactMarkdown>
+                            {streaming && (
+                              <span className="inline-block w-0.5 h-[1em] bg-current animate-pulse ml-0.5 align-middle opacity-70" />
+                            )}
+                          </>
+                        )}
+                      </motion.div>
+                    </>
+                  )
+                }
+
+                return null
+              })()}
             </div>
           ) : (
             <p className="whitespace-pre-wrap text-[16px] font-medium leading-relaxed relative z-10">{message.content}</p>
@@ -151,43 +392,27 @@ function MessageBubbleInner({
         </div>
       </div>
 
-      {/* Copy button */}
-      {!isUser && message.content && (
-        <div className="ml-14 mt-1 flex items-center gap-0.5 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200">
+
+      <div className={`mt-1.5 flex items-center w-full ${isUser ? 'justify-end' : 'justify-start'} gap-2 px-1`}>
+        {message.timestamp && (
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+            {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+        {!isUser && message.content && (
           <button
-            onClick={() => onCopy(message.content)}
+            onClick={() => { onCopy(message.content); onToast('Copied to clipboard'); }}
             title="Copy response"
-            className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all text-[11px]"
+            className="text-gray-400 hover:text-blue-500 transition-colors opacity-0 group-hover/msg:opacity-100"
           >
             <Copy size={12} />
           </button>
-        </div>
-      )}
-
-      {/* Regenerate */}
-      {!isUser && chatPhase === 'ADVISOR' && index > 0 && !message.properties?.length && (
-        <button
-          onClick={() => onRegenerate(index)}
-          disabled={regeneratingIdx === index || isSubmitting}
-          className="ml-[56px] mt-1 inline-flex items-center gap-1 px-3 py-1.5 text-[11px] text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-full hover:bg-white/50 dark:hover:bg-gray-800 disabled:opacity-40 touch-target-min"
-          title="Regenerate response"
-        >
-          <RotateCcw size={11} className={regeneratingIdx === index ? 'animate-spin' : ''} />
-          {regeneratingIdx === index ? 'Regenerating...' : 'Regenerate'}
-        </button>
-      )}
-
-      {/* Rich Property Detail View */}
-      {message.propertyDetail && (
-        <PropertyDetailView
-          propertyDetail={message.propertyDetail}
-          onToast={onToast}
-        />
-      )}
+        )}
+      </div>
 
       {/* In-chat image gallery */}
-      {!message.propertyDetail && message.images && message.images.length > 0 && (
-        <div className="mt-3 ml-12 w-full max-w-[80%]">
+      {message.images && message.images.length > 0 && (
+        <div className="mt-3 w-full max-w-[90%] md:max-w-[80%]">
           <div className="relative rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm">
             {message.images[carouselIndex]?.type && (
               <div className="absolute top-3 left-3 z-10">
@@ -196,13 +421,18 @@ function MessageBubbleInner({
                 </span>
               </div>
             )}
-            <Image
-              src={message.images[carouselIndex]?.url ?? message.images[0]?.url ?? ''}
-              alt={message.images[carouselIndex]?.caption ?? 'Property image'}
-              width={680}
-              height={400}
-              className="w-full h-72 object-cover"
-            />
+            {(() => {
+              const src = message.images[carouselIndex]?.url ?? message.images[0]?.url;
+              return src ? (
+                <Image
+                  src={src}
+                  alt={message.images[carouselIndex]?.caption ?? 'Property image'}
+                  width={680}
+                  height={400}
+                  className="w-full h-72 object-cover"
+                />
+              ) : null;
+            })()}
             {message.images.length > 1 && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
                 {message.images.map((_, imgIdx) => (
@@ -227,8 +457,8 @@ function MessageBubbleInner({
       )}
 
       {/* Highlights */}
-      {!message.propertyDetail && message.highlights && message.highlights.length > 0 && (
-        <div className="mt-3 ml-12 max-w-[80%] bg-[#F7F7F7] dark:bg-gray-800 border border-[#E8E8E8] dark:border-gray-700 rounded-2xl px-5 py-4 shadow-sm">
+      {message.highlights && message.highlights.length > 0 && (
+        <div className="mt-3 max-w-[90%] md:max-w-[80%] bg-[#F7F7F7] dark:bg-gray-800 border border-[#E8E8E8] dark:border-gray-700 rounded-2xl px-5 py-4 shadow-sm">
           <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Key Highlights</p>
           <ul className="space-y-2">
             {message.highlights.map((h, hIdx) => (
@@ -242,8 +472,8 @@ function MessageBubbleInner({
       )}
 
       {/* Amenities */}
-      {!message.propertyDetail && message.amenities && message.amenities.length > 0 && (
-        <div className="mt-4 ml-12 sm:ml-14 w-full max-w-[95%] sm:max-w-[85%] md:max-w-[75%]">
+      {message.amenities && message.amenities.length > 0 && (
+        <div className="mt-4 w-full max-w-[95%] sm:max-w-[85%] md:max-w-[75%]">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3">
             {message.amenities.map((amenity, idx) => (
               <div key={idx} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-blue-100 dark:border-blue-900/30 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 flex items-center justify-center text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 group">
@@ -254,103 +484,177 @@ function MessageBubbleInner({
         </div>
       )}
 
-      {/* Property cards */}
+      {/* Property cards — suppressed in comparison mode (ComparisonTable owns that UI) */}
       {(() => {
-        const isGeneralOrComparison =
-          message.content.includes('| Property |') ||
-          message.content.includes('| ---') ||
-          message.intent?.is_general_query === true
-        if (!message.properties || message.properties.length === 0 || isGeneralOrComparison) return null
+        if (message.responseMode === 'comparison') return null
 
-        if (!isLastProperties) {
-          return (
-            <div className="mt-2">
-              <button
-                onClick={() => onToggleExpanded(message.id)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-100 rounded-xl text-[12px] font-semibold text-gray-500 hover:text-blue-700 transition-all"
-              >
-                <span>🏠</span>
-                {isExpanded ? 'Hide' : 'View'} {message.properties.length} properties from this search
-                <ChevronDown size={13} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-              </button>
-              {isExpanded && (
-                <div className="mt-3 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-x-auto snap-x snap-mandatory sm:overflow-x-visible pb-2 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
-                  {message.properties.map((property, pi) => (
-                    <motion.div
-                      key={property.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
-                      className="min-w-[85vw] sm:min-w-0 snap-center flex-shrink-0 sm:flex-shrink"
-                    >
-                      <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onCallback={onCallback} onToast={onToast} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )
-        }
+        // New format: exactResults / nearbyResults (set on all fresh messages)
+        const useNewFormat = message.exactResults !== undefined
+        const exactList = message.exactResults ?? []
+        const nearbyList = message.nearbyResults ?? []
+        const expansion = message.expansion
+        const legacyList = message.properties ?? []
+
+        const hasExact = exactList.length > 0
+        const hasNearby = nearbyList.length > 0
+        const hasLegacy = legacyList.length > 0
+
+        if (useNewFormat && !hasExact && !hasNearby) return null
+        if (!useNewFormat && !hasLegacy) return null
+
+        const isOpen = isLastProperties ? !isExpanded : isExpanded
+
+        // Determine the card list to render for map + legacy path
+        const primaryCards = useNewFormat ? (hasExact ? exactList : nearbyList) : legacyList
+
+        const headerLabel = useNewFormat && !hasExact && hasNearby
+          ? `${nearbyList.length} nearby ${nearbyList.length === 1 ? 'alternative' : 'alternatives'}`
+          : `${primaryCards.length} ${primaryCards.length === 1 ? 'property' : 'properties'} found`
+
+        const headerSector = useNewFormat && !hasExact && hasNearby
+          ? expansion?.searchedSectors.join(', ')
+          : primaryCards[0]?.sector
 
         return (
-          <>
+          <div className="mt-2 w-full">
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-4 flex items-center gap-3"
+              className="mt-4 flex flex-wrap items-center justify-between gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-100 dark:border-gray-700 p-2.5 rounded-xl shadow-sm"
             >
-              <div className="flex-1 flex items-center gap-2">
-                <span className="text-[15px]">🏘️</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[15px]">{useNewFormat && !hasExact && hasNearby ? '📍' : (isLast && isSubmitting ? '🔍' : '✓')}</span>
                 <span className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
-                  {message.properties.length} {message.properties.length === 1 ? 'property' : 'properties'} found
+                  {headerLabel}
                 </span>
-                {message.properties[0]?.sector && (
-                  <span className="text-[11px] text-gray-400">· {message.properties[0].sector}</span>
+                {headerSector && (
+                  <span className="text-[11px] text-gray-400 hidden sm:inline">· {headerSector}</span>
                 )}
+                <span className="hidden sm:inline text-[9px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full ml-1 uppercase tracking-wider">
+                  Ranked by fit
+                </span>
               </div>
-              <span className="text-[10px] font-semibold text-gray-400 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2.5 py-1 rounded-full">
-                Ranked by fit
-              </span>
+              <button
+                onClick={() => onToggleExpanded(message.id)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-lg text-[11px] font-semibold text-gray-600 dark:text-gray-300 transition-all shadow-sm active:scale-95"
+              >
+                {isOpen ? 'Hide' : 'View'}
+                <ChevronDown size={12} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
             </motion.div>
 
-            <div className="mt-3 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-x-auto snap-x snap-mandatory sm:overflow-x-visible pb-2 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0 w-full">
-              {message.properties.map((property, pi) => (
-                <motion.div
-                  key={property.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
-                  className="min-w-[85vw] sm:min-w-0 snap-center flex-shrink-0 sm:flex-shrink"
-                >
-                  <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onCallback={onCallback} onToast={onToast} />
-                </motion.div>
-              ))}
-            </div>
+            {/* Empty sector banner — shown when requested sector has no exact matches */}
+            {useNewFormat && !hasExact && hasNearby && expansion && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-3 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-start gap-3"
+              >
+                <span className="text-amber-500 text-base mt-0.5 flex-shrink-0">⚠️</span>
+                <div>
+                  <p className="text-[13px] font-semibold text-amber-800 dark:text-amber-300">
+                    We couldn&apos;t find an exact match in {expansion.requestedSector}
+                  </p>
+                  <p className="text-[12px] text-amber-700 dark:text-amber-400 mt-0.5 font-medium">
+                    Verified N/a
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
-            {message.properties.length >= 2 && (
+            {isOpen && (
               <div className="mt-3 w-full">
-                <button
-                  onClick={onToggleMap}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-100 rounded-xl text-[12px] font-semibold text-gray-600 hover:text-blue-700 transition-all mb-2"
-                >
-                  <span>🗺️</span>
-                  {showMap ? 'Hide map' : `View on map — ${message.properties.length} properties`}
-                </button>
-                {showMap && (
-                  <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                    <SectorMap properties={message.properties} />
+                {/* AI Recommendation — reasoning only, for the top-ranked result */}
+                {primaryCards[0] && (
+                  <div className="mb-4">
+                    <AIRecommendationCard project={primaryCards[0]} onViewDetails={onDetailOpen} />
+                  </div>
+                )}
+
+                {/* Exact results grid */}
+                {(useNewFormat ? exactList : legacyList).length > 0 && (
+                  <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                    {(useNewFormat ? exactList : legacyList).map((property, pi) => (
+                      <motion.div
+                        key={property.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
+                        className="w-full h-full flex flex-col"
+                      >
+                        <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
+                        <PropertyQuickActions
+                          project={property}
+                          onCallback={onCallback}
+                          onSetSiteVisit={onSetSiteVisit}
+                          onOpenCalculator={onOpenCalculator}
+                          onOpenShareSheet={onOpenShareSheet}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Nearby results section */}
+                {useNewFormat && hasNearby && (
+                  <div className={hasExact ? 'mt-6' : ''}>
+                    {hasExact && (
+                      <div className="mb-3 flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          📍 Nearby alternatives · {expansion?.searchedSectors.join(', ')}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                      {nearbyList.map((property, pi) => (
+                        <motion.div
+                          key={property.id}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
+                          className="w-full h-full flex flex-col"
+                        >
+                          <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
+                          <PropertyQuickActions
+                            project={property}
+                            onCallback={onCallback}
+                            onSetSiteVisit={onSetSiteVisit}
+                            onOpenCalculator={onOpenCalculator}
+                            onOpenShareSheet={onOpenShareSheet}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {primaryCards.length >= 2 && (
+                  <div className="mt-2 w-full">
+                    <button
+                      onClick={onToggleMap}
+                      className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 rounded-xl text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-all mb-4 shadow-sm"
+                    >
+                      <span>🗺️</span>
+                      {showMap ? 'Hide interactive map' : `View all ${primaryCards.length} on map`}
+                    </button>
+                    {showMap && (
+                      <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-md">
+                        <SectorMap properties={primaryCards} />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             )}
-          </>
+          </div>
         )
       })()}
 
       {/* Advisor shortlist re-surface */}
-      {message.type === 'ai' && chatPhase === 'ADVISOR' && !message.properties?.length && lastShortlist.length > 0 && isLast && (
-        <div className="mt-3 ml-14 w-full">
+      {message.type === 'ai' && chatPhase === 'ADVISOR' && !message.exactResults?.length && !message.nearbyResults?.length && !message.properties?.length && lastShortlist.length > 0 && isLast && (
+        <div className="mt-3 w-full">
           <button
             onClick={() => onToggleExpanded(message.id)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl text-[12px] font-semibold text-blue-700 transition-all"
@@ -361,51 +665,33 @@ function MessageBubbleInner({
           {isExpanded && (
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {lastShortlist.map((p, pi) => (
-                <ProjectCard key={p.id} project={p} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
+                <div key={p.id} className="flex flex-col">
+                  <ProjectCard project={p} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
+                  <PropertyQuickActions
+                    project={p}
+                    onCallback={onCallback}
+                    onSetSiteVisit={onSetSiteVisit}
+                    onOpenCalculator={onOpenCalculator}
+                    onOpenShareSheet={onOpenShareSheet}
+                  />
+                </div>
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Follow-up chips */}
-      {message.type === 'ai' && message.content && isLast && !isSubmitting && followUpChips.length > 0 && (
+      {/* Progressive chips from Conversation Engine */}
+      {message.type === 'ai' && message.content && isLast && !isSubmitting && chips.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.15 }}
-          className="mt-3 ml-0 sm:ml-14"
+          className="mt-3"
         >
-          <div className="flex flex-wrap gap-2">
-            {followUpChips.map((chip) => {
-              const isActive = chipPicker?.label === chip.label
-              return (
-                <button
-                  key={chip.label}
-                  onClick={() => {
-                    if (chip.special === '__open_calculator__') { onOpenCalculator(); onSetChipPicker(null); return }
-                    if (chip.special === '__share_shortlist__') { onOpenShareSheet(); onSetChipPicker(null); return }
-                    if (chip.msg) { onSetChipPicker(null); onSubmitMessage(chip.msg); return }
-                    if (chip.picker && chip.pickerAction) {
-                      if (isActive) { onSetChipPicker(null); return }
-                      onSetChipPicker({ mode: chip.picker, action: chip.pickerAction, label: chip.label, isModal: chip.pickerModal ?? false, selected: [] })
-                    }
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-[12px] font-semibold transition-all shadow-sm whitespace-nowrap border ${
-                    isActive
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900'
-                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
-                  }`}
-                >
-                  <span>{chip.emoji}</span>
-                  {chip.label}
-                  {chip.picker && <span className={`text-[10px] ml-0.5 ${isActive ? 'text-blue-200' : 'text-gray-400'}`}>▾</span>}
-                </button>
-              )
-            })}
-          </div>
+          <SuggestionChipGroups chips={chips} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} />
 
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {chipPicker && (
               <motion.div
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
@@ -434,7 +720,15 @@ function MessageBubbleInner({
                                 if (chipPicker.action === 'site_visit') { onSetSiteVisit(p); return }
                                 if (chipPicker.action === 'callback') { onCallback(p); return }
                               }
-                              onSubmitMessage(buildPickerMessage(chipPicker.action, [p]))
+                              onAction({
+                                id: crypto.randomUUID(),
+                                actionType: 'TEXT_MESSAGE',
+                                label: chipPicker.action,
+                                icon: '',
+                                analyticsId: '',
+                                priority: 1,
+                                payload: { text: buildPickerMessage(chipPicker.action, [p]) }
+                              })
                             } else {
                               onSetChipPicker({
                                 ...chipPicker,
@@ -476,7 +770,15 @@ function MessageBubbleInner({
                         onClick={() => {
                           const selected = lastShortlist.filter(p => chipPicker.selected.includes(p.slug))
                           onSetChipPicker(null)
-                          onSubmitMessage(buildPickerMessage(chipPicker.action, selected))
+                          onAction({
+                            id: crypto.randomUUID(),
+                            actionType: 'TEXT_MESSAGE',
+                            label: 'Compare',
+                            icon: '',
+                            analyticsId: '',
+                            priority: 1,
+                            payload: { text: buildPickerMessage(chipPicker.action, selected) }
+                          })
                         }}
                         className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[13px] font-semibold rounded-xl transition-all"
                       >
@@ -492,12 +794,46 @@ function MessageBubbleInner({
       )}
 
       {/* Comparison table */}
-      {message.type === 'ai' && message.showComparisonTable && lastShortlist.length >= 2 && (
-        <div className="mt-3 ml-14 w-full">
-          <ComparisonTable left={lastShortlist[0]} right={lastShortlist[1]} />
+      {message.type === 'ai' && message.showComparisonTable && (message.comparisonProjects?.length ?? 0) >= 2 && (
+        <div className="mt-3 w-full">
+          <ComparisonTable projects={message.comparisonProjects!} />
         </div>
       )}
-    </div>
+
+      {/* Context Menu (Right Click / Long Press) */}
+      <AnimatePresence mode="wait">
+        {contextMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.1 }}
+            className="fixed z-50 bg-white dark:bg-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 dark:border-gray-700 rounded-xl py-1.5 w-48 overflow-hidden"
+            style={{ 
+              top: Math.min(contextMenu.y, typeof window !== 'undefined' ? window.innerHeight - 100 : contextMenu.y), 
+              left: Math.min(contextMenu.x, typeof window !== 'undefined' ? window.innerWidth - 200 : contextMenu.x)
+            }}
+          >
+            <button
+              onClick={() => { onCopy(message.content); setContextMenu(null); onToast('Copied to clipboard'); }}
+              className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2.5 transition-colors"
+            >
+              <Copy size={14} className="text-gray-400" /> Copy Response
+            </button>
+            {chatPhase === 'ADVISOR' && index > 0 && !message.properties?.length && (
+              <button
+                onClick={() => { onRegenerate(index); setContextMenu(null); }}
+                disabled={regeneratingIdx === index || isSubmitting}
+                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2.5 transition-colors disabled:opacity-50"
+              >
+                <RotateCcw size={14} className={`text-gray-400 ${regeneratingIdx === index ? 'animate-spin' : ''}`} /> 
+                {regeneratingIdx === index ? 'Regenerating...' : 'Regenerate'}
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 

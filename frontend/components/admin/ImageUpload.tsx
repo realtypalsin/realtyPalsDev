@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { Upload, Loader2, X, ExternalLink } from 'lucide-react'
 import Image from 'next/image'
+import { API_BASE } from '@/lib/env'
 
 interface Props {
   value: string
@@ -23,7 +24,11 @@ export default function ImageUpload({ value, onChange, projectSlug }: Props) {
     form.append('file', file)
     form.append('slug', projectSlug || 'unnamed')
 
-    const res  = await fetch('/api/v1/admin/upload-image', { method: 'POST', body: form })
+    const res  = await fetch(`${API_BASE}/admin/upload-image`, { 
+      method: 'POST', 
+      credentials: 'include',
+      body: form 
+    })
     const data = await res.json()
 
     if (!res.ok) {

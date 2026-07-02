@@ -9,6 +9,7 @@ import SkeletonCard from '@/components/SkeletonCard';
 import ProjectDetailPanel from '@/components/ProjectDetailPanel';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
 import { API_BASE } from '@/lib/env';
+import { authHeaders } from '@/lib/authedFetch';
 import { Bookmark } from 'lucide-react';
 import Toast from '@/components/Toast';
 import { motion } from 'framer-motion';
@@ -26,7 +27,8 @@ export default function SavedPropertiesPage() {
     const uid = localStorage.getItem('user_id');
     if (!uid) { router.replace('/auth'); return; }
     setUserId(uid);
-    fetch(`${API_BASE}/saved`, { headers: { 'X-User-Id': uid } })
+    authHeaders()
+      .then((headers) => fetch(`${API_BASE}/saved`, { headers }))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();

@@ -1,20 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
-import { API_BASE } from '@/lib/env'
 import type { ProjectDetail } from '@/types/project'
 import ProjectDetailPanel from '@/components/ProjectDetailPanel'
-import SkeletonCard from '@/components/SkeletonCard'
+import { API_BASE } from '@/lib/env'
 
 export default function PropertyDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
-  const [project, setProject] = useState<ProjectDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
+  const [detail, setDetail] = useState<ProjectDetail | null>(null)
+  const [notFound, setNotFound] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Stable stub — lets the panel open and show skeletons immediately
+  const stub = useMemo(() => ({ slug: slug ?? '', id: '' } as any), [slug])
+
+  useEffect(() => {
+    setUserId(localStorage.getItem('user_id'))
+  }, [])
 
   useEffect(() => {
     if (!slug) return
@@ -23,10 +28,11 @@ export default function PropertyDetailPage() {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()
       })
-      .then(d => setProject(d.project ?? null))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
+      .then(d => setDetail(d.project ?? null))
+      .catch(() => setNotFound(true))
   }, [slug])
+
+  if (!slug) return null
 
   return (
     <div className="min-h-screen bg-[#E6E6E6]">
@@ -39,13 +45,7 @@ export default function PropertyDetailPage() {
           Back
         </button>
 
-        {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
-          </div>
-        )}
-
-        {error && !loading && (
+        {notFound ? (
           <div className="text-center py-20">
             <p className="text-2xl mb-2">🏚️</p>
             <p className="text-gray-500 mb-4">Property not found.</p>
@@ -56,16 +56,14 @@ export default function PropertyDetailPage() {
               Explore properties
             </button>
           </div>
-        )}
-
-        {project && !loading && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <ProjectDetailPanel project={project} onClose={() => router.back()} inline />
-          </motion.div>
+        ) : (
+          <ProjectDetailPanel
+            project={detail ?? stub}
+            initialDetail={detail ?? undefined}
+            onClose={() => router.back()}
+            userId={userId}
+            inline
+          />
         )}
       </div>
     </div>

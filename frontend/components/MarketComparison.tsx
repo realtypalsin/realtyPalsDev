@@ -18,9 +18,6 @@ interface ComparisonData {
 interface Props {
   sector: string
   city?: string
-  /** Project's own price per sqft to highlight on chart */
-  projectPriceSqft?: number | null
-  projectName?: string
 }
 
 function statusLabel(s: string): string {
@@ -41,7 +38,7 @@ function statusColor(s: string): string {
   return map[s] ?? 'bg-gray-400'
 }
 
-export default function MarketComparison({ sector, city = 'Noida', projectPriceSqft, projectName }: Props) {
+export default function MarketComparison({ sector, city = 'Noida' }: Props) {
   const [data, setData] = useState<ComparisonData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -64,10 +61,6 @@ export default function MarketComparison({ sector, city = 'Noida', projectPriceS
   }
 
   if (!data) return <p className="text-xs text-gray-400 py-2">No market data available for {sector}.</p>
-
-  const priceComparison = projectPriceSqft && data.avg_price_sqft
-    ? ((projectPriceSqft - data.avg_price_sqft) / data.avg_price_sqft) * 100
-    : null
 
   return (
     <div className="space-y-4">
@@ -94,24 +87,11 @@ export default function MarketComparison({ sector, city = 'Noida', projectPriceS
                       left: `${((data.avg_price_sqft - data.min_price_sqft) / (data.max_price_sqft - data.min_price_sqft)) * 100}%`
                     }}
                   />
-                  {projectPriceSqft && (
-                    <div
-                      className="absolute top-0 bottom-0 w-1 bg-yellow-400 rounded"
-                      style={{
-                        left: `${Math.min(100, Math.max(0, ((projectPriceSqft - data.min_price_sqft) / (data.max_price_sqft - data.min_price_sqft)) * 100))}%`
-                      }}
-                    />
-                  )}
                 </>
               )}
             </div>
             <div className="flex justify-between items-center text-[10px]">
               <span className="text-gray-500">Sector avg: <strong className="text-gray-700">₹{data.avg_price_sqft.toLocaleString()}/sqft</strong></span>
-              {priceComparison !== null && (
-                <span className={`font-bold ${priceComparison > 10 ? 'text-red-500' : priceComparison < -10 ? 'text-green-500' : 'text-amber-500'}`}>
-                  {projectName}: {priceComparison > 0 ? '+' : ''}{priceComparison.toFixed(0)}% vs avg
-                </span>
-              )}
             </div>
           </div>
         </div>

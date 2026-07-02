@@ -1,7 +1,7 @@
 // backend/src/routes/documents.ts
-// POST /documents       — upload PDF/image, extract text, persist
+// POST /documents       — upload PDF/image, extract text, persist (admin only)
 // GET  /documents?slug= — list docs for a project
-// POST /documents/ask   — ask a question about a stored document
+// POST /documents/ask   — ask a question about a stored document (rate limited)
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import multer from 'multer'
@@ -9,6 +9,9 @@ import type { ChatCompletionContentPart } from 'groq-sdk/resources/chat/completi
 import { prisma } from '../lib/db'
 import { supabaseAdmin } from '../lib/supabase'
 import { groq, GROQ_SMART } from '../lib/ai/groq'
+import { requireAdmin } from '../lib/adminAuth'
+import { checkRateLimit } from '../lib/cache'
+import { clientIp } from '../lib/request'
 
 const router = Router()
 
@@ -27,6 +30,12 @@ const AskSchema = z.object({
 })
 
 router.post('/ask', async (req: Request, res: Response) => {
+  const { allowed } = await checkRateLimit(`docs:ask:${clientIp(req)}`, 20, 60)
+  if (!allowed) {
+    res.status(429).json({ error: 'Too many requests. Please try again later.' })
+    return
+  }
+
   const parsed = AskSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid request' })
@@ -88,14 +97,14 @@ router.get('/', async (req: Request, res: Response) => {
   const docs = await prisma.projectDocument.findMany({
     where: { project_slug: slug },
     orderBy: { created_at: 'desc' },
-    select: { id: true, name: true, storage_url: true, doc_type: true, created_at: true },
+    select: { id: true, name: true, storage_url: true, doc_type: true, created_at: true, file_size_bytes: true },
   })
 
   res.json({ docs })
 })
 
 // ── POST /  ───────────────────────────────────────────────────────────────────
-router.post('/', upload.single('file'), async (req: Request, res: Response) => {
+router.post('/', requireAdmin, upload.single('file'), async (req: Request, res: Response) => {
   const file = req.file
   const project_id   = req.body['project_id'] as string | undefined
   const project_slug = req.body['project_slug'] as string | undefined
@@ -111,6 +120,12 @@ router.post('/', upload.single('file'), async (req: Request, res: Response) => {
     return
   }
 
+  const project = await prisma.project.findUnique({ where: { id: project_id }, select: { id: true } })
+  if (!project) {
+    res.status(404).json({ error: 'Project not found' })
+    return
+  }
+
   // Upload to Supabase Storage
   const ext = (file.originalname.split('.').pop() ?? 'pdf').toLowerCase()
   const storagePath = `documents/${project_slug}/${Date.now()}.${ext}`
@@ -120,7 +135,8 @@ router.post('/', upload.single('file'), async (req: Request, res: Response) => {
     .upload(storagePath, file.buffer, { contentType: file.mimetype, upsert: false })
 
   if (uploadError) {
-    res.status(500).json({ error: `Upload failed: ${uploadError.message}` })
+    console.error('[documents] storage upload failed:', uploadError.message)
+    res.status(500).json({ error: 'Storage upload failed' })
     return
   }
 
@@ -171,6 +187,7 @@ router.post('/', upload.single('file'), async (req: Request, res: Response) => {
         storage_url:  publicUrl,
         content_text,
         doc_type,
+        file_size_bytes: file.size,
       },
     })
   } catch (dbError) {

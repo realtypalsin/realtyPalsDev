@@ -2,11 +2,11 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Eye, EyeOff, Mail, Lock, User as UserIcon } from 'lucide-react';
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { track, identifyUser } from '@/lib/analytics';
 import Toast from '@/components/Toast';
 
@@ -19,22 +19,20 @@ export default function AuthPage() {
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [checking, setChecking] = useState(true);
   const [error, setError] = useState('');
   const [toast, setToast] = useState<string | null>(null);
   const router = useRouter();
-  const supabaseRef = useRef(createClient());
-  const supabase = supabaseRef.current;
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    let cancelled = false;
+    getSupabaseClient().then((supabase) => supabase.auth.getSession()).then(({ data }) => {
+      if (cancelled) return;
       if (data.session?.user) {
         localStorage.setItem('user_id', data.session.user.id);
         router.replace('/discover');
-      } else {
-        setChecking(false);
       }
     });
+    return () => { cancelled = true; };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,6 +43,7 @@ export default function AuthPage() {
     setError('');
 
     try {
+      const supabase = await getSupabaseClient();
       if (mode === 'login') {
         const { data, error: authError } = await supabase.auth.signInWithPassword({
           email: email.trim().toLowerCase(),
@@ -95,14 +94,6 @@ export default function AuthPage() {
     setShowPassword(false);
   };
 
-  if (checking) {
-    return (
-      <div className="flex items-center justify-center min-h-[100dvh] bg-black">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
-      </div>
-    );
-  }
-
   return (
     <div className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center bg-black overflow-hidden">
       {/* Background */}
@@ -119,7 +110,8 @@ export default function AuthPage() {
         {/* Logo + wordmark */}
         <div className="flex flex-col items-center mb-8 gap-3">
           <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-xl overflow-hidden">
-            <Image src="/images/logo/realtypals.png" alt="RealtyPals" width={48} height={48} className="object-contain" />
+            <Image src="/images/logo/realtypals.png" alt="RealtyPals" width={48} height={48} className="object-contain block dark:hidden" />
+            <Image src="/images/logo/RealtyPals-logoWhite.png" alt="RealtyPals" width={48} height={48} className="object-contain hidden dark:block" />
           </div>
           <div className="text-center">
             <p className="text-white font-bold text-xl tracking-tight">RealtyPals</p>
@@ -235,7 +227,16 @@ export default function AuthPage() {
           </p>
         </div>
 
-        <p className="text-center text-white/20 text-[11px] mt-5">
+        <div className="text-center mt-5">
+          <button
+            onClick={() => router.push('/discover')}
+            className="text-white/30 hover:text-white/60 text-[12px] transition-colors"
+          >
+            Continue as guest →
+          </button>
+        </div>
+
+        <p className="text-center text-white/20 text-[11px] mt-3">
           AI-powered real estate advisor · Noida · V1
         </p>
       </div>

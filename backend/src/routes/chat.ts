@@ -6,7 +6,9 @@ import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { checkRateLimit, invalidateSessionList, getCached, setCached } from '../lib/cache'
 import { extractIntent } from '../lib/ai/intent'
-import { getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview } from '../lib/discovery'
+import { getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel, matchesProjectName } from '../lib/discovery'
+import type { Intent, ScoredProject } from '../lib/discovery'
+import { computeConfidence, buildClarificationOptions } from '../lib/discovery/confidence'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
@@ -15,11 +17,108 @@ import { streamWithGroq } from '../lib/ai/groq'
 // import { streamWithClaude } from '../lib/ai/claude'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
 import { verifyUser } from '../lib/auth'
+import { clientIp } from '../lib/request'
 import { getBuilderRecord } from '../lib/builders'
 import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
 
 const router = Router()
+
+// ── Fixes 1/2/8/9/12: Centralized cache-reuse decision ──────────────────────
+
+// Fix 8: order-independent array comparison
+function sameSet(a: unknown[], b: unknown[]): boolean {
+  if (a.length !== b.length) return false
+  const sa = [...a].map(String).sort()
+  const sb = [...b].map(String).sort()
+  return sa.every((v, i) => v === sb[i])
+}
+
+// Fix 12: structured routing observability
+function logRouting(
+  event:
+    | 'CACHE_REUSED' | 'CACHE_REJECTED' | 'CACHE_PROJECT_MISS'
+    | 'CACHE_SECTOR_MISS' | 'DISCOVERY_TRIGGERED' | 'DISCOVERY_SKIPPED'
+    | 'SHORTLISTED_ENTERED',
+  detail: Record<string, unknown>,
+): void {
+  console.log(`[ROUTING:${event}]`, detail)
+}
+
+type CacheDecision = {
+  reuse: boolean
+  reason: 'CACHE_REUSED' | 'CACHE_REJECTED' | 'CACHE_PROJECT_MISS' | 'CACHE_SECTOR_MISS'
+  budgetOnly: boolean
+}
+
+// Fix 9: centralized cache validation — priority: project > sector > builder > BHK > budget > reuse
+function canReuseCache(
+  intent: Intent,
+  prevIntent: Record<string, unknown>,
+  cached: ScoredProject[],
+): CacheDecision {
+  const prev = prevIntent as Partial<Intent>
+
+  // Fix 1/3: project named but absent from cache → must discover (uses shared matchesProjectName)
+  if ((intent.projectNames?.length ?? 0) > 0) {
+    const missing = (intent.projectNames ?? []).filter(
+      (n) => !cached.some((p) => matchesProjectName(n, p.name)),
+    )
+    if (missing.length > 0) {
+      return { reuse: false, reason: 'CACHE_PROJECT_MISS', budgetOnly: false }
+    }
+  }
+
+  // Fix 2: search-signal changes evaluated in priority order — sector first.
+  // City-level terms ("Noida", "Greater Noida") are not search signals — do not invalidate cache.
+  if (
+    intent.sector !== undefined &&
+    intent.sector !== prev.sector &&
+    !isCityLevel(intent.sector)
+  ) {
+    return { reuse: false, reason: 'CACHE_SECTOR_MISS', budgetOnly: false }
+  }
+  if (intent.builderName !== undefined && intent.builderName !== prev.builderName) {
+    return { reuse: false, reason: 'CACHE_REJECTED', budgetOnly: false }
+  }
+  // Fix 8: order-independent BHK comparison
+  if ((intent.bhk?.length ?? 0) > 0 && !sameSet(intent.bhk!, (prev.bhk as number[] | undefined) ?? [])) {
+    return { reuse: false, reason: 'CACHE_REJECTED', budgetOnly: false }
+  }
+
+  // Budget changed → filter existing set, no re-discovery
+  const budgetChanged = intent.budgetMax !== prev.budgetMax || intent.budgetMin !== prev.budgetMin
+  if (budgetChanged) return { reuse: true, reason: 'CACHE_REUSED', budgetOnly: true }
+
+  // No search-signal change → safe to reuse (reasoning, follow-ups, etc.)
+  return { reuse: true, reason: 'CACHE_REUSED', budgetOnly: false }
+}
+
+// ── Issue 4: Token budget protection — prevent OpenAI 413 ────────────────────
+
+const SAFE_TOKEN_CEILING = 100_000
+
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4)
+}
+
+function trimMessagesToBudget(
+  systemPrompt: string,
+  msgs: Array<{ role: 'user' | 'assistant'; content: string }>,
+): Array<{ role: 'user' | 'assistant'; content: string }> {
+  const remaining = SAFE_TOKEN_CEILING - estimateTokens(systemPrompt)
+  if (remaining <= 0) return msgs.slice(-2)
+
+  let trimmed = [...msgs]
+  while (
+    trimmed.length > 2 &&
+    estimateTokens(trimmed.map((m) => m.content).join(' ')) > remaining
+  ) {
+    // drop oldest user+assistant pair (priority: old history first)
+    trimmed = trimmed.slice(2)
+  }
+  return trimmed
+}
 
 // Appended to system prompt when Groq is used as fallback.
 // Groq runs without tool support — no builder_lookup, web_search, rera_check,
@@ -107,13 +206,24 @@ DO NOT say "typically", "approximately", "usually", or "from general knowledge" 
 Keep responses concise — you have a 1024-token limit in this mode.`
 
 const BodySchema = z.object({
-  message: z.string().min(1).max(2000).trim(),
+  action: z.object({
+    type: z.enum([
+      'TEXT_MESSAGE',
+      'INTENT_PATCH',
+      'COMPARE_PROPERTIES',
+      'CALCULATE_EMI',
+      'BOOK_VISIT',
+      'REMOVE_FILTER',
+      'OPEN_TOOL',
+    ]),
+    payload: z.record(z.unknown()),
+  }),
   sessionId: z.string().uuid().optional(),
   guestToken: z.string().optional(),
   intent: z.record(z.unknown()).optional(),
 })
 
-import { inputGuardrail } from '../lib/ai/guardrails'
+import { inputGuardrail, outputGuardrail } from '../lib/ai/guardrails'
 
 function sseWrite(res: Response, event: string, data: Record<string, unknown>): void {
   res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
@@ -126,8 +236,9 @@ router.post('/', async (req: Request, res: Response) => {
     return
   }
 
-  const { message, sessionId, guestToken } = parsed.data
+  const { action, sessionId, guestToken } = parsed.data
   const prevIntent = (parsed.data.intent ?? {}) as Record<string, unknown>
+  let message = action.type === 'TEXT_MESSAGE' ? (action.payload.text as string) : ''
   // Identity is derived from a VERIFIED Supabase token only — never a client-set header.
   const userId = (await verifyUser(req)) ?? undefined
 
@@ -137,7 +248,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   const rlKey = userId ?? guestToken!
-  const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || req.ip || 'unknown'
+  const ip = clientIp(req)
   // Two ceilings: per-identity (20/min) AND per-IP (40/min) so rotating guest tokens
   // from one source can't bypass the limit and drain the AI budget.
   const [byKey, byIp] = await Promise.all([
@@ -159,7 +270,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   const send = (event: string, data: Record<string, unknown>) => sseWrite(res, event, data)
 
-  const guardrailCheck = await inputGuardrail(message);
+  const guardrailCheck = await inputGuardrail(message || JSON.stringify(action.payload));
   if (guardrailCheck.blocked) {
     send('token', { token: "I'm not able to help with that. I'm here to assist with Noida real estate — property search, builder info, and home-buying decisions." });
     send('done', { sessionId: sessionId ?? null, intentState: 'COLD', intent: {} });
@@ -167,28 +278,135 @@ router.post('/', async (req: Request, res: Response) => {
     return;
   }
 
-  try {
-    console.log('[CHAT] START extractIntent+getMemory', Date.now(), { message: message.slice(0, 80) })
-    const [intent, memory] = await Promise.all([
-      extractIntent(message, prevIntent as Parameters<typeof extractIntent>[1]),
-      getMemory(userId, guestToken),
-    ])
-    console.log('[CHAT] END extractIntent+getMemory', Date.now(), { intent })
+  // Declared outside try so the outer catch can reference them for rate-limit fallback.
+  let intent: Intent = prevIntent as Intent
+  let intentState: ReturnType<typeof getIntentState> = 'COLD'
+  let intentDegraded = false
+  let projects: Awaited<ReturnType<typeof discoverProjects>>['exactResults'] = []
+  let nearbyProjects: Awaited<ReturnType<typeof discoverProjects>>['nearbyResults'] = []
 
-    const intentState = getIntentState(intent)
+  try {
+    console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
+    let rawIntentResult = { intent: prevIntent as Intent, degraded: false }
+    
+    // FAST PATH: bypass LLM extraction if action is INTENT_PATCH
+    if (action.type === 'INTENT_PATCH') {
+      console.log('[CHAT] INTENT_PATCH fast path — skipping LLM extraction')
+      const patch = action.payload.patch as Record<string, unknown>
+      const { mergeIntent } = await import('../lib/ai/intent')
+      rawIntentResult = { intent: mergeIntent(prevIntent, patch), degraded: false }
+    } else if (action.type === 'REMOVE_FILTER') {
+      console.log('[CHAT] REMOVE_FILTER fast path')
+      const fieldToRemove = action.payload.field as string
+      const newIntent = { ...prevIntent }
+      delete newIntent[fieldToRemove]
+      rawIntentResult = { intent: newIntent as Intent, degraded: false }
+    } else if (action.type === 'TEXT_MESSAGE' && message) {
+      console.log('[CHAT] TEXT_MESSAGE — running LLM extraction')
+      rawIntentResult = await extractIntent(message, prevIntent)
+    }
+
+    const [memory, sessionData] = await Promise.all([
+      getMemory(userId, guestToken),
+      sessionId ? prisma.chatSession.findUnique({
+        where: { id: sessionId },
+        select: {
+          id: true,
+          user_id: true,
+          guest_token: true,
+          summary: true,
+          last_projects: true,
+          messages: { orderBy: { created_at: 'asc' }, select: { role: true, content: true } },
+        },
+      }) : null,
+    ])
+    console.log('[CHAT] END intent/memory/session', Date.now())
+
+    // Ownership check — prevent resuming/poisoning another user's conversation (IDOR).
+    if (sessionData && !(
+      (userId && sessionData.user_id === userId) ||
+      (guestToken && sessionData.guest_token === guestToken)
+    )) {
+      send('error', { message: 'This conversation is not available.' })
+      res.end()
+      return
+    }
+
+    const existingSummary = sessionData?.summary ?? null
+    const chatHistory: Array<{ role: 'user' | 'assistant'; content: string }> = sessionData?.messages.map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    })) ?? []
+    const cachedProjectsFromSession: ScoredProject[] | null = sessionData?.last_projects
+      ? (sessionData.last_projects as unknown as ScoredProject[])
+      : null
+    let currentSessionId = sessionId
+
+    intentDegraded = rawIntentResult.degraded
+    const rawIntent = rawIntentResult.intent
+
+    if (intentDegraded) {
+      console.log('[CHAT] Intent extraction degraded (fallback to previous intent used).', { currentSessionId });
+    }
+
+    // Code-level purpose inference: retiree and first_time_buyer unambiguously imply endUse.
+    // Defensive fallback for cases where the LLM prompt inference doesn't fire.
+    intent = (
+      !rawIntent.purpose &&
+      (rawIntent.riskProfile === 'retiree' || rawIntent.riskProfile === 'first_time_buyer')
+    ) ? { ...rawIntent, purpose: 'endUse' } : rawIntent
+    console.log('[CHAT] END extractIntent', Date.now(), { intent })
+
+    const hasCachedProjects = (cachedProjectsFromSession?.length ?? 0) > 0
+
+    // Fix 2: resolve cache decision BEFORE computing intentState so SHORTLISTED is
+    // only emitted when the cache is actually reused — not when it's rejected.
+    const cacheDecision = hasCachedProjects
+      ? canReuseCache(intent, prevIntent, cachedProjectsFromSession!)
+      : null
+    const skipForCachedQuery = cacheDecision?.reuse ?? false
+
+    // SHORTLISTED iff the cache is being reused; cache miss → READY_TO_SEARCH
+    intentState = getIntentState(intent, skipForCachedQuery)
+    if (intentState === 'SHORTLISTED') {
+      logRouting('SHORTLISTED_ENTERED', { cachedCount: cachedProjectsFromSession?.length ?? 0 })
+    }
     console.log('[CHAT] intentState', Date.now(), { intentState })
     send('intent', { intent, intentState })
 
-    let projects: Awaited<ReturnType<typeof discoverProjects>>['exactResults'] = []
-    let nearbyProjects: Awaited<ReturnType<typeof discoverProjects>>['nearbyResults'] = []
+    // Emit ui_state FIRST TIME (pre-search, sets stage and thinking loader)
+    const { computeConversationState } = await import('../lib/discovery/conversationEngine')
+    const preSearchUiState = computeConversationState(intent, intentState, cachedProjectsFromSession ?? [], intent.is_comparison_query ?? false, chatHistory)
+    send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
+
+    if (skipForCachedQuery) {
+      logRouting(cacheDecision!.reason, { budgetOnly: cacheDecision!.budgetOnly, cachedCount: cachedProjectsFromSession!.length })
+    } else if (cacheDecision && !cacheDecision.reuse) {
+      logRouting('DISCOVERY_TRIGGERED', { reason: cacheDecision.reason })
+    }
+
     let discoveryExpansion: Awaited<ReturnType<typeof discoverProjects>>['expansion'] = undefined
     let notFoundNames: string[] | undefined = undefined
+    let disambiguationText: string | null = null
 
-    const isAdvisoryQuery = intentState === 'GATHERING' && (
+    // Single-signal with no geographic or lifestyle context → ask rather than guess.
+    // Covers: BHK-only, budget-only, sector-only. Takes priority over isAdvisoryQuery.
+    const needsClarification = intentState === 'GATHERING' && (
+      ((intent.bhk?.length ?? 0) > 0 && !intent.sector && !intent.budgetMax && !(intent.lifestyleKeywords?.length ?? 0)) ||
+      (!!intent.budgetMax && !intent.sector && !(intent.bhk?.length ?? 0) && !(intent.lifestyleKeywords?.length ?? 0)) ||
+      (!!intent.sector && !isCityLevel(intent.sector) && !(intent.bhk?.length ?? 0) && !intent.budgetMax && !(intent.lifestyleKeywords?.length ?? 0))
+    )
+
+    // NEVER ask purpose when intentState is READY_TO_SEARCH — the state machine owns this.
+    // If we have enough to search, we search. Purpose is inferred post-results.
+    const needsPurposeClarification = false
+
+    const isAdvisoryQuery = !skipForCachedQuery && !needsClarification && intentState === 'GATHERING' && (
       (intent.bhk?.length ?? 0) > 0 ||
       !!intent.budgetMax ||
       (intent.lifestyleKeywords?.length ?? 0) > 0
     )
+    // ponytail: hasSectorAndBhk was part of the removed needsPurposeClarification gate
 
     if (isAdvisoryQuery) {
       console.log('[CHAT] START getAllSectorsOverview', Date.now())
@@ -200,14 +418,65 @@ router.post('/', async (req: Request, res: Response) => {
       console.log('[CHAT] END getAllSectorsOverview', Date.now())
     }
 
-    if (intentState === 'READY_TO_SEARCH' || intentState === 'SHORTLISTED') {
+    const discoverySkipReason =
+      needsClarification   ? 'needsClarification' :
+      skipForCachedQuery   ? `cachedQuery=${cacheDecision?.reason ?? 'cached'}` :
+      (intentState !== 'READY_TO_SEARCH' && intentState !== 'SHORTLISTED') ? `intentState=${intentState}` :
+      null
+    console.log('[DISCOVERY:GATE]', discoverySkipReason
+      ? { ran: false, reason: discoverySkipReason, intentState, intent }
+      : { ran: true,  intentState, intent }
+    )
+
+    if (skipForCachedQuery) {
+      // Fix 6: restore provenance — split cached set by cacheSource tag
+      const allCached = cachedProjectsFromSession!
+      const cachedExact = allCached.filter((p) => p.cacheSource !== 'nearby')
+      const cachedNearby = allCached.filter((p) => p.cacheSource === 'nearby')
+
+      if (cacheDecision!.budgetOnly && intent.budgetMax) {
+        // Filter to new budget with 10% tolerance
+        projects = cachedExact.filter((p) => (p.price_min_cr ?? 0) <= intent.budgetMax! * 1.1)
+        nearbyProjects = cachedNearby.filter((p) => (p.price_min_cr ?? 0) <= intent.budgetMax! * 1.1)
+        logRouting('CACHE_REUSED', { budgetFilter: intent.budgetMax, exact: projects.length, nearby: nearbyProjects.length })
+      } else {
+        projects = cachedExact
+        nearbyProjects = cachedNearby
+        logRouting('CACHE_REUSED', { exact: projects.length, nearby: nearbyProjects.length })
+      }
+
+      // Fix 3: sync frontend cards with filtered/reused result set
+      if (projects.length > 0 || nearbyProjects.length > 0) {
+        send('properties', { exactResults: projects, nearbyResults: nearbyProjects, expansion: null })
+      }
+      logRouting('DISCOVERY_SKIPPED', { intentState })
+    } else if (intentState === 'READY_TO_SEARCH' || intentState === 'SHORTLISTED') {
+      // Builder-only queries always run discovery — no pre-disambiguation.
+      // discoverProjects() returns all matching projects via BUILDER_ONLY_THRESHOLD;
+      // the AI summarizes. Pre-disambiguation here blocked discoverProjects() from
+      // running, so no property cards were emitted for builder searches.
       console.log('[CHAT] START discoverProjects', Date.now(), { intent })
       const discoveryResult = await discoverProjects(intent)
       console.log('[CHAT] END discoverProjects', Date.now(), { exact: discoveryResult.exactResults.length, nearby: discoveryResult.nearbyResults.length, expansion: discoveryResult.expansion ?? null, notFound: discoveryResult.notFoundNames ?? [] })
+      console.log('[INTELLIGENCE:RETRIEVED]', discoveryResult.exactResults.map(p => ({
+        name:            p.name,
+        score:           p.matchScore,
+        rec_tier:        p.recommendation_profile?.tier          ?? 'MISSING',
+        persona:         p.persona_profile?.primary_persona      ?? 'MISSING',
+        decision_thesis: p.decision_profile?.decision_thesis?.slice(0, 60) ?? 'MISSING',
+        competitor_count: (p.competitors?.length ?? 0),
+      })))
       projects = discoveryResult.exactResults
       nearbyProjects = discoveryResult.nearbyResults
       discoveryExpansion = discoveryResult.expansion
       notFoundNames = discoveryResult.notFoundNames
+      if (discoveryResult.disambiguation) {
+        const { query, candidates } = discoveryResult.disambiguation
+        const list = candidates.map((c) => `• ${c.name} (${c.sector})`).join('\n')
+        disambiguationText = `Multiple projects match "${query}":\n\n${list}\n\nWhich one did you mean?`
+        console.log('[CHAT:DISAMBIG] multi-match detected', { query, count: candidates.length })
+      }
+
       // Always send the properties event when intent is ready — even empty exactResults
       // is meaningful (triggers empty state UI and nearby section on the frontend).
       if (projects.length > 0 || nearbyProjects.length > 0) {
@@ -219,49 +488,43 @@ router.post('/', async (req: Request, res: Response) => {
       }
     }
 
-    // Use expansion sector for context when nearby expansion fired,
-    // otherwise use the originally requested sector.
-    const sectorForContext = discoveryExpansion?.searchedSectors[0] ?? intent.sector
+    // Emit ui_state SECOND TIME (post-search, populates progressive chips)
+    const postSearchUiState = computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory)
+    send('ui_state', postSearchUiState as unknown as Record<string, unknown>)
+
+    // Skip sector context when: cache reused (project data carries it), or discovery found nothing
+    const hasDiscoveredProjects = projects.length > 0 || nearbyProjects.length > 0
+    const sectorForContext = (skipForCachedQuery || !hasDiscoveredProjects)
+      ? null
+      : (discoveryExpansion?.searchedSectors[0] ?? intent.sector)
     console.log('[CHAT] START getSectorContext', Date.now(), { sectorForContext: sectorForContext ?? null })
     const sectorCtx = sectorForContext ? await getSectorContext(sectorForContext) : null
     console.log('[CHAT] END getSectorContext', Date.now(), { found: !!sectorCtx })
 
-    let chatHistory: Array<{ role: 'user' | 'assistant'; content: string }> = []
-    let existingSummary: string | null = null
-    let currentSessionId = sessionId
-
-    if (sessionId) {
-      const session = await prisma.chatSession.findUnique({
-        where: { id: sessionId },
-        include: {
-          messages: { orderBy: { created_at: 'asc' }, select: { role: true, content: true } },
-        },
-      })
-      if (session) {
-        // Ownership check — prevent resuming/poisoning another user's conversation (IDOR).
-        const owned =
-          (userId && session.user_id === userId) ||
-          (guestToken && session.guest_token === guestToken)
-        if (!owned) {
-          send('error', { message: 'This conversation is not available.' })
-          res.end()
-          return
-        }
-        existingSummary = session.summary ?? null
-        chatHistory = session.messages.map((m) => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content,
-        }))
-      }
-    }
-
     console.log('[CHAT] START maybeCompress', Date.now(), { historyLen: chatHistory.length })
     const { messages: compressedHistory, newSummary } = await maybeCompress(chatHistory, existingSummary)
     console.log('[CHAT] END maybeCompress', Date.now(), { compressedLen: compressedHistory.length, newSummary: !!newSummary })
-    const { systemSuffix, messages } = buildContextMessages(message, compressedHistory, newSummary ?? existingSummary, memory)
+    const { systemSuffix, messages: rawMessages } = buildContextMessages(message, compressedHistory, newSummary ?? existingSummary, memory)
     const systemPrompt = buildAdvisorSystemPrompt(intent, projects, memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects : undefined, notFoundNames) + systemSuffix
 
+    // Issue 4: trim message history if total token estimate exceeds safe ceiling
+    const messages = trimMessagesToBudget(systemPrompt, rawMessages)
+    if (messages.length < rawMessages.length) {
+      console.warn('[CHAT:TOKEN_GUARD] trimmed messages', { from: rawMessages.length, to: messages.length, estimatedSystemTokens: estimateTokens(systemPrompt) })
+    }
+
     let fullText = ''
+    if (needsClarification) {
+      const confidence = computeConfidence(intent)
+      const clarification = buildClarificationOptions(intent)
+      fullText = clarification.question
+      console.log('[CHAT:CLARIFY] deterministic clarification, skipping LLM', { intent, confidence: confidence.level, question: fullText })
+      send('token', { token: fullText })
+    } else if (disambiguationText !== null) {
+      fullText = disambiguationText
+      send('token', { token: fullText })
+    }
+    if (!needsClarification && disambiguationText === null) {
     /*
     if (process.env.GROQ_API_KEY) {
       let groqAttempts = 0
@@ -332,24 +595,39 @@ router.post('/', async (req: Request, res: Response) => {
         }
 
         if (name === 'calculate_emi') {
-          const r = calcEmi(Number(args.principalCr), Number(args.annualRate ?? 8.75), Number(args.tenureYears ?? 20));
+          const pCr = Number(args.principalCr);
+          const aRate = Number(args.annualRate ?? 8.75);
+          const tYears = Number(args.tenureYears ?? 20);
+          if (isNaN(pCr) || isNaN(aRate) || isNaN(tYears) || pCr <= 0) {
+            return { error: 'Invalid parameters for calculate_emi. principalCr must be a positive number.' };
+          }
+          const r = calcEmi(pCr, aRate, tYears);
           return {
             monthly_emi: formatInr(r.emi),
             total_payment: formatInr(r.totalPayment),
             total_interest: formatInr(r.totalInterest),
-            assumptions: { annual_rate_pct: Number(args.annualRate ?? 8.75), tenure_years: Number(args.tenureYears ?? 20) },
+            assumptions: { annual_rate_pct: aRate, tenure_years: tYears },
           };
         }
 
         if (name === 'calculate_stamp_duty') {
+          const pCr = Number(args.priceCr);
+          if (isNaN(pCr) || pCr <= 0) {
+            return { error: 'Invalid priceCr parameter for calculate_stamp_duty. Must be a positive number.' };
+          }
           const g = (args.gender === 'female' || args.gender === 'joint') ? args.gender : 'male';
-          const r = calcStampDuty(Number(args.priceCr), g);
+          const r = calcStampDuty(pCr, g);
           return { stamp_duty: formatInr(r.stampDuty), registration: formatInr(r.registration), total: formatInr(r.total), rate_pct: r.rate };
         }
 
         if (name === 'calculate_gst') {
+          const pCr = Number(args.priceCr);
+          const cSqm = Number(args.carpetSqm ?? 0);
+          if (isNaN(pCr) || pCr <= 0 || isNaN(cSqm)) {
+            return { error: 'Invalid parameters for calculate_gst. priceCr must be a positive number.' };
+          }
           const st = args.status === 'ready_to_move' ? 'ready_to_move' : 'under_construction';
-          const r = calcGst(Number(args.priceCr), st, Number(args.carpetSqm ?? 0));
+          const r = calcGst(pCr, st, cSqm);
           return { gst: formatInr(r.gst), rate_pct: r.rate, category: r.category };
         }
 
@@ -377,12 +655,32 @@ router.post('/', async (req: Request, res: Response) => {
       // from training memory. This preserves Hard Rules 13, 16, 17, 18.
       if (process.env.GROQ_API_KEY) {
         const fallbackSystemPrompt = systemPrompt + GROQ_FALLBACK_SUFFIX
-        console.log('[CHAT] START streamWithGroq (fallback)', Date.now())
+        console.log('[CHAT] START streamWithGroq (fallback)', Date.now(), {
+          reason: 'OpenAI pre-first-chunk stall or network error',
+          originalErrorMessage: (err as Error).message
+        })
         fullText = await streamWithGroq(fallbackSystemPrompt, messages, send);
         console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
       } else {
         throw new Error('OpenAI failed and no GROQ_API_KEY fallback configured');
       }
+    }
+    } // end: !needsClarification && disambiguationText === null
+
+    if (fullText) {
+      // Observe-mode guardrail: runs asynchronously after response assembly
+      outputGuardrail(fullText, systemPrompt).then((gr) => {
+        if (gr.violations.length > 0) {
+          console.warn('[GUARDRAIL_VIOLATION] Output guardrail triggered in observe mode', {
+            blocked: gr.blocked,
+            reason: gr.reason,
+            confidence: gr.confidence,
+            violations: gr.violations,
+          })
+        }
+      }).catch(err => {
+        console.error('[GUARDRAIL_ERROR] Failed to run outputGuardrail', err)
+      })
     }
 
     // ── Build artifact payload for the assistant message ──────────────────
@@ -400,10 +698,16 @@ router.post('/', async (req: Request, res: Response) => {
       })
     }
 
-    // Comparison: intent named ≥2 specific projects AND discovery returned them.
-    // No keyword heuristic — intent.projectNames is the authoritative signal.
-    // Capped at 4 projects; anything beyond is silently dropped (widget limit).
-    const isComparison = (intent.projectNames?.length ?? 0) >= 2 && projects.length >= 2
+    // Comparison: user explicitly asked to compare projects (is_comparison_query=true)
+    // AND discovery returned ≥2 results to compare. The flag is set by intent
+    // extraction — no inference from projectNames count, no stale state bleed.
+    const isComparison = intent.is_comparison_query === true && projects.length >= 2
+
+    // Backend owns responseMode — frontend renders, never derives.
+    const responseMode: 'search' | 'comparison' | 'chat' =
+      isComparison ? 'comparison' :
+      (projects.length > 0 || nearbyProjects.length > 0) ? 'search' :
+      'chat'
 
     if (isComparison) {
       messageArtifacts.push({
@@ -413,7 +717,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Pre-generate ID for new sessions so send('done') never blocks on DB write.
-    const isNewSession = !currentSessionId
+    const isNewSession = !currentSessionId || !sessionData
     if (isNewSession) currentSessionId = randomUUID()
 
     const persistPromises: Promise<unknown>[] = []
@@ -463,7 +767,13 @@ router.post('/', async (req: Request, res: Response) => {
             chat_phase: intentState,
             message_count: { increment: 2 },
             ...(newSummary ? { summary: newSummary } : {}),
-            ...(projects.length > 0 ? { last_projects: projects as unknown as Prisma.InputJsonValue } : nearbyProjects.length > 0 ? { last_projects: nearbyProjects as unknown as Prisma.InputJsonValue } : {}),
+            ...(() => {
+              const tagged = [
+                ...projects.map((p) => ({ ...p, cacheSource: 'exact' as const })),
+                ...nearbyProjects.map((p) => ({ ...p, cacheSource: 'nearby' as const })),
+              ]
+              return tagged.length > 0 ? { last_projects: tagged as unknown as Prisma.InputJsonValue } : {}
+            })(),
           },
         })
       )
@@ -497,7 +807,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     console.log('[CHAT] BEFORE send(done)', Date.now())
-    send('done', { sessionId: currentSessionId, intentState, intent })
+    send('done', { sessionId: currentSessionId, intentState, intent, responseMode })
     console.log('[CHAT] AFTER send(done)', Date.now())
 
     console.log('[CHAT] BEFORE persist', Date.now())
@@ -505,7 +815,23 @@ router.post('/', async (req: Request, res: Response) => {
     console.log('[CHAT] AFTER persist', Date.now())
   } catch (err) {
     console.error('[chat] error:', err)
-    send('error', { message: "I'm having trouble right now. Please try again in a moment." })
+    // Issue 5: rate-limit fallback — preserve loaded context instead of dropping it
+    const errMsg = (err as Error).message ?? ''
+    const isRateLimit =
+      (err as { status?: number }).status === 429 ||
+      errMsg.includes('429') ||
+      errMsg.toLowerCase().includes('rate limit') ||
+      errMsg.toLowerCase().includes('tpm') ||
+      errMsg.toLowerCase().includes('capacity')
+    const loadedProjects = [...(projects ?? []), ...(nearbyProjects ?? [])].slice(0, 5)
+    if (isRateLimit && loadedProjects.length > 0) {
+      const projectList = loadedProjects.map((p) => `• ${p.name}`).join('\n')
+      const fallback = `I've temporarily hit capacity limits.\n\nCurrent matches already loaded:\n\n${projectList}\n\nYou can continue exploring these results. Capacity typically resets in seconds — try your question again shortly.`
+      send('token', { token: fallback })
+      send('done', { sessionId: sessionId ?? null, intentState, intent, responseMode: 'chat' })
+    } else {
+      send('error', { message: "I'm having trouble right now. Please try again in a moment." })
+    }
   } finally {
     res.end()
   }
@@ -545,6 +871,24 @@ function formatMessages(
     created_at: m.created_at,
     artifacts: Array.isArray(m.artifacts) ? m.artifacts : [],
   }))
+}
+
+// Session restore (GET /chat/session) never runs the Conversation Engine, so
+// without this the progressive suggestion chips only exist after the user
+// sends a fresh message — a restored session with a shortlist and history
+// shows no chips at all until then. Recompute the same ui_state a live POST
+// /chat turn would emit, from the restored intent/projects/history.
+async function buildRestoreUiState(
+  lastIntent: Prisma.JsonValue | null,
+  lastProjects: Prisma.JsonValue | null,
+  messages: Array<{ role: string; content: string }>,
+) {
+  const { computeConversationState } = await import('../lib/discovery/conversationEngine')
+  const intent = (lastIntent ?? {}) as Intent
+  const projects = (lastProjects as unknown as ScoredProject[]) ?? []
+  const chatHistory = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+  const intentState = getIntentState(intent, projects.length > 0)
+  return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory)
 }
 
 // GET /chat/session/list — must come before GET /chat/session (order matters in Express)
@@ -607,7 +951,9 @@ router.get('/session/list', async (req: Request, res: Response) => {
 // GET /chat/session?id= — restore or find/create latest session
 router.get('/session', async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
-  if (!userId) {
+  const guestToken = req.query.guestToken as string | undefined
+
+  if (!userId && !guestToken) {
     res.status(401).json({ error: 'Auth required' })
     return
   }
@@ -615,9 +961,12 @@ router.get('/session', async (req: Request, res: Response) => {
   const specificId = req.query.id as string | undefined
 
   if (specificId) {
+    // Guests can restore their own sessions too (guest_token match) — mirrors
+    // the ownership check already used by PATCH/DELETE /session/:id below.
+    const ownerFilter = userId ? { user_id: userId } : { guest_token: guestToken }
     const session = await prisma.chatSession.findFirst({
-      where: { id: specificId, user_id: userId },
-      include: { messages: { orderBy: { created_at: 'asc' }, take: MAX_MESSAGES } },
+      where: { id: specificId, ...ownerFilter },
+      include: { messages: { orderBy: { created_at: 'desc' }, take: MAX_MESSAGES } },
     })
 
     if (!session) {
@@ -625,11 +974,20 @@ router.get('/session', async (req: Request, res: Response) => {
       return
     }
 
+    session.messages.reverse()
+
+    const lastIntent = [...session.messages]
+      .reverse()
+      .find((m) => m.role === 'user' && m.intent_snapshot != null)
+      ?.intent_snapshot ?? null
+
     res.json({
       session_id: session.id,
       title: session.title ?? null,
       chat_phase: session.chat_phase ?? 'DISCOVERY',
       last_projects: session.last_projects ?? null,
+      last_intent: lastIntent,
+      ui_state: await buildRestoreUiState(lastIntent, session.last_projects, session.messages),
       messages: formatMessages(
         session.messages as Parameters<typeof formatMessages>[0]
       ),
@@ -637,24 +995,39 @@ router.get('/session', async (req: Request, res: Response) => {
     return
   }
 
-  // No id — find or create latest session
+  // No id — find or create latest session (authenticated users only; guests
+  // never auto-continue a "latest" session, they land on a fresh welcome screen)
+  if (!userId) {
+    res.status(401).json({ error: 'Auth required' })
+    return
+  }
+
   let session = await prisma.chatSession.findFirst({
     where: { user_id: userId },
     orderBy: { last_active: 'desc' },
-    include: { messages: { orderBy: { created_at: 'asc' }, take: MAX_MESSAGES } },
+    include: { messages: { orderBy: { created_at: 'desc' }, take: MAX_MESSAGES } },
   })
 
   if (!session) {
     session = await prisma.chatSession.create({
       data: { user_id: userId },
-      include: { messages: { orderBy: { created_at: 'asc' }, take: MAX_MESSAGES } },
+      include: { messages: { orderBy: { created_at: 'desc' }, take: MAX_MESSAGES } },
     })
   }
+
+  session.messages.reverse()
+
+  const lastIntent = [...session.messages]
+    .reverse()
+    .find((m) => m.role === 'user' && m.intent_snapshot != null)
+    ?.intent_snapshot ?? null
 
   res.json({
     session_id: session.id,
     chat_phase: session.chat_phase ?? 'DISCOVERY',
     last_projects: session.last_projects ?? null,
+    last_intent: lastIntent,
+    ui_state: await buildRestoreUiState(lastIntent, session.last_projects, session.messages),
     messages: formatMessages(
       session.messages as Parameters<typeof formatMessages>[0]
     ),

@@ -12,6 +12,7 @@ type EventName =
   | 'signup_completed'
   | 'whatsapp_handoff'
   | 'lead_created'
+  | 'document_download'
 
 export function track(event: EventName, properties?: Record<string, unknown>) {
   try {

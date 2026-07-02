@@ -1,16 +1,22 @@
 {
   "name": "realtypals-monorepo",
   "private": true,
-  "workspaces": ["frontend", "backend"],
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
   },
   "devDependencies": {
+    "@astryxdesign/cli": "^0.1.2",
     "concurrently": "^9.1.0"
   },
   "dependencies": {
+    "@astryxdesign/core": "^0.1.2",
+    "@astryxdesign/theme-neutral": "^0.1.2",
     "baseline-browser-mapping": "^2.10.33",
     "caniuse-lite": "^1.0.30001793"
   }

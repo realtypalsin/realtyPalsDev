@@ -66,7 +66,7 @@ function BuilderFormFields({
               if (key === 'name') onChange({ ...form, name: v, slug: toSlug(v) })
             }}
             placeholder={ph}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 transition-colors"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-[13px] text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all bg-white shadow-sm"
           />
         </div>
       ))}
@@ -76,9 +76,9 @@ function BuilderFormFields({
           id="credai"
           checked={form.credai_member}
           onChange={(e) => set('credai_member')(e.target.checked)}
-          className="w-4 h-4 rounded accent-blue-600"
+          className="w-4 h-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900 accent-slate-800"
         />
-        <label htmlFor="credai" className="text-sm text-gray-600 font-medium">CREDAI Member</label>
+        <label htmlFor="credai" className="text-sm text-slate-700 font-medium">CREDAI Member</label>
       </div>
     </div>
   )
@@ -172,19 +172,19 @@ export default function AdminBuilders() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Builders</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{builders.length} builder profiles</p>
+          <h1 className="text-3xl font-serif font-black text-slate-900 tracking-tight">Builder Profiles</h1>
+          <p className="text-sm text-slate-500 mt-1">{builders.length} registered partners</p>
         </div>
         <button
           onClick={() => { setShowAdd(!showAdd); setEditingId(null) }}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm shadow-blue-200"
+          className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-full text-sm font-semibold transition-all shadow-md hover:shadow-lg"
         >
-          {showAdd ? <X size={15} /> : <Plus size={15} />}
+          {showAdd ? <X size={16} /> : <Plus size={16} />}
           {showAdd ? 'Cancel' : 'Add Builder'}
         </button>
       </div>
@@ -193,94 +193,94 @@ export default function AdminBuilders() {
       {showAdd && (
         <form
           onSubmit={handleAdd}
-          className="bg-white rounded-2xl border border-blue-100 p-5 shadow-sm space-y-4"
+          className="bg-white rounded-3xl border border-gray-100 p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6"
         >
-          <h3 className="text-sm font-bold text-gray-700">New Builder</h3>
+          <h3 className="text-lg font-serif font-bold text-slate-900 border-b border-gray-100 pb-3">New Builder Profile</h3>
           <BuilderFormFields form={addForm} onChange={setAddForm} />
-          <div className="flex gap-2 pt-1">
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => setShowAdd(false)}
-              className="px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+              className="px-5 py-2.5 border border-gray-200 rounded-full text-[13px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold disabled:opacity-40 transition-colors"
+              className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-black text-white rounded-full text-[13px] font-bold disabled:opacity-40 transition-colors shadow-sm"
             >
-              {saving ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
-              {saving ? 'Adding…' : 'Add Builder'}
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+              {saving ? 'Saving...' : 'Save Profile'}
             </button>
           </div>
         </form>
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-7 h-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : builders.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 text-sm">No builders yet</div>
+          <div className="py-20 text-center text-slate-400 text-sm font-medium">No builders registered yet</div>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/80">
+              <tr className="border-b border-gray-100 bg-slate-50/50">
                 {['Builder', 'Founded', 'HQ', 'Projects', ''].map((h, i) => (
-                  <th key={i} className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider px-4 py-3">{h}</th>
+                  <th key={i} className="text-left text-[10px] font-black text-slate-400 uppercase tracking-widest px-6 py-4">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {builders.map((b) => (
                 <>
-                  <tr key={b.id} className="hover:bg-gray-50/50 group transition-colors">
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Building2 size={14} className="text-blue-400" />
+                  <tr key={b.id} className="hover:bg-slate-50/50 group transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white border border-gray-100 shadow-sm rounded-xl flex items-center justify-center flex-shrink-0 text-slate-300 group-hover:text-slate-900 transition-colors">
+                          <Building2 size={18} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{b.name}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] text-gray-400 font-mono">{b.slug}</span>
+                          <p className="text-[16px] font-serif font-bold text-slate-900">{b.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[11px] text-slate-400 font-medium font-mono">{b.slug}</span>
                             {b.credai_member && (
-                              <span className="flex items-center gap-0.5 text-[9px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full">
-                                <CheckCircle2 size={8} /> CREDAI
+                              <span className="flex items-center gap-1 text-[9px] text-emerald-700 font-black tracking-wider uppercase bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md shadow-sm">
+                                <CheckCircle2 size={10} /> CREDAI
                               </span>
                             )}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 text-sm text-gray-500">{b.founded_year ?? '—'}</td>
-                    <td className="px-4 py-3.5 text-sm text-gray-500 max-w-[140px] truncate">{b.headquarters ?? '—'}</td>
-                    <td className="px-4 py-3.5">
-                      <span className="text-sm font-bold text-gray-900">{b._count.projects}</span>
-                      <span className="text-xs text-gray-400 ml-1">projects</span>
+                    <td className="px-6 py-4 text-[13px] font-medium text-slate-500">{b.founded_year ?? '—'}</td>
+                    <td className="px-6 py-4 text-[13px] font-medium text-slate-500 max-w-[180px] truncate">{b.headquarters ?? '—'}</td>
+                    <td className="px-6 py-4">
+                      <span className="text-[15px] font-black text-slate-900">{b._count.projects}</span>
+                      <span className="text-xs text-slate-400 ml-1.5 font-medium">projects</span>
                     </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {b.website && (
                           <a
                             href={b.website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-500 transition-colors"
+                            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-100 shadow-sm text-slate-400 hover:text-slate-900 hover:border-gray-200 transition-all"
                             title="Website"
                           >
-                            <Globe size={13} />
+                            <Globe size={14} />
                           </a>
                         )}
                         <button
                           onClick={() => editingId === b.id ? setEditingId(null) : startEdit(b)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
+                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-100 shadow-sm text-slate-400 hover:text-slate-900 hover:border-gray-200 transition-all"
                           title="Edit"
                         >
-                          <Pencil size={13} />
+                          <Pencil size={14} />
                         </button>
                       </div>
                     </td>
@@ -289,14 +289,14 @@ export default function AdminBuilders() {
                   {/* Inline edit row */}
                   {editingId === b.id && (
                     <tr key={`${b.id}-edit`}>
-                      <td colSpan={5} className="px-4 py-4 bg-blue-50/30 border-b border-blue-100">
-                        <div className="space-y-4">
+                      <td colSpan={5} className="px-6 py-6 bg-slate-50/50 border-b border-gray-100">
+                        <div className="space-y-6">
                           <BuilderFormFields form={editForm} onChange={setEditForm} />
-                          <div className="flex gap-2">
+                          <div className="flex justify-end gap-3 pt-2">
                             <button
                               type="button"
                               onClick={() => setEditingId(null)}
-                              className="px-4 py-2 border border-gray-200 bg-white rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                              className="px-5 py-2.5 border border-gray-200 bg-white rounded-full text-[13px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
                             >
                               Cancel
                             </button>
@@ -304,10 +304,10 @@ export default function AdminBuilders() {
                               type="button"
                               onClick={() => saveEdit(b.id)}
                               disabled={editSaving}
-                              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold disabled:opacity-40 transition-colors"
+                              className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-black text-white rounded-full text-[13px] font-bold disabled:opacity-40 transition-colors shadow-sm"
                             >
-                              {editSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-                              {editSaving ? 'Saving…' : 'Save Changes'}
+                              {editSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                              {editSaving ? 'Saving...' : 'Save Changes'}
                             </button>
                           </div>
                         </div>

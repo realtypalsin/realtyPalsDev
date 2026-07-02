@@ -5,25 +5,47 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { track } from '@/lib/analytics';
 import { GitCompare, ArrowRight } from 'lucide-react';
+
+const COMPARE_SUGGESTIONS = [
+  'Compare ATS Kingston Heath vs Godrej Palm Retreat',
+  'Which is better — Sector 150 or Sector 137?',
+  'Mahagun Mywoods vs Supertech Supernova — which has better amenities?',
+];
+
+function getOrCreateGuestToken(): string {
+  let token = localStorage.getItem('guest_token');
+  if (!token) {
+    token = 'guest-' + crypto.randomUUID();
+    localStorage.setItem('guest_token', token);
+  }
+  return token;
+}
 
 export default function ComparePage() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [checking, setChecking] = useState(true);
+  const [guestToken, setGuestToken] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('user_id');
-    if (!storedUserId) { router.replace('/auth'); return; }
     setUserId(storedUserId);
-    setChecking(false);
-  }, [router]);
+    if (!storedUserId) setGuestToken(getOrCreateGuestToken());
+    setReady(true);
+  }, []);
 
-  if (checking && !userId) return null;
+  useEffect(() => {
+    if (!ready) return;
+    track('comparison_used', { suggestion_count: COMPARE_SUGGESTIONS.length });
+  }, [ready]);
+
+  if (!ready) return null;
 
   return (
     <div className="flex h-[100dvh] bg-[#E6E6E6] overflow-hidden">
-      <Sidebar userId={userId} />
+      <Sidebar userId={userId} guestToken={guestToken} />
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 4 }}
@@ -45,11 +67,7 @@ export default function ComparePage() {
             <div className="bg-white rounded-2xl border border-gray-200 p-5 max-w-md w-full text-left shadow-sm">
               <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-3">Try asking</p>
               <div className="space-y-2">
-                {[
-                  'Compare ATS Kingston Heath vs Godrej Palm Retreat',
-                  'Which is better — Sector 150 or Sector 137?',
-                  'Mahagun Mywoods vs Supertech Supernova — which has better amenities?',
-                ].map((q) => (
+                {COMPARE_SUGGESTIONS.map((q) => (
                   <button
                     key={q}
                     onClick={() => {

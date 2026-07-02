@@ -10,7 +10,8 @@ export default function AIThinkingIndicator({ query }: { query?: string }) {
     <div className="flex items-start gap-3 animate-message-in">
       {/* Bot avatar */}
       <div className="w-12 h-12 rounded-full bg-white dark:bg-gray-700 border border-[#E0E0E0] dark:border-gray-600 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
-        <Image src="/images/logo/realtypals.png" alt="RP" width={40} height={40} className="opacity-90 drop-shadow-sm" />
+        <Image src="/images/logo/realtypals.png" alt="RP" width={40} height={40} className="opacity-90 drop-shadow-sm block dark:hidden" />
+        <Image src="/images/logo/RealtyPals-logoWhite.png" alt="RP" width={40} height={40} className="opacity-90 drop-shadow-sm hidden dark:block" />
       </div>
 
       <div className="flex flex-col">

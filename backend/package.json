@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "prisma migrate deploy --schema=../frontend/prisma/schema.prisma && node dist/index.js",
     "test": "node --require tsx/cjs --test src/lib/ai/__tests__/intent-extraction.test.ts",
     "db:generate": "prisma generate --schema=../frontend/prisma/schema.prisma"
   },
@@ -21,6 +21,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-async-errors": "^3.1.1",
     "groq-sdk": "^0.7.0",
     "helmet": "^8.2.0",
     "multer": "^1.4.5-lts.2",

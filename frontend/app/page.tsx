@@ -1,20 +1,17 @@
 'use client';
 
-export const dynamic = 'force-dynamic'
-
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { createClient } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export default function LandingPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const supabaseRef = useRef(createClient());
 
   useEffect(() => {
     let cancelled = false;
-    supabaseRef.current.auth.getSession().then(({ data }) => {
+    getSupabaseClient().then((supabase) => supabase.auth.getSession()).then(({ data }) => {
       if (cancelled) return;
       if (data.session?.user) {
         localStorage.setItem('user_id', data.session.user.id);
@@ -59,7 +56,15 @@ export default function LandingPage() {
             alt="RealtyPals Logo"
             width={350}
             height={140}
-            className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105"
+            className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105 block dark:hidden"
+            priority
+          />
+          <Image
+            src="/images/logo/RealtyPals-logoWhite.png"
+            alt="RealtyPals Logo"
+            width={350}
+            height={140}
+            className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105 hidden dark:block"
             priority
           />
         </div>
@@ -75,10 +80,10 @@ export default function LandingPage() {
         {/* CTA */}
         <div className="mt-[60px] flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <button
-            onClick={() => router.push('/auth')}
+            onClick={() => router.push('/discover')}
             className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-full text-base transition-all duration-200 shadow-2xl hover:shadow-blue-500/30 active:scale-95"
           >
-            Start Discovery
+            Try RealtyPals
           </button>
           <button
             onClick={() => router.push('/auth')}

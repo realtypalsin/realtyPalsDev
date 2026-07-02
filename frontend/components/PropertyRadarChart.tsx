@@ -19,14 +19,12 @@ const PREMIUM_BUILDERS = ['Godrej', 'Tata', 'DLF', 'Prestige', 'ATS', 'Ace', 'Ma
  * Generate radar scores from property data
  */
 export function generateRadarScores(property: {
-  price_per_sqft?: number | null;
   amenities?: string[];
   builder?: string;
   status?: string;
 }): RadarAxis[] {
-  // Value: inverse of price (cheaper = higher score relative to sector avg ~10,000)
-  const ppsq = property.price_per_sqft ?? 10000;
-  const valueScore = Math.min(95, Math.max(40, Math.round(120 - (ppsq / 200))));
+  // Value score static without per-sqft
+  const valueScore = 80;
 
   // Location: Sector 150 is always high (hardcoded for now)
   const locationScore = 82;
@@ -106,9 +104,6 @@ export default function PropertyRadarChart({ axes, size = 200 }: PropertyRadarCh
     return { ...a, x: p.x, y: p.y };
   });
 
-  // Overall score
-  const overall = Math.round(axes.reduce((sum, a) => sum + a.value, 0) / axes.length);
-
   return (
     <div className="flex flex-col items-center">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -163,31 +158,14 @@ export default function PropertyRadarChart({ axes, size = 200 }: PropertyRadarCh
           </text>
         ))}
 
-        {/* Center score */}
-        <text
-          x={cx}
-          y={cy - 6}
-          textAnchor="middle"
-          className="fill-gray-900 dark:fill-white text-lg font-bold"
-        >
-          {animated ? overall : 0}
-        </text>
-        <text
-          x={cx}
-          y={cy + 8}
-          textAnchor="middle"
-          className="fill-gray-400 text-[8px]"
-        >
-          AI Score
-        </text>
       </svg>
 
-      {/* Legend */}
+      {/* Legend — axis labels only, no fabricated scores */}
       <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 justify-center">
         {axes.map((a, i) => (
           <div key={i} className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: a.color }} />
-            <span className="text-[10px] text-gray-500 dark:text-gray-400">{a.label}: {a.value}</span>
+            <span className="text-[10px] text-gray-500 dark:text-gray-400">{a.label}</span>
           </div>
         ))}
       </div>
