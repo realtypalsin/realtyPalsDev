@@ -767,7 +767,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
                         <div className="flex items-center gap-6">
                            <div>
-                             <p className="text-3xl font-bold text-white tracking-tight leading-none">{d?.price_range_label}</p>
+                             <p className="text-3xl font-bold text-white tracking-tight leading-none">{detail?.price_range_label || project?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr Onwards` : 'Price on Request')}</p>
                              <p className="text-[12px] text-white/60 uppercase tracking-wider mt-1.5">Price Range</p>
                            </div>
                            <div className="w-px h-10 bg-white/20" />
@@ -780,11 +780,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                         {intelligenceChips && (
                            <div className="mt-6 inline-block">
                              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3">
-                                <Sparkles size={18} className="text-emerald-400 flex-shrink-0" />
+                                <FileText size={18} className="text-emerald-400 flex-shrink-0" />
                                 <div>
                                   <div className="flex items-center gap-2 mb-0.5">
-                                    <p className="text-[12px] font-bold text-white">Investment Thesis</p>
-                                    {tier && <span className="bg-emerald-500/20 text-emerald-300 text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">{tierLabel[tier] ?? tier}</span>}
+                                    <p className="text-[12px] font-bold text-white">Overview</p>
                                   </div>
                                   <p className="text-[12px] text-white/70 line-clamp-1">{decisionThesis || (persona && `Ideal for ${persona.charAt(0) + persona.slice(1).toLowerCase()}.`)}</p>
                                 </div>
