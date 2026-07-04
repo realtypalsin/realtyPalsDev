@@ -14,7 +14,6 @@ import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
 import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
 import { streamWithGroq } from '../lib/ai/groq'
-// import { streamWithClaude } from '../lib/ai/claude'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
@@ -525,34 +524,6 @@ router.post('/', async (req: Request, res: Response) => {
       send('token', { token: fullText })
     }
     if (!needsClarification && disambiguationText === null) {
-    /*
-    if (process.env.GROQ_API_KEY) {
-      let groqAttempts = 0
-      while (groqAttempts < 2) {
-        try {
-          fullText = await streamWithGroq(systemPrompt, messages, send)
-          break
-        } catch (err) {
-          groqAttempts++
-          console.warn(`[chat] Groq stream failed (attempt ${groqAttempts}):`, (err as Error).message)
-          if (groqAttempts >= 2) {
-            if (process.env.ANTHROPIC_API_KEY) {
-              console.warn('[chat] Falling back to Claude')
-              fullText = await streamWithClaude(systemPrompt, messages, send)
-            } else {
-              throw err
-            }
-          } else {
-            await new Promise(r => setTimeout(r, 1000))
-          }
-        }
-      }
-    } else if (process.env.ANTHROPIC_API_KEY) {
-      fullText = await streamWithClaude(systemPrompt, messages, send)
-    } else {
-      throw new Error('No AI API keys configured')
-    }
-    */
 
     // Using GitHub Models API (via Azure OpenAI) as Primary
     try {

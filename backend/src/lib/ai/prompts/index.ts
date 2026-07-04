@@ -57,12 +57,5 @@ export function buildAdvisorSystemPrompt(
   const projectsBlock        = buildProjectsBlock(exactResults, sectorCtx, expansion, nearbyResults, notFoundNames)
 
   const finalPrompt = BASE_SYSTEM_PROMPT + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
-  console.log('[PROMPT:CHECK]', {
-    ivy_present:      projectsBlock.includes('Ivy County'),
-    rec_tier_present: projectsBlock.includes('recommendation_tier'),
-    persona_present:  projectsBlock.includes('primary_persona'),
-    thesis_present:   projectsBlock.includes('decision_thesis'),
-    est_tokens:       Math.round(finalPrompt.length / 4),
-  })
   return finalPrompt
 }
