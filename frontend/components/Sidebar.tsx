@@ -127,11 +127,10 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
           <X size={20} />
         </button>
 
-        <div className="px-6 md:px-8 h-[88px] flex items-center border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
-            <Image src="/images/logo/realtypals.png" alt="RealtyPals Logo" width={48} height={48} className="flex-shrink-0 drop-shadow-md scale-110 block dark:hidden" />
-            <Image src="/images/logo/RealtyPals-logoWhite.png" alt="RealtyPals Logo" width={48} height={48} className="flex-shrink-0 drop-shadow-md scale-110 hidden dark:block" />
-            <AnimatedText text="RealtyPals" className="py-0 flex-shrink-0" textClassName="font-bold text-xl tracking-wide dark:text-white" />
+        <div className="px-6 md:px-8 h-[88px] flex items-center border-b border-gray-100/50 dark:border-gray-800/50">
+          <div className="flex items-center w-full justify-center">
+            <Image src="/images/logo/realtypals.png" alt="RealtyPals Logo" width={140} height={40} className="flex-shrink-0 object-contain block dark:hidden drop-shadow-sm" />
+            <Image src="/images/logo/RealtyPals-logoWhite.png" alt="RealtyPals Logo" width={140} height={40} className="flex-shrink-0 object-contain hidden dark:block drop-shadow-sm" />
           </div>
         </div>
 

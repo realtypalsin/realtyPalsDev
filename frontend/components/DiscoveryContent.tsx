@@ -994,7 +994,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             </div>
           )}
           
-          <div className="relative flex items-center gap-1.5 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-gray-200 dark:border-gray-700 p-2 pl-3 rounded-full transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:border-gray-300 dark:hover:border-gray-600 mx-auto w-full">
+          <div className="relative flex items-center gap-1.5 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-200/50 dark:border-white/10 p-2 pl-3 rounded-full transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:bg-white dark:hover:bg-gray-900 mx-auto w-full group">
             <div id="chat-input-guide" className="relative flex-1 group">
               <PlaceholdersAndVanishInput
                 placeholders={
@@ -1115,14 +1115,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           /* Welcome screen */
           <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10 overflow-y-auto">
             <div className="text-center mb-10 max-w-3xl">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center shadow-sm overflow-hidden">
-                <Image src="/images/logo/realtypals.png" alt="RealtyPal" width={44} height={44} className="block dark:hidden" />
-                <Image src="/images/logo/RealtyPals-logoWhite.png" alt="RealtyPal" width={44} height={44} className="hidden dark:block" />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 tracking-tight uppercase">
-                Your AI Property Advisor
+              <h1 className="text-[4rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white mb-2 tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
+                RealtyPals
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+              <h2 className="text-lg md:text-xl font-normal text-gray-600 dark:text-gray-400 mb-6 tracking-tight font-[family-name:var(--font-afacad)]">
+                Your AI Property Advisor
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm md:text-[15px] leading-relaxed max-w-2xl mx-auto px-4">
                 Compare projects, verify builder reputation, explore RERA-approved properties, estimate EMIs and discover the best properties, all through a single AI-powered search.
               </p>
             </div>
@@ -1137,7 +1136,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 <button
                   key={chip.label}
                   onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 text-[14px] text-gray-700 dark:text-gray-300 font-medium rounded-full shadow-sm transition-all"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm text-[13px] text-gray-700 dark:text-gray-300 font-medium rounded-full shadow-sm transition-all duration-300 hover:-translate-y-0.5"
                 >
                   <span className="text-base">{chip.icon}</span>
                   <span>{chip.label}</span>

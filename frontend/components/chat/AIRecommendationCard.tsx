@@ -30,53 +30,45 @@ export default function AIRecommendationCard({ project, onViewDetails }: Props) 
   if (!headline && reasons.length === 0 && !intel) return null
 
   return (
-    <div className="rounded-[24px] border border-blue-100 bg-blue-50/40 p-5 md:p-6">
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">AI Recommendation</span>
-        {intel && (
-          <span className={`text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border ${tierStyle[intel.tier] ?? tierStyle.HOLD}`}>
-            {tierLabel[intel.tier] ?? intel.tier} · {intel.confidence} Confidence
-          </span>
-        )}
+    <div className="py-2 pl-2">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+          <svg className="w-3.5 h-3.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          AI Summary
+        </span>
       </div>
 
-
-      <h3 className="text-[18px] font-bold text-gray-900 tracking-tight mb-2">{project.name}</h3>
-
+      <h3 className="text-[15px] font-semibold text-gray-900 dark:text-white tracking-tight mb-2">
+        {project.name}
+      </h3>
 
       {reasons.length > 0 && (
-        <div className="mb-3">
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Why this property</p>
-          <ul className="space-y-1.5">
-            {reasons.map((r) => (
-              <li key={r} className="flex items-start gap-2 text-[12.5px] text-gray-700">
-                <span className="mt-1.5 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
-                {r}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ul className="space-y-1.5 mb-3">
+          {reasons.map((r) => (
+            <li key={r} className="flex items-start gap-2.5 text-[13.5px] text-gray-700 dark:text-gray-300 leading-relaxed">
+              <span className="mt-[7px] w-[3px] h-[3px] rounded-full bg-gray-400 dark:bg-gray-500 flex-shrink-0" />
+              <span>{r}</span>
+            </li>
+          ))}
+        </ul>
       )}
 
       {concerns.length > 0 && (
-        <div className="mb-3">
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Worth noting</p>
-          <ul className="space-y-1.5">
-            {concerns.map((c) => (
-              <li key={c} className="flex items-start gap-2 text-[12.5px] text-gray-600">
-                <span className="mt-1.5 w-1 h-1 rounded-full bg-amber-400 flex-shrink-0" />
-                {c}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ul className="space-y-1.5 mb-3">
+          {concerns.map((c) => (
+            <li key={c} className="flex items-start gap-2.5 text-[13.5px] text-gray-600 dark:text-gray-400 leading-relaxed">
+              <span className="mt-[7px] w-[3px] h-[3px] rounded-full bg-amber-400/80 flex-shrink-0" />
+              <span>{c}</span>
+            </li>
+          ))}
+        </ul>
       )}
 
       <button
         onClick={() => onViewDetails(project)}
-        className="flex items-center gap-1.5 text-[12.5px] font-bold text-blue-600 hover:text-blue-700 mt-2"
+        className="flex items-center gap-1.5 text-[13px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mt-1"
       >
-        View full analysis <ArrowRight size={13} />
+        View full details <ArrowRight size={14} />
       </button>
     </div>
   )

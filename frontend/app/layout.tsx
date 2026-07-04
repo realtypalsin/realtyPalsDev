@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import { Outfit, Playfair_Display } from "next/font/google";
+import { Outfit, Playfair_Display, Afacad } from "next/font/google";
 import { PostHogProvider } from "@/components/PostHogProvider";
 
 const outfit = Outfit({
@@ -12,6 +12,11 @@ const outfit = Outfit({
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
+});
+
+const afacad = Afacad({
+  subsets: ["latin"],
+  variable: "--font-afacad",
 });
 
 export const metadata: Metadata = {
@@ -45,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${playfair.variable} font-sans`}>
+    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
       <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#EEEEEE]">
         <div className="noise-overlay" />
         <PostHogProvider>{children}</PostHogProvider>
