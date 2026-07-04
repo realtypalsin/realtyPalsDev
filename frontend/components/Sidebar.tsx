@@ -1,7 +1,7 @@
 'use client';
 import { Compass, Bookmark, X, Plus, LogOut } from 'lucide-react';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -54,6 +54,8 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [leadsToday, setLeadsToday] = useState<number | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { sessions, loading: sessionsLoading, error: sessionsError, deleteSession, renameSession } = useSessions(userId, guestToken);
 
@@ -136,13 +138,18 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
         <div className="p-4">
           <button
             onClick={() => {
+              if (isNavigating) return;
+              setIsNavigating(true);
+              if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
               closeMobile();
+              navigationTimeoutRef.current = setTimeout(() => setIsNavigating(false), 1000);
               router.push('/discover');
             }}
-            className="w-full bg-[#E6E6E6] dark:bg-gray-700 hover:bg-[#DEDEDE] dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 border border-[#D0D0D0] dark:border-gray-600 shadow-sm"
+            disabled={isNavigating}
+            className="w-full bg-[#E6E6E6] dark:bg-gray-700 hover:bg-[#DEDEDE] dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 border border-[#D0D0D0] dark:border-gray-600 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus size={20} />
-            <span className="text-base">New Chat</span>
+            <span className="text-base">{isNavigating ? 'Creating...' : 'New Chat'}</span>
           </button>
         </div>
 

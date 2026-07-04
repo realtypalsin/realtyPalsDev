@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { API_BASE } from '@/lib/env';
 import { authHeaders } from '@/lib/authedFetch';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
@@ -13,9 +13,16 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fetchSessionsRef = useRef<(() => Promise<void>) | null>(null);
+  const mutationCountRef = useRef(0);
 
   const fetchSessions = useCallback(async () => {
     if (!userId && !guestToken) return;
+
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
 
     setLoading(true);
     setError(null);
@@ -25,34 +32,59 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
 
       const res = await fetch(url, {
         headers: await authHeaders(),
-        signal: AbortSignal.timeout(8000),
+        signal: abortControllerRef.current.signal,
       });
       if (!res.ok) throw new Error('Failed to load sessions');
       const data = await res.json();
       setSessions(data.sessions ?? []);
     } catch (err) {
-      setError((err as Error).message);
+      if ((err as Error).name !== 'AbortError') {
+        setError((err as Error).message);
+      }
     } finally {
       setLoading(false);
     }
   }, [userId, guestToken]);
+
+  // Keep ref in sync with latest fetchSessions
+  fetchSessionsRef.current = fetchSessions;
 
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
 
   useEffect(() => {
-    const handler = () => fetchSessions();
-    window.addEventListener('realtypals:session-updated', handler);
-    return () => window.removeEventListener('realtypals:session-updated', handler);
-  }, [fetchSessions]);
+    const handleSessionUpdate = () => {
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = setTimeout(() => {
+        // Skip refresh if mutations are in flight (optimistic updates in progress)
+        if (mutationCountRef.current > 0) {
+          return;
+        }
+        fetchSessionsRef.current?.();
+      }, 300);
+    };
+
+    window.addEventListener('realtypals:session-updated', handleSessionUpdate);
+    return () => {
+      window.removeEventListener('realtypals:session-updated', handleSessionUpdate);
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const deleteSession = async (sessionId: string) => {
     // Optimistic UI
     const previous = [...sessions];
     setSessions((s) => s.filter((x) => x.id !== sessionId));
     LOCAL_SESSION_CACHE.delete(sessionId);
-    
+
+    mutationCountRef.current++;
     try {
       const res = await fetch(`${API_BASE}/chat/session/${sessionId}`, {
         method: 'DELETE',
@@ -62,6 +94,8 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
     } catch (err) {
       setSessions(previous); // Rollback
       throw err;
+    } finally {
+      mutationCountRef.current--;
     }
   };
 
@@ -69,13 +103,14 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
     // Optimistic UI
     const previous = [...sessions];
     setSessions((s) => s.map((x) => (x.id === sessionId ? { ...x, label: title } : x)));
-    
+
     const cached = LOCAL_SESSION_CACHE.get(sessionId);
     if (cached) {
       cached.title = title;
       LOCAL_SESSION_CACHE.set(sessionId, cached);
     }
 
+    mutationCountRef.current++;
     try {
       const res = await fetch(`${API_BASE}/chat/session/${sessionId}`, {
         method: 'PATCH',
@@ -86,6 +121,8 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
     } catch (err) {
       setSessions(previous); // Rollback
       throw err;
+    } finally {
+      mutationCountRef.current--;
     }
   };
 

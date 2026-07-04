@@ -1,7 +1,35 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageSquare, Check, X, Pencil, Trash2 } from 'lucide-react';
 import { Session } from '@/hooks/useSessions';
 import { toast } from 'sonner';
+
+// Global PerformanceObserver instance — reused across all SessionItem clicks to avoid repeated creation
+let globalPerfObserver: PerformanceObserver | null = null;
+function getOrCreateObserver(): PerformanceObserver {
+  if (globalPerfObserver) return globalPerfObserver;
+  globalPerfObserver = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const e = entry as PerformanceResourceTiming;
+      if (e.name.includes('_rsc') || e.name.includes('discover')) {
+        const nt = (window as any).__navTimings;
+        if (nt && !nt.rscEnd) {
+          nt.rscStart = e.startTime;
+          nt.rscEnd = e.startTime + e.duration;
+          console.log(
+            `[NAV] RSC fetch: start +${(e.startTime - nt.t0).toFixed(1)}ms` +
+            ` | ttfb +${((e.startTime + (e as any).responseStart) - nt.t0).toFixed(1)}ms` +
+            ` | duration ${e.duration.toFixed(1)}ms` +
+            ` | end +${(nt.rscEnd - nt.t0).toFixed(1)}ms` +
+            ` | url ${e.name.split('?')[0].split('/').slice(-2).join('/')}`
+          );
+          globalPerfObserver?.disconnect();
+          globalPerfObserver = null;
+        }
+      }
+    }
+  });
+  return globalPerfObserver;
+}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -29,7 +57,9 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
   const [renameValue, setRenameValue] = useState(session.label);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isRenaming) {
@@ -116,47 +146,37 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
   }
 
   return (
-    <div 
-      className={`group/session flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer border ${
+    <div
+      className={`group/session flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+        isNavigating ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+      } border ${
         isActive
           ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300'
           : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-white/70 dark:hover:bg-gray-800/70 hover:border-gray-200 dark:hover:border-gray-700'
       }`}
       onClick={() => {
+        if (isNavigating) return;
+
+        setIsNavigating(true);
+        if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current = setTimeout(() => setIsNavigating(false), 1000);
+
         // [TIMING] mark sidebar click as t0
         const t0 = performance.now()
         ;(window as any).__navTimings = { t0 }
         console.log('[NAV] 1. sidebar-click  t=0ms')
 
-        // [TIMING] observe the RSC fetch (_rsc= resource) to measure Next.js compilation+response time.
-        // This covers the blind spot between router.push and page-mount.
+        // [TIMING] Reuse global observer to avoid repeated creation
         if (typeof PerformanceObserver !== 'undefined') {
-          const obs = new PerformanceObserver((list) => {
-            for (const entry of list.getEntries()) {
-              const e = entry as PerformanceResourceTiming
-              if (e.name.includes('_rsc') || e.name.includes('discover')) {
-                const nt = (window as any).__navTimings
-                if (nt && !nt.rscEnd) {
-                  nt.rscStart = e.startTime
-                  nt.rscEnd   = e.startTime + e.duration
-                  console.log(
-                    `[NAV] RSC fetch: start +${(e.startTime - t0).toFixed(1)}ms` +
-                    ` | ttfb +${((e.startTime + (e as any).responseStart) - t0).toFixed(1)}ms` +
-                    ` | duration ${e.duration.toFixed(1)}ms` +
-                    ` | end +${(nt.rscEnd - t0).toFixed(1)}ms` +
-                    ` | url ${e.name.split('?')[0].split('/').slice(-2).join('/')}`
-                  )
-                  obs.disconnect()
-                }
-              }
-            }
-          })
-          try { obs.observe({ type: 'resource', buffered: true }) } catch (_) { /* unsupported */ }
+          try {
+            const obs = getOrCreateObserver()
+            obs.observe({ type: 'resource', buffered: true })
+          } catch (_) { /* unsupported */ }
         }
 
         onClick()
       }}
-      onDoubleClick={() => setIsRenaming(true)}
+      onDoubleClick={() => !isNavigating && setIsRenaming(true)}
     >
       <MessageSquare size={14} className={`flex-shrink-0 transition-colors ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover/session:text-gray-500'}`} />
       <span className="text-[13px] truncate flex-1 font-medium">{session.label}</span>
