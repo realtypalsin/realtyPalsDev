@@ -587,6 +587,7 @@ function MessageBubbleInner({
                         <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
                         <PropertyQuickActions
                           project={property}
+                          onDetailOpen={onDetailOpen}
                           onCallback={onCallback}
                           onSetSiteVisit={onSetSiteVisit}
                           onOpenCalculator={onOpenCalculator}
@@ -619,6 +620,7 @@ function MessageBubbleInner({
                           <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
                           <PropertyQuickActions
                             project={property}
+                            onDetailOpen={onDetailOpen}
                             onCallback={onCallback}
                             onSetSiteVisit={onSetSiteVisit}
                             onOpenCalculator={onOpenCalculator}
@@ -669,6 +671,7 @@ function MessageBubbleInner({
                   <ProjectCard project={p} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
                   <PropertyQuickActions
                     project={p}
+                    onDetailOpen={onDetailOpen}
                     onCallback={onCallback}
                     onSetSiteVisit={onSetSiteVisit}
                     onOpenCalculator={onOpenCalculator}
