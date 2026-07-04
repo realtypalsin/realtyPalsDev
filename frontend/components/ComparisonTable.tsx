@@ -404,6 +404,11 @@ function ProjectMiniCard({
   const cfg = tier ? TIER_CFG[tier] : null
   const isRTM = project.status === 'ready_to_move'
 
+  const uploadedImage = (project.images ?? []).find(
+    (i) => i.type === 'exterior' || i.type === 'hero'
+  )?.url
+  const imgSrc = uploadedImage ?? project.hero_image_url
+
   return (
     <div className={`flex-1 rounded-2xl overflow-hidden border transition-all ${
       isWinner
@@ -412,9 +417,9 @@ function ProjectMiniCard({
     } bg-white dark:bg-gray-800`}>
       {/* Image */}
       <div className="relative h-[110px] bg-gray-100 dark:bg-gray-700">
-        {project.hero_image_url && !imgFailed ? (
+        {imgSrc && !imgFailed ? (
           <Image
-            src={project.hero_image_url}
+            src={imgSrc}
             alt={project.name}
             fill
             unoptimized

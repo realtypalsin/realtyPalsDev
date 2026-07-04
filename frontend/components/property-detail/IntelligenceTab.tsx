@@ -7,6 +7,7 @@ import { CheckFat, Warning } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail, DecisionDimension } from '@/types/project'
 import BuilderIntelligence from '@/components/BuilderIntelligence'
 import MarketComparison from '@/components/MarketComparison'
+import PropertyRadarChart from '@/components/PropertyRadarChart'
 import { Card, CardRow } from './Card'
 
 // ── Sector price history — sample market data, kept exactly as it was in the
@@ -377,7 +378,26 @@ export default function IntelligenceTab({
           <p className="text-[13px] text-gray-400 mb-5">Buyer fit and reasons to walk away, based on this project&apos;s profile.</p>
           <CardRow
             left={<BuyerFitPersonas personas={buyerPersonas} />}
-            right={<DealBreakersCard dealBreakers={dealBreakers} />}
+            right={
+              dealBreakers.length > 0 ? (
+                <DealBreakersCard dealBreakers={dealBreakers} />
+              ) : (
+                <Card className="h-full flex flex-col items-center justify-center bg-gray-50/50">
+                  <div className="text-center mb-6">
+                    <p className="text-[15px] font-bold text-gray-900">Buyer Fit Radar</p>
+                    <p className="text-[12px] text-gray-500 mt-0.5">Strength across key demographics</p>
+                  </div>
+                  <PropertyRadarChart 
+                    axes={buyerPersonas.map((p, i) => ({
+                      label: p.type,
+                      value: (p.stars / 5) * 100,
+                      color: i === 0 ? '#4f46e5' : i === 1 ? '#10b981' : i === 2 ? '#f59e0b' : i === 3 ? '#ec4899' : '#8b5cf6'
+                    }))} 
+                    size={280} 
+                  />
+                </Card>
+              )
+            }
           />
         </div>
       )}

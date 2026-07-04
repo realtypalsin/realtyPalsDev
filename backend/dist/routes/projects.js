@@ -131,7 +131,7 @@ router.get('/:slug', async (req, res) => {
         possession_certainty_label: project.dna.possession_certainty_label,
         last_verified_at: project.dna.last_verified_at,
     } : null;
-    res.json({ project: { ...project, dna: publicDna, recommendation_score } });
+    res.json({ project: { ...project, builder_detail: project.builder, dna: publicDna, recommendation_score } });
 });
 router.get('/:slug/documents', async (req, res) => {
     const project = await db_1.prisma.project.findUnique({ where: { slug: req.params.slug }, select: { id: true } });
@@ -141,7 +141,7 @@ router.get('/:slug/documents', async (req, res) => {
     }
     const documents = await db_1.prisma.projectDocument.findMany({
         where: { project_id: project.id },
-        select: { id: true, doc_type: true, name: true, storage_url: true, created_at: true },
+        select: { id: true, doc_type: true, name: true, storage_url: true, created_at: true, file_size_bytes: true },
         orderBy: { created_at: 'desc' },
     });
     res.json({ documents });

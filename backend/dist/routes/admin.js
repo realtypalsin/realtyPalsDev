@@ -7,6 +7,7 @@ const crypto_1 = require("crypto");
 const express_1 = require("express");
 const zod_1 = require("zod");
 const multer_1 = __importDefault(require("multer"));
+const client_1 = require("@prisma/client");
 const db_1 = require("../lib/db");
 const adminAuth_1 = require("../lib/adminAuth");
 const cache_1 = require("../lib/cache");
@@ -125,6 +126,7 @@ const ProjectSchema = zod_1.z.object({
     total_units: zod_1.z.number().int().optional(),
     total_towers: zod_1.z.number().int().optional(),
     land_area_acres: zod_1.z.number().optional(),
+    launch_date: zod_1.z.string().optional(),
     possession_label: zod_1.z.string().optional(),
     possession_date: zod_1.z.string().optional(),
     description: zod_1.z.string().optional(),
@@ -147,6 +149,7 @@ const ProjectPatchSchema = zod_1.z.object({
     total_units: zod_1.z.number().int().optional(),
     total_towers: zod_1.z.number().int().optional(),
     land_area_acres: zod_1.z.number().optional(),
+    launch_date: zod_1.z.string().optional(),
     possession_label: zod_1.z.string().optional(),
     possession_date: zod_1.z.string().optional(),
     description: zod_1.z.string().optional(),
@@ -170,6 +173,14 @@ const BuilderSchema = zod_1.z.object({
     delivered_projects: zod_1.z.array(zod_1.z.string()).optional(),
     ongoing_projects: zod_1.z.array(zod_1.z.string()).optional(),
     awards: zod_1.z.array(zod_1.z.string()).optional(),
+    cin: zod_1.z.string().optional(),
+    rera_promoter_id: zod_1.z.string().optional(),
+    financial_hygiene_score: zod_1.z.number().int().min(0).max(100).optional(),
+    outstanding_dues_cr: zod_1.z.number().optional(),
+    legal_entities: zod_1.z.array(zod_1.z.object({ name: zod_1.z.string(), cin: zod_1.z.string(), role: zod_1.z.string() })).optional(),
+    executives: zod_1.z.array(zod_1.z.object({ name: zod_1.z.string(), designation: zod_1.z.string() })).optional(),
+    funding_banks: zod_1.z.array(zod_1.z.string()).optional(),
+    audit_flags_log: zod_1.z.string().optional(),
 });
 const BuilderPatchSchema = zod_1.z.object({
     name: zod_1.z.string().min(2).optional(),
@@ -178,6 +189,14 @@ const BuilderPatchSchema = zod_1.z.object({
     headquarters: zod_1.z.string().nullable().optional(),
     website: zod_1.z.string().nullable().optional(),
     credai_member: zod_1.z.boolean().optional(),
+    cin: zod_1.z.string().nullable().optional(),
+    rera_promoter_id: zod_1.z.string().nullable().optional(),
+    financial_hygiene_score: zod_1.z.number().int().min(0).max(100).nullable().optional(),
+    outstanding_dues_cr: zod_1.z.number().nullable().optional(),
+    legal_entities: zod_1.z.array(zod_1.z.object({ name: zod_1.z.string(), cin: zod_1.z.string(), role: zod_1.z.string() })).nullable().optional(),
+    executives: zod_1.z.array(zod_1.z.object({ name: zod_1.z.string(), designation: zod_1.z.string() })).nullable().optional(),
+    funding_banks: zod_1.z.array(zod_1.z.string()).optional(),
+    audit_flags_log: zod_1.z.string().nullable().optional(),
 });
 // ── Intelligence Zod Schemas ──────────────────────────────────────────
 const IntelligenceStatusEnum = zod_1.z.enum(['DRAFT', 'IN_REVIEW', 'PUBLISHED']);
@@ -228,6 +247,7 @@ const PersonaEnum = zod_1.z.enum(['FAMILY', 'PROFESSIONAL', 'INVESTOR', 'NRI', '
 const PersonaProfilePatchSchema = zod_1.z.object({
     primary_persona: PersonaEnum.nullable().optional(),
     secondary_personas: zod_1.z.array(PersonaEnum).optional(),
+    persona_descriptions: zod_1.z.record(zod_1.z.string()).nullable().optional(),
     income_range: zod_1.z.string().nullable().optional(),
     family_stage: zod_1.z.string().nullable().optional(),
     work_location: zod_1.z.string().nullable().optional(),
@@ -342,6 +362,7 @@ router.post('/projects', async (req, res) => {
             total_units: d.total_units,
             total_towers: d.total_towers,
             land_area_acres: d.land_area_acres,
+            launch_date: d.launch_date ? new Date(d.launch_date) : undefined,
             possession_label: d.possession_label,
             possession_date: d.possession_date ? new Date(d.possession_date) : undefined,
             description: d.description,
@@ -433,6 +454,7 @@ router.patch('/projects/:id', async (req, res) => {
             where: { id: req.params.id },
             data: {
                 ...d,
+                launch_date: d.launch_date ? new Date(d.launch_date) : undefined,
                 possession_date: d.possession_date ? new Date(d.possession_date) : undefined,
             },
         });
@@ -552,11 +574,19 @@ router.patch('/projects/:id/persona-profile', async (req, res) => {
         return;
     }
     try {
+        // Prisma's Json fields require the JsonNull sentinel (not a plain `null`) to clear the column.
+        const { persona_descriptions, ...rest } = parsed.data;
+        const data = {
+            ...rest,
+            ...(persona_descriptions !== undefined
+                ? { persona_descriptions: persona_descriptions === null ? client_1.Prisma.JsonNull : persona_descriptions }
+                : {}),
+        };
         const before = await db_1.prisma.personaProfile.findUnique({ where: { project_id: req.params.id } });
         const profile = await db_1.prisma.personaProfile.upsert({
             where: { project_id: req.params.id },
-            create: { project_id: req.params.id, ...parsed.data },
-            update: parsed.data,
+            create: { project_id: req.params.id, ...data },
+            update: data,
         });
         await db_1.prisma.intelligenceAudit.create({
             data: {
@@ -782,14 +812,14 @@ const AmenityPatchSchema = zod_1.z.object({
     category: zod_1.z.enum(['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking']).optional(),
 });
 const ConnectivityCreateSchema = zod_1.z.object({
-    type: zod_1.z.enum(['metro', 'road', 'school', 'hospital', 'mall', 'landmark', 'airport', 'university']),
+    type: zod_1.z.enum(['metro', 'road', 'expressway', 'school', 'hospital', 'mall', 'landmark', 'airport', 'university']),
     name: zod_1.z.string().min(1),
     distance_km: zod_1.z.number().nullable().optional(),
     data_source: zod_1.z.enum(['brochure', 'google', 'estimated', 'manual']).optional(),
     notes: zod_1.z.string().nullable().optional(),
 });
 const ConnectivityPatchSchema = zod_1.z.object({
-    type: zod_1.z.enum(['metro', 'road', 'school', 'hospital', 'mall', 'landmark', 'airport', 'university']).optional(),
+    type: zod_1.z.enum(['metro', 'road', 'expressway', 'school', 'hospital', 'mall', 'landmark', 'airport', 'university']).optional(),
     name: zod_1.z.string().min(1).optional(),
     distance_km: zod_1.z.number().nullable().optional(),
     data_source: zod_1.z.enum(['brochure', 'google', 'estimated', 'manual']).optional(),
@@ -798,12 +828,16 @@ const ConnectivityPatchSchema = zod_1.z.object({
 const ImagePatchSchema = zod_1.z.object({
     type: zod_1.z.enum(['hero', 'exterior', 'interior', 'floor_plan', 'amenity', 'master_plan', 'clubhouse', 'pool', 'location_map']).optional(),
     caption: zod_1.z.string().nullable().optional(),
+    bhk: zod_1.z.number().int().nullable().optional(),
+    size_sqft: zod_1.z.number().int().nullable().optional(),
     sort_order: zod_1.z.number().int().optional(),
 });
 const ImageCreateSchema = zod_1.z.object({
     url: zod_1.z.string().url(),
     type: zod_1.z.enum(['hero', 'exterior', 'interior', 'floor_plan', 'amenity', 'master_plan', 'clubhouse', 'pool', 'location_map']),
     caption: zod_1.z.string().nullable().optional(),
+    bhk: zod_1.z.number().int().nullable().optional(),
+    size_sqft: zod_1.z.number().int().nullable().optional(),
     sort_order: zod_1.z.number().int().optional(),
 });
 // ---------------------------------------------------------------------------
@@ -1103,7 +1137,7 @@ router.delete('/builders/:id', async (req, res) => {
 const BUCKET = 'property-images';
 router.post('/upload-image', upload.single('file'), async (req, res) => {
     const file = req.file;
-    const slug = req.body?.slug ?? 'unnamed';
+    const slug = (req.body?.slug ?? 'unnamed').replace(/[^a-z0-9-]/g, '');
     if (!file) {
         res.status(400).json({ error: 'No file provided' });
         return;

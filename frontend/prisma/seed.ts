@@ -37,7 +37,7 @@ async function main() {
       continue
     }
 
-    const { unit_types, amenities, connectivity, project_images, builder_slug, dna, decision_profile, persona_profile, recommendation_profile, competitors, ...projectData } = p
+    const { unit_types, amenities, connectivity, project_images, builder_slug, dna, decision_profile, persona_profile, recommendation_profile, competitors, payment_plan, cost_sheet, ...projectData } = p
 
     // Upsert project
     const project = await prisma.project.upsert({
@@ -116,6 +116,22 @@ async function main() {
     if (competitors && competitors.length > 0) {
       await prisma.projectCompetitor.createMany({
         data: (competitors as any[]).map(c => ({ ...c, project_id: project.id, last_verified_at: verifiedAt })),
+      })
+    }
+
+    // Cost plan tables (payment_plan / cost_sheet are 1:1 relations, upsert on project_id)
+    if (payment_plan) {
+      await prisma.paymentPlan.upsert({
+        where: { project_id: project.id },
+        update: { ...payment_plan, verified_at: verifiedAt, verified_by: 'seed' },
+        create: { ...payment_plan, project_id: project.id, verified_at: verifiedAt, verified_by: 'seed' },
+      })
+    }
+    if (cost_sheet) {
+      await prisma.costSheet.upsert({
+        where: { project_id: project.id },
+        update: { ...cost_sheet, verified_at: verifiedAt, verified_by: 'seed' },
+        create: { ...cost_sheet, project_id: project.id, verified_at: verifiedAt, verified_by: 'seed' },
       })
     }
 

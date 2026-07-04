@@ -106,6 +106,50 @@ export default function BuilderDNA({ builder: b }: Props) {
         )}
       </div>
 
+      {/* Financial & legal */}
+      {(b.financial_hygiene_score !== null || b.outstanding_dues_cr !== null || b.cin || b.rera_promoter_id || b.funding_banks?.length > 0 || b.audit_flags_log) && (
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Financial &amp; Legal</p>
+          {b.financial_hygiene_score !== null && (
+            <div className="space-y-0.5">
+              <p className="text-[11px] text-gray-500">Financial Hygiene</p>
+              <ScoreBar score={b.financial_hygiene_score} />
+            </div>
+          )}
+          {b.outstanding_dues_cr !== null && (
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-gray-500">Outstanding Dues</span>
+              <span className="font-semibold text-gray-700">₹{b.outstanding_dues_cr} Cr</span>
+            </div>
+          )}
+          {b.cin && (
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-gray-500">CIN</span>
+              <span className="font-mono text-gray-700">{b.cin}</span>
+            </div>
+          )}
+          {b.rera_promoter_id && (
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-gray-500">RERA Promoter ID</span>
+              <span className="font-mono text-gray-700">{b.rera_promoter_id}</span>
+            </div>
+          )}
+          {b.funding_banks?.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {b.funding_banks.map((bank) => (
+                <span key={bank} className="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-full font-medium">{bank}</span>
+              ))}
+            </div>
+          )}
+          {b.audit_flags_log && (
+            <div className="flex items-start gap-1.5 text-[11px] text-red-700 bg-red-50 border border-red-100 rounded-lg px-2 py-1.5">
+              <ShieldAlert size={12} className="flex-shrink-0 mt-0.5" />
+              {b.audit_flags_log}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Specialization chips */}
       {specializations.length > 0 && (
         <div className="flex flex-wrap gap-1.5">

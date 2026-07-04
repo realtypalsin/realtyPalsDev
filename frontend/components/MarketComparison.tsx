@@ -99,42 +99,46 @@ export default function MarketComparison({ sector, city = 'Noida' }: Props) {
 
       {/* Status breakdown */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gray-50 rounded-xl p-3">
-          <p className="text-[9px] text-gray-400 uppercase font-semibold mb-2">{data.project_count} Projects in Sector</p>
-          <div className="space-y-1.5">
-            {Object.entries(data.status_breakdown).map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <div className={`w-2 h-2 rounded-sm ${statusColor(k)}`} />
-                  <span className="text-[10px] text-gray-600">{statusLabel(k)}</span>
-                </div>
-                <span className="text-[10px] font-bold text-gray-700">{v}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3">
-          <p className="text-[9px] text-gray-400 uppercase font-semibold mb-2">Unit Mix</p>
-          <div className="space-y-1.5">
-            {Object.entries(data.bhk_distribution)
-              .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-              .map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between">
-                <span className="text-[10px] text-gray-600">{k}</span>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-400 rounded-full"
-                      style={{ width: `${(v / Math.max(...Object.values(data.bhk_distribution))) * 100}%` }}
-                    />
+        {data.status_breakdown && (
+          <div className="bg-gray-50 rounded-xl p-3">
+            <p className="text-[9px] text-gray-400 uppercase font-semibold mb-2">{data.project_count} Projects in Sector</p>
+            <div className="space-y-1.5">
+              {Object.entries(data.status_breakdown).map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <div className={`w-2 h-2 rounded-sm ${statusColor(k)}`} />
+                    <span className="text-[10px] text-gray-600">{statusLabel(k)}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-gray-700 w-4 text-right">{v}</span>
+                  <span className="text-[10px] font-bold text-gray-700">{v}</span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {data.bhk_distribution && (
+          <div className="bg-gray-50 rounded-xl p-3">
+            <p className="text-[9px] text-gray-400 uppercase font-semibold mb-2">Unit Mix</p>
+            <div className="space-y-1.5">
+              {Object.entries(data.bhk_distribution)
+                .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                .map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between">
+                  <span className="text-[10px] text-gray-600">{k}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-400 rounded-full"
+                        style={{ width: `${(v / Math.max(...Object.values(data.bhk_distribution))) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-700 w-4 text-right">{v}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

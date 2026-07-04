@@ -37,6 +37,8 @@ export const viewport = {
   viewportFit: 'cover' as const,
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -47,6 +49,7 @@ export default function RootLayout({
       <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#EEEEEE]">
         <div className="noise-overlay" />
         <PostHogProvider>{children}</PostHogProvider>
+        <Toaster position="bottom-right" richColors closeButton theme="light" />
       </body>
     </html>
   );

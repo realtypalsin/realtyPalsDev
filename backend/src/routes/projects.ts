@@ -137,7 +137,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
     last_verified_at:           project.dna.last_verified_at,
   } : null
 
-  res.json({ project: { ...project, dna: publicDna, recommendation_score } })
+  res.json({ project: { ...project, builder_detail: project.builder, dna: publicDna, recommendation_score } })
 })
 
 router.get('/:slug/documents', async (req: Request, res: Response) => {

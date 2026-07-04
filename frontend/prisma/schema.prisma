@@ -45,6 +45,14 @@ model Builder {
   litigation_count           Int?
   insolvency_history         Boolean   @default(false)
   legal_flag                 String?
+  cin                        String?
+  rera_promoter_id           String?
+  financial_hygiene_score    Int?
+  outstanding_dues_cr        Float?
+  legal_entities             Json?     // [{name, cin, role}]
+  executives                 Json?     // [{name, designation}]
+  funding_banks              String[]
+  audit_flags_log            String?
 
   // Market Position
   luxury_specialization      Boolean   @default(false)
@@ -103,6 +111,11 @@ model Project {
   updated_at               DateTime               @updatedAt
   embedding                Unsupported("vector")?
   project_risk_flag        String?
+  escrow_verified          Boolean?
+  escrow_bank_name         String?
+  registry_status          String?
+  registry_embargo_reasons String[]
+  nclt_moratorium_active   Boolean?
   amenities                Amenity[]
   connectivity             Connectivity[]
   decision_profile         DecisionProfile?

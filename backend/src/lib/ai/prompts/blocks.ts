@@ -13,75 +13,28 @@ export function buildPropertyResultsFormatBlock(): string {
 
 ## RESPONSE FORMAT — SEARCH RESULTS
 
-HARD LIMIT: 35 words. Target: 20–30 words. Must fit one screen without scrolling.
+HARD LIMIT: 15 words. Target: 5–10 words. Must fit one screen without scrolling.
 
-The cards already show: price, builder name, BHK, carpet area, amenity list, possession date, RERA status, sector.
+The cards already show: price, builder name, BHK, carpet area, amenity list, possession date, RERA status, sector, and AI recommendations.
 NEVER put any of those facts in your text — the user can already see them.
+Do not provide a textual recommendation. The recommendation will be shown in the UI cards.
 
 ---
 
 ### EXACT FORMAT
 
-🏆 Recommended Choice
-[Project Name]
-• Budget fit: [Why it fits the budget]
-• Biggest strength: [The core advantage]
-• Key differentiator: [What makes it stand out]
-[Important tradeoff if any, or omit]
-
-Best if: [Single sentence explaining who this recommendation is best suited for]
-
-For multiple results, only provide this format for the top pick.
-If runner-up serves a clearly different need (e.g. RTM vs UC), add one line: "Consider another option if: [Need] — [Project Name]."
-
----
-
-### SIGNAL HIERARCHY — build the recommendation from these fields in order:
-
-1. \`decision_bottom_line\` field present → paraphrase it
-2. \`recommendation_thesis\` field present → use it
-3. \`decision_top_strengths\` field present → pick the single strongest signal
-4. DNA labels (\`builder_reputation\`, \`value_positioning\`, \`delivery_confidence\`, \`location_quality\`) present → derive from the strongest label
-5. NONE of the above present → write EXACTLY: "Best match for your search criteria." — STOP. Nothing else. Do not improvise.
-
-Rule 5 is a HARD STOP. When no curated signal exists, writing anything from raw project specs is worse than the fallback.
-
----
-
-### WHAT THE SENTENCE MUST LOOK LIKE
-
-PASS — pure factual judgement:
-🏆 Recommended Choice
-Godrej Woods
-• Budget fit: High value for the segment
-• Biggest strength: Deepest lifestyle offering
-• Key differentiator: Established Market Leader builder
-
-Best if: You want the strongest family option in the area.
-
-FAIL — marketing language or repeating specs:
-✗ "Luxurious 3BHK in Sector 150 starting at 1.5Cr with a beautiful swimming pool!"
-
----
-
-TIER RULES:
-- STRONG_BUY / BUY → recommend confidently
-- HOLD → balanced, no recommendation
-- WATCH → "approach with caution" + reason from risk_thesis
-- AVOID → never recommend; explain only if user asks directly
+Just provide a very brief conversational introduction. For example:
+"Here are the top matches for your search:" or "I found some great options fitting your criteria:"
+Do not include any property names, bullets, or detailed recommendations in your text response.
 
 ---
 
 RESPONSE FAILURE — disqualifies the response:
-• Any price, builder name, sector name, sqft, BHK count, possession date, RERA status, or amenity name in AI text
-• Improvised recommendation sentence when no curated signal exists (Rule 5 requires the exact fallback phrase)
-• "Best For" section
+• Any property name, price, builder name, sector name, sqft, BHK count, possession date, RERA status, or amenity name in AI text
+• Any recommendation text, pros/cons, or "Best For" sections
 • "Quick Picks" section or table
 • Bullets, headers, or per-project sections
-• More than one recommendation sentence
-• More than one caution
 • Internal field names
-• Fabricated scores or percentages
 • Call-to-action — cards are already visible`
 }
 

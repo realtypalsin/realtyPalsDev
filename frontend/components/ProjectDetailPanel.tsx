@@ -147,10 +147,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     getAqi(project.lat, project.lng, 'noida').then(setAqi).catch(() => {})
   }, [project?.slug])
 
-  // Lazy-load payment plan when 'Costs' or 'Pricing' tab is opened — the Pricing
-  // tab's Financial Snapshot teaser reuses this same fetch/cache instead of a second one.
+  // Lazy-load payment plan when 'Pricing' tab is opened.
   useEffect(() => {
-    if ((activeTab !== 'Costs' && activeTab !== 'Pricing') || !project?.slug || paymentPlan.loaded) return
+    if (activeTab !== 'Pricing' || !project?.slug || paymentPlan.loaded) return
     getPaymentPlan(project.slug).then((res) => {
       setPaymentPlan({ loaded: true, available: res.available, data: res.plan ?? null, message: res.message })
     }).catch(() => {
@@ -158,9 +157,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     })
   }, [activeTab, project?.slug])
 
-  // Lazy-load cost sheet when 'Costs' or 'Pricing' tab is opened (same reasoning as above)
+  // Lazy-load cost sheet when 'Pricing' tab is opened.
   useEffect(() => {
-    if ((activeTab !== 'Costs' && activeTab !== 'Pricing') || !project?.slug || costSheet.loaded) return
+    if (activeTab !== 'Pricing' || !project?.slug || costSheet.loaded) return
     getCostSheet(project.slug).then((res) => {
       setCostSheet({ loaded: true, available: res.available, data: res.sheet ?? null, illustration: res.illustration ?? null, note: res.illustration_note, message: res.message })
     }).catch(() => {
@@ -434,27 +433,27 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     </div>
   )
 
-  // ── Tab strip ───────────────────────────────────────────────────────────────
+  // ── Unified Sticky Header (Vercel Style) & Tab Strip ──────────────────────────────────
   const tabIcons: Record<Tab, React.ReactNode> = {
-    Overview: <Building2 size={16} />,
-    Analysis: <LineChart size={16} />,
-    Residences: <BedDouble size={16} />,
-    Pricing: <IndianRupee size={16} />,
-    Location: <MapPin size={16} />,
-    Documents: <FileText size={16} />
+    Overview: <Building2 size={15} />,
+    Analysis: <LineChart size={15} />,
+    Residences: <BedDouble size={15} />,
+    Pricing: <IndianRupee size={15} />,
+    Location: <MapPin size={15} />,
+    Documents: <FileText size={15} />
   }
 
   const tabStrip = (
-    <div className="sticky top-0 z-40 flex gap-8 bg-white/95 backdrop-blur-xl px-10 border-b border-gray-100 w-full overflow-x-auto hide-scrollbar">
+    <div className="flex gap-8 px-5 overflow-x-auto hide-scrollbar">
       {SECTION_TABS.map((tab) => {
         const isActive = activeTab === tab;
         return (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`relative py-4 flex items-center gap-2 text-[14px] font-semibold transition-colors whitespace-nowrap ${
+            className={`relative py-3 flex items-center gap-2 text-[14px] font-semibold transition-colors whitespace-nowrap ${
               isActive
-                ? 'text-blue-600'
+                ? 'text-gray-900'
                 : 'text-gray-500 hover:text-gray-900'
             }`}
           >
@@ -462,14 +461,68 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             {tab}
             {isActive && (
               <motion.div
-                layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full"
+                layoutId="activeTabUnderlineMobile"
+                className="absolute bottom-0 left-0 right-0 h-[3px] bg-gray-900 rounded-t-full"
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
             )}
           </button>
         )
       })}
+    </div>
+  )
+
+  const stickyHeader = (
+    <div className="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 transition-all duration-300">
+      <div className={`flex items-center px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-[60px]' : 'h-[52px]'}`}>
+        
+        {/* Left: Identity (Injected on scroll) */}
+        <div className={`flex items-center gap-6 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
+          isScrolled ? 'max-w-[300px] opacity-100 translate-x-0 mr-6' : 'max-w-0 opacity-0 -translate-x-8 mr-0'
+        }`}>
+           <div className="flex items-center gap-3 flex-shrink-0">
+             <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
+             <span className="font-bold text-gray-900 dark:text-gray-100 text-[14px] truncate">{d?.name}</span>
+           </div>
+           <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+        </div>
+
+        {/* Center: Tabs */}
+        <div className="flex gap-4 md:gap-6 overflow-x-auto hide-scrollbar flex-1 justify-start">
+          {SECTION_TABS.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`relative py-4 flex items-center gap-2 text-[13px] font-semibold transition-colors whitespace-nowrap ${
+                  isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                {tabIcons[tab]}
+                <span className="hidden sm:inline">{tab}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabUnderline"
+                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-gray-900 dark:bg-white rounded-t-full"
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Right: Action (Injected on scroll) */}
+        <div className={`flex items-center justify-end gap-4 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
+          isScrolled ? 'max-w-[300px] opacity-100 translate-x-0 ml-4' : 'max-w-0 opacity-0 translate-x-8 ml-0'
+        }`}>
+           <p className="text-[13px] font-semibold text-gray-500 hidden xl:block whitespace-nowrap">{d?.price_range_label}</p>
+           <button onClick={() => setShowVisitScheduler(true)} className="px-4 py-2 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-semibold rounded-full text-[12px] transition-all whitespace-nowrap flex-shrink-0 shadow-sm">
+             Book Visit
+           </button>
+        </div>
+      </div>
     </div>
   )
 
@@ -586,10 +639,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             </div>
           </div>
 
-          {/* Tab strip — light bar directly under the hero */}
-          <div className="px-5 pt-4 pb-3 border-b border-gray-100">
-            {tabStrip}
-          </div>
+          {/* Tab strip — unified header */}
+          {stickyHeader}
           <div className="flex-1 overflow-y-auto">{tabBody}</div>
           {ctaFooter}
         </div>
@@ -656,29 +707,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                            rounded-3xl bg-gray-50 overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.4)]"
                 onClick={(e) => e.stopPropagation()}
               >
-              {/* Floating Header */}
-              <AnimatePresence>
-                {isScrolled && (
-                  <motion.div 
-                     initial={{ opacity: 0, y: '-100%' }} 
-                     animate={{ opacity: 1, y: 0 }} 
-                     exit={{ opacity: 0, y: '-100%' }}
-                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                     className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 hidden md:flex pointer-events-auto rounded-t-3xl"
-                  >
-                     <div className="flex items-center gap-3">
-                       <div className={`w-2 h-2 rounded-full shadow-sm ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-                       <h2 className="text-[15px] font-bold text-gray-900 tracking-tight">{d?.name}</h2>
-                     </div>
-                     <div className="flex items-center gap-4">
-                       <p className="text-[14px] font-bold text-gray-900">{d?.price_range_label}</p>
-                       <button onClick={() => setShowVisitScheduler(true)} className="px-5 py-2 bg-gray-900 hover:bg-black text-white font-semibold rounded-full text-[13px] transition-colors shadow-sm">
-                         Book Visit
-                       </button>
-                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* 
+                 Floating Header is completely removed. 
+                 The stickyHeader (tab bar) now dynamically injects the identity and action on scroll! 
+              */}
 
               {/* Scrollable Content */}
               <div className="flex-1 overflow-y-auto w-full relative pb-24 hide-scrollbar" onScroll={handleScroll}>
@@ -802,10 +834,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                   </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="bg-white">
-                  {tabStrip}
-                </div>
+                {/* Sticky Header / Tabs */}
+                {stickyHeader}
 
                 {/* Main Content Area */}
                 <div className="p-8 md:p-10 max-w-[1200px] mx-auto">

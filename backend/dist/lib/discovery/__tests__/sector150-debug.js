@@ -62,6 +62,7 @@ async function main() {
             ai_search_keywords: p.ai_search_keywords,
             builder: p.builder,
             hero_image_url: p.hero_image_url,
+            images: [],
             rera_number: p.rera_number,
         }, IDEAL_INTENT, budgetStatus);
         const inBudgetFilter = minPrice != null && minPrice <= IDEAL_INTENT.budgetMax * constants_1.BUDGET_TOLERANCE_MAX;

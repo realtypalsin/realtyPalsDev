@@ -156,6 +156,14 @@ export interface BuilderDetail {
   litigation_count: number | null
   insolvency_history: boolean
   legal_flag: string | null
+  cin: string | null
+  rera_promoter_id: string | null
+  financial_hygiene_score: number | null
+  outstanding_dues_cr: number | null
+  legal_entities: { name: string; cin: string; role: string }[] | null
+  executives: { name: string; designation: string }[] | null
+  funding_banks: string[]
+  audit_flags_log: string | null
   // Market Position
   luxury_specialization: boolean
   township_specialization: boolean

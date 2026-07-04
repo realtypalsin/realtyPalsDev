@@ -261,6 +261,21 @@ export const NEW_BUILDERS = [
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
+    cin: 'U70101DL2012PTC244539',
+    legal_entities: [
+      { name: 'Shirja Real Estate Solutions Pvt. Ltd.', cin: 'U70101DL2012PTC244539', role: 'primary' },
+      { name: 'Countyconcept Developers LLP', cin: null, role: 'secondary' },
+    ],
+    rera_promoter_id: 'UPRERAPRM80484',
+    executives: [
+      { name: 'Ramawtar Ramsisaria', designation: 'Chairman' },
+      { name: 'Amit Modi', designation: 'Director' },
+      { name: 'Puspahas Agrawal', designation: 'Managing Director' },
+    ],
+    financial_hygiene_score: 98,
+    outstanding_dues_cr: 0.00,
+    funding_banks: ['Kotak Mahindra Bank'],
+    audit_flags_log: 'Clean record. Zero active consumer disputes on active escrow files. Sovereign land premiums fully paid-up. Zero outstanding land dues.',
   },
   {
     slug: 'maxblis-construction',
@@ -275,10 +290,21 @@ export const NEW_BUILDERS = [
     phone: null,
     credai_member: false,
     delivered_units: null,
-    delivered_projects: [] as string[],
+    delivered_projects: ['Maxblis Grand Wellington', 'Maxblis White House (I & II)', 'Grand Kingston', 'Grace'],
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
+    cin: 'U45201DL2004PTC129673',
+    rera_promoter_id: 'UPRERAPRM7813',
+    executives: [
+      { name: 'Ajay Sharma', designation: 'Founder & Director' },
+      { name: 'Ajay Kumar', designation: 'Director' },
+      { name: 'Vishal Kumar', designation: 'Director' },
+    ],
+    financial_hygiene_score: 40,
+    outstanding_dues_cr: 1717.00,
+    funding_banks: [] as string[], // ponytail: no corporate funding bank named in source docs — do not fabricate
+    audit_flags_log: 'CRITICAL STATUS. 46% revenue drop. Part of Aims Max Gardenia consortium which defaulted on 1,717 Crore land dues to Noida Authority. Active registry freeze. No new launches permitted.',
   },
   {
     slug: 'gardenia-aims-max',
@@ -293,11 +319,27 @@ export const NEW_BUILDERS = [
     phone: null,
     credai_member: false,
     delivered_units: null,
-    delivered_projects: [] as string[],
+    delivered_projects: ['Gardenia Grace', 'Glory', 'Gateway'], // physical delivery only — legal registries not confirmed
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
     legal_flag: 'LEGAL_RISK: Builder under NCLT insolvency proceedings. Massive unpaid land dues to Noida Authority blocking registries in multiple towers at Golf City. Do not recommend any under-construction or unregistered unit. Only consider a specific unit that already has a fully executed, clean registry. Verify at NCLT dockets and Noida Authority defaulters list before advising.',
+    insolvency_history: true,
+    cin: 'U70109DL2010PTC201695',
+    legal_entities: [
+      { name: 'Aims Max Gardenia Developers Pvt. Ltd.', cin: 'U70109DL2010PTC201695', role: 'primary' },
+      { name: 'Gardenia India Limited', cin: 'U15122DL2009PTC195400', role: 'secondary' },
+    ],
+    executives: [
+      { name: 'Ajay Kumar', designation: 'Promoter Director' },
+      { name: 'Manoj Kumar Ray', designation: 'Promoter Director' },
+      { name: 'Malook Nagar', designation: 'Promoter Director' },
+      { name: 'Sanjeev Kumar', designation: 'Promoter Director' },
+    ],
+    financial_hygiene_score: 10,
+    outstanding_dues_cr: 2574.00,
+    funding_banks: [] as string[], // ponytail: default status, escrow frozen, no corporate bank confirmed in source docs
+    audit_flags_log: 'CRITICAL RED FLAG. Owes 1,717 Cr (Sector 75) and 857 Cr (Sector 46) to Noida Authority. Active NCLT bankruptcy petitions. Registry embargo strictly enforced.',
   },
   {
     slug: 'nbcc-india',
@@ -316,6 +358,15 @@ export const NEW_BUILDERS = [
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
+    cin: 'L74899DL1960GOI003335',
+    executives: [
+      { name: 'Kellambally Puttaswamy Mahadevaswamy', designation: 'Managing Director' },
+      { name: 'Dr. Suman Kumar', designation: 'Whole-time Director' },
+    ],
+    financial_hygiene_score: 100,
+    outstanding_dues_cr: 0.00,
+    funding_banks: ['Sovereign-backed (Government of India)'],
+    audit_flags_log: 'AAA rated, listed on NSE/BSE. Zero bankruptcy risk — sovereign-backed PSU. Currently executing Supreme Court-monitored Amrapali takeover.',
   },
   {
     slug: 'elite-group',
@@ -334,6 +385,22 @@ export const NEW_BUILDERS = [
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
+    cin: 'U70200DL2012PTC237482',
+    legal_entities: [
+      { name: 'Golfgreen Mansions Private Limited', cin: 'U70200DL2012PTC237482', role: 'primary' },
+      { name: 'Golfgreen Buildcon Pvt. Ltd.', cin: null, role: 'secondary' },
+    ],
+    rera_promoter_id: 'UPRERAPRM5180',
+    executives: [
+      { name: 'Vinod Bahl', designation: 'Director' },
+      { name: 'Pramod Bahl', designation: 'Director' },
+      { name: 'Vikas Gupta', designation: 'Director' },
+      { name: 'Uma Shanker', designation: 'Director' },
+    ],
+    financial_hygiene_score: 92,
+    outstanding_dues_cr: 0.00,
+    funding_banks: ['Tata Capital'],
+    audit_flags_log: 'Clean RERA record. On-time or near-on-time delivery with no structural delays across 4 delivered projects.',
   },
   {
     slug: 'irish-infrastructure',
@@ -352,6 +419,19 @@ export const NEW_BUILDERS = [
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
+    cin: 'U45200DL2013PTC256534',
+    legal_entities: [
+      { name: 'Irish Infrastructure Private Limited', cin: 'U45200DL2013PTC256534', role: 'primary' },
+      { name: 'Irish Buildcon Pvt. Ltd.', cin: null, role: 'secondary' },
+    ],
+    executives: [
+      { name: 'Gaurav Garg', designation: 'Promoter Director' },
+      { name: 'Anjana Garg', designation: 'Promoter Director' },
+    ],
+    financial_hygiene_score: 70,
+    outstanding_dues_cr: 0.00,
+    funding_banks: ['Axis Bank'],
+    audit_flags_log: 'Clean slate on RERA but limited track record — only 1 delivered project (Irish Pearls) to date.',
   },
   {
     slug: 'fusion-buildtech',
@@ -370,6 +450,15 @@ export const NEW_BUILDERS = [
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
+    cin: 'U70200DL2010PTC204178',
+    executives: [
+      { name: 'Yogesh Goyal', designation: 'Promoter Director' },
+      { name: 'Mukesh Khandelwal', designation: 'Promoter Director' },
+    ],
+    financial_hygiene_score: 80,
+    outstanding_dues_cr: 0.00,
+    funding_banks: [] as string[], // ponytail: no corporate funding bank named in source docs — do not fabricate
+    audit_flags_log: 'Clean registry. Flagged in 2023 CAG audit for irregular lease rent installment permissions, but zero NCLT filings and zero outstanding land dues.',
   },
 ];
 

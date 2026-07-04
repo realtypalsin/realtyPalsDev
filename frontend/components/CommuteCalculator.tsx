@@ -148,11 +148,11 @@ export default function CommuteCalculator({ projectAddress }: Props) {
             </div>
           )}
 
-          {result.nearby_metro.length > 0 && (
+          {(result.nearby_metro ?? []).length > 0 && (
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Nearby Metro Stations</p>
               <div className="space-y-2">
-                {result.nearby_metro.slice(0, 3).map((m, i) => (
+                {(result.nearby_metro ?? []).slice(0, 3).map((m, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
                       <TrainFront size={12} className="text-gray-500" />

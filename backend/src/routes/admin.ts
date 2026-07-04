@@ -183,6 +183,14 @@ const BuilderSchema = z.object({
   delivered_projects: z.array(z.string()).optional(),
   ongoing_projects:   z.array(z.string()).optional(),
   awards:             z.array(z.string()).optional(),
+  cin:                       z.string().optional(),
+  rera_promoter_id:          z.string().optional(),
+  financial_hygiene_score:   z.number().int().min(0).max(100).optional(),
+  outstanding_dues_cr:       z.number().optional(),
+  legal_entities:            z.array(z.object({ name: z.string(), cin: z.string(), role: z.string() })).optional(),
+  executives:                z.array(z.object({ name: z.string(), designation: z.string() })).optional(),
+  funding_banks:             z.array(z.string()).optional(),
+  audit_flags_log:           z.string().optional(),
 })
 
 const BuilderPatchSchema = z.object({
@@ -192,6 +200,14 @@ const BuilderPatchSchema = z.object({
   headquarters:  z.string().nullable().optional(),
   website:       z.string().nullable().optional(),
   credai_member: z.boolean().optional(),
+  cin:                       z.string().nullable().optional(),
+  rera_promoter_id:          z.string().nullable().optional(),
+  financial_hygiene_score:   z.number().int().min(0).max(100).nullable().optional(),
+  outstanding_dues_cr:       z.number().nullable().optional(),
+  legal_entities:            z.array(z.object({ name: z.string(), cin: z.string(), role: z.string() })).nullable().optional(),
+  executives:                z.array(z.object({ name: z.string(), designation: z.string() })).nullable().optional(),
+  funding_banks:             z.array(z.string()).optional(),
+  audit_flags_log:           z.string().nullable().optional(),
 })
 
 // ── Intelligence Zod Schemas ──────────────────────────────────────────
@@ -1024,7 +1040,7 @@ router.patch('/builders/:id', async (req: Request, res: Response): Promise<void>
   try {
     const builder = await prisma.builder.update({
       where: { id: req.params.id },
-      data:  parsed.data,
+      data:  parsed.data as Prisma.BuilderUpdateInput,
     })
     res.json({ builder })
   } catch (err: unknown) {
@@ -1064,7 +1080,7 @@ router.post(
   upload.single('file'),
   async (req: Request, res: Response): Promise<void> => {
     const file = req.file
-    const slug = (req.body?.slug as string | undefined) ?? 'unnamed'
+    const slug = ((req.body?.slug as string | undefined) ?? 'unnamed').replace(/[^a-z0-9-]/g, '')
 
     if (!file) {
       res.status(400).json({ error: 'No file provided' })

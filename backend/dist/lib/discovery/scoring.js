@@ -130,7 +130,7 @@ function scoreProject(p, intent, budgetStatus) {
     if ((p.builder.awards_count ?? 0) > 0)
         score += 1;
     // ── Data quality (max 3) ────────────────────────────────────────────
-    if (p.hero_image_url)
+    if (p.hero_image_url || p.images.some((i) => i.type === 'exterior' || i.type === 'hero'))
         score += 2;
     if (p.rera_number)
         score += 1;

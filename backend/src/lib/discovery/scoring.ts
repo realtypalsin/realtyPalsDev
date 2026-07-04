@@ -72,6 +72,7 @@ export function scoreProject(
       legal_flag?: string | null
     }
     hero_image_url: string | null
+    images: Array<{ type: string }>
     rera_number: string | null
     recommendation_profile?: { tier?: string | null } | null
     project_risk_flag?: string | null
@@ -154,7 +155,7 @@ export function scoreProject(
   if ((p.builder.awards_count ?? 0) > 0)     score += 1
 
   // ── Data quality (max 3) ────────────────────────────────────────────
-  if (p.hero_image_url) score += 2
+  if (p.hero_image_url || p.images.some((i) => i.type === 'exterior' || i.type === 'hero')) score += 2
   if (p.rera_number)    score += 1
 
   // ── Recommendation tier ──────────────────────────────────────────────

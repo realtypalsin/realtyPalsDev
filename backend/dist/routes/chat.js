@@ -648,9 +648,14 @@ router.post('/', async (req, res) => {
             (projects.length > 0 || nearbyProjects.length > 0) ? 'search' :
                 'chat';
         if (isComparison) {
+            // Compare exactly what the user named; only fall back to a capped
+            // default when no explicit project list was extracted (e.g. "compare
+            // top options here").
+            const requestedCount = intent.projectNames?.length ?? 0;
+            const compareCount = requestedCount >= 2 ? requestedCount : Math.min(projects.length, 4);
             messageArtifacts.push({
                 type: 'comparison',
-                projects: projects.slice(0, 4),
+                projects: projects.slice(0, compareCount),
             });
         }
         // Pre-generate ID for new sessions so send('done') never blocks on DB write.
@@ -790,6 +795,19 @@ function formatMessages(messages) {
         artifacts: Array.isArray(m.artifacts) ? m.artifacts : [],
     }));
 }
+// Session restore (GET /chat/session) never runs the Conversation Engine, so
+// without this the progressive suggestion chips only exist after the user
+// sends a fresh message — a restored session with a shortlist and history
+// shows no chips at all until then. Recompute the same ui_state a live POST
+// /chat turn would emit, from the restored intent/projects/history.
+async function buildRestoreUiState(lastIntent, lastProjects, messages) {
+    const { computeConversationState } = await Promise.resolve().then(() => __importStar(require('../lib/discovery/conversationEngine')));
+    const intent = (lastIntent ?? {});
+    const projects = lastProjects ?? [];
+    const chatHistory = messages.map((m) => ({ role: m.role, content: m.content }));
+    const intentState = (0, discovery_1.getIntentState)(intent, projects.length > 0);
+    return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory);
+}
 // GET /chat/session/list — must come before GET /chat/session (order matters in Express)
 router.get('/session/list', async (req, res) => {
     const userId = (await (0, auth_1.verifyUser)(req)) ?? undefined;
@@ -844,14 +862,18 @@ router.get('/session/list', async (req, res) => {
 // GET /chat/session?id= — restore or find/create latest session
 router.get('/session', async (req, res) => {
     const userId = await (0, auth_1.verifyUser)(req);
-    if (!userId) {
+    const guestToken = req.query.guestToken;
+    if (!userId && !guestToken) {
         res.status(401).json({ error: 'Auth required' });
         return;
     }
     const specificId = req.query.id;
     if (specificId) {
+        // Guests can restore their own sessions too (guest_token match) — mirrors
+        // the ownership check already used by PATCH/DELETE /session/:id below.
+        const ownerFilter = userId ? { user_id: userId } : { guest_token: guestToken };
         const session = await db_1.prisma.chatSession.findFirst({
-            where: { id: specificId, user_id: userId },
+            where: { id: specificId, ...ownerFilter },
             include: { messages: { orderBy: { created_at: 'desc' }, take: MAX_MESSAGES } },
         });
         if (!session) {
@@ -869,11 +891,17 @@ router.get('/session', async (req, res) => {
             chat_phase: session.chat_phase ?? 'DISCOVERY',
             last_projects: session.last_projects ?? null,
             last_intent: lastIntent,
+            ui_state: await buildRestoreUiState(lastIntent, session.last_projects, session.messages),
             messages: formatMessages(session.messages),
         });
         return;
     }
-    // No id — find or create latest session
+    // No id — find or create latest session (authenticated users only; guests
+    // never auto-continue a "latest" session, they land on a fresh welcome screen)
+    if (!userId) {
+        res.status(401).json({ error: 'Auth required' });
+        return;
+    }
     let session = await db_1.prisma.chatSession.findFirst({
         where: { user_id: userId },
         orderBy: { last_active: 'desc' },
@@ -895,6 +923,7 @@ router.get('/session', async (req, res) => {
         chat_phase: session.chat_phase ?? 'DISCOVERY',
         last_projects: session.last_projects ?? null,
         last_intent: lastIntent,
+        ui_state: await buildRestoreUiState(lastIntent, session.last_projects, session.messages),
         messages: formatMessages(session.messages),
     });
 });

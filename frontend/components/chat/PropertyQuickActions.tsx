@@ -1,6 +1,7 @@
 'use client'
 
-import { CalendarDays, Calculator, Phone, Sparkles, Share2 } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { CalendarDays, Calculator, Phone, Sparkles, Share2, MoreHorizontal } from 'lucide-react'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { track } from '@/lib/analytics'
@@ -12,6 +13,7 @@ const WhatsAppIcon = ({ size = 14 }: { size?: number }) => (
 )
 
 const pillClass = 'flex items-center gap-1.5 text-[11.5px] font-semibold px-3 py-2 rounded-full border transition-colors whitespace-nowrap'
+const dropdownItemClass = 'w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer whitespace-nowrap text-left'
 
 interface Props {
   project: ProjectCardType
@@ -21,11 +23,20 @@ interface Props {
   onOpenShareSheet: () => void
 }
 
-// Dedicated action row rendered below a property card — reuses the exact same
-// callbacks/handlers the card used to call internally, just relocated out of
-// the preview so the card itself only has to answer "do I want to open this?"
 export default function PropertyQuickActions({ project, onCallback, onSetSiteVisit, onOpenCalculator, onOpenShareSheet }: Props) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const waUrl = buildWhatsAppUrl(project)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleAskAI = () => {
     window.dispatchEvent(
@@ -36,50 +47,70 @@ export default function PropertyQuickActions({ project, onCallback, onSetSiteVis
   }
 
   return (
-    <div className="flex flex-wrap gap-2 mt-2.5">
+    <div className="flex flex-wrap gap-2 mt-2.5 relative">
       <button
         onClick={() => onSetSiteVisit(project)}
         className={`${pillClass} bg-white hover:bg-blue-50 border-gray-200 hover:border-blue-200 text-gray-700 hover:text-blue-700`}
       >
         <CalendarDays size={13} /> Book Site Visit
       </button>
-      <button
-        onClick={onOpenCalculator}
-        className={`${pillClass} bg-white hover:bg-blue-50 border-gray-200 hover:border-blue-200 text-gray-700 hover:text-blue-700`}
-      >
-        <Calculator size={13} /> Payment Plan
-      </button>
-      {waUrl && (
-        <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => track('whatsapp_handoff', { project_slug: project.slug, project_name: project.name })}
-          className={`${pillClass} bg-[#25D366]/10 hover:bg-[#25D366]/20 border-[#25D366]/30 text-[#1a9e4f]`}
-        >
-          <WhatsAppIcon size={13} /> WhatsApp
-        </a>
-      )}
-      {onCallback && (
-        <button
-          onClick={() => onCallback(project)}
-          className={`${pillClass} bg-white hover:bg-emerald-50 border-gray-200 hover:border-emerald-200 text-gray-700 hover:text-emerald-700`}
-        >
-          <Phone size={13} /> Request Callback
-        </button>
-      )}
-      <button
-        onClick={onOpenShareSheet}
-        className={`${pillClass} bg-white hover:bg-gray-50 border-gray-200 text-gray-500 hover:text-gray-700`}
-      >
-        <Share2 size={13} /> Share
-      </button>
+
       <button
         onClick={handleAskAI}
         className={`${pillClass} bg-white hover:bg-gray-50 border-gray-200 text-gray-500 hover:text-gray-700`}
       >
         <Sparkles size={13} /> Ask AI
       </button>
+
+      <div className="relative" ref={menuRef}>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className={`${pillClass} bg-white hover:bg-gray-50 border-gray-200 text-gray-500 hover:text-gray-700 !px-2.5`}
+          aria-label="More options"
+        >
+          <MoreHorizontal size={14} />
+        </button>
+
+        {menuOpen && (
+          <div className="absolute top-full left-0 sm:left-auto sm:right-0 mt-2 py-1.5 w-44 bg-white/90 backdrop-blur-xl rounded-[14px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-black/5 z-50 overflow-hidden">
+            <button
+              onClick={() => { onOpenCalculator(); setMenuOpen(false); }}
+              className={dropdownItemClass}
+            >
+              <Calculator size={14} className="text-gray-500" /> Payment Plan
+            </button>
+            {waUrl && (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  track('whatsapp_handoff', { project_slug: project.slug, project_name: project.name })
+                  setMenuOpen(false)
+                }}
+                className={dropdownItemClass}
+              >
+                <WhatsAppIcon size={14} /> WhatsApp
+              </a>
+            )}
+            {onCallback && (
+              <button
+                onClick={() => { onCallback(project); setMenuOpen(false); }}
+                className={dropdownItemClass}
+              >
+                <Phone size={14} className="text-gray-500" /> Request Callback
+              </button>
+            )}
+            <button
+              onClick={() => { onOpenShareSheet(); setMenuOpen(false); }}
+              className={dropdownItemClass}
+            >
+              <Share2 size={14} className="text-gray-500" /> Share
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
+

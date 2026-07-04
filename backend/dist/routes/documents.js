@@ -88,7 +88,7 @@ router.get('/', async (req, res) => {
     const docs = await db_1.prisma.projectDocument.findMany({
         where: { project_slug: slug },
         orderBy: { created_at: 'desc' },
-        select: { id: true, name: true, storage_url: true, doc_type: true, created_at: true },
+        select: { id: true, name: true, storage_url: true, doc_type: true, created_at: true, file_size_bytes: true },
     });
     res.json({ docs });
 });
@@ -166,6 +166,7 @@ router.post('/', adminAuth_1.requireAdmin, upload.single('file'), async (req, re
                 storage_url: publicUrl,
                 content_text,
                 doc_type,
+                file_size_bytes: file.size,
             },
         });
     }

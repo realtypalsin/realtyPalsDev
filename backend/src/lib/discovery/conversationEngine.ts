@@ -269,8 +269,8 @@ function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[
       directCompare ? { mode: 'direct', selected: results.slice(0, 3).map(r => r.slug) } : { mode: 'multi' }, 1))
   }
 
-  chips.push(chip('emi', 'CALCULATE_EMI', 'Calculate EMI', '📊',
-    { mode: 'single' }, 2))
+  chips.push(chip('price_trends', 'TEXT_MESSAGE', 'Price Trends', '📊',
+    { text: `How have property prices trended in ${intent.sector ?? 'this area'} recently?` }, 2))
 
   if (hasUnderConstruction) {
     chips.push(chip('builder_risk', 'TEXT_MESSAGE', 'Builder delivery risk', '🏗️',
@@ -306,10 +306,12 @@ function getComparingChips(results: ScoredProject[]): ChipAction[] {
 
 function getDecidingChips(results: ScoredProject[]): ChipAction[] {
   const chips: ChipAction[] = [
-    chip('emi_final', 'CALCULATE_EMI', 'Calculate EMI', '📊', { mode: 'single' }, 1),
-    chip('payment_plan', 'TEXT_MESSAGE', 'View payment plan', '🗓️',
-      { text: 'Show me the detailed payment plan and construction timeline' }, 2),
-    chip('book_visit', 'BOOK_VISIT', 'Book site visit', '📅', { mode: 'single' }, 3),
+    chip('hidden_risks', 'TEXT_MESSAGE', 'What are the risks?', '⚠️',
+      { text: 'Are there any hidden risks, legal issues, or downsides I should be aware of before deciding?' }, 1),
+    chip('negotiation', 'TEXT_MESSAGE', 'Negotiation tips', '🤝',
+      { text: 'What is a realistic negotiation margin for these properties?' }, 2),
+    chip('legal_check', 'TEXT_MESSAGE', 'RERA & Legal', '🛡️',
+      { text: 'Can you verify the RERA status and legal clearances for my shortlist?' }, 3),
   ]
   if (results.length >= 2) {
     chips.unshift(chip('final_compare', 'COMPARE_PROPERTIES', 'Final comparison', '⚖️',

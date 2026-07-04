@@ -193,6 +193,7 @@ function mapToScored(p: RawProject, intent: Intent): ScoredProject {
         ai_search_keywords: p.ai_search_keywords,
         builder: p.builder,
         hero_image_url: p.hero_image_url,
+        images: p.images,
         rera_number: p.rera_number,
         recommendation_profile: p.recommendation_profile,
         project_risk_flag: p.project_risk_flag,

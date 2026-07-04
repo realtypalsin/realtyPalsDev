@@ -710,9 +710,14 @@ router.post('/', async (req: Request, res: Response) => {
       'chat'
 
     if (isComparison) {
+      // Compare exactly what the user named; only fall back to a capped
+      // default when no explicit project list was extracted (e.g. "compare
+      // top options here").
+      const requestedCount = intent.projectNames?.length ?? 0
+      const compareCount = requestedCount >= 2 ? requestedCount : Math.min(projects.length, 4)
       messageArtifacts.push({
         type: 'comparison',
-        projects: projects.slice(0, 4),
+        projects: projects.slice(0, compareCount),
       })
     }
 

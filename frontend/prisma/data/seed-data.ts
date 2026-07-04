@@ -17,6 +17,21 @@ export const BUILDERS = [
     awards: [],
     awards_count: null,
     description: 'Premium real estate developer delivering 5000+ units across Noida.',
+    cin: 'U70109DL2014PTC271794',
+    // ponytail: no RERA Promoter ID in source docs for ACE Group — do not fabricate
+    financial_hygiene_score: 95,
+    outstanding_dues_cr: 0.00,
+    legal_entities: [
+      { name: 'LA Buildtech Private Limited', cin: 'U70109DL2014PTC271794', role: 'primary' },
+      { name: 'L.A. Infraventures Pvt. Ltd.', cin: null, role: 'secondary' },
+    ],
+    executives: [
+      { name: 'Ajay Chaudhary', designation: 'CMD' },
+      { name: 'Pratap Singh Bhadauria', designation: 'Director' },
+      { name: 'Rahul Misra', designation: 'Director' },
+    ],
+    funding_banks: ['HDFC Bank', 'ICICI Bank'],
+    audit_flags_log: 'Income Tax department search conducted in January 2022; operations remained unimpeded',
   },
   {
     name: 'ATS Infrastructure Ltd',
@@ -103,6 +118,21 @@ export const BUILDERS = [
     ongoing_projects: ['Mahagun Mezzaria'],
     awards: [], awards_count: null,
     description: 'Leading NCR developer with 16,000+ delivered units across luxury residential developments.',
+    cin: 'U74899DL1995PTC072752',
+    // ponytail: no RERA Promoter ID in source docs for Mahagun Group — do not fabricate
+    financial_hygiene_score: 75,
+    outstanding_dues_cr: 117.00,
+    legal_entities: [
+      { name: 'Mahagun (India) Private Limited', cin: 'U74899DL1995PTC072752', role: 'primary' },
+      { name: 'Mahagun Real Estate Pvt. Ltd.', cin: 'U45200DL2008PTC174063', role: 'secondary' },
+      { name: 'Nexgen Infracon Pvt. Ltd.', cin: null, role: 'secondary' },
+    ],
+    executives: [
+      { name: 'Dhiraj Jain', designation: 'Director' },
+      { name: 'Amit Jain', designation: 'Director' },
+    ],
+    funding_banks: ['IDBI Bank', 'Union Bank of India'],
+    audit_flags_log: 'NCLT CIRP admitted on Aug 5, 2025; successfully settled and officially dismissed by NCLAT on Feb 22, 2026. Sector 78 project owes 117 Cr outstanding dues.',
   },
   {
     name: 'Sikka Group',

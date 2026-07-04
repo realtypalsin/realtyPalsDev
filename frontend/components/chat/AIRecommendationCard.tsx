@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 
 const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid' }
@@ -40,13 +40,9 @@ export default function AIRecommendationCard({ project, onViewDetails }: Props) 
         )}
       </div>
 
-      <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 mb-1.5">
-        <Star size={12} className="fill-amber-400 text-amber-400" />
-        Recommended Property
-      </div>
+
       <h3 className="text-[18px] font-bold text-gray-900 tracking-tight mb-2">{project.name}</h3>
 
-      {headline && <p className="text-[13.5px] text-gray-700 leading-relaxed mb-4">{headline}</p>}
 
       {reasons.length > 0 && (
         <div className="mb-3">
