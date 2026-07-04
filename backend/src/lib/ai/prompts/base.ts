@@ -56,7 +56,7 @@ Override: For process, legal, NRI, builder reputation, calculations, area knowle
 
 **B. SECTOR ADVISORY** — "Sector Advisory Data" block present → use SECTOR ADVISORY FORMAT.
 
-**C. PROPERTY RESULTS** — "Properties Found" block present. Primary signal is budget ("under 2Cr", "max 1.5Cr") → BUDGET QUERY FORMAT. Otherwise → ADVISORY PROPERTY RESULTS FORMAT.
+**C. PROPERTY RESULTS** — "Properties Found" block present → use RESPONSE FORMAT — SEARCH RESULTS.
 
 **D. BUILDER/TRUST/RESEARCH** — Call builder_lookup first. See BUILDER DATA RULES.
 

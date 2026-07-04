@@ -553,34 +553,71 @@ function AlternativesCard({ competitors }: { competitors: NonNullable<ProjectDet
   if (competitors.length === 0) return null
   return (
     <Card title="Compare Alternatives" className="h-full">
-      <div className="space-y-2.5">
+      <div className="space-y-4">
         {competitors.map((c) => (
-          <div key={c.id} className="rounded-2xl border border-gray-100 p-4">
-            <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[13.5px] font-bold text-gray-900">{c.competitor_name}</p>
-              {c.verdict && (
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                  c.verdict.toLowerCase().includes('better') || c.verdict.toLowerCase().includes('win')
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : c.verdict.toLowerCase().includes('tie') || c.verdict.toLowerCase().includes('similar')
-                      ? 'bg-amber-50 text-amber-700 border-amber-200'
-                      : 'bg-gray-50 text-gray-600 border-gray-200'
-                }`}>{c.verdict}</span>
-              )}
+          <div key={c.id} className="group relative rounded-2xl border border-gray-200/60 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300">
+            {/* Header with Small Thumbnail */}
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200/60 flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8)]">
+                <Building2 size={20} className="text-gray-400" />
+              </div>
+              
+              <div className="flex-1 min-w-0 pt-0.5">
+                <h4 className="text-[15.5px] font-semibold text-gray-900 truncate tracking-tight">{c.competitor_name}</h4>
+                <div className="flex items-center gap-1.5 text-gray-500 mt-1">
+                  <MapPin size={12} className="text-gray-400" />
+                  <span className="text-[12px] font-medium">Alternative Property</span>
+                </div>
+              </div>
             </div>
-            <div className="space-y-1.5">
+
+            {/* Key Takeaway */}
+            {c.verdict && (
+              <div className="rounded-xl bg-gray-50/70 border border-gray-100 p-3.5 mb-5">
+                <p className="text-[9.5px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Key Takeaway</p>
+                <p className="text-[13px] text-gray-700 leading-relaxed">{c.verdict}</p>
+              </div>
+            )}
+
+            {/* Checklist */}
+            <div className="space-y-3 mb-5">
               {c.this_project_advantage && (
-                <p className="text-[12px] text-emerald-700 flex items-start gap-1.5">
-                  <CheckCircle2 size={12} className="mt-0.5 flex-shrink-0" />{c.this_project_advantage}
-                </p>
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 size={11} className="text-emerald-600 stroke-[3]" />
+                  </div>
+                  <span className="text-[12.5px] text-gray-600 leading-snug">{c.this_project_advantage}</span>
+                </div>
               )}
               {c.competitor_advantage && (
-                <p className="text-[12px] text-amber-700 flex items-start gap-1.5">
-                  <Warning size={12} weight="fill" className="mt-0.5 flex-shrink-0" />{c.competitor_advantage}
-                </p>
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 w-4 h-4 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                    <Warning size={11} className="text-amber-600" />
+                  </div>
+                  <span className="text-[12.5px] text-gray-600 leading-snug">{c.competitor_advantage}</span>
+                </div>
               )}
-              {c.price_delta_note && <p className="text-[11.5px] text-gray-500 mt-1">{c.price_delta_note}</p>}
+              {c.price_delta_note && (
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 w-4 h-4 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+                    <Warning size={11} className="text-orange-600" />
+                  </div>
+                  <span className="text-[12.5px] text-gray-600 leading-snug">{c.price_delta_note}</span>
+                </div>
+              )}
             </div>
+
+            {/* Footer Action */}
+            {c.competitor_slug && (
+              <div className="flex justify-end pt-4 border-t border-gray-100/60">
+                <a
+                  href={`/property/${c.competitor_slug}`}
+                  className="flex items-center gap-1.5 text-[12.5px] font-semibold text-gray-700 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 px-4 py-2 rounded-lg transition-all shadow-sm"
+                >
+                  View Details <ChevronRight size={14} className="text-gray-400" />
+                </a>
+              </div>
+            )}
           </div>
         ))}
       </div>

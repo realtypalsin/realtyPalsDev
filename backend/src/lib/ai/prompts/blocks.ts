@@ -297,7 +297,7 @@ NEVER invent nearby sector names — only suggest sectors you can verify are in 
     const budgetWarningNote = overBudgetCount > 0
       ? `\nBUDGET NOTE: ${overBudgetCount} of ${exactResults.length} results exceed the user's stated budget. You MUST disclose this. Mention the actual price and that it is above their budget.`
       : ''
-    block += `\n\n## Exact Matches — Use the ADVISORY PROPERTY RESULTS format${budgetWarningNote}\n${serializeProjects(exactResults)}`
+    block += `\n\n## Exact Matches — Use RESPONSE FORMAT — SEARCH RESULTS${budgetWarningNote}\n${serializeProjects(exactResults)}`
   }
 
   if (hasNearby && nearbyResults) {
