@@ -46,13 +46,13 @@ export default function DataConfidence({ confidence, intelligenceCompleteness, v
   const cfg = CONFIDENCE_CONFIG[confidence]
 
   return (
-    <div className={`rounded-xl border p-3 ${cfg.cardClass}`}>
-      <div className="flex items-center gap-2 mb-1">
-        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dotClass}`} />
-        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+    <div className={`rounded-[20px] border p-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)] ${cfg.cardClass}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dotClass} shadow-[0_0_8px_rgba(0,0,0,0.1)]`} />
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
           Data Confidence
         </span>
-        <span className={`ml-auto text-[11px] font-semibold ${
+        <span className={`ml-auto text-[10px] font-bold uppercase tracking-wider ${
           confidence === 'HIGH' ? 'text-green-600' :
           confidence === 'MEDIUM' ? 'text-blue-600' :
           confidence === 'LOW' ? 'text-amber-600' : 'text-gray-400'
@@ -60,18 +60,18 @@ export default function DataConfidence({ confidence, intelligenceCompleteness, v
           {confidence}
         </span>
       </div>
-      <p className="text-[11px] text-gray-500 leading-relaxed">{cfg.description}</p>
+      <p className="text-[11.5px] text-gray-500 leading-relaxed">{cfg.description}</p>
 
       {/* DB-backed completeness */}
       {intelligenceCompleteness !== null && intelligenceCompleteness !== undefined && (
-        <div className="mt-2 space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-gray-400">
+        <div className="mt-4 space-y-1.5">
+          <div className="flex items-center justify-between text-[10px] text-gray-400 font-medium">
             <span>Profile completeness</span>
-            <span className="font-semibold">{intelligenceCompleteness}%</span>
+            <span className="font-bold">{intelligenceCompleteness}%</span>
           </div>
-          <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden shadow-inner">
             <div
-              className={`h-full rounded-full ${intelligenceCompleteness >= 70 ? 'bg-green-400' : intelligenceCompleteness >= 40 ? 'bg-amber-400' : 'bg-gray-300'}`}
+              className={`h-full rounded-full transition-all duration-1000 ease-out ${intelligenceCompleteness >= 70 ? 'bg-emerald-400' : intelligenceCompleteness >= 40 ? 'bg-amber-400' : 'bg-gray-300'}`}
               style={{ width: `${intelligenceCompleteness}%` }}
             />
           </div>
@@ -79,8 +79,8 @@ export default function DataConfidence({ confidence, intelligenceCompleteness, v
       )}
 
       {verificationLevel && verificationLevel !== 'unverified' && (
-        <p className="mt-1.5 text-[10px] text-gray-400">
-          Verification: <span className="font-medium capitalize">{verificationLevel}</span>
+        <p className="mt-3 text-[10.5px] text-gray-400 font-medium">
+          Verification: <span className="font-semibold capitalize text-gray-600">{verificationLevel}</span>
           {lastVerifiedAt && ` · ${new Date(lastVerifiedAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`}
         </p>
       )}
@@ -89,10 +89,11 @@ export default function DataConfidence({ confidence, intelligenceCompleteness, v
         href="https://www.up-rera.in/Promoters"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-blue-500 hover:text-blue-700 transition-colors"
+        className="inline-flex items-center gap-1 mt-3 text-[11.5px] font-semibold text-blue-600 hover:text-blue-700 underline decoration-blue-200 underline-offset-2 transition-colors"
       >
-        Verify on UP-RERA →
+        Verify on UP-RERA &rarr;
       </a>
     </div>
   )
 }
+

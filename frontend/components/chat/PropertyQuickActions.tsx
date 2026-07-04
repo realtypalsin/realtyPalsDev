@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { CalendarDays, Calculator, Phone, Sparkles, Share2, MoreHorizontal, ArrowRight } from 'lucide-react'
+import { Calculator, Phone, Share2, MoreHorizontal, ArrowRight, Bot, MapPin } from 'lucide-react'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
+import type { ConversationStage } from '@/components/chat/types'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { track } from '@/lib/analytics'
 
@@ -12,10 +13,9 @@ const WhatsAppIcon = ({ size = 14 }: { size?: number }) => (
   </svg>
 )
 
-const dropdownItemClass = 'w-full flex items-center gap-3 px-3.5 py-3 text-[13.5px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer whitespace-nowrap text-left rounded-lg'
-
 interface Props {
   project: ProjectCardType
+  stage?: ConversationStage  // New: stage-aware actions
   onDetailOpen?: (project: ProjectCardType) => void
   onCallback?: (project: ProjectCardType) => void
   onSetSiteVisit: (project: ProjectCardType) => void
@@ -23,7 +23,7 @@ interface Props {
   onOpenShareSheet: () => void
 }
 
-export default function PropertyQuickActions({ project, onDetailOpen, onCallback, onSetSiteVisit, onOpenCalculator, onOpenShareSheet }: Props) {
+export default function PropertyQuickActions({ project, stage = 'RESEARCH', onDetailOpen, onCallback, onSetSiteVisit, onOpenCalculator, onOpenShareSheet }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const waUrl = buildWhatsAppUrl(project)
@@ -41,13 +41,20 @@ export default function PropertyQuickActions({ project, onDetailOpen, onCallback
   const handleAskAI = () => {
     window.dispatchEvent(
       new CustomEvent('realtypals:ask-ai', {
-        detail: { text: `Tell me more about ${project.name} by ${project.builder.name}` },
+        detail: { text: `Tell me more about ${project.name}` },
       }),
     )
   }
 
+  // Stage-aware action selection
+  const showCompare = stage === 'RESEARCH' || stage === 'COMPARING'
+  const showEmi = stage === 'COMPARING' || stage === 'DECIDING'
+  const showVisit = stage === 'DECIDING'
+  const showCallback = stage === 'DECIDING'
+
   return (
-    <div className="flex flex-col gap-2 mt-3 relative w-full bg-white dark:bg-[#0a0a0a] rounded-b-2xl p-4 pt-0">
+    <div className="flex flex-col gap-2 mt-4 relative w-full">
+      {/* Primary: View Details always available */}
       <button
         onClick={() => onDetailOpen?.(project)}
         className="w-full py-3 bg-[#3061F2] hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-[10px] text-[14px] font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
@@ -55,48 +62,62 @@ export default function PropertyQuickActions({ project, onDetailOpen, onCallback
         View Details <ArrowRight size={15} strokeWidth={2.5} />
       </button>
 
+      {/* Secondary: Ask AI + More (stage-filtered) */}
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={handleAskAI}
-          className="flex items-center justify-center gap-1.5 border border-gray-200 dark:border-gray-700/60 rounded-[10px] py-2.5 text-[13.5px] font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
+          className="flex items-center justify-center gap-1.5 border border-gray-200 dark:border-gray-700/60 rounded-[10px] py-2.5 text-[13px] font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:border-blue-300 dark:hover:border-blue-700 transition-colors shadow-sm"
         >
-          <Sparkles size={15} className="text-[#3061F2] dark:text-blue-400" /> Ask AI
+          <Bot size={14} className="text-[#3061F2] dark:text-blue-400" /> Ask
         </button>
 
         <div className="relative w-full" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="w-full flex items-center justify-center gap-1.5 border border-gray-200 dark:border-gray-700/60 rounded-[10px] py-2.5 text-[13.5px] font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
+            className="w-full flex items-center justify-center gap-1.5 border border-gray-200 dark:border-gray-700/60 rounded-[10px] py-2.5 text-[13px] font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:border-blue-300 dark:hover:border-blue-700 transition-colors shadow-sm"
             aria-label="More options"
           >
-            <MoreHorizontal size={15} /> More
+            <MoreHorizontal size={14} /> More
           </button>
 
           {menuOpen && (
-            <div className="absolute bottom-full right-0 mb-2 py-1.5 w-56 bg-white dark:bg-gray-900 rounded-[14px] shadow-[0_4px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-gray-800 z-50 overflow-hidden transform origin-bottom-right">
-              <button
-                onClick={() => { onSetSiteVisit(project); setMenuOpen(false); }}
-                className={dropdownItemClass}
-              >
-                <Sparkles size={15} className="text-[#3061F2] dark:text-blue-400 flex-shrink-0" /> Book Site Visit
-              </button>
-              
-              <button
-                onClick={() => { onOpenCalculator(); setMenuOpen(false); }}
-                className={dropdownItemClass}
-              >
-                <Sparkles size={15} className="text-[#3061F2] dark:text-blue-400 flex-shrink-0" /> Payment Plan
-              </button>
-              
-              {onCallback && (
+            <div className="absolute bottom-full right-0 mb-2 py-1 w-48 bg-white dark:bg-gray-900 rounded-[12px] shadow-[0_4px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
+              {showCompare && (
                 <button
-                  onClick={() => { onCallback(project); setMenuOpen(false); }}
-                  className={dropdownItemClass}
+                  onClick={() => { window.dispatchEvent(new CustomEvent('realtypals:ask-ai', { detail: { text: `Compare this with other options` } })); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12.5px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
                 >
-                  <Sparkles size={15} className="text-[#3061F2] dark:text-blue-400 flex-shrink-0" /> Request Callback
+                  ⚖️ Compare
                 </button>
               )}
-              
+
+              {showEmi && (
+                <button
+                  onClick={() => { onOpenCalculator(); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12.5px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                >
+                  <Calculator size={13} className="text-gray-500 dark:text-gray-400" /> See Financing
+                </button>
+              )}
+
+              {showVisit && (
+                <button
+                  onClick={() => { onSetSiteVisit(project); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12.5px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                >
+                  <MapPin size={13} className="text-gray-500 dark:text-gray-400" /> Schedule Visit
+                </button>
+              )}
+
+              {showCallback && onCallback && (
+                <button
+                  onClick={() => { onCallback(project); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12.5px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                >
+                  <Phone size={13} className="text-gray-500 dark:text-gray-400" /> Request Callback
+                </button>
+              )}
+
               {waUrl && (
                 <a
                   href={waUrl}
@@ -106,17 +127,17 @@ export default function PropertyQuickActions({ project, onDetailOpen, onCallback
                     track('whatsapp_handoff', { project_slug: project.slug, project_name: project.name })
                     setMenuOpen(false)
                   }}
-                  className={dropdownItemClass}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12.5px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
                 >
-                  <Sparkles size={15} className="text-[#3061F2] dark:text-blue-400 flex-shrink-0" /> WhatsApp
+                  <WhatsAppIcon size={13} /> WhatsApp
                 </a>
               )}
-              
+
               <button
                 onClick={() => { onOpenShareSheet(); setMenuOpen(false); }}
-                className={dropdownItemClass}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12.5px] font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
               >
-                <Sparkles size={15} className="text-[#3061F2] dark:text-blue-400 flex-shrink-0" /> Share
+                <Share2 size={13} className="text-gray-500 dark:text-gray-400" /> Share
               </button>
             </div>
           )}

@@ -20,7 +20,6 @@ import { resolveImgUrl } from '@/lib/utils'
 interface Props {
   project: ProjectCardType
   userId: string | null
-  index?: number
   onDetailOpen?: (project: ProjectCardType) => void
   onToast?: (message: string) => void
   quickActions?: React.ReactNode
@@ -47,17 +46,21 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
   university: BookOpen,
 }
 
-export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onToast, quickActions }: Props) {
+const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid' }
+const tierColor: Record<string, string> = {
+  STRONG_BUY: 'text-emerald-700 dark:text-emerald-400',
+  BUY: 'text-blue-700 dark:text-blue-400',
+  HOLD: 'text-amber-700 dark:text-amber-400',
+  WATCH: 'text-orange-700 dark:text-orange-400',
+  AVOID: 'text-red-700 dark:text-red-400',
+}
+
+export default function PropertyCardWithRecommendation({ project, userId, onDetailOpen, onToast, quickActions }: Props) {
   const [imgIdx, setImgIdx] = useState(0)
   const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set())
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)
-
-  const isTopPick = index === 0
-  const isRTM = project.status === 'ready_to_move'
-  const isNew = project.status === 'new_launch'
-  const statusLabel = isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'
 
   const unitsByBhk = project.unit_types.reduce((acc, u) => {
     if (!acc[u.bhk]) acc[u.bhk] = []
@@ -132,7 +135,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         onToast?.('Property saved! ✓')
       }
     } catch (err) {
-      console.error('[ProjectCard] save failed:', err)
+      console.error('[PropertyCardWithRecommendation] save failed:', err)
       setSaved(wasSaved)
       onToast?.('Could not save. Please try again.')
     } finally {
@@ -140,17 +143,21 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
     }
   }
 
+  const intel = project.decisionIntelligence
+  const tier = intel?.tier
+  const headline = project.matchReason ?? intel?.bottomLine ?? null
+  const reasons = (project.matchReasons && project.matchReasons.length > 0)
+    ? project.matchReasons.slice(0, 3)
+    : (intel?.topStrengths ?? []).slice(0, 3)
+  const concerns = (project.concerns ?? []).slice(0, 2)
+
   return (
     <div
       onClick={() => onDetailOpen?.(project)}
-      className={`group relative w-full h-full flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0a0a0a] transition-all duration-300 ease-out cursor-pointer ${
-        isTopPick
-          ? 'ring-2 ring-[#C9960C] shadow-[0_0_0_4px_rgba(201,150,12,0.12),0_8px_32px_rgba(201,150,12,0.18)] hover:shadow-[0_0_0_5px_rgba(201,150,12,0.2),0_12px_40px_rgba(201,150,12,0.25)]'
-          : 'ring-1 ring-inset ring-gray-200/60 dark:ring-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]'
-      } md:hover:scale-[1.01]`}
+      className="group relative w-full h-full flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0a0a0a] transition-all duration-300 ease-out cursor-pointer border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md md:hover:scale-[1.01]"
     >
       {/* ── Hero image ── */}
-      <div className="relative h-[220px] overflow-hidden bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+      <div className="relative h-[240px] overflow-hidden bg-gray-50 dark:bg-gray-900 flex-shrink-0">
         {workingImages.length > 0 && !allFailed ? (
           <>
             {workingImages.map((src, i) => (
@@ -159,7 +166,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                 src={resolveImgUrl(src) || '/placeholder.png'}
                 alt={project.name}
                 fill
-                priority={index < 4 && i === 0}
+                priority={i === 0}
                 onError={() => markImageFailed(src)}
                 className={`object-cover transition-all duration-500 ${
                   i === activeIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
@@ -171,6 +178,17 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-[#f5f5f5] dark:bg-[#111]">
             <Buildings size={44} weight="duotone" className="text-gray-300 dark:text-gray-700" />
+          </div>
+        )}
+
+
+
+        {/* Tier badge (top-right) */}
+        {tier && (
+          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
+            <span className={`text-[11px] font-bold tracking-wide ${tierColor[tier] || 'text-gray-700'}`}>
+              {tierLabel[tier]}
+            </span>
           </div>
         )}
 
@@ -201,10 +219,8 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
           </>
         )}
 
-
-
         {/* Save button */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+        <div className="absolute top-3 right-12 flex items-center gap-1.5 z-10">
           <button
             onClick={handleSave}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${
@@ -220,15 +236,42 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         </div>
       </div>
 
-      {/* ── Body ── */}
-      <div className="px-4 pt-3.5 pb-4 flex-1 flex flex-col bg-white dark:bg-[#0a0a0a]">
+      {/* ── Recommendation Section ── */}
+      <div className="px-4 pt-3 pb-3 border-b border-blue-100 dark:border-blue-900/30 bg-blue-50/40 dark:bg-blue-900/20">
+        {headline && (
+          <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100 mb-2 leading-snug">
+            {headline}
+          </p>
+        )}
+        {reasons.length > 0 && (
+          <ul className="space-y-1 mb-2">
+            {reasons.map((r, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-[12px] text-gray-700 dark:text-gray-300">
+                <span className="mt-1.5 w-1 h-1 rounded-full bg-blue-400 dark:bg-blue-500 flex-shrink-0" />
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {concerns.length > 0 && (
+          <ul className="space-y-1">
+            {concerns.map((c, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-[12px] text-amber-700 dark:text-amber-400">
+                <span className="mt-1.5 w-1 h-1 rounded-full bg-amber-400 flex-shrink-0" />
+                <span>{c}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
+      {/* ── Body ── */}
+      <div className="px-4 pt-3 pb-4 flex-1 flex flex-col bg-white dark:bg-[#0a0a0a]">
         {/* Name row + Price */}
         <div className="flex items-start justify-between gap-2 mb-1">
           <h3 className="text-[15px] font-bold text-gray-900 dark:text-gray-100 tracking-tight leading-snug truncate">
             {project.name}
           </h3>
-          {/* RERA badge — blue */}
           {project.rera_number && (
             <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[5px] bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wide">
               <CheckCircle size={10} weight="fill" className="text-blue-500" />
@@ -251,16 +294,18 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
           </p>
           <div className="flex items-center gap-2 mt-3">
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold tracking-wide ${
-              isRTM
+              project.status === 'ready_to_move'
                 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                : isNew
+                : project.status === 'new_launch'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                 : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
             }`}>
-              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-              {statusLabel}
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                project.status === 'ready_to_move' ? 'bg-emerald-500' : project.status === 'new_launch' ? 'bg-blue-500' : 'bg-amber-500'
+              }`} />
+              {project.status === 'ready_to_move' ? 'Ready to Move' : project.status === 'new_launch' ? 'New Launch' : 'Under Construction'}
             </span>
-            {project.possession_label && !isRTM && (
+            {project.possession_label && project.status !== 'ready_to_move' && (
               <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{project.possession_label}</span>
             )}
           </div>
@@ -270,7 +315,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         <div className="border-t border-gray-100 dark:border-white/5 mb-3" />
 
         {/* Configurations */}
-        <div className="flex flex-col gap-1.5 mb-1">
+        <div className="flex flex-col gap-1.5 mb-3">
           {(expandedUnits ? bhkGroups : bhkGroups.slice(0, 2)).map(g => (
             <div key={g.bhk} className="flex items-baseline gap-2 text-[13px]">
               <span className="font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap w-14 flex-shrink-0">{g.bhk} BHK</span>

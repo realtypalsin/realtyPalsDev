@@ -22,7 +22,7 @@ export function Card({
       {title && (
         <div className="flex items-start justify-between gap-3 mb-5">
           <div>
-            <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">{title}</h3>
+            <h3 className="text-[20px] font-serif font-bold text-[#111] tracking-tight">{title}</h3>
             {description && <p className="text-[12.5px] text-gray-400 mt-0.5">{description}</p>}
           </div>
           {action}

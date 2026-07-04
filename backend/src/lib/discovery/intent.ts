@@ -9,8 +9,8 @@ export function isCityLevel(sector: string): boolean {
 export function getIntentState(intent: Intent, hasExistingResults = false): IntentState {
   const hasBhk = (intent.bhk?.length ?? 0) > 0
   const hasBudget = !!intent.budgetMax
-  // City-level "sector" values (e.g. "Noida") don't count as a sector signal
-  const hasSector = !!intent.sector && !isCityLevel(intent.sector)
+  // City-level (e.g. "Noida") and sector-level both count as location signals
+  const hasSector = !!intent.sector
   const hasBuilder = !!intent.builderName
   const hasProjectNames = (intent.projectNames?.length ?? 0) > 0
   // Explicit timeline/possession intent (e.g. "ready to move", "possession in 1 year")

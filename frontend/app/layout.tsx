@@ -17,6 +17,7 @@ const playfair = Playfair_Display({
 const afacad = Afacad({
   subsets: ["latin"],
   variable: "--font-afacad",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
@@ -51,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
-      <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#EEEEEE]">
+      <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#E4E4E5]">
         <div className="noise-overlay" />
         <PostHogProvider>{children}</PostHogProvider>
         <Toaster position="bottom-right" richColors closeButton theme="light" />

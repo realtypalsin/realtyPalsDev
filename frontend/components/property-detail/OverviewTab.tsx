@@ -617,15 +617,15 @@ export default function OverviewTab({
     <div className="p-5 md:p-8 space-y-6">
       {/* 1. Full width top elements */}
       {(detail?.recommendation_score || detail?.dna || aboutText) && (
-        <CardRow
-          left={detail?.recommendation_score ? <RecommendationScoreCard score={detail.recommendation_score} /> : null}
-          right={
-            <div className="space-y-6">
-              {detail?.dna && <ProjectDnaCard dna={detail.dna} />}
-              {aboutText && <AboutCard text={aboutText} />}
-            </div>
-          }
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
+          <div className="flex flex-col gap-6">
+            {aboutText && <AboutCard text={aboutText} />}
+            {detail?.dna && <ProjectDnaCard dna={detail.dna} />}
+          </div>
+          <div className="h-full">
+            {detail?.recommendation_score ? <RecommendationScoreCard score={detail.recommendation_score} /> : null}
+          </div>
+        </div>
       )}
 
       <StatsRow stats={stats} />

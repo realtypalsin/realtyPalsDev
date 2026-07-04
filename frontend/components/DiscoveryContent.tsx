@@ -1269,6 +1269,26 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               )}
             </div>
 
+            {/* ── View All on Map — floats above input ── */}
+            {lastShortlist.length >= 2 && (
+              <div className="w-full flex justify-center py-2">
+                <button
+                  onClick={handleToggleMap}
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all duration-200 shadow-md border ${
+                    showMap
+                      ? 'bg-[#3061F2] text-white border-[#3061F2] shadow-[0_4px_14px_rgba(48,97,242,0.3)]'
+                      : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-[#3061F2] hover:text-[#3061F2] hover:shadow-[0_4px_14px_rgba(48,97,242,0.15)]'
+                  }`}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  {showMap ? 'Hide Map' : `View all ${lastShortlist.length} on Map`}
+                </button>
+              </div>
+            )}
+
             {/* Stable flex-bottom input island */}
             <AnimatePresence initial={false}>
               {!isInputMinimized && (

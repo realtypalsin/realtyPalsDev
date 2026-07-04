@@ -172,7 +172,7 @@ function WhyRankedLowerCard({ reasons }: { reasons: Array<{ rank: number; label:
 // ── Section 3: Buyer Fit ─────────────────────────────────────────────────────
 function BuyerPersonaCard({ persona, isPrimary }: { persona: NonNullable<ProjectCardType['buyerPersonas']>[number]; isPrimary: boolean }) {
   return (
-    <div className={`rounded-2xl border p-5 ${isPrimary ? 'border-indigo-200 bg-indigo-50/50' : 'border-gray-100 bg-white'}`}>
+    <div className={`rounded-[24px] border p-5 flex flex-col ${isPrimary ? 'border-indigo-100 bg-indigo-50/40 shadow-sm' : 'border-gray-100 bg-white shadow-[0_2px_16px_rgba(0,0,0,0.03)]'}`}>
       <div className="flex items-center justify-between mb-2">
         <p className={`font-bold ${isPrimary ? 'text-[16px] text-indigo-900' : 'text-[13.5px] text-gray-800'}`}>{persona.type}</p>
         <div className="flex gap-0.5">
@@ -198,12 +198,10 @@ function BuyerFitPersonas({ personas }: { personas: NonNullable<ProjectCardType[
   if (personas.length === 0) return null
   const [primary, ...secondary] = personas
   return (
-    <Card className="h-full">
-      <div className="space-y-3">
-        <BuyerPersonaCard persona={primary} isPrimary />
-        {secondary.map((p) => <BuyerPersonaCard key={p.type} persona={p} isPrimary={false} />)}
-      </div>
-    </Card>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+      <BuyerPersonaCard persona={primary} isPrimary />
+      {secondary.map((p) => <BuyerPersonaCard key={p.type} persona={p} isPrimary={false} />)}
+    </div>
   )
 }
 

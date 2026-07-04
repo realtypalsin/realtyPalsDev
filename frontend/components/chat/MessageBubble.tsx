@@ -10,7 +10,7 @@ import { parseResponseBlocks } from '@/lib/responseParser'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
 import ChatLoader from '@/components/ChatLoader'
 import ProjectCard from '@/components/ProjectCard'
-import AIRecommendationCard from '@/components/chat/AIRecommendationCard'
+import PropertyCardWithRecommendation from '@/components/chat/PropertyCardWithRecommendation'
 import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
@@ -566,35 +566,38 @@ function MessageBubbleInner({
 
             {isOpen && (
               <div className="mt-3 w-full">
-                {/* AI Recommendation — reasoning only, for the top-ranked result */}
-                {primaryCards[0] && (
-                  <div className="mb-4">
-                    <AIRecommendationCard project={primaryCards[0]} onViewDetails={onDetailOpen} />
-                  </div>
-                )}
-
-                {/* Exact results grid */}
+                {/* Property Results Grid */}
                 {(useNewFormat ? exactList : legacyList).length > 0 && (
-                  <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-                    {(useNewFormat ? exactList : legacyList).map((property, pi) => (
-                      <motion.div
-                        key={property.id}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
-                        className="w-full h-full flex flex-col"
-                      >
-                        <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
-                        <PropertyQuickActions
-                          project={property}
-                          onDetailOpen={onDetailOpen}
-                          onCallback={onCallback}
-                          onSetSiteVisit={onSetSiteVisit}
-                          onOpenCalculator={onOpenCalculator}
-                          onOpenShareSheet={onOpenShareSheet}
-                        />
-                      </motion.div>
-                    ))}
+                  <div className="mt-3">
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                      {(useNewFormat ? exactList : legacyList).map((property, pi) => (
+                        <motion.div
+                          key={property.id}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
+                          className="w-full h-full flex flex-col"
+                        >
+                          <ProjectCard
+                            project={property}
+                            userId={userId}
+                            index={pi}
+                            onDetailOpen={onDetailOpen}
+                            onToast={onToast}
+                            quickActions={
+                              <PropertyQuickActions
+                                project={property}
+                                onDetailOpen={onDetailOpen}
+                                onCallback={onCallback}
+                                onSetSiteVisit={onSetSiteVisit}
+                                onOpenCalculator={onOpenCalculator}
+                                onOpenShareSheet={onOpenShareSheet}
+                              />
+                            }
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -617,14 +620,22 @@ function MessageBubbleInner({
                           transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
                           className="w-full h-full flex flex-col"
                         >
-                          <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
-                          <PropertyQuickActions
-                            project={property}
-                            onDetailOpen={onDetailOpen}
-                            onCallback={onCallback}
-                            onSetSiteVisit={onSetSiteVisit}
-                            onOpenCalculator={onOpenCalculator}
-                            onOpenShareSheet={onOpenShareSheet}
+                          <ProjectCard 
+                            project={property} 
+                            userId={userId} 
+                            index={pi} 
+                            onDetailOpen={onDetailOpen} 
+                            onToast={onToast}
+                            quickActions={
+                              <PropertyQuickActions
+                                project={property}
+                                onDetailOpen={onDetailOpen}
+                                onCallback={onCallback}
+                                onSetSiteVisit={onSetSiteVisit}
+                                onOpenCalculator={onOpenCalculator}
+                                onOpenShareSheet={onOpenShareSheet}
+                              />
+                            }
                           />
                         </motion.div>
                       ))}
@@ -632,20 +643,9 @@ function MessageBubbleInner({
                   </div>
                 )}
 
-                {primaryCards.length >= 2 && (
-                  <div className="mt-2 w-full">
-                    <button
-                      onClick={onToggleMap}
-                      className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 rounded-xl text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-all mb-4 shadow-sm"
-                    >
-                      <span>🗺️</span>
-                      {showMap ? 'Hide interactive map' : `View all ${primaryCards.length} on map`}
-                    </button>
-                    {showMap && (
-                      <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-md">
-                        <SectorMap properties={primaryCards} />
-                      </div>
-                    )}
+                {showMap && primaryCards.length >= 2 && (
+                  <div className="mt-3 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-md w-full">
+                    <SectorMap properties={primaryCards} />
                   </div>
                 )}
               </div>
@@ -668,14 +668,22 @@ function MessageBubbleInner({
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {lastShortlist.map((p, pi) => (
                 <div key={p.id} className="flex flex-col">
-                  <ProjectCard project={p} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
-                  <PropertyQuickActions
-                    project={p}
-                    onDetailOpen={onDetailOpen}
-                    onCallback={onCallback}
-                    onSetSiteVisit={onSetSiteVisit}
-                    onOpenCalculator={onOpenCalculator}
-                    onOpenShareSheet={onOpenShareSheet}
+                  <ProjectCard 
+                    project={p} 
+                    userId={userId} 
+                    index={pi} 
+                    onDetailOpen={onDetailOpen} 
+                    onToast={onToast}
+                    quickActions={
+                      <PropertyQuickActions
+                        project={p}
+                        onDetailOpen={onDetailOpen}
+                        onCallback={onCallback}
+                        onSetSiteVisit={onSetSiteVisit}
+                        onOpenCalculator={onOpenCalculator}
+                        onOpenShareSheet={onOpenShareSheet}
+                      />
+                    }
                   />
                 </div>
               ))}
@@ -692,7 +700,7 @@ function MessageBubbleInner({
           transition={{ duration: 0.3, delay: 0.15 }}
           className="mt-3"
         >
-          <SuggestionChipGroups chips={chips} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} />
+          {/* SuggestionChips intentionally removed as per UI revamp */}
 
           <AnimatePresence mode="wait">
             {chipPicker && (

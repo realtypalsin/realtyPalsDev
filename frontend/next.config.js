@@ -5,6 +5,7 @@ const nextConfig = {
   experimental: {
     instrumentationHook: true,
     optimizePackageImports: ['lucide-react', '@phosphor-icons/react'],
+    serverComponentsExternalPackages: ['@sentry/nextjs', '@sentry/node', '@apm-js-collab/tracing-hooks'],
   },
   transpilePackages: ['leaflet', 'react-leaflet'],
   images: {
