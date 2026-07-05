@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getReEngagement } from '@/lib/backend-api';
-import { MessageSquare, ArrowRight, Plus } from 'lucide-react';
+import { MessageSquare, ArrowRight, Plus, X } from 'lucide-react';
 
 interface Props {
   userId?: string | null;
