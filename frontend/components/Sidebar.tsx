@@ -192,7 +192,7 @@ export default function Sidebar({
 
       <div
         className={`
-        ${isCollapsed ? 'hidden md:flex w-[68px]' : 'w-72 md:w-[260px]'} 
+        ${isCollapsed ? 'hidden md:flex w-[68px]' : 'w-64 md:w-[260px]'} 
         text-gray-900 dark:text-gray-100 flex flex-col h-full border-r border-gray-200/50 dark:border-gray-800/50 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl
         fixed md:relative z-50 md:z-auto shrink-0
         transition-all duration-300 ease-in-out overflow-hidden
