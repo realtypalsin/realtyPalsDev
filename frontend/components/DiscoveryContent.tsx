@@ -1034,17 +1034,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           {rateLimitUntil && (
             <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
           )}
-          {showReEngagement && !hasUserReplied && (
-            <ReEngagementBanner
-              userId={userId ?? undefined}
-              guestToken={guestToken ?? undefined}
-              onResume={(sid) => {
-                setShowReEngagement(false);
-                router.push(`/discover/${sid}`);
-              }}
-              onDismiss={() => setShowReEngagement(false)}
-            />
-          )}
           {isSubmitting && (
             <div className="flex items-center justify-end mb-4 px-2">
               <button
@@ -1231,14 +1220,26 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         ) : !hasUserReplied ? (
           /* Welcome screen */
           <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10 overflow-y-auto">
-            <div className="text-center mb-10 max-w-[880px]">
+            <div className="text-center mb-6 max-w-[880px]">
               <h1 className="text-[4rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white mb-2 tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
                 RealtyPals
               </h1>
-              <h2 className="text-lg md:text-xl font-medium text-gray-600 dark:text-gray-400 tracking-wide">
-                Your AI Property Advisor
+              <h2 className="text-2xl md:text-3xl font-[family-name:var(--font-afacad)] font-medium text-gray-600 dark:text-gray-400 tracking-wide mt-2">
+                From Search to Decision.
               </h2>
             </div>
+
+              {showReEngagement && !hasUserReplied && (
+                <ReEngagementBanner
+                  userId={userId ?? undefined}
+                  guestToken={guestToken ?? undefined}
+                  onResume={(sid) => {
+                    setShowReEngagement(false);
+                    router.push(`/discover/${sid}`);
+                  }}
+                  onDismiss={() => setShowReEngagement(false)}
+                />
+              )}
 
             <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-2xl mb-12">
               {[

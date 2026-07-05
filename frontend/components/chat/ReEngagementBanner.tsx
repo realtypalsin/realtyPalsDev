@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getReEngagement } from '@/lib/backend-api';
-import { MessageSquare, ArrowRight, Plus, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ArrowRight, X } from 'lucide-react';
 
 interface Props {
   userId?: string | null;
@@ -11,62 +12,58 @@ interface Props {
   onDismiss: () => void;
 }
 
-interface ReEngagementSession {
-  id: string;
-  title: string | null;
-  chat_phase: string;
-  last_active: string;
-}
-
 export default function ReEngagementBanner({ userId, guestToken, onResume, onDismiss }: Props) {
-  const [session, setSession] = useState<ReEngagementSession | null>(null);
-  const [visible, setVisible] = useState(false);
+  const hasFiredRef = useRef(false);
 
   useEffect(() => {
-    if (!userId && !guestToken) return;
+    if ((!userId && !guestToken) || hasFiredRef.current) return;
+    
+    let isMounted = true;
+    
     getReEngagement(userId ?? undefined, guestToken ?? undefined).then(({ session }) => {
-      if (session) {
-        setSession(session);
-        setVisible(true);
-      }
+      if (!isMounted || !session || hasFiredRef.current) return;
+      hasFiredRef.current = true;
+
+      toast.custom((t) => (
+        <div className="group relative flex items-center gap-4 px-5 py-3.5 bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl border border-white/40 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] pointer-events-auto overflow-hidden animate-in fade-in zoom-in-95 duration-500 max-w-sm w-full">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          <div className="relative flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse ring-4 ring-blue-500/20" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Previous Search</span>
+            </div>
+            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+              {session.title || 'Continue your property discovery'}
+            </p>
+          </div>
+
+          <div className="relative flex items-center gap-2">
+            <button
+              onClick={() => { toast.dismiss(t); onResume(session.id); }}
+              className="flex items-center justify-center h-8 px-3.5 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold rounded-lg transition-all shadow-sm hover:shadow active:scale-95"
+            >
+              Resume
+            </button>
+            <button
+              onClick={() => { toast.dismiss(t); onDismiss(); }}
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: 8000,
+        position: 'top-center',
+        onAutoClose: () => onDismiss(),
+      });
     }).catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
   }, [userId, guestToken]);
 
-  if (!visible || !session) return null;
-
-  const dismiss = () => {
-    setVisible(false);
-    onDismiss();
-  };
-
-  const timeAgo = (() => {
-    const ms = Date.now() - new Date(session.last_active).getTime();
-    const hours = Math.floor(ms / 3600000);
-    if (hours < 1) return 'just now';
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  })();
-
-  return (
-    <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 z-30 whitespace-nowrap">
-      <span className="text-[13px] text-gray-600 dark:text-gray-300 flex items-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-        Resume: <span className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">{session.title || 'Previous search'}</span>
-      </span>
-      <button
-        onClick={() => { setVisible(false); onResume(session.id); }}
-        className="text-[13px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
-      >
-        Continue <ArrowRight className="w-3.5 h-3.5" />
-      </button>
-      <div className="w-px h-3 bg-gray-200 dark:bg-gray-700" />
-      <button
-        onClick={dismiss}
-        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-0.5"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
+  return null;
 }
