@@ -1,5 +1,5 @@
 "use client";
-import { MessageSquarePlus, Compass, Bookmark, PanelLeftClose, PanelLeftOpen, LogOut, MoreHorizontal, Check, Pen, Trash2, X, Plus, MessageSquare, SquarePen, Clock, User } from 'lucide-react';
+import { MessageSquarePlus, Compass, Bookmark, PanelLeftClose, PanelLeftOpen, LogOut, MoreHorizontal, Check, Pen, Trash2, Plus, MessageSquare, SquarePen, Clock, User } from 'lucide-react';
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
@@ -137,6 +137,27 @@ export default function Sidebar({
     { id: "saved", label: "Saved Property", icon: Bookmark, href: "/saved" },
   ];
 
+  useEffect(() => {
+    let touchStartX = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+    };
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX - touchStartX > 80 && touchStartX < 30) {
+        setMobileOpen(true);
+      } else if (touchStartX - touchEndX > 80) {
+        setMobileOpen(false);
+      }
+    };
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchend', handleTouchEnd);
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
   const closeMobile = () => setMobileOpen(false);
   const grouped = groupSessionsByDate(sessions);
 
@@ -144,11 +165,11 @@ export default function Sidebar({
     <>
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-4 left-3 z-40 w-11 h-11 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg flex items-center justify-center border border-gray-100 dark:border-gray-700 active:scale-95 transition-all text-gray-700 dark:text-gray-200"
+        className="md:hidden fixed top-4 left-4 z-40 w-10 h-10 flex items-center justify-center active:scale-95 transition-all text-gray-700 dark:text-gray-200"
         aria-label="Open menu"
       >
         <svg
-          className="w-5 h-5"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -156,8 +177,8 @@ export default function Sidebar({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={2.5}
-            d="M4 6h16M4 12h16M4 18h16"
+            strokeWidth={2}
+            d="M4 8h16M4 16h16"
           />
         </svg>
       </button>
@@ -178,14 +199,6 @@ export default function Sidebar({
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}
       >
-        <button
-          onClick={closeMobile}
-          className="md:hidden absolute top-4 right-3 w-11 h-11 flex items-center justify-center text-gray-500 hover:text-gray-900"
-          aria-label="Close menu"
-        >
-          <X size={20} />
-        </button>
-
         <div className="group h-14 flex items-center justify-center border-b border-gray-100/50 dark:border-gray-800/50 w-full px-3 shrink-0 relative">
           {!isCollapsed ? (
             <>
@@ -195,7 +208,10 @@ export default function Sidebar({
               </div>
               <div className="absolute right-3 flex items-center justify-center">
                 <button
-                  onClick={onToggleCollapse}
+                  onClick={() => {
+                    if (window.innerWidth < 768) closeMobile();
+                    else onToggleCollapse();
+                  }}
                   className="p-2 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                   title="Close sidebar"
                 >
