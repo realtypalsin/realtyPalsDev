@@ -18,11 +18,9 @@ import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-van
 import MessageBubble from '@/components/chat/MessageBubble';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
-import {
-  MessageSquare, AlertTriangle, Mic, Plus, ArrowUp,
-  Search, Building2, Scale, Calculator
-} from 'lucide-react';
+import { Building2, Home, Key, MapPin, Search, Send, Upload, User, Loader2, Sparkles, Map, Info, AlertTriangle, ArrowRight, X, Clock, Navigation, CheckCircle2, Bot, StopCircle, ArrowDown, Mic, PanelLeft, ChevronDown, Star, Pencil, Trash2, Sun, Moon, ArrowUp, MessageSquare, PanelLeftClose, PanelLeftOpen, SquarePen } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
+import { useSessions } from '@/hooks/useSessions';
 
 // ── Dynamic imports — heavy components excluded from initial bundle ─────────
 const SiteVisitScheduler = dynamic(() => import('@/components/SiteVisitScheduler'), { ssr: false })
@@ -61,9 +59,11 @@ interface DiscoveryContentProps {
   guestToken?: string | null;
   onSessionChange?: (sessionId: string | null) => void;
   initialSessionId?: string | null;
+  isSidebarCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export default function DiscoveryContent({ userId, guestToken, onSessionChange, initialSessionId }: DiscoveryContentProps) {
+export default function DiscoveryContent({ userId, guestToken, onSessionChange, initialSessionId, isSidebarCollapsed, onToggleCollapse }: DiscoveryContentProps) {
   const router = useRouter();
   const [chatInput, setChatInput] = useState(() => {
     if (typeof window === 'undefined') return '';
@@ -83,10 +83,50 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [showContextWarning, setShowContextWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null);
   const [conversationState, setConversationState] = useState<import('@/components/chat/types').ConversationState | null>(null);
+
+  const { deleteSession, renameSession } = useSessions(userId, guestToken);
+  const [isRenamingHeader, setIsRenamingHeader] = useState(false);
+  const [headerRenameValue, setHeaderRenameValue] = useState('');
+
+  const handleStartRename = () => {
+    setHeaderRenameValue(sessionTitle || 'New Chat');
+    setIsRenamingHeader(true);
+    setShowHeaderDropdown(false);
+  };
+
+  const submitHeaderRename = async () => {
+    if (!sessionId || !headerRenameValue.trim() || headerRenameValue.trim() === sessionTitle) {
+      setIsRenamingHeader(false);
+      return;
+    }
+    const newTitle = headerRenameValue.trim();
+    const oldTitle = sessionTitle;
+    setSessionTitle(newTitle);
+    setIsRenamingHeader(false);
+    try {
+      await renameSession(sessionId, newTitle);
+      window.dispatchEvent(new Event('realtypals:session-updated'));
+    } catch (err) {
+      setSessionTitle(oldTitle);
+      setToast({ message: 'Failed to rename session' });
+    }
+  };
+
+  const handleDeleteSession = async () => {
+    if (!sessionId) return;
+    try {
+      await deleteSession(sessionId);
+      window.dispatchEvent(new Event('realtypals:session-updated'));
+      router.push('/discover');
+    } catch (err) {
+      setToast({ message: 'Failed to delete session' });
+    }
+    setShowHeaderDropdown(false);
+  };
 
   // Notify parent of session changes for sidebar highlighting
   useEffect(() => { onSessionChange?.(sessionId) }, [sessionId, onSessionChange])
@@ -121,6 +161,19 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, []);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState(false);
+  const [showBottomNav, setShowBottomNav] = useState(false);
+  const [showHeaderDropdown, setShowHeaderDropdown] = useState(false);
+  const headerDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (headerDropdownRef.current && !headerDropdownRef.current.contains(e.target as Node)) {
+        setShowHeaderDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const [showCalculator, setShowCalculator] = useState(false);
   const [chipPicker, setChipPicker] = useState<ChipPickerState | null>(null);
   const [siteVisitProject, setSiteVisitProject] = useState<ProjectCardType | null>(null);
@@ -994,7 +1047,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             </div>
           )}
           
-          <div className="relative flex items-center gap-1.5 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-200/50 dark:border-white/10 p-2 pl-3 rounded-full transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:bg-white dark:hover:bg-gray-900 mx-auto w-full group">
+          <div className="relative flex items-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)] border border-gray-200/60 dark:border-white/10 rounded-[28px] transition-all duration-300 hover:shadow-[0_16px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_16px_50px_rgba(0,0,0,0.4)] hover:bg-white dark:hover:bg-gray-900 mx-auto w-full group pr-1.5 py-1.5">
             <div id="chat-input-guide" className="relative flex-1 group">
               <PlaceholdersAndVanishInput
                 placeholders={
@@ -1051,15 +1104,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             )}
           </div>
           
-          {/* Quick Action Pills Removed */}
-
-          {hasUserReplied && (
-            <div className="text-center mt-2 mb-1">
-              <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                AI can make mistakes. Verify important information.
-              </span>
-            </div>
-          )}
         </div>
     </div>
   );
@@ -1069,7 +1113,69 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      <Header title={headerTitle} onToast={(msg: string) => setToast({ message: msg })} />
+      {/* Claude-style Seamless Header */}
+      <div className="absolute top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 bg-gradient-to-b from-slate-50/80 to-transparent dark:from-gray-900/80 pointer-events-none">
+        <div className="flex-1 flex items-center justify-start relative pointer-events-auto" ref={headerDropdownRef}>
+          {hasUserReplied && (
+            isRenamingHeader ? (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-200/50 dark:bg-gray-800/50">
+                <input
+                  autoFocus
+                  type="text"
+                  value={headerRenameValue}
+                  onChange={(e) => setHeaderRenameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') submitHeaderRename();
+                    if (e.key === 'Escape') setIsRenamingHeader(false);
+                  }}
+                  onBlur={submitHeaderRename}
+                  className="bg-transparent border-none outline-none text-sm font-medium w-32 md:w-48 text-gray-700 dark:text-gray-300"
+                />
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowHeaderDropdown(!showHeaderDropdown)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-800/50 transition-colors text-gray-700 dark:text-gray-300 group"
+              >
+                <span className="text-sm font-medium truncate max-w-[150px] md:max-w-xs">{sessionTitle || 'New Chat'}</span>
+                <ChevronDown size={14} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
+              </button>
+            )
+          )}
+
+          {/* Dropdown Menu */}
+          {showHeaderDropdown && hasUserReplied && (
+            <div className="absolute top-full left-4 mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
+              <div className="group/star relative">
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <Star size={16} className="text-gray-400" />
+                  <span>Star</span>
+                </button>
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 py-1 px-2 bg-gray-900 text-white text-[11px] font-medium rounded-md opacity-0 group-hover/star:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100]">
+                  Coming soon
+                </div>
+              </div>
+              <button onClick={handleStartRename} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <Pencil size={16} className="text-gray-400" />
+                <span>Rename</span>
+              </button>
+              <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2" />
+              <button onClick={handleDeleteSession} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+                <Trash2 size={16} />
+                <span>Delete</span>
+              </button>
+            </div>
+          )}
+        </div>
+        
+        <div className="flex-1 flex justify-center relative pointer-events-auto">
+          {/* Spacer so the middle items stay centered */}
+        </div>
+
+        <div className="flex-1 flex items-center justify-end gap-2 pointer-events-auto">
+          <ThemeToggle />
+        </div>
+      </div>
 
       {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10">
@@ -1114,16 +1220,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         ) : !hasUserReplied ? (
           /* Welcome screen */
           <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10 overflow-y-auto">
-            <div className="text-center mb-10 max-w-3xl">
+            <div className="text-center mb-10 max-w-[880px]">
               <h1 className="text-[4rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white mb-2 tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
                 RealtyPals
               </h1>
-              <h2 className="text-lg md:text-xl font-normal text-gray-600 dark:text-gray-400 mb-6 tracking-tight font-[family-name:var(--font-afacad)]">
+              <h2 className="text-lg md:text-xl font-medium text-gray-600 dark:text-gray-400 tracking-wide">
                 Your AI Property Advisor
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm md:text-[15px] leading-relaxed max-w-2xl mx-auto px-4">
-                Compare projects, verify builder reputation, explore RERA-approved properties, estimate EMIs and discover the best properties, all through a single AI-powered search.
-              </p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-2xl mb-12">
@@ -1144,27 +1247,26 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               ))}
             </div>
 
-            <div className="w-full max-w-3xl">
+            <div className="w-full max-w-[880px]">
               {chatInputForm}
             </div>
           </div>
         ) : (
           /* Feed layout */
-          /* Feed layout */
-          <div className="flex flex-col w-full h-full">
+          <div className="flex flex-col w-full h-full relative">
             <div
               ref={chatContainerRef}
               role="log"
               aria-live="polite"
               aria-relevant="additions text"
               aria-label="Conversation with RealtyPal advisor"
-              className="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 pt-6 pb-4 relative z-10"
+              className="flex-1 w-full h-full overflow-y-auto px-4 md:px-8 pt-6 pb-32 relative z-10"
               onScroll={(e) => {
                 const el = e.currentTarget;
                 userScrolledUp.current = (el.scrollHeight - el.scrollTop - el.clientHeight) > 100;
               }}
             >
-              <div className="max-w-4xl mx-auto space-y-6">
+              <div className="max-w-[880px] mx-auto space-y-6">
                 {showReEngagement && (
                   <ReEngagementBanner
                     userId={userId ?? undefined}
@@ -1269,25 +1371,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               )}
             </div>
 
-            {/* ── View All on Map — floats above input ── */}
-            {lastShortlist.length >= 2 && (
-              <div className="w-full flex justify-center py-2">
-                <button
-                  onClick={handleToggleMap}
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all duration-200 shadow-md border ${
-                    showMap
-                      ? 'bg-[#3061F2] text-white border-[#3061F2] shadow-[0_4px_14px_rgba(48,97,242,0.3)]'
-                      : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-[#3061F2] hover:text-[#3061F2] hover:shadow-[0_4px_14px_rgba(48,97,242,0.15)]'
-                  }`}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                  </svg>
-                  {showMap ? 'Hide Map' : `View all ${lastShortlist.length} on Map`}
-                </button>
-              </div>
-            )}
+            {/* (View on Map Toggle moved to MessageBubble) */}
 
             {/* Stable flex-bottom input island */}
             <AnimatePresence initial={false}>
@@ -1297,10 +1381,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className={`flex-none w-full z-30 flex justify-center pb-6 md:pb-8 pt-2 ${keyboardOpen ? 'pb-safe' : ''}`}
+                  className={`absolute bottom-0 left-0 right-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-8 pointer-events-none ${keyboardOpen ? 'pb-safe' : ''}`}
                   style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
                 >
-                  <div className="px-4 w-full max-w-3xl flex flex-col justify-center">
+                  <div className="px-4 w-full max-w-[880px] flex flex-col justify-center pointer-events-auto">
                     {chatInputForm}
                   </div>
                 </motion.div>

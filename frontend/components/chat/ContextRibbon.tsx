@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import type { ConversationState } from './types';
 
 interface ContextRibbonProps {
@@ -41,27 +41,29 @@ export default function ContextRibbon({ intent, onRemove }: ContextRibbonProps) 
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, height: 0 }}
-      className="w-full flex justify-center py-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20"
+      className="w-full flex justify-center py-3 absolute top-14 left-0 z-20 pointer-events-none"
     >
-      <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl px-4">
-        <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mr-2">
-          Searching for
+      <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-3xl px-4 pointer-events-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-full py-1.5 px-3 shadow-sm">
+        <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mr-1 flex items-center gap-1">
+          <Search size={12} className="text-gray-400 dark:text-gray-500" />
+          Intent
         </span>
+        <div className="w-[1px] h-3 bg-gray-300 dark:bg-gray-700 mx-1" />
         <AnimatePresence>
           {activeFilters.map(filter => (
             <motion.div
               layout
               key={filter.field}
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0, width: 0 }}
+              exit={{ scale: 0.9, opacity: 0, width: 0 }}
               transition={{ layout: { duration: 0.2, ease: "easeOut" } }}
-              className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/50 rounded-full text-xs font-medium"
+              className="flex items-center gap-1 px-2.5 py-0.5 rounded-full hover:bg-gray-100/80 dark:hover:bg-gray-800/80 text-[11px] font-medium text-gray-700 dark:text-gray-300 transition-colors group border border-transparent hover:border-gray-200 dark:hover:border-gray-700 cursor-default"
             >
               <span>{filter.label}</span>
               <button
                 onClick={() => onRemove(filter.field)}
-                className="w-4 h-4 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 flex items-center justify-center transition-colors -mr-1"
+                className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
                 title={`Remove ${filter.field}`}
               >
                 <X size={10} />

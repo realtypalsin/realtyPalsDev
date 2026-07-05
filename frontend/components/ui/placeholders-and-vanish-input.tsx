@@ -66,7 +66,7 @@ export function PlaceholdersAndVanishInput({
         if (!inputRef.current) return;
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) return;
 
         canvas.width = 800;
@@ -192,14 +192,14 @@ export function PlaceholdersAndVanishInput({
     return (
         <form
             className={cn(
-                "w-full relative max-w-4xl mx-auto bg-gray-100 dark:bg-gray-800 h-12 rounded-full overflow-hidden shadow-sm border-0 transition duration-200",
+                "w-full relative max-w-4xl mx-auto bg-transparent h-12 rounded-full overflow-hidden border-0 transition duration-200",
                 disabled && "opacity-70 pointer-events-none"
             )}
             onSubmit={handleSubmit}
         >
             <canvas
                 className={cn(
-                    "absolute pointer-events-none  text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
+                    "absolute pointer-events-none text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
                     !animating ? "opacity-0" : "opacity-100"
                 )}
                 ref={canvasRef}
@@ -217,49 +217,13 @@ export function PlaceholdersAndVanishInput({
                 type="text"
                 disabled={disabled}
                 className={cn(
-                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-6 pr-16 touch-target-min disabled:cursor-not-allowed",
+                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-4 sm:pl-6 pr-4 touch-target-min disabled:cursor-not-allowed",
                     animating && "text-transparent dark:text-transparent"
                 )}
             />
 
             <div className="absolute right-2 top-1/2 z-50 -translate-y-1/2 flex items-center gap-2">
                 {children}
-                <button
-                    disabled={!value || disabled}
-                    type="submit"
-                    className="h-8 w-8 rounded-full disabled:bg-gray-300/70 dark:disabled:bg-gray-700 bg-blue-600 dark:bg-blue-600 transition duration-200 flex items-center justify-center touch-target-min"
-                >
-                    <motion.svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-gray-300 h-4 w-4"
-                    >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <motion.path
-                            d="M5 12l14 0"
-                            initial={{
-                                strokeDasharray: "50%",
-                                strokeDashoffset: "50%",
-                            }}
-                            animate={{
-                                strokeDashoffset: value ? 0 : "50%",
-                            }}
-                            transition={{
-                                duration: 0.3,
-                                ease: "linear",
-                            }}
-                        />
-                        <path d="M13 18l6 -6" />
-                        <path d="M13 6l6 6" />
-                    </motion.svg>
-                </button>
             </div>
 
             <div className="absolute inset-0 flex items-center rounded-full pointer-events-none">

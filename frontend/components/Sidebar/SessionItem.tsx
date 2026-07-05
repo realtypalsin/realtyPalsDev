@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageSquare, Check, X, Pencil, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import { Session } from '@/hooks/useSessions';
 import { toast } from 'sonner';
 
@@ -146,7 +147,8 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
   }
 
   return (
-    <div
+    <Link
+      href={`/discover/${session.id}`}
       className={`group/session flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all duration-200 ${
         isNavigating ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
       } border ${
@@ -154,8 +156,11 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
           ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300'
           : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-white/70 dark:hover:bg-gray-800/70 hover:border-gray-200 dark:hover:border-gray-700'
       }`}
-      onClick={() => {
-        if (isNavigating) return;
+      onClick={(e) => {
+        if (isNavigating) {
+          e.preventDefault();
+          return;
+        }
 
         setIsNavigating(true);
         if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
@@ -174,9 +179,13 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
           } catch (_) { /* unsupported */ }
         }
 
-        onClick()
+        // Call the parent onClick (which handles closeMobile)
+        onClick();
       }}
-      onDoubleClick={() => !isNavigating && setIsRenaming(true)}
+      onDoubleClick={(e) => {
+        e.preventDefault();
+        if (!isNavigating) setIsRenaming(true);
+      }}
     >
       <MessageSquare size={14} className={`flex-shrink-0 transition-colors ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover/session:text-gray-500'}`} />
       <span className="text-[13px] truncate flex-1 font-medium">{session.label}</span>
@@ -185,20 +194,20 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
       </span>
       <div className="flex items-center gap-0.5 opacity-0 group-hover/session:opacity-100 transition-opacity flex-shrink-0">
         <button
-          onClick={(e) => { e.stopPropagation(); setIsRenaming(true); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsRenaming(true); }}
           className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           title="Rename"
         >
           <Pencil size={11} />
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDelete(true); }}
           className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 transition-colors"
           title="Delete"
         >
           <Trash2 size={11} />
         </button>
       </div>
-    </div>
+    </Link>
   );
 }

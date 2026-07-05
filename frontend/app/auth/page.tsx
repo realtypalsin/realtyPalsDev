@@ -236,9 +236,7 @@ export default function AuthPage() {
           </button>
         </div>
 
-        <p className="text-center text-white/20 text-[11px] mt-3">
-          AI-powered real estate advisor · Noida · V1
-        </p>
+
       </div>
       {toast && <Toast message={toast} duration={3000} onClose={() => setToast(null)} />}
     </div>

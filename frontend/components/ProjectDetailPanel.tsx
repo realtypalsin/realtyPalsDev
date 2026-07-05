@@ -56,6 +56,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const [documents, setDocuments]     = useState<ProjectDocumentPublic[]>([])
   const [loading, setLoading]         = useState(false)
   const [activeTab, setActiveTab]     = useState<Tab>('Overview')
+  const [isOverviewExpanded, setIsOverviewExpanded] = useState(false)
   // Optimistic-only, same as ProjectCard's save button — no GET check on mount,
   // so it doesn't reflect a pre-existing saved state, just the current session's action.
   const [saved, setSaved]             = useState(false)
@@ -785,7 +786,13 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                                   <div className="flex items-center gap-2 mb-0.5">
                                     <p className="text-[12px] font-bold text-white">Overview</p>
                                   </div>
-                                  <p className="text-[12px] text-white/70 line-clamp-1">{decisionThesis || (persona && `Ideal for ${persona.charAt(0) + persona.slice(1).toLowerCase()}.`)}</p>
+                                  <p 
+                                    className={`text-[12px] text-white/70 cursor-pointer transition-all ${isOverviewExpanded ? '' : 'line-clamp-1'}`}
+                                    onClick={() => setIsOverviewExpanded(!isOverviewExpanded)}
+                                    title="Click to expand/collapse"
+                                  >
+                                    {decisionThesis || (persona && `Ideal for ${persona.charAt(0) + persona.slice(1).toLowerCase()}.`)}
+                                  </p>
                                 </div>
                              </div>
                            </div>

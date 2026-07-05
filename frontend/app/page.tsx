@@ -52,19 +52,11 @@ export default function LandingPage() {
         {/* Logo */}
         <div className="mb-0 md:mb-4 flex flex-col items-center animate-fade-in-up">
           <Image
-            src="/images/logo/realtypals.png"
+            src="/images/icons/ExpandedRealtyPalsWhite.png"
             alt="RealtyPals Logo"
             width={350}
             height={140}
-            className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105 block dark:hidden"
-            priority
-          />
-          <Image
-            src="/images/logo/RealtyPals-logoWhite.png"
-            alt="RealtyPals Logo"
-            width={350}
-            height={140}
-            className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105 hidden dark:block"
+            className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105"
             priority
           />
         </div>

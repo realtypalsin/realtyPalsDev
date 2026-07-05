@@ -25,6 +25,7 @@ export default function DiscoverPage() {
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,11 +89,25 @@ export default function DiscoverPage() {
 
   return (
     <div className="flex h-[100dvh] bg-transparent overflow-hidden no-overscroll">
-      <Sidebar userId={userId} guestToken={guestToken} activeSessionId={activeSessionId} />
+      <Sidebar 
+        userId={userId} 
+        guestToken={guestToken} 
+        activeSessionId={activeSessionId} 
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
         <ChatErrorBoundary>
           <Suspense fallback={<div className="flex-1 flex items-center justify-center text-gray-500">Loading...</div>}>
-            <DiscoveryContent key="new" initialSessionId={null} userId={userId} guestToken={guestToken} onSessionChange={setActiveSessionId} />
+            <DiscoveryContent 
+              key="new" 
+              initialSessionId={null} 
+              userId={userId} 
+              guestToken={guestToken} 
+              onSessionChange={setActiveSessionId} 
+              isSidebarCollapsed={isSidebarCollapsed} 
+              onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            />
           </Suspense>
         </ChatErrorBoundary>
       </main>

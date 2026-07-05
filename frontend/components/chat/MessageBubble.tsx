@@ -4,7 +4,7 @@ import { memo, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { User, RotateCcw, Copy, ChevronDown } from 'lucide-react'
+import { User, RotateCcw, Copy, ChevronDown, MapPin } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import { parseResponseBlocks } from '@/lib/responseParser'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
@@ -221,6 +221,7 @@ function MessageBubbleInner({
   onSetSiteVisit, onOpenCalculator, onOpenShareSheet, onToast,
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
+  const [showAllProperties, setShowAllProperties] = useState(false)
 
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
   const touchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -490,14 +491,24 @@ function MessageBubbleInner({
 
         // New format: exactResults / nearbyResults (set on all fresh messages)
         const useNewFormat = message.exactResults !== undefined
-        const exactList = message.exactResults ?? []
-        const nearbyList = message.nearbyResults ?? []
+        const rawExactList = message.exactResults ?? []
+        const rawNearbyList = message.nearbyResults ?? []
         const expansion = message.expansion
-        const legacyList = message.properties ?? []
+        const rawLegacyList = message.properties ?? []
 
-        const hasExact = exactList.length > 0
-        const hasNearby = nearbyList.length > 0
-        const hasLegacy = legacyList.length > 0
+        // Pagination (limit to 6 cards max)
+        const MAX_CARDS = 6
+        const totalCards = useNewFormat ? rawExactList.length + rawNearbyList.length : rawLegacyList.length
+        const hasMoreThanMax = totalCards > MAX_CARDS
+
+        const exactList = showAllProperties ? rawExactList : rawExactList.slice(0, MAX_CARDS)
+        const remainingSlots = Math.max(0, MAX_CARDS - exactList.length)
+        const nearbyList = showAllProperties ? rawNearbyList : rawNearbyList.slice(0, remainingSlots)
+        const legacyList = showAllProperties ? rawLegacyList : rawLegacyList.slice(0, MAX_CARDS)
+
+        const hasExact = rawExactList.length > 0
+        const hasNearby = rawNearbyList.length > 0
+        const hasLegacy = rawLegacyList.length > 0
 
         if (useNewFormat && !hasExact && !hasNearby) return null
         if (!useNewFormat && !hasLegacy) return null
@@ -535,13 +546,22 @@ function MessageBubbleInner({
                   Ranked by fit
                 </span>
               </div>
-              <button
-                onClick={() => onToggleExpanded(message.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-lg text-[11px] font-semibold text-gray-600 dark:text-gray-300 transition-all shadow-sm active:scale-95"
-              >
-                {isOpen ? 'Hide' : 'View'}
-                <ChevronDown size={12} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('realtypals:open-map'))}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/50 border border-blue-200 dark:border-blue-800/50 rounded-lg text-[11px] font-semibold text-blue-700 dark:text-blue-400 transition-all shadow-sm active:scale-95"
+                >
+                  <MapPin size={12} />
+                  <span className="hidden sm:inline">Map</span>
+                </button>
+                <button
+                  onClick={() => onToggleExpanded(message.id)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-lg text-[11px] font-semibold text-gray-600 dark:text-gray-300 transition-all shadow-sm active:scale-95"
+                >
+                  {isOpen ? 'Hide' : 'View'}
+                  <ChevronDown size={12} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
             </motion.div>
 
             {/* Empty sector banner — shown when requested sector has no exact matches */}
@@ -569,7 +589,7 @@ function MessageBubbleInner({
                 {/* Property Results Grid */}
                 {(useNewFormat ? exactList : legacyList).length > 0 && (
                   <div className="mt-3">
-                    <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {(useNewFormat ? exactList : legacyList).map((property, pi) => (
                         <motion.div
                           key={property.id}
@@ -611,7 +631,7 @@ function MessageBubbleInner({
                         </span>
                       </div>
                     )}
-                    <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {nearbyList.map((property, pi) => (
                         <motion.div
                           key={property.id}
@@ -646,6 +666,17 @@ function MessageBubbleInner({
                 {showMap && primaryCards.length >= 2 && (
                   <div className="mt-3 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-md w-full">
                     <SectorMap properties={primaryCards} />
+                  </div>
+                )}
+
+                {hasMoreThanMax && (
+                  <div className="mt-4 flex justify-center w-full">
+                    <button
+                      onClick={() => setShowAllProperties(prev => !prev)}
+                      className="px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[13px] font-semibold text-blue-600 dark:text-blue-400 rounded-full shadow-sm hover:shadow-md hover:bg-blue-50 dark:hover:bg-gray-700 transition-all active:scale-95"
+                    >
+                      {showAllProperties ? 'Show less properties' : `View all ${totalCards} properties`}
+                    </button>
                   </div>
                 )}
               </div>

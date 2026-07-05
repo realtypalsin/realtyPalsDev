@@ -9,7 +9,7 @@ import {
   MapPin, ArrowRight, BookmarkSimple,
   CaretLeft, CaretRight,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Barbell, Star, Buildings,
+  Barbell, Star, Buildings, Bed,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 import { API_BASE } from '@/lib/env'
@@ -154,10 +154,10 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
   return (
     <div
       onClick={() => onDetailOpen?.(project)}
-      className="group relative w-full h-full flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0a0a0a] transition-all duration-300 ease-out cursor-pointer border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md md:hover:scale-[1.01]"
+      className="group relative w-full h-full flex flex-col rounded-[32px] overflow-hidden bg-white dark:bg-[#0a0a0a] transition-all duration-400 ease-out cursor-pointer border border-gray-200/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
     >
       {/* ── Hero image ── */}
-      <div className="relative h-[240px] overflow-hidden bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+      <div className="relative h-[440px] overflow-hidden bg-gray-50 dark:bg-gray-900 flex-shrink-0">
         {workingImages.length > 0 && !allFailed ? (
           <>
             {workingImages.map((src, i) => (
@@ -220,116 +220,95 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
         )}
 
         {/* Save button */}
-        <div className="absolute top-3 right-12 flex items-center gap-1.5 z-10">
+        <div className="absolute top-5 right-5 flex items-center gap-1.5 z-10">
           <button
             onClick={handleSave}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${
-              saved ? 'bg-red-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:scale-105'
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all shadow-sm ${
+              saved ? 'bg-red-500 text-white' : 'bg-white text-gray-900 hover:scale-105'
             }`}
             title={saved ? 'Unsave' : 'Save property'}
           >
             {saved
-              ? <BookmarkSimple size={15} weight="fill" />
-              : <BookmarkSimple size={15} weight="bold" />
+              ? <BookmarkSimple size={18} weight="fill" />
+              : <BookmarkSimple size={18} weight="bold" />
             }
           </button>
         </div>
+
+        {/* Status Badge (Ready to Move / New Launch) at Bottom-Left of Image */}
+        <div className="absolute bottom-5 left-5 z-10 flex items-center gap-2">
+          <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] font-medium tracking-wide backdrop-blur-md shadow-sm bg-black/60 text-white`}>
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${project.status === 'ready_to_move' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+            {project.status === 'ready_to_move' ? 'Ready to Move' : project.status === 'new_launch' ? 'New Launch' : 'Under Construction'}
+          </span>
+          {project.possession_label && project.status !== 'ready_to_move' && (
+            <span className="px-3 py-1.5 bg-black/60 backdrop-blur-md text-white rounded-full text-[13px] font-medium shadow-sm">
+              {project.possession_label}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* ── Recommendation Section ── */}
-      <div className="px-4 pt-3 pb-3 border-b border-blue-100 dark:border-blue-900/30 bg-blue-50/40 dark:bg-blue-900/20">
-        {headline && (
-          <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100 mb-2 leading-snug">
-            {headline}
-          </p>
-        )}
-        {reasons.length > 0 && (
-          <ul className="space-y-1 mb-2">
-            {reasons.map((r, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-[12px] text-gray-700 dark:text-gray-300">
-                <span className="mt-1.5 w-1 h-1 rounded-full bg-blue-400 dark:bg-blue-500 flex-shrink-0" />
-                <span>{r}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-        {concerns.length > 0 && (
-          <ul className="space-y-1">
-            {concerns.map((c, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-[12px] text-amber-700 dark:text-amber-400">
-                <span className="mt-1.5 w-1 h-1 rounded-full bg-amber-400 flex-shrink-0" />
-                <span>{c}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
+      {/* ── Recommendation Section (Hidden for aesthetic match) ── */}
       {/* ── Body ── */}
-      <div className="px-4 pt-3 pb-4 flex-1 flex flex-col bg-white dark:bg-[#0a0a0a]">
-        {/* Name row + Price */}
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="text-[15px] font-bold text-gray-900 dark:text-gray-100 tracking-tight leading-snug truncate">
+      <div className="px-6 pt-5 pb-6 flex-1 flex flex-col bg-white dark:bg-[#0a0a0a]">
+        {/* Name row + RERA */}
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <h3 className="text-[36px] font-extrabold text-[#0a192f] dark:text-gray-100 tracking-tight leading-none truncate" style={{ fontFamily: 'Georgia, serif' }}>
             {project.name}
           </h3>
           {project.rera_number && (
-            <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[5px] bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wide">
-              <CheckCircle size={10} weight="fill" className="text-blue-500" />
+            <span className="flex-shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded-[6px] bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-700 text-[12px] font-bold text-blue-600 dark:text-blue-400 tracking-wide mt-1">
+              <SealCheck size={14} weight="fill" className="text-blue-500" />
               RERA
             </span>
           )}
         </div>
 
         {/* Builder · Sector */}
-        <div className="flex items-center gap-1.5 text-[12px] text-gray-500 dark:text-gray-400 mb-3">
-          <span className="font-medium truncate">{project.builder.name}</span>
+        <div className="flex items-center gap-2 text-[15px] font-medium text-gray-500 dark:text-gray-400 mb-6">
+          <span className="truncate">{project.builder.name}</span>
           <span className="opacity-40">·</span>
           <span className="truncate">{project.sector}</span>
         </div>
 
         {/* Price — big hero number */}
-        <div className="mb-3">
-          <p className="text-[24px] font-black text-gray-900 dark:text-gray-50 tracking-tight leading-none">
+        <div className="mb-6">
+          <span className="text-[14px] text-gray-500 font-medium tracking-wide block mb-1">Price Range</span>
+          <p className="text-[38px] font-black text-[#0a192f] dark:text-gray-50 tracking-tight leading-none">
             {project.price_range_label}
           </p>
-          <div className="flex items-center gap-2 mt-3">
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold tracking-wide ${
-              project.status === 'ready_to_move'
-                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                : project.status === 'new_launch'
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
-                : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
-            }`}>
-              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                project.status === 'ready_to_move' ? 'bg-emerald-500' : project.status === 'new_launch' ? 'bg-blue-500' : 'bg-amber-500'
-              }`} />
-              {project.status === 'ready_to_move' ? 'Ready to Move' : project.status === 'new_launch' ? 'New Launch' : 'Under Construction'}
-            </span>
-            {project.possession_label && project.status !== 'ready_to_move' && (
-              <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{project.possession_label}</span>
-            )}
-          </div>
         </div>
 
         {/* Divider */}
         <div className="border-t border-gray-100 dark:border-white/5 mb-3" />
 
         {/* Configurations */}
-        <div className="flex flex-col gap-1.5 mb-3">
-          {(expandedUnits ? bhkGroups : bhkGroups.slice(0, 2)).map(g => (
-            <div key={g.bhk} className="flex items-baseline gap-2 text-[13px]">
-              <span className="font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap w-14 flex-shrink-0">{g.bhk} BHK</span>
-              {g.areas.length > 0 && (
-                <span className="text-gray-500 dark:text-gray-400 font-normal truncate">
-                  {g.areas.join(', ')}
-                </span>
+        <div className="flex flex-col mb-4">
+          {(expandedUnits ? bhkGroups : bhkGroups.slice(0, 2)).map((g, idx) => (
+            <div key={g.bhk} className="flex flex-col">
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-50">
+                    <Bed size={22} weight="regular" />
+                  </div>
+                  <span className="font-bold text-[#0a192f] dark:text-gray-100 text-[18px] whitespace-nowrap">{g.bhk} BHK</span>
+                </div>
+                {g.areas.length > 0 && (
+                  <span className="text-gray-500 dark:text-gray-400 text-[15px] font-medium truncate text-right">
+                    {g.areas.join(', ')}
+                  </span>
+                )}
+              </div>
+              {idx < (expandedUnits ? bhkGroups : bhkGroups.slice(0, 2)).length - 1 && (
+                <div className="border-t border-gray-100 dark:border-white/5 my-1" />
               )}
             </div>
           ))}
           {bhkGroups.length > 2 && (
             <button
               onClick={(e) => { e.stopPropagation(); setExpandedUnits(prev => !prev) }}
-              className="text-[12px] font-semibold text-[#3061F2] dark:text-blue-400 hover:underline text-left mt-0.5"
+              className="text-[12px] font-semibold text-[#3061F2] dark:text-blue-400 hover:underline text-center mt-2"
             >
               {expandedUnits ? 'Show less ↑' : `+ ${bhkGroups.length - 2} more configurations`}
             </button>
@@ -337,17 +316,18 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
         </div>
 
         {/* Quick Actions */}
-        {quickActions ? (
-          <div onClick={(e) => e.stopPropagation()} className="mt-auto">
+        {quickActions && (
+          <div onClick={(e) => e.stopPropagation()} className="mt-auto z-10 relative">
             {quickActions}
           </div>
-        ) : (
-          <div className="absolute right-4 bottom-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-            <div className="w-8 h-8 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center shadow-md">
-              <ArrowRight size={14} weight="bold" />
-            </div>
-          </div>
         )}
+
+        {/* Clickable Indicator Arrow */}
+        <div className="absolute right-4 bottom-4 transition-all duration-300 pointer-events-none opacity-80 group-hover:opacity-100 group-hover:translate-x-1">
+          <div className="w-8 h-8 rounded-full bg-gray-900/50 dark:bg-white/50 backdrop-blur-sm group-hover:bg-gray-900 group-hover:dark:bg-white text-white dark:text-gray-900 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
+            <ArrowRight size={14} weight="bold" />
+          </div>
+        </div>
       </div>
     </div>
   )

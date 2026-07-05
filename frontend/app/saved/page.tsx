@@ -10,9 +10,12 @@ import ProjectDetailPanel from '@/components/ProjectDetailPanel';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
 import { API_BASE } from '@/lib/env';
 import { authHeaders } from '@/lib/authedFetch';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, PanelLeftClose, PanelLeftOpen, Sun, SquarePen, Compass } from 'lucide-react';
 import Toast from '@/components/Toast';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false });
 
 export default function SavedPropertiesPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -21,6 +24,7 @@ export default function SavedPropertiesPage() {
   const [error, setError] = useState(false);
   const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
   const [toast, setToast] = useState('');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -42,17 +46,35 @@ export default function SavedPropertiesPage() {
   }, []);
 
   return (
-    <div className="flex h-[100dvh] bg-[#E6E6E6] overflow-hidden">
-      <Sidebar userId={userId} />
-      <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden">
+    <div className="flex h-[100dvh] bg-slate-50/50 dark:bg-gray-900 overflow-hidden">
+      <Sidebar 
+        userId={userId} 
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+      <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
         <motion.div
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="flex-1 flex flex-col min-h-0 overflow-hidden"
+          className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10"
         >
-          <Header title="Saved Properties" onToast={(m: string) => setToast(m)} />
-          <div className="flex-1 overflow-y-auto px-6 py-6">
+          {/* Claude-style Seamless Header */}
+          <div className="absolute top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 bg-gradient-to-b from-slate-50/80 to-transparent dark:from-gray-900/80 pointer-events-none">
+            <div className="flex-1 flex items-center justify-start pointer-events-auto">
+              {/* Spacer */}
+            </div>
+            
+            <div className="flex-1 flex justify-center relative pointer-events-auto">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Saved Properties</span>
+            </div>
+
+            <div className="flex-1 flex items-center justify-end gap-2 pointer-events-auto">
+              <ThemeToggle />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-6 pt-16">
             {error ? (
               <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                 <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center">
@@ -75,13 +97,22 @@ export default function SavedPropertiesPage() {
                 </div>
               </div>
             ) : projects.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center">
-                  <Bookmark size={32} className="text-amber-600" />
+              <div className="flex flex-col items-center justify-center h-full gap-4 text-center mt-[-10vh]">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-amber-400/20 dark:bg-amber-500/20 blur-2xl rounded-full scale-150 pointer-events-none" />
+                  <div className="relative w-20 h-20 rounded-[24px] bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/40 dark:to-amber-800/40 border border-amber-200/50 dark:border-amber-700/50 flex items-center justify-center shadow-sm">
+                    <Bookmark size={34} className="text-amber-500 dark:text-amber-400 drop-shadow-sm" />
+                  </div>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">No saved properties</h2>
-                <p className="text-gray-500 max-w-sm">Save properties from the chat to compare and revisit them here.</p>
-                <button onClick={() => router.push('/discover')} className="mt-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all text-sm">
+                <div className="space-y-1.5 mt-2">
+                  <h2 className="text-[22px] font-bold tracking-tight text-gray-900 dark:text-gray-100">No saved properties</h2>
+                  <p className="text-[14px] text-gray-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">Save properties from the chat to compare and revisit them here.</p>
+                </div>
+                <button 
+                  onClick={() => router.push('/discover')} 
+                  className="mt-4 px-6 py-2.5 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 rounded-full font-medium transition-all text-[13px] shadow-sm flex items-center gap-2"
+                >
+                  <Compass size={16} className="opacity-70" />
                   Start Discovery
                 </button>
               </div>
