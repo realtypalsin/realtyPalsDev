@@ -186,7 +186,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [shareCopied, setShareCopied] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
-    const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
+  const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
   const [statusPhase, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
   const [resultCount, setResultCount] = useState<number | null>(null)
   const [showReEngagement, setShowReEngagement] = useState(true)
@@ -196,7 +196,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
   const userScrolledUp = useRef(false);
-  const performResetRef = useRef<() => void>(() => {});
+  const performResetRef = useRef<() => void>(() => { });
   // [TIMING] holds in-progress restore stage timestamps; cleared after summary printed
   const navTimingsRef = useRef<{ restoreStart: number; authMs: number; fetchMs: number; mapperMs: number; setHistoryAt: number } | null>(null);
 
@@ -240,7 +240,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
@@ -558,7 +558,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             role: string
             content: string
             created_at: string
-            artifacts?: Array<{ type: string; [key: string]: unknown }>
+            artifacts?: Array<{ type: string;[key: string]: unknown }>
           }
           const mapperT0 = performance.now()
           const restored: ChatMessage[] = data.messages.map((m: RawMessage) => {
@@ -594,7 +594,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
           // [TIMING] store for render-complete detection
           navTimingsRef.current = { restoreStart, authMs, fetchMs, mapperMs, setHistoryAt: performance.now() }
-          
+
           LOCAL_SESSION_CACHE.set(initialSessionId, {
             session_id: data.session_id,
             title: data.title,
@@ -636,20 +636,20 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     if (nt) {
       console.log(`[NAV] 9. render-complete   +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${renderMs.toFixed(1)}ms)`)
       const totalMs = performance.now() - nt.t0
-      const rscMs   = nt.rscEnd     != null ? nt.rscEnd     - nt.t0 : null
+      const rscMs = nt.rscEnd != null ? nt.rscEnd - nt.t0 : null
       const mountMs = nt.pageMounted != null ? nt.pageMounted - nt.t0 : null
       const stages = [
-        { name: 'rsc+compile',  ms: rscMs   ?? 0 },
-        { name: 'authHeaders',  ms: t.authMs },
-        { name: 'fetch',        ms: t.fetchMs },
-        { name: 'mapper',       ms: t.mapperMs },
-        { name: 'render',       ms: renderMs },
+        { name: 'rsc+compile', ms: rscMs ?? 0 },
+        { name: 'authHeaders', ms: t.authMs },
+        { name: 'fetch', ms: t.fetchMs },
+        { name: 'mapper', ms: t.mapperMs },
+        { name: 'render', ms: renderMs },
       ].filter(s => s.ms > 0)
       const slowest = stages.reduce((a, b) => a.ms > b.ms ? a : b)
       console.log(
         `[NAV] ━━━ TOTAL ${totalMs.toFixed(0)}ms` +
-        (rscMs   != null ? ` | rsc+compile ${rscMs.toFixed(0)}ms`   : '') +
-        (mountMs != null ? ` | page-mount ${mountMs.toFixed(0)}ms`  : '') +
+        (rscMs != null ? ` | rsc+compile ${rscMs.toFixed(0)}ms` : '') +
+        (mountMs != null ? ` | page-mount ${mountMs.toFixed(0)}ms` : '') +
         ` | authHeaders ${t.authMs.toFixed(0)}ms` +
         ` | fetch ${t.fetchMs.toFixed(0)}ms` +
         ` | mapper ${t.mapperMs.toFixed(0)}ms` +
@@ -658,7 +658,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       )
     }
     navTimingsRef.current = null // reset so streaming turns don't re-trigger
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatHistory.length])
 
   // [TIMING] property cards first visible — fires once when any message has property results
@@ -673,7 +673,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       nt.propertyCards = performance.now()
       console.log(`[NAV] 9b. property-cards +${(nt.propertyCards - nt.t0).toFixed(1)}ms`)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatHistory])
 
 
@@ -700,12 +700,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       content: userText,
       timestamp: new Date().toISOString(),
     };
-    
+
     // Only add a user message bubble if it's an explicit text message or a selected chip that isn't a silent patch
     if (isText || action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
       setChatHistory(prev => [...prev, userMsg]);
     }
-    
+
     setChatTurnCount(c => c + 1);
     if (chatTurnCount === 0) track('chat_started', { session_id: sessionId })
     setChatInput('');
@@ -764,15 +764,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
               ? {
-                  ...m,
-                  isSearching: false,
-                  exactResults: exact,
-                  nearbyResults: nearby,
-                  expansion,
-                  properties: shortlist,
-                  streamingPhase: 'generating',
-                  streamingResultCount: shortlist.length,
-                }
+                ...m,
+                isSearching: false,
+                exactResults: exact,
+                nearbyResults: nearby,
+                expansion,
+                properties: shortlist,
+                streamingPhase: 'generating',
+                streamingResultCount: shortlist.length,
+              }
               : m
           ));
           setLastShortlist(shortlist);
@@ -826,14 +826,14 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
               ? {
-                  ...m,
-                  isSearching: false,
-                  responseMode,
-                  showComparisonTable: isComparison,
-                  ...(isComparison ? {
-                    comparisonProjects: localProjects.slice(0, 4),
-                  } : {}),
-                }
+                ...m,
+                isSearching: false,
+                responseMode,
+                showComparisonTable: isComparison,
+                ...(isComparison ? {
+                  comparisonProjects: localProjects.slice(0, 4),
+                } : {}),
+              }
               : m
           ));
           setExpandedShortlists(new Set());
@@ -856,7 +856,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               })
             ).finally(() => {
               window.dispatchEvent(new CustomEvent('realtypals:session-updated'))
-            }).catch(() => {})
+            }).catch(() => { })
           } else {
             // All other turns: refresh immediately (no PATCH follows).
             window.dispatchEvent(new CustomEvent('realtypals:session-updated'));
@@ -921,7 +921,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       if (tool === 'share') setShareSheetOpen(true);
       return;
     }
-    
+
     if (action.actionType === 'COMPARE_PROPERTIES') {
       if (action.payload.mode === 'direct') {
         const selectedIds = action.payload.selected as string[];
@@ -932,7 +932,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           return;
         }
       }
-      
+
       if (action.payload.mode === 'multi') {
         if (lastShortlist.length < 2) {
           dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: 'Compare projects' } });
@@ -950,25 +950,25 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     }
 
     if (action.actionType === 'CALCULATE_EMI' && action.payload.mode === 'single') {
-       setChipPicker({
-         mode: 'single',
-         action: 'emi',
-         label: 'Calculate EMI',
-         isModal: false,
-         selected: []
-       });
-       return;
+      setChipPicker({
+        mode: 'single',
+        action: 'emi',
+        label: 'Calculate EMI',
+        isModal: false,
+        selected: []
+      });
+      return;
     }
 
     if (action.actionType === 'BOOK_VISIT' && action.payload.mode === 'single') {
-       setChipPicker({
-         mode: 'single',
-         action: 'visit',
-         label: 'Book Visit',
-         isModal: false,
-         selected: []
-       });
-       return;
+      setChipPicker({
+        mode: 'single',
+        action: 'visit',
+        label: 'Book Visit',
+        isModal: false,
+        selected: []
+      });
+      return;
     }
 
     // For INTENT_PATCH, TEXT_MESSAGE, REMOVE_FILTER, just dispatch to backend
@@ -993,7 +993,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(stripMarkdown(text))
       .then(() => setToast({ message: 'Copied!' }))
-      .catch(() => {})
+      .catch(() => { })
   }, []);
 
   const hasUserReplied = chatHistory.some((m) => m.type === 'user');
@@ -1031,80 +1031,80 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const chatInputForm = (
     <div className={`relative w-full transition-all duration-300 ${isInputMinimized ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="relative w-full">
-          {rateLimitUntil && (
-            <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
-          )}
-          {isSubmitting && (
-            <div className="flex items-center justify-end mb-4 px-2">
-              <button
-                type="button"
-                onClick={() => abortControllerRef.current?.abort()}
-                className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 border border-gray-300 dark:border-gray-600 rounded-full transition-all shadow-sm"
-              >
-                <div className="w-2 h-2 bg-current rounded-sm" />
-                Stop
-              </button>
-            </div>
-          )}
-          
-          <div className="relative flex items-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)] border border-gray-200/60 dark:border-white/10 rounded-[28px] transition-all duration-300 hover:shadow-[0_16px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_16px_50px_rgba(0,0,0,0.4)] hover:bg-white dark:hover:bg-gray-900 mx-auto w-full group pr-1.5 py-1.5">
-            <div id="chat-input-guide" className="relative flex-1 group">
-              <PlaceholdersAndVanishInput
-                placeholders={
-                  chatPhase === 'ADVISOR'
-                    ? [
-                        'What are the risks with this property?',
-                        'Compare Godrej Woods vs ATS Pristine...',
-                        'Calculate EMI for 1.5Cr at 8.5%...',
-                        'How far is the nearest metro station?',
-                      ]
-                    : [
-                        'Find a 3 BHK in Sector 150...',
-                        'Which are the best RERA-approved projects?',
-                        'Show me luxury apartments on Noida Expressway...',
-                        'Properties with possession by 2025...',
-                      ]
-                }
-                onChange={(e) => setChatInput(e.target.value)}
-                onSubmit={handleChatSubmit}
-                value={chatInput}
-                disabled={isSubmitting}
-              />
-            </div>
-
-            {/* Send button when text present, Voice button when empty */}
-            {chatInput.trim() ? (
-              <button
-                type="button"
-                onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
-                className="w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-200 bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg active:scale-95"
-                title="Send"
-              >
-                <ArrowUp size={20} className="text-white" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={toggleVoiceInput}
-                className={`w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${isListening
-                  ? 'text-red-500 animate-pulse scale-105 bg-red-50 border border-red-200 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                  }`}
-                title="Voice Input"
-              >
-                {isListening ? (
-                  <div className="relative flex items-center justify-center">
-                    <div className="absolute inset-0 -m-1 rounded-full bg-red-100 animate-ping opacity-50" />
-                    <Mic size={20} className="relative text-red-500 fill-current" />
-                  </div>
-                ) : (
-                  <Mic size={20} />
-                )}
-              </button>
-            )}
+        {rateLimitUntil && (
+          <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
+        )}
+        {isSubmitting && (
+          <div className="flex items-center justify-end mb-4 px-2">
+            <button
+              type="button"
+              onClick={() => abortControllerRef.current?.abort()}
+              className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 border border-gray-300 dark:border-gray-600 rounded-full transition-all shadow-sm"
+            >
+              <div className="w-2 h-2 bg-current rounded-sm" />
+              Stop
+            </button>
           </div>
-          
+        )}
+
+        <div className="relative flex items-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)] border border-gray-200/60 dark:border-white/10 rounded-[28px] transition-all duration-300 hover:shadow-[0_16px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_16px_50px_rgba(0,0,0,0.4)] hover:bg-white dark:hover:bg-gray-900 mx-auto w-full group pr-1.5 py-1.5">
+          <div id="chat-input-guide" className="relative flex-1 group">
+            <PlaceholdersAndVanishInput
+              placeholders={
+                chatPhase === 'ADVISOR'
+                  ? [
+                    'What are the risks with this property?',
+                    'Compare Godrej Woods vs ATS Pristine...',
+                    'Calculate EMI for 1.5Cr at 8.5%...',
+                    'How far is the nearest metro station?',
+                  ]
+                  : [
+                    'Find a 3 BHK in Sector 150...',
+                    'Which are the best RERA-approved projects?',
+                    'Show me luxury apartments on Noida Expressway...',
+                    'Properties with possession by 2025...',
+                  ]
+              }
+              onChange={(e) => setChatInput(e.target.value)}
+              onSubmit={handleChatSubmit}
+              value={chatInput}
+              disabled={isSubmitting}
+            />
+          </div>
+
+          {/* Send button when text present, Voice button when empty */}
+          {chatInput.trim() ? (
+            <button
+              type="button"
+              onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
+              className="w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-200 bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg active:scale-95"
+              title="Send"
+            >
+              <ArrowUp size={20} className="text-white" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={toggleVoiceInput}
+              className={`w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${isListening
+                ? 'text-red-500 animate-pulse scale-105 bg-red-50 border border-red-200 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              title="Voice Input"
+            >
+              {isListening ? (
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute inset-0 -m-1 rounded-full bg-red-100 animate-ping opacity-50" />
+                  <Mic size={20} className="relative text-red-500 fill-current" />
+                </div>
+              ) : (
+                <Mic size={20} />
+              )}
+            </button>
+          )}
         </div>
+
+      </div>
     </div>
   );
 
@@ -1133,7 +1133,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 />
               </div>
             ) : (
-              <button 
+              <button
                 onClick={() => setShowHeaderDropdown(!showHeaderDropdown)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-800/50 transition-colors text-gray-700 dark:text-gray-300 group"
               >
@@ -1167,7 +1167,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             </div>
           )}
         </div>
-        
+
         <div className="flex-1 flex justify-center relative pointer-events-auto">
           {/* Spacer so the middle items stay centered */}
         </div>
@@ -1187,9 +1187,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           <div className="absolute bottom-[-10%] left-[40%] w-[400px] h-[400px] bg-teal-400/10 dark:bg-teal-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" style={{ animationDelay: "4s" }} />
         </div>
 
-        <ContextRibbon 
-          intent={currentIntent} 
-          onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })} 
+        <ContextRibbon
+          intent={currentIntent}
+          onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
         />
 
         {(!isInitialized && !!initialSessionId) ? (
@@ -1225,21 +1225,21 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 RealtyPals
               </h1>
               <h2 className="text-2xl md:text-3xl font-[family-name:var(--font-afacad)] font-medium text-gray-600 dark:text-gray-400 tracking-wide mt-2">
-                From Search to Decision.
+                Buy Better.
               </h2>
             </div>
 
-              {showReEngagement && !hasUserReplied && (
-                <ReEngagementBanner
-                  userId={userId ?? undefined}
-                  guestToken={guestToken ?? undefined}
-                  onResume={(sid) => {
-                    setShowReEngagement(false);
-                    router.push(`/discover/${sid}`);
-                  }}
-                  onDismiss={() => setShowReEngagement(false)}
-                />
-              )}
+            {showReEngagement && !hasUserReplied && (
+              <ReEngagementBanner
+                userId={userId ?? undefined}
+                guestToken={guestToken ?? undefined}
+                onResume={(sid) => {
+                  setShowReEngagement(false);
+                  router.push(`/discover/${sid}`);
+                }}
+                onDismiss={() => setShowReEngagement(false)}
+              />
+            )}
 
             <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-2xl mb-12">
               {[
@@ -1285,10 +1285,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                     Long conversation detected. Start a new chat for the best AI responses.
                   </div>
                 )}
-                
+
                 {chatHistory.length > visibleCount && (
                   <div className="text-center py-2">
-                    <button 
+                    <button
                       onClick={() => setVisibleCount(v => v + 15)}
                       className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium border border-gray-200 dark:border-gray-700 shadow-sm"
                     >
@@ -1300,36 +1300,36 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 {chatHistory.slice(-visibleCount).map((message, index) => {
                   const actualIndex = Math.max(0, chatHistory.length - visibleCount) + index;
                   return (
-                  <MessageBubble
-                    key={message.id}
-                    message={message}
-                    index={actualIndex}
-                    isLast={actualIndex === chatHistory.length - 1}
-                    isSubmitting={isSubmitting}
-                    chatPhase={chatPhase}
-                    isLastProperties={actualIndex === lastPropertiesIndex}
-                    isExpanded={expandedShortlists.has(message.id)}
-                    carouselIndex={carouselIndexes[actualIndex] ?? 0}
-                    lastShortlist={lastShortlist}
-                    showMap={showMap}
-                    userId={userId}
-                    regeneratingIdx={regeneratingIdx}
-                    chipPicker={chipPicker}
-                    chips={conversationState?.chips ?? []}
-                    onCopy={handleCopy}
-                    onDetailOpen={openDetailProject}
-                    onCallback={setCallbackProject}
-                    onRegenerate={handleRegenerate}
-                    onAction={handleChipAction}
-                    onToggleExpanded={handleToggleExpanded}
-                    onToggleMap={handleToggleMap}
-                    onSetChipPicker={setChipPicker}
-                    onSetCarouselIndex={handleSetCarouselIndex}
-                    onSetSiteVisit={setSiteVisitProject}
-                    onOpenCalculator={handleOpenCalculator}
-                    onOpenShareSheet={handleOpenShareSheet}
-                    onToast={handleToast}
-                  />
+                    <MessageBubble
+                      key={message.id}
+                      message={message}
+                      index={actualIndex}
+                      isLast={actualIndex === chatHistory.length - 1}
+                      isSubmitting={isSubmitting}
+                      chatPhase={chatPhase}
+                      isLastProperties={actualIndex === lastPropertiesIndex}
+                      isExpanded={expandedShortlists.has(message.id)}
+                      carouselIndex={carouselIndexes[actualIndex] ?? 0}
+                      lastShortlist={lastShortlist}
+                      showMap={showMap}
+                      userId={userId}
+                      regeneratingIdx={regeneratingIdx}
+                      chipPicker={chipPicker}
+                      chips={conversationState?.chips ?? []}
+                      onCopy={handleCopy}
+                      onDetailOpen={openDetailProject}
+                      onCallback={setCallbackProject}
+                      onRegenerate={handleRegenerate}
+                      onAction={handleChipAction}
+                      onToggleExpanded={handleToggleExpanded}
+                      onToggleMap={handleToggleMap}
+                      onSetChipPicker={setChipPicker}
+                      onSetCarouselIndex={handleSetCarouselIndex}
+                      onSetSiteVisit={setSiteVisitProject}
+                      onOpenCalculator={handleOpenCalculator}
+                      onOpenShareSheet={handleOpenShareSheet}
+                      onToast={handleToast}
+                    />
                   );
                 })}
 
@@ -1583,7 +1583,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 py-3.5 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl text-sm transition-colors"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                     Share on WhatsApp
                   </a>
                 )}

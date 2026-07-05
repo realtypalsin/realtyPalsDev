@@ -54,7 +54,7 @@ export default function ReEngagementBanner({ userId, guestToken, onResume, onDis
           </div>
         </div>
       ), {
-        duration: 8000,
+        duration: 5000,
         position: 'top-center',
         onAutoClose: () => onDismiss(),
       });
