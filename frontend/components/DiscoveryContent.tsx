@@ -1034,6 +1034,17 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           {rateLimitUntil && (
             <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
           )}
+          {showReEngagement && !hasUserReplied && (
+            <ReEngagementBanner
+              userId={userId ?? undefined}
+              guestToken={guestToken ?? undefined}
+              onResume={(sid) => {
+                setShowReEngagement(false);
+                router.push(`/discover/${sid}`);
+              }}
+              onDismiss={() => setShowReEngagement(false)}
+            />
+          )}
           {isSubmitting && (
             <div className="flex items-center justify-end mb-4 px-2">
               <button
@@ -1115,7 +1126,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     >
       {/* Claude-style Seamless Header */}
       <div className="absolute top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 bg-gradient-to-b from-slate-50/80 to-transparent dark:from-gray-900/80 pointer-events-none">
-        <div className="flex-1 flex items-center justify-start relative pointer-events-auto" ref={headerDropdownRef}>
+        <div className="flex-1 flex items-center justify-start pl-14 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
           {hasUserReplied && (
             isRenamingHeader ? (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-200/50 dark:bg-gray-800/50">
@@ -1267,17 +1278,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               }}
             >
               <div className="max-w-[880px] mx-auto space-y-6">
-                {showReEngagement && (
-                  <ReEngagementBanner
-                    userId={userId ?? undefined}
-                    guestToken={guestToken ?? undefined}
-                    onResume={(sid) => {
-                      setShowReEngagement(false);
-                      router.push(`/discover/${sid}`);
-                    }}
-                    onDismiss={() => setShowReEngagement(false)}
-                  />
-                )}
+                {/* ReEngagementBanner moved to chat input area */}
                 {showContextWarning && (
                   <div className="mx-auto max-w-lg px-4 py-2 my-2 text-xs text-center text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     Long conversation detected. Start a new chat for the best AI responses.
