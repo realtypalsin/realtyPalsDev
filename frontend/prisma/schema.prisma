@@ -74,7 +74,13 @@ model Builder {
   intelligence_completeness  Int?
 
   created_at                 DateTime  @default(now())
+
+  // Relations
   projects                   Project[]
+  news                       BuilderNews[]
+  account                    BuilderAccount?
+  leads                      BuilderLead[]
+  theme                      BuilderTheme?
 
   @@map("builders")
 }
@@ -107,6 +113,7 @@ model Project {
   marketing_claims         String[]
   ai_search_keywords       String[]
   hero_image_url           String?
+  builder_theme            Json?    // {primaryColor, secondaryColor, logoUrl, active_until}
   created_at               DateTime               @default(now())
   updated_at               DateTime               @updatedAt
   embedding                Unsupported("vector")?
@@ -343,6 +350,10 @@ model ChatSession {
   summary       String?
   messages      ChatMessage[]
 
+  // Analytics relations
+  analytics     ChatAnalytics[]
+  query_metrics QueryMetrics[]
+
   @@index([user_id])
   @@index([guest_token])
   @@map("chat_sessions")
@@ -561,4 +572,384 @@ enum SiteVisitStatus {
   confirmed
   cancelled
   completed
+}
+
+// ──────────────────────────────────────────────────────────────
+// ANALYTICS & TRACKING (Phase 1+)
+// ──────────────────────────────────────────────────────────────
+
+model ChatAnalytics {
+  id                    String    @id @default(uuid())
+  session_id            String
+  user_id               String?
+  guest_token           String?
+
+  // Funnel stages
+  chat_started_at       DateTime
+  intent_identified_at  DateTime?
+  results_shown_at      DateTime?
+  first_engagement_at   DateTime?
+  conversion_at         DateTime?
+
+  // Extracted intent (from intent_snapshot JSON in ChatMessage)
+  intent_type           String?   // "budget_search", "location_search", "property_type", etc.
+  extracted_sector      String?
+  extracted_bhk         Int?
+  extracted_budget_min  Float?
+  extracted_budget_max  Float?
+
+  // Engagement metrics
+  projects_viewed       Int @default(0)
+  projects_clicked      Int @default(0)
+  projects_saved        Int @default(0)
+  time_spent_seconds    Int @default(0)
+
+  // Conversion tracking
+  conversion_type       String?   // "callback_requested", "site_visit_requested", "property_saved"
+  converted_project_id  String?
+  converted_builder_id  String?
+
+  // Drop-off analysis
+  drop_off_stage        String?   // "no_intent", "no_results", "no_engagement", "no_action", null if converted
+  drop_off_at           DateTime?
+  idle_seconds_before_drop_off Int?
+
+  // Promotional tracking
+  promotional_id        String?
+  promo_clicked         Boolean @default(false)
+
+  created_at            DateTime @default(now())
+  session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([user_id])
+  @@index([created_at])
+  @@index([converted_builder_id])
+  @@index([conversion_type])
+  @@map("chat_analytics")
+}
+
+model QueryMetrics {
+  id                String   @id @default(uuid())
+  query_text        String   // Raw user query
+  intent_type       String?
+  sector            String?
+  bhk               Int?
+  budget_min_cr     Float?
+  budget_max_cr     Float?
+  session_id        String
+  user_id           String?
+
+  week_start        DateTime // ISO week start (Monday)
+
+  clicked           Boolean @default(false)
+  converted         Boolean @default(false)
+
+  created_at        DateTime @default(now())
+  session           ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([created_at])
+  @@index([sector])
+  @@index([week_start])
+  @@index([intent_type])
+  @@map("query_metrics")
+}
+
+model WeeklyMetricsSummary {
+  id                String   @id @default(uuid())
+  week_start        DateTime
+  week_end          DateTime
+
+  total_queries     Int
+  unique_sessions   Int
+  conversion_rate   Float
+  drop_off_rate     Float
+  avg_time_spent_s  Int
+
+  top_sectors       Json     // [{sector, count, conversions}]
+  intent_breakdown  Json     // [{type, count}]
+  budget_distribution Json   // [{range, count}]
+  bhk_preferences   Json     // [{bhk, count}]
+
+  created_at        DateTime @default(now())
+
+  @@unique([week_start])
+  @@index([week_start])
+  @@map("weekly_metrics_summary")
+}
+
+// ──────────────────────────────────────────────────────────────
+// PROMOTIONAL SYSTEM (Phase 2+)
+// ──────────────────────────────────────────────────────────────
+
+model Promotional {
+  id                String   @id @default(uuid())
+  title             String
+  description       String?
+
+  type              PromotionalType // "button", "toast_text", "news_feature"
+  content           String
+
+  link_type         String?  // "project", "builder", "external_url"
+  link_target       String?  // project_id, builder_id, or URL
+
+  image_url         String?
+  icon_url          String?
+  builder_id        String?
+
+  starts_at         DateTime
+  ends_at           DateTime
+  is_active         Boolean @default(true)
+
+  target_sectors    String[] @default([])  // Empty = show to all
+  target_bhk        Int[]    @default([])
+
+  impressions       Int @default(0)
+  clicks            Int @default(0)
+  conversions       Int @default(0)
+
+  created_by        String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  interactions      PromotionalInteraction[]
+
+  @@index([is_active, starts_at, ends_at])
+  @@index([builder_id])
+  @@map("promotionals")
+}
+
+model PromotionalInteraction {
+  id                String   @id @default(uuid())
+  promotional_id    String
+  session_id        String?
+  user_id           String?
+  guest_token       String?
+
+  interaction_type  String   // "impression", "click", "conversion"
+  converted_project_id String?
+
+  created_at        DateTime @default(now())
+  promotional       Promotional @relation(fields: [promotional_id], references: [id], onDelete: Cascade)
+
+  @@index([promotional_id, created_at])
+  @@index([interaction_type])
+  @@map("promotional_interactions")
+}
+
+enum PromotionalType {
+  button
+  toast_text
+  news_feature
+}
+
+// ──────────────────────────────────────────────────────────────
+// BUILDER NEWS (Phase 3+)
+// ──────────────────────────────────────────────────────────────
+
+model BuilderNews {
+  id              String   @id @default(uuid())
+  builder_id      String
+
+  title           String
+  description     String
+  image_url       String?
+
+  link_type       String?  // "project", "external_url"
+  link_target     String?
+
+  status          NewsStatus
+  submitted_by    String?
+  approved_by     String?
+  approval_notes  String?
+
+  run_as_promo    Boolean @default(false)
+  promo_id        String?
+
+  archived_at     DateTime?
+  created_at      DateTime @default(now())
+  published_at    DateTime?
+
+  builder         Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@index([builder_id])
+  @@index([status])
+  @@index([published_at])
+  @@map("builder_news")
+}
+
+enum NewsStatus {
+  draft
+  pending_approval
+  published
+  archived
+  rejected
+}
+
+// ──────────────────────────────────────────────────────────────
+// BUILDER SELF-SERVICE FORM (Phase 3+)
+// ──────────────────────────────────────────────────────────────
+
+model BuilderApplicationForm {
+  id              String   @id @default(uuid())
+
+  name            String
+  cin             String
+  email           String
+  phone           String
+  website         String?
+  headquarters    String?
+  logo_url        String?
+  description     String?
+
+  legal_entities  Json?    // [{name, cin, role, incorporated_date}]
+  executives      Json?    // [{name, designation}]
+  projects        String[]
+  delivery_track  String?
+
+  ip_address      String
+  user_agent      String
+  submitted_at    DateTime @default(now())
+
+  status          FormStatus
+  reviewed_by     String?
+  review_notes    String?
+  linked_builder  String?  // builder_id if approved
+
+  @@index([status])
+  @@index([email])
+  @@index([submitted_at])
+  @@map("builder_application_forms")
+}
+
+enum FormStatus {
+  new
+  reviewing
+  approved
+  rejected
+  clarification_requested
+}
+
+// ──────────────────────────────────────────────────────────────
+// BUILDER DASHBOARD (Phase 4+)
+// ──────────────────────────────────────────────────────────────
+
+model BuilderAccount {
+  id              String   @id @default(uuid())
+  builder_id      String   @unique
+  email           String
+  password_hash   String?  // Bcrypt hash for password auth
+  auth_method     String   // "password", "magic_link"
+
+  last_login      DateTime?
+  last_activity   DateTime?
+  is_active       Boolean @default(true)
+
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  builder         Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@unique([email])
+  @@index([is_active])
+  @@map("builder_accounts")
+}
+
+model BuilderLead {
+  id              String   @id @default(uuid())
+  builder_id      String
+  project_id      String?
+
+  lead_type       String   // "callback_requested", "site_visit_requested", "inquiry"
+
+  // Lead info
+  name            String?
+  email           String?
+  phone           String?
+  message         String?
+
+  // Source
+  source_session  String?  // chat_session_id
+  source_intent   Json?    // Original user intent snapshot
+
+  // Status
+  status          LeadStatus
+  assigned_to     String?  // Future: broker/sales person ID
+  notes           String?
+
+  // Tracking
+  contacted_at    DateTime?
+  converted_at    DateTime?  // Did this lead convert to customer?
+
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  builder         Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@index([builder_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("builder_leads")
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  lost
+  converted
+  archived
+}
+
+model BuilderAnalytics {
+  id              String   @id @default(uuid())
+  builder_id      String
+  date            DateTime // Daily snapshot
+
+  leads_generated Int @default(0)
+  callbacks_requested Int @default(0)
+  site_visits_requested Int @default(0)
+
+  impressions     Int @default(0)      // From promotionals
+  clicks_on_promo Int @default(0)
+  conversions_from_promo Int @default(0)
+
+  projects_viewed Int @default(0)
+  projects_saved  Int @default(0)
+
+  created_at      DateTime @default(now())
+
+  @@unique([builder_id, date])
+  @@index([builder_id])
+  @@map("builder_analytics")
+}
+
+// ──────────────────────────────────────────────────────────────
+// BRAND THEME SYSTEM (Phase 4+)
+// ──────────────────────────────────────────────────────────────
+
+model BuilderTheme {
+  id              String   @id @default(uuid())
+  builder_id      String   @unique
+
+  // Colors
+  primary_color   String   // Hex color code
+  secondary_color String?
+
+  // Media
+  logo_url        String?
+  favicon_url     String?
+
+  // Dates
+  active_from     DateTime
+  active_until    DateTime?  // null = indefinite
+
+  is_active       Boolean @default(true)
+  created_at      DateTime @default(now())
+
+  builder         Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@index([builder_id])
+  @@index([active_from, active_until])
+  @@map("builder_themes")
 }
