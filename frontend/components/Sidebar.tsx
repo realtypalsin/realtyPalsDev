@@ -210,7 +210,7 @@ export default function Sidebar({
                 <button
                   onClick={() => {
                     if (window.innerWidth < 768) closeMobile();
-                    else onToggleCollapse();
+                    else onToggleCollapse?.();
                   }}
                   className="p-2 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                   title="Close sidebar"
