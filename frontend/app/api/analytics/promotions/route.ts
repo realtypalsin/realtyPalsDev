@@ -6,10 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import {
-  trackPromotionalImpression,
-  trackPromotionalClick
-} from '@/backend/src/lib/analytics/tracking'
 
 // Track promotional impression
 export async function POST(request: NextRequest) {
@@ -21,12 +17,36 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'impression') {
-      await trackPromotionalImpression(promotional_id, session_id, user_id, guest_token)
+      await prisma.promotionalImpression.create({
+        data: {
+          promotional_id,
+          session_id: session_id || null,
+          user_id: user_id || null,
+          guest_token: guest_token || null,
+        }
+      })
+      // Update stats
+      await prisma.promotional.update({
+        where: { id: promotional_id },
+        data: { impressions_count: { increment: 1 } }
+      })
       return NextResponse.json({ success: true })
     }
 
     if (action === 'click') {
-      await trackPromotionalClick(promotional_id, session_id, user_id, guest_token)
+      await prisma.promotionalClick.create({
+        data: {
+          promotional_id,
+          session_id: session_id || null,
+          user_id: user_id || null,
+          guest_token: guest_token || null,
+        }
+      })
+      // Update stats
+      await prisma.promotional.update({
+        where: { id: promotional_id },
+        data: { clicks_count: { increment: 1 } }
+      })
       return NextResponse.json({ success: true })
     }
 
