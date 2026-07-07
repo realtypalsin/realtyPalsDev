@@ -47,24 +47,31 @@ export const SECTOR_CENTROIDS: Record<string, [number, number]> = {
 
 export const NOIDA_CENTER: [number, number] = [28.535, 77.391]
 
+interface ExtraMarker {
+  name: string
+  pos: [number, number]
+  category: string
+}
+
 interface Props {
   properties: ProjectCard[]
+  extraMarkers?: ExtraMarker[]
 }
 
 const MapInner = dynamic(() => import('./SectorMapInner'), {
   ssr: false,
   loading: () => (
-    <div className="h-[280px] rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+    <div className="h-[400px] rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
     </div>
   ),
 })
 
-export default function SectorMap({ properties }: Props) {
+export default function SectorMap({ properties, extraMarkers }: Props) {
   if (!properties.length) return null
   return (
     <MapErrorBoundary>
-      <MapInner properties={properties} />
+      <MapInner properties={properties} extraMarkers={extraMarkers} />
     </MapErrorBoundary>
   )
 }

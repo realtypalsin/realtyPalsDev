@@ -1,4 +1,4 @@
-﻿// backend/src/lib/ai/prompts/intent-extraction.ts
+// backend/src/lib/ai/prompts/intent-extraction.ts
 
 export const INTENT_EXTRACTION_PROMPT = `Extract real estate search intent from user messages (Hindi, Hinglish, or English).
 Return ONLY valid JSON. No markdown, no explanation.
@@ -17,7 +17,8 @@ OUTPUT SCHEMA (all fields optional):
   "lifestyleKeywords": string[], // amenity signals
   "projectNames": string[],      // ANY query about a specific named project: RERA lookups, possession dates, reviews, comparisons, detail questions — extract ALL project names mentioned
   "riskProfile": "nri"|"retiree"|"risk_averse"|"first_time_buyer",  // buyer risk profile
-  "is_comparison_query": boolean // true ONLY when user explicitly asks to COMPARE multiple named projects ("X vs Y", "compare X and Y", "which is better X or Y"). NEVER true for single-project detail/RERA/possession queries. NEVER true for general searches.
+  "is_comparison_query": boolean, // true ONLY when user explicitly asks to COMPARE multiple named projects ("X vs Y", "compare X and Y", "which is better X or Y"). NEVER true for single-project detail/RERA/possession queries. NEVER true for general searches.
+  "legal_check": boolean         // true when user explicitly asks about the legal status, disputes, safety, builder reputation, RERA validity, NCLT, or court cases of a project or builder.
 }
 
 PROJECTNAMES RULE: Populate projectNames ONLY when the user mentions a real branded project name (e.g. "Godrej Meridien", "ATS Pristine", "ACE Starlit"). Real project names are proper nouns — brand names given to a specific development. DO NOT put generic adjectives or descriptions into projectNames: "best project", "good flat", "affordable property", "top apartments", "cheap house" are NOT project names.
@@ -90,6 +91,9 @@ Output: {"projectNames":["Godrej Palm Retreat"]}
 
 Input: "is ACE Starlit RERA registered"
 Output: {"projectNames":["ACE Starlit"]}
+
+Input: "is Gardenia Gateway safe to buy or are there legal issues"
+Output: {"projectNames":["Gardenia Gateway"], "legal_check": true}
 
 Input: "show me RERA details for Mahagun Moderne"
 Output: {"projectNames":["Mahagun Moderne"]}

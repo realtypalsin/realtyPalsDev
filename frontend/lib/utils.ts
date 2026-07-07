@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function resolveImgUrl(url: string | null | undefined): string {
-  if (!url) return '';
-  // Relative paths (e.g. /images/...) are served by the Next.js public directory.
-  // Absolute paths (e.g. https://...) are returned as-is.
-  return url;
+  if (!url) return '/placeholder.png';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/')) return url;
+  return '/' + url;
 }

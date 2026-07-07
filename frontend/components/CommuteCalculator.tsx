@@ -15,9 +15,10 @@ interface CommuteResult {
 
 interface Props {
   projectAddress: string
+  initialDestination?: string
 }
 
-export default function CommuteCalculator({ projectAddress }: Props) {
+export default function CommuteCalculator({ projectAddress, initialDestination }: Props) {
   const [destination, setDestination] = useState('')
   const [result, setResult] = useState<CommuteResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -29,6 +30,14 @@ export default function CommuteCalculator({ projectAddress }: Props) {
     const saved = localStorage.getItem(OFFICE_STORAGE_KEY)
     if (saved) setSavedOffice(saved)
   }, [])
+
+  // Sync initialDestination if passed externally
+  useEffect(() => {
+    if (initialDestination) {
+      setDestination(initialDestination)
+      calculate(initialDestination)
+    }
+  }, [initialDestination])
 
   async function calculate(dest?: string) {
     const target = (dest ?? destination).trim()

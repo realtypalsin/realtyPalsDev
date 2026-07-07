@@ -15,6 +15,8 @@ export interface Intent {
   projectNames?: string[]
   riskProfile?: 'nri' | 'retiree' | 'risk_averse' | 'first_time_buyer'
   is_comparison_query?: boolean   // explicit: user asked to compare named projects
+  gathering_loop_count?: number
+  legal_check?: boolean
 }
 
 export type IntentState = 'COLD' | 'GATHERING' | 'READY_TO_SEARCH' | 'SHORTLISTED'
@@ -72,6 +74,8 @@ export interface ScoredProject {
   interior_designer?: string | null
   design_theme?: string | null
   project_risk_flag?: string | null
+  nclt_moratorium_active?: boolean | null
+  registry_status?: string | null
   marketing_claims: string[]
   hero_image_url?: string | null
   price_min_cr?: number | null

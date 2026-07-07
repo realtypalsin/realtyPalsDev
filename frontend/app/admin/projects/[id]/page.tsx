@@ -10,7 +10,11 @@ import AmenitiesEditor from '@/components/admin/AmenitiesEditor'
 import ConnectivityEditor from '@/components/admin/ConnectivityEditor'
 import ImagesEditor from '@/components/admin/ImagesEditor'
 import DocumentsEditor from '@/components/admin/DocumentsEditor'
-import { Loader2, LayoutPanelLeft, Cpu, Images, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
+import PaymentPlanEditor from '@/components/admin/PaymentPlanEditor'
+import CostSheetEditor from '@/components/admin/CostSheetEditor'
+import InvestmentInsightsEditor from '@/components/admin/InvestmentInsightsEditor'
+import LocationIntelligenceEditor from '@/components/admin/LocationIntelligenceEditor'
+import { Loader2, LayoutPanelLeft, Cpu, Images, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -34,7 +38,7 @@ interface CompletenessResult {
   }
 }
 
-type AdminTab = 'core' | 'media' | 'intelligence'
+type AdminTab = 'core' | 'pricing' | 'media' | 'intelligence'
 
 function CompletenessBar({ result, onClose }: { result: CompletenessResult; onClose: () => void }) {
   const [expanded, setExpanded] = useState(false)
@@ -227,9 +231,10 @@ export default function EditProject() {
   }
 
   const TAB_ITEMS: { id: AdminTab; label: string; icon: React.ElementType }[] = [
-    { id: 'core',         label: 'Core Info',     icon: LayoutPanelLeft },
-    { id: 'media',        label: 'Media',         icon: Images },
-    { id: 'intelligence', label: 'Intelligence',  icon: Cpu },
+    { id: 'core',         label: 'Core Info',          icon: LayoutPanelLeft },
+    { id: 'pricing',      label: 'Pricing & Location', icon: IndianRupee },
+    { id: 'media',        label: 'Media',              icon: Images },
+    { id: 'intelligence', label: 'Intelligence',       icon: Cpu },
   ]
 
   return (
@@ -311,6 +316,16 @@ export default function EditProject() {
               />
             )}
           </div>
+        </div>
+      )}
+
+      {/* Pricing & Location tab */}
+      {adminTab === 'pricing' && (
+        <div className="max-w-3xl space-y-6">
+          <PaymentPlanEditor projectId={id} initialData={data.payment_plan} />
+          <CostSheetEditor projectId={id} initialData={data.cost_sheet} />
+          <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile?.intelligence_data?.investment_insights} />
+          <LocationIntelligenceEditor projectId={id} initialData={data} />
         </div>
       )}
 

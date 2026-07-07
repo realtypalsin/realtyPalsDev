@@ -164,6 +164,8 @@ function serializeProjects(projects: ScoredProject[]): string {
       // project_risk_flag: non-null value is a Hard Rule 6 / Rule 22 trigger.
       // The AI must disclose this risk inline and not recommend this project.
       project_risk_flag: p.project_risk_flag ?? null,
+      nclt_moratorium_active: p.nclt_moratorium_active ?? null,
+      registry_status: p.registry_status ?? null,
       // NOT_IN_DATABASE is a machine-readable sentinel: Hard Rule 16 maps it to
       // a required exact response ("I cannot verify the RERA registration number…").
       // This prevents the model from fabricating a UPRERAPRJ string.

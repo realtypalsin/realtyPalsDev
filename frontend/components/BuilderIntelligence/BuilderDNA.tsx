@@ -7,6 +7,7 @@ import type { BuilderDetail } from '@/types/project'
 interface Props {
   builder: BuilderDetail | null
   reraNumber?: string | null
+  defaultExpanded?: boolean
 }
 
 function ScoreBar({ score }: { score: number | null }) {
@@ -22,8 +23,8 @@ function ScoreBar({ score }: { score: number | null }) {
   )
 }
 
-export default function BuilderDNA({ builder: b }: Props) {
-  const [expanded, setExpanded] = useState(false)
+export default function BuilderDNA({ builder: b, defaultExpanded = false }: Props) {
+  const [expanded, setExpanded] = useState(defaultExpanded)
 
   if (!b) return null
 

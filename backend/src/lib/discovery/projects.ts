@@ -228,6 +228,8 @@ function mapToScored(p: RawProject, intent: Intent): ScoredProject {
     interior_designer: p.interior_designer ?? null,
     design_theme: p.design_theme ?? null,
     project_risk_flag: (p as any).project_risk_flag ?? null,
+    nclt_moratorium_active: (p as any).nclt_moratorium_active ?? null,
+    registry_status: (p as any).registry_status ?? null,
     marketing_claims: p.marketing_claims,
     hero_image_url: p.hero_image_url ?? null,
     price_min_cr: minP,

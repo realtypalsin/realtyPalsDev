@@ -13,6 +13,9 @@ type EventName =
   | 'whatsapp_handoff'
   | 'lead_created'
   | 'document_download'
+  | 'ask_ai_tapped'
+  | 'call_tapped'
+  | 'share_tapped'
 
 export function track(event: EventName, properties?: Record<string, unknown>) {
   try {

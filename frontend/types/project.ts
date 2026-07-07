@@ -75,6 +75,9 @@ export interface ProjectCard {
   possession_date: string | null
   architect?: string | null
   interior_designer?: string | null
+  floors?: string | null
+  open_space_pct?: number | null
+  green_rating?: string | null
   design_theme?: string | null
   marketing_claims: string[]
   hero_image_url?: string | null
@@ -102,6 +105,7 @@ export interface ProjectCard {
 }
 
 export interface UnitTypeSummary {
+  id: string
   name: string
   bhk: number
   bathrooms: number | null
@@ -111,6 +115,14 @@ export interface UnitTypeSummary {
   price_min_cr?: number | null
   price_max_cr?: number | null
   price_label?: string | null
+  subtitle?: string | null
+  description?: string | null
+  category_badge?: string | null
+  inventory_left?: number | null
+  perfect_for?: string[]
+  key_highlights?: any
+  whats_included?: any
+  views?: any
 }
 
 export interface AmenitySummary {
@@ -224,6 +236,7 @@ export interface DecisionProfilePublic {
   best_for:           string | null
   not_ideal_for:      string | null
   confidence_sources: ConfidenceSource[]
+  intelligence_data?: any
   last_verified_at:   string | null
 }
 

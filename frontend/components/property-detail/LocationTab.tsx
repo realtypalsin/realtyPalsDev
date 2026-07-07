@@ -1,35 +1,14 @@
 'use client'
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
-  TrainFront, Plane, GraduationCap, HeartPulse, ShoppingBag, Landmark,
-  BookOpen, Milestone, Route, MapPin, ChevronRight, CheckCircle2,
+  MapPin, Share2, Car, TrainFront, HeartPulse, ShoppingBag,
+  GraduationCap, Plane, Briefcase, TrendingUp, CalendarDays, PhoneCall,
+  Map as MapIcon, ChevronRight
 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import CommuteCalculator from '@/components/CommuteCalculator'
-import SectorMap from '@/components/SectorMap'
-import { Card, CardRow } from './Card'
-
-type Conn = { type: string; name: string; distance_km?: number | null }
-
-const CONN_ICONS: Record<string, any> = {
-  metro: TrainFront, airport: Plane, road: Route, expressway: Milestone, school: GraduationCap,
-  hospital: HeartPulse, mall: ShoppingBag, landmark: Landmark, university: BookOpen,
-}
-const CONN_LABELS: Record<string, string> = {
-  metro: 'Metro', airport: 'Airport', road: 'Road', expressway: 'Expressway', school: 'School',
-  hospital: 'Hospital', mall: 'Shopping Mall', landmark: 'Landmark', university: 'University',
-}
-
-// A rough, labelled distance→time band — not a fabricated per-destination ETA
-// (that requires a real routing call, which only the Commute Calculator makes).
-// Purely a glance-friendly qualifier next to the real distance figure.
-function paceLabel(km: number): string {
-  if (km <= 1.5) return 'Walkable'
-  if (km <= 5) return 'Short drive'
-  if (km <= 15) return 'Drive'
-  return 'Longer drive'
-}
+import SectorMap, { SECTOR_CENTROIDS } from '@/components/SectorMap'
+import { buildWhatsAppUrl } from '@/lib/whatsapp'
 
 export interface LocationTabProps {
   project: ProjectCardType | null
@@ -38,222 +17,331 @@ export interface LocationTabProps {
   projectAddress: string
 }
 
-// ── Section 1: Location Overview ────────────────────────────────────────────
-function CommuteCard({ projectAddress }: { projectAddress: string }) {
-  return (
-    <Card title="Commute Calculator" description="How long from here to your office?" className="h-full">
-      <CommuteCalculator projectAddress={projectAddress} />
-    </Card>
-  )
+const ICONS: Record<string, any> = {
+  car: Car,
+  train: TrainFront,
+  heartpulse: HeartPulse,
+  shopping: ShoppingBag,
+  school: GraduationCap,
+  plane: Plane,
+  briefcase: Briefcase,
+  "trending-up": TrendingUp,
+  "map-pin": MapPin,
 }
 
-function MapCard({ project }: { project: ProjectCardType | null }) {
-  if (!project) return null
-  return (
-    <Card title="Map" className="h-full !p-3 md:!p-3">
-      <div className="rounded-[20px] overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
-        <SectorMap properties={[project]} />
-      </div>
-    </Card>
-  )
-}
+export default function LocationTab({ project, detail, d, projectAddress }: LocationTabProps) {
+  const waUrl = d ? buildWhatsAppUrl(d as any, 'panel') : 'https://wa.me/'
 
-// ── Section 2: Connectivity ──────────────────────────────────────────────────
-function ConnectivityRow({ c }: { c: Conn }) {
-  const Icon = CONN_ICONS[c.type] ?? Route
-  return (
-    <div className="flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0">
-      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-        <Icon size={17} className="text-blue-500" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13.5px] font-bold text-gray-900 truncate">{c.name}</p>
-        <p className="text-[11.5px] text-gray-400">{CONN_LABELS[c.type] ?? c.type}</p>
-      </div>
-      {c.distance_km != null && (
-        <div className="text-right flex-shrink-0">
-          <p className="text-[13px] font-black text-gray-800">{c.distance_km} km</p>
-          <p className="text-[10.5px] text-gray-400">{paceLabel(c.distance_km)}</p>
-        </div>
-      )}
-    </div>
-  )
-}
+  // State handles
+  const [selectedMapFilter, setSelectedMapFilter] = useState<'All' | 'Transport' | 'Education' | 'Healthcare' | 'Lifestyle' | 'Work'>('All')
+  const [sharedStatus, setSharedStatus] = useState(false)
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
+  const [commuteTarget, setCommuteTarget] = useState('')
 
-function ConnectivitySection({ connectivity }: { connectivity: Conn[] }) {
-  if (connectivity.length === 0) return null
-  const sorted = [...connectivity].sort((a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity))
-  return (
-    <Card title="Connectivity" description="Everything around this project, closest first.">
-      <div>{sorted.map((c, i) => <ConnectivityRow key={`${c.type}-${c.name}-${i}`} c={c} />)}</div>
-    </Card>
-  )
-}
-
-// ── Section 3: Social Infrastructure ────────────────────────────────────────
-function InfrastructureCard({ title, items }: { title: string; items: Conn[] }) {
-  const [expanded, setExpanded] = useState(false)
-  if (items.length === 0) return null
-  const sorted = [...items].sort((a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity))
-  const top = sorted.slice(0, 3)
-  const rest = sorted.slice(3)
-  return (
-    <Card title={title} className="h-full">
-      <div className="space-y-2.5">
-        {top.map((c, i) => (
-          <div key={i} className="flex items-center justify-between text-[12.5px]">
-            <span className="text-gray-700 font-medium truncate">{c.name}</span>
-            {c.distance_km != null && <span className="text-gray-400 font-semibold flex-shrink-0 ml-2">{c.distance_km} km</span>}
-          </div>
-        ))}
-      </div>
-      {rest.length > 0 && (
-        <div className="mt-4">
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="text-[11.5px] font-bold text-blue-600 cursor-pointer select-none flex items-center gap-1"
-          >
-            View {rest.length} more <ChevronRight size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
-          </button>
-          {expanded && (
-            <div className="overflow-hidden mt-2.5 px-6 pb-6 pt-1 border-t border-gray-50">
-              <div className="space-y-2.5">
-                {rest.map((c, i) => (
-                  <div key={i} className="flex items-center justify-between text-[12.5px]">
-                    <span className="text-gray-700 font-medium truncate">{c.name}</span>
-                    {c.distance_km != null && <span className="text-gray-400 font-semibold flex-shrink-0 ml-2">{c.distance_km} km</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </Card>
-  )
-}
-
-function SocialInfrastructureSection({ connectivity }: { connectivity: Conn[] }) {
-  const byType = (t: string) => connectivity.filter((c) => c.type === t)
-  const groups = [
-    { title: 'Schools', items: byType('school') },
-    { title: 'Hospitals', items: byType('hospital') },
-    { title: 'Shopping', items: byType('mall') },
-    { title: 'Landmarks', items: byType('landmark') },
-  ].filter((g) => g.items.length > 0)
-
-  if (groups.length === 0) return null
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      {groups.map((g) => <InfrastructureCard key={g.title} title={g.title} items={g.items} />)}
-    </div>
-  )
-}
-
-// ── Section 4: Neighborhood Advantages ──────────────────────────────────────
-function AdvantagesCard({ claims }: { claims: string[] }) {
-  if (claims.length === 0) return null
-  return (
-    <Card title="Neighborhood Advantages" className="h-full">
-      <ul className="space-y-2.5">
-        {claims.map((c) => (
-          <li key={c} className="flex items-start gap-2 text-[13px] text-gray-700 leading-relaxed">
-            <CheckCircle2 size={13} className="text-emerald-500 mt-0.5 flex-shrink-0" />
-            {c}
-          </li>
-        ))}
-      </ul>
-    </Card>
-  )
-}
-
-function AreaInsightsCard({ localityLabel, connectivity }: { localityLabel: string | null; connectivity: Conn[] }) {
-  const withDistance = connectivity.filter((c) => c.distance_km != null)
-  const nearest = withDistance.length > 0 ? Math.min(...withDistance.map((c) => c.distance_km!)) : null
-
-  const insights: Array<{ label: string; value: string }> = []
-  if (localityLabel) insights.push({ label: 'Locality Quality', value: localityLabel })
-  if (connectivity.length > 0) insights.push({ label: 'Connectivity', value: `${connectivity.length} points of interest mapped` })
-  if (nearest != null) insights.push({ label: 'Nearest Amenity', value: `${nearest} km away` })
-
-  if (insights.length === 0) return null
-
-  return (
-    <Card title="Area Insights" description="Derived from verified project and location data" className="h-full">
-      <div className="space-y-4">
-        {insights.map((ins) => (
-          <div key={ins.label} className="flex items-center justify-between border-b border-gray-50 last:border-0 pb-3 last:pb-0">
-            <span className="text-[12.5px] text-gray-500 font-medium">{ins.label}</span>
-            <span className="text-[13px] font-bold text-gray-900">{ins.value}</span>
-          </div>
-        ))}
-      </div>
-    </Card>
-  )
-}
-
-// ── Section 5: Commute Summary ───────────────────────────────────────────────
-function CommuteSummarySection({ connectivity }: { connectivity: Conn[] }) {
-  const nearestByType = (t: string) => {
-    const matches = connectivity.filter((c) => c.type === t && c.distance_km != null)
-    return matches.length > 0 ? matches.reduce((a, b) => (a.distance_km! < b.distance_km! ? a : b)) : null
+  // Fetch data from DB via ProjectDetail
+  const locationData = detail?.decision_profile?.intelligence_data || {
+    location_hero_image: "",
+    quick_commutes: [],
+    location_highlights: [],
+    nearby_essentials: {},
+    neighborhood_advantages: []
   }
 
-  const summary = ['metro', 'expressway', 'hospital', 'mall', 'airport']
-    .map((t) => ({ type: t, entry: nearestByType(t) }))
-    .filter((x) => x.entry !== null) as { type: string; entry: Conn }[]
+  // Base coordinates for calculations
+  const projectLat = project?.lat || SECTOR_CENTROIDS[project?.sector || '']?.[0] || 28.535
+  const projectLng = project?.lng || SECTOR_CENTROIDS[project?.sector || '']?.[1] || 77.391
 
-  if (summary.length === 0) return null
+  // Dynamic extra markers with offset coordinates relative to the project
+  const allMapMarkers = [
+    { name: "Proposed Metro Station", pos: [projectLat + 0.005, projectLng - 0.008] as [number, number], category: "Transport" },
+    { name: "Gaur Chowk", pos: [projectLat + 0.012, projectLng + 0.01] as [number, number], category: "Transport" },
+    { name: "DPS Noida Extension", pos: [projectLat - 0.006, projectLng + 0.008] as [number, number], category: "Education" },
+    { name: "Ryan International School", pos: [projectLat - 0.01, projectLng - 0.005] as [number, number], category: "Education" },
+    { name: "Yatharth Super Speciality Hospital", pos: [projectLat + 0.008, projectLng + 0.004] as [number, number], category: "Healthcare" },
+    { name: "Gaur City Mall", pos: [projectLat + 0.015, projectLng - 0.002] as [number, number], category: "Lifestyle" },
+    { name: "Galaxy Blue Sapphire Plaza", pos: [projectLat + 0.01, projectLng - 0.012] as [number, number], category: "Lifestyle" },
+    { name: "Knowledge Park V Office Corridor", pos: [projectLat - 0.002, projectLng + 0.002] as [number, number], category: "Work" },
+  ]
+
+  const filteredMapMarkers = selectedMapFilter === 'All'
+    ? allMapMarkers
+    : allMapMarkers.filter(m => m.category === selectedMapFilter)
+
+  const handleGetDirections = () => {
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(projectAddress)}`, '_blank')
+  }
+
+  const handleShareLocation = () => {
+    if (navigator.share) {
+      navigator.share({ title: d?.name || 'Elite X', url: window.location.href })
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+      setSharedStatus(true)
+      setTimeout(() => setSharedStatus(false), 2500)
+    }
+  }
+
+  const triggerCommuteCalculator = (destinationName: string) => {
+    setCommuteTarget(destinationName)
+    const el = document.getElementById('commute-calculator-section')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
+  const toggleCategoryExpansion = (category: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }))
+  }
 
   return (
-    <Card title="Commute Summary" description="The closest essentials, ranked by distance.">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {summary.map(({ type, entry }) => {
-          const Icon = CONN_ICONS[type] ?? MapPin
-          return (
-            <div key={type} className="rounded-2xl border border-gray-100 p-4 text-center">
-              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mx-auto mb-2">
-                <Icon size={16} className="text-gray-500" />
-              </div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nearest {CONN_LABELS[type] ?? type}</p>
-              <p className="text-[13px] font-bold text-gray-900 mt-1 truncate">{entry.name}</p>
-              <p className="text-[12px] text-gray-500 font-semibold">{entry.distance_km} km</p>
-            </div>
-          )
-        })}
+    <div className="space-y-6 md:space-y-10 py-4">
+      {/* 1. Hero Section */}
+      <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)] relative flex flex-col md:flex-row">
+        {/* Left Content */}
+        <div className="p-8 md:p-12 md:w-1/2 flex flex-col justify-center z-10 bg-white md:bg-transparent">
+          <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-3">Project Location</p>
+          <h2 className="text-[32px] md:text-[40px] font-black text-gray-900 tracking-tight leading-tight mb-4">
+            {d?.sector ? `Sector ${d.sector}` : 'Sector 10'}, {d?.city ? d.city : 'Greater Noida West'},<br />Uttar Pradesh
+          </h2>
+          <p className="text-[14px] text-gray-500 leading-relaxed mb-8">
+            Strategically located in the heart of Greater Noida West with excellent connectivity and fast-developing infrastructure.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleGetDirections}
+              className="px-6 py-3 bg-blue-50 text-blue-600 font-bold rounded-full text-[14px] flex items-center gap-2 hover:bg-blue-100 transition-colors"
+            >
+              <MapPin size={16} />
+              Get Directions
+            </button>
+            <button
+              onClick={handleShareLocation}
+              className="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-full text-[14px] flex items-center gap-2 hover:bg-gray-50 transition-colors shadow-sm relative"
+            >
+              <Share2 size={16} />
+              {sharedStatus ? 'Link Copied!' : 'Share Location'}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Image with Fade */}
+        <div className="h-[300px] md:h-auto md:w-[60%] absolute md:absolute right-0 top-0 bottom-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent z-10 hidden md:block" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent z-10 md:hidden" />
+
+          {/* Fallback pattern if image is missing */}
+          <div className="absolute inset-0 bg-blue-50/50 flex items-center justify-center">
+            <MapIcon size={64} className="text-blue-100" />
+          </div>
+
+          <img
+            src={locationData.location_hero_image}
+            alt="Location Hero"
+            className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-90 z-0"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        </div>
       </div>
-    </Card>
-  )
-}
 
-// ── Main orchestrator ────────────────────────────────────────────────────────
-export default function LocationTab({ project, detail, d, projectAddress }: LocationTabProps) {
-  const connectivity: Conn[] = detail?.all_connectivity ?? d?.top_connectivity ?? []
-  const marketingClaims = detail?.marketing_claims ?? (d as any)?.marketing_claims ?? []
-  const localityLabel = detail?.dna?.locality_label ?? null
+      {/* 2. Quick Commutes Bar */}
+      <div className="bg-white rounded-3xl p-4 md:p-6 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+        <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
+          {(locationData.quick_commutes || []).map((commute: any, i: number) => {
+            const Icon = ICONS[commute.icon] || Car
+            return (
+              <div
+                key={i}
+                onClick={() => triggerCommuteCalculator(commute.destination)}
+                className="flex items-center gap-4 w-full md:w-auto p-3 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                  <Icon size={20} />
+                </div>
+                <div>
+                  <p className="text-[18px] font-black text-gray-900">{commute.time}</p>
+                  <p className="text-[12px] text-gray-500 font-medium leading-tight">to {commute.destination}</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
-  return (
-    <div className="p-5 md:p-8 space-y-8">
-      {/* Section 1 */}
-      <CardRow left={<CommuteCard projectAddress={projectAddress} />} right={<MapCard project={project} />} />
+      {/* 3. Map & Commute Calculator */}
+      <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
+        {/* Left: Map */}
+        <div className="flex-[2] bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex flex-col">
+          <h3 className="text-[22px] font-black text-gray-900 mb-6">Location Map</h3>
+          <div className="flex-1 rounded-[24px] overflow-hidden border border-gray-200 shadow-inner bg-gray-50 relative min-h-[400px]">
+            {project ? (
+              <SectorMap properties={[project]} extraMarkers={filteredMapMarkers} />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                <p>Map unavailable</p>
+              </div>
+            )}
+          </div>
 
-      {/* Section 2 */}
-      <ConnectivitySection connectivity={connectivity} />
+          <div className="flex flex-wrap gap-2 mt-6">
+            {(['All', 'Transport', 'Education', 'Healthcare', 'Lifestyle', 'Work'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setSelectedMapFilter(filter)}
+                className={`px-5 py-2 font-bold rounded-full text-[12px] transition-all ${selectedMapFilter === filter
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      {/* Section 3 */}
-      <SocialInfrastructureSection connectivity={connectivity} />
+        {/* Right: Calculator */}
+        <div className="flex-1" id="commute-calculator-section">
+          <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)] h-full">
+            <h3 className="text-[22px] font-black text-gray-900 mb-2">Commute Calculator</h3>
+            <p className="text-[13px] text-gray-500 mb-6">Plan your daily travel</p>
+            <CommuteCalculator projectAddress={projectAddress} initialDestination={commuteTarget} />
+          </div>
+        </div>
+      </div>
 
-      {/* Section 4 */}
-      {(marketingClaims.length > 0 || localityLabel || connectivity.length > 0) && (
-        <CardRow
-          left={<AdvantagesCard claims={marketingClaims} />}
-          right={<AreaInsightsCard localityLabel={localityLabel} connectivity={connectivity} />}
-        />
-      )}
+      {/* 4. Location Highlights */}
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+        <h3 className="text-[22px] font-black text-gray-900 mb-8">Why people choose this location</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {(locationData.location_highlights || []).map((highlight: any, i: number) => {
+            const Icon = ICONS[highlight.icon] || MapPin
+            return (
+              <div
+                key={i}
+                onClick={() => triggerCommuteCalculator(highlight.title)}
+                className="border border-gray-100 rounded-3xl p-6 hover:shadow-lg transition-shadow group relative overflow-hidden bg-white cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-xl bg-gray-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                  <Icon size={22} />
+                </div>
+                <h4 className="text-[16px] font-bold text-gray-900 mb-1">{highlight.title}</h4>
+                <p className="text-[16px] font-black text-gray-900 mb-3">{highlight.time}</p>
+                <p className="text-[13px] text-gray-500 leading-relaxed">{highlight.description}</p>
+                <div className="mt-4 pt-4 border-t border-gray-50 flex justify-end">
+                  <ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-600 transition-colors" />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
-      {/* Section 5 */}
-      <CommuteSummarySection connectivity={connectivity} />
+      {/* 5. Nearby Essentials */}
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-[22px] font-black text-gray-900">Nearby Essentials</h3>
+            <p className="text-[14px] text-gray-500 mt-1">Everything you need, just minutes away</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Object.entries(locationData.nearby_essentials || {}).map(([category, data]: [string, any], i: number) => {
+            const isExpanded = expandedCategories[category] || false
+            const placesArray = Array.isArray(data) ? data : (data?.places || [])
+            const visiblePlaces = isExpanded ? placesArray : placesArray.slice(0, 3)
+            const fallbackImage = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80'
+            const imageUrl = (!Array.isArray(data) && data?.image) ? data.image : fallbackImage
+
+            return (
+              <div key={i} className="group">
+                <div className="w-full h-36 rounded-2xl overflow-hidden bg-gray-100 mb-4 relative">
+                  <img
+                    src={imageUrl}
+                    alt={category}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage }}
+                  />
+                </div>
+                <h4 className="text-[16px] font-black text-gray-900 mb-4">{category}</h4>
+                <div className="space-y-3">
+                  {visiblePlaces.map((place: any, j: number) => (
+                    <div
+                      key={j}
+                      onClick={() => triggerCommuteCalculator(place.name)}
+                      className="flex justify-between items-center border-b border-gray-50 pb-2 last:border-0 cursor-pointer hover:text-blue-600 transition-colors"
+                    >
+                      <span className="text-[13px] font-medium text-gray-700 truncate pr-2 hover:underline">{place.name}</span>
+                      <span className="text-[12px] text-gray-400 whitespace-nowrap">{place.dist || place.distance}</span>
+                    </div>
+                  ))}
+                </div>
+                {placesArray.length > 3 && (
+                  <button
+                    onClick={() => toggleCategoryExpansion(category)}
+                    className="text-[13px] font-bold text-blue-600 mt-3 hover:underline"
+                  >
+                    {isExpanded ? 'Show less' : `+ ${placesArray.length - 3} more`}
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 6. Neighborhood Advantages */}
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+        <h3 className="text-[22px] font-black text-gray-900 mb-8">Neighborhood Advantages</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {(locationData.neighborhood_advantages || []).map((adv: any, i: number) => {
+            const Icon = ICONS[adv.icon] || MapPin
+            return (
+              <div key={i} className="group">
+                <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Icon size={20} />
+                </div>
+                <h4 className="text-[15px] font-bold text-gray-900 mb-2">{adv.title}</h4>
+                <p className="text-[13px] text-gray-500 leading-relaxed mb-4">{adv.description}</p>
+                <ChevronRight size={14} className="text-gray-300 group-hover:text-purple-600 transition-colors" />
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 7. Footer CTA */}
+      <div className="bg-gradient-to-r from-pink-50 via-white to-orange-50 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-pink-100/50">
+        <div>
+          <h3 className="text-[20px] font-black text-gray-900 tracking-tight">Love the location?</h3>
+          <p className="text-[14px] text-gray-600 mt-1 max-w-md">Schedule a site visit to experience the surroundings yourself.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <a
+            href={waUrl || undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto px-8 py-3.5 bg-[#0F172A] hover:bg-black text-white font-bold rounded-xl text-[14px] transition-colors shadow-sm flex items-center justify-center gap-2"
+          >
+            <CalendarDays size={16} />
+            Book Site Visit
+          </a>
+          <a
+            href={waUrl || undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto px-8 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-[14px] transition-colors shadow-sm flex items-center justify-center gap-2"
+          >
+            <PhoneCall size={16} />
+            Talk to Advisor
+          </a>
+        </div>
+      </div>
+
+      <p className="text-center text-[11px] text-gray-400 pt-2 pb-6">Travel times are approximate and based on typical traffic conditions.</p>
     </div>
   )
 }

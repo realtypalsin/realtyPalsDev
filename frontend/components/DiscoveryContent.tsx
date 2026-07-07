@@ -18,9 +18,11 @@ import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-van
 import MessageBubble from '@/components/chat/MessageBubble';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
+import ChipPicker from '@/components/chat/ChipPicker';
 import { Building2, Home, Key, MapPin, Search, Send, Upload, User, Loader2, Sparkles, Map, Info, AlertTriangle, ArrowRight, X, Clock, Navigation, CheckCircle2, Bot, StopCircle, ArrowDown, Mic, PanelLeft, ChevronDown, Star, Pencil, Trash2, Sun, Moon, ArrowUp, MessageSquare, PanelLeftClose, PanelLeftOpen, SquarePen } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { useSessions } from '@/hooks/useSessions';
+import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } from '@/hooks/useAnalyticsTracking';
 
 // ── Dynamic imports — heavy components excluded from initial bundle ─────────
 const SiteVisitScheduler = dynamic(() => import('@/components/SiteVisitScheduler'), { ssr: false })
@@ -146,6 +148,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     });
   }, [chatHistory, sessionId, sessionTitle, chatPhase, currentIntent, lastShortlist]);
 
+  // ── Analytics hooks ──
+  const { recordDropoff } = useDropoffDetection({ sessionId: sessionId || 'pending' });
+  const { recordEngagement } = useEngagementTracking({ sessionId: sessionId || 'pending' });
+  const { trackImpression, trackClick } = usePromotionalTracking({
+    sessionId: sessionId || 'pending',
+    userId: userId || undefined,
+    guestToken: guestToken || undefined
+  });
+
   // Draft persistence — save input to localStorage, clear on submit
   useEffect(() => {
     if (chatInput) {
@@ -157,8 +168,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
   const openDetailProject = useCallback((project: ProjectCardType | null) => {
     setDetailProject(project)
-    if (project) track('property_viewed', { project_slug: project.slug, project_name: project.name })
-  }, []);
+    if (project) {
+      track('property_viewed', { project_slug: project.slug, project_name: project.name });
+      recordEngagement(project.id);
+    }
+  }, [recordEngagement]);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(false);
@@ -1000,10 +1014,37 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const headerTitle = sessionTitle ?? (hasUserReplied ? 'RealtyPals' : 'New conversation');
 
   // Index of the last chat message that has property cards — only that one shows full grid
-  const lastPropertiesIndex = useMemo(() =>
-    chatHistory.reduce((last, msg, i) =>
-      ((msg.exactResults?.length ?? 0) > 0 || (msg.nearbyResults?.length ?? 0) > 0 || (msg.properties?.length ?? 0) > 0 ? i : last), -1
-    ), [chatHistory]);
+  // If the properties are exactly the same as the previous turn, it returns -1 (auto-collapses them).
+  const lastPropertiesIndex = useMemo(() => {
+    const propIndices = chatHistory.reduce<number[]>((acc, msg, i) => {
+      if ((msg.exactResults?.length ?? 0) > 0 || (msg.nearbyResults?.length ?? 0) > 0 || (msg.properties?.length ?? 0) > 0) {
+        acc.push(i);
+      }
+      return acc;
+    }, []);
+
+    if (propIndices.length === 0) return -1;
+    const lastIdx = propIndices[propIndices.length - 1];
+    
+    if (propIndices.length > 1) {
+      const prevIdx = propIndices[propIndices.length - 2];
+      const lastMsg = chatHistory[lastIdx];
+      const prevMsg = chatHistory[prevIdx];
+      
+      const getProjectSlugs = (m: import('@/types/property').ChatMessage) => {
+        const exact = m.exactResults?.map(p => p.slug) ?? [];
+        const nearby = m.nearbyResults?.map(p => p.slug) ?? [];
+        const legacy = m.properties?.map(p => p.slug) ?? [];
+        return [...exact, ...nearby, ...legacy].sort().join(',');
+      };
+      
+      if (getProjectSlugs(lastMsg) === getProjectSlugs(prevMsg)) {
+        return -1; // Properties are identical to previous turn, keep them collapsed!
+      }
+    }
+    
+    return lastIdx;
+  }, [chatHistory]);
 
 
 
@@ -1227,6 +1268,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               <h2 className="text-2xl md:text-3xl font-[family-name:var(--font-afacad)] font-medium text-gray-600 dark:text-gray-400 tracking-wide mt-2">
                 Buy Better.
               </h2>
+              <p className="text-[14px] text-gray-500 dark:text-gray-500 mt-3 max-w-md mx-auto leading-relaxed">
+                Tell me what you&apos;re looking for — I&apos;ll find, compare, and help you decide with verified data and honest analysis.
+              </p>
             </div>
 
             {showReEngagement && !hasUserReplied && (
@@ -1241,19 +1285,22 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               />
             )}
 
-            <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-2xl mb-12">
+            {/* Starter chips — scalable, no hardcoded locations */}
+            <div className="flex flex-wrap items-center justify-center gap-2.5 w-full max-w-2xl mb-12">
               {[
-                { label: 'Best 3 BHK in Noida', icon: '🏠', prompt: 'Show me the best 3 BHK apartments in Noida' },
-                { label: 'Luxury on Expressway', icon: '✨', prompt: 'Show luxury apartments on Noida Expressway' },
-                { label: 'Top investment', icon: '📈', prompt: 'Best areas for property investment in Noida right now' },
-                { label: 'Ready to move', icon: '🔑', prompt: 'Ready to move properties under 2 Cr in Noida' },
+                { label: 'Ready to Move', icon: '🔑', prompt: 'Show me ready to move properties' },
+                { label: 'Best Investment', icon: '📈', prompt: 'Which projects have the best investment potential?' },
+                { label: 'Luxury Apartments', icon: '✨', prompt: 'Show luxury apartments' },
+                { label: 'Under ₹1.5Cr', icon: '💰', prompt: 'Properties under 1.5 crore' },
+                { label: 'Compare Top Projects', icon: '⚖️', prompt: 'Compare the top projects available' },
+                { label: 'Legally Safe Projects', icon: '🛡️', prompt: 'Show me projects with clean RERA and no registry issues' },
               ].map(chip => (
                 <button
                   key={chip.label}
                   onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm text-[13px] text-gray-700 dark:text-gray-300 font-medium rounded-full shadow-sm transition-all duration-300 hover:-translate-y-0.5"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm text-[12.5px] text-gray-700 dark:text-gray-300 font-medium rounded-full shadow-sm transition-all duration-300 hover:-translate-y-0.5"
                 >
-                  <span className="text-base">{chip.icon}</span>
+                  <span className="text-[14px]">{chip.icon}</span>
                   <span>{chip.label}</span>
                 </button>
               ))}
@@ -1332,6 +1379,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                     />
                   );
                 })}
+
 
                 <div ref={chatEndRef} />
               </div>

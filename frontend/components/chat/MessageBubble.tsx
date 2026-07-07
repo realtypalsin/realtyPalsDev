@@ -95,12 +95,12 @@ function buildPickerMessage(action: string, selected: ProjectCardType[]): string
 // 'primary'/'secondary'/'tertiary' come from the engine's group metadata; chips
 // with no group (every stage besides DISCOVERY today) keep the original
 // priority/actionType-driven styling untouched.
-function renderSuggestionChip(
+export function renderSuggestionChip(
   chip: import('./types').ChipAction,
   chipPicker: ChipPickerState | null,
   onSetChipPicker: (picker: ChipPickerState | null) => void,
   onAction: (action: import('./types').ChipAction) => void,
-  emphasis?: 'primary' | 'secondary' | 'tertiary',
+  emphasis?: 'primary' | 'secondary' | 'tertiary' | 'notebook',
 ) {
   const isActive = chipPicker?.label === chip.label
   const hasDropdown = chip.actionType === 'COMPARE_PROPERTIES' || chip.actionType === 'CALCULATE_EMI' || chip.actionType === 'BOOK_VISIT'
@@ -110,20 +110,24 @@ function renderSuggestionChip(
   let sizeClass: string
   let colorClass: string
   switch (emphasis) {
+    case 'notebook':
+      sizeClass = 'px-4 py-3 text-[13px] font-medium rounded-xl w-full justify-start'
+      colorClass = 'bg-gray-100/80 dark:bg-[#1e1e1e] border-transparent text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-[#2a2a2a]'
+      break
     case 'primary':
-      sizeClass = 'px-5 py-3 text-[14px] font-semibold rounded-2xl'
+      sizeClass = 'px-5 py-3 text-[14px] font-semibold rounded-2xl justify-center'
       colorClass = 'bg-blue-600 border-blue-600 text-white shadow-sm hover:bg-blue-700 hover:border-blue-700'
       break
     case 'tertiary':
-      sizeClass = 'px-2.5 py-1 text-[11px] font-medium rounded-full'
+      sizeClass = 'px-2.5 py-1 text-[11px] font-medium rounded-full justify-center'
       colorClass = 'bg-transparent border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300'
       break
     case 'secondary':
-      sizeClass = 'px-3.5 py-1.5 sm:px-4 sm:py-2 text-[12px] font-semibold rounded-full'
+      sizeClass = 'px-3.5 py-1.5 sm:px-4 sm:py-2 text-[12px] font-semibold rounded-full justify-center'
       colorClass = 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
       break
     default:
-      sizeClass = 'px-3.5 py-1.5 sm:px-4 sm:py-2 text-[12px] font-semibold rounded-full'
+      sizeClass = 'px-3.5 py-1.5 sm:px-4 sm:py-2 text-[12px] font-semibold rounded-full justify-center'
       colorClass =
         chip.priority === 1 && chip.actionType !== 'TEXT_MESSAGE' && chip.actionType !== 'INTENT_PATCH'
           ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900 hover:bg-blue-700 hover:border-blue-700'
@@ -140,10 +144,10 @@ function renderSuggestionChip(
         if (isActive) { onSetChipPicker(null); return }
         onAction(chip)
       }}
-      className={`flex items-center gap-1.5 transition-all shadow-sm whitespace-nowrap border ${sizeClass} ${isActive ? activeClass : colorClass}`}
+      className={`flex items-center gap-2 transition-all shadow-sm ${emphasis !== 'notebook' ? 'whitespace-nowrap' : 'text-left'} border ${sizeClass} ${isActive ? activeClass : colorClass}`}
     >
-      {chip.icon && <span>{chip.icon}</span>}
-      {chip.label}
+      {chip.icon && emphasis !== 'notebook' && <span>{chip.icon}</span>}
+      <span>{chip.label}</span>
       {hasDropdown && <span className={`text-[10px] ml-0.5 ${isActive || chip.priority === 1 ? 'text-blue-200' : 'text-gray-400'}`}>▾</span>}
     </motion.button>
   )
@@ -164,35 +168,39 @@ export function SuggestionChipGroups({
 }) {
   if (chips.length === 0) return null
 
-  if (chips.some((c) => c.group)) {
-    /* Grouped chips (e.g. homepage): engine decides groups/counts, we just render them. */
-    return (
-      <div className="flex flex-col gap-4">
-        {Array.from(
-          chips.reduce((groups, c) => {
-            const key = c.group!.id
-            if (!groups.has(key)) groups.set(key, { group: c.group!, items: [] as typeof chips })
-            groups.get(key)!.items.push(c)
-            return groups
-          }, new Map<string, { group: NonNullable<(typeof chips)[number]['group']>; items: typeof chips }>())
-            .values()
-        ).map(({ group, items }) => (
-          <div key={group.id}>
-            <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
-              {group.label}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {items.map((chip) => renderSuggestionChip(chip, chipPicker, onSetChipPicker, onAction, group.emphasis))}
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  }
+  const groupedChips = chips.filter((c) => c.group)
+  const ungroupedChips = chips.filter((c) => !c.group)
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {chips.map((chip) => renderSuggestionChip(chip, chipPicker, onSetChipPicker, onAction))}
+    <div className="flex flex-col gap-4">
+      {groupedChips.length > 0 && (
+        <div className="flex flex-col gap-4">
+          {Array.from(
+            groupedChips.reduce((groups, c) => {
+              const key = c.group!.id
+              if (!groups.has(key)) groups.set(key, { group: c.group!, items: [] as typeof chips })
+              groups.get(key)!.items.push(c)
+              return groups
+            }, new Map<string, { group: NonNullable<(typeof chips)[number]['group']>; items: typeof chips }>())
+              .values()
+          ).map(({ group, items }) => (
+            <div key={group.id}>
+              <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
+                {group.label}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {items.map((chip) => renderSuggestionChip(chip, chipPicker, onSetChipPicker, onAction, group.emphasis))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {ungroupedChips.length > 0 && (
+        <div className={`flex flex-col gap-2 ${groupedChips.length > 0 ? 'pt-2 border-t border-gray-100 dark:border-gray-800' : ''}`}>
+          {ungroupedChips.map((chip) => renderSuggestionChip(chip, chipPicker, onSetChipPicker, onAction, 'notebook'))}
+        </div>
+      )}
     </div>
   )
 }
@@ -222,6 +230,29 @@ function MessageBubbleInner({
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
   const [showAllProperties, setShowAllProperties] = useState(false)
+
+  // ── Extract <antml:chips> from content ──
+  let displayContent = message.content || ''
+  let dynamicChips: import('./types').ChipAction[] = []
+  const chipsMatch = displayContent.match(/<antml:chips>([\s\S]*?)<\/antml:chips>/)
+  if (chipsMatch) {
+    try {
+      const parsed = JSON.parse(chipsMatch[1])
+      if (Array.isArray(parsed)) {
+        dynamicChips = parsed.map(label => ({
+          id: crypto.randomUUID(),
+          actionType: 'TEXT_MESSAGE',
+          label,
+          icon: '',
+          analyticsId: '',
+          priority: 2,
+          payload: { text: label }
+        }))
+      }
+    } catch (e) {}
+    displayContent = displayContent.replace(/<antml:chips>[\s\S]*?<\/antml:chips>/, '').trim()
+  }
+  const combinedChips = [...chips, ...dynamicChips]
 
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
   const touchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -351,9 +382,9 @@ function MessageBubbleInner({
                 }
 
                 // Stage C: AI text streaming or complete
-                if (message.content) {
+                if (displayContent) {
                   const streaming = isLast && isSubmitting
-                  const blocks = streaming ? null : parseResponseBlocks(message.content)
+                  const blocks = streaming ? null : parseResponseBlocks(displayContent)
                   return (
                     <>
                       {!hasProperties && (
@@ -372,7 +403,7 @@ function MessageBubbleInner({
                         ) : (
                           <>
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {message.content}
+                              {displayContent}
                             </ReactMarkdown>
                             {streaming && (
                               <span className="inline-block w-0.5 h-[1em] bg-current animate-pulse ml-0.5 align-middle opacity-70" />
@@ -388,7 +419,7 @@ function MessageBubbleInner({
               })()}
             </div>
           ) : (
-            <p className="whitespace-pre-wrap text-[16px] font-medium leading-relaxed relative z-10">{message.content}</p>
+            <p className="whitespace-pre-wrap text-[16px] font-medium leading-relaxed relative z-10">{displayContent}</p>
           )}
         </div>
       </div>
@@ -400,9 +431,9 @@ function MessageBubbleInner({
             {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
           </span>
         )}
-        {!isUser && message.content && (
+        {!isUser && displayContent && (
           <button
-            onClick={() => { onCopy(message.content); onToast('Copied to clipboard'); }}
+            onClick={() => { onCopy(displayContent); onToast('Copied to clipboard'); }}
             title="Copy response"
             className="text-gray-400 hover:text-blue-500 transition-colors opacity-0 group-hover/msg:opacity-100"
           >
@@ -604,16 +635,14 @@ function MessageBubbleInner({
                             index={pi}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
-                            quickActions={
-                              <PropertyQuickActions
-                                project={property}
-                                onDetailOpen={onDetailOpen}
-                                onCallback={onCallback}
-                                onSetSiteVisit={onSetSiteVisit}
-                                onOpenCalculator={onOpenCalculator}
-                                onOpenShareSheet={onOpenShareSheet}
-                              />
-                            }
+                            onAskAI={(p) => {
+                              window.dispatchEvent(
+                                new CustomEvent('realtypals:ask-ai', {
+                                  detail: { text: `Tell me more about ${p.name}` },
+                                }),
+                              )
+                            }}
+                            onSetSiteVisit={onSetSiteVisit}
                           />
                         </motion.div>
                       ))}
@@ -646,16 +675,14 @@ function MessageBubbleInner({
                             index={pi} 
                             onDetailOpen={onDetailOpen} 
                             onToast={onToast}
-                            quickActions={
-                              <PropertyQuickActions
-                                project={property}
-                                onDetailOpen={onDetailOpen}
-                                onCallback={onCallback}
-                                onSetSiteVisit={onSetSiteVisit}
-                                onOpenCalculator={onOpenCalculator}
-                                onOpenShareSheet={onOpenShareSheet}
-                              />
-                            }
+                            onAskAI={(p) => {
+                              window.dispatchEvent(
+                                new CustomEvent('realtypals:ask-ai', {
+                                  detail: { text: `Tell me more about ${p.name}` },
+                                }),
+                              )
+                            }}
+                            onSetSiteVisit={onSetSiteVisit}
                           />
                         </motion.div>
                       ))}
@@ -724,14 +751,19 @@ function MessageBubbleInner({
       )}
 
       {/* Progressive chips from Conversation Engine */}
-      {message.type === 'ai' && message.content && isLast && !isSubmitting && chips.length > 0 && (
+      {message.type === 'ai' && displayContent && isLast && !isSubmitting && combinedChips.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.15 }}
           className="mt-3"
         >
-          {/* SuggestionChips intentionally removed as per UI revamp */}
+          <SuggestionChipGroups
+            chips={combinedChips}
+            chipPicker={chipPicker}
+            onSetChipPicker={onSetChipPicker}
+            onAction={onAction}
+          />
 
           <AnimatePresence mode="wait">
             {chipPicker && (

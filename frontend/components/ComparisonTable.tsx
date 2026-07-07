@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Trophy, TrendingUp, ShieldCheck, Users, Zap } from 'lucide-react'
+import { Trophy, TrendingUp, ShieldCheck, Users, Zap, ChevronDown, IndianRupee, Trees, HeartHandshake } from 'lucide-react'
 import { Buildings, SealCheck } from '@phosphor-icons/react'
 import type { ProjectCard, ProjectDetail } from '@/types/project'
 import { API_BASE } from '@/lib/env'
@@ -480,6 +480,33 @@ function ProjectMiniCard({
   )
 }
 
+// ── Accordion Component ───────────────────────────────────────────────────────
+
+function Accordion({ title, icon: Icon, children, defaultOpen = false }: { title: string, icon: React.ElementType, children: React.ReactNode, defaultOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+  return (
+    <div className="border border-gray-100 dark:border-gray-700/60 rounded-xl overflow-hidden mb-3 bg-white dark:bg-gray-800/40 shadow-sm">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="w-full flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Icon size={16} className="text-gray-500 dark:text-gray-400" />
+          <span className="text-[13px] font-bold text-gray-900 dark:text-gray-100">{title}</span>
+        </div>
+        <div className={`transform transition-transform text-gray-400 ${isOpen ? 'rotate-180' : ''}`}>
+          <ChevronDown size={16} />
+        </div>
+      </button>
+      {isOpen && (
+        <div className="p-0 border-t border-gray-100 dark:border-gray-700/60 overflow-x-auto">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
 function Skeleton({ n }: { n: number }) {
@@ -804,6 +831,132 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                 })}
               </div>
             )}
+          </Section>
+
+          {/* ── Detailed Comparison Accordions ────────────────────────────── */}
+          <Section title="Detailed Breakdown" icon={HeartHandshake}>
+            <Accordion title="Trust & Legal" icon={ShieldCheck}>
+              <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
+                {projects.map((p, i) => (
+                  <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                      <span className="text-gray-500">RERA</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100">{details[i]?.dna?.rera_compliance_label || '--'}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                      <span className="text-gray-500">Builder</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.builder_track_record_label || '--'}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                      <span className="text-gray-500">Delivery Risk</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.possession_certainty_label || '--'}</span>
+                    </div>
+                    <div className="flex justify-between pb-1">
+                      <span className="text-gray-500">Litigation</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.litigation_disputes_label || '--'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Accordion>
+            
+            <Accordion title="Price & Cost" icon={IndianRupee}>
+              <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
+                {projects.map((p, i) => {
+                  const minCr = Math.min(...(details[i]?.unit_types || []).map((u: any) => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter((v: number) => v !== Infinity))
+                  const psf = minCr !== Infinity && minCr !== -Infinity ? `₹${minCr.toLocaleString('en-IN')}/sqft` : '--'
+                  return (
+                    <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
+                      <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                        <span className="text-gray-500">Entry Price</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100">{details[i]?.price_range_label || p.price_range_label || '--'}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                        <span className="text-gray-500">Price PSF</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100">{psf}</span>
+                      </div>
+                      <div className="flex justify-between pb-1">
+                        <span className="text-gray-500">Loading %</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.loading_efficiency_label || '--'}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Accordion>
+            
+            <Accordion title="Investment Potential" icon={TrendingUp}>
+              <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
+                {projects.map((p, i) => {
+                  const intel = (details[i] as any)?.decision_profile?.intelligence_data?.investment_insights
+                  return (
+                    <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
+                      <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                        <span className="text-gray-500">1 Yr Growth</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100">{intel?.appreciation_1yr || '--'}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                        <span className="text-gray-500">Rental Yield</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100">{intel?.rental_yield || '--'}</span>
+                      </div>
+                      <div className="flex justify-between pb-1">
+                        <span className="text-gray-500">Liquidity</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100">{intel?.liquidity_score || '--'}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Accordion>
+            
+            <Accordion title="Lifestyle & Build" icon={Trees}>
+              <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
+                {projects.map((p, i) => (
+                  <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                      <span className="text-gray-500">Density</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.project_density_label || '--'}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                      <span className="text-gray-500">Open Area</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.open_area_label || '--'}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                      <span className="text-gray-500">Const. Quality</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.construction_quality_label || '--'}</span>
+                    </div>
+                    <div className="flex justify-between pb-1">
+                      <span className="text-gray-500">Amenities</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.amenity_depth_label || '--'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Accordion>
+            
+            <Accordion title="Social Proof" icon={Users}>
+              <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
+                {projects.map((p, i) => {
+                  const sp = (details[i] as any)?.decision_profile?.intelligence_data?.social_proof
+                  return (
+                    <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
+                      <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                        <span className="text-gray-500">Resident Rating</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100">{sp?.overall_rating ? `${sp.overall_rating}/5` : '--'}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+                        <span className="text-gray-500">Community</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{sp?.demographic_tags?.join(', ') || '--'}</span>
+                      </div>
+                      <div className="flex justify-between pb-1">
+                        <span className="text-gray-500">Sentiment</span>
+                        <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{sp?.sentiment_summary || '--'}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Accordion>
           </Section>
 
           {/* ── Builder Intelligence ─────────────────────────────────────── */}

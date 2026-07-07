@@ -20,6 +20,14 @@ import { clientIp } from '../lib/request'
 import { getBuilderRecord } from '../lib/builders'
 import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
+import {
+  initializeChatAnalytics,
+  trackIntentIdentified,
+  trackResultsShown,
+  trackConversion,
+  trackDropOff,
+  trackPromotionalClick
+} from '../lib/analytics/tracking'
 
 const router = Router()
 
@@ -246,6 +254,9 @@ router.post('/', async (req: Request, res: Response) => {
     return
   }
 
+  // ─── ANALYTICS: Initialize chat tracking
+  await initializeChatAnalytics(sessionId, userId, guestToken)
+
   const rlKey = userId ?? guestToken!
   const ip = clientIp(req)
   // Two ceilings: per-identity (20/min) AND per-IP (40/min) so rotating guest tokens
@@ -355,6 +366,24 @@ router.post('/', async (req: Request, res: Response) => {
       (rawIntent.riskProfile === 'retiree' || rawIntent.riskProfile === 'first_time_buyer')
     ) ? { ...rawIntent, purpose: 'endUse' } : rawIntent
     console.log('[CHAT] END extractIntent', Date.now(), { intent })
+
+    // ─── ANALYTICS: Track intent identification
+    if (action.type === 'TEXT_MESSAGE' && message && sessionId) {
+      await trackIntentIdentified(sessionId, intent, message)
+    }
+
+    // ─── GATHERING Loop Fallback
+    const currentIntentState = getIntentState(intent)
+    const prevIntentState = prevIntent ? getIntentState(prevIntent as Intent) : 'COLD'
+    if (currentIntentState === 'GATHERING' && prevIntentState === 'GATHERING') {
+      intent.gathering_loop_count = ((prevIntent as Intent).gathering_loop_count ?? 0) + 1
+      if (intent.gathering_loop_count >= 2) {
+        console.log('[CHAT] GATHERING loop detected. Breaking out with fallback intent.')
+        intent = { ...intent, budgetMax: intent.budgetMax ?? 1.5, bhk: intent.bhk ?? [3], gathering_loop_count: 0 }
+      }
+    } else {
+      intent.gathering_loop_count = 0
+    }
 
     const hasCachedProjects = (cachedProjectsFromSession?.length ?? 0) > 0
 
@@ -484,6 +513,11 @@ router.post('/', async (req: Request, res: Response) => {
           nearbyResults: nearbyProjects,
           expansion: discoveryExpansion ?? null,
         })
+
+        // ─── ANALYTICS: Track results shown
+        if (sessionId) {
+          await trackResultsShown(sessionId, projects.length + nearbyProjects.length)
+        }
       }
     }
 
@@ -504,7 +538,7 @@ router.post('/', async (req: Request, res: Response) => {
     const { messages: compressedHistory, newSummary } = await maybeCompress(chatHistory, existingSummary)
     console.log('[CHAT] END maybeCompress', Date.now(), { compressedLen: compressedHistory.length, newSummary: !!newSummary })
     const { systemSuffix, messages: rawMessages } = buildContextMessages(message, compressedHistory, newSummary ?? existingSummary, memory)
-    const systemPrompt = buildAdvisorSystemPrompt(intent, projects, memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects : undefined, notFoundNames) + systemSuffix
+    const systemPrompt = buildAdvisorSystemPrompt(intent, projects.slice(0, 3), memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects.slice(0, 3) : undefined, notFoundNames) + systemSuffix
 
     // Issue 4: trim message history if total token estimate exceeds safe ceiling
     const messages = trimMessagesToBudget(systemPrompt, rawMessages)

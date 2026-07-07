@@ -30,6 +30,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: '*.supabase.in',
       },
+      {
+        protocol: 'https',
+        hostname: 'storage.realtypals.com',
+      },
     ],
   },
   async headers() {

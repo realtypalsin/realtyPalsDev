@@ -10,6 +10,7 @@ import { isPrismaNotFound } from '../lib/db'
 import { clientIp } from '../lib/request'
 import { supabaseAdmin } from '../lib/supabase'
 import { computeCompleteness } from '../lib/completeness'
+import applicationsRouter from './builderApplications'
 
 const router = Router()
 
@@ -141,6 +142,16 @@ const ProjectSchema = z.object({
   long_description:   z.string().optional(),
   design_theme:       z.string().optional(),
   architect:          z.string().optional(),
+  interior_designer:  z.string().optional(),
+  floors:             z.string().optional(),
+  open_space_pct:     z.number().optional(),
+  green_rating:       z.string().optional(),
+  schools_nearby_count: z.number().int().optional(),
+  hospitals_nearby_count: z.number().int().optional(),
+  shopping_nearby_count: z.number().int().optional(),
+  it_parks_nearby_count: z.number().int().optional(),
+  banks_nearby_count: z.number().int().optional(),
+  restaurants_nearby_count: z.number().int().optional(),
   hero_image_url:     z.string().optional(),
   marketing_claims:   z.array(z.string()).optional(),
   ai_search_keywords: z.array(z.string()).optional(),
@@ -165,6 +176,16 @@ const ProjectPatchSchema = z.object({
   long_description:   z.string().optional(),
   design_theme:       z.string().optional(),
   architect:          z.string().optional(),
+  interior_designer:  z.string().optional(),
+  floors:             z.string().optional(),
+  open_space_pct:     z.number().optional(),
+  green_rating:       z.string().optional(),
+  schools_nearby_count: z.number().int().optional(),
+  hospitals_nearby_count: z.number().int().optional(),
+  shopping_nearby_count: z.number().int().optional(),
+  it_parks_nearby_count: z.number().int().optional(),
+  banks_nearby_count: z.number().int().optional(),
+  restaurants_nearby_count: z.number().int().optional(),
   hero_image_url:     z.string().optional(),
   marketing_claims:   z.array(z.string()).optional(),
   ai_search_keywords: z.array(z.string()).optional(),
@@ -418,6 +439,8 @@ router.get('/projects/:id', async (req: Request, res: Response): Promise<void> =
       persona_profile:        true,
       recommendation_profile: true,
       competitors:            { orderBy: { sort_order: 'asc' } },
+      payment_plan:           true,
+      cost_sheet:             true,
     },
   })
   if (!project) {
@@ -509,6 +532,63 @@ router.delete('/projects/:id', async (req: Request, res: Response): Promise<void
       return
     }
     console.error('[admin]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// PUT /projects/:id/payment-plan
+// ---------------------------------------------------------------------------
+router.put('/projects/:id/payment-plan', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const data = req.body
+    await prisma.paymentPlan.upsert({
+      where: { project_id: req.params.id },
+      create: { project_id: req.params.id, ...data },
+      update: data,
+    })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    console.error('[admin] payment plan', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// PUT /projects/:id/cost-sheet
+// ---------------------------------------------------------------------------
+router.put('/projects/:id/cost-sheet', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const data = req.body
+    await prisma.costSheet.upsert({
+      where: { project_id: req.params.id },
+      create: { project_id: req.params.id, ...data },
+      update: data,
+    })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    console.error('[admin] cost sheet', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /projects/:id/investment-insights
+// ---------------------------------------------------------------------------
+router.patch('/projects/:id/investment-insights', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const profile = await prisma.decisionProfile.findUnique({ where: { project_id: req.params.id } })
+    const existingData: any = profile?.intelligence_data || {}
+    const newData = { ...existingData, investment_insights: req.body }
+    
+    await prisma.decisionProfile.upsert({
+      where: { project_id: req.params.id },
+      create: { project_id: req.params.id, intelligence_data: newData },
+      update: { intelligence_data: newData },
+    })
+    res.json({ ok: true })
+  } catch (err: unknown) {
+    console.error('[admin] investment insights', err)
     res.status(500).json({ error: 'Internal error' })
   }
 })
@@ -1071,6 +1151,9 @@ router.delete('/builders/:id', async (req: Request, res: Response): Promise<void
 })
 
 // ---------------------------------------------------------------------------
+// ─── BUILDER APPLICATIONS ───────────────────────────────────────────────
+router.use('/applications', applicationsRouter)
+
 // POST /upload-image
 // ---------------------------------------------------------------------------
 const BUCKET = 'property-images'

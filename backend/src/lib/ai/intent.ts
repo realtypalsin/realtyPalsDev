@@ -20,6 +20,7 @@ const IntentSchema = z.object({
   projectNames: z.array(z.string()).optional(),
   riskProfile: z.enum(['nri', 'retiree', 'risk_averse', 'first_time_buyer']).optional(),
   is_comparison_query: z.boolean().optional(),
+  legal_check: z.boolean().optional(),
 })
 
 export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchema>): Intent {

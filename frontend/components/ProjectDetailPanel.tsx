@@ -1,6 +1,6 @@
 'use client'
 import {
-  Building2, CheckCircle2, Clock, LineChart, BedDouble,
+  Building2, CheckCircle2, Clock, LineChart, BedDouble, Star,
   ExternalLink, X, MapPin, Sparkles, CalendarDays, Bookmark, FileText, IndianRupee, Wallet, Map as MapIcon, File as FileIcon
 } from 'lucide-react'
 
@@ -16,7 +16,8 @@ import SiteVisitScheduler from '@/components/SiteVisitScheduler'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
 import OverviewTab from '@/components/property-detail/OverviewTab'
 import IntelligenceTab from '@/components/property-detail/IntelligenceTab'
-import PricingTab from '@/components/property-detail/PricingTab'
+import ResidencesTab from '@/components/property-detail/ResidencesTab'
+import ProjectPricingTab from '@/components/property-detail/ProjectPricingTab'
 import LocationTab from '@/components/property-detail/LocationTab'
 import DocumentsTab from '@/components/property-detail/DocumentsTab'
 import { API_BASE } from '@/lib/env'
@@ -222,7 +223,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const rawImg = workingHeroCandidates[imgIdx % Math.max(workingHeroCandidates.length, 1)]
   const currentImg = resolveImgUrl(rawImg)
   const floorPlanImages = allImages.filter(i => i.type === 'floor_plan')
-
   const d = detail ?? project
 
   const isRTM = d?.status === 'ready_to_move'
@@ -305,7 +305,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       )}
 
       {activeTab === 'Residences' && (
-        <PricingTab
+        <ResidencesTab
           unitTypes={d?.unit_types ?? []}
           floorPlanImages={floorPlanImages}
           loading={loading}
@@ -315,79 +315,16 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           costSheet={costSheet}
           onViewFloorPlans={(plans) => setShowFloorPlan({ plans })}
           onGoToCosts={() => setActiveTab('Pricing')}
+          onGoToOverview={() => setActiveTab('Overview')}
         />
       )}
 
       {activeTab === 'Pricing' && (
-        <div className="p-5 md:p-6 space-y-5">
-          {/* Payment Schedule */}
-          <div>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Payment Schedule</p>
-            {!paymentPlan.loaded ? (
-              <div className="h-24 bg-gray-100 rounded-xl animate-pulse" />
-            ) : !paymentPlan.available ? (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
-                <p className="text-[13px] font-medium text-gray-500">{paymentPlan.message ?? 'Payment schedule not yet verified.'}</p>
-                <p className="text-[11px] text-gray-400 mt-1">Contact the builder for a current payment schedule.</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {!!paymentPlan.data?.plan_name && (
-                  <p className="text-[12px] font-semibold text-gray-700">{String(paymentPlan.data.plan_name)}</p>
-                )}
-                {Array.isArray(paymentPlan.data?.milestones) && paymentPlan.data.milestones.map((m: any, i: number) => (
-                  <div key={i} className="flex items-start justify-between gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-semibold text-gray-800">{m.milestone}</p>
-                      {m.notes && <p className="text-[11px] text-gray-500 mt-0.5">{m.notes}</p>}
-                    </div>
-                    <span className="text-[13px] font-black text-blue-700 flex-shrink-0">{m.percentage}%</span>
-                  </div>
-                ))}
-                {!!paymentPlan.data?.notes && (
-                  <p className="text-[11px] text-gray-400 mt-2">{String(paymentPlan.data.notes)}</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Cost Breakdown */}
-          <div>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Cost Breakdown</p>
-            {!costSheet.loaded ? (
-              <div className="h-32 bg-gray-100 rounded-xl animate-pulse" />
-            ) : !costSheet.available ? (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
-                <p className="text-[13px] font-medium text-gray-500">{costSheet.message ?? 'Cost sheet not yet verified.'}</p>
-                <p className="text-[11px] text-gray-400 mt-1">Ask the builder for a detailed cost sheet.</p>
-              </div>
-            ) : costSheet.illustration ? (
-              <div className="space-y-2">
-                {Object.entries(costSheet.illustration).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => (
-                  <div key={k} className={`flex items-center justify-between px-3 py-2.5 rounded-xl ${k === 'total_cost_cr' ? 'bg-gray-900 text-white' : 'bg-gray-50 border border-gray-100'}`}>
-                    <span className={`text-[12px] ${k === 'total_cost_cr' ? 'font-bold text-white' : 'text-gray-600'}`}>
-                      {k.replace(/_/g, ' ').replace(/\bcr\b/g, '').trim().replace(/\b\w/g, c => c.toUpperCase())}
-                    </span>
-                    <span className={`text-[12px] font-black ${k === 'total_cost_cr' ? 'text-white' : 'text-gray-900'}`}>
-                      ₹{Number(v).toFixed(2)} Cr
-                    </span>
-                  </div>
-                ))}
-                {costSheet.note && (
-                  <p className="text-[10px] text-gray-400 leading-relaxed mt-2">{costSheet.note}</p>
-                )}
-                {Array.isArray(costSheet.data?.assumptions) && costSheet.data.assumptions.length > 0 && (
-                  <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
-                    <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1.5">Assumptions</p>
-                    {costSheet.data.assumptions.map((a: string, i: number) => (
-                      <p key={i} className="text-[11px] text-amber-800">· {a}</p>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : null}
-          </div>
-        </div>
+        <ProjectPricingTab
+          unitTypes={d?.unit_types ?? []}
+          detail={{ ...(detail as any), payment_plan: paymentPlan.data, cost_sheet: costSheet.data }}
+          onGoToCosts={() => setShowVisitScheduler(true)}
+        />
       )}
 
       {activeTab === 'Location' && (
@@ -399,9 +336,31 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         />
       )}
 
-      {activeTab === 'Documents' && (
-        <DocumentsTab documents={documents} loading={loading && !detail} projectSlug={(d as any)?.slug} />
-      )}
+      {activeTab === 'Documents' && (() => {
+        const intelDocs = detail?.decision_profile?.intelligence_data?.documents || []
+        const transparencyChecks = detail?.decision_profile?.intelligence_data?.transparency_checks || []
+        const mappedDocs = documents.map(doc => {
+          const meta = intelDocs.find((m: any) => m.id === doc.id || m.file_name === doc.storage_url.split('/').pop())
+          return {
+            ...doc,
+            description: meta?.description || undefined,
+            is_quick_access: meta?.is_quick_access || false,
+            thumbnail_url: meta?.thumbnail_url || undefined,
+            file_format: meta?.file_format || undefined,
+            verified_by: meta?.verified_by || undefined,
+            category_description: meta?.category?.category_description || undefined,
+            category_icon_name: meta?.category?.category_icon_name || undefined
+          }
+        })
+        return (
+          <DocumentsTab 
+            documents={mappedDocs} 
+            loading={loading && !detail} 
+            projectSlug={(d as any)?.slug}
+            transparency_checks={transparencyChecks}
+          />
+        )
+      })()}
       </motion.div>
     </AnimatePresence>
   )
@@ -474,13 +433,11 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   )
 
   const stickyHeader = (
-    <div className="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 transition-all duration-300">
-      <div className={`flex items-center px-4 md:px-8 transition-all duration-300 overflow-visible ${isScrolled ? 'h-[60px]' : 'h-[52px]'}`}>
+    <div className="sticky top-0 z-40 w-full bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 transition-all duration-300">
+      <div className={`flex items-center px-4 md:px-8 transition-all duration-300 overflow-visible h-[60px]`}>
         
-        {/* Left: Identity (Injected on scroll) */}
-        <div className={`flex items-center gap-6 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
-          isScrolled ? 'max-w-[300px] opacity-100 translate-x-0 mr-6' : 'max-w-0 opacity-0 -translate-x-8 mr-0'
-        }`}>
+        {/* Left: Identity (Always injected for new layout) */}
+        <div className={`flex items-center gap-6 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden max-w-[300px] opacity-100 translate-x-0 mr-6`}>
            <div className="flex items-center gap-3 flex-shrink-0">
              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
              <span className="font-bold text-gray-900 dark:text-gray-100 text-[14px] truncate">{d?.name}</span>
@@ -514,18 +471,172 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           })}
         </div>
 
-        {/* Right: Action (Injected on scroll) */}
-        <div className={`flex items-center justify-end gap-4 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
-          isScrolled ? 'max-w-[300px] opacity-100 translate-x-0 ml-4' : 'max-w-0 opacity-0 translate-x-8 ml-0'
-        }`}>
+        {/* Right: Action (Always injected for new layout) */}
+        <div className={`flex items-center justify-end gap-4 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden max-w-[300px] opacity-100 translate-x-0 ml-4`}>
            <p className="text-[13px] font-semibold text-gray-500 hidden xl:block whitespace-nowrap">{d?.price_range_label}</p>
            <button onClick={() => setShowVisitScheduler(true)} className="px-4 py-2 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-semibold rounded-full text-[12px] transition-all whitespace-nowrap flex-shrink-0 shadow-sm">
-             Book Visit
+             Book Site Visit
            </button>
         </div>
       </div>
     </div>
   )
+
+  const renderHero = () => {
+    const displayPrice = d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr Onwards` : 'Price on Request')
+      const displayPossession = d?.possession_label || 'TBD'
+      const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 0
+      const displayTier = detail?.recommendation_score?.tier || (d as any)?.recommendation_score?.tier || 'UNRATED'
+      const unitTypes = d?.unit_types ?? []
+
+      return (
+        <div className="relative w-full bg-white dark:bg-[#120f0d] border-b border-gray-100 dark:border-gray-800/40 overflow-hidden flex-shrink-0">
+          {!inline && (
+            <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md z-20">
+              <X size={20} />
+            </button>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 md:p-8 items-center">
+            
+            {/* Left Hero Details */}
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <span className="inline-block bg-[#FEF3C7] dark:bg-[#2c2211] text-[#D97706] dark:text-[#fbbf24] text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded">
+                    {d?.status === 'ready_to_move' ? 'Ready to Move' : d?.status === 'new_launch' ? 'New Launch' : 'Under Construction'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-[34px] md:text-[44px] font-extrabold font-serif tracking-tight leading-tight text-[#171412] dark:text-white">
+                    {d?.name}
+                  </h1>
+                  {d?.rera_number && (
+                    <span className="flex items-center gap-1 bg-[#E8F5E9] dark:bg-[#1b2f20] text-[#2E7D32] dark:text-[#a5d6a7] text-[11px] font-bold px-2.5 py-1 rounded-full border border-[#C8E6C9] dark:border-[#2e7d32]/30">
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                      RERA Registered
+                    </span>
+                  )}
+                </div>
+                {d?.tagline && (
+                  <p className="text-[15px] md:text-[17px] text-gray-500 dark:text-gray-400 font-medium italic">
+                    {d.tagline}
+                  </p>
+                )}
+                <div className="flex items-center gap-4 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                  {d?.builder?.name && (
+                    <span className="flex items-center gap-1">
+                      <Building2 size={15} className="text-gray-400" />
+                      by <strong className="text-gray-800 dark:text-gray-200">{d.builder.name}</strong>
+                    </span>
+                  )}
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700" />
+                  <span className="flex items-center gap-1">
+                    <MapPin size={15} className="text-gray-400" />
+                    {d?.sector}, {d?.city}
+                  </span>
+                </div>
+              </div>
+
+              {/* Stats Row */}
+              <div className="grid grid-cols-4 gap-2 md:gap-4 pt-4 border-t border-gray-100 dark:border-gray-800/40">
+                {[
+                  { value: d?.total_towers ? `${d.total_towers}` : '—', label: 'Towers' },
+                  { value: (d as any)?.floors ? `${(d as any).floors}` : 'G+26', label: 'Floors' },
+                  { value: (d as any)?.total_units ? `${(d as any).total_units}` : '—', label: 'Units' },
+                  { value: d?.land_area_acres ? `${d.land_area_acres} Ac` : '—', label: 'Land Area' }
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white dark:bg-[#1a1715] border border-gray-100 dark:border-gray-800/40 rounded-2xl p-3 text-center shadow-sm">
+                    <p className="text-[18px] md:text-[22px] font-black text-[#c47860] dark:text-[#c47860] leading-none">
+                      {stat.value}
+                    </p>
+                    <p className="text-[9px] text-gray-450 dark:text-gray-500 font-bold uppercase tracking-wider mt-1.5">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Hero Image Card */}
+            <div className="lg:col-span-5 relative rounded-3xl overflow-hidden h-[260px] lg:h-[280px] shadow-md group">
+              <Image 
+                src={d?.hero_image_url || "/images/properties/default-hero.jpg"} 
+                alt={d?.name || "Elite X"} 
+                fill 
+                priority 
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+              {floorPlanImages.length > 0 && (
+                <button onClick={() => setShowFloorPlan({ plans: floorPlanImages })} className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors z-10">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  {floorPlanImages.length} Photos
+                </button>
+              )}
+            </div>
+
+          </div>
+
+          {/* Bottom Price/Score Overlay Row */}
+          <div className="mx-6 md:mx-8 mb-6 md:mb-8 bg-white dark:bg-[#171412] border border-gray-150 dark:border-gray-800/40 rounded-3xl p-5 md:p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] grid grid-cols-1 md:grid-cols-12 gap-4 items-center divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-gray-800">
+            {/* Price & Possession */}
+            <div className="md:col-span-5 pb-4 md:pb-0 md:pr-4 flex items-center justify-between">
+              <div>
+                <p className="text-[24px] md:text-[28px] font-black text-gray-900 dark:text-white leading-none tracking-tight">
+                  {displayPrice}
+                </p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-1.5">
+                  All Inclusive {unitTypes.length > 0 && `· Starts ₹${Math.min(...unitTypes.map(u => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter(v => v !== Infinity))}/sqft`}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 bg-[#FAF7F2] dark:bg-[#201c18] border border-[#F2E8D8]/40 px-3.5 py-2 rounded-xl">
+                <svg className="w-4 h-4 text-[#c47860]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <div>
+                  <p className="text-[8px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest leading-none">Possession</p>
+                  <p className="text-[12px] font-bold text-gray-800 dark:text-gray-200 mt-0.5">{displayPossession}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Score */}
+            <div className="md:col-span-4 py-4 md:py-0 md:px-4 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
+                  AI Recommendation Score
+                </p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                  {detail?.recommendation_profile?.primary_thesis || 'Full intelligence report pending.'}
+                </p>
+              </div>
+              <div className="relative flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-full border-4 border-emerald-500/20">
+                <div className="text-center">
+                  <span className="text-[16px] font-black text-gray-900 dark:text-white leading-none">{displayScore}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stars & Hold */}
+            <div className="md:col-span-3 pt-4 md:pt-0 md:pl-4 flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-0.5 text-amber-400">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={13} fill="currentColor" />)}
+                </div>
+                <p className="text-[9px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">
+                  Satisfaction Rating
+                </p>
+              </div>
+              <span className="bg-[#FFF8E1] dark:bg-[#2c2712] text-[#FFB300] dark:text-[#ffe082] text-[11px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-[#FFE082] dark:border-[#ffe082]/20">
+                {displayTier}
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+      )
+  }
+
 
   // ── Inline mode (property page) ─────────────────────────────────────────────
   if (inline) {
@@ -537,108 +648,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         transition={{ duration: 0.25, ease: 'easeOut' }}
       >
         <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-2xl rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col border border-gray-200/50 dark:border-gray-700/50">
-          {/* Cinematic hero */}
-          <div className="relative h-[380px] md:h-[440px] bg-gray-900 overflow-hidden flex-shrink-0">
-            <AnimatePresence mode="wait">
-              {currentImg ? (
-                <motion.div
-                  key={currentImg}
-                  className="absolute inset-0"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                >
-                  <Image
-                    src={currentImg}
-                    alt={d?.name ?? ''}
-                    fill
-                    priority
-                    className="object-cover scale-105 blur-[2px]"
-                    sizes="100vw"
-                    onError={() => markImgFailed(currentImg)}
-                  />
-                </motion.div>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
-                  <Building2 size={56} className="text-slate-600" />
-                </div>
-              )}
-            </AnimatePresence>
-            {/* Cinematic gradient — dark enough at the bottom for white type to sit on, clear at the top for the status/save row */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
-
-            {/* Top row — status badge + save */}
-            <div className="absolute top-5 inset-x-5 flex items-center justify-between">
-              <div className={`flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full backdrop-blur-md border border-white/20 ${isRTM ? 'bg-emerald-500/80 text-white' : isNew ? 'bg-blue-500/80 text-white' : 'bg-amber-500/80 text-white'}`}>
-                {isRTM ? <CheckCircle2 size={11} /> : <Clock size={11} />}
-                {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
-              </div>
-              {userId && (
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleSave}
-                  disabled={saving}
-                  className={`w-9 h-9 rounded-full backdrop-blur-md border flex items-center justify-center transition-colors disabled:opacity-50 ${
-                    saved ? 'bg-white text-gray-900 border-white' : 'bg-black/30 text-white border-white/25 hover:bg-black/50'
-                  }`}
-                  aria-label={saved ? 'Remove from saved' : 'Save property'}
-                >
-                  <Bookmark size={15} className={saved ? 'fill-current' : ''} />
-                </motion.button>
-              )}
-            </div>
-
-            {allImages.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {allImages.map((_, i) => (
-                  <button key={i} onClick={() => setImgIdx(i)}
-                    className={`h-1.5 rounded-full transition-all ${i === imgIdx ? 'bg-white w-4' : 'bg-white/40 w-1.5'}`} />
-                ))}
-              </div>
-            )}
-
-            {/* Identity + score, sitting directly on the image */}
-            <div className="absolute bottom-0 inset-x-0 p-5 md:p-8">
-              <div className="flex items-end justify-between gap-4 flex-wrap mb-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 text-white/70 text-[12px] font-medium mb-2">
-                    <MapPin size={12} className="flex-shrink-0" />
-                    <span className="truncate">{d?.builder?.name} · {d?.sector}, {d?.city}</span>
-                  </div>
-                  <h1 className="text-white text-[28px] md:text-[38px] font-bold tracking-tight leading-[1.08]">{d?.name}</h1>
-                  {d?.tagline && <p className="text-white/75 text-[13px] md:text-[14px] mt-1.5 font-light italic">{d.tagline}</p>}
-                </div>
-
-                {heroScore != null && (
-                  <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-2.5 flex-shrink-0">
-                    <span className="text-white text-[26px] font-bold leading-none tracking-tight">{Math.round(heroScore)}</span>
-                    <div>
-                      <p className="text-white text-[12px] font-bold leading-tight">{heroTier ? (tierLabel[heroTier] ?? heroTier) : '—'}</p>
-                      <p className="text-white/55 text-[9px] font-bold uppercase tracking-widest mt-0.5">Top Recommendation</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {decisionThesis && (
-                <p className="text-white/80 text-[12.5px] leading-relaxed max-w-2xl mb-4 line-clamp-2">{decisionThesis}</p>
-              )}
-
-              <div className="flex items-end justify-between gap-4 pt-4 border-t border-white/15">
-                <div>
-                  <p className="text-white text-[22px] md:text-[26px] font-bold tracking-tight leading-none">{d?.price_range_label}</p>
-                  <p className="text-white/60 text-[11px] mt-1">{bhkLabel}</p>
-                </div>
-                {d?.rera_number && (
-                  <span className="flex items-center gap-1 text-[11px] font-semibold text-white/85 flex-shrink-0">
-                    <CheckCircle2 size={12} />
-                    RERA Verified
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          {renderHero()}
 
           {/* Tab strip — unified header */}
           {stickyHeader}
@@ -716,129 +726,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               {/* Scrollable Content */}
               <div className="flex-1 overflow-y-auto w-full relative pb-24 hide-scrollbar" onScroll={handleScroll}>
                 {/* Hero Section */}
-                <div className="relative w-full h-[450px] bg-gray-900 flex-shrink-0 overflow-hidden">
-                  <div className="absolute inset-0 w-full h-full">
-                    {currentImg ? (
-                      <Image src={currentImg} alt={d?.name ?? ''} fill priority className="object-cover opacity-60" sizes="1200px" onError={() => markImgFailed(currentImg)} />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 to-black">
-                        <Building2 size={56} className="text-slate-700" />
-                      </div>
-                    )}
-                  </div>
-                  {/* Gradient Overlay for Text Readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/50 to-transparent" />
-
-                  <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md z-10">
-                    <X size={20} />
-                  </button>
-                  {imageCarouselDots}
-
-                  {/* Hero Content */}
-                  <div className="absolute inset-0 p-10 flex flex-col justify-end max-w-[1200px] mx-auto w-full">
-                    <div className="flex items-end justify-between gap-8">
-                      {/* Left side info */}
-                      <div className="flex-1 min-w-0 pb-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border flex items-center gap-1.5 ${isRTM ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : isNew ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'}`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${isRTM ? 'bg-emerald-400' : isNew ? 'bg-blue-400' : 'bg-amber-400'}`} />
-                            {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
-                          </div>
-                        </div>
-
-                        <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight font-serif mb-1">{d?.name}</h2>
-                        {d?.tagline && <p className="text-[18px] text-white/80 font-serif italic mb-4">{d.tagline}</p>}
-
-                        <div className="flex items-center gap-2 text-[14px] font-medium text-white/70 mb-6">
-                          <MapPin size={14} />
-                          <span>{d?.sector}, {d?.city}</span>
-                          <span>·</span>
-                          <span className="text-white/90">{d?.builder?.name}</span>
-                          {d?.rera_number && (
-                            <>
-                              <span>·</span>
-                              <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-                                <CheckCircle2 size={14} />
-                                RERA Verified
-                              </span>
-                            </>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-6">
-                           <div>
-                             <p className="text-3xl font-bold text-white tracking-tight leading-none">{detail?.price_range_label || project?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr Onwards` : 'Price on Request')}</p>
-                             <p className="text-[12px] text-white/60 uppercase tracking-wider mt-1.5">Price Range</p>
-                           </div>
-                           <div className="w-px h-10 bg-white/20" />
-                           <div>
-                             <p className="text-[20px] font-bold text-white tracking-tight leading-none">{bhkLabel}</p>
-                             <p className="text-[12px] text-white/60 uppercase tracking-wider mt-1.5">Configurations</p>
-                           </div>
-                        </div>
-
-                        {intelligenceChips && (
-                           <div className="mt-6 inline-block">
-                             <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3">
-                                <FileText size={18} className="text-emerald-400 flex-shrink-0" />
-                                <div>
-                                  <div className="flex items-center gap-2 mb-0.5">
-                                    <p className="text-[12px] font-bold text-white">Overview</p>
-                                  </div>
-                                  <p 
-                                    className={`text-[12px] text-white/70 cursor-pointer transition-all ${isOverviewExpanded ? '' : 'line-clamp-1'}`}
-                                    onClick={() => setIsOverviewExpanded(!isOverviewExpanded)}
-                                    title="Click to expand/collapse"
-                                  >
-                                    {decisionThesis || (persona && `Ideal for ${persona.charAt(0) + persona.slice(1).toLowerCase()}.`)}
-                                  </p>
-                                </div>
-                             </div>
-                           </div>
-                        )}
-                      </div>
-
-                      {/* Right side floating stats card */}
-                      <div className="w-[340px] bg-white rounded-2xl shadow-xl overflow-hidden flex-shrink-0 mb-4 z-10 border border-gray-100">
-                        <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
-                           <div className="p-4 text-center">
-                             <Building2 size={18} className="text-gray-400 mx-auto mb-2" />
-                             <p className="text-[18px] font-bold text-gray-900 leading-none mb-1">{d?.total_towers ? `${d.total_towers}` : '—'}</p>
-                             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Towers</p>
-                           </div>
-                           <div className="p-4 text-center">
-                             <MapIcon size={18} className="text-gray-400 mx-auto mb-2" />
-                             <p className="text-[18px] font-bold text-gray-900 leading-none mb-1">{(detail?.total_units ?? (d as any)?.total_units) ? `${(detail?.total_units ?? (d as any)?.total_units)}` : '—'}</p>
-                             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Units</p>
-                           </div>
-                           <div className="p-4 text-center">
-                             <FileIcon size={18} className="text-gray-400 mx-auto mb-2" />
-                             <p className="text-[18px] font-bold text-gray-900 leading-none mb-1">{d?.land_area_acres ? `${d.land_area_acres} Ac` : '—'}</p>
-                             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Land Area</p>
-                           </div>
-                        </div>
-                        <div className="p-5 flex items-center justify-between">
-                           <div>
-                             <p className="text-[11px] font-bold text-gray-500 mb-1">Recommendation Score</p>
-                             <div className="flex items-baseline gap-1">
-                               <span className="text-4xl font-black text-gray-900 tracking-tight leading-none">{heroScore ? Math.round(heroScore) : '—'}</span>
-                               {heroScore && <span className="text-[14px] text-gray-500 font-medium">/ 100</span>}
-                             </div>
-                           </div>
-                           <div className="text-right">
-                             <div className="flex text-amber-400 mb-1.5 justify-end">
-                               {Array.from({ length: 5 }).map((_, i) => (
-                                 <svg key={i} className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                               ))}
-                             </div>
-                             {heroTier && <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">{tierLabel[heroTier] ?? heroTier}</span>}
-                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {renderHero()}
 
                 {/* Sticky Header / Tabs */}
                 {stickyHeader}

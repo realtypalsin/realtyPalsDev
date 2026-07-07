@@ -335,24 +335,10 @@ export function computeConversationState(
   const thinking = getThinkingMessage(stage, intent)
 
   let chips: ChipAction[] = []
-  switch (stage) {
-    case 'DISCOVERY':
-      chips = getDiscoveryChips(intent)
-      break
-    case 'CLARIFYING':
-      chips = getClarifyingChips(intent, missingFields, results, chatHistory)
-      break
-    case 'SEARCHING':
-    case 'RESEARCH':
-      chips = getResearchChips(intent, results)
-      break
-    case 'COMPARING':
-      chips = getComparingChips(results)
-      break
-    case 'DECIDING':
-      chips = getDecidingChips(results)
-      break
-  }
+  
+  // To match the Notebook LM style, we strictly rely on the AI's <antml:chips>
+  // generation during an active conversation.
+  chips = []
 
   // Deduplicate by id (safety guard)
   const seen = new Set<string>()

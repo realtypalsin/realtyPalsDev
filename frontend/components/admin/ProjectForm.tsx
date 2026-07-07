@@ -31,6 +31,10 @@ interface ProjectData {
   long_description: string
   design_theme: string
   architect: string
+  interior_designer: string
+  floors: string
+  open_space_pct: string
+  green_rating: string
   hero_image_url: string
   marketing_claims: string[]
   ai_search_keywords: string[]
@@ -41,7 +45,7 @@ const EMPTY: ProjectData = {
   status: 'ready_to_move', tagline: '', address: '', lat: '', lng: '',
   rera_number: '', rera_url: '', total_units: '', total_towers: '',
   land_area_acres: '', launch_date: '', possession_label: '', possession_date: '',
-  description: '', long_description: '', design_theme: '', architect: '',
+  description: '', long_description: '', design_theme: '', architect: '', interior_designer: '', floors: '', open_space_pct: '', green_rating: '',
   hero_image_url: '', marketing_claims: [], ai_search_keywords: [],
 }
 
@@ -238,6 +242,10 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
       long_description:   form.long_description || undefined,
       design_theme:       form.design_theme || undefined,
       architect:          form.architect || undefined,
+      interior_designer:  form.interior_designer || undefined,
+      floors:             form.floors || undefined,
+      open_space_pct:     form.open_space_pct ? parseInt(form.open_space_pct) : undefined,
+      green_rating:       form.green_rating || undefined,
       hero_image_url:     form.hero_image_url || undefined,
       marketing_claims:   form.marketing_claims,
       ai_search_keywords: form.ai_search_keywords,
@@ -368,6 +376,22 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
 
         <Field label="Architect">
           <Input value={form.architect} onChange={set('architect')} placeholder="Architect firm name" />
+        </Field>
+        
+        <Field label="Interior Designer">
+          <Input value={form.interior_designer} onChange={set('interior_designer')} placeholder="Interior designer name" />
+        </Field>
+
+        <Field label="Floors" hint="e.g. G+26">
+          <Input value={form.floors} onChange={set('floors')} placeholder="G+26" />
+        </Field>
+
+        <Field label="Open Space (%)">
+          <Input value={form.open_space_pct} onChange={set('open_space_pct')} placeholder="75" type="number" />
+        </Field>
+
+        <Field label="Green Rating">
+          <Input value={form.green_rating} onChange={set('green_rating')} placeholder="IGBC Gold" />
         </Field>
 
 

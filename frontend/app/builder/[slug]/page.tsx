@@ -11,6 +11,8 @@ import {
   Star, Award
 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { applyTheme, ELITE_THEME, DEFAULT_THEME, type BuilderTheme } from '@/lib/builderTheme'
+import PropertyDetailThemed from '@/components/PropertyDetailThemed'
 
 interface BuilderProject {
   id: string
@@ -47,6 +49,7 @@ interface Builder {
   awards: string[]
   awards_count: number | null
   description: string | null
+  builder_theme?: BuilderTheme
   projects: BuilderProject[]
 }
 
@@ -78,6 +81,7 @@ export default function BuilderPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [activeFilter, setActiveFilter] = useState<'all' | 'ready_to_move' | 'under_construction'>('all')
+  const [theme, setTheme] = useState<BuilderTheme>(DEFAULT_THEME)
 
   useEffect(() => {
     if (!slug) return
@@ -86,7 +90,22 @@ export default function BuilderPage() {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()
       })
-      .then(d => setBuilder(d.builder ?? null))
+      .then(d => {
+        const builderData = d.builder ?? null
+        setBuilder(builderData)
+
+        // Apply builder theme if available
+        let selectedTheme = DEFAULT_THEME
+
+        if (builderData?.slug === 'elite-group' || builderData?.name?.toLowerCase().includes('elite')) {
+          selectedTheme = ELITE_THEME
+        } else if (builderData?.builder_theme) {
+          selectedTheme = builderData.builder_theme
+        }
+
+        setTheme(selectedTheme)
+        applyTheme(selectedTheme)
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [slug])
@@ -121,8 +140,9 @@ export default function BuilderPage() {
   const experienceYears = builder.founded_year ? new Date().getFullYear() - builder.founded_year : null
 
   return (
-    <div className="min-h-screen bg-[#f0f0f0]">
-      <div className="max-w-4xl mx-auto px-4 py-6">
+    <PropertyDetailThemed theme={theme}>
+      <div className="min-h-screen bg-[#f0f0f0]">
+        <div className="max-w-4xl mx-auto px-4 py-6">
 
         {/* Back */}
         <button
@@ -417,7 +437,8 @@ export default function BuilderPage() {
           Builder information sourced from public records and RERA disclosures. Always verify independently at up-rera.in before purchase decisions.
         </p>
 
+        </div>
       </div>
-    </div>
+    </PropertyDetailThemed>
   )
 }

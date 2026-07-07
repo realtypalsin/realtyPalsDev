@@ -21,6 +21,7 @@ import builderReputationRouter from './routes/builderReputation'
 import transcribeRouter from './routes/transcribe'
 import documentsRouter from './routes/documents'
 import registryPricesRouter from './routes/registryPrices'
+import builderRegistrationRouter from './routes/builderRegistration'
 
 // Synchronous env assertions — must run before any async work or app setup.
 for (const key of ['ADMIN_PASSWORD', 'DATABASE_URL'] as const) {
@@ -97,6 +98,7 @@ app.use('/api/v1/builder-reputation', builderReputationRouter)
 app.use('/api/v1/transcribe', transcribeRouter)
 app.use('/api/v1/documents', documentsRouter)
 app.use('/api/v1/registry-prices', registryPricesRouter)
+app.use('/api/v1/builder-registration', builderRegistrationRouter)
 
 // Global error handler — catches any error passed to next(err) or thrown in an
 // async route (via express-async-errors). Must be registered after all routes.

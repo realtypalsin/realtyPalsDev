@@ -9,7 +9,7 @@ interface RadarAxis {
 }
 
 interface PropertyRadarChartProps {
-  axes: RadarAxis[];
+  axes?: RadarAxis[];
   size?: number;
 }
 
@@ -50,7 +50,7 @@ export function generateRadarScores(property: {
   ];
 }
 
-export default function PropertyRadarChart({ axes, size = 200 }: PropertyRadarChartProps) {
+export default function PropertyRadarChart({ axes = [], size = 200 }: PropertyRadarChartProps) {
   const [animated, setAnimated] = useState(false);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export default function PropertyRadarChart({ axes, size = 200 }: PropertyRadarCh
   const cy = size / 2;
   const maxR = size * 0.38;
   const levels = 4;
-  const angleStep = (2 * Math.PI) / axes.length;
+  const angleStep = axes.length > 0 ? (2 * Math.PI) / axes.length : 0;
 
   // Get point coordinates
   const getPoint = (index: number, value: number) => {

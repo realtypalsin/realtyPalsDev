@@ -1,8 +1,9 @@
-﻿// backend/src/routes/leads.ts
+// backend/src/routes/leads.ts
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { verifyUser } from '../lib/auth'
+import { trackConversion } from '../lib/analytics/tracking'
 
 const router = Router()
 
@@ -25,6 +26,7 @@ const CallbackSchema = z.object({
   phone: z.string().min(10),
   projectName: z.string().optional(),
   projectSlug: z.string().optional(),
+  session_id: z.string().optional(),
   guestToken: z.string().optional(),
 })
 
@@ -43,10 +45,37 @@ router.post('/callback', async (req: Request, res: Response) => {
   const parsed = CallbackSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
 
-  const { name, phone, projectName, projectSlug, guestToken } = parsed.data
+  const { name, phone, projectName, projectSlug, guestToken, session_id } = parsed.data
+
+  // Get project and builder info for analytics
+  const project = await prisma.project.findUnique({
+    where: { slug: projectSlug },
+    select: { id: true, builder_id: true }
+  })
+
   const cb = await prisma.callbackRequest.create({
     data: { name, phone, project_name: projectName, project_slug: projectSlug, user_id: userId, guest_token: guestToken },
   })
+
+  // ─── ANALYTICS: Track conversion
+  if (session_id && project) {
+    await Promise.all([
+      trackConversion(session_id, 'callback_requested', project.id, project.builder_id),
+      // Also create BuilderLead record
+      prisma.builderLead.create({
+        data: {
+          builder_id: project.builder_id,
+          project_id: project.id,
+          lead_type: 'callback_requested',
+          name,
+          phone,
+          email: undefined,
+          source_session: session_id,
+          status: 'new',
+        }
+      })
+    ]).catch(err => console.error('[leads] Analytics tracking failed:', err))
+  }
 
   fireWebhook('callback_requested', { name, phone, projectName }).catch((e) => console.error('[leads] webhook failed:', e))
 
@@ -66,7 +95,7 @@ router.post('/site-visit', async (req: Request, res: Response) => {
     }
   }
 
-  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } })
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, builder_id: true } })
   if (!project) { res.status(404).json({ error: 'Project not found' }); return }
 
   const sv = await prisma.siteVisitRequest.create({
@@ -79,6 +108,26 @@ router.post('/site-visit', async (req: Request, res: Response) => {
       time_slot: timeSlot,
     },
   })
+
+  // ─── ANALYTICS: Track conversion
+  const { session_id } = req.body
+  if (session_id) {
+    await Promise.all([
+      trackConversion(session_id, 'site_visit_requested', project.id, project.builder_id),
+      prisma.builderLead.create({
+        data: {
+          builder_id: project.builder_id,
+          project_id: project.id,
+          lead_type: 'site_visit_requested',
+          name,
+          phone,
+          email: undefined,
+          source_session: session_id,
+          status: 'new',
+        }
+      })
+    ]).catch(err => console.error('[leads] Analytics tracking failed:', err))
+  }
 
   fireWebhook('site_visit_requested', { name, phone, projectName, visitDate, timeSlot }).catch((e) => console.error('[leads] webhook failed:', e))
 

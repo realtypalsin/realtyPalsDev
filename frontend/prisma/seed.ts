@@ -121,17 +121,24 @@ async function main() {
 
     // Cost plan tables (payment_plan / cost_sheet are 1:1 relations, upsert on project_id)
     if (payment_plan) {
+      const cleanPaymentPlan = { ...payment_plan }
       await prisma.paymentPlan.upsert({
         where: { project_id: project.id },
-        update: { ...payment_plan, verified_at: verifiedAt, verified_by: 'seed' },
-        create: { ...payment_plan, project_id: project.id, verified_at: verifiedAt, verified_by: 'seed' },
+        update: { ...cleanPaymentPlan, verified_at: verifiedAt, verified_by: 'seed' },
+        create: { ...cleanPaymentPlan, project: { connect: { id: project.id } }, verified_at: verifiedAt, verified_by: 'seed' },
       })
     }
     if (cost_sheet) {
+      const cleanCostSheet = { 
+        ...cost_sheet,
+        stamp_duty_pct: cost_sheet.stamp_duty_pct ?? 0,
+        registration_pct: cost_sheet.registration_pct ?? 0,
+        floor_rise_per_floor: cost_sheet.floor_rise_per_floor ?? 0
+      }
       await prisma.costSheet.upsert({
         where: { project_id: project.id },
-        update: { ...cost_sheet, verified_at: verifiedAt, verified_by: 'seed' },
-        create: { ...cost_sheet, project_id: project.id, verified_at: verifiedAt, verified_by: 'seed' },
+        update: { ...cleanCostSheet, verified_at: verifiedAt, verified_by: 'seed' },
+        create: { ...cleanCostSheet, project: { connect: { id: project.id } }, verified_at: verifiedAt, verified_by: 'seed' },
       })
     }
 

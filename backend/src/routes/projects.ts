@@ -78,6 +78,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
           best_for:           true,
           not_ideal_for:      true,
           confidence_sources: true,
+          intelligence_data:   true,
           last_verified_at:   true,
         },
       },
@@ -137,7 +138,9 @@ router.get('/:slug', async (req: Request, res: Response) => {
     last_verified_at:           project.dna.last_verified_at,
   } : null
 
-  res.json({ project: { ...project, builder_detail: project.builder, dna: publicDna, recommendation_score } })
+  const reportUrl = `/api/projects/${project.slug}/report`;
+
+  res.json({ project: { ...project, builder_detail: project.builder, dna: publicDna, recommendation_score, reportUrl } })
 })
 
 router.get('/:slug/documents', async (req: Request, res: Response) => {

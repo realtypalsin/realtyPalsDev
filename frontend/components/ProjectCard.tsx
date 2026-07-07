@@ -3,15 +3,12 @@
 import { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import {
-  ClockCountdown, CheckCircle, SealCheck,
-  Subway, AirplaneTakeoff, Path,
-  Leaf, Baby, Heart,
-  MapPin, ArrowRight, BookmarkSimple,
-  CaretLeft, CaretRight,
-  Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Barbell, Star, Buildings,
+  CheckCircle, SealCheck,
+  BookmarkSimple,
+  CaretLeft, CaretRight, CaretRight as ChevronRight,
+  Buildings, Phone, ShareNetwork, Robot, Bed,
 } from '@phosphor-icons/react'
-import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
+import type { ProjectCard as ProjectCardType } from '@/types/project'
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics'
 import { authHeaders } from '@/lib/authedFetch'
@@ -23,56 +20,44 @@ interface Props {
   index?: number
   onDetailOpen?: (project: ProjectCardType) => void
   onToast?: (message: string) => void
+  onAskAI?: (project: ProjectCardType) => void
+  onSetSiteVisit?: (project: ProjectCardType) => void
   quickActions?: React.ReactNode
 }
 
-const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
-  sports:    Barbell,
-  lifestyle: Star,
-  wellness:  Leaf,
-  kids:      Baby,
-  security:  SealCheck,
-  parking:   Car,
-}
-
-const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
-  metro:      Subway,
-  airport:    AirplaneTakeoff,
-  road:       Path,
-  expressway: Path,
-  school:     GraduationCap,
-  hospital:   Heart,
-  mall:       ShoppingBag,
-  landmark:   Bank,
-  university: BookOpen,
-}
-
-export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onToast, quickActions }: Props) {
+export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onToast, onAskAI, onSetSiteVisit, quickActions }: Props) {
   const [imgIdx, setImgIdx] = useState(0)
   const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set())
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [expandedUnits, setExpandedUnits] = useState(false)
+  const [showAllConfigs, setShowAllConfigs] = useState(false)
 
-  const isTopPick = index === 0
   const isRTM = project.status === 'ready_to_move'
   const isNew = project.status === 'new_launch'
-  const statusLabel = isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'
 
+  // Status badge config
+  const statusCfg = isRTM
+    ? { label: 'Ready to Move', dot: 'bg-emerald-400', bg: 'bg-emerald-950/70', text: 'text-emerald-300' }
+    : isNew
+    ? { label: 'New Launch', dot: 'bg-blue-400', bg: 'bg-blue-950/70', text: 'text-blue-300' }
+    : { label: 'Under Construction', dot: 'bg-amber-400', bg: 'bg-amber-950/70', text: 'text-amber-300' }
+
+  // Deduplicated BHK configuration rows
   const unitsByBhk = project.unit_types.reduce((acc, u) => {
-    if (!acc[u.bhk]) acc[u.bhk] = []
+    if (!acc[u.bhk]) acc[u.bhk] = new Set<string>()
     const area = u.carpet_area_sqft || u.super_area_sqft
-    if (area) acc[u.bhk].push(`${area}sqft`)
+    if (area) acc[u.bhk].add(`${area} sqft`)
     return acc
-  }, {} as Record<number, string[]>)
+  }, {} as Record<number, Set<string>>)
 
-  const bhkGroups = Object.entries(unitsByBhk)
+  const bhkRows = Object.entries(unitsByBhk)
     .sort(([a], [b]) => Number(a) - Number(b))
     .map(([bhk, areas]) => ({
       bhk: Number(bhk),
-      areas: [...new Set(areas)].sort((a, b) => parseInt(a) - parseInt(b))
+      area: [...areas].sort((a, b) => parseInt(a) - parseInt(b)).join(', ') || null,
     }))
 
+  // Images
   const uploadedImages = (project.images ?? [])
     .filter((i) => (i.type === 'exterior' || i.type === 'hero'))
     .map((i) => i.url)
@@ -140,17 +125,42 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
     }
   }
 
+  const handleAskAI = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    track('ask_ai_tapped', { project_slug: project.slug, project_name: project.name })
+    onAskAI?.(project)
+  }
+
+  const handleCall = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    track('call_tapped', { project_slug: project.slug })
+  }
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    track('share_tapped', { project_slug: project.slug })
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: project.name,
+          text: `${project.name} — ${project.price_range_label}`,
+          url: window.location.href,
+        })
+      } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(window.location.href)
+      onToast?.('Link copied!')
+    }
+  }
+
   return (
     <div
       onClick={() => onDetailOpen?.(project)}
-      className={`group relative w-full h-full flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0a0a0a] transition-all duration-300 ease-out cursor-pointer ${
-        isTopPick
-          ? 'ring-2 ring-[#C9960C] shadow-[0_0_0_4px_rgba(201,150,12,0.12),0_8px_32px_rgba(201,150,12,0.18)] hover:shadow-[0_0_0_5px_rgba(201,150,12,0.2),0_12px_40px_rgba(201,150,12,0.25)]'
-          : 'ring-1 ring-inset ring-gray-200/60 dark:ring-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]'
-      } md:hover:scale-[1.01]`}
+      className="group relative w-full h-full flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#111] cursor-pointer ring-1 ring-inset ring-gray-200/70 dark:ring-white/8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 md:hover:scale-[1.01]"
     >
-      {/* ── Hero image ── */}
-      <div className="relative h-[220px] overflow-hidden bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+
+      {/* ── Hero Image ── */}
+      <div className="relative h-[220px] overflow-hidden bg-gray-100 dark:bg-gray-900 flex-shrink-0">
         {workingImages.length > 0 && !allFailed ? (
           <>
             {workingImages.map((src, i) => (
@@ -169,27 +179,36 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
             ))}
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-[#f5f5f5] dark:bg-[#111]">
-            <Buildings size={44} weight="duotone" className="text-gray-300 dark:text-gray-700" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+            <Buildings size={48} weight="duotone" className="text-gray-300 dark:text-gray-600" />
           </div>
         )}
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+
+        {/* Status badge — bottom left on image */}
+        <div className={`absolute bottom-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-sm ${statusCfg.bg} border border-white/10`}>
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusCfg.dot}`} />
+          <span className={`text-[11px] font-semibold tracking-wide ${statusCfg.text}`}>{statusCfg.label}</span>
+        </div>
 
         {/* Carousel controls */}
         {hasMultiple && (
           <>
             <button
               onClick={prevImg}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-full flex items-center justify-center text-gray-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
             >
-              <CaretLeft size={14} weight="bold" />
+              <CaretLeft size={13} weight="bold" />
             </button>
             <button
               onClick={nextImg}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-full flex items-center justify-center text-gray-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
             >
-              <CaretRight size={14} weight="bold" />
+              <CaretRight size={13} weight="bold" />
             </button>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10 px-2 py-1 bg-black/40 rounded-full">
+            <div className="absolute bottom-3 right-3 flex gap-1 z-10">
               {workingImages.map((_, i) => (
                 <button
                   key={i}
@@ -201,109 +220,130 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
           </>
         )}
 
-
-
-        {/* Save button */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-          <button
-            onClick={handleSave}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${
-              saved ? 'bg-red-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:scale-105'
-            }`}
-            title={saved ? 'Unsave' : 'Save property'}
-          >
-            {saved
-              ? <BookmarkSimple size={15} weight="fill" />
-              : <BookmarkSimple size={15} weight="bold" />
-            }
-          </button>
-        </div>
+        {/* Save button — top right */}
+        <button
+          onClick={handleSave}
+          className={`absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm backdrop-blur-sm ${
+            saved
+              ? 'bg-red-500 text-white'
+              : 'bg-black/40 text-white hover:bg-black/60 hover:scale-105'
+          }`}
+          title={saved ? 'Unsave' : 'Save property'}
+        >
+          <BookmarkSimple size={15} weight={saved ? 'fill' : 'bold'} />
+        </button>
       </div>
 
       {/* ── Body ── */}
-      <div className="px-4 pt-3.5 pb-4 flex-1 flex flex-col bg-white dark:bg-[#0a0a0a]">
+      <div className="px-4 pt-3.5 pb-0 flex-1 flex flex-col bg-white dark:bg-[#111]">
 
-        {/* Name row + Price */}
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="text-[15px] font-bold text-gray-900 dark:text-gray-100 tracking-tight leading-snug truncate">
+        {/* Project name + RERA */}
+        <div className="flex items-start justify-between gap-2 mb-0.5">
+          <h3 className="text-[15px] font-bold text-gray-900 dark:text-gray-100 tracking-tight leading-snug line-clamp-1">
             {project.name}
           </h3>
-          {/* RERA badge — blue */}
           {project.rera_number && (
-            <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[5px] bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wide">
-              <CheckCircle size={10} weight="fill" className="text-blue-500" />
+            <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/30 border border-blue-200/70 dark:border-blue-700/50 text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wide">
+              <SealCheck size={10} weight="fill" className="text-blue-500" />
               RERA
             </span>
           )}
         </div>
 
-        {/* Builder · Sector */}
-        <div className="flex items-center gap-1.5 text-[12px] text-gray-500 dark:text-gray-400 mb-3">
-          <span className="font-medium truncate">{project.builder.name}</span>
-          <span className="opacity-40">·</span>
-          <span className="truncate">{project.sector}</span>
-        </div>
-
-        {/* Price — big hero number */}
-        <div className="mb-3">
-          <p className="text-[24px] font-black text-gray-900 dark:text-gray-50 tracking-tight leading-none">
-            {project.price_range_label}
-          </p>
-          <div className="flex items-center gap-2 mt-3">
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold tracking-wide ${
-              isRTM
-                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                : isNew
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
-                : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
-            }`}>
-              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-              {statusLabel}
+        {/* Builder · Sector · Possession */}
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <span className="text-[12px] text-gray-500 dark:text-gray-400 truncate">
+            <span className="font-medium">{project.builder.name}</span>
+            <span className="opacity-40 mx-1">·</span>
+            <span>{project.sector}</span>
+          </span>
+          {project.possession_label && !isRTM && (
+            <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap flex-shrink-0">
+              Possession: {project.possession_label}
             </span>
-            {project.possession_label && !isRTM && (
-              <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{project.possession_label}</span>
-            )}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-gray-100 dark:border-white/5 mb-3" />
-
-        {/* Configurations */}
-        <div className="flex flex-col gap-1.5 mb-1">
-          {(expandedUnits ? bhkGroups : bhkGroups.slice(0, 2)).map(g => (
-            <div key={g.bhk} className="flex items-baseline gap-2 text-[13px]">
-              <span className="font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap w-14 flex-shrink-0">{g.bhk} BHK</span>
-              {g.areas.length > 0 && (
-                <span className="text-gray-500 dark:text-gray-400 font-normal truncate">
-                  {g.areas.join(', ')}
-                </span>
-              )}
-            </div>
-          ))}
-          {bhkGroups.length > 2 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setExpandedUnits(prev => !prev) }}
-              className="text-[12px] font-semibold text-[#3061F2] dark:text-blue-400 hover:underline text-left mt-0.5"
-            >
-              {expandedUnits ? 'Show less ↑' : `+ ${bhkGroups.length - 2} more configurations`}
-            </button>
           )}
         </div>
 
-        {/* Quick Actions */}
-        {quickActions ? (
-          <div onClick={(e) => e.stopPropagation()} className="mt-auto">
-            {quickActions}
-          </div>
-        ) : (
-          <div className="absolute right-4 bottom-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-            <div className="w-8 h-8 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center shadow-md">
-              <ArrowRight size={14} weight="bold" />
-            </div>
-          </div>
-        )}
+        {/* Price */}
+        <p className="text-[23px] font-black text-gray-900 dark:text-white tracking-tight leading-none mb-3">
+          {project.price_range_label}
+        </p>
+
+        {/* Divider */}
+        <div className="border-t border-gray-100 dark:border-white/6 mb-2" />
+
+        {/* Configuration rows — tappable with chevron */}
+        {/* Configuration rows */}
+        <div className="flex flex-col mb-4">
+          {bhkRows.slice(0, showAllConfigs ? undefined : 2).map((row, idx, arr) => {
+            const isLast = idx === arr.length - 1 && (!showAllConfigs ? bhkRows.length <= 2 : true);
+            return (
+              <div
+                key={row.bhk}
+                className={`flex items-center justify-between py-2.5 ${isLast ? '' : 'border-b border-gray-100 dark:border-gray-800'}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[10px] bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                    <Bed size={16} weight="regular" className="text-[#3061F2] dark:text-blue-400" />
+                  </div>
+                  <span className="text-[14px] font-bold text-gray-900 dark:text-white">
+                    {row.bhk} BHK
+                  </span>
+                </div>
+                {row.area && (
+                  <span className="text-[12.5px] font-medium text-gray-500 dark:text-gray-400 text-right max-w-[50%] leading-snug">
+                    {row.area}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+          {!showAllConfigs && bhkRows.length > 2 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowAllConfigs(true); }}
+              className="text-[11.5px] font-medium text-[#3061F2] dark:text-blue-400 pt-2 px-1 text-left w-max hover:underline"
+            >
+              +{bhkRows.length - 2} more configurations
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* ── Bottom CTA Bar ── */}
+      {quickActions ? (
+        <div onClick={(e) => e.stopPropagation()} className="px-4 pb-4">
+          {quickActions}
+        </div>
+      ) : (
+        <div className="px-4 pb-4 pt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          {/* Ask AI — primary full-width pill */}
+          <button
+            onClick={handleAskAI}
+            className="flex-1 flex items-center justify-center gap-2 h-10 bg-[#3061F2] hover:bg-[#2451d4] active:scale-[0.98] rounded-full text-white text-[13px] font-semibold transition-all shadow-[0_2px_8px_rgba(48,97,242,0.35)] hover:shadow-[0_4px_16px_rgba(48,97,242,0.45)]"
+          >
+            <Robot size={16} weight="fill" />
+            Ask AI
+          </button>
+
+          {/* Call icon button */}
+          <button
+            onClick={handleCall}
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/8 hover:bg-gray-200 dark:hover:bg-white/12 text-gray-600 dark:text-gray-300 transition-all"
+            title="Request a callback"
+          >
+            <Phone size={16} weight="fill" />
+          </button>
+
+          {/* Share icon button */}
+          <button
+            onClick={handleShare}
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/8 hover:bg-gray-200 dark:hover:bg-white/12 text-gray-600 dark:text-gray-300 transition-all"
+            title="Share"
+          >
+            <ShareNetwork size={16} weight="fill" />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
