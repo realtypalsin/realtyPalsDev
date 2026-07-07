@@ -117,7 +117,7 @@ export default function BuilderNewsPage() {
         <div className="text-center py-12">Loading...</div>
       ) : news.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          No news posted yet. Click "New Post" to get started.
+          No news posted yet. Click &quot;New Post&quot; to get started.
         </div>
       ) : (
         <div className="space-y-4">

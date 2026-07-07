@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get builder for this user via BuilderAccount
-    const account = await prisma.builderAccount.findUnique({
+    const account = await prisma.builderAccount.findFirst({
       where: { user_id: userId },
       include: { builder: true }
     })
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get builder for this user via BuilderAccount
-    const account = await prisma.builderAccount.findUnique({
+    const account = await prisma.builderAccount.findFirst({
       where: { user_id: userId },
       include: { builder: true }
     })

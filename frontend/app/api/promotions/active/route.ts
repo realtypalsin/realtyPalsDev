@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '../../../../lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
         ends_at: true,
         impressions: true,
         clicks: true,
-        conversions: true
+        conversions: true,
+        target_bhk: true
       },
       orderBy: { created_at: 'desc' },
       take: 10
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
     // Filter by BHK if provided
     let filtered = promotions
     if (bhk && bhk > 0) {
-      filtered = promotions.filter(p => {
+      filtered = promotions.filter((p: any) => {
         return p.target_bhk.length === 0 || p.target_bhk.includes(bhk)
       })
     }

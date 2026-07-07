@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '../../../../lib/prisma'
 import { verifyUser } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const status = request.nextUrl.searchParams.get('status') || 'all'
 
     // Get builder for this user via BuilderAccount
-    const account = await prisma.builderAccount.findUnique({
+    const account = await prisma.builderAccount.findFirst({
       where: { user_id: userId },
       include: { builder: true }
     })
@@ -31,27 +31,29 @@ export async function GET(request: NextRequest) {
     const leads = await prisma.builderLead.findMany({
       where: {
         builder_id: builder.id,
-        ...(status !== 'all' && { status })
+        ...(status !== 'all' && { status: status as any })
       },
-      orderBy: { created_at: 'desc' },
-      include: {
-        project: {
-          select: { name: true }
-        }
-      }
+      orderBy: { created_at: 'desc' }
     })
 
-    const formatted = leads.map(lead => ({
+    const projectIds = Array.from(new Set(leads.map((l: any) => l.project_id).filter(Boolean))) as string[]
+    const projects = await prisma.project.findMany({
+      where: { id: { in: projectIds } },
+      select: { id: true, name: true }
+    })
+    const projectMap = new Map(projects.map((p: any) => [p.id, p.name]))
+
+    const formatted = leads.map((lead: any) => ({
       id: lead.id,
       name: lead.name,
       phone: lead.phone,
       email: lead.email,
       lead_type: lead.lead_type,
       project_id: lead.project_id,
-      project_name: lead.project?.name || 'Unknown',
+      project_name: lead.project_id ? projectMap.get(lead.project_id) || 'Unknown' : 'General Inquiry',
       status: lead.status,
       created_at: lead.created_at,
-      follow_up_date: lead.follow_up_date,
+      follow_up_date: (lead as any).follow_up_date || lead.contacted_at,
       notes: lead.notes
     }))
 

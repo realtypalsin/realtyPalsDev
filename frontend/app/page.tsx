@@ -50,46 +50,47 @@ export default function LandingPage() {
 
       <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center justify-center text-center">
         {/* Logo */}
-        <div className="mb-0 md:mb-4 flex flex-col items-center animate-fade-in-up">
+        <div className="mb-0 md:mb-6 flex flex-col items-center animate-fade-in-up">
           <Image
             src="/images/icons/ExpandedRealtyPalsWhite.png"
             alt="RealtyPals Logo"
-            width={350}
-            height={140}
-            className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105"
+            width={380}
+            height={150}
+            className="object-contain drop-shadow-[0_10px_30px_rgba(255,255,255,0.15)] transition-transform duration-700 hover:scale-105"
             priority
           />
         </div>
 
         {/* Hero text */}
         <h2
-          className="text-3xl md:text-5xl lg:text-[56px] leading-[1.2] md:leading-[1.15] text-white font-medium max-w-4xl tracking-tight drop-shadow-2xl animate-fade-in-up transform transition-all duration-700 hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+          className="text-3xl md:text-5xl lg:text-[56px] leading-[1.2] md:leading-[1.15] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 font-semibold max-w-4xl tracking-tight drop-shadow-2xl animate-fade-in-up transform transition-all duration-700"
           style={{ animationDelay: '0.2s' }}
         >
           Intelligence layer for smarter property decisions in Noida
         </h2>
 
         {/* CTA */}
-        <div className="mt-[60px] flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+        <div className="mt-14 flex flex-col sm:flex-row gap-5 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <button
             onClick={() => router.push('/discover')}
-            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-full text-base transition-all duration-200 shadow-2xl hover:shadow-blue-500/30 active:scale-95"
+            className="group px-10 py-4 bg-white hover:bg-gray-50 text-black font-semibold rounded-[16px] text-[15px] transition-all duration-300 shadow-[0_4px_14px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_25px_rgba(255,255,255,0.25)] active:scale-95 flex items-center justify-center gap-2"
           >
             Try RealtyPals
+            <span className="group-hover:translate-x-1 transition-transform duration-300 opacity-60">→</span>
           </button>
           <button
             onClick={() => router.push('/auth')}
-            className="px-10 py-4 bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-full text-base transition-all duration-200 active:scale-95"
+            className="px-10 py-4 bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-md border border-white/[0.08] hover:border-white/[0.15] text-white font-medium rounded-[16px] text-[15px] transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] active:scale-95"
           >
             Sign In
           </button>
         </div>
 
         {/* Features row */}
-        <div className="mt-16 flex flex-wrap justify-center gap-6 text-sm text-white/60 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-          {['AI-powered recommendations', 'Honest trade-off analysis', 'RERA verified data', 'Noida Sector 78 · 137 · 150'].map((f) => (
-            <span key={f} className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-blue-400" />
+        <div className="mt-20 flex flex-wrap justify-center gap-x-8 gap-y-4 text-[13px] font-medium text-white/50 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+          {['Zero Commission Bias', 'RERA-Verified Intelligence', 'Hyperlocal Noida Expertise', 'Predictive ROI Models'].map((f) => (
+            <span key={f} className="flex items-center gap-2.5 bg-white/[0.02] border border-white/[0.05] px-4 py-2 rounded-full shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
               {f}
             </span>
           ))}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, Clock, Eye, Click, TrendingUp } from 'lucide-react'
+import { Plus, Edit2, Trash2, Clock, Eye, MousePointerClick, TrendingUp } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 interface Promotion {
@@ -180,7 +180,7 @@ export default function PromotionsAdminPage() {
                   <span>{promo.impressions} impressions</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <Click className="w-4 h-4" />
+                  <MousePointerClick className="w-4 h-4" />
                   <span>{promo.clicks} clicks</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">

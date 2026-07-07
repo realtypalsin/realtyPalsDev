@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '../../../../../lib/prisma'
 import { verifyUser } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get builder for this user via BuilderAccount
-    const account = await prisma.builderAccount.findUnique({
+    const account = await prisma.builderAccount.findFirst({
       where: { user_id: userId },
       include: { builder: true }
     })
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const [projects, leads, news, views] = await Promise.all([
       prisma.project.count({ where: { builder_id: builder.id } }),
       prisma.builderLead.count({ where: { builder_id: builder.id } }),
-      prisma.builderNews.count({ where: { builder_id: builder.id, status: 'approved' } }),
+      prisma.builderNews.count({ where: { builder_id: builder.id, status: 'published' } }),
       prisma.builderLead.count({ where: { builder_id: builder.id } }) // Replace with actual view tracking
     ])
 

@@ -234,7 +234,7 @@ function MessageBubbleInner({
   // ── Extract <antml:chips> from content ──
   let displayContent = message.content || ''
   let dynamicChips: import('./types').ChipAction[] = []
-  const chipsMatch = displayContent.match(/<antml:chips>([\s\S]*?)<\/antml:chips>/)
+  const chipsMatch = displayContent.match(/(?:<)?antml:chips(?:>)?([\s\S]*?)<\/antml:chips>/)
   if (chipsMatch) {
     try {
       const parsed = JSON.parse(chipsMatch[1])
@@ -250,7 +250,7 @@ function MessageBubbleInner({
         }))
       }
     } catch (e) {}
-    displayContent = displayContent.replace(/<antml:chips>[\s\S]*?<\/antml:chips>/, '').trim()
+    displayContent = displayContent.replace(/(?:<)?antml:chips(?:>)?[\s\S]*?<\/antml:chips>/, '').trim()
   }
   const combinedChips = [...chips, ...dynamicChips]
 

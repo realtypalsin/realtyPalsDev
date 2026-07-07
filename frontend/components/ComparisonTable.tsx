@@ -851,10 +851,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                       <span className="text-gray-500">Delivery Risk</span>
                       <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.possession_certainty_label || '--'}</span>
                     </div>
-                    <div className="flex justify-between pb-1">
-                      <span className="text-gray-500">Litigation</span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.litigation_disputes_label || '--'}</span>
-                    </div>
+
                   </div>
                 ))}
               </div>
@@ -875,10 +872,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                         <span className="text-gray-500">Price PSF</span>
                         <span className="font-bold text-gray-900 dark:text-gray-100">{psf}</span>
                       </div>
-                      <div className="flex justify-between pb-1">
-                        <span className="text-gray-500">Loading %</span>
-                        <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.loading_efficiency_label || '--'}</span>
-                      </div>
+
                     </div>
                   )
                 })}
@@ -913,18 +907,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
               <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
                 {projects.map((p, i) => (
                   <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
-                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
-                      <span className="text-gray-500">Density</span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.project_density_label || '--'}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
-                      <span className="text-gray-500">Open Area</span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.open_area_label || '--'}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
-                      <span className="text-gray-500">Const. Quality</span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.construction_quality_label || '--'}</span>
-                    </div>
+
                     <div className="flex justify-between pb-1">
                       <span className="text-gray-500">Amenities</span>
                       <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1 text-right ml-2">{details[i]?.dna?.amenity_depth_label || '--'}</span>

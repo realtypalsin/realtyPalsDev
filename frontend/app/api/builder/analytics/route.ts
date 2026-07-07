@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '../../../../lib/prisma'
 import { verifyUser } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get builder for this user via BuilderAccount
-    const account = await prisma.builderAccount.findUnique({
+    const account = await prisma.builderAccount.findFirst({
       where: { user_id: userId },
       include: { builder: true }
     })
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       _count: true
     })
 
-    const lead_sources = leads.map(l => ({
+    const lead_sources = leads.map((l: any) => ({
       source: l.lead_type === 'callback_requested' ? 'Callback Requests' : 'Site Visit Requests',
       count: l._count
     }))
@@ -72,13 +72,13 @@ export async function GET(request: NextRequest) {
     })
 
     const top_projects = await Promise.all(
-      projects.slice(0, 5).map(async p => {
-        const project = await prisma.project.findUnique({
+      projects.slice(0, 5).map(async (p: any) => {
+        const project = p.project_id ? await prisma.project.findUnique({
           where: { id: p.project_id },
           select: { name: true }
-        })
+        }) : null
         return {
-          project_name: project?.name || 'Unknown',
+          project_name: project?.name || 'General Inquiry',
           views: p._count * 2.5,
           leads: p._count,
           conversion_rate: Math.random() * 0.3 + 0.1

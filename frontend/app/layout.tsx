@@ -44,6 +44,7 @@ export const viewport = {
 };
 
 import { Toaster } from "sonner";
+import { PingBackend } from "@/components/PingBackend";
 
 export default function RootLayout({
   children,
@@ -53,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
       <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#E4E4E5]">
+        <PingBackend />
         <div className="noise-overlay" />
         <PostHogProvider>{children}</PostHogProvider>
         <Toaster position="bottom-right" richColors closeButton theme="light" />

@@ -89,7 +89,7 @@ export default function PricingCharts({ priceHistory, unitPriceCr, otherCharges,
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} tickFormatter={(val) => `₹${val}`} />
                 <RechartsTooltip 
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Price PSF']}
+                  formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Price PSF']}
                 />
                 <Line type="monotone" dataKey="price_psf" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
               </LineChart>
@@ -120,7 +120,7 @@ export default function PricingCharts({ priceHistory, unitPriceCr, otherCharges,
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} tickFormatter={(val) => `${val}%`} />
                 <RechartsTooltip 
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: number) => [`+${value}%`, 'Projected Growth']}
+                  formatter={(value: any) => [`+${value}%`, 'Projected Growth']}
                 />
                 <Line type="monotone" dataKey="growth" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#10b981' }} activeDot={{ r: 6 }} />
               </LineChart>
@@ -156,7 +156,7 @@ export default function PricingCharts({ priceHistory, unitPriceCr, otherCharges,
                 <RechartsTooltip 
                   cursor={{ fill: '#F3F4F6' }}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Monthly EMI']}
+                  formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Monthly EMI']}
                 />
                 <Bar dataKey="emi" radius={[6, 6, 0, 0]}>
                   {emiData.map((entry, index) => (

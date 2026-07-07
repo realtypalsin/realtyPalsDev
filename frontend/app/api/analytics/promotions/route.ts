@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '../../../../lib/prisma'
 
 // Track promotional impression
 export async function POST(request: NextRequest) {
@@ -17,36 +17,47 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'impression') {
-      await prisma.promotionalImpression.create({
-        data: {
-          promotional_id,
-          session_id: session_id || null,
-          user_id: user_id || null,
-          guest_token: guest_token || null,
-        }
-      })
-      // Update stats
-      await prisma.promotional.update({
-        where: { id: promotional_id },
-        data: { impressions_count: { increment: 1 } }
-      })
+      await Promise.all([
+        prisma.promotionalInteraction.create({
+          data: {
+            promotional_id,
+            session_id: session_id || null,
+            user_id: user_id || null,
+            guest_token: guest_token || null,
+            interaction_type: 'impression',
+          }
+        }),
+        prisma.promotional.update({
+          where: { id: promotional_id },
+          data: { impressions: { increment: 1 } }
+        })
+      ])
       return NextResponse.json({ success: true })
     }
 
     if (action === 'click') {
-      await prisma.promotionalClick.create({
-        data: {
-          promotional_id,
-          session_id: session_id || null,
-          user_id: user_id || null,
-          guest_token: guest_token || null,
-        }
-      })
-      // Update stats
-      await prisma.promotional.update({
-        where: { id: promotional_id },
-        data: { clicks_count: { increment: 1 } }
-      })
+      await Promise.all([
+        prisma.promotionalInteraction.create({
+          data: {
+            promotional_id,
+            session_id: session_id || null,
+            user_id: user_id || null,
+            guest_token: guest_token || null,
+            interaction_type: 'click',
+          }
+        }),
+        prisma.promotional.update({
+          where: { id: promotional_id },
+          data: { clicks: { increment: 1 } }
+        }),
+        session_id ? prisma.chatAnalytics.updateMany({
+          where: { session_id },
+          data: {
+            promotional_id,
+            promo_clicked: true,
+          }
+        }) : Promise.resolve()
+      ])
       return NextResponse.json({ success: true })
     }
 

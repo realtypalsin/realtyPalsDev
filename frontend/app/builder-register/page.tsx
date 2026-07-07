@@ -12,7 +12,7 @@ export default function BuilderRegisterPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-2">Join RealtyPals as a Builder</h1>
           <p className="text-gray-600 text-lg">
-            Connect with buyers and manage your projects on India's trusted real estate advisor
+            Connect with buyers and manage your projects on India&apos;s trusted real estate advisor
           </p>
         </div>
         <BuilderRegistrationForm />

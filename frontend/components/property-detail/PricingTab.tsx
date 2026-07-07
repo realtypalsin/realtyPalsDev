@@ -61,7 +61,7 @@ export interface PricingTabProps {
 }
 
 export default function PricingTab({
-  unitTypes, floorPlanImages, _loading, detail, _projectStatus, _paymentPlan, _costSheet, onViewFloorPlans, onGoToCosts, onGoToOverview,
+  unitTypes, floorPlanImages, loading: _loading, detail, projectStatus: _projectStatus, paymentPlan: _paymentPlan, costSheet: _costSheet, onViewFloorPlans, onGoToCosts, onGoToOverview,
 }: PricingTabProps) {
   const [filter, setFilter] = useState<number | 'all'>('all')
   const [expandedUnitId, setExpandedUnitId] = useState<string | null>(null)

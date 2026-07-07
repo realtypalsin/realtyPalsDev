@@ -501,7 +501,7 @@ export default function IntelligenceTab({
                 <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 11, fontWeight: 600 }} />
                 <Radar name="Risk Level" dataKey="A" stroke="#ef4444" fill="#ef4444" fillOpacity={0.2} />
                 <RechartsTooltip 
-                  formatter={(val: number) => [val === 20 ? 'Low' : val === 50 ? 'Medium' : 'High', 'Risk Level']}
+                  formatter={(val: any) => [val === 20 ? 'Low' : val === 50 ? 'Medium' : 'High', 'Risk Level']}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
               </RadarChart>

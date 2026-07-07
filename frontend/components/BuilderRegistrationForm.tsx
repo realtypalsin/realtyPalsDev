@@ -141,7 +141,7 @@ export default function BuilderRegistrationForm() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      {toast && <Toast message={toast.message} />}
+      {toast && <Toast message={toast.message} onClose={() => setToast(null)} />}
 
       <div className="mb-8">
         <div className="flex justify-between mb-2">
