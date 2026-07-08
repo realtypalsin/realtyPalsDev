@@ -4,6 +4,8 @@
  * DELETE /api/builder/news/[id]
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyUser } from '@/lib/auth'

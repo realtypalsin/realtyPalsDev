@@ -693,7 +693,7 @@ export default function OverviewTab({
             {quickInfoItems.map((item, i) => {
               const Icon = item.icon
               return (
-                <div key={i} className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+                <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-4 flex items-center gap-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color}`}>
                     <Icon size={18} />
                   </div>
@@ -719,7 +719,7 @@ export default function OverviewTab({
                 const Icon = icons[i % icons.length]
                 const bg = bgs[i % bgs.length]
                 return (
-                  <div key={i} className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-2xl p-5 shadow-sm space-y-3.5">
+                  <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-3.5 transition-all hover:-translate-y-0.5">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bg}`}>
                       <Icon size={18} />
                     </div>
@@ -746,7 +746,7 @@ export default function OverviewTab({
             {unitTypes.map((opt, i) => {
               const startsAt = opt.super_area_sqft && opt.price_min_cr ? `Starts ₹${Math.round((opt.price_min_cr * 10000000) / opt.super_area_sqft).toLocaleString('en-IN')}/sqft` : null;
               return (
-                <div key={i} className="border border-gray-100 dark:border-gray-850 hover:border-[#c47860]/40 hover:bg-[#c47860]/5 bg-white dark:bg-[#171412] rounded-2xl p-5 shadow-sm space-y-4 transition-all duration-300">
+                <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 transition-all duration-300 hover:-translate-y-0.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[16px] font-black text-gray-900 dark:text-white">{opt.name || `${opt.bhk} BHK`}</span>
                     <BedDouble size={18} className="text-gray-400" />
@@ -779,7 +779,7 @@ export default function OverviewTab({
           </div>
           <button 
             onClick={onGoToPricing} 
-            className="w-full py-3.5 bg-white dark:bg-[#171412] hover:bg-gray-50 border border-gray-200 dark:border-gray-800/40 rounded-2xl text-[13px] font-extrabold text-gray-700 dark:text-gray-300 transition-colors flex items-center justify-center gap-2 shadow-sm"
+            className="w-full py-3.5 bg-white dark:bg-[#111] hover:bg-gray-50 dark:hover:bg-white/5 ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] text-[13px] font-extrabold text-gray-700 dark:text-gray-300 transition-colors flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
             Compare All Unit Types
@@ -791,7 +791,7 @@ export default function OverviewTab({
           
           {/* Key Highlights */}
           {marketingClaims.length > 0 && (
-            <div className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm space-y-6">
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
               <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
                 Key Highlights
               </h2>
@@ -929,13 +929,19 @@ export default function OverviewTab({
         <div className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-6 space-y-2">
             <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Built by {d?.builder?.name ?? '--'}
+              Built by {d?.builder?.name ?? (loading ? <span className="inline-block w-24 h-5 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" /> : '--')}
             </h2>
-            {(detail?.builder_detail?.company_overview) && (
+            {loading && !detail?.builder_detail ? (
+              <div className="space-y-1.5 mt-2">
+                <div className="h-3 w-full bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                <div className="h-3 w-[90%] bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                <div className="h-3 w-[70%] bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+              </div>
+            ) : detail?.builder_detail?.company_overview ? (
               <p className="text-[12.5px] text-gray-500 dark:text-gray-400 leading-relaxed font-semibold">
                 {detail.builder_detail.company_overview}
               </p>
-            )}
+            ) : null}
           </div>
           <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
@@ -945,8 +951,17 @@ export default function OverviewTab({
               { label: 'ISO Certified', val: detail?.builder_detail?.iso_certified === true ? 'Certified' : detail?.builder_detail?.iso_certified === false ? 'Not Certified' : '--' }
             ].map((b, i) => (
               <div key={i} className="bg-gray-50 dark:bg-[#201c18] border border-gray-100 dark:border-gray-800/40 rounded-xl p-3.5 text-center">
-                <p className="text-[15px] font-black text-gray-800 dark:text-white leading-none">{b.val}</p>
-                <p className="text-[9px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-1">{b.label}</p>
+                {loading && !detail?.builder_detail ? (
+                  <div className="flex flex-col items-center justify-center h-full space-y-2">
+                    <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-[15px] font-black text-gray-800 dark:text-white leading-none">{b.val}</p>
+                    <p className="text-[9px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-1">{b.label}</p>
+                  </>
+                )}
               </div>
             ))}
           </div>

@@ -16,6 +16,7 @@ interface UnitRow {
   price_max_cr: number | null
   price_label: string | null
   price_is_estimated: boolean
+  views?: any
 }
 
 interface LocalRow extends UnitRow {
@@ -27,6 +28,7 @@ interface LocalRow extends UnitRow {
   _min: string
   _max: string
   _label: string
+  _views: any[]
 }
 
 function toLocal(u: UnitRow): LocalRow {
@@ -40,6 +42,7 @@ function toLocal(u: UnitRow): LocalRow {
     _min:    u.price_min_cr?.toString() ?? '',
     _max:    u.price_max_cr?.toString() ?? '',
     _label:  u.price_label ?? '',
+    _views:  u.views || [],
   }
 }
 
@@ -70,6 +73,7 @@ export default function UnitsEditor({
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState(EMPTY_ADD)
   const [addSaving, setAddSaving] = useState(false)
+  const [uploadingView, setUploadingView] = useState<string | null>(null)
   const [err, setErr]         = useState<string | null>(null)
 
   function patchRow(id: string, key: keyof LocalRow, val: string | boolean) {
@@ -92,6 +96,7 @@ export default function UnitsEditor({
       price_max_cr:       row._max  ? parseFloat(row._max)  : null,
       price_label:        row._label || null,
       price_is_estimated: row.price_is_estimated,
+      views:              row._views,
     }
     const res = await fetch(`${API_BASE}/admin/units/${row.id}`, {
       method: 'PATCH', credentials: 'include',
@@ -122,6 +127,39 @@ export default function UnitsEditor({
       setErr('Delete failed')
     }
     setDeleting(s => { const n = new Set(s); n.delete(id); return n })
+  }
+
+  async function handleUploadView(e: React.ChangeEvent<HTMLInputElement>, rowId: string) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingView(rowId)
+    setErr(null)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      form.append('slug', 'unit-view') // generic slug folder
+      const upRes = await fetch(`${API_BASE}/admin/upload-image`, {
+        method: 'POST', credentials: 'include', body: form,
+      })
+      if (!upRes.ok) throw new Error('Upload failed')
+      const { url } = await upRes.json()
+      
+      const newView = { image_url: url, title: 'Unit View', subtitle: 'Actual view from this tower/floor' }
+      setRows(rs => rs.map(r => r.id === rowId ? { ...r, _views: [...r._views, newView] } : r))
+      setDirty(s => new Set(s).add(rowId))
+      setSaved(s => { const n = new Set(s); n.delete(rowId); return n })
+    } catch (err: any) {
+      setErr(err.message)
+    } finally {
+      setUploadingView(null)
+      e.target.value = ''
+    }
+  }
+
+  function removeView(rowId: string, viewIdx: number) {
+    setRows(rs => rs.map(r => r.id === rowId ? { ...r, _views: r._views.filter((_: any, i: number) => i !== viewIdx) } : r))
+    setDirty(s => new Set(s).add(rowId))
+    setSaved(s => { const n = new Set(s); n.delete(rowId); return n })
   }
 
   async function addUnit() {
@@ -289,7 +327,29 @@ export default function UnitsEditor({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1 border-t border-zinc-100">
+            <div className="pt-4 mt-4 border-t border-zinc-100">
+              <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Unit Views (Images)</p>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {row._views.map((vw: any, idx: number) => (
+                  <div key={idx} className="relative w-24 h-24 rounded-xl bg-zinc-100 flex-shrink-0 group overflow-hidden border border-zinc-200">
+                    {vw.image_url && <img src={vw.image_url} alt="View" className="absolute inset-0 w-full h-full object-cover" />}
+                    <button 
+                      onClick={() => removeView(row.id, idx)}
+                      className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+                <label className="flex flex-col items-center justify-center w-24 h-24 rounded-xl border-2 border-dashed border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 cursor-pointer flex-shrink-0 transition-all text-zinc-400 hover:text-zinc-600">
+                  {uploadingView === row.id ? <Loader2 size={16} className="animate-spin mb-1" /> : <Plus size={16} className="mb-1" />}
+                  <span className="text-[10px] font-bold">Add View</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUploadView(e, row.id)} disabled={uploadingView === row.id} />
+                </label>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1 border-t border-zinc-100 mt-2">
               <button
                 onClick={() => deleteRow(row.id)}
                 disabled={deleting.has(row.id)}

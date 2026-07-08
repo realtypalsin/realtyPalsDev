@@ -110,9 +110,10 @@ export function buildExpansionBlock(expansion: NearbyExpansion): string {
   return `\n\n## CONSTRAINT EXPANSION — MANDATORY DISCLOSURE
 The user requested ${expansion.requestedSector} but no matching inventory exists there.
 Results below are NEARBY ALTERNATIVES from ${sectorsLabel}.
-YOU MUST begin your response by clearly disclosing this to the user.
-Say something like: "I couldn't find matching options in ${expansion.requestedSector}, so I'm showing nearby alternatives from ${sectorsLabel}."
-NEVER present these results as ${expansion.requestedSector} properties.`
+YOU MUST begin your response by clearly disclosing this to the user in a highly professional, marketing-oriented tone.
+Say something like: "We are currently not serving ${expansion.requestedSector}, but we are continuously evaluating new areas and will be expanding our verified intelligence there soon! In the meantime, we have curated some exceptional premium options in nearby areas like ${sectorsLabel} that you might love."
+NEVER present these results as ${expansion.requestedSector} properties.
+Ensure the tone is welcoming and matches how a premium real estate marketing person would communicate.`
 }
 
 // Strip characters that could affect system prompt structure.
@@ -230,6 +231,17 @@ function serializeProjects(projects: ScoredProject[]): string {
         decision_tradeoffs:   p.decisionIntelligence.tradeoffs,
         decision_bottom_line: p.decisionIntelligence.bottomLine,
       } : {}),
+      // Track C: Add intelligence_data fields to AI context
+      ...((p as any).intelligence_data?.transparency_checks ? {
+        transparency_checks: (p as any).intelligence_data.transparency_checks
+      } : {}),
+      ...((p as any).intelligence_data?.riskRadar ? {
+        riskRadar: (p as any).intelligence_data.riskRadar
+      } : {}),
+      ...((p as any).intelligence_data?.investment_insights ? {
+        rental_yield: (p as any).intelligence_data.investment_insights.rental_yield,
+        appreciation_annual: (p as any).intelligence_data.investment_insights.appreciation_annual,
+      } : {}),
       ...(p.whyNot?.reasons?.length ? {
         why_ranked_lower: p.whyNot.reasons.map((r) => r.detail),
       } : {}),
@@ -272,19 +284,19 @@ export function buildProjectsBlock(
 This sector has no projects in the RealtyPals database and is not in our current coverage.
 You MUST NOT invent project names, prices, carpet areas, or any property data for it.
 
-Use EXACTLY this response structure — no deviations:
+Use EXACTLY this response structure — no deviations. The tone must be highly professional, welcoming, and match how a luxury real estate marketing person would speak:
 
-🏗️ **Coverage Status**
-We aren't actively serving [sector name] yet. We're continuously expanding our verified project intelligence as reliable data becomes available.
+🌟 **Upcoming Expansion**
+We are currently not serving [sector name], but we are continuously evaluating new areas and will be expanding our verified project intelligence there soon!
 
-**Nearby sectors we currently cover:**
-• [Sector X] — [one-line why it's relevant: proximity, similar profile, RTM options, etc.]
+**In the meantime, we have curated some exceptional premium options in nearby areas that you might love:**
+• [Sector X] — [one-line why it's relevant: proximity, similar profile, premium RTM options, etc.]
 • [Sector Y] — [one-line relevance]
 • [Sector Z] — [one-line relevance]
 
-(List 2–3 genuinely nearby sectors only. If you don't know which sectors are nearby, say "Here are some well-covered sectors nearby" without inventing adjacency.)
+(List 2–3 genuinely nearby sectors only. If you don't know which sectors are nearby, say "Here are some well-covered premium sectors nearby" without inventing adjacency.)
 
-Then ask: "Want me to search any of these instead?"
+Then ask: "Would you like me to curate some options from any of these areas instead?"
 
 NEVER say: "No results found", "I couldn't find any properties", or any failure language.
 NEVER invent nearby sector names — only suggest sectors you can verify are in the Noida/Greater Noida area.`
@@ -375,11 +387,17 @@ export function buildMemorySummary(memory: {
   sector_preference?: string | null
   purpose?: string | null
   viewed_slugs?: string[]
+  current_session_viewed?: string[] // Track C: current session viewed projects
 }): string {
   const parts: string[] = []
   if (memory.bhk_preference) parts.push(`Past BHK preference: ${memory.bhk_preference}BHK`)
   if (memory.budget_max_cr) parts.push(`Past budget: ₹${memory.budget_max_cr}Cr`)
   if (memory.sector_preference) parts.push(`Past sector interest: ${memory.sector_preference}`)
   if (memory.viewed_slugs?.length) parts.push(`Previously viewed: ${memory.viewed_slugs.slice(0, 3).join(', ')}`)
-  return parts.length ? `Returning user — use as defaults when not re-stated: ${parts.join(' · ')}\n` : ''
+  
+  let summary = parts.length ? `Returning user — use as defaults when not re-stated: ${parts.join(' · ')}\n` : ''
+  if (memory.current_session_viewed?.length) {
+    summary += `User recently viewed in THIS session: ${memory.current_session_viewed.join(', ')}. When user says "this", "that", or "how does it compare", they refer to these.\n`
+  }
+  return summary
 }

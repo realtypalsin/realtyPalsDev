@@ -185,11 +185,11 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
     <div className="space-y-6 md:space-y-10 py-4">
 
       {/* 1. Pricing Overview */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[28px] p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all duration-300">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-black/5 dark:border-white/5 pb-4">
           <div>
-            <h2 className="text-[24px] md:text-[28px] font-black text-gray-900 tracking-tight">Pricing &amp; Investment</h2>
-            <p className="text-[14px] text-gray-500 mt-1">Transparent pricing, flexible plans and complete cost breakdown.</p>
+            <h2 className="text-[18px] font-black font-sans tracking-tight text-gray-900 dark:text-white leading-none">Pricing &amp; Investment</h2>
+            <p className="text-[13px] text-gray-500 mt-2">Transparent pricing, flexible plans and complete cost breakdown.</p>
           </div>
           {reraNum && (
             <div className="flex items-center gap-2 px-4 py-2 bg-blue-50/50 border border-blue-100 rounded-full">
@@ -314,11 +314,11 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
       </div>
 
       {/* 2. Cost Breakdown — only when we have cost sheet + price data */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[28px] p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all duration-300">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-black/5 dark:border-white/5 pb-4">
           <div>
-            <h2 className="text-[24px] font-black text-gray-900 tracking-tight">Cost Breakdown</h2>
-            <p className="text-[14px] text-gray-500 mt-1">
+            <h2 className="text-[18px] font-black font-sans tracking-tight text-gray-900 dark:text-white leading-none">Cost Breakdown</h2>
+            <p className="text-[13px] text-gray-500 mt-2">
               {hasCostSheet && basePrice != null
                 ? 'Interactive chart. Hover entries to isolate cost components.'
                 : 'Detailed cost breakdown available upon inquiry.'}
@@ -424,10 +424,10 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
       </div>
 
       {/* 3. Additional Charges — from cost sheet rates */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-        <div className="mb-8">
-          <h2 className="text-[24px] font-black text-gray-900 tracking-tight">Additional Charges</h2>
-          <p className="text-[14px] text-gray-500 mt-1">Government taxes and one-time charges for complete transparency.</p>
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[28px] p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all duration-300">
+        <div className="mb-8 border-b border-black/5 dark:border-white/5 pb-4">
+          <h2 className="text-[18px] font-black font-sans tracking-tight text-gray-900 dark:text-white leading-none">Additional Charges</h2>
+          <p className="text-[13px] text-gray-500 mt-2">Government taxes and one-time charges for complete transparency.</p>
         </div>
 
         {!hasCostSheet ? (
@@ -506,10 +506,10 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
       </div>
 
       {/* 4. Investment Insights — from intelligence_data or empty state */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-        <div className="mb-8">
-          <h2 className="text-[24px] font-black text-gray-900 tracking-tight">Investment Insights</h2>
-          <p className="text-[14px] text-gray-500 mt-1">Understand the investment potential of {detail?.name ?? 'this project'}.</p>
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[28px] p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all duration-300">
+        <div className="mb-8 border-b border-black/5 dark:border-white/5 pb-4">
+          <h2 className="text-[18px] font-black font-sans tracking-tight text-gray-900 dark:text-white leading-none">Investment Insights</h2>
+          <p className="text-[13px] text-gray-500 mt-2">Understand the investment potential of {detail?.name ?? 'this project'}.</p>
         </div>
 
         {!investmentInsights ? (
@@ -531,7 +531,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
               ].map((insight, i) => {
                 const Icon = insight.icon
                 return (
-                  <div key={i} className="border border-gray-100 rounded-2xl p-5">
+                  <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5">
                     <div className="flex items-center gap-3 mb-4">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${insight.color}`}>
                         <Icon size={18} />

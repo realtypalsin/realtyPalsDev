@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Plus, Trash, PencilSimple, FloppyDisk, Spinner, CheckCircle, DotsSixVertical } from '@phosphor-icons/react'
+import { Plus, Trash2, Pencil, Save, Loader2, CheckCircle2, GripVertical } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 
-type ImageType = 'hero' | 'exterior' | 'interior' | 'floor_plan' | 'amenity' | 'master_plan' | 'clubhouse' | 'pool' | 'location_map'
+type ImageType = 'hero' | 'exterior' | 'interior' | 'floor_plan' | 'amenity' | 'master_plan' | 'clubhouse' | 'pool' | 'location_map' | 'view'
 
 interface ProjectImage {
   id:         string
@@ -24,7 +24,7 @@ interface Props {
   onSaved:   () => Promise<void>
 }
 
-const IMAGE_TYPES: ImageType[] = ['hero', 'exterior', 'interior', 'floor_plan', 'amenity', 'master_plan', 'clubhouse', 'pool', 'location_map']
+const IMAGE_TYPES: ImageType[] = ['hero', 'exterior', 'interior', 'floor_plan', 'amenity', 'master_plan', 'clubhouse', 'pool', 'location_map', 'view']
 
 const TYPE_LABELS: Record<ImageType, string> = {
   hero:         'Hero',
@@ -36,6 +36,7 @@ const TYPE_LABELS: Record<ImageType, string> = {
   clubhouse:    'Clubhouse',
   pool:         'Pool',
   location_map: 'Location Map',
+  view:         'View From Home',
 }
 
 interface EditState {
@@ -240,7 +241,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
             </>
           )}
           <label className="flex items-center gap-2 text-[13px] font-bold text-white bg-slate-900 hover:bg-black px-5 py-2.5 rounded-full transition-all cursor-pointer shadow-sm">
-            {uploading ? <Spinner size={14} className="animate-spin" /> : <Plus size={14} weight="bold" />}
+            {uploading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
             Upload Image
             <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
           </label>
@@ -250,7 +251,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
       {error   && <p className="text-[12px] text-red-500 mb-3">{error}</p>}
       {success && (
         <p className="flex items-center gap-1 text-[12px] text-emerald-600 mb-3">
-          <CheckCircle size={13} weight="fill" /> {success}
+          <CheckCircle2 size={13} className="fill-current" /> {success}
         </p>
       )}
 
@@ -277,7 +278,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
             >
               {/* Drag handle */}
               <div className="absolute top-2 left-2 z-10 w-6 h-6 bg-black/40 backdrop-blur-sm rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
-                <DotsSixVertical size={12} className="text-white" weight="bold" />
+                <GripVertical size={12} className="text-white" />
               </div>
 
               <div className="relative h-32 bg-slate-50">
@@ -322,7 +323,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
                       disabled={editState.saving}
                       className="flex-1 flex items-center justify-center gap-1 text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 py-1 rounded-lg"
                     >
-                      {editState.saving ? <Spinner size={11} className="animate-spin" /> : <FloppyDisk size={11} />}
+                      {editState.saving ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
                       Save
                     </button>
                     <button
@@ -347,13 +348,13 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
                       onClick={() => startEdit(img)}
                       className="flex items-center justify-center gap-1.5 flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[11px] font-bold py-1.5 rounded-lg transition-colors"
                     >
-                      <PencilSimple size={12} weight="bold" /> Edit
+                      <Pencil size={12} /> Edit
                     </button>
                     <button
                       onClick={() => handleDelete(img.id)}
                       className="flex items-center justify-center gap-1.5 flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold py-1.5 rounded-lg transition-colors"
                     >
-                      <Trash size={12} weight="bold" /> Delete
+                      <Trash2 size={12} /> Delete
                     </button>
                   </div>
                 </div>
@@ -365,3 +366,4 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
     </div>
   )
 }
+

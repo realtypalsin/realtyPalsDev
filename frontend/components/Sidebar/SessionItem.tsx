@@ -16,13 +16,15 @@ function getOrCreateObserver(): PerformanceObserver {
         if (nt && !nt.rscEnd) {
           nt.rscStart = e.startTime;
           nt.rscEnd = e.startTime + e.duration;
-          console.log(
-            `[NAV] RSC fetch: start +${(e.startTime - nt.t0).toFixed(1)}ms` +
-            ` | ttfb +${((e.startTime + (e as any).responseStart) - nt.t0).toFixed(1)}ms` +
-            ` | duration ${e.duration.toFixed(1)}ms` +
-            ` | end +${(nt.rscEnd - nt.t0).toFixed(1)}ms` +
-            ` | url ${e.name.split('?')[0].split('/').slice(-2).join('/')}`
-          );
+          if (process.env.NODE_ENV === 'development') {
+            console.log(
+              `[NAV] RSC fetch: start +${(e.startTime - nt.t0).toFixed(1)}ms` +
+              ` | ttfb +${((e.startTime + (e as any).responseStart) - nt.t0).toFixed(1)}ms` +
+              ` | duration ${e.duration.toFixed(1)}ms` +
+              ` | end +${(nt.rscEnd - nt.t0).toFixed(1)}ms` +
+              ` | url ${e.name.split('?')[0].split('/').slice(-2).join('/')}`
+            );
+          }
           globalPerfObserver?.disconnect();
           globalPerfObserver = null;
         }
@@ -169,7 +171,7 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
         // [TIMING] mark sidebar click as t0
         const t0 = performance.now()
         ;(window as any).__navTimings = { t0 }
-        console.log('[NAV] 1. sidebar-click  t=0ms')
+        if (process.env.NODE_ENV === 'development') console.log('[NAV] 1. sidebar-click  t=0ms')
 
         // [TIMING] Reuse global observer to avoid repeated creation
         if (typeof PerformanceObserver !== 'undefined') {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Trash, UploadSimple, Spinner, FilePdf, CheckCircle } from '@phosphor-icons/react'
+import { Trash2, Upload, Loader2, FileText, CheckCircle2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 
 interface ProjectDocument {
@@ -59,12 +59,15 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
         credentials: 'include',
         body:        form,
       })
-      if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? 'Upload failed') }
+      if (!res.ok) { 
+        const j = await res.json().catch(() => ({})); 
+        throw new Error(j.error ?? 'We were unable to upload your document at this time.') 
+      }
       const data = await res.json()
-      flash('Document uploaded')
+      flash('Document successfully uploaded')
       await onSaved()
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Upload failed')
+      setError(e instanceof Error ? e.message : 'An unexpected error occurred during upload.')
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -72,14 +75,19 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
   }
 
   const handleDelete = async (id: string) => {
+    // Optimistic delete
     setRows(r => r.filter(x => x.id !== id))
     try {
       const res = await fetch(`${API_BASE}/admin/documents/${id}`, { method: 'DELETE', credentials: 'include' })
-      if (!res.ok) throw new Error('Delete failed')
-      flash('Deleted')
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({})); 
+        throw new Error(j.error ?? 'Delete operation failed.')
+      }
+      flash('Document removed')
       await onSaved()
-    } catch {
-      setError('Delete failed')
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Unable to delete document at this time.')
+      // Revert optimistic delete on failure
       setRows(initial)
     }
   }
@@ -100,7 +108,7 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
             {DOC_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
           </select>
           <label className="flex items-center gap-2 text-[13px] font-bold text-white bg-slate-900 hover:bg-black px-5 py-2.5 rounded-full transition-all cursor-pointer shadow-sm">
-            {uploading ? <Spinner size={14} className="animate-spin" /> : <UploadSimple size={14} weight="bold" />}
+            {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
             Upload Document
             <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleUpload} disabled={uploading} />
           </label>
@@ -110,7 +118,7 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
       {error   && <p className="text-[12px] text-red-500 mb-3">{error}</p>}
       {success && (
         <p className="flex items-center gap-1 text-[12px] text-emerald-600 mb-3">
-          <CheckCircle size={13} weight="fill" /> {success}
+          <CheckCircle2 size={13} className="fill-current" /> {success}
         </p>
       )}
 
@@ -122,7 +130,7 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
             <div key={doc.id} className="group flex items-center justify-between py-4 hover:bg-slate-50/50 transition-colors px-2 rounded-xl">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
-                  <FilePdf size={20} weight="duotone" className="text-red-500" />
+                  <FileText size={20} className="text-red-500" />
                 </div>
                 <div>
                   <a
@@ -143,7 +151,7 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
                 onClick={() => handleDelete(doc.id)}
                 className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg text-rose-500 hover:bg-rose-50 hover:border-rose-100 hover:text-rose-600 transition-all"
               >
-                <Trash size={14} weight="bold" />
+                <Trash2 size={14} />
               </button>
             </div>
           ))}
@@ -152,3 +160,4 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
     </div>
   )
 }
+

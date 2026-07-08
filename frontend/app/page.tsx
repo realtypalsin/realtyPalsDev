@@ -34,8 +34,8 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] w-full flex flex-col justify-center items-center overflow-hidden bg-black no-overscroll">
-      {/* Background */}
+    <div className="relative min-h-[100dvh] w-full flex flex-col justify-center items-center overflow-hidden bg-[#050505] no-overscroll">
+      {/* Background - Minimalist Dark Canvas */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/backgrounds/newBg.jpeg"
@@ -50,47 +50,55 @@ export default function LandingPage() {
 
       <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center justify-center text-center">
         {/* Logo */}
-        <div className="mb-0 md:mb-6 flex flex-col items-center animate-fade-in-up">
+        <div className="mb-8 md:mb-12 flex flex-col items-center animate-fade-in-up">
           <Image
             src="/images/icons/ExpandedRealtyPalsWhite.png"
             alt="RealtyPals Logo"
-            width={380}
-            height={150}
-            className="object-contain drop-shadow-[0_10px_30px_rgba(255,255,255,0.15)] transition-transform duration-700 hover:scale-105"
+            width={240}
+            height={80}
+            className="object-contain drop-shadow-[0_4px_12px_rgba(255,255,255,0.05)] transition-transform duration-700"
             priority
           />
         </div>
 
-        {/* Hero text */}
-        <h2
-          className="text-3xl md:text-5xl lg:text-[56px] leading-[1.2] md:leading-[1.15] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 font-semibold max-w-4xl tracking-tight drop-shadow-2xl animate-fade-in-up transform transition-all duration-700"
+        {/* Hero text - Huge, tracking-tighter, high contrast */}
+        <h1
+          className="text-4xl md:text-6xl lg:text-[72px] leading-[1.1] md:leading-[1.05] text-white font-semibold max-w-4xl tracking-tighter animate-fade-in-up transform transition-all duration-700"
+          style={{ animationDelay: '0.1s' }}
+        >
+          Intelligence layer for smarter property decisions.
+        </h1>
+        
+        {/* Subtitle */}
+        <p 
+          className="mt-6 text-[15px] md:text-[17px] text-white/50 max-w-xl tracking-tight leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
-          Intelligence layer for smarter property decisions in Noida
-        </h2>
+          Research properties, compare investments, and navigate the Noida real estate market with absolute precision.
+        </p>
 
         {/* CTA */}
-        <div className="mt-14 flex flex-col sm:flex-row gap-5 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+        <div className="mt-12 flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
           <button
             onClick={() => router.push('/discover')}
-            className="group px-10 py-4 bg-white hover:bg-gray-50 text-black font-semibold rounded-[16px] text-[15px] transition-all duration-300 shadow-[0_4px_14px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_25px_rgba(255,255,255,0.25)] active:scale-95 flex items-center justify-center gap-2"
+            className="group px-8 py-3.5 bg-white hover:bg-gray-50 text-black font-semibold rounded-full text-[14px] transition-all duration-300 shadow-[0_2px_10px_rgba(255,255,255,0.1)] active:scale-95 flex items-center justify-center gap-2"
           >
-            Try RealtyPals
-            <span className="group-hover:translate-x-1 transition-transform duration-300 opacity-60">→</span>
+            Enter Discovery
+            <span className="group-hover:translate-x-0.5 transition-transform duration-300 opacity-80">→</span>
           </button>
           <button
             onClick={() => router.push('/auth')}
-            className="px-10 py-4 bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-md border border-white/[0.08] hover:border-white/[0.15] text-white font-medium rounded-[16px] text-[15px] transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] active:scale-95"
+            className="px-8 py-3.5 bg-white/[0.02] hover:bg-white/[0.06] backdrop-blur-md border border-white/10 text-white font-medium rounded-full text-[14px] transition-all duration-300 active:scale-95"
           >
             Sign In
           </button>
         </div>
 
-        {/* Features row */}
-        <div className="mt-20 flex flex-wrap justify-center gap-x-8 gap-y-4 text-[13px] font-medium text-white/50 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+        {/* Features row - Subheading Typography Rule */}
+        <div className="mt-24 flex flex-wrap justify-center gap-x-10 gap-y-6 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           {['Zero Commission Bias', 'RERA-Verified Intelligence', 'Hyperlocal Noida Expertise', 'Predictive ROI Models'].map((f) => (
-            <span key={f} className="flex items-center gap-2.5 bg-white/[0.02] border border-white/[0.05] px-4 py-2 rounded-full shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+            <span key={f} className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em] text-white/40 font-semibold">
+              <span className="w-1 h-1 rounded-full bg-white/20" />
               {f}
             </span>
           ))}

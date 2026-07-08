@@ -294,6 +294,8 @@ router.post('/', async (req: Request, res: Response) => {
   let intentDegraded = false
   let projects: Awaited<ReturnType<typeof discoverProjects>>['exactResults'] = []
   let nearbyProjects: Awaited<ReturnType<typeof discoverProjects>>['nearbyResults'] = []
+  let projectDisambiguation: Awaited<ReturnType<typeof discoverProjects>>['disambiguation'] | undefined
+  let sectorDisambiguation: { query: string; candidates: string[] } | undefined
 
   try {
     console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
@@ -499,6 +501,7 @@ router.post('/', async (req: Request, res: Response) => {
       discoveryExpansion = discoveryResult.expansion
       notFoundNames = discoveryResult.notFoundNames
       if (discoveryResult.disambiguation) {
+        projectDisambiguation = discoveryResult.disambiguation
         const { query, candidates } = discoveryResult.disambiguation
         const list = candidates.map((c) => `• ${c.name} (${c.sector})`).join('\n')
         disambiguationText = `Multiple projects match "${query}":\n\n${list}\n\nWhich one did you mean?`
@@ -506,23 +509,29 @@ router.post('/', async (req: Request, res: Response) => {
       }
 
       // Always send the properties event when intent is ready — even empty exactResults
-      // is meaningful (triggers empty state UI and nearby section on the frontend).
-      if (projects.length > 0 || nearbyProjects.length > 0) {
-        send('properties', {
-          exactResults: projects,
-          nearbyResults: nearbyProjects,
-          expansion: discoveryExpansion ?? null,
-        })
+      // is meaningful (triggers empty state UI and nearby section on the frontend, and clears previous results).
+      send('properties', {
+        exactResults: projects,
+        nearbyResults: nearbyProjects,
+        expansion: discoveryExpansion ?? null,
+      })
 
-        // ─── ANALYTICS: Track results shown
-        if (sessionId) {
-          await trackResultsShown(sessionId, projects.length + nearbyProjects.length)
-        }
+      // ─── ANALYTICS: Track results shown
+      if (sessionId && (projects.length > 0 || nearbyProjects.length > 0)) {
+        await trackResultsShown(sessionId, projects.length + nearbyProjects.length)
       }
     }
 
     // Emit ui_state SECOND TIME (post-search, populates progressive chips)
-    const postSearchUiState = computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory)
+    const postSearchUiState = computeConversationState(
+      intent, 
+      intentState, 
+      projects, 
+      intent.is_comparison_query ?? false, 
+      chatHistory,
+      projectDisambiguation,
+      sectorDisambiguation
+    )
     send('ui_state', postSearchUiState as unknown as Record<string, unknown>)
 
     // Skip sector context when: cache reused (project data carries it), or discovery found nothing

@@ -354,6 +354,7 @@ const UnitPatchSchema = z.object({
   price_max_cr:       z.number().nullable().optional(),
   price_label:        z.string().nullable().optional(),
   price_is_estimated: z.boolean().optional(),
+  views:              z.any().optional(),
 })
 
 // ---------------------------------------------------------------------------

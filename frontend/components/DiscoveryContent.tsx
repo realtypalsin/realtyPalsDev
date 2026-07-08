@@ -1088,7 +1088,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           </div>
         )}
 
-        <div className="relative flex items-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.3)] border border-gray-200/60 dark:border-white/10 rounded-[28px] transition-all duration-300 hover:shadow-[0_16px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_16px_50px_rgba(0,0,0,0.4)] hover:bg-white dark:hover:bg-gray-900 mx-auto w-full group pr-1.5 py-1.5">
+        <div className="relative flex items-center bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] rounded-full transition-all duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] mx-auto w-full group pr-1.5 py-1.5">
           <div id="chat-input-guide" className="relative flex-1 group">
             <PlaceholdersAndVanishInput
               placeholders={
@@ -1118,10 +1118,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             <button
               type="button"
               onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
-              className="w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-200 bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg active:scale-95"
+              className="w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-black dark:bg-white text-white dark:text-black shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95"
               title="Send"
             >
-              <ArrowUp size={20} className="text-white" />
+              <ArrowUp size={20} className="text-current" />
             </button>
           ) : (
             <button
@@ -1261,16 +1261,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         ) : !hasUserReplied ? (
           /* Welcome screen */
           <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10 overflow-y-auto">
-            <div className="text-center mb-6 max-w-[880px]">
-              <h1 className="text-[4rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white mb-2 tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
+            <div className="text-center mb-10 max-w-[880px] animate-fade-in-up flex flex-col items-center">
+              <h1 className="text-[4rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
                 RealtyPals
               </h1>
-              <h2 className="text-2xl md:text-3xl font-[family-name:var(--font-afacad)] font-medium text-gray-600 dark:text-gray-400 tracking-wide mt-2">
+              <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-1 font-[family-name:var(--font-afacad)]">
                 Buy Better.
               </h2>
-              <p className="text-[14px] text-gray-500 dark:text-gray-500 mt-3 max-w-md mx-auto leading-relaxed">
-                Tell me what you&apos;re looking for — I&apos;ll find, compare, and help you decide with verified data and honest analysis.
-              </p>
             </div>
 
             {showReEngagement && !hasUserReplied && (
@@ -1298,7 +1295,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 <button
                   key={chip.label}
                   onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm text-[12.5px] text-gray-700 dark:text-gray-300 font-medium rounded-full shadow-sm transition-all duration-300 hover:-translate-y-0.5"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 text-[13px] text-gray-700 dark:text-gray-300 font-medium rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 active:scale-95"
                 >
                   <span className="text-[14px]">{chip.icon}</span>
                   <span>{chip.label}</span>

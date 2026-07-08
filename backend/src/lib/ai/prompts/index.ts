@@ -1,6 +1,6 @@
 // backend/src/lib/ai/prompts/index.ts
 import type { Intent, ScoredProject, SectorContext, SectorOverview, NearbyExpansion } from '../../discovery'
-import { BASE_SYSTEM_PROMPT } from './base'
+import { getBaseSystemPrompt } from './base'
 import {
   buildProjectsBlock,
   buildSectorBlock,
@@ -14,7 +14,7 @@ import {
 } from './blocks'
 
 export { INTENT_EXTRACTION_PROMPT } from './intent-extraction'
-export { BASE_SYSTEM_PROMPT } from './base'
+export { getBaseSystemPrompt } from './base'
 export { buildProjectsBlock, buildSectorBlock, buildSectorsOverviewBlock, buildIntentSummary, buildMemorySummary, buildExpansionBlock } from './blocks'
 
 export function buildAdvisorSystemPrompt(
@@ -26,6 +26,7 @@ export function buildAdvisorSystemPrompt(
     sector_preference?: string | null
     purpose?: string | null
     viewed_slugs?: string[]
+    current_session_viewed?: string[] // Track C
   } | null,
   sectorCtx?: SectorContext,
   sectorsOverview?: SectorOverview[],
@@ -56,6 +57,6 @@ export function buildAdvisorSystemPrompt(
   const expansionBlock       = expansion ? buildExpansionBlock(expansion) : ''
   const projectsBlock        = buildProjectsBlock(exactResults, sectorCtx, expansion, nearbyResults, notFoundNames)
 
-  const finalPrompt = BASE_SYSTEM_PROMPT + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
+  const finalPrompt = getBaseSystemPrompt(intent as Record<string, unknown>) + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
   return finalPrompt
 }

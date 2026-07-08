@@ -105,18 +105,18 @@ export function getThinkingMessage(stage: ConversationStage, intent: Intent): st
   switch (stage) {
     case 'SEARCHING':
       return intent.sector
-        ? `Searching projects in ${intent.sector}…`
-        : 'Searching available projects…'
+        ? `Curating premium projects in ${intent.sector}…`
+        : 'Curating a tailored selection of properties…'
     case 'RESEARCH':
-      return 'Ranking by fit and value…'
+      return 'Evaluating portfolio fit and optimal value…'
     case 'COMPARING':
-      return 'Preparing detailed comparison…'
+      return 'Preparing a comprehensive diligence comparison…'
     case 'DECIDING':
-      return 'Analysing your shortlist…'
+      return 'Evaluating your shortlisted projects for the best fit…'
     case 'CONVERTING':
-      return 'Preparing next steps…'
+      return 'Finalising strategic next steps…'
     default:
-      return 'Understanding your requirements…'
+      return 'Analysing your investment and lifestyle requirements…'
   }
 }
 
@@ -156,43 +156,7 @@ const JOURNEY_GROUP:  ChipGroup = { id: 'popular_journeys', label: 'Popular jour
 const FILTER_GROUP:   ChipGroup = { id: 'quick_filters',    label: 'Quick filters',              order: 2, emphasis: 'tertiary' }
 
 function getDiscoveryChips(intent: Intent): ChipAction[] {
-  return [
-    // Primary actions — the three top-level intents a buyer starts from.
-    chip('buy_home', 'TEXT_MESSAGE', 'Buy a Home', '🏠',
-      { text: "I'm looking to buy a home to live in" }, 1, PRIMARY_GROUP),
-    chip('investment', 'TEXT_MESSAGE', 'Investment', '📈',
-      { text: "I'm looking for investment properties" }, 2, PRIMARY_GROUP),
-    chip('explore', 'TEXT_MESSAGE', 'Explore Projects', '🧭',
-      { text: 'Show me projects available right now' }, 3, PRIMARY_GROUP),
-
-    // Popular journeys — common, concrete starting queries.
-    chip('find_3bhk', 'TEXT_MESSAGE', 'Best 3 BHK', '',
-      { text: 'Show me the best 3 BHK apartments in Noida' }, 4, JOURNEY_GROUP),
-    chip('ready_move', 'TEXT_MESSAGE', 'Ready to Move', '',
-      { text: 'Ready to move properties under 2 Cr in Noida' }, 5, JOURNEY_GROUP),
-    chip('luxury', 'TEXT_MESSAGE', 'Luxury Homes', '',
-      { text: 'Show luxury apartments on Noida Expressway' }, 6, JOURNEY_GROUP),
-    chip('new_launch', 'TEXT_MESSAGE', 'New Launches', '',
-      { text: 'Show me newly launched projects in Noida' }, 7, JOURNEY_GROUP),
-    chip('compare_builders', 'TEXT_MESSAGE', 'Compare Builders', '',
-      { text: 'Which builders in Noida have the best track record?' }, 8, JOURNEY_GROUP),
-
-    // Quick filters — bare dimensions; if still unresolved after extraction,
-    // the existing GATHERING/CLARIFYING flow (getClarifyingChips) returns
-    // concrete follow-up chips next turn. No new mechanics.
-    chip('filter_budget', 'TEXT_MESSAGE', 'Budget', '',
-      { text: "I'd like to set a budget range" }, 9, FILTER_GROUP),
-    chip('filter_sector', 'TEXT_MESSAGE', 'Sector', '',
-      { text: 'I want to search in a specific sector' }, 10, FILTER_GROUP),
-    chip('filter_bhk', 'TEXT_MESSAGE', 'BHK', '',
-      { text: "I'd like to choose a BHK configuration" }, 11, FILTER_GROUP),
-    chip('filter_possession', 'TEXT_MESSAGE', 'Possession', '',
-      { text: 'I want to filter by possession timeline' }, 12, FILTER_GROUP),
-    chip('filter_metro', 'TEXT_MESSAGE', 'Metro', '',
-      { text: 'I want a project near a metro station' }, 13, FILTER_GROUP),
-    chip('filter_expressway', 'TEXT_MESSAGE', 'Expressway', '',
-      { text: 'I want a project on the Noida Expressway' }, 14, FILTER_GROUP),
-  ]
+  return []
 }
 
 function getClarifyingChips(
@@ -252,7 +216,7 @@ function getClarifyingChips(
     return chips
   }
 
-  return getDiscoveryChips(intent)
+  return chips // Do not fallback to getDiscoveryChips, return whatever we built or empty
 }
 
 function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[] {
@@ -261,57 +225,60 @@ function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[
   const hasUnderConstruction = results.some(
     r => r.status === 'under_construction' || r.status === 'new_launch'
   )
+  const topProjectName = results[0]?.name || 'these properties'
 
   if (hasMultiple) {
     // Frictionless Comparison: Bypasses picker if exactly 2 or 3 projects.
     const directCompare = results.length <= 3
-    chips.push(chip('compare', 'COMPARE_PROPERTIES', 'Compare Top Picks', '⚖️',
+    chips.push(chip('compare', 'COMPARE_PROPERTIES', `Compare ${topProjectName} vs others`, '⚖️',
       directCompare ? { mode: 'direct', selected: results.slice(0, 3).map(r => r.slug) } : { mode: 'multi' }, 1))
   }
 
   chips.push(chip('price_trends', 'TEXT_MESSAGE', 'Price Trends', '📊',
-    { text: `How have property prices trended in ${intent.sector ?? 'this area'} recently?` }, 2))
+    { text: `How have property prices trended for ${topProjectName} recently?` }, 2))
 
   if (hasUnderConstruction) {
     chips.push(chip('builder_risk', 'TEXT_MESSAGE', 'Builder delivery risk', '🏗️',
-      { text: `What are the builder delivery risks for projects in ${intent.sector ?? 'my shortlist'}?` }, 3))
+      { text: `What are the builder delivery risks for ${topProjectName}?` }, 3))
   } else {
     chips.push(chip('builder_track', 'TEXT_MESSAGE', 'Builder track record', '🏗️',
-      { text: `Tell me about the builders in my shortlist — delivery history and reputation` }, 3))
+      { text: `Tell me about the builder for ${topProjectName} — delivery history and reputation` }, 3))
   }
 
   if (intent.purpose === 'investment' || !intent.purpose) {
     chips.push(chip('roi', 'TEXT_MESSAGE', 'Investment ROI', '📈',
-      { text: 'What is the rental yield and appreciation potential for these projects?' }, 4))
+      { text: `What is the rental yield and appreciation potential for ${topProjectName}?` }, 4))
   } else {
     chips.push(chip('nearby', 'TEXT_MESSAGE', 'Nearby amenities', '🏫',
-      { text: 'What schools, hospitals, and metro stations are near these properties?' }, 4))
+      { text: `What schools, hospitals, and metro stations are near ${topProjectName}?` }, 4))
   }
 
   return chips.slice(0, 4)
 }
 
 function getComparingChips(results: ScoredProject[]): ChipAction[] {
+  const topNames = results.slice(0, 2).map(r => r.name).join(' and ') || 'these properties'
   return [
-    chip('roi_compare', 'TEXT_MESSAGE', 'Which offers better ROI?', '📈',
-      { text: 'Which of these properties offers better return on investment?' }, 1),
-    chip('hidden_costs', 'TEXT_MESSAGE', 'Hidden costs', '💸',
-      { text: 'What are the total hidden costs: maintenance, GST, stamp duty for each?' }, 2),
-    chip('family_fit', 'TEXT_MESSAGE', 'Best for families', '👨‍👩‍👧',
-      { text: 'Which project is better suited for a family with children?' }, 3),
-    chip('payment_plan', 'TEXT_MESSAGE', 'Payment plans', '🗓️',
-      { text: 'Compare the payment plans and construction-linked plans for these projects' }, 4),
+    chip('roi_compare', 'TEXT_MESSAGE', 'Optimal ROI', '📈',
+      { text: `Between ${topNames}, which offers the best return on investment?` }, 1),
+    chip('hidden_costs', 'TEXT_MESSAGE', 'Cost & Tax Transparency', '💸',
+      { text: `Provide a complete breakdown of maintenance, GST, and stamp duty for ${topNames}.` }, 2),
+    chip('family_fit', 'TEXT_MESSAGE', 'Lifestyle & Family Fit', '👨‍👩‍👧',
+      { text: `Which between ${topNames} offers the best ecosystem and lifestyle amenities for a family?` }, 3),
+    chip('payment_plan', 'TEXT_MESSAGE', 'Payment Structuring', '🗓️',
+      { text: `Compare the payment plans and construction-linked structures for ${topNames}.` }, 4),
   ]
 }
 
 function getDecidingChips(results: ScoredProject[]): ChipAction[] {
+  const topProjectName = results[0]?.name || 'my shortlist'
   const chips: ChipAction[] = [
-    chip('hidden_risks', 'TEXT_MESSAGE', 'What are the risks?', '⚠️',
-      { text: 'Are there any hidden risks, legal issues, or downsides I should be aware of before deciding?' }, 1),
-    chip('negotiation', 'TEXT_MESSAGE', 'Negotiation tips', '🤝',
-      { text: 'What is a realistic negotiation margin for these properties?' }, 2),
-    chip('legal_check', 'TEXT_MESSAGE', 'RERA & Legal', '🛡️',
-      { text: 'Can you verify the RERA status and legal clearances for my shortlist?' }, 3),
+    chip('hidden_risks', 'TEXT_MESSAGE', 'Risk & Diligence Check', '⚠️',
+      { text: `Are there any hidden risks, legal issues, or delivery concerns for ${topProjectName}?` }, 1),
+    chip('negotiation', 'TEXT_MESSAGE', 'Strategic Acquisition', '🤝',
+      { text: `What is a realistic negotiation margin and acquisition strategy for ${topProjectName}?` }, 2),
+    chip('legal_check', 'TEXT_MESSAGE', 'RERA & Compliance', '🛡️',
+      { text: `Verify the RERA compliance and legal clearances for ${topProjectName}.` }, 3),
   ]
   if (results.length >= 2) {
     chips.unshift(chip('final_compare', 'COMPARE_PROPERTIES', 'Final comparison', '⚖️',
@@ -327,7 +294,9 @@ export function computeConversationState(
   intentState: IntentState,
   results: ScoredProject[],
   isComparison: boolean,
-  chatHistory: { role: string; content: string }[] = []
+  chatHistory: { role: string; content: string }[] = [],
+  disambiguation?: { query: string; candidates: Array<{ name: string; sector: string; builder: string }> },
+  sectorDisambiguation?: { query: string; candidates: string[] }
 ): ConversationState {
   const stage = computeStage(intent, intentState, results, isComparison)
   const missingFields = getMissingFields(intent, intentState)
@@ -336,9 +305,50 @@ export function computeConversationState(
 
   let chips: ChipAction[] = []
   
-  // To match the Notebook LM style, we strictly rely on the AI's <antml:chips>
-  // generation during an active conversation.
-  chips = []
+  if (disambiguation) {
+    chips = disambiguation.candidates.map((c, idx) => chip(
+      `disambig_${idx}`,
+      'TEXT_MESSAGE',
+      `${c.name} (${c.sector})`,
+      '🏢',
+      { text: `Show me ${c.name} in ${c.sector}` },
+      idx + 1
+    ))
+  } else if (sectorDisambiguation) {
+    chips = sectorDisambiguation.candidates.map((s, idx) => chip(
+      `disambig_sec_${idx}`,
+      'INTENT_PATCH',
+      s,
+      '📍',
+      { patch: { sector: s }, label: s },
+      idx + 1
+    ))
+  } else {
+    // Populate chips dynamically based on the conversation stage
+    switch (stage) {
+      case 'CLARIFYING':
+        chips = getClarifyingChips(intent, missingFields, results, chatHistory)
+        break
+      case 'DISCOVERY':
+        chips = getDiscoveryChips(intent)
+        break
+      case 'SEARCHING':
+        chips = getDiscoveryChips(intent) // Offer discovery chips while searching so user can refine
+        break
+      case 'RESEARCH':
+        chips = getResearchChips(intent, results)
+        break
+      case 'COMPARING':
+        chips = getComparingChips(results)
+        break
+      case 'DECIDING':
+        chips = getDecidingChips(results)
+        break
+      case 'CONVERTING':
+        chips = []
+        break
+    }
+  }
 
   // Deduplicate by id (safety guard)
   const seen = new Set<string>()

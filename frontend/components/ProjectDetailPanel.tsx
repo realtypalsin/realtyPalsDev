@@ -213,7 +213,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   // Falls back to `project.images` (already loaded from the search-result card)
   // while `detail` is still fetching, instead of jumping straight to the legacy
   // `hero_image_url` column, which can be a stale/deleted local path.
-  const imageTypeRank = (type: string) => (type === 'hero' ? 0 : type === 'exterior' ? 1 : 2)
+  const imageTypeRank = (type: string) => {
+    const t = type.toLowerCase()
+    return t === 'hero' ? 0 : t === 'exterior' ? 1 : 2
+  }
   const allImages = [...(detail?.images ?? project?.images ?? [])].sort((a, b) => imageTypeRank(a.type) - imageTypeRank(b.type))
   const heroCandidates = [
     ...allImages.map((i) => i.url),
@@ -508,7 +511,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                   </span>
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-[34px] md:text-[44px] font-extrabold font-serif tracking-tight leading-tight text-[#171412] dark:text-white">
+                  <h1 className="text-[36px] md:text-[48px] font-black font-sans tracking-tighter leading-none text-gray-900 dark:text-white">
                     {d?.name}
                   </h1>
                   {d?.rera_number && (
@@ -519,7 +522,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                   )}
                 </div>
                 {d?.tagline && (
-                  <p className="text-[15px] md:text-[17px] text-gray-500 dark:text-gray-400 font-medium italic">
+                  <p className="text-[16px] md:text-[18px] text-gray-500 dark:text-gray-400 font-medium tracking-tight">
                     {d.tagline}
                   </p>
                 )}
@@ -538,19 +541,19 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                 </div>
               </div>
 
-              {/* Stats Row */}
-              <div className="grid grid-cols-4 gap-2 md:gap-4 pt-4 border-t border-gray-100 dark:border-gray-800/40">
+              {/* Stats Row Bento */}
+              <div className="grid grid-cols-4 gap-2 md:gap-3 pt-6 border-t border-gray-100 dark:border-gray-800/40">
                 {[
                   { value: d?.total_towers ? `${d.total_towers}` : '—', label: 'Towers' },
                   { value: (d as any)?.floors ? `${(d as any).floors}` : 'G+26', label: 'Floors' },
                   { value: (d as any)?.total_units ? `${(d as any).total_units}` : '—', label: 'Units' },
                   { value: d?.land_area_acres ? `${d.land_area_acres} Ac` : '—', label: 'Land Area' }
                 ].map((stat, i) => (
-                  <div key={i} className="bg-white dark:bg-[#1a1715] border border-gray-100 dark:border-gray-800/40 rounded-2xl p-3 text-center shadow-sm">
-                    <p className="text-[18px] md:text-[22px] font-black text-[#c47860] dark:text-[#c47860] leading-none">
+                  <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[16px] p-4 text-center shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all hover:-translate-y-0.5">
+                    <p className="text-[20px] md:text-[24px] font-black tracking-tight text-gray-900 dark:text-white leading-none">
                       {stat.value}
                     </p>
-                    <p className="text-[9px] text-gray-450 dark:text-gray-500 font-bold uppercase tracking-wider mt-1.5">
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-2">
                       {stat.label}
                     </p>
                   </div>
@@ -559,34 +562,40 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             </div>
 
             {/* Right Hero Image Card */}
-            <div className="lg:col-span-5 relative rounded-3xl overflow-hidden h-[260px] lg:h-[280px] shadow-md group">
+            <div 
+              onClick={() => setShowFloorPlan({ plans: allImages.length > 0 ? allImages : floorPlanImages })}
+              className="lg:col-span-5 relative rounded-3xl overflow-hidden h-[260px] lg:h-[280px] shadow-md group cursor-pointer"
+            >
               <Image 
-                src={d?.hero_image_url || "/images/properties/default-hero.jpg"} 
-                alt={d?.name || "Elite X"} 
+                src={currentImg || "/images/properties/default-hero.jpg"} 
+                alt={d?.name || "Project Image"} 
                 fill 
                 priority 
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
+                onError={() => {
+                  if (currentImg) markImgFailed(currentImg)
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
-              {floorPlanImages.length > 0 && (
-                <button onClick={() => setShowFloorPlan({ plans: floorPlanImages })} className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors z-10">
+              {allImages.length > 0 && (
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors z-10">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  {floorPlanImages.length} Photos
-                </button>
+                  {allImages.length} Photos
+                </div>
               )}
             </div>
 
           </div>
 
           {/* Bottom Price/Score Overlay Row */}
-          <div className="mx-6 md:mx-8 mb-6 md:mb-8 bg-white dark:bg-[#171412] border border-gray-150 dark:border-gray-800/40 rounded-3xl p-5 md:p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] grid grid-cols-1 md:grid-cols-12 gap-4 items-center divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-gray-800">
+          <div className="mx-6 md:mx-8 mb-6 md:mb-8 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 md:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-12 gap-4 items-center divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/10">
             {/* Price & Possession */}
             <div className="md:col-span-5 pb-4 md:pb-0 md:pr-4 flex items-center justify-between">
               <div>
-                <p className="text-[24px] md:text-[28px] font-black text-gray-900 dark:text-white leading-none tracking-tight">
+                <p className="text-[28px] md:text-[34px] font-black tracking-tighter text-gray-900 dark:text-white leading-none">
                   {displayPrice}
                 </p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-1.5">
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-2">
                   All Inclusive {unitTypes.length > 0 && `· Starts ₹${Math.min(...unitTypes.map(u => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter(v => v !== Infinity))}/sqft`}
                 </p>
               </div>
@@ -600,33 +609,38 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             </div>
 
             {/* AI Score */}
-            <div className="md:col-span-4 py-4 md:py-0 md:px-4 flex items-center justify-between">
-              <div>
-                <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
+            <div className="md:col-span-4 py-4 md:py-0 md:px-6 flex items-center justify-between">
+              <div className="pr-2">
+                <p className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-1">
                   AI Recommendation Score
                 </p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                <p className="text-[12px] text-gray-600 dark:text-gray-400 leading-snug">
                   {detail?.recommendation_profile?.primary_thesis || 'Full intelligence report pending.'}
                 </p>
               </div>
-              <div className="relative flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-full border-4 border-emerald-500/20">
-                <div className="text-center">
-                  <span className="text-[16px] font-black text-gray-900 dark:text-white leading-none">{displayScore}</span>
-                </div>
+              <div className="relative flex items-center justify-center flex-shrink-0 w-14 h-14">
+                <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-100 dark:stroke-gray-800" strokeWidth="3" />
+                  <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-900 dark:stroke-white" strokeWidth="3"
+                    pathLength="100" strokeDasharray="100" strokeDashoffset={100 - Number(displayScore)} strokeLinecap="round" 
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 m-1" />
+                <span className="relative z-10 text-[14px] font-black tracking-tighter text-gray-900 dark:text-white leading-none">{displayScore}</span>
               </div>
             </div>
 
             {/* Stars & Hold */}
-            <div className="md:col-span-3 pt-4 md:pt-0 md:pl-4 flex items-center justify-between">
+            <div className="md:col-span-3 pt-4 md:pt-0 md:pl-6 flex items-center justify-between">
               <div className="space-y-1">
-                <div className="flex items-center gap-0.5 text-amber-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} size={13} fill="currentColor" />)}
+                <div className="flex items-center gap-0.5 text-gray-900 dark:text-white">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
                 </div>
-                <p className="text-[9px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">
-                  Satisfaction Rating
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em]">
+                  Satisfaction
                 </p>
               </div>
-              <span className="bg-[#FFF8E1] dark:bg-[#2c2712] text-[#FFB300] dark:text-[#ffe082] text-[11px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-[#FFE082] dark:border-[#ffe082]/20">
+              <span className="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-[10px] font-bold uppercase tracking-[0.1em] px-3.5 py-1.5 rounded-full shadow-sm">
                 {displayTier}
               </span>
             </div>

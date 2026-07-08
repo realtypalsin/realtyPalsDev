@@ -3,16 +3,12 @@
 import { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import {
-  ClockCountdown, CheckCircle, SealCheck,
-  Subway, AirplaneTakeoff, Path,
-  Leaf, Baby, Heart,
-  MapPin, ArrowRight, BookmarkSimple,
-  CaretLeft, CaretRight,
-  Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Barbell, Star, Buildings, Bed,
-} from '@phosphor-icons/react'
+  Building2, ChevronLeft, ChevronRight, Bookmark,
+  BadgeCheck, BedDouble, ArrowRight
+} from 'lucide-react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 import { API_BASE } from '@/lib/env'
+import { tierLabel } from '@/components/property-detail/shared'
 import { track } from '@/lib/analytics'
 import { authHeaders } from '@/lib/authedFetch'
 import { resolveImgUrl } from '@/lib/utils'
@@ -25,28 +21,6 @@ interface Props {
   quickActions?: React.ReactNode
 }
 
-const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
-  sports:    Barbell,
-  lifestyle: Star,
-  wellness:  Leaf,
-  kids:      Baby,
-  security:  SealCheck,
-  parking:   Car,
-}
-
-const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
-  metro:      Subway,
-  airport:    AirplaneTakeoff,
-  road:       Path,
-  expressway: Path,
-  school:     GraduationCap,
-  hospital:   Heart,
-  mall:       ShoppingBag,
-  landmark:   Bank,
-  university: BookOpen,
-}
-
-const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid' }
 const tierColor: Record<string, string> = {
   STRONG_BUY: 'text-emerald-700 dark:text-emerald-400',
   BUY: 'text-blue-700 dark:text-blue-400',
@@ -96,6 +70,16 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
     return () => clearInterval(timer)
   }, [hasMultiple, workingImages.length])
 
+  // A5: Sync saved state with detail panel via custom event
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ id: string; saved: boolean }>).detail
+      if (detail?.id === project.id) setSaved(detail.saved)
+    }
+    window.addEventListener('realtypals:property-saved', handler)
+    return () => window.removeEventListener('realtypals:property-saved', handler)
+  }, [project.id])
+
   const prevImg = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     setImgIdx((i) => (i - 1 + workingImages.length) % workingImages.length)
@@ -123,6 +107,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
           headers: await authHeaders(),
         })
         if (!res.ok) throw new Error('Delete failed')
+        window.dispatchEvent(new CustomEvent('realtypals:property-saved', { detail: { id: project.id, saved: false } }))
         onToast?.('Removed from saved')
       } else {
         const res = await fetch(`${API_BASE}/saved`, {
@@ -132,6 +117,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
         })
         if (!res.ok) throw new Error('Save failed')
         track('property_saved', { project_slug: project.slug, project_name: project.name })
+        window.dispatchEvent(new CustomEvent('realtypals:property-saved', { detail: { id: project.id, saved: true } }))
         onToast?.('Property saved! ✓')
       }
     } catch (err) {
@@ -177,15 +163,15 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-[#f5f5f5] dark:bg-[#111]">
-            <Buildings size={44} weight="duotone" className="text-gray-300 dark:text-gray-700" />
+            <Building2 size={44} className="text-gray-300 dark:text-gray-700" />
           </div>
         )}
 
 
 
-        {/* Tier badge (top-right) */}
+        {/* Tier badge (top-left) */}
         {tier && (
-          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
+          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm z-10">
             <span className={`text-[11px] font-bold tracking-wide ${tierColor[tier] || 'text-gray-700'}`}>
               {tierLabel[tier]}
             </span>
@@ -195,17 +181,11 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
         {/* Carousel controls */}
         {hasMultiple && (
           <>
-            <button
-              onClick={prevImg}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-full flex items-center justify-center text-gray-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            >
-              <CaretLeft size={14} weight="bold" />
+            <button onClick={prevImg} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 border border-white/20 shadow-lg">
+              <ChevronLeft size={16} strokeWidth={3} />
             </button>
-            <button
-              onClick={nextImg}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-full flex items-center justify-center text-gray-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            >
-              <CaretRight size={14} weight="bold" />
+            <button onClick={nextImg} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 border border-white/20 shadow-lg">
+              <ChevronRight size={16} strokeWidth={3} />
             </button>
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10 px-2 py-1 bg-black/40 rounded-full">
               {workingImages.map((_, i) => (
@@ -229,8 +209,8 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
             title={saved ? 'Unsave' : 'Save property'}
           >
             {saved
-              ? <BookmarkSimple size={18} weight="fill" />
-              : <BookmarkSimple size={18} weight="bold" />
+              ? <Bookmark size={18} className="fill-current" />
+              : <Bookmark size={18} />
             }
           </button>
         </div>
@@ -249,7 +229,6 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
         </div>
       </div>
 
-      {/* ── Recommendation Section (Hidden for aesthetic match) ── */}
       {/* ── Body ── */}
       <div className="px-6 pt-5 pb-6 flex-1 flex flex-col bg-white dark:bg-[#0a0a0a]">
         {/* Name row + RERA */}
@@ -259,21 +238,53 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
           </h3>
           {project.rera_number && (
             <span className="flex-shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded-[6px] bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-700 text-[12px] font-bold text-blue-600 dark:text-blue-400 tracking-wide mt-1">
-              <SealCheck size={14} weight="fill" className="text-blue-500" />
+              <BadgeCheck size={14} className="fill-current text-blue-500" />
               RERA
             </span>
           )}
         </div>
 
         {/* Builder · Sector */}
-        <div className="flex items-center gap-2 text-[15px] font-medium text-gray-500 dark:text-gray-400 mb-6">
+        <div className="flex items-center gap-2 text-[15px] font-medium text-gray-500 dark:text-gray-400 mb-4">
           <span className="truncate">{project.builder.name}</span>
           <span className="opacity-40">·</span>
           <span className="truncate">{project.sector}</span>
         </div>
 
+        {/* AI Verdict Strip — only shown when intelligence is available */}
+        {(headline || (reasons && reasons.length > 0)) && (
+          <div className="mb-4 px-4 py-3 rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-900/60 dark:to-blue-900/20 border border-slate-100 dark:border-slate-800">
+            {headline && (
+              <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-200 leading-snug mb-2">
+                “{headline.replace(/^["']|["']$/g, '').trim()}”
+              </p>
+            )}
+            {reasons && reasons.length > 0 && (
+              <div className="flex flex-col gap-1">
+                {reasons.map((r, i) => (
+                  <div key={i} className="flex items-start gap-1.5 text-[12px] text-slate-600 dark:text-slate-400">
+                    <span className="text-emerald-500 mt-0.5 flex-shrink-0">✓</span>
+                    <span>{r}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Best For tags — from DB best_for field or buyer personas */}
+        {project.best_for && (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {project.best_for.split(/[,|;]/).map(tag => tag.trim()).filter(Boolean).slice(0, 3).map(tag => (
+              <span key={tag} className="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Price — big hero number */}
-        <div className="mb-6">
+        <div className="mb-4">
           <span className="text-[14px] text-gray-500 font-medium tracking-wide block mb-1">Price Range</span>
           <p className="text-[38px] font-black text-[#0a192f] dark:text-gray-50 tracking-tight leading-none">
             {project.price_range_label}
@@ -290,7 +301,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
               <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-50">
-                    <Bed size={22} weight="regular" />
+                    <BedDouble size={20} strokeWidth={1.5} />
                   </div>
                   <span className="font-bold text-[#0a192f] dark:text-gray-100 text-[18px] whitespace-nowrap">{g.bhk} BHK</span>
                 </div>
@@ -325,7 +336,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
         {/* Clickable Indicator Arrow */}
         <div className="absolute right-4 bottom-4 transition-all duration-300 pointer-events-none opacity-80 group-hover:opacity-100 group-hover:translate-x-1">
           <div className="w-8 h-8 rounded-full bg-gray-900/50 dark:bg-white/50 backdrop-blur-sm group-hover:bg-gray-900 group-hover:dark:bg-white text-white dark:text-gray-900 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
-            <ArrowRight size={14} weight="bold" />
+            <ArrowRight size={14} strokeWidth={2.5} />
           </div>
         </div>
       </div>

@@ -2,8 +2,7 @@
 
 import { ArrowRight } from 'lucide-react'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
-
-const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid' }
+import { tierLabel } from '@/components/property-detail/shared'
 const tierStyle: Record<string, string> = {
   STRONG_BUY: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   BUY: 'bg-blue-50 text-blue-700 border-blue-200',

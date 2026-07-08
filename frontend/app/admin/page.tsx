@@ -152,10 +152,11 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Bar Chart: Top Builders */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
+        <div className="lg:col-span-2 bg-white rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50/50 rounded-full blur-[80px] -z-10 group-hover:bg-blue-100/50 transition-colors duration-700" />
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Top Builders</h2>
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight">Top Builders</h2>
               <p className="text-sm text-slate-500">Number of projects per builder in database</p>
             </div>
           </div>
@@ -163,69 +164,107 @@ export default function AdminDashboard() {
             {stats ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.topBuilders} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                  <defs>
+                    <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3B82F6" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#2563EB" stopOpacity={0.8} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11, fontWeight: 500 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11, fontWeight: 500 }} />
                   <RechartsTooltip 
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-                    itemStyle={{ fontSize: '13px', fontWeight: 600, color: '#3B82F6' }}
-                    labelStyle={{ fontSize: '12px', color: '#64748B', marginBottom: '4px' }}
-                    cursor={{ fill: '#F1F5F9' }}
+                    cursor={{ fill: 'rgba(241,245,249,0.5)' }}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-white/80 backdrop-blur-xl border border-white/20 p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+                            <p className="text-[12px] font-semibold text-slate-500 uppercase tracking-widest mb-1">{label}</p>
+                            <p className="text-[20px] font-black text-blue-600 leading-none">{payload[0].value} <span className="text-[14px] font-semibold text-slate-400">Projects</span></p>
+                          </div>
+                        )
+                      }
+                      return null
+                    }}
                   />
-                  <Bar dataKey="projects" fill="#3B82F6" radius={[6, 6, 0, 0]} maxBarSize={50} />
+                  <Bar dataKey="projects" fill="url(#blueGradient)" radius={[8, 8, 8, 8]} maxBarSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="w-full h-full bg-slate-50 animate-pulse rounded-xl" />
+              <div className="w-full h-full flex items-end justify-around pb-8 px-4 gap-4">
+                {[40, 70, 45, 90, 60].map((h, i) => (
+                  <div key={i} className="w-full bg-slate-100 rounded-t-lg animate-pulse" style={{ height: `${h}%` }} />
+                ))}
+              </div>
             )}
           </div>
         </div>
 
         {/* Donut Chart: Project Status */}
-        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col">
-          <h2 className="text-lg font-bold text-slate-900">Properties by Status</h2>
+        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50/50 rounded-full blur-[80px] -z-10 group-hover:bg-emerald-100/50 transition-colors duration-700" />
+          <h2 className="text-lg font-bold text-slate-900 tracking-tight">Properties by Status</h2>
           <p className="text-sm text-slate-500 mb-8">Current inventory distribution</p>
           
           <div className="flex-1 min-h-[250px] relative flex flex-col items-center justify-center">
             {stats ? (
               <>
-                <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                  <span className="text-3xl font-black text-slate-900">{stats.total}</span>
-                  <span className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Total</span>
+                <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none drop-shadow-sm">
+                  <span className="text-[40px] font-black text-slate-900 tracking-tighter leading-none">{stats.total}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Total</span>
                 </div>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
+                    <defs>
+                      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="4" stdDeviation="6" floodOpacity="0.1" />
+                      </filter>
+                    </defs>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={70}
-                      outerRadius={90}
-                      paddingAngle={5}
+                      innerRadius={80}
+                      outerRadius={100}
+                      paddingAngle={8}
                       dataKey="value"
                       stroke="none"
+                      cornerRadius={6}
                     >
                       {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.color} filter="url(#shadow)" />
                       ))}
                     </Pie>
                     <RechartsTooltip 
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-                      itemStyle={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload
+                          return (
+                            <div className="bg-white/80 backdrop-blur-xl border border-white/20 p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-3">
+                              <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: data.color }} />
+                              <div>
+                                <p className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider">{data.name}</p>
+                                <p className="text-[16px] font-bold text-slate-900 leading-none mt-0.5">{data.value}</p>
+                              </div>
+                            </div>
+                          )
+                        }
+                        return null
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               </>
             ) : (
-              <div className="w-48 h-48 rounded-full border-8 border-gray-100 animate-pulse" />
+              <div className="w-52 h-52 rounded-full border-[16px] border-slate-100 animate-pulse" />
             )}
           </div>
           
-          <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-2 gap-4 mt-6">
             {pieData.map(item => (
-              <div key={item.name} className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-sm font-medium text-slate-600">{item.name}</span>
+              <div key={item.name} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: item.color }} />
+                <span className="text-[13px] font-semibold text-slate-600">{item.name}</span>
               </div>
             ))}
           </div>

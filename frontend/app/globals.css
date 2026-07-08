@@ -81,8 +81,12 @@ body.glass-app {
   -webkit-backdrop-filter: none;
   transition: box-shadow 0.2s ease-out, transform 0.2s ease-out;
 }
-/* Apply Playfair Display to main headings globally */
-h1, h2, h3, h4, .font-playfair, .font-serif {
+/* Apply Outfit to main headings globally for a modern SaaS look */
+h1, h2, h3, h4 {
+  font-family: var(--font-outfit), sans-serif;
+  letter-spacing: -0.02em; /* Tighter tracking for headings */
+}
+.font-serif {
   font-family: var(--font-playfair), serif;
 }
 
@@ -293,10 +297,6 @@ input[type="range"]::-moz-range-thumb {
 
 /* ── Mobile-specific improvements ── */
 @media (max-width: 767px) {
-  /* Safe area padding for iOS devices with notch/home bar */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 8px);
-  }
 
   /* Remove tap highlight on mobile for cleaner touch interactions */
   button, a, [role="button"] {
@@ -371,4 +371,13 @@ body { overflow-x: hidden; }
 }
 input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: none;
+}
+
+/* ── Hide scrollbar class ── */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

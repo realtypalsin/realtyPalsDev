@@ -18,7 +18,8 @@ OUTPUT SCHEMA (all fields optional):
   "projectNames": string[],      // ANY query about a specific named project: RERA lookups, possession dates, reviews, comparisons, detail questions — extract ALL project names mentioned
   "riskProfile": "nri"|"retiree"|"risk_averse"|"first_time_buyer",  // buyer risk profile
   "is_comparison_query": boolean, // true ONLY when user explicitly asks to COMPARE multiple named projects ("X vs Y", "compare X and Y", "which is better X or Y"). NEVER true for single-project detail/RERA/possession queries. NEVER true for general searches.
-  "legal_check": boolean         // true when user explicitly asks about the legal status, disputes, safety, builder reputation, RERA validity, NCLT, or court cases of a project or builder.
+  "legal_check": boolean,        // true when user explicitly asks about the legal status, disputes, safety, builder reputation, RERA validity, NCLT, or court cases of a project or builder.
+  "verbose": boolean             // true when user explicitly asks for details, deep dive, explanation, or uses words like "explain in detail", "tell me more", "elaborate".
 }
 
 PROJECTNAMES RULE: Populate projectNames ONLY when the user mentions a real branded project name (e.g. "Godrej Meridien", "ATS Pristine", "ACE Starlit"). Real project names are proper nouns — brand names given to a specific development. DO NOT put generic adjectives or descriptions into projectNames: "best project", "good flat", "affordable property", "top apartments", "cheap house" are NOT project names.
@@ -27,6 +28,8 @@ PROJECTNAMES RULE: Populate projectNames ONLY when the user mentions a real bran
 - Review / opinion queries ("Is X good", "X kaisa hai")
 - Direct detail queries ("Tell me about X", "X ke baare mein batao")
 - Comparison queries ("X vs Y", "compare X and Y")
+
+VERBOSE RULE: Set verbose: true ONLY when the user explicitly requests more detail, explanation, or depth than a normal summary (e.g. "explain in detail", "tell me everything about", "give me a deep dive", "elaborate").
 
 RISKPROFILE RULE: Set riskProfile when buyer identity signals are present.
   "nri" → "NRI", "non-resident", "abroad", "US mein hoon", "Dubai se hoon", "overseas"

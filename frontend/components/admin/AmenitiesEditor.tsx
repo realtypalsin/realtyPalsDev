@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash, FloppyDisk, Spinner } from '@phosphor-icons/react'
+import { Plus, Trash2, Save, Loader2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 
 type AmenityCategory = 'sports' | 'lifestyle' | 'wellness' | 'kids' | 'security' | 'parking'
@@ -90,7 +90,7 @@ export default function AmenitiesEditor({ amenities: initial, projectId, onSaved
           onClick={() => setAdding(v => !v)}
           className="flex items-center gap-1.5 text-[12px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 px-3 py-1.5 rounded-lg transition-colors"
         >
-          <Plus size={13} weight="bold" />
+          <Plus size={13} />
           Add
         </button>
       </div>
@@ -122,7 +122,7 @@ export default function AmenitiesEditor({ amenities: initial, projectId, onSaved
             disabled={saving || !newRow.name.trim()}
             className="flex items-center gap-1.5 text-[12px] font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-3 py-2 rounded-lg transition-colors"
           >
-            {saving ? <Spinner size={13} className="animate-spin" /> : <FloppyDisk size={13} />}
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
             Save
           </button>
         </div>
@@ -144,7 +144,7 @@ export default function AmenitiesEditor({ amenities: initial, projectId, onSaved
                 onClick={() => handleDelete(a.id)}
                 className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-all"
               >
-                <Trash size={11} weight="bold" />
+                <Trash2 size={11} />
               </button>
             </div>
           ))}
@@ -153,3 +153,4 @@ export default function AmenitiesEditor({ amenities: initial, projectId, onSaved
     </div>
   )
 }
+

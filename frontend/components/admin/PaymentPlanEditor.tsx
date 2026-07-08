@@ -65,44 +65,46 @@ export default function PaymentPlanEditor({ projectId, initialData }: { projectI
         </div>
       </div>
 
-      <div className="space-y-3 mb-6">
-        {milestones.map((m, i) => (
-          <div key={i} className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
-            <button
-              onClick={() => updateMilestone(i, 'done', !m.done)}
-              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${m.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300'}`}
-            >
-              {m.done && <CheckCircle2 size={14} />}
-            </button>
-            <input
-              value={m.milestone || m.label || ''}
-              onChange={(e) => updateMilestone(i, 'milestone', e.target.value)}
-              className="flex-[2] bg-white rounded-lg px-3 py-2 text-[13px] border border-gray-200"
-              placeholder="Milestone (e.g. On Booking)"
-            />
-            <input
-              value={m.pct}
-              onChange={(e) => updateMilestone(i, 'pct', e.target.value)}
-              className="flex-1 bg-white rounded-lg px-3 py-2 text-[13px] border border-gray-200"
-              placeholder="10%"
-            />
-            <input
-              value={m.amt}
-              onChange={(e) => updateMilestone(i, 'amt', e.target.value)}
-              className="flex-1 bg-white rounded-lg px-3 py-2 text-[13px] border border-gray-200"
-              placeholder="₹5 Lakhs"
-            />
-            <input
-              value={m.due}
-              onChange={(e) => updateMilestone(i, 'due', e.target.value)}
-              className="flex-1 bg-white rounded-lg px-3 py-2 text-[13px] border border-gray-200"
-              placeholder="Jan 2024"
-            />
-            <button onClick={() => removeMilestone(i)} className="text-gray-400 hover:text-red-500 p-2">
-              <X size={16} />
-            </button>
-          </div>
-        ))}
+      <div className="space-y-3 mb-6 overflow-x-auto pb-2">
+        <div className="min-w-[700px] space-y-3">
+          {milestones.map((m, i) => (
+            <div key={i} className="grid grid-cols-[auto_minmax(180px,3fr)_minmax(80px,1fr)_minmax(100px,1.5fr)_minmax(120px,2fr)_auto] items-center gap-3 bg-gray-50/80 p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-colors">
+              <button
+                onClick={() => updateMilestone(i, 'done', !m.done)}
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${m.done ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm shadow-emerald-200' : 'border-gray-300 hover:border-gray-400 bg-white'}`}
+              >
+                {m.done && <CheckCircle2 size={14} />}
+              </button>
+              <input
+                value={m.milestone || m.label || ''}
+                onChange={(e) => updateMilestone(i, 'milestone', e.target.value)}
+                className="w-full bg-white rounded-lg px-3 py-2.5 text-[13px] font-medium border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400"
+                placeholder="Milestone (e.g. On Booking)"
+              />
+              <input
+                value={m.pct}
+                onChange={(e) => updateMilestone(i, 'pct', e.target.value)}
+                className="w-full bg-white rounded-lg px-3 py-2.5 text-[13px] font-medium border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400"
+                placeholder="10%"
+              />
+              <input
+                value={m.amt}
+                onChange={(e) => updateMilestone(i, 'amt', e.target.value)}
+                className="w-full bg-white rounded-lg px-3 py-2.5 text-[13px] font-medium border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400"
+                placeholder="₹5 Lakhs"
+              />
+              <input
+                value={m.due}
+                onChange={(e) => updateMilestone(i, 'due', e.target.value)}
+                className="w-full bg-white rounded-lg px-3 py-2.5 text-[13px] font-medium border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400"
+                placeholder="Jan 2024"
+              />
+              <button onClick={() => removeMilestone(i)} className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors flex-shrink-0">
+                <X size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex justify-between items-center pt-4 border-t border-gray-100">

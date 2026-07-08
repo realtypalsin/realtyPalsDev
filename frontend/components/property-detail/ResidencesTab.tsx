@@ -173,7 +173,7 @@ export default function ResidencesTab({
                     <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">{unit.name}</h3>
                     <div className="flex items-center gap-3.5 mt-1 text-[12px] text-gray-500 font-medium">
                       <span className="flex items-center gap-1"><Bed size={12} /> {unit.bhk} Beds</span>
-                      {unit.bathrooms != null && <span className="flex items-center gap-1"><Bath size={12} /> {unit.bathrooms} Baths</span>}
+                      <span className="flex items-center gap-1"><Bath size={12} /> {unit.bathrooms || unit.bhk} Baths</span>
                       {area && <span className="flex items-center gap-1"><Ruler size={12} /> {area.toLocaleString()} sqft</span>}
                     </div>
                   </div>
@@ -233,7 +233,7 @@ export default function ResidencesTab({
                               <h2 className="text-[28px] font-black text-gray-900 dark:text-white tracking-tight mt-2">{unit.name}</h2>
                               <div className="flex items-center gap-4 mt-2 text-[13px] text-gray-500 font-medium">
                                 <span className="flex items-center gap-1"><Bed size={14} className="text-gray-400" /> {unit.bhk} Beds</span>
-                                {unit.bathrooms != null && <span className="flex items-center gap-1"><Bath size={14} className="text-gray-400" /> {unit.bathrooms} Baths</span>}
+                                <span className="flex items-center gap-1"><Bath size={14} className="text-gray-400" /> {unit.bathrooms || unit.bhk} Baths</span>
                                 {area && <span className="flex items-center gap-1"><Ruler size={14} className="text-gray-400" /> {area.toLocaleString()} sqft</span>}
                               </div>
                             </div>
@@ -351,34 +351,49 @@ export default function ResidencesTab({
                                 )}
                                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
                                   <p className="text-[12px] font-bold text-gray-900 dark:text-white">Typical Floor Plan</p>
-                                  <p className="text-[11px] text-gray-450 mt-0.5">Tower A · Even Floors</p>
+                                  <p className="text-[11px] text-gray-500 mt-0.5">{unit.name}</p>
                                 </div>
                               </div>
 
                               {/* Right side: View From This Home */}
                               <div className="md:col-span-7 space-y-3 flex flex-col justify-between">
                                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">View From This Home</p>
-                                <div className="grid grid-cols-3 gap-2.5 flex-1">
+                                <div className="flex-1 w-full flex">
                                   {viewsList.length > 0 ? (
-                                    viewsList.map((vw: any, idx: number) => (
-                                      <div key={idx} className="group relative rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 aspect-[3/4] flex flex-col justify-end bg-gray-100">
-                                        <Image src={resolveImgUrl(vw.image_url)} alt={vw.title} fill className="object-cover" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all z-20">
-                                          <Eye size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="grid grid-cols-3 gap-2.5 w-full">
+                                      {viewsList.map((vw: any, idx: number) => (
+                                        <div key={idx} className="group relative rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 aspect-[3/4] flex flex-col justify-end bg-gray-100">
+                                          <div className="absolute inset-0 flex items-center justify-center">
+                                            <Eye size={24} className="text-gray-300" />
+                                          </div>
+                                          {vw.image_url && (
+                                            <Image 
+                                              src={resolveImgUrl(vw.image_url)} 
+                                              alt={vw.title} 
+                                              fill 
+                                              className="object-cover relative z-10" 
+                                              onError={(e) => { e.currentTarget.style.display = 'none' }} 
+                                            />
+                                          )}
+                                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
+                                          <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all z-20">
+                                            <Eye size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                          </div>
+                                          <div className="absolute bottom-0 inset-x-0 p-2.5 z-20">
+                                            <p className="text-[11px] text-white font-bold leading-tight truncate">{vw.title}</p>
+                                            <p className="text-[9px] text-white/70 mt-0.5 leading-none truncate">{vw.subtitle}</p>
+                                          </div>
                                         </div>
-                                        <div className="absolute bottom-0 inset-x-0 p-2.5 z-20">
-                                          <p className="text-[11px] text-white font-bold leading-tight truncate">{vw.title}</p>
-                                          <p className="text-[9px] text-white/70 mt-0.5 leading-none truncate">{vw.subtitle}</p>
-                                        </div>
-                                      </div>
-                                    ))
+                                      ))}
+                                    </div>
                                   ) : (
-                                    [1, 2, 3].map((i) => (
-                                      <div key={i} className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 flex items-center justify-center aspect-[3/4]">
-                                        <Eye size={16} className="text-gray-300" />
+                                    <div className="flex-1 w-full rounded-2xl border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-[#111] p-5 flex flex-col items-center justify-center text-center">
+                                      <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-gray-400 mb-3">
+                                        <Compass size={18} />
                                       </div>
-                                    ))
+                                      <p className="text-[13px] font-bold text-gray-900 dark:text-white">Views vary by floor & tower</p>
+                                      <p className="text-[11px] text-gray-500 mt-1 max-w-[180px]">Connect with our advisor to see actual drone shots and view pictures from this specific unit.</p>
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -436,32 +451,32 @@ export default function ResidencesTab({
             {
               icon: TrendingDown,
               label: 'Lowest Entry Price',
-              val: lowestEntry ? priceLabel(lowestEntry) : '₹2.01 Cr',
-              tag: lowestEntry ? lowestEntry.name : '3 BHK',
-              badge: '3.2% vs last month',
+              val: lowestEntry ? priceLabel(lowestEntry) : '—',
+              tag: lowestEntry ? lowestEntry.name : '—',
+              badge: 'Value Pick',
               badgeColor: 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100/50'
             },
             {
               icon: Maximize2,
               label: 'Largest Configuration',
-              val: largest ? `${areaSqft(largest)!.toLocaleString()} sqft` : '2,500 sqft',
-              tag: largest ? largest.name : '5 BHK',
+              val: largest && areaSqft(largest) ? `${areaSqft(largest)!.toLocaleString()} sqft` : '—',
+              tag: largest ? largest.name : '—',
               badge: 'Most Preferred',
               badgeColor: 'text-indigo-700 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-100/50'
             },
             {
               icon: Award,
               label: 'Best Value Configuration',
-              val: bestValue ? bestValue.name : '3.5 BHK',
-              tag: bestValue ? priceLabel(bestValue) : '₹2.36 Cr+',
+              val: bestValue ? bestValue.name : '—',
+              tag: bestValue ? priceLabel(bestValue) : '—',
               badge: "Buyer's Choice",
               badgeColor: 'text-amber-700 bg-amber-50 dark:bg-amber-950/30 border-amber-100/50'
             },
             {
               icon: Crown,
               label: 'Premium Configuration',
-              val: premium ? premium.name : '5 BHK',
-              tag: premium ? priceLabel(premium) : '₹3.40 – 4.50 Cr',
+              val: premium ? premium.name : '—',
+              tag: premium ? priceLabel(premium) : '—',
               badge: 'Premium Living',
               badgeColor: 'text-indigo-700 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-100/50'
             }

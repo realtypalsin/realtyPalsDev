@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Trophy, TrendingUp, ShieldCheck, Users, Zap, ChevronDown, IndianRupee, Trees, HeartHandshake } from 'lucide-react'
-import { Buildings, SealCheck } from '@phosphor-icons/react'
+import { Building2, BadgeCheck } from 'lucide-react'
 import type { ProjectCard, ProjectDetail } from '@/types/project'
 import { API_BASE } from '@/lib/env'
 
@@ -428,7 +428,7 @@ function ProjectMiniCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20">
-            <Buildings size={28} className="text-blue-200" />
+            <Building2 size={28} className="text-blue-200" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
@@ -980,7 +980,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                       )}
                       {reraLabel && (
                         <div className="flex items-start gap-1 mt-1">
-                          <SealCheck size={10} weight="fill" className="text-[#0064E5] flex-shrink-0 mt-0.5" />
+                          <BadgeCheck size={10} className="fill-current text-[#0064E5] flex-shrink-0 mt-0.5" />
                           <span className="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">
                             {reraLabel}
                           </span>
@@ -1090,6 +1090,46 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                         ))}
                         {!dp && (
                           <p className="text-[11px] text-gray-400 italic">No analysis available yet.</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Section>
+          )}
+
+          {/* ── Advisor Take (per-project decision_thesis) ────────────────────── */}
+          {details.some(d => d?.decision_profile?.decision_thesis) && (
+            <Section title="Advisor Take" icon={HeartHandshake}>
+              <div className={`${isMulti ? 'flex gap-2.5 overflow-x-auto' : 'grid grid-cols-2 gap-2.5'}`}>
+                {projects.map((p, i) => {
+                  const dp = details[i]?.decision_profile
+                  const thesis = dp?.decision_thesis
+                  const tier = details[i]?.recommendation_profile?.tier
+                  const tierCfg = tier ? TIER_CFG[tier] : null
+                  return (
+                    <div
+                      key={p.id}
+                      className={`${isMulti ? 'flex-none w-[220px]' : ''} rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden`}
+                    >
+                      <div className="px-3 py-2 bg-gray-50/80 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <span className="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wide line-clamp-1">
+                          {p.name}
+                        </span>
+                        {tierCfg && (
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${tierCfg.chipCls}`}>
+                            {tierCfg.label}
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        {thesis ? (
+                          <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                            {thesis.length > 200 ? thesis.slice(0, 200) + '...' : thesis}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-gray-400 italic">No advisor take available yet.</p>
                         )}
                       </div>
                     </div>

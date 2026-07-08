@@ -63,6 +63,21 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
+router.get('/:id/check', async (req: Request, res: Response) => {
+  const userId = await verifyUser(req)
+  if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
+
+  try {
+    const saved = await prisma.savedProperty.findUnique({
+      where: { user_id_project_id: { user_id: userId, project_id: req.params.id } },
+    })
+    res.json({ is_saved: !!saved })
+  } catch (err) {
+    console.error('[GET /saved/:id/check]', err)
+    res.status(500).json({ error: 'Failed to check' })
+  }
+})
+
 // :id param represents project_id (the foreign key), NOT the saved record's internal id.
 router.delete('/:id', async (req: Request, res: Response) => {
   const userId = await verifyUser(req)

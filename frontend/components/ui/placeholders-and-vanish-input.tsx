@@ -22,21 +22,21 @@ export function PlaceholdersAndVanishInput({
     const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-    const startAnimation = () => {
-        intervalRef.current = setInterval(() => {
-            setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
-        }, 3000);
-    };
-    const handleVisibilityChange = () => {
-        if (document.visibilityState !== "visible" && intervalRef.current) {
-            clearInterval(intervalRef.current); // Clear the interval when the tab is not visible
-            intervalRef.current = null;
-        } else if (document.visibilityState === "visible") {
-            startAnimation(); // Restart the interval when the tab becomes visible
-        }
-    };
-
     useEffect(() => {
+        const startAnimation = () => {
+            intervalRef.current = setInterval(() => {
+                setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
+            }, 3000);
+        };
+        const handleVisibilityChange = () => {
+            if (document.visibilityState !== "visible" && intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            } else if (document.visibilityState === "visible") {
+                startAnimation();
+            }
+        };
+
         startAnimation();
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -58,7 +58,9 @@ export function PlaceholdersAndVanishInput({
     useEffect(() => {
         if (controlledValue !== undefined) {
             setValue(controlledValue);
-            setTimeout(() => inputRef.current?.focus(), 50);
+            if (controlledValue && document.activeElement !== inputRef.current) {
+                setTimeout(() => inputRef.current?.focus(), 50);
+            }
         }
     }, [controlledValue]);
 
@@ -226,7 +228,7 @@ export function PlaceholdersAndVanishInput({
                 {children}
             </div>
 
-            <div className="absolute inset-0 flex items-center rounded-full pointer-events-none">
+            <div className={cn("absolute inset-0 flex items-center rounded-full pointer-events-none transition-opacity duration-200", value ? "opacity-0" : "opacity-100")}>
                 <AnimatePresence mode="wait">
                     {!value && (
                         <motion.p

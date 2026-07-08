@@ -6,6 +6,7 @@ import {
   TrendingUp, BarChart3, AlertTriangle, CheckCircle2,
   Building2, Scale, Lightbulb, User, Activity, Info
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import PropertyRadarChart from '@/components/PropertyRadarChart'
@@ -174,7 +175,7 @@ export default function IntelligenceTab({
     return 'D'
   }
 
-  const computedProjectAvg = detail?.unit_types && detail.unit_types.length > 0
+  const computedProjectAvgNumber = detail?.unit_types && detail.unit_types.length > 0
     ? (() => {
       let totalRate = 0
       let count = 0
@@ -186,9 +187,11 @@ export default function IntelligenceTab({
           count++
         }
       })
-      return count > 0 ? `₹${Math.round(totalRate / count).toLocaleString('en-IN')} /sqft` : dbIntel.pricingIntelligence.projectAvg
+      return count > 0 ? Math.round(totalRate / count) : Number(String(dbIntel.pricingIntelligence.projectAvg || '').replace(/[^0-9]/g, ''))
     })()
-    : dbIntel.pricingIntelligence.projectAvg
+    : Number(String(dbIntel.pricingIntelligence.projectAvg || '').replace(/[^0-9]/g, ''))
+
+  const computedProjectAvg = computedProjectAvgNumber ? `₹${computedProjectAvgNumber.toLocaleString('en-IN')} /sqft` : dbIntel.pricingIntelligence.projectAvg
 
   return (
     <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
@@ -205,56 +208,56 @@ export default function IntelligenceTab({
         </p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-[20px] p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center gap-4 transition-all hover:-translate-y-0.5">
+            <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
               <User className="text-blue-500" size={20} />
             </div>
             <div>
-              <p className="text-[11px] text-gray-500 font-medium mb-1">Overall AI Score</p>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em] mb-1">Overall AI Score</p>
               <div className="flex items-baseline gap-1">
-                <span className="text-[28px] font-black leading-none">{overallScore}</span>
+                <span className="text-[28px] font-black tracking-tight leading-none text-gray-900 dark:text-white">{overallScore}</span>
                 <span className="text-[12px] font-bold text-gray-400">/100</span>
               </div>
-              <div className="mt-2 inline-block px-2.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-100 tracking-wider">{tier}</div>
+              <div className="mt-2 inline-block px-2.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20 tracking-wider">{tier}</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-[20px] p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center gap-4 transition-all hover:-translate-y-0.5">
+            <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
               <Briefcase className="text-blue-500" size={20} />
             </div>
             <div>
-              <p className="text-[11px] text-gray-500 font-medium mb-1">Investment Grade</p>
-              <p className="text-[28px] font-black leading-none text-gray-900">{dbIntel.topLevelMetrics.investmentGrade}</p>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em] mb-1">Investment Grade</p>
+              <p className="text-[28px] font-black tracking-tight leading-none text-gray-900 dark:text-white">{dbIntel.topLevelMetrics.investmentGrade}</p>
               <p className="text-[11px] text-gray-500 mt-2 font-medium">{dbIntel.topLevelMetrics.investmentGradeLabel}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-[20px] p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+          <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center gap-4 transition-all hover:-translate-y-0.5">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
               <TrendingUp className="text-emerald-500" size={20} />
             </div>
             <div>
-              <p className="text-[11px] text-gray-500 font-medium mb-1">Price Advantage</p>
-              <p className="text-[28px] font-black leading-none text-gray-900">{dbIntel.topLevelMetrics.priceAdvantage}</p>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em] mb-1">Price Advantage</p>
+              <p className="text-[28px] font-black tracking-tight leading-none text-gray-900 dark:text-white">{dbIntel.topLevelMetrics.priceAdvantage}</p>
               <p className="text-[11px] text-gray-500 mt-2 font-medium">{dbIntel.topLevelMetrics.priceAdvantageSubtext}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-[20px] p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+          <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center gap-4 transition-all hover:-translate-y-0.5">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
               <CheckCircle2 className="text-emerald-500" size={20} />
             </div>
             <div>
-              <p className="text-[11px] text-gray-500 font-medium mb-1">Confidence Level</p>
-              <p className="text-[28px] font-black leading-none text-gray-900">{dbIntel.topLevelMetrics.confidenceLevel}</p>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em] mb-1">Confidence Level</p>
+              <p className="text-[28px] font-black tracking-tight leading-none text-gray-900 dark:text-white">{dbIntel.topLevelMetrics.confidenceLevel}</p>
               <p className="text-[11px] text-gray-500 mt-2 font-medium">{dbIntel.topLevelMetrics.confidenceLabel}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#131211] rounded-[24px] p-6 md:p-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-300">
+      <div className="bg-white dark:bg-[#111] rounded-[24px] p-6 md:p-8 ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all duration-300">
         <div className="flex items-center gap-2 mb-8">
           <h3 className="text-[18px] font-bold text-gray-900 dark:text-white">Score by Dimension</h3>
           <div className="group relative">
@@ -329,12 +332,13 @@ export default function IntelligenceTab({
             const Icon = ICON_MAP[persona.iconName] || Users
             const isExpanded = expandedPersona === persona.type
             return (
-              <div
+              <motion.div
+                layout
                 key={idx}
-                className={`bg-white dark:bg-[#131211] border rounded-[22px] p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer ${isExpanded ? 'border-gray-300 dark:border-gray-600 ring-4 ring-gray-50 dark:ring-gray-900/50' : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'}`}
+                className={`bg-white dark:bg-[#111] ring-1 ring-inset rounded-[24px] p-6 transition-all duration-300 flex flex-col cursor-pointer overflow-hidden ${isExpanded ? 'ring-gray-300 dark:ring-gray-600 bg-gray-50/50 dark:bg-white/5 shadow-md' : 'ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)] hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.06)]'}`}
                 onClick={() => setExpandedPersona(isExpanded ? null : persona.type)}
               >
-                <div className="flex items-start justify-between mb-4">
+                <motion.div layout="position" className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center flex-shrink-0">
                       <Icon size={18} className="text-gray-900 dark:text-gray-100" />
@@ -353,35 +357,45 @@ export default function IntelligenceTab({
                   <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${persona.fitColor}`}>
                     {persona.fit}
                   </span>
-                </div>
+                </motion.div>
 
-                <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed mb-2">
+                <motion.p layout="position" className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed mb-2">
                   {persona.reasons[0]?.split(':')[0] || 'Good overall fit.'}
-                </p>
+                </motion.p>
 
+                <AnimatePresence initial={false}>
                 {isExpanded && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <ul className="flex flex-col gap-3">
-                      {persona.reasons.map((r: string, i: number) => {
-                        const split = r.split(':')
-                        return (
-                          <li key={i} className="text-[13px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800 leading-relaxed">
-                            <strong className="text-gray-900 dark:text-white font-semibold mr-1">{split[0]}:</strong>
-                            {split[1] || ''}
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  </div>
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                      <ul className="flex flex-col gap-3">
+                        {persona.reasons.map((r: string, i: number) => {
+                          const split = r.split(':')
+                          return (
+                            <li key={i} className="text-[13px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 p-3.5 rounded-[16px] border border-gray-100 dark:border-gray-800 leading-relaxed">
+                              <strong className="text-gray-900 dark:text-white font-bold mr-1.5">{split[0]}:</strong>
+                              {split[1] || ''}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
+                  </motion.div>
                 )}
+                </AnimatePresence>
 
-                <div className="flex justify-start items-center mt-4 pt-4 border-t border-gray-50 dark:border-gray-800/30">
-                  <span className="text-[12px] text-gray-900 dark:text-gray-100 font-bold hover:underline flex items-center gap-1">
+                <motion.div layout="position" className="flex justify-start items-center mt-4 pt-4 border-t border-gray-50 dark:border-gray-800/30">
+                  <span className="text-[12px] text-gray-900 dark:text-gray-100 font-bold hover:underline flex items-center gap-1.5 transition-colors">
                     {isExpanded ? 'Hide Details' : 'View Deep Dive'}
-                    <span className="text-[16px] leading-none">{isExpanded ? '↑' : '→'}</span>
+                    <span className={`text-[16px] leading-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'translate-x-0.5'}`}>↓</span>
                   </span>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )
           })}
         </div>
@@ -395,7 +409,7 @@ export default function IntelligenceTab({
       {/* 4. Investment & Pricing Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Investment Snapshot */}
-        <div className="bg-white border border-gray-100 shadow-sm rounded-[24px] p-6">
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-[24px] p-6">
           <h3 className="text-[16px] font-bold text-gray-900 mb-6">How this investment may perform</h3>
           <div className="space-y-4">
             {(dbIntel.investmentSnapshot || []).map((item: any, i: number) => {
@@ -428,7 +442,7 @@ export default function IntelligenceTab({
         </div>
 
         {/* Pricing Intelligence */}
-        <div className="bg-white border border-gray-100 shadow-sm rounded-[24px] p-6">
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-[24px] p-6">
           <h3 className="text-[16px] font-bold text-gray-900 mb-6">Is this fairly priced?</h3>
           <div className="space-y-4 mb-6">
             <div className="flex items-center justify-between">
@@ -475,7 +489,7 @@ export default function IntelligenceTab({
       </div>
 
       {/* 5. Risk & Concern Radar */}
-      <div className="bg-white border border-gray-100 shadow-sm rounded-[24px] p-6 md:p-8 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-[24px] p-6 md:p-8 relative overflow-hidden">
         {/* Red warning triangle in bg */}
         <div className="absolute -top-4 -left-4 w-16 h-16 bg-red-50 rounded-full flex items-center justify-center opacity-50">
           <AlertTriangle className="text-red-500 opacity-50" size={32} />
@@ -572,7 +586,7 @@ export default function IntelligenceTab({
             }
 
             return (
-              <div key={i} className="flex items-start justify-between bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+              <div key={i} className="flex items-start justify-between bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
                 <div className="flex gap-4">
                   <div className={`w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5`}>
                     <Icon className={item.iconColor || 'text-blue-500'} size={16} />
@@ -592,51 +606,77 @@ export default function IntelligenceTab({
       </div>
       {/* 7. Market Comparison (Existing Component) */}
       <div className="pt-6" ref={marketRef}>
-        <MarketComparison sector={d?.sector || '10'} city={d?.city || 'Greater Noida West'} currentPriceSqft={computedProjectAvg || undefined} />
+        <MarketComparison sector={d?.sector || '10'} city={d?.city || 'Greater Noida West'} currentPriceSqft={computedProjectAvgNumber || undefined} />
       </div>
 
       {/* Report Modal */}
+      <AnimatePresence>
       {showReportModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 relative">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowReportModal(false)} 
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.5 }}
+            className="bg-white/95 dark:bg-[#131211]/95 backdrop-blur-md rounded-[32px] max-w-lg w-full p-8 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-white/20 dark:border-white/5 relative z-10 overflow-hidden"
+          >
+            {/* Soft decorative glow */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+            
             <button
               onClick={() => setShowReportModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg font-bold"
+              className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-gray-100/50 hover:bg-gray-200/50 dark:bg-gray-800/50 dark:hover:bg-gray-700/50 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full transition-colors"
             >
               ✕
             </button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <TrendingUp className="text-blue-600" size={18} />
+            <div className="flex items-center gap-4 mb-8 relative z-10">
+              <div className="w-12 h-12 rounded-[18px] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-100/50 dark:border-blue-800/50 flex items-center justify-center shadow-inner">
+                <TrendingUp className="text-blue-600 dark:text-blue-400" size={20} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">AI Investment Report</h3>
-                <p className="text-xs text-gray-500">{d?.name || 'Project'} Detailed Projections</p>
+                <h3 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">AI Investment Report</h3>
+                <p className="text-[13px] text-gray-500 font-medium">{d?.name || 'Project'} Detailed Projections</p>
               </div>
             </div>
 
-            <div className="space-y-4 border-t border-b border-gray-100 py-4">
+            <div className="space-y-5 relative z-10">
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Appreciation Rate</span>
-                  <span className="text-base font-bold text-gray-900">12-16% Annually</span>
+                <div className="bg-gray-50/80 dark:bg-gray-900/80 border border-gray-100/50 dark:border-gray-800/50 p-4 rounded-[20px]">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Appreciation</span>
+                  <span className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">12-16% <span className="text-[12px] font-semibold text-gray-400 tracking-normal">/yr</span></span>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Rental Yield</span>
-                  <span className="text-base font-bold text-gray-900">6.5% - 7.5%</span>
+                <div className="bg-gray-50/80 dark:bg-gray-900/80 border border-gray-100/50 dark:border-gray-800/50 p-4 rounded-[20px]">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Rental Yield</span>
+                  <span className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">6.5 - 7.5%</span>
                 </div>
               </div>
-              <div className="text-xs text-gray-600 space-y-2">
-                <p>📈 <strong>Market Capital Gain Catalyst:</strong> Positioned in high-appreciating Sector 10 Extension corridor. Demand is heavily catalyzed by commercial expansion opposite Knowledge Park V.</p>
-                <p>🛡️ <strong>Funding Safeguards:</strong> Fast-tracked construction with zero cash-flow threat, backed by institutional funding from Tata Capital.</p>
-                <p>📋 <strong>RERA Filing Validation:</strong> Registered under UP-RERA UPRERAPRJ916631/02/2024. Clear land title deeds verify no outstanding developer dues.</p>
+              
+              <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 p-5 rounded-[20px] space-y-3.5">
+                <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span className="font-bold text-gray-900 dark:text-white">📈 Capital Gain Catalyst:</span> Positioned in high-appreciating Sector 10 Extension corridor. Demand is heavily catalyzed by commercial expansion opposite Knowledge Park V.
+                </p>
+                <div className="h-px bg-blue-100/50 dark:bg-blue-900/30 w-full" />
+                <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span className="font-bold text-gray-900 dark:text-white">🛡️ Funding Safeguards:</span> Fast-tracked construction with zero cash-flow threat, backed by institutional funding from Tata Capital.
+                </p>
+                <div className="h-px bg-blue-100/50 dark:bg-blue-900/30 w-full" />
+                <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span className="font-bold text-gray-900 dark:text-white">📋 RERA Validation:</span> Registered under UP-RERA UPRERAPRJ916631/02/2024. Clear land title deeds verify no outstanding developer dues.
+                </p>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 mt-8 relative z-10">
               <button
                 onClick={() => setShowReportModal(false)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-full transition"
+                className="px-5 py-2.5 bg-gray-100/80 hover:bg-gray-200/80 dark:bg-gray-800/80 dark:hover:bg-gray-700/80 text-gray-700 dark:text-gray-300 text-[13px] font-bold rounded-xl transition-colors"
               >
                 Close
               </button>
@@ -645,14 +685,16 @@ export default function IntelligenceTab({
                   setShowReportModal(false)
                   alert('Investment report download started!')
                 }}
-                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-full transition"
+                className="px-5 py-2.5 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 text-[13px] font-bold rounded-xl transition-all shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] flex items-center gap-2"
               >
-                Download PDF Report
+                Download PDF
+                <span className="opacity-60">↓</span>
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
+      </AnimatePresence>
 
       {/* Additional helper components can be placed here if needed */}
 

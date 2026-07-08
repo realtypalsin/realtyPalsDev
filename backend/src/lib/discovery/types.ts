@@ -168,6 +168,11 @@ export interface DiscoveryResult {
     query: string
     candidates: Array<{ name: string; sector: string; builder: string }>
   }
+  /** Sector term matched multiple distinct sectors (e.g., Sector 10 Noida vs Sector 10 Greater Noida). */
+  sectorDisambiguation?: {
+    query: string
+    candidates: string[]
+  }
 }
 
 export interface SectorContext {

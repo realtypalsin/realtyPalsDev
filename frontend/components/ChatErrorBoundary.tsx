@@ -28,9 +28,9 @@ export default class ChatErrorBoundary extends Component<Props, State> {
             <AlertTriangle size={28} className="text-red-500" />
           </div>
           <div>
-            <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Something went wrong</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-              The chat crashed unexpectedly. Reload to continue.
+            <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">We encountered a temporary issue</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed">
+              Our advisory system hit a minor snag. Please refresh the chat to continue your session.
             </p>
           </div>
           <button

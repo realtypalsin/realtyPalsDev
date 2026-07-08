@@ -93,6 +93,7 @@ export function streamChat(
     userId?: string
     guestToken?: string
     intent?: Record<string, unknown>
+    currentSessionViewed?: string[]
     onEvent: (event: SSEEvent) => void
     onDone?: () => void
     signal?: AbortSignal
@@ -106,6 +107,7 @@ export function streamChat(
       sessionId: options.sessionId,
       guestToken: options.guestToken,
       intent: options.intent,
+      currentSessionViewed: options.currentSessionViewed,
     }),
     signal: options.signal,
   })).then(async (res) => {

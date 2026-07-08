@@ -3,17 +3,22 @@
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Building2, Users, LayoutDashboard, LogOut, Menu, X,
-  ChevronRight, Search, Command
+  ChevronRight, Search, Command, FileText, MessageSquare, Newspaper, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { API_BASE } from '@/lib/env'
 
 const NAV = [
-  { href: '/admin',          label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/projects', label: 'Projects',  icon: Building2 },
-  { href: '/admin/builders', label: 'Builders',  icon: Users },
+  { href: '/admin',                       label: 'Dashboard',            icon: LayoutDashboard },
+  { href: '/admin/projects',              label: 'Projects',             icon: Building2 },
+  { href: '/admin/builders',              label: 'Builders',             icon: Users },
+  { href: '/admin/property-listings',     label: 'Listings',             icon: Building2 },
+  { href: '/admin/builder-applications',  label: 'Registrations',        icon: FileText },
+  { href: '/admin/leads',                 label: 'Leads',                icon: MessageSquare },
+  { href: '/admin/news',                  label: 'News',                 icon: Newspaper },
 ]
 
 function breadcrumb(pathname: string): { label: string; href?: string }[] {
@@ -38,7 +43,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router   = useRouter()
   const pathname = usePathname()
   const [checking, setChecking]   = useState(true)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const [cmdOpen, setCmdOpen] = useState(false)
 
   useEffect(() => {
@@ -52,7 +58,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => document.removeEventListener('keydown', down)
   }, [])
 
-  // Update browser tab title
   useEffect(() => {
     document.title = "Admin RealtyPals"
   }, [pathname])
@@ -65,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         else setChecking(false)
       })
       .catch(() => router.replace('/admin/login'))
-  }, [pathname])
+  }, [pathname, router])
 
   if (pathname === '/admin/login') return <>{children}</>
 
@@ -86,6 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="h-screen bg-[#EEEEEE] font-sans text-slate-800 selection:bg-slate-200 selection:text-slate-900 flex overflow-hidden">
+      
       {/* Command Palette */}
       <AnimatePresence>
         {cmdOpen && (
@@ -135,87 +141,134 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
       </AnimatePresence>
 
+      {/* Mobile Backdrop */}
+      {mobileOpen && (
+        <div 
+          className="md:hidden fixed inset-0 z-40 bg-zinc-900/40 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-[240px] bg-white border-r border-gray-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col transform transition-transform duration-200
-        lg:translate-x-0 lg:static lg:z-auto
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${isCollapsed ? 'hidden md:flex w-[68px]' : 'w-64 md:w-[260px]'} 
+        flex flex-col h-full bg-[#fdfdfd] border-r border-zinc-200/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)]
+        fixed md:relative z-50 md:z-auto shrink-0
+        transition-all duration-300 ease-in-out
+        ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-
-        {/* Brand */}
-        <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
-          <div className="w-8 h-8 bg-slate-900 shadow-sm rounded-lg flex items-center justify-center flex-shrink-0">
-            <Building2 size={15} className="text-white" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-zinc-900 text-sm font-bold leading-none tracking-tight">RealtyPals</p>
-            <p className="text-[10px] text-zinc-500 mt-0.5 font-medium">Admin Panel</p>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden text-zinc-500 hover:text-zinc-800 p-1"
-          >
-            <X size={16} />
-          </button>
+        
+        {/* Brand Header */}
+        <div className="group h-14 flex items-center justify-center border-b border-zinc-100/80 w-full px-3 shrink-0 relative">
+          {!isCollapsed ? (
+            <>
+              <div className="flex flex-1 items-center justify-center transition-opacity duration-300">
+                <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals" width={140} height={32} className="object-contain drop-shadow-sm" unoptimized />
+              </div>
+              <div className="absolute right-3 flex items-center justify-center">
+                <button
+                  onClick={() => {
+                    if (window.innerWidth < 768) setMobileOpen(false);
+                    else setIsCollapsed(true);
+                  }}
+                  className="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
+                >
+                  <PanelLeftClose size={20} strokeWidth={1.5} />
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
+                <Image src="/images/icons/CollapsedRealtyPalsBlackSqLogo.png" alt="RealtyPals Logo" width={32} height={32} className="object-contain rounded-md drop-shadow-sm" unoptimized />
+              </div>
+              <button
+                onClick={() => setIsCollapsed(false)}
+                className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-all duration-200"
+              >
+                <PanelLeftOpen size={20} strokeWidth={1.5} />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-2.5 py-3 space-y-1">
-          {NAV.map(({ href, label, icon: Icon }) => {
-            const active = href === '/admin'
-              ? pathname === '/admin'
-              : pathname.startsWith(href)
+        {/* Workspace Tag (Expanded only) */}
+        {!isCollapsed && (
+          <div className="px-5 py-3 border-b border-zinc-50/50 flex items-center gap-2 bg-zinc-50/30">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Admin Workspace</p>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+          {NAV.map(item => {
+            const isActive = pathname === item.href
+              ? true
+              : pathname.startsWith(item.href) && item.href !== '/admin'
+
+            const Icon = item.icon
             return (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setSidebarOpen(false)}
-                className={`relative flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-[13px] font-semibold transition-colors group ${
-                  active ? 'text-zinc-900' : 'text-zinc-500 hover:text-zinc-900'
-                }`}
-              >
-                {active && (
-                  <motion.div
-                    layoutId="sidebar-active"
-                    className="absolute inset-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04),0_0_0_1px_rgba(0,0,0,0.02)] rounded-[10px]"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
+              <div key={item.href} className="relative group/navitem flex justify-center">
+                <Link
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-[12px]'} ${
+                    isActive 
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' 
+                      : 'text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900'
+                  }`}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-white' : 'text-zinc-400 group-hover/navitem:text-zinc-600'} />
+                  {!isCollapsed && <span className={`text-[13px] font-semibold tracking-wide ${isActive ? 'text-white' : ''}`}>{item.label}</span>}
+                </Link>
+                {/* Tooltip for collapsed state */}
+                {isCollapsed && (
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 py-1.5 px-2.5 bg-zinc-800 text-white text-[11px] font-medium rounded-md opacity-0 group-hover/navitem:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-xl">
+                    {item.label}
+                  </div>
                 )}
-                <Icon size={15} className={`relative z-10 flex-shrink-0 transition-colors ${active ? 'text-zinc-900' : 'text-zinc-400 group-hover:text-zinc-600'}`} />
-                <span className="relative z-10">{label}</span>
-              </Link>
+              </div>
             )
           })}
         </nav>
 
-        {/* Footer */}
-        <div className="px-2.5 py-3 border-t border-gray-100 space-y-1">
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100/80 transition-all border border-transparent"
-          >
-            <Building2 size={14} className="flex-shrink-0" />
-            View site
-          </a>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-zinc-500 hover:text-red-600 hover:bg-red-50 hover:border-red-100 transition-all border border-transparent w-full"
-          >
-            <LogOut size={14} className="flex-shrink-0" />
-            Sign Out
-          </button>
+        {/* Footer Area */}
+        <div className="p-3 border-t border-zinc-100 shrink-0 w-full space-y-1">
+          <div className="relative group/navitem flex justify-center">
+            <Link 
+              href="/" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-[12px]'} text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900`}
+            >
+              <Building2 size={18} strokeWidth={2} className="text-zinc-400 group-hover/navitem:text-zinc-600" />
+              {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">View site</span>}
+            </Link>
+            {isCollapsed && (
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 py-1.5 px-2.5 bg-zinc-800 text-white text-[11px] font-medium rounded-md opacity-0 group-hover/navitem:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-xl">
+                View site
+              </div>
+            )}
+          </div>
+
+          <div className="relative group/navitem flex justify-center">
+            <button 
+              onClick={handleLogout}
+              className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-[12px]'} text-zinc-500 hover:bg-red-50 hover:text-red-600`}
+            >
+              <LogOut size={18} strokeWidth={2} className="text-zinc-400 group-hover/navitem:text-red-500" />
+              {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">Sign Out</span>}
+            </button>
+            {isCollapsed && (
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 py-1.5 px-2.5 bg-zinc-800 text-white text-[11px] font-medium rounded-md opacity-0 group-hover/navitem:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-xl">
+                Sign Out
+              </div>
+            )}
+          </div>
         </div>
       </aside>
-
-      {/* Backdrop (mobile) */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#EEEEEE]">
@@ -224,42 +277,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="bg-[#EEEEEE]/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-zinc-500 hover:text-zinc-900 p-1"
+              onClick={() => setMobileOpen(true)}
+              className="md:hidden text-zinc-500 hover:text-zinc-900 p-1 mr-2"
             >
               <Menu size={20} />
             </button>
 
             {/* Breadcrumbs */}
             <nav className="flex items-center gap-1.5 text-[13px] font-semibold min-w-0">
-            {crumbs.map((c, i) => (
-              <span key={i} className="flex items-center gap-1 min-w-0">
-                {i > 0 && <ChevronRight size={12} className="text-zinc-300 flex-shrink-0" />}
-                {c.href && i < crumbs.length - 1 ? (
-                  <Link href={c.href} className="text-zinc-500 hover:text-zinc-900 transition-colors truncate">
-                    {c.label}
-                  </Link>
-                ) : (
-                  <span className="text-zinc-900 truncate">{c.label}</span>
-                )}
-              </span>
-            ))}
-          </nav>
-        </div>
+              {crumbs.map((c, i) => (
+                <span key={i} className="flex items-center gap-1 min-w-0">
+                  {i > 0 && <ChevronRight size={12} className="text-zinc-300 flex-shrink-0" />}
+                  {c.href && i < crumbs.length - 1 ? (
+                    <Link href={c.href} className="text-zinc-500 hover:text-zinc-900 transition-colors truncate">
+                      {c.label}
+                    </Link>
+                  ) : (
+                    <span className="text-zinc-900 truncate">{c.label}</span>
+                  )}
+                </span>
+              ))}
+            </nav>
+          </div>
 
-        {/* Command shortcut hint */}
-        <button 
-          onClick={() => setCmdOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-zinc-100/50 hover:bg-zinc-100 rounded-lg text-[11px] font-semibold text-zinc-400 hover:text-zinc-600 transition-colors"
-        >
-          <Search size={12} />
-          <span>Search</span>
-          <kbd className="font-sans border border-zinc-200/80 rounded px-1.5 py-0.5 bg-white shadow-sm">⌘K</kbd>
-        </button>
-      </header>
+          {/* Command shortcut hint */}
+          <button 
+            onClick={() => setCmdOpen(true)}
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-zinc-100/50 hover:bg-zinc-100 rounded-lg text-[11px] font-semibold text-zinc-400 hover:text-zinc-600 transition-colors"
+          >
+            <Search size={12} />
+            <span>Search</span>
+            <kbd className="font-sans border border-zinc-200/80 rounded px-1.5 py-0.5 bg-white shadow-sm">⌘K</kbd>
+          </button>
+        </header>
 
         {/* Page */}
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
+        <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
       </div>
     </div>
   )

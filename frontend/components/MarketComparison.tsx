@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { TrendingUp, BarChart3, Loader2, Building2, MapPin, ArrowUpRight } from 'lucide-react'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts'
 import { API_BASE } from '@/lib/env'
 
 interface ComparisonData {
@@ -67,91 +68,142 @@ export default function MarketComparison({ sector, city = 'Noida', currentPriceS
   const min = data.min_price_sqft || 0
   const max = data.max_price_sqft || 0
   const avg = data.avg_price_sqft || 0
-  const range = max - min
 
-  const getPercentage = (value: number) => {
-    if (!range) return 50
-    return Math.max(0, Math.min(100, ((value - min) / range) * 100))
+  // Generate a smooth bell curve for the distribution chart
+  const generateDistributionCurve = () => {
+    if (!min || !max || !avg) return []
+    const points = []
+    const steps = 40
+    // Pad the min/max by 10% for visual breathing room
+    const range = max - min
+    const paddedMin = min - (range * 0.1)
+    const paddedMax = max + (range * 0.1)
+    const step = (paddedMax - paddedMin) / steps
+    
+    for (let i = 0; i <= steps; i++) {
+      const x = paddedMin + (step * i)
+      const variance = range / 3 
+      const y = Math.exp(-Math.pow(x - avg, 2) / (2 * Math.pow(variance, 2)))
+      points.push({ price: x, density: y * 100 })
+    }
+    return points
   }
 
-  const avgPercent = getPercentage(avg)
-  const currentPercent = currentPriceSqft ? getPercentage(currentPriceSqft) : null
+  const chartData = generateDistributionCurve()
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-[#111] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xl border border-white/10">
+          ₹{Math.round(label).toLocaleString()}/sqft
+        </div>
+      )
+    }
+    return null
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Price comparison card */}
       {data.avg_price_sqft && (
-        <div className="bg-white border border-gray-100 shadow-sm rounded-3xl p-6 lg:p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                <BarChart3 size={16} />
+        <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-[20px] p-6 lg:p-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <BarChart3 size={18} />
               </div>
               <div>
-                <h4 className="text-[15px] font-bold text-gray-900">Sector {sector} Price Benchmarking</h4>
-                <p className="text-[11px] text-gray-400 font-medium">Real-time localized market positioning</p>
+                <h4 className="text-[16px] font-bold text-gray-900 dark:text-white tracking-tight">Sector {sector} Price Distribution</h4>
+                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-[0.1em] mt-0.5">Real-time localized market positioning</p>
               </div>
             </div>
             {currentPriceSqft && avg > 0 && (
-              <span className={`text-[12px] font-bold px-2.5 py-1 rounded-full ${
-                currentPriceSqft > avg ? 'text-amber-700 bg-amber-50' : 'text-emerald-700 bg-emerald-50'
+              <span className={`text-[10px] font-bold uppercase tracking-[0.05em] px-3 py-1.5 rounded-full ${
+                currentPriceSqft > avg ? 'text-amber-700 bg-amber-50 dark:bg-amber-500/10' : 'text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10'
               }`}>
                 {currentPriceSqft > avg 
-                  ? `+${Math.round(((currentPriceSqft - avg) / avg) * 100)}% Sector Premium`
-                  : `${Math.round(((currentPriceSqft - avg) / avg) * 100)}% Below Average`
+                  ? `+${Math.round(((currentPriceSqft - avg) / avg) * 100)}% Premium`
+                  : `${Math.round(((avg - currentPriceSqft) / avg) * 100)}% Below Avg`
                 }
               </span>
             )}
           </div>
 
-          <div className="space-y-8">
-            {/* Visual Graph Axis */}
-            <div className="relative pt-6 pb-2">
-              {/* Range bar background */}
-              <div className="h-2.5 bg-gray-100 rounded-full relative overflow-visible">
-                {/* Gradient spread bar representing the market min-max range */}
-                <div className="absolute inset-y-0 left-0 right-0 bg-gradient-to-r from-emerald-100 via-sky-200 to-indigo-200 rounded-full opacity-80" />
+          <div className="h-[200px] w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorDensity" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis 
+                  dataKey="price" 
+                  tickFormatter={(val) => `₹${(val/1000).toFixed(1)}k`} 
+                  stroke="#9ca3af"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  minTickGap={30}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                <Area 
+                  type="monotone" 
+                  dataKey="density" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorDensity)" 
+                  activeDot={{ r: 4, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
+                />
+                
+                {/* Average Market Line */}
+                <ReferenceLine 
+                  x={avg} 
+                  stroke="#9ca3af" 
+                  strokeDasharray="3 3"
+                  label={{ value: 'Market Avg', position: 'top', fill: '#9ca3af', fontSize: 10, fontWeight: 'bold' }} 
+                />
 
-                {/* Avg Marker line and tag */}
-                <div 
-                  className="absolute -top-1.5 bottom-0 w-0.5 bg-gray-400 flex flex-col items-center"
-                  style={{ left: `${avgPercent}%` }}
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-gray-600 -mt-0.5" />
-                  <div className="absolute top-4 whitespace-nowrap text-center">
-                    <span className="text-[10px] font-semibold text-gray-400 block">Avg</span>
-                    <span className="text-[11px] font-bold text-gray-700">₹{avg.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                {/* Current Project Marker (Only if currentPriceSqft is provided) */}
-                {currentPriceSqft !== undefined && currentPercent !== null && (
-                  <div 
-                    className="absolute -top-3.5 bottom-0 w-1 flex flex-col items-center z-10"
-                    style={{ left: `${currentPercent}%` }}
-                  >
-                    {/* Glowing pulse ring */}
-                    <span className="absolute inline-flex h-3 w-3 rounded-full bg-blue-400 opacity-75 animate-ping -mt-0.5"></span>
-                    <div className="w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow-md relative" />
-                    
-                    <div className="absolute -top-7 whitespace-nowrap bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
-                      This Project (₹{currentPriceSqft.toLocaleString()}/sqft)
-                    </div>
-                  </div>
+                {/* Current Project Line */}
+                {currentPriceSqft && (
+                  <ReferenceLine 
+                    x={currentPriceSqft} 
+                    stroke="#2563eb" 
+                    strokeWidth={2}
+                    label={{ 
+                      value: 'This Project', 
+                      position: 'top', 
+                      fill: '#2563eb', 
+                      fontSize: 11, 
+                      fontWeight: 800,
+                      offset: 10
+                    }} 
+                  />
                 )}
-              </div>
-
-              {/* End Ticks */}
-              <div className="flex justify-between text-[11px] text-gray-400 font-medium mt-8 pt-2 border-t border-gray-50">
-                <div className="text-left">
-                  <span className="block text-[10px] text-gray-400 uppercase tracking-wider">Sector Min</span>
-                  <span className="font-bold text-gray-800">₹{min.toLocaleString()}/sqft</span>
-                </div>
-                <div className="text-right">
-                  <span className="block text-[10px] text-gray-400 uppercase tracking-wider">Sector Max</span>
-                  <span className="font-bold text-gray-800">₹{max.toLocaleString()}/sqft</span>
-                </div>
-              </div>
+                {currentPriceSqft && (
+                  <ReferenceDot 
+                    x={currentPriceSqft} 
+                    y={Math.exp(-Math.pow(currentPriceSqft - avg, 2) / (2 * Math.pow((max - min) / 3, 2))) * 100} 
+                    r={5} 
+                    fill="#2563eb" 
+                    stroke="#fff" 
+                    strokeWidth={2} 
+                  />
+                )}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100 dark:border-white/5">
+            <div>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em]">Sector Min</p>
+              <p className="text-[14px] font-black text-gray-900 dark:text-white mt-0.5">₹{min.toLocaleString()}/sqft</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em]">Sector Max</p>
+              <p className="text-[14px] font-black text-gray-900 dark:text-white mt-0.5">₹{max.toLocaleString()}/sqft</p>
             </div>
           </div>
         </div>
@@ -160,16 +212,16 @@ export default function MarketComparison({ sector, city = 'Noida', currentPriceS
       {/* Stats breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {data.status_breakdown && (
-          <div className="bg-white border border-gray-100 shadow-sm rounded-3xl p-5">
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-4">{data.project_count} {data.project_count === 1 ? 'Project' : 'Projects'} in Sector {sector}</p>
-            <div className="space-y-3">
+          <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-[20px] p-6">
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em] mb-5">{data.project_count} {data.project_count === 1 ? 'Project' : 'Projects'} in Sector {sector}</p>
+            <div className="space-y-4">
               {Object.entries(data.status_breakdown).map(([k, v]) => (
-                <div key={k} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0 last:pb-0">
+                <div key={k} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${statusColor(k)}`} />
-                    <span className="text-[12px] text-gray-600 font-medium">{statusLabel(k)}</span>
+                    <span className="text-[12px] text-gray-700 dark:text-gray-300 font-bold tracking-tight">{statusLabel(k)}</span>
                   </div>
-                  <span className="text-[12px] font-bold text-gray-900 bg-gray-50 px-2 py-0.5 rounded-md">{v}</span>
+                  <span className="text-[12px] font-black text-gray-900 dark:text-white bg-gray-50 dark:bg-white/5 ring-1 ring-inset ring-gray-900/5 dark:ring-white/10 px-2.5 py-1 rounded-md">{v}</span>
                 </div>
               ))}
             </div>
@@ -177,22 +229,22 @@ export default function MarketComparison({ sector, city = 'Noida', currentPriceS
         )}
 
         {data.bhk_distribution && (
-          <div className="bg-white border border-gray-100 shadow-sm rounded-3xl p-5">
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-4">Unit Mix Distribution</p>
-            <div className="space-y-3">
+          <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-[20px] p-6">
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em] mb-5">Unit Mix Distribution</p>
+            <div className="space-y-4">
               {Object.entries(data.bhk_distribution)
                 .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
                 .map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between">
-                  <span className="text-[12px] text-gray-600 font-medium w-12">{k}</span>
+                  <span className="text-[12px] text-gray-700 dark:text-gray-300 font-bold tracking-tight w-12">{k}</span>
                   <div className="flex-1 flex items-center gap-3">
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full"
                         style={{ width: `${(v / Math.max(...Object.values(data.bhk_distribution))) * 100}%` }}
                       />
                     </div>
-                    <span className="text-[12px] font-bold text-gray-900 w-4 text-right">{v}</span>
+                    <span className="text-[12px] font-black text-gray-900 dark:text-white w-4 text-right">{v}</span>
                   </div>
                 </div>
               ))}

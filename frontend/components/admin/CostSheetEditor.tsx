@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, Save, IndianRupee } from 'lucide-react'
+import { Plus, X, Save, IndianRupee, CheckCircle2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { toast } from 'sonner'
 

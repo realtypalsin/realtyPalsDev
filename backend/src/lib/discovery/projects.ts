@@ -128,9 +128,15 @@ type RawProject = Prisma.ProjectGetPayload<{ include: typeof PROJECT_INCLUDE }>
 function buildHardFilters(intent: Intent): Prisma.ProjectWhereInput {
   const where: Prisma.ProjectWhereInput = {}
 
-  // Sector — exact match (case-insensitive). `contains` would match "Sector 10" inside "Sector 107".
+  // Sector — whole-word match (case-insensitive).
+  // This ensures 'Sector 10' matches 'Sector 10 Greater Noida West' but NOT 'Sector 107'.
   if (intent.sector && !isCityLevel(intent.sector)) {
-    where.sector = { equals: intent.sector, mode: 'insensitive' }
+    where.OR = [
+      { sector: { equals: intent.sector, mode: 'insensitive' } },
+      { sector: { startsWith: `${intent.sector} `, mode: 'insensitive' } },
+      { sector: { endsWith: ` ${intent.sector}`, mode: 'insensitive' } },
+      { sector: { contains: ` ${intent.sector} `, mode: 'insensitive' } }
+    ]
   }
 
   // BHK + budget — single AND condition on the same unit type
@@ -477,6 +483,21 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
   })
 
   if (rawProjects.length > 0) {
+    if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)) {
+      const distinctSectors = [...new Set(rawProjects.map((p) => p.sector))]
+      if (distinctSectors.length > 1) {
+        console.log(`[DISCOVERY:B2] SECTOR MULTI-MATCH: "${effectiveIntent.sector}" matched ${distinctSectors.length} distinct sectors:`, distinctSectors)
+        return {
+          exactResults: [],
+          nearbyResults: [],
+          sectorDisambiguation: {
+            query: effectiveIntent.sector,
+            candidates: distinctSectors
+          }
+        }
+      }
+    }
+
     // Builder-only queries (no BHK/budget/sector) bypass score threshold
     // so every builder project surfaces regardless of soft-signal richness.
     const isBuilderOnly =

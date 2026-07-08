@@ -60,16 +60,13 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-4 flex-shrink-0 bg-gradient-to-b from-black/80 to-transparent absolute top-0 inset-x-0 z-10 pointer-events-none">
         <div>
-          <p className="text-white text-sm font-semibold">{title ?? 'Floor Plans'}</p>
-          {plan.caption && <p className="text-gray-400 text-xs mt-0.5">{plan.caption}</p>}
-          {floorPlans.length > 1 && (
-            <p className="text-gray-500 text-[10px] mt-0.5">{idx + 1} / {floorPlans.length}</p>
-          )}
+          <p className="text-white text-lg font-semibold drop-shadow-md">{title ?? 'Gallery'}</p>
+          {plan.caption && <p className="text-gray-300 text-sm mt-0.5 drop-shadow-md">{plan.caption}</p>}
         </div>
-        <button onClick={onClose} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white">
-          <X size={16} />
+        <button onClick={onClose} className="w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-md pointer-events-auto transition-colors">
+          <X size={18} />
         </button>
       </div>
 
@@ -102,38 +99,63 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-        {/* Prev/Next */}
-        <div className="flex gap-2">
-          <button
-            onClick={prev}
-            disabled={!canPrev}
-            className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-30"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <button
-            onClick={next}
-            disabled={!canNext}
-            className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-30"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
+      {/* Controls & Thumbnails */}
+      <div className="flex flex-col bg-black/60 backdrop-blur-xl border-t border-white/10 flex-shrink-0 pb-safe">
+        
+        {/* Thumbnails Track */}
+        {floorPlans.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto px-4 pt-4 pb-2 hide-scrollbar items-center sm:justify-center">
+            {floorPlans.map((p, i) => (
+              <button
+                key={p.id || i}
+                onClick={() => { setIdx(i); resetView() }}
+                className={`relative w-16 h-12 sm:w-20 sm:h-14 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                  i === idx ? 'border-white opacity-100 scale-105 shadow-[0_0_15px_rgba(255,255,255,0.2)] z-10' : 'border-transparent opacity-40 hover:opacity-100'
+                }`}
+              >
+                <Image src={p.url} alt="" fill unoptimized className="object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Zoom */}
-        <div className="flex items-center gap-2">
-          <button onClick={zoomOut} disabled={zoom <= 1} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-30">
-            <ZoomOut size={16} />
-          </button>
-          <span className="text-white text-xs w-10 text-center font-mono">{Math.round(zoom * 100)}%</span>
-          <button onClick={zoomIn} disabled={zoom >= 4} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-30">
-            <ZoomIn size={16} />
-          </button>
-          <button onClick={resetView} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white">
-            <RotateCcw size={14} />
-          </button>
+        {/* Action Controls */}
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Prev/Next */}
+          <div className="flex gap-2">
+            <button
+              onClick={prev}
+              disabled={!canPrev}
+              className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-20 transition-colors"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <span className="text-white text-xs flex items-center justify-center w-12 font-semibold">
+              {idx + 1} / {floorPlans.length}
+            </span>
+            <button
+              onClick={next}
+              disabled={!canNext}
+              className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-20 transition-colors"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+
+          {/* Zoom */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button onClick={zoomOut} disabled={zoom <= 1} className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-20 transition-colors">
+              <ZoomOut size={18} />
+            </button>
+            <span className="text-white text-xs w-12 text-center font-mono font-medium">{Math.round(zoom * 100)}%</span>
+            <button onClick={zoomIn} disabled={zoom >= 4} className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-20 transition-colors">
+              <ZoomIn size={18} />
+            </button>
+            <div className="w-px h-6 bg-white/20 mx-1 sm:mx-2" />
+            <button onClick={resetView} className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors">
+              <RotateCcw size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>

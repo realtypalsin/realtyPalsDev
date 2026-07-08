@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../../lib/prisma'
 import { verifyUser } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const userId = await verifyUser(request)
@@ -45,14 +47,14 @@ export async function GET(request: NextRequest) {
       total_projects: projects,
       total_leads: leads,
       news_published: news,
-      profile_views: views * 2.5, // Placeholder calculation
+      profile_views: views, // TODO: Replace with actual analytics view tracking
       lead_conversion_rate: leads > 0 ? ((conversions / leads) * 100).toFixed(1) : 0,
-      average_response_time_hours: 24
+      average_response_time_hours: 0 // TODO: Implement actual response time calculation
     })
   } catch (err) {
-    console.error('[API] Failed to fetch dashboard stats:', err)
+    console.error('[API][GET /api/builder/dashboard/stats] Failed to fetch dashboard stats:', err)
     return NextResponse.json(
-      { error: 'Failed to fetch stats' },
+      { error: 'An unexpected error occurred while fetching your dashboard statistics. Please try again later.' },
       { status: 500 }
     )
   }
