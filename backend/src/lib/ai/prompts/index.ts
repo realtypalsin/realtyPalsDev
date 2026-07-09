@@ -32,7 +32,8 @@ export function buildAdvisorSystemPrompt(
   sectorsOverview?: SectorOverview[],
   expansion?: NearbyExpansion,
   nearbyResults?: ScoredProject[],
-  notFoundNames?: string[]
+  notFoundNames?: string[],
+  blockedBuilders?: Array<{ name: string; legal_flag?: string }>
 ): string {
   const hasExactResults = exactResults.length > 0
   const hasNearbyResults = (nearbyResults?.length ?? 0) > 0
@@ -57,6 +58,6 @@ export function buildAdvisorSystemPrompt(
   const expansionBlock       = expansion ? buildExpansionBlock(expansion) : ''
   const projectsBlock        = buildProjectsBlock(exactResults, sectorCtx, expansion, nearbyResults, notFoundNames)
 
-  const finalPrompt = getBaseSystemPrompt(intent as Record<string, unknown>) + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
+  const finalPrompt = getBaseSystemPrompt(intent as Record<string, unknown>, blockedBuilders) + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
   return finalPrompt
 }

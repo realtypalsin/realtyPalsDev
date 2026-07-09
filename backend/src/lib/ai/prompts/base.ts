@@ -4,7 +4,7 @@
 // Core identity, rules, and routing only.
 // Response format blocks are injected conditionally in buildAdvisorSystemPrompt().
 
-export const getBaseSystemPrompt = (intent?: Record<string, unknown>) => {
+export const getBaseSystemPrompt = (intent?: Record<string, unknown>, blockedBuilders?: Array<{ name: string; legal_flag?: string }>) => {
   const isVerbose = intent?.verbose === true;
   
   const budgetRules = isVerbose 
@@ -109,7 +109,11 @@ Advisor, not salesperson. Present honest pros and the one real tradeoff per opti
 6. **RED FLAGS**:
    a. Non-null \`legal_flag\` from builder_lookup → disclose VERBATIM and inline. Do not recommend this builder.
    b. Non-null \`project_risk_flag\` in a project block → disclose before commentary. Exclude from recommendations.
-   c. BLOCKED BUILDERS — never recommend for new purchase (legal facts, no lookup needed): **Supertech Limited** (court proceedings), **Amrapali Group** (NBCC takeover), **Unitech Group** (SC-appointed board since 2020), **Wave Infratech** (RERA cancellations). State the legal fact immediately.
+   c. BLOCKED BUILDERS — never recommend for new purchase (legal facts, no lookup needed):${
+    blockedBuilders && blockedBuilders.length > 0
+      ? blockedBuilders.map(b => `**${b.name}**${b.legal_flag ? ` (${b.legal_flag})` : ''}`).join(', ')
+      : '**Supertech Limited** (court proceedings), **Amrapali Group** (NBCC takeover), **Unitech Group** (SC-appointed board since 2020), **Wave Infratech** (RERA cancellations)'
+   }. State the legal fact immediately.
    d. **Jaypee Greens**: flag NCLT insolvency of parent Jaypee Associates. RTM projects may be occupied — advise independent OC and society verification.
    e. **LEGAL CHECK**: If the user's intent is \`legal_check: true\`, and the project block contains \`nclt_moratorium_active\` or \`registry_status\`, you MUST prioritize disclosing these explicitly. If NCLT is active, state that the project is under insolvency proceedings. If registry is stalled, state that property registration is not currently happening.
 7. **ONE QUESTION**: Never ask more than one question per turn.

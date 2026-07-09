@@ -5,6 +5,7 @@
 // Pure deterministic function — no LLM, no async.
 // ---------------------------------------------------------------------------
 import type { Intent } from './types'
+import type { ChipInventory } from './chipInventory'
 import { isCityLevel } from './intent'
 
 export interface ConfidenceResult {
@@ -22,45 +23,6 @@ export interface ClarificationRequest {
   question: string
   options:  ClarificationOption[]
 }
-
-/** Sectors with live project data — used for clarification chip options. */
-const COVERED_SECTORS = [
-  'Sector 75', 'Sector 78', 'Sector 79', 'Sector 93', 'Sector 107',
-  'Sector 108', 'Sector 120', 'Sector 128', 'Sector 131', 'Sector 137',
-  'Sector 143', 'Sector 143B', 'Sector 144', 'Sector 150', 'Sector 151',
-  'Sector 167',
-]
-
-/** Chips offered when only BHK is known. */
-const SECTOR_CHIPS: ClarificationOption[] = [
-  ...['Sector 150', 'Sector 75', 'Sector 78', 'Sector 107', 'Sector 128'].map(s => ({
-    label: s,
-    value: s,
-  })),
-  { label: 'Other sector', value: 'Tell me more about sectors in Noida' },
-]
-
-/** Chips offered when only sector is known — config options. */
-const BHK_CHIPS: ClarificationOption[] = [
-  { label: '2 BHK', value: '2 BHK' },
-  { label: '3 BHK', value: '3 BHK' },
-  { label: '4 BHK', value: '4 BHK' },
-  { label: 'Any config', value: 'Show me 2, 3 and 4 BHK options' },
-]
-
-/** Chips offered when only budget is known. */
-const BUDGET_SECTOR_CHIPS: ClarificationOption[] = [
-  ...['Sector 150', 'Sector 75', 'Sector 107', 'Sector 128'].map(s => ({
-    label: s,
-    value: s,
-  })),
-]
-
-const BUDGET_BHK_CHIPS: ClarificationOption[] = [
-  { label: '2 BHK', value: '2 BHK' },
-  { label: '3 BHK', value: '3 BHK' },
-  { label: '4 BHK', value: '4 BHK' },
-]
 
 // ---------------------------------------------------------------------------
 
@@ -103,37 +65,62 @@ export function computeConfidence(intent: Intent): ConfidenceResult {
 // ---------------------------------------------------------------------------
 // Clarification chips builder
 // Returns the chips to show for LOW confidence only.
+// Builds options dynamically from live inventory.
 // ---------------------------------------------------------------------------
-export function buildClarificationOptions(intent: Intent): ClarificationRequest {
+export function buildClarificationOptions(intent: Intent, inventory: ChipInventory | null): ClarificationRequest {
   const hasBhk    = (intent.bhk?.length ?? 0) > 0
   const hasBudget = !!intent.budgetMax
   const hasSector = !!intent.sector && !isCityLevel(intent.sector)
   const bhkLabel  = hasBhk ? intent.bhk!.map(b => `${b}BHK`).join('/') : null
   const budgetLabel = hasBudget ? `₹${intent.budgetMax}Cr` : null
 
+  // Build dynamic sector chips from inventory
+  const sectorChips = inventory?.sectors.slice(0, 3).map(s => ({
+    label: s.sector,
+    value: s.sector,
+  })) ?? []
+  sectorChips.push({ label: 'Other sector', value: 'Tell me more about sectors in Noida' })
+
+  // Build dynamic BHK chips from inventory
+  const bhkChips = inventory?.bhkOptions.map(bhk => ({
+    label: `${bhk} BHK`,
+    value: `${bhk} BHK`,
+  })) ?? [
+    { label: '2 BHK', value: '2 BHK' },
+    { label: '3 BHK', value: '3 BHK' },
+    { label: '4 BHK', value: '4 BHK' },
+  ]
+  bhkChips.push({ label: 'Any config', value: 'Show me 2, 3 and 4 BHK options' })
+
+  // Build dynamic budget chips from inventory
+  const budgetChips = inventory?.budgetBuckets.slice(0, 3).map(b => ({
+    label: b.label,
+    value: `Budget ${b.label.toLowerCase()}`,
+  })) ?? [
+    { label: 'Under 1.5 Cr', value: 'Budget under 1.5 Cr' },
+    { label: 'Under 2.5 Cr', value: 'Budget under 2.5 Cr' },
+    { label: 'Under 3.5 Cr', value: 'Budget under 3.5 Cr' },
+  ]
+
   // Two knowns
   if (hasSector && hasBhk && !hasBudget) {
     return {
       question: `${intent.sector} and ${bhkLabel} noted. What is your maximum budget?`,
-      options: [
-        { label: 'Under 1.5 Cr', value: 'Budget under 1.5 Cr' },
-        { label: 'Under 2.5 Cr', value: 'Budget under 2.5 Cr' },
-        { label: 'Under 3.5 Cr', value: 'Budget under 3.5 Cr' },
-      ],
+      options: budgetChips,
     }
   }
 
   if (hasBhk && hasBudget && !hasSector) {
     return {
       question: `${bhkLabel} under ${budgetLabel} noted. Any preferred sector?`,
-      options: SECTOR_CHIPS,
+      options: sectorChips,
     }
   }
 
   if (hasSector && hasBudget && !hasBhk) {
     return {
       question: `${intent.sector} under ${budgetLabel} noted. What configuration are you looking for?`,
-      options: BHK_CHIPS,
+      options: bhkChips,
     }
   }
 
@@ -141,29 +128,29 @@ export function buildClarificationOptions(intent: Intent): ClarificationRequest 
   if (hasBhk && !hasSector && !hasBudget) {
     return {
       question: `${bhkLabel} noted. Which sector or area are you considering?`,
-      options:  SECTOR_CHIPS,
+      options: sectorChips,
     }
   }
 
   if (hasBudget && !hasSector && !hasBhk) {
     return {
       question: `Budget under ${budgetLabel} noted. Which sector and configuration?`,
-      options:  [...BUDGET_SECTOR_CHIPS, ...BUDGET_BHK_CHIPS],
+      options: [...sectorChips.slice(0, 2), ...bhkChips.slice(0, 2)],
     }
   }
 
   if (hasSector && !hasBhk && !hasBudget) {
     return {
       question: `${intent.sector} noted. What configuration are you looking for?`,
-      options:  BHK_CHIPS,
+      options: bhkChips,
     }
   }
 
   // Zero knowns
   return {
     question: 'What are you looking for? (area, configuration, or budget)',
-    options:  [
-      ...BHK_CHIPS.slice(0, 3),
+    options: [
+      ...bhkChips.slice(0, 3),
       { label: 'Tell me options', value: 'What options are available in Noida under 2 crore?' },
     ],
   }

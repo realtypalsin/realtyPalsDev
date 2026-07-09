@@ -15,6 +15,7 @@ import { maybeCompress } from '../lib/ai/compression'
 import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
 import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
+import { getChipInventory } from '../lib/discovery/chipInventory'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
 import { getBuilderRecord } from '../lib/builders'
@@ -407,7 +408,17 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Emit ui_state FIRST TIME (pre-search, sets stage and thinking loader)
     const { computeConversationState } = await import('../lib/discovery/conversationEngine')
-    const preSearchUiState = computeConversationState(intent, intentState, cachedProjectsFromSession ?? [], intent.is_comparison_query ?? false, chatHistory)
+    const chipInventory = await getChipInventory('Noida') // TODO: extract city from intent if available
+    const preSearchUiState = computeConversationState(
+      intent,
+      intentState,
+      cachedProjectsFromSession ?? [],
+      intent.is_comparison_query ?? false,
+      chatHistory,
+      undefined,
+      undefined,
+      chipInventory
+    )
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
     if (skipForCachedQuery) {
@@ -538,13 +549,14 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Emit ui_state SECOND TIME (post-search, populates progressive chips)
     const postSearchUiState = computeConversationState(
-      intent, 
-      intentState, 
-      projects, 
-      intent.is_comparison_query ?? false, 
+      intent,
+      intentState,
+      projects,
+      intent.is_comparison_query ?? false,
       chatHistory,
       projectDisambiguation,
-      sectorDisambiguation
+      sectorDisambiguation,
+      chipInventory // Reuse inventory loaded earlier for consistency
     )
     send('ui_state', postSearchUiState as unknown as Record<string, unknown>)
 
@@ -561,7 +573,12 @@ router.post('/', async (req: Request, res: Response) => {
     const { messages: compressedHistory, newSummary } = await maybeCompress(chatHistory, existingSummary)
     console.log('[CHAT] END maybeCompress', Date.now(), { compressedLen: compressedHistory.length, newSummary: !!newSummary })
     const { systemSuffix, messages: rawMessages } = buildContextMessages(message, compressedHistory, newSummary ?? existingSummary, memory)
-    const systemPrompt = buildAdvisorSystemPrompt(intent, projects.slice(0, 3), memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects.slice(0, 3) : undefined, notFoundNames) + systemSuffix
+    const blockedBuildersRaw = await prisma.builder.findMany({
+      where: { legal_flag: { not: null } },
+      select: { name: true, legal_flag: true },
+    })
+    const blockedBuilders: Array<{ name: string; legal_flag?: string }> = blockedBuildersRaw.map(b => ({ name: b.name, legal_flag: b.legal_flag as string | undefined }))
+    const systemPrompt = buildAdvisorSystemPrompt(intent, projects.slice(0, 3), memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects.slice(0, 3) : undefined, notFoundNames, blockedBuilders) + systemSuffix
 
     // Issue 4: trim message history if total token estimate exceeds safe ceiling
     const messages = trimMessagesToBudget(systemPrompt, rawMessages)
@@ -572,7 +589,7 @@ router.post('/', async (req: Request, res: Response) => {
     let fullText = ''
     if (needsClarification) {
       const confidence = computeConfidence(intent)
-      const clarification = buildClarificationOptions(intent)
+      const clarification = buildClarificationOptions(intent, chipInventory)
       fullText = clarification.question
       console.log('[CHAT:CLARIFY] deterministic clarification, skipping LLM', { intent, confidence: confidence.level, question: fullText })
       send('token', { token: fullText })
@@ -933,7 +950,8 @@ async function buildRestoreUiState(
   const projects = (lastProjects as unknown as ScoredProject[]) ?? []
   const chatHistory = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
   const intentState = getIntentState(intent, projects.length > 0)
-  return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory)
+  const chipInventory = await getChipInventory('Noida') // TODO: extract city from intent if available
+  return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, chipInventory)
 }
 
 // GET /chat/session/list — must come before GET /chat/session (order matters in Express)
