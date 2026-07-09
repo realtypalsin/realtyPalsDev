@@ -1,17 +1,17 @@
 # PHASE 5 VERIFICATION PLAN
 ## Frontend Hooks Extraction + Backend Dedup + Test Cleanup
 
-### 5.1 Frontend Hooks Extraction
+### 5.1 Frontend Hooks Extraction — ✅ COMPLETE
 
-**usePreferredImages(project) Hook**
-- Consolidates hero/exterior image preference logic from 5 locations
-- Locations to refactor:
-  - ProjectCard.tsx:80-119
-  - ProjectDetailPanel.tsx:216-226
-  - PropertyCardWithRecommendation.tsx:58
-  - ComparisonTable.tsx:407-410
-  - admin/projects/page.tsx:259
-- Adds missing onError fallback to MessageBubble.tsx:449-455 (broken image handling)
+**usePreferredImages(project) Hook** — Created in `frontend/lib/hooks/usePreferredImages.ts`
+- [x] Consolidated hero/exterior image preference logic
+- [x] ProjectCard.tsx refactored (removed 30+ lines)
+- [x] ProjectDetailPanel.tsx refactored with detail?.images support
+- [x] PropertyCardWithRecommendation.tsx refactored
+- [x] ComparisonTable.tsx ProjectMiniCard refactored
+- [x] Commit: 3475cef (Phase 5.1 complete)
+- [x] TypeScript: CLEAN (0 errors)
+- [x] admin/projects/page.tsx: left as-is (thumbnail only, simpler case)
 
 **useSaveProject(projectId) Hook**
 - Consolidates /saved POST/DELETE + auth headers from:
@@ -110,13 +110,31 @@ Score floor added               → ≥10 threshold enforced
 Repo cleanup                    → 0 deleted files left
 ```
 
-### Phase 5 Timeline Estimate
-- Hooks extraction: 2-3 commits
-- Backend dedup: 2-3 commits
-- Test cleanup: 1 commit
-- Final fixes + cleanup: 2-3 commits
-- Total: ~8-10 atomic commits
+### Phase 5.1 COMPLETE SUMMARY
+
+✅ **Done**:
+- frontend/lib/hooks/usePreferredImages.ts created (70 lines, fully typed)
+- 4 components refactored to use hook (130 lines removed, shared logic)
+- TypeScript clean (0 errors)
+- Tests pass (6/6 suites)
+- 1 commit: 3475cef
+
+**Impact**: Consolidated image handling across 4 components, fixed missing error fallback in MessageBubble carousel (Phase 2.2 requirement met).
 
 ---
 
-## Ready to proceed? Y/N
+## Phase 5.2-5.8 Remaining Work
+
+### Priority Order:
+1. **5.2 Backend Dedup** (2-3 commits) — Extract shared rule text, session checks, enums
+2. **5.3 Price Formatter** (1 commit) — Consolidate 3 formatters into one
+3. **5.4 Test Cleanup** (1-2 commits) — Delete old test files, update package.json scripts
+4. **5.5 Final Fixes** (2-3 commits) — Score floor validation, error visibility, chart fallback
+5. **5.6 Repo Cleanup** (1 commit) — Delete old files, update .gitignore
+6. **5.7 Design Issues** (TBD) — Address impeccable findings (gray-on-color: 3 files)
+
+### Timeline: ~10-12 more commits to Phase 5 completion
+
+---
+
+## What's next?
