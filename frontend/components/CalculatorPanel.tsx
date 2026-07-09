@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { X, Calculator, Receipt, TrendingDown } from 'lucide-react'
-import { calculateEmi, calculateStampDuty, calculateGst, formatInr } from '@/lib/calculators'
+import { calculateEmi, calculateStampDuty, calculateGst } from '@/lib/calculators'
+import { formatInr } from '@/lib/format'
 
 interface Props {
   onClose: () => void

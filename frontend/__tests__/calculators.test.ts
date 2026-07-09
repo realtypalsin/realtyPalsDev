@@ -1,4 +1,5 @@
-import { calculateEmi, calculateStampDuty, calculateGst, formatInr } from '../lib/calculators'
+import { calculateEmi, calculateStampDuty, calculateGst } from '../lib/calculators'
+import { formatInr } from '../lib/format'
 
 describe('calculateEmi', () => {
   it('computes correct EMI for 1Cr at 8.5% for 20 years', () => {

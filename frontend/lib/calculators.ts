@@ -105,8 +105,3 @@ export function calculateGst(
   }
 }
 
-export function formatInr(amount: number): string {
-  if (amount >= 1e7) return `₹${(amount / 1e7).toFixed(2)} Cr`
-  if (amount >= 1e5) return `₹${(amount / 1e5).toFixed(2)} L`
-  return `₹${amount.toLocaleString('en-IN')}`
-}
