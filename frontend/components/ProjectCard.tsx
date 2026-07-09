@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import Image from 'next/image'
 import {
   ClockCountdown, CheckCircle, SealCheck,
@@ -16,6 +16,7 @@ import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics'
 import { authHeaders } from '@/lib/authedFetch'
 import { resolveImgUrl } from '@/lib/utils'
+import { usePreferredImages } from '@/lib/hooks'
 
 interface Props {
   project: ProjectCardType
@@ -52,11 +53,10 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
 }
 
 export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onToast, onAskAI, onSetSiteVisit, onCall, onShare, quickActions }: Props) {
-  const [imgIdx, setImgIdx] = useState(0)
-  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set())
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)
+  const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg } = usePreferredImages(project)
 
   const isTopPick = index === 0
   const isRTM = project.status === 'ready_to_move'
@@ -77,46 +77,6 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
       areas: [...new Set(areas)].sort((a, b) => parseInt(a) - parseInt(b))
     }))
 
-  const heroImages = (project.images ?? [])
-    .filter((i) => i.type.toLowerCase() === 'hero')
-    .map((i) => i.url)
-  
-  const exteriorImages = (project.images ?? [])
-    .filter((i) => i.type.toLowerCase() === 'exterior')
-    .map((i) => i.url)
-
-  const uploadedImages = [...heroImages, ...exteriorImages]
-  
-  const cardImages = [
-    ...uploadedImages,
-    ...(uploadedImages.length === 0 && project.hero_image_url ? [project.hero_image_url] : []),
-  ].filter(Boolean) as string[]
-
-  const workingImages = cardImages.filter((src) => !failedUrls.has(src))
-  const allFailed = cardImages.length > 0 && workingImages.length === 0
-  const activeIdx = workingImages.length > 0 ? imgIdx % workingImages.length : 0
-  const hasMultiple = workingImages.length > 1
-
-  useEffect(() => {
-    if (!hasMultiple) return
-    if (typeof window !== 'undefined' && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
-    const timer = setInterval(() => setImgIdx((i) => (i + 1) % workingImages.length), 3500)
-    return () => clearInterval(timer)
-  }, [hasMultiple, workingImages.length])
-
-  const prevImg = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    setImgIdx((i) => (i - 1 + workingImages.length) % workingImages.length)
-  }, [workingImages.length])
-
-  const nextImg = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    setImgIdx((i) => (i + 1) % workingImages.length)
-  }, [workingImages.length])
-
-  const markImageFailed = useCallback((src: string) => {
-    setFailedUrls((prev) => (prev.has(src) ? prev : new Set(prev).add(src)))
-  }, [])
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -173,7 +133,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                 priority={index < 4 && i === 0}
                 onError={() => markImageFailed(src)}
                 className={`object-cover transition-all duration-500 ${
-                  i === activeIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
+                  i === imgIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
                 }`}
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
@@ -204,8 +164,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
               {workingImages.map((_, i) => (
                 <button
                   key={i}
-                  onClick={(e) => { e.stopPropagation(); setImgIdx(i) }}
-                  className={`rounded-full transition-all ${i === activeIdx ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
+                  className={`rounded-full transition-all ${i === imgIdx ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
                 />
               ))}
             </div>

@@ -7,6 +7,7 @@ import { Trophy, TrendingUp, ShieldCheck, Users, Zap, ChevronDown, IndianRupee, 
 import { Building2, BadgeCheck } from 'lucide-react'
 import type { ProjectCard, ProjectDetail } from '@/types/project'
 import { API_BASE } from '@/lib/env'
+import { usePreferredImages } from '@/lib/hooks'
 
 // ── Tier configuration ────────────────────────────────────────────────────────
 
@@ -399,15 +400,10 @@ function ProjectMiniCard({
   detail: ProjectDetail | null
   isWinner: boolean
 }) {
-  const [imgFailed, setImgFailed] = useState(false)
+  const { activeUrl, allFailed } = usePreferredImages(project)
   const tier = detail?.recommendation_profile?.tier
   const cfg = tier ? TIER_CFG[tier] : null
   const isRTM = project.status === 'ready_to_move'
-
-  const uploadedImage = (project.images ?? []).find(
-    (i) => i.type === 'exterior' || i.type === 'hero'
-  )?.url
-  const imgSrc = uploadedImage ?? project.hero_image_url
 
   return (
     <div className={`flex-1 rounded-2xl overflow-hidden border transition-all duration-300 ${
@@ -417,13 +413,12 @@ function ProjectMiniCard({
     } bg-white dark:bg-[#111]`}>
       {/* Image */}
       <div className="relative h-[110px] bg-zinc-50 dark:bg-zinc-900">
-        {imgSrc && !imgFailed ? (
+        {activeUrl && !allFailed ? (
           <Image
-            src={imgSrc}
+            src={activeUrl}
             alt={project.name}
             fill
             unoptimized
-            onError={() => setImgFailed(true)}
             className="object-cover"
           />
         ) : (

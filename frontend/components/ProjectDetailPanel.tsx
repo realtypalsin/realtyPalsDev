@@ -12,6 +12,7 @@ import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { track } from '@/lib/analytics'
 import { authHeaders } from '@/lib/authedFetch'
 import { getAqi, type AqiResult } from '@/lib/waqi'
+import { usePreferredImages } from '@/lib/hooks'
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
 import OverviewTab from '@/components/property-detail/OverviewTab'
@@ -64,7 +65,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const [saving, setSaving]           = useState(false)
   const [paymentPlan, setPaymentPlan] = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; message?: string }>({ loaded: false, available: false, data: null })
   const [costSheet, setCostSheet]     = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; illustration: Record<string, number | null> | null; note?: string; message?: string }>({ loaded: false, available: false, data: null, illustration: null })
-  const [imgIdx, setImgIdx]           = useState(0)
   const [showVisitScheduler, setShowVisitScheduler] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => setIsScrolled(e.currentTarget.scrollTop > 200)
@@ -72,11 +72,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const [aqi, setAqi]                 = useState<AqiResult | null>(null)
   const [marketVisible, setMarketVisible] = useState(false)
   const [isMobile, setIsMobile]       = useState(false)
-  // Per-URL failure tracking (not a single boolean) — one broken candidate
-  // shouldn't permanently blank the hero once a working one is available.
-  const [failedImgUrls, setFailedImgUrls] = useState<Set<string>>(new Set())
-  const markImgFailed = (src: string) => setFailedImgUrls((prev) => (prev.has(src) ? prev : new Set(prev).add(src)))
   const marketRef                     = useRef<HTMLDivElement>(null)
+  const { imgIdx, markImageFailed, activeUrl, setImgIdx } = usePreferredImages(project, detail?.images)
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)')
@@ -100,8 +97,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   useEffect(() => {
     if (!project) { setDetail(null); setDocuments([]); setLoading(false); return }
     setActiveTab('Overview')
-    setImgIdx(0)
-    setFailedImgUrls(new Set())
     setAqi(null)
     setMarketVisible(false)
     setDetail(null)
@@ -218,14 +213,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     return t === 'hero' ? 0 : t === 'exterior' ? 1 : 2
   }
   const allImages = [...(detail?.images ?? project?.images ?? [])].sort((a, b) => imageTypeRank(a.type) - imageTypeRank(b.type))
-  const heroCandidates = [
-    ...allImages.map((i) => i.url),
-    ...(allImages.length === 0 && project?.hero_image_url ? [project.hero_image_url] : []),
-  ].filter(Boolean) as string[]
-  const workingHeroCandidates = heroCandidates.filter((src) => !failedImgUrls.has(src))
-  const rawImg = workingHeroCandidates[imgIdx % Math.max(workingHeroCandidates.length, 1)]
-  const currentImg = resolveImgUrl(rawImg)
   const floorPlanImages = allImages.filter(i => i.type === 'floor_plan')
+  const currentImg = activeUrl ? resolveImgUrl(activeUrl) : null
   const d = detail ?? project
 
   const isRTM = d?.status === 'ready_to_move'
@@ -573,7 +562,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                 priority 
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                 onError={() => {
-                  if (currentImg) markImgFailed(currentImg)
+                  if (currentImg) markImageFailed(currentImg)
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
@@ -803,7 +792,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               {/* Hero image */}
               <div className="relative h-56 bg-gray-900 flex-shrink-0 overflow-hidden">
                 {currentImg ? (
-                  <Image src={currentImg} alt={d?.name ?? ''} fill priority className="object-cover" sizes="100vw" onError={() => markImgFailed(currentImg)} />
+                  <Image src={currentImg} alt={d?.name ?? ''} fill priority className="object-cover" sizes="100vw" onError={() => markImageFailed(currentImg)} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
                     <Building2 size={40} className="text-slate-600" />

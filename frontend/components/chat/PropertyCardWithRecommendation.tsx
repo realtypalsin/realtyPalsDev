@@ -12,6 +12,7 @@ import { tierLabel } from '@/components/property-detail/shared'
 import { track } from '@/lib/analytics'
 import { authHeaders } from '@/lib/authedFetch'
 import { resolveImgUrl } from '@/lib/utils'
+import { usePreferredImages } from '@/lib/hooks'
 
 interface Props {
   project: ProjectCardType
@@ -30,10 +31,9 @@ const tierColor: Record<string, string> = {
 }
 
 export default function PropertyCardWithRecommendation({ project, userId, onDetailOpen, onToast, quickActions }: Props) {
-  const [imgIdx, setImgIdx] = useState(0)
-  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set())
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg, setImgIdx } = usePreferredImages(project)
   const [expandedUnits, setExpandedUnits] = useState(false)
 
   const unitsByBhk = project.unit_types.reduce((acc, u) => {
@@ -50,26 +50,6 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
       areas: [...new Set(areas)].sort((a, b) => parseInt(a) - parseInt(b))
     }))
 
-  const uploadedImages = (project.images ?? [])
-    .filter((i) => (i.type === 'exterior' || i.type === 'hero'))
-    .map((i) => i.url)
-  const cardImages = [
-    ...uploadedImages,
-    ...(uploadedImages.length === 0 && project.hero_image_url ? [project.hero_image_url] : []),
-  ].filter(Boolean) as string[]
-
-  const workingImages = cardImages.filter((src) => !failedUrls.has(src))
-  const allFailed = cardImages.length > 0 && workingImages.length === 0
-  const activeIdx = workingImages.length > 0 ? imgIdx % workingImages.length : 0
-  const hasMultiple = workingImages.length > 1
-
-  useEffect(() => {
-    if (!hasMultiple) return
-    if (typeof window !== 'undefined' && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
-    const timer = setInterval(() => setImgIdx((i) => (i + 1) % workingImages.length), 3500)
-    return () => clearInterval(timer)
-  }, [hasMultiple, workingImages.length])
-
   // A5: Sync saved state with detail panel via custom event
   useEffect(() => {
     const handler = (e: Event) => {
@@ -79,20 +59,6 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
     window.addEventListener('realtypals:property-saved', handler)
     return () => window.removeEventListener('realtypals:property-saved', handler)
   }, [project.id])
-
-  const prevImg = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    setImgIdx((i) => (i - 1 + workingImages.length) % workingImages.length)
-  }, [workingImages.length])
-
-  const nextImg = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    setImgIdx((i) => (i + 1) % workingImages.length)
-  }, [workingImages.length])
-
-  const markImageFailed = useCallback((src: string) => {
-    setFailedUrls((prev) => (prev.has(src) ? prev : new Set(prev).add(src)))
-  }, [])
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -155,7 +121,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
                 priority={i === 0}
                 onError={() => markImageFailed(src)}
                 className={`object-cover transition-all duration-500 ${
-                  i === activeIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
+                  i === imgIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
                 }`}
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
@@ -192,7 +158,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
                 <button
                   key={i}
                   onClick={(e) => { e.stopPropagation(); setImgIdx(i) }}
-                  className={`rounded-full transition-all ${i === activeIdx ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
+                  className={`rounded-full transition-all ${i === imgIdx ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
                 />
               ))}
             </div>
