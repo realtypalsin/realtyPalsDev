@@ -22,6 +22,7 @@ export default function BuilderLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'new' | 'contacted' | 'qualified'>('all')
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
 
   useEffect(() => {
     fetchLeads()
@@ -49,9 +50,16 @@ export default function BuilderLeadsPage() {
       })
       if (res.ok) {
         setLeads(leads.map(l => l.id === leadId ? { ...l, status: newStatus as any } : l))
+        setToast({ message: 'Lead status updated', type: 'success' })
+        setTimeout(() => setToast(null), 3000)
+      } else {
+        setToast({ message: `Failed to update lead: ${res.statusText}`, type: 'error' })
+        setTimeout(() => setToast(null), 5000)
       }
     } catch (err) {
       console.error('Update failed:', err)
+      setToast({ message: 'Error updating lead status', type: 'error' })
+      setTimeout(() => setToast(null), 5000)
     }
   }
 
@@ -165,6 +173,15 @@ export default function BuilderLeadsPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-lg text-white text-sm font-medium shadow-lg transition-opacity ${
+          toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'
+        }`}>
+          {toast.message}
         </div>
       )}
     </div>

@@ -356,12 +356,14 @@ function scoreAndSort(
   const scored = rawProjects.map((p) => mapToScored(p, intent))
   let passed = scored.filter((p) => p.matchScore >= threshold)
   
-  // Fallback: If no projects pass the strict threshold, but we have valid projects (score > 0), 
+  // Fallback: If no projects pass the strict threshold, but we have valid projects (score ≥ 10),
   // return the best ones rather than falsely claiming no inventory.
+  // Minimum score floor of 10 prevents returning near-zero-relevance results.
   if (passed.length === 0) {
-    const valid = scored.filter((p) => p.matchScore > 0)
+    const MIN_SCORE_FLOOR = 10
+    const valid = scored.filter((p) => p.matchScore >= MIN_SCORE_FLOOR)
     if (valid.length > 0) {
-      console.log('[DISCOVERY:FALLBACK] No projects met threshold. Falling back to best available.')
+      console.log('[DISCOVERY:FALLBACK] No projects met threshold. Falling back to best available (floor: ' + MIN_SCORE_FLOOR + ').')
       passed = valid
     }
   }

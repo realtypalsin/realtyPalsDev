@@ -12,7 +12,13 @@ export default function RealtyChart({ type, data, title }: { type: string, data:
     }
   }, [data]);
 
-  if (!parsedData || parsedData.length === 0) return null;
+  if (!parsedData || parsedData.length === 0) {
+    return (
+      <div className="my-4 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#111] shadow-sm flex items-center justify-center h-32">
+        <p className="text-sm text-gray-500 dark:text-gray-400">Chart data unavailable</p>
+      </div>
+    );
+  }
 
   return (
     <div className="my-4 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111] shadow-sm">
