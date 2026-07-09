@@ -35,7 +35,8 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
     ...previous,
     projectNames: undefined,           // reset — only populated if this turn names projects
     is_comparison_query: undefined,    // reset — only populated if this turn is a compare request
-    ...(freshProjectLookup ? { sector: undefined, lifestyleKeywords: undefined } : {}),
+    // Only clear sector/lifestyle if this is a TRULY fresh lookup (no prior context)
+    ...(freshProjectLookup && !previous.sector ? { lifestyleKeywords: undefined } : {}),
     ...Object.fromEntries(Object.entries(update).filter(([, v]) => v !== undefined)),
   } as Intent
 
