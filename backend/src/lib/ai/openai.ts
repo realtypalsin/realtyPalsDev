@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { MODELS, FINANCIAL } from '../config'
 
 type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null; name?: string; tool_calls?: any[], tool_call_id?: string };
 type SendFn = (event: string, data: Record<string, unknown>) => void;
@@ -166,8 +167,8 @@ export async function streamWithOpenAI(
           type: 'object',
           properties: {
             principalCr: { type: 'number', description: 'Loan amount in crore' },
-            annualRate: { type: 'number', description: 'Annual interest rate %, defaults to 8.75' },
-            tenureYears: { type: 'number', description: 'Tenure in years, defaults to 20' },
+            annualRate: { type: 'number', description: `Annual interest rate %, defaults to ${FINANCIAL.EMI_RATE}` },
+            tenureYears: { type: 'number', description: `Tenure in years, defaults to ${FINANCIAL.LOAN_TENURE_YEARS}` },
           },
           required: ['principalCr'],
         },
@@ -244,7 +245,7 @@ export async function streamWithOpenAI(
     try {
       stream = await client.chat.completions.create(
         {
-          model: 'gpt-4o-mini',
+          model: MODELS.FALLBACK,
           messages: currentMsgs as any,
           ...(allowTools ? { tools } : {}),
           stream: true,

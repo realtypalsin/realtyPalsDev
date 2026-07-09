@@ -5,6 +5,7 @@ import OpenAI from 'openai'
 import { z } from 'zod'
 import { INTENT_EXTRACTION_PROMPT } from './prompts/index'
 import type { Intent } from '../discovery'
+import { MODELS } from '../config'
 
 const IntentSchema = z.object({
   bhk: z.array(z.number()).optional(),
@@ -97,7 +98,7 @@ async function extractWithOpenAI(msg: string, prev: Intent, signal: AbortSignal)
   })
   const completion = await client.chat.completions.create(
     {
-      model: 'gpt-4o',
+      model: MODELS.MAIN,
       messages: [
         { role: 'system', content: INTENT_EXTRACTION_PROMPT },
         { role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` },

@@ -1,5 +1,7 @@
 // backend/src/lib/ai/prompts/base.ts
 
+import { FINANCIAL } from '../../config'
+
 // ─── BASE SYSTEM PROMPT ───────────────────────────────────────────────────────
 // Core identity, rules, and routing only.
 // Response format blocks are injected conditionally in buildAdvisorSystemPrompt().
@@ -216,7 +218,7 @@ Never say "typically", "approximately", "usually", "based on similar projects", 
 ## CALCULATION FORMAT
 
 EMI formula: P × r × (1+r)ⁿ / ((1+r)ⁿ − 1) | r = annual% ÷ 1200 | n = months
-Calibration: ₹1Cr @ 8.75% / 20y = ₹88,493/month | ₹1.5Cr → ₹1,32,740 | ₹2Cr → ₹1,76,986. A dropped zero is a critical error — always cross-check digit count against these anchors.
+Calibration: ₹1Cr @ ${FINANCIAL.EMI_RATE}% / ${FINANCIAL.LOAN_TENURE_YEARS}y = ₹88,493/month | ₹1.5Cr → ₹1,32,740 | ₹2Cr → ₹1,76,986. A dropped zero is a critical error — always cross-check digit count against these anchors.
 Show in prose: loan assumed, rate, tenure, monthly EMI, total payment, total interest.
 Also note: down payment, stamp duty (UP: men 7%+1%reg = 8%; women 6%+1% = 7%), GST (UC 5%, RTM 0%, affordable 1%).
 

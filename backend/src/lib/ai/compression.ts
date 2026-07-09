@@ -1,6 +1,7 @@
 // backend/src/lib/ai/compression.ts
 import Groq from 'groq-sdk'
 import OpenAI from 'openai'
+import { MODELS } from '../config'
 
 const COMPRESSION_THRESHOLD = 14
 const KEEP_RECENT = 8
@@ -48,7 +49,7 @@ export async function maybeCompress(
         baseURL: 'https://models.inference.ai.azure.com',
       })
       const res = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: MODELS.FALLBACK,
         messages: [
           { role: 'system', content: COMPRESSION_PROMPT },
           { role: 'user', content: context },
