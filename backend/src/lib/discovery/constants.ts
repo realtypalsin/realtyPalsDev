@@ -34,6 +34,8 @@ export const CITY_LEVEL_TERMS = [
 // Keys are canonical sector strings as stored in the DB.
 // Values are ordered by geographic proximity (closest first).
 // Used for nearby sector expansion when the requested sector returns zero results.
+// TODO: Restructure to Record<city, Record<sector, string[]>> when scaling to city #2.
+// Currently hardcoded to Noida/Greater Noida; extraction logic in discovery/index.ts assumes this shape.
 export const SECTOR_ADJACENCY: Record<string, string[]> = {
   // Noida Expressway corridor (Sectors 128–158)
   'Sector 150': ['Sector 151', 'Sector 148', 'Sector 143', 'Sector 137'],
