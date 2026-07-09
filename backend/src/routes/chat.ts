@@ -579,7 +579,7 @@ router.post('/', async (req: Request, res: Response) => {
       select: { name: true, legal_flag: true },
     })
     const blockedBuilders: Array<{ name: string; legal_flag?: string }> = blockedBuildersRaw.map(b => ({ name: b.name, legal_flag: b.legal_flag as string | undefined }))
-    const systemPrompt = buildAdvisorSystemPrompt(intent, projects.slice(0, 3), memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects.slice(0, 3) : undefined, notFoundNames, blockedBuilders) + systemSuffix
+    const systemPrompt = buildAdvisorSystemPrompt(intent, projects.slice(0, 3), memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects.slice(0, 3) : undefined, notFoundNames, blockedBuilders, intentState) + systemSuffix
 
     // Issue 4: trim message history if total token estimate exceeds safe ceiling
     const messages = trimMessagesToBudget(systemPrompt, rawMessages)

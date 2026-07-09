@@ -33,7 +33,8 @@ export function buildAdvisorSystemPrompt(
   expansion?: NearbyExpansion,
   nearbyResults?: ScoredProject[],
   notFoundNames?: string[],
-  blockedBuilders?: Array<{ name: string; legal_flag?: string }>
+  blockedBuilders?: Array<{ name: string; legal_flag?: string }>,
+  intentState?: string // GATHERING, READY_TO_SEARCH, SHORTLISTED, COMPARING, DECIDING
 ): string {
   const hasExactResults = exactResults.length > 0
   const hasNearbyResults = (nearbyResults?.length ?? 0) > 0
@@ -42,9 +43,11 @@ export function buildAdvisorSystemPrompt(
   const isComparison = intent.is_comparison_query === true
 
   // Inject format blocks only when the query type warrants them.
+  // In SHORTLISTED state, skip sector overview (already have results) to reduce tokens.
   // Saves ~770–1,200 tokens on cold, process, and builder queries.
+  const isShortlisted = intentState === 'SHORTLISTED' || intentState === 'COMPARING'
   const propertyResultsFormat = hasProperties ? buildPropertyResultsFormatBlock() : ''
-  const sectorAdvisoryFormat  = hasSectorsOverview ? buildSectorAdvisoryFormatBlock() : ''
+  const sectorAdvisoryFormat  = (hasSectorsOverview && !isShortlisted) ? buildSectorAdvisoryFormatBlock() : ''
   const comparisonFormat      = isComparison ? buildComparisonFormatBlock() : ''
 
   const intentSummary = buildIntentSummary(intent)
