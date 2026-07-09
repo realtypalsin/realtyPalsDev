@@ -327,6 +327,7 @@ model ProjectImage {
   project_id String
   url        String
   type       ImageType
+  source     String    @default("admin")
   caption    String?
   bhk        Int?
   size_sqft  Int?
@@ -334,6 +335,7 @@ model ProjectImage {
   project    Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
   @@index([project_id, type])
+  @@index([project_id, source])
   @@map("project_images")
 }
 

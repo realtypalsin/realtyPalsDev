@@ -46,58 +46,7 @@ const ICON_MAP: Record<string, any> = {
   TrendingUp, Home, Activity, BarChart3, Building2, Scale, Users, Briefcase, Gem, Globe, CheckCircle2, Sparkles, AlertTriangle, User
 }
 
-// ── Fallback Defaults ──
-const getDefaultIntel = (projectName: string) => ({
-  topLevelMetrics: {
-    overallScore: 88,
-    tier: 'STRONG_BUY',
-    investmentGrade: 'A',
-    investmentGradeLabel: 'Low Risk / High Growth',
-    priceAdvantage: '+12%',
-    priceAdvantageSubtext: 'Premium',
-    confidenceLevel: 'High',
-    confidenceLabel: 'Highly Reliable'
-  },
-  dimensionScores: {
-    builderTrust: { score: 92, status: 'Verified' },
-    locationQuality: { score: 88, status: 'Verified' },
-    lifestyleAmenities: { score: 90, status: 'Verified' },
-    valueForMoney: { score: 85, status: 'Verified' },
-    appreciationPotential: { score: 95, status: 'Verified' },
-    legalSafety: { score: 95, status: 'Verified' }
-  },
-  keyTakeaway: `${projectName} represents a premier off-plan investment in Greater Noida West, combining an impeccable legal foundation with high-end execution to capture massive capital appreciation.`,
-  buyerPersonas: [
-    { type: 'Families', iconName: 'Users', stars: 5, reasons: ['Excellent Multi-Tiered Security: Features 24/7 gated security with CCTV, video door phones, intercoms, patrolling guards, and RFID access.', 'Dedicated Kids\' Infrastructure: Built with dedicated central gardens, extensive children\'s play areas, and a safe children\'s wading splash pool.', 'Top-Tier Schools Nearby: Positioned within a 5-km radius of premium educational institutions, including DPS Noida Extension and Sarvottam International School.'], fit: 'Great Fit', fitColor: 'text-emerald-600 bg-emerald-50' },
-    { type: 'Investors', iconName: 'Briefcase', stars: 5, reasons: [`Robust Capital Appreciation: Sector 10 has recorded a staggering 108% appreciation over a five-year horizon, with ${projectName} showing strong annual growth.`, 'High-Growth Location: Directly borders major commercial, IT, and administrative powerhouse corridors.', 'Strong Undivided Share (UDS): The low-density layout secures a much higher land share for owners.'], fit: 'Excellent Fit', fitColor: 'text-emerald-600 bg-emerald-50' },
-    { type: 'Luxury Seekers', iconName: 'Gem', stars: 4, reasons: ['Exclusive Mini-Golf Course: Offers private, restricted-access mini-golf greens designed exclusively for the estate\'s residents.', 'Tall, Airy Residences: Apartments feature rare 11-foot interior ceiling heights, expansive balconies with panoramic views, and large-format premium room layouts.', 'Biophilic Landscaping: Spans 70% open green biophilic spaces with natural wellness courts, manicured gardens, and luxury deck pools.'], fit: 'Premium Fit', fitColor: 'text-amber-600 bg-amber-50' },
-    { type: 'NRIs', iconName: 'Globe', stars: 5, reasons: ['Government & RERA Compliance: Approved with clear, transparent papers under RERA ID UPRERAPRJ916631/02/2024.', 'Mivan Structural Longevity: Built using 100% Mivan aluminum formwork technology, protecting long-distance assets from maintenance or seepage issues.', 'Reputable Developer Background: Backed by Elite Group, which has successfully delivered over 2,100 units across 3 million sq. ft. of residential area.'], fit: 'Great Fit', fitColor: 'text-emerald-600 bg-emerald-50' },
-    { type: 'End Users', iconName: 'Home', stars: 5, reasons: ['Spacious Utility Layouts: Configured in premium, spacious floor plans (ranging from 1,800 to 2,632 sq. ft.) with added study and servant rooms.', 'In-House Retail & Convenience: Features built-in convenience stores, milk booths, multi-purpose retail spaces, cafes, spas, and salons.', 'On-Time Delivery Confidence: Backed by active, visible construction progress and fully secured institutional funding lines.'], fit: 'Great Fit', fitColor: 'text-emerald-600 bg-emerald-50' }
-  ],
-  investmentSnapshot: [
-    { label: 'Expected Appreciation (5Y)', value: '12% to 16% annual growth', iconName: 'TrendingUp', trend: 'up' },
-    { label: 'Average Rent (3BHK)', value: '₹28,000 - ₹34,000 / month', iconName: 'Home', trend: 'neutral' },
-    { label: 'Price Trend', value: 'Rising', iconName: 'Activity', trend: 'up', showArrow: true },
-    { label: 'ROI Potential', value: '6.5% - 7.5% rental yield', iconName: 'BarChart3', trend: 'up' }
-  ],
-  pricingIntelligence: {
-    projectAvg: '₹11,000 /sqft',
-    marketAvg: '₹9,800 /sqft',
-    premium: '+12%',
-    justification: 'Commands a premium due to 100% Mivan tech construction, low-density planning (115 units/acre), and exclusive luxury amenities like the private mini-golf course and 70% open green biophilic spaces.'
-  },
-  riskRadar: [
-    { type: 'Construction Risk', level: 'Low', description: 'Heavily insulated by fast-track Mivan aluminum shuttering technology and fully secured construction funding from Tata Capital.', iconName: 'Building2', colorClass: 'text-emerald-500', bgClass: 'bg-emerald-50', badgeClass: 'bg-emerald-100 text-emerald-700' },
-    { type: 'Market Risk', level: 'Medium', description: `Surrounding sectors feature high-density housing launches, but ${projectName} is insulated by its low-density layout and premium configurations.`, iconName: 'BarChart3', colorClass: 'text-amber-500', bgClass: 'bg-amber-50', badgeClass: 'bg-amber-100 text-amber-700' },
-    { type: 'Legal Risk', level: 'Low', description: 'Pristine legal record. Registered under UP-RERA UPRERAPRJ916631/02/2024, with clean title deeds free of authority dues.', iconName: 'Scale', colorClass: 'text-emerald-500', bgClass: 'bg-emerald-50', badgeClass: 'bg-emerald-100 text-emerald-700' }
-  ],
-  detailedAnalysis: [
-    { category: 'Strength', title: 'Solid Institutional Credit Support', description: 'The project\'s construction is backed by active financial charges from Tata Capital Housing Finance Limited (TCHFL), removing any potential developer cash-flow crises.', iconName: 'CheckCircle2', iconColor: 'text-blue-500' },
-    { category: 'Opportunity', title: 'Upcoming Aqua Line Metro Extension', description: 'Proximity to the proposed Knowledge Park V metro station (located just 3 km away) will act as a major capital appreciation catalyst, driving property prices toward the projected target of ₹14,500+/sq. ft. by possession.', iconName: 'Sparkles', iconColor: 'text-blue-500' },
-    { category: 'Risk', title: 'Off-Plan Delayed Cash Yields', description: 'With an official possession date of December 31, 2028, investors must note that capital is locked with zero immediate rental income.', iconName: 'AlertTriangle', iconColor: 'text-red-500' },
-    { category: 'Consideration', title: 'Super Area Loading', description: 'The project features typical luxury loading meaning buyers must evaluate the actual carpet area configurations.', iconName: 'AlertTriangle', iconColor: 'text-amber-500' }
-  ]
-})
+// Note: Fabricated defaults have been removed. Only real verified data from DB is shown.
 
 export default function IntelligenceTab({
   project, detail, d, loading, marketRef
@@ -106,28 +55,11 @@ export default function IntelligenceTab({
   const [expandedPersona, setExpandedPersona] = useState<string | null>(null)
   const [showReportModal, setShowReportModal] = useState(false)
 
-  const defaultIntel = getDefaultIntel(d?.name || 'This project')
-  const rawIntel = (d as any)?.decision_profile?.intelligence_data || {}
+  // Only use real verified data from DB; no fabricated defaults
+  const dbIntel = (d as any)?.decision_profile?.intelligence_data || {}
 
-  const dbIntel = {
-    ...defaultIntel,
-    ...rawIntel,
-    topLevelMetrics: {
-      ...defaultIntel.topLevelMetrics,
-      ...(rawIntel.topLevelMetrics || {}),
-    },
-    dimensionScores: {
-      ...defaultIntel.dimensionScores,
-      ...(rawIntel.dimensionScores || {}),
-    },
-    pricingIntelligence: {
-      ...defaultIntel.pricingIntelligence,
-      ...(rawIntel.pricingIntelligence || {}),
-    },
-  }
-
-  const overallScore = dbIntel?.topLevelMetrics?.overallScore || 50
-  const tier = dbIntel?.topLevelMetrics?.tier || 'HOLD'
+  const overallScore = dbIntel?.topLevelMetrics?.overallScore
+  const tier = dbIntel?.topLevelMetrics?.tier
 
   const categoryPluralMap: Record<string, string> = {
     'Strength': 'Strengths',
@@ -145,21 +77,24 @@ export default function IntelligenceTab({
     ? detailedAnalysisArray
     : detailedAnalysisArray.filter((a: any) => categoryPluralMap[a.category] === activeTab)
 
+  // Build dimensions array from real DB data only; skip missing dimensions
   const dimensionsForChart = [
-    { key: 'builder', label: 'Builder Trust', score: dbIntel.dimensionScores?.builderTrust?.score ?? 50, value: dbIntel.dimensionScores?.builderTrust?.score ?? 50, color: '#f59e0b', stars: 3, description: '', basis: '', status: 'Verified' as const },
-    { key: 'location', label: 'Location Quality', score: dbIntel.dimensionScores?.locationQuality?.score ?? 50, value: dbIntel.dimensionScores?.locationQuality?.score ?? 50, color: '#3b82f6', stars: 3, description: '', basis: '', status: 'Verified' as const },
-    { key: 'amenities', label: 'Lifestyle & Amenities', score: dbIntel.dimensionScores?.lifestyleAmenities?.score ?? 50, value: dbIntel.dimensionScores?.lifestyleAmenities?.score ?? 50, color: '#8b5cf6', stars: 3, description: '', basis: '', status: 'Verified' as const },
-    { key: 'value', label: 'Value for Money', score: dbIntel.dimensionScores?.valueForMoney?.score ?? 50, value: dbIntel.dimensionScores?.valueForMoney?.score ?? 50, color: '#10b981', stars: 3, description: '', basis: '', status: 'Verified' as const },
-    { key: 'appreciation', label: 'Appreciation Potential', score: dbIntel.dimensionScores?.appreciationPotential?.score ?? 50, value: dbIntel.dimensionScores?.appreciationPotential?.score ?? 50, color: '#ef4444', stars: 3, description: '', basis: '', status: 'Verified' as const },
-    { key: 'legal', label: 'Legal & Safety', score: dbIntel.dimensionScores?.legalSafety?.score ?? 50, value: dbIntel.dimensionScores?.legalSafety?.score ?? 50, color: '#6366f1', stars: 3, description: '', basis: '', status: 'Verified' as const }
-  ]
+    dbIntel.dimensionScores?.builderTrust?.score ? { key: 'builder', label: 'Builder Trust', score: dbIntel.dimensionScores.builderTrust.score, value: dbIntel.dimensionScores.builderTrust.score, color: '#f59e0b', stars: 3, description: '', basis: '', status: 'Verified' as const } : null,
+    dbIntel.dimensionScores?.locationQuality?.score ? { key: 'location', label: 'Location Quality', score: dbIntel.dimensionScores.locationQuality.score, value: dbIntel.dimensionScores.locationQuality.score, color: '#3b82f6', stars: 3, description: '', basis: '', status: 'Verified' as const } : null,
+    dbIntel.dimensionScores?.lifestyleAmenities?.score ? { key: 'amenities', label: 'Lifestyle & Amenities', score: dbIntel.dimensionScores.lifestyleAmenities.score, value: dbIntel.dimensionScores.lifestyleAmenities.score, color: '#8b5cf6', stars: 3, description: '', basis: '', status: 'Verified' as const } : null,
+    dbIntel.dimensionScores?.valueForMoney?.score ? { key: 'value', label: 'Value for Money', score: dbIntel.dimensionScores.valueForMoney.score, value: dbIntel.dimensionScores.valueForMoney.score, color: '#10b981', stars: 3, description: '', basis: '', status: 'Verified' as const } : null,
+    dbIntel.dimensionScores?.appreciationPotential?.score ? { key: 'appreciation', label: 'Appreciation Potential', score: dbIntel.dimensionScores.appreciationPotential.score, value: dbIntel.dimensionScores.appreciationPotential.score, color: '#ef4444', stars: 3, description: '', basis: '', status: 'Verified' as const } : null,
+    dbIntel.dimensionScores?.legalSafety?.score ? { key: 'legal', label: 'Legal & Safety', score: dbIntel.dimensionScores.legalSafety.score, value: dbIntel.dimensionScores.legalSafety.score, color: '#6366f1', stars: 3, description: '', basis: '', status: 'Verified' as const } : null,
+  ].filter(Boolean)
 
-  const getDimensionSummary = (label: string, score: number) => {
-    if (label === 'Builder Trust') return score >= 90 ? 'Excellent (Legacy of 2100+ units delivered)' : 'Standard'
-    if (label === 'Location Quality') return score >= 85 ? 'Strategic (Directly opposite Knowledge Park V)' : 'Emerging'
-    if (label === 'Lifestyle & Amenities') return score >= 90 ? 'Premium (Private Mini-Golf & Clubhouse)' : 'Standard'
-    if (label === 'Value for Money') return score >= 85 ? 'High Value (Mivan-Tech & 11ft ceilings)' : 'Fair'
-    if (label === 'Appreciation Potential') return score >= 90 ? 'High (Metro extension impact)' : 'Moderate'
+  const getDimensionSummary = (label: string, score: number | undefined) => {
+    // Only return real summary if score exists; otherwise return empty state
+    if (score === undefined) return 'Data not verified yet'
+    if (label === 'Builder Trust') return score >= 90 ? 'Excellent' : score >= 70 ? 'Good' : 'Under Review'
+    if (label === 'Location Quality') return score >= 85 ? 'Strategic' : score >= 70 ? 'Good' : 'Under Review'
+    if (label === 'Lifestyle & Amenities') return score >= 90 ? 'Premium' : score >= 70 ? 'Good' : 'Under Review'
+    if (label === 'Value for Money') return score >= 85 ? 'High Value' : score >= 70 ? 'Fair' : 'Under Review'
+    if (label === 'Appreciation Potential') return score >= 90 ? 'High' : score >= 70 ? 'Moderate' : 'Under Review'
     if (label === 'Legal & Safety') return score >= 95 ? 'Secure (TCHFL Funding)' : 'Standard'
     return 'Verified'
   }
@@ -192,6 +127,24 @@ export default function IntelligenceTab({
     : Number(String(dbIntel.pricingIntelligence.projectAvg || '').replace(/[^0-9]/g, ''))
 
   const computedProjectAvg = computedProjectAvgNumber ? `₹${computedProjectAvgNumber.toLocaleString('en-IN')} /sqft` : dbIntel.pricingIntelligence.projectAvg
+
+  // Show empty state if no intelligence data exists in DB
+  if (!dbIntel?.topLevelMetrics) {
+    return (
+      <div className="p-4 md:p-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+            <Sparkles className="text-blue-600" size={16} />
+          </div>
+          <h2 className="text-[22px] font-bold text-gray-900 dark:text-white tracking-tight">AI-Powered Analysis</h2>
+        </div>
+        <div className="mt-6 p-6 bg-white dark:bg-[#111] rounded-lg border border-gray-200 dark:border-gray-800 text-center">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Data not verified yet</p>
+          <p className="text-gray-400 dark:text-gray-600 text-xs mt-2">Our AI analysis will be available once verified by our team.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">

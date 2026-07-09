@@ -131,11 +131,20 @@ function buildHardFilters(intent: Intent): Prisma.ProjectWhereInput {
   // Sector — whole-word match (case-insensitive).
   // This ensures 'Sector 10' matches 'Sector 10 Greater Noida West' but NOT 'Sector 107'.
   if (intent.sector && !isCityLevel(intent.sector)) {
+    // Sanitize sector by removing common city suffixes that LLM might append
+    let cleanSector = intent.sector
+    const cityTerms = [' noida', ' greater noida', ' gurgaon', ' gurugram', ' delhi', ' mumbai', ' bangalore', ' hyderabad', ' pune', ' chennai']
+    for (const city of cityTerms) {
+      if (cleanSector.toLowerCase().endsWith(city)) {
+        cleanSector = cleanSector.slice(0, -city.length).trim()
+      }
+    }
+
     where.OR = [
-      { sector: { equals: intent.sector, mode: 'insensitive' } },
-      { sector: { startsWith: `${intent.sector} `, mode: 'insensitive' } },
-      { sector: { endsWith: ` ${intent.sector}`, mode: 'insensitive' } },
-      { sector: { contains: ` ${intent.sector} `, mode: 'insensitive' } }
+      { sector: { equals: cleanSector, mode: 'insensitive' } },
+      { sector: { startsWith: `${cleanSector} `, mode: 'insensitive' } },
+      { sector: { endsWith: ` ${cleanSector}`, mode: 'insensitive' } },
+      { sector: { contains: ` ${cleanSector} `, mode: 'insensitive' } }
     ]
   }
 
@@ -145,15 +154,22 @@ function buildHardFilters(intent: Intent): Prisma.ProjectWhereInput {
     unitConditions.push({ bhk: { in: intent.bhk } })
   }
   if (intent.budgetMax) {
-    // price_min_cr comparisons automatically exclude NULL rows in Prisma
+    // Include both priced units within budget AND unpriced units (price_min_cr: null)
+    // This ensures projects with incomplete pricing still appear (AI already handles "pricing not disclosed")
     unitConditions.push({
-      price_min_cr: { lte: intent.budgetMax * BUDGET_TOLERANCE_MAX },
+      OR: [
+        { price_min_cr: { lte: intent.budgetMax * BUDGET_TOLERANCE_MAX } },
+        { price_min_cr: null }  // Include unpriced units
+      ]
     })
   }
   if (unitConditions.length === 1) {
     where.unit_types = { some: unitConditions[0] }
   } else if (unitConditions.length > 1) {
     where.unit_types = { some: { AND: unitConditions } }
+  } else if (!intent.budgetMax && !intent.bhk) {
+    // No budget or BHK filter: include all projects regardless of pricing
+    // (unit_types could be empty or all null-priced)
   }
 
   // Builder
@@ -338,8 +354,19 @@ function scoreAndSort(
   threshold: number
 ): ScoredProject[] {
   const scored = rawProjects.map((p) => mapToScored(p, intent))
-  const passed = scored.filter((p) => p.matchScore >= threshold)
-  const excluded = scored.filter((p) => p.matchScore < threshold)
+  let passed = scored.filter((p) => p.matchScore >= threshold)
+  
+  // Fallback: If no projects pass the strict threshold, but we have valid projects (score > 0), 
+  // return the best ones rather than falsely claiming no inventory.
+  if (passed.length === 0) {
+    const valid = scored.filter((p) => p.matchScore > 0)
+    if (valid.length > 0) {
+      console.log('[DISCOVERY:FALLBACK] No projects met threshold. Falling back to best available.')
+      passed = valid
+    }
+  }
+
+  const excluded = scored.filter((p) => !passed.includes(p))
   if (excluded.length > 0) {
     console.log('[DISCOVERY:EXCLUDED]', excluded.map((p) => ({
       name:  p.name,

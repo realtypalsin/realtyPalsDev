@@ -47,10 +47,11 @@ async function main() {
     })
 
     // Delete and re-insert related records (idempotent seed)
+    // NOTE: Only delete seed-sourced images. Admin images persist across re-seeds.
     await prisma.unitType.deleteMany({ where: { project_id: project.id } })
     await prisma.amenity.deleteMany({ where: { project_id: project.id } })
     await prisma.connectivity.deleteMany({ where: { project_id: project.id } })
-    await prisma.projectImage.deleteMany({ where: { project_id: project.id } })
+    await prisma.projectImage.deleteMany({ where: { project_id: project.id, source: 'seed' } })
 
     // Insert unit types
     if (unit_types.length > 0) {
@@ -82,13 +83,14 @@ async function main() {
       })
     }
 
-    // Insert project images
+    // Insert project images (mark as seed for future re-seeds)
     if (project_images && project_images.length > 0) {
       await prisma.projectImage.createMany({
         data: project_images.map((img: any) => ({
           ...img,
           project_id: project.id,
           type: img.type as ImageType,
+          source: 'seed',
         })),
       })
     }

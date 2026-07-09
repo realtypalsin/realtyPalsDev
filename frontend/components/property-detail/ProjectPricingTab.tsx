@@ -106,7 +106,9 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const dbMilestones: any[] = dbPaymentPlan?.milestones ?? []
   const hasPaymentPlan = dbMilestones.length > 0
   const planName = dbPaymentPlan?.plan_name ?? 'Payment Schedule'
-  const bookingAmtPct = dbPaymentPlan?.booking_amount_pct != null ? `${dbPaymentPlan.booking_amount_pct}%` : '--'
+  // Derive booking amount % from first milestone if available
+  const firstMilestone = dbMilestones[0] as any | undefined
+  const bookingAmtPct = firstMilestone?.pct != null ? `${firstMilestone.pct}%` : null
 
   // Cost sheet from DB
   const dbCostSheet = (detail as any)?.cost_sheet ?? null
@@ -203,7 +205,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
           <StatCard icon={IndianRupee} value={startingPriceCr} label="Starting Price" />
           <StatCard icon={TrendingUp} value={pricePerSqft} label="Price per sq.ft" />
           <StatCard icon={CalendarDays} value={possessionLabel} label="Possession" />
-          <StatCard icon={Percent} value={bookingAmtPct} label="Booking Amount" />
+          {bookingAmtPct && <StatCard icon={Percent} value={bookingAmtPct} label="Booking Amount" />}
         </div>
 
         <PricingCharts 

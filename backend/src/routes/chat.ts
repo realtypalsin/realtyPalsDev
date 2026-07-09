@@ -13,7 +13,7 @@ import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
 import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
-import { streamWithGroq } from '../lib/ai/groq'
+import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
@@ -380,8 +380,9 @@ router.post('/', async (req: Request, res: Response) => {
     if (currentIntentState === 'GATHERING' && prevIntentState === 'GATHERING') {
       intent.gathering_loop_count = ((prevIntent as Intent).gathering_loop_count ?? 0) + 1
       if (intent.gathering_loop_count >= 2) {
-        console.log('[CHAT] GATHERING loop detected. Breaking out with fallback intent.')
-        intent = { ...intent, budgetMax: intent.budgetMax ?? 1.5, bhk: intent.bhk ?? [3], gathering_loop_count: 0 }
+        console.log('[CHAT] GATHERING loop detected (2+ turns). Ask for clarification instead of fabricating constraints.')
+        // Do NOT inject fabricated constraints here. Fall through to clarification chips instead.
+        intent.gathering_loop_count = 0
       }
     } else {
       intent.gathering_loop_count = 0
@@ -500,12 +501,25 @@ router.post('/', async (req: Request, res: Response) => {
       nearbyProjects = discoveryResult.nearbyResults
       discoveryExpansion = discoveryResult.expansion
       notFoundNames = discoveryResult.notFoundNames
+
+      // Handle project disambiguation (multi-project match)
       if (discoveryResult.disambiguation) {
         projectDisambiguation = discoveryResult.disambiguation
         const { query, candidates } = discoveryResult.disambiguation
         const list = candidates.map((c) => `• ${c.name} (${c.sector})`).join('\n')
         disambiguationText = `Multiple projects match "${query}":\n\n${list}\n\nWhich one did you mean?`
         console.log('[CHAT:DISAMBIG] multi-match detected', { query, count: candidates.length })
+      }
+
+      // Handle sector disambiguation (multi-sector match) — FIXED: was dropped before
+      if (discoveryResult.sectorDisambiguation) {
+        sectorDisambiguation = discoveryResult.sectorDisambiguation
+        const { query, candidates } = discoveryResult.sectorDisambiguation
+        const list = candidates.map((sector) => `${sector}`).join(', ')
+        disambiguationText = disambiguationText
+          ? disambiguationText + `\n\nOr did you mean sector(s): ${list}?`
+          : `Did you mean: ${list}?`
+        console.log('[CHAT:DISAMBIG] sector ambiguity detected', { query, count: candidates.length })
       }
 
       // Always send the properties event when intent is ready — even empty exactResults
@@ -673,8 +687,20 @@ router.post('/', async (req: Request, res: Response) => {
           reason: 'OpenAI pre-first-chunk stall or network error',
           originalErrorMessage: (err as Error).message
         })
-        fullText = await streamWithGroq(fallbackSystemPrompt, messages, send);
-        console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
+        try {
+          fullText = await streamWithGroq(fallbackSystemPrompt, messages, send);
+          console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
+        } catch (groqErr) {
+          if (groqErr instanceof GroqStreamStallError) {
+            console.error('[chat] Groq fallback also failed with stream stall:', (groqErr as Error).message);
+            // Both OpenAI and Groq failed; send error to client
+            send('error', { message: 'All AI services unavailable. Please try again in a moment.' });
+            throw groqErr;
+          }
+          // Other Groq errors
+          console.error('[chat] Groq fallback error:', (groqErr as Error).message);
+          throw groqErr;
+        }
       } else {
         throw new Error('OpenAI failed and no GROQ_API_KEY fallback configured');
       }

@@ -51,17 +51,24 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
   const projectLat = project?.lat || SECTOR_CENTROIDS[project?.sector || '']?.[0] || 28.535
   const projectLng = project?.lng || SECTOR_CENTROIDS[project?.sector || '']?.[1] || 77.391
 
-  // Dynamic extra markers with offset coordinates relative to the project
-  const allMapMarkers = [
-    { name: "Proposed Metro Station", pos: [projectLat + 0.005, projectLng - 0.008] as [number, number], category: "Transport" },
-    { name: "Gaur Chowk", pos: [projectLat + 0.012, projectLng + 0.01] as [number, number], category: "Transport" },
-    { name: "DPS Noida Extension", pos: [projectLat - 0.006, projectLng + 0.008] as [number, number], category: "Education" },
-    { name: "Ryan International School", pos: [projectLat - 0.01, projectLng - 0.005] as [number, number], category: "Education" },
-    { name: "Yatharth Super Speciality Hospital", pos: [projectLat + 0.008, projectLng + 0.004] as [number, number], category: "Healthcare" },
-    { name: "Gaur City Mall", pos: [projectLat + 0.015, projectLng - 0.002] as [number, number], category: "Lifestyle" },
-    { name: "Galaxy Blue Sapphire Plaza", pos: [projectLat + 0.01, projectLng - 0.012] as [number, number], category: "Lifestyle" },
-    { name: "Knowledge Park V Office Corridor", pos: [projectLat - 0.002, projectLng + 0.002] as [number, number], category: "Work" },
-  ]
+  // Build markers from real connectivity data from DB; no hardcoded fabricated POIs
+  const connectivity = (detail as any)?.connectivity || []
+  const categoryMap: Record<string, string> = {
+    'metro': 'Transport',
+    'road': 'Transport',
+    'expressway': 'Transport',
+    'school': 'Education',
+    'hospital': 'Healthcare',
+    'mall': 'Lifestyle',
+    'landmark': 'Lifestyle'
+  }
+
+  // Only show markers if we have real connectivity data
+  const allMapMarkers = connectivity.map((conn: any) => ({
+    name: conn.name || 'Nearby location',
+    pos: [projectLat, projectLng] as [number, number], // Use project coords if no lat/lng in connectivity
+    category: categoryMap[conn.type?.toLowerCase()] || 'Other'
+  }))
 
   const filteredMapMarkers = selectedMapFilter === 'All'
     ? allMapMarkers
@@ -103,12 +110,22 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
         {/* Left Content */}
         <div className="p-8 md:p-12 md:w-1/2 flex flex-col justify-center z-10 bg-white md:bg-transparent">
           <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-3">Project Location</p>
-          <h2 className="text-[32px] md:text-[40px] font-black text-gray-900 tracking-tight leading-tight mb-4">
-            {d?.sector ? `Sector ${d.sector}` : 'Sector 10'}, {d?.city ? d.city : 'Greater Noida West'},<br />Uttar Pradesh
-          </h2>
-          <p className="text-[14px] text-gray-500 leading-relaxed mb-8">
-            Strategically located in the heart of Greater Noida West with excellent connectivity and fast-developing infrastructure.
-          </p>
+          {d?.sector && d?.city && (
+            <>
+              <h2 className="text-[32px] md:text-[40px] font-black text-gray-900 tracking-tight leading-tight mb-4">
+                Sector {d.sector}, {d.city},<br />Uttar Pradesh
+              </h2>
+              {locationData?.location_highlights?.[0] ? (
+                <p className="text-[14px] text-gray-500 leading-relaxed mb-8">
+                  {locationData.location_highlights[0]}
+                </p>
+              ) : (
+                <p className="text-[14px] text-gray-400 leading-relaxed mb-8 italic">
+                  Location details not verified yet
+                </p>
+              )}
+            </>
+          )}
           <div className="flex items-center gap-3">
             <button
               onClick={handleGetDirections}

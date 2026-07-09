@@ -9,6 +9,7 @@
 // This is the SINGLE place that decides conversation intelligence.
 
 import type { Intent, IntentState, ScoredProject } from './types'
+import type { ChipInventory } from './chipInventory'
 
 // ─── Shared types (mirrored in frontend/components/chat/types.ts) ─────────────
 
@@ -122,19 +123,6 @@ export function getThinkingMessage(stage: ConversationStage, intent: Intent): st
 
 // ─── Chip generation ──────────────────────────────────────────────────────────
 
-const SECTOR_OPTIONS = [
-  'Sector 150', 'Sector 137', 'Sector 75', 'Sector 128', 'Sector 93', 'Expressway',
-]
-
-const BUDGET_OPTIONS = [
-  { label: 'Under ₹1.5 Cr', patch: { budgetMax: 1.5 } },
-  { label: '₹1.5 – ₹2.5 Cr', patch: { budgetMin: 1.5, budgetMax: 2.5 } },
-  { label: '₹2.5 – ₹4 Cr', patch: { budgetMin: 2.5, budgetMax: 4 } },
-  { label: 'Luxury ₹4 Cr+', patch: { budgetMin: 4 } },
-]
-
-const BHK_OPTIONS = [2, 3, 4]
-
 function chip(
   id: string,
   actionType: ConversationActionType,
@@ -151,19 +139,68 @@ function chip(
 // The engine owns grouping entirely: which groups exist, their order, their
 // visual weight, and how many chips land in each. The frontend just renders
 // whatever groups arrive, in the order given — it has no opinion on counts.
-const PRIMARY_GROUP:  ChipGroup = { id: 'primary_actions',  label: 'What are you looking for?', order: 0, emphasis: 'primary' }
-const JOURNEY_GROUP:  ChipGroup = { id: 'popular_journeys', label: 'Popular journeys',           order: 1, emphasis: 'secondary' }
-const FILTER_GROUP:   ChipGroup = { id: 'quick_filters',    label: 'Quick filters',              order: 2, emphasis: 'tertiary' }
+/**
+ * Discovery chips: offered proactively when entering chat to suggest typical starting queries.
+ * Builds dynamically from live chip inventory (sectors, budget buckets, BHK options).
+ */
+function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
+  if (!inventory) return []
 
-function getDiscoveryChips(intent: Intent): ChipAction[] {
-  return []
+  const chips: ChipAction[] = []
+  const sectorGroup: ChipGroup = { id: 'popular_sectors', label: `Popular sectors in ${inventory.city}`, order: 0, emphasis: 'primary' }
+
+  // Top sectors by project count
+  for (const { sector, projectCount } of inventory.sectors.slice(0, 3)) {
+    chips.push(chip(
+      `discovery_sector_${sector.replace(/\s+/g, '_').toLowerCase()}`,
+      'INTENT_PATCH',
+      `${sector} (${projectCount} projects)`,
+      '📍',
+      { patch: { sector }, label: sector },
+      chips.length + 1,
+      sectorGroup
+    ))
+  }
+
+  // Budget buckets
+  const budgetGroup: ChipGroup = { id: 'budget_buckets', label: 'Budget ranges', order: 1, emphasis: 'secondary' }
+  for (let i = 0; i < Math.min(3, inventory.budgetBuckets.length); i++) {
+    const bucket = inventory.budgetBuckets[i]
+    const budgetMax = bucket.max || 10
+    chips.push(chip(
+      `discovery_budget_${bucket.label.replace(/\W+/g, '_').toLowerCase()}`,
+      'INTENT_PATCH',
+      bucket.label,
+      '💰',
+      { patch: { budgetMax }, label: bucket.label },
+      chips.length + 1,
+      budgetGroup
+    ))
+  }
+
+  // BHK options
+  const bhkGroup: ChipGroup = { id: 'bhk_options', label: 'Configurations', order: 2, emphasis: 'tertiary' }
+  for (const bhk of inventory.bhkOptions) {
+    chips.push(chip(
+      `discovery_bhk_${bhk}`,
+      'INTENT_PATCH',
+      `${bhk} BHK`,
+      '🏠',
+      { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
+      chips.length + 1,
+      bhkGroup
+    ))
+  }
+
+  return chips
 }
 
 function getClarifyingChips(
   intent: Intent,
   missingFields: string[],
   results: ScoredProject[],
-  chatHistory: { role: string; content: string }[]
+  chatHistory: { role: string; content: string }[],
+  inventory: ChipInventory | null
 ): ChipAction[] {
   const chips: ChipAction[] = []
   let priority = 1
@@ -190,9 +227,9 @@ function getClarifyingChips(
     if (chips.length > 0) return chips
   }
 
-  // Missing BHK
-  if (missingFields.includes('bhk') && !intent.bhk?.length) {
-    for (const bhk of BHK_OPTIONS) {
+  // Missing BHK — offer from inventory
+  if (missingFields.includes('bhk') && !intent.bhk?.length && inventory?.bhkOptions) {
+    for (const bhk of inventory.bhkOptions) {
       chips.push(chip(
         `bhk_${bhk}`,
         'INTENT_PATCH', `${bhk} BHK`, '🏠',
@@ -203,13 +240,14 @@ function getClarifyingChips(
     return chips
   }
 
-  // Missing budget
-  if (missingFields.includes('budget') && !intent.budgetMax && !intent.budgetMin) {
-    for (const opt of BUDGET_OPTIONS) {
+  // Missing budget — offer from inventory
+  if (missingFields.includes('budget') && !intent.budgetMax && !intent.budgetMin && inventory?.budgetBuckets) {
+    for (const bucket of inventory.budgetBuckets.slice(0, 3)) {
+      const budgetMax = bucket.max || 10
       chips.push(chip(
-        `budget_${opt.label.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
-        'INTENT_PATCH', opt.label, '💰',
-        { patch: opt.patch, label: opt.label },
+        `budget_${bucket.label.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
+        'INTENT_PATCH', bucket.label, '💰',
+        { patch: { budgetMax }, label: bucket.label },
         priority++,
       ))
     }
@@ -296,7 +334,8 @@ export function computeConversationState(
   isComparison: boolean,
   chatHistory: { role: string; content: string }[] = [],
   disambiguation?: { query: string; candidates: Array<{ name: string; sector: string; builder: string }> },
-  sectorDisambiguation?: { query: string; candidates: string[] }
+  sectorDisambiguation?: { query: string; candidates: string[] },
+  chipInventory: ChipInventory | null = null
 ): ConversationState {
   const stage = computeStage(intent, intentState, results, isComparison)
   const missingFields = getMissingFields(intent, intentState)
@@ -327,13 +366,13 @@ export function computeConversationState(
     // Populate chips dynamically based on the conversation stage
     switch (stage) {
       case 'CLARIFYING':
-        chips = getClarifyingChips(intent, missingFields, results, chatHistory)
+        chips = getClarifyingChips(intent, missingFields, results, chatHistory, chipInventory)
         break
       case 'DISCOVERY':
-        chips = getDiscoveryChips(intent)
+        chips = getDiscoveryChips(chipInventory)
         break
       case 'SEARCHING':
-        chips = getDiscoveryChips(intent) // Offer discovery chips while searching so user can refine
+        chips = getDiscoveryChips(chipInventory) // Offer discovery chips while searching so user can refine
         break
       case 'RESEARCH':
         chips = getResearchChips(intent, results)

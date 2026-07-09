@@ -15,6 +15,9 @@ import {
   parseSingleProjectHeader,
   extractSingleProjectBullets,
 } from '@/lib/responseParser'
+import rehypeRaw from 'rehype-raw'
+import RealtyChart from '@/components/RealtyChart'
+import RealtyBox from '@/components/RealtyBox'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 
@@ -206,7 +209,16 @@ function TextBlock({ block }: { block: ResponseBlock }) {
   if (!block.body) return null
   return (
     <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-table:text-sm">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.body}</ReactMarkdown>
+      <ReactMarkdown 
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
+        components={{
+          'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
+          'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>
+        } as any}
+      >
+        {block.body}
+      </ReactMarkdown>
     </div>
   )
 }

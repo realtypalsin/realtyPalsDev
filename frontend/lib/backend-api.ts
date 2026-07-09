@@ -4,8 +4,8 @@
 import { authHeaders } from '@/lib/authedFetch'
 import type { ConversationAction, ConversationStage, ChipAction } from '@/components/chat/types'
 
-// Default aligned with backend/.env (PORT=3002). Override via NEXT_PUBLIC_BACKEND_URL.
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3002'
+// Default aligned with backend/.env (PORT=3001). Override via NEXT_PUBLIC_BACKEND_URL.
+const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3001'
 
 export interface UnitTypeSummary {
   name: string

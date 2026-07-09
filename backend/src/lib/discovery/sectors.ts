@@ -3,10 +3,14 @@ import { prisma } from '../db'
 import { SectorContext, SectorOverview } from './types'
 import { SECTORS_OVERVIEW_MAX, SECTOR_ADJACENCY } from './constants'
 
-export async function getSectorContext(sector: string): Promise<SectorContext | null> {
+export async function getSectorContext(sector: string, city: string = 'Noida'): Promise<SectorContext | null> {
   // Exact match — `contains` would return "Sector 107" projects for a "Sector 10" query.
+  // Multi-city support: filter by both city AND sector (for future expansion)
   const projects = await prisma.project.findMany({
-    where: { sector: { equals: sector, mode: 'insensitive' } },
+    where: {
+      sector: { equals: sector, mode: 'insensitive' },
+      city: { equals: city, mode: 'insensitive' },
+    },
     include: {
       unit_types: { select: { price_min_cr: true, price_max_cr: true } },
       connectivity: { select: { type: true, name: true, distance_km: true } },
@@ -31,19 +35,19 @@ export async function getSectorContext(sector: string): Promise<SectorContext | 
 
   const allConn = projects.flatMap((p) => p.connectivity)
   const metroStations = [
-    ...new Set(allConn.filter((c) => String(c.type) === 'METRO').map((c) => c.name)),
+    ...new Set(allConn.filter((c) => String(c.type) === 'metro').map((c) => c.name)),
   ].slice(0, 3)
   const keyRoads = [
     ...new Set(
       allConn
-        .filter((c) => { const t = String(c.type); return t === 'HIGHWAY' || t === 'EXPRESSWAY' })
+        .filter((c) => { const t = String(c.type); return t === 'road' || t === 'expressway' })
         .map((c) => c.name)
     ),
   ].slice(0, 3)
   const nearbyLandmarks = [
     ...new Set(
       allConn
-        .filter((c) => { const t = String(c.type); return t === 'HOSPITAL' || t === 'SCHOOL' || t === 'MALL' })
+        .filter((c) => { const t = String(c.type); return t === 'hospital' || t === 'school' || t === 'mall' })
         .map((c) => c.name)
     ),
   ].slice(0, 4)
@@ -61,8 +65,10 @@ export async function getSectorContext(sector: string): Promise<SectorContext | 
   }
 }
 
-export async function getAllSectorsOverview(lifestyleKeywords?: string[]): Promise<SectorOverview[]> {
+export async function getAllSectorsOverview(lifestyleKeywords?: string[], city: string = 'Noida'): Promise<SectorOverview[]> {
+  // Multi-city support: filter by city, key by city+sector
   const projects = await prisma.project.findMany({
+    where: { city: { equals: city, mode: 'insensitive' } },
     include: {
       unit_types: { select: { price_min_cr: true, price_max_cr: true } },
       amenities: { select: { name: true, category: true } },
@@ -72,13 +78,15 @@ export async function getAllSectorsOverview(lifestyleKeywords?: string[]): Promi
 
   const bySector = new Map<string, typeof projects>()
   for (const p of projects) {
-    const existing = bySector.get(p.sector) ?? []
+    const key = `${p.city}+${p.sector}`
+    const existing = bySector.get(key) ?? []
     existing.push(p)
-    bySector.set(p.sector, existing)
+    bySector.set(key, existing)
   }
 
   const overviews: SectorOverview[] = []
-  for (const [sector, sectorProjects] of bySector) {
+  for (const [key, sectorProjects] of bySector) {
+    const [, sector] = key.split('+')  // Extract sector from city+sector key
     const allPrices = sectorProjects.flatMap((p) => p.unit_types.filter((u) => u.price_min_cr).map((u) => u.price_min_cr!))
     const allMaxPrices = sectorProjects.flatMap((p) => p.unit_types.filter((u) => u.price_max_cr).map((u) => u.price_max_cr!))
 

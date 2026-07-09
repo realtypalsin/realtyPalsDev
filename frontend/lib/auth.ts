@@ -58,8 +58,12 @@ export async function verifyAdminUser(req: NextRequest): Promise<string | null> 
   const userId = await verifyUser(req)
   if (!userId) return null
 
-  // Check if user is in admin list
-  if (ADMIN_USER_IDS.length > 0 && !ADMIN_USER_IDS.includes(userId)) {
+  // Fail-closed: require admin list to be non-empty and user to be listed
+  if (ADMIN_USER_IDS.length === 0) {
+    console.error('[auth] ADMIN_USER_IDS is empty — denying admin access to all users')
+    return null
+  }
+  if (!ADMIN_USER_IDS.includes(userId)) {
     console.warn(`[auth] user ${userId} not in admin list`)
     return null
   }

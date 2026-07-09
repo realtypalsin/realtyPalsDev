@@ -1,13 +1,8 @@
 import { extractIntent } from './src/lib/ai/intent'
 
 async function run() {
-  const originalWarn = console.warn;
-  console.warn = (...args) => {
-    console.log("WARN CATCHED:", ...args);
-    originalWarn(...args);
-  };
-  const intent = await extractIntent('show me ace', {})
-  console.log(intent)
+  const intent = await extractIntent('show me 3 bhk flat in sector 78 noida under 3cr', {})
+  console.log(JSON.stringify(intent, null, 2))
 }
 
 run().catch(console.error).finally(() => process.exit(0))

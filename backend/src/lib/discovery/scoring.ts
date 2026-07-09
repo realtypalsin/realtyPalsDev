@@ -299,7 +299,7 @@ export function buildMatchSignals(
   if (p.rera_number) matchReasons.push('RERA registered')
 
   // Possession / ready to move
-  if (p.status === 'READY_TO_MOVE') {
+  if (p.status === 'ready_to_move') {
     matchReasons.push('ready to move')
   } else if (p.possession_date) {
     const months = (p.possession_date.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)

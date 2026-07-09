@@ -410,13 +410,13 @@ function ProjectMiniCard({
   const imgSrc = uploadedImage ?? project.hero_image_url
 
   return (
-    <div className={`flex-1 rounded-2xl overflow-hidden border transition-all ${
+    <div className={`flex-1 rounded-2xl overflow-hidden border transition-all duration-300 ${
       isWinner
-        ? 'border-[#0064E5]/40 dark:border-[#0064E5]/50 ring-2 ring-[#0064E5]/20 shadow-lg shadow-blue-500/10'
-        : 'border-gray-200 dark:border-gray-700'
-    } bg-white dark:bg-gray-800`}>
+        ? 'border-blue-500/30 dark:border-blue-400/30 ring-2 ring-blue-500/10 shadow-[0_4px_20px_rgba(59,130,246,0.1)]'
+        : 'border-black/[0.04] dark:border-white/[0.05] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)]'
+    } bg-white dark:bg-[#111]`}>
       {/* Image */}
-      <div className="relative h-[110px] bg-gray-100 dark:bg-gray-700">
+      <div className="relative h-[110px] bg-zinc-50 dark:bg-zinc-900">
         {imgSrc && !imgFailed ? (
           <Image
             src={imgSrc}
@@ -427,15 +427,15 @@ function ProjectMiniCard({
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20">
-            <Building2 size={28} className="text-blue-200" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-900/10 dark:to-indigo-900/10">
+            <Building2 size={24} className="text-zinc-300 dark:text-zinc-700" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-transparent" />
 
         {/* Winner crown */}
         {isWinner && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#0064E5] text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow">
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#0064E5] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm">
             <Trophy size={8} />
             Top Pick
           </div>
@@ -443,21 +443,21 @@ function ProjectMiniCard({
 
         {/* Tier badge — only show on non-winner to avoid crowding */}
         {cfg && !isWinner && (
-          <div className={`absolute top-2 left-2 text-[9px] font-black px-1.5 py-0.5 rounded-full ${cfg.chipCls}`}>
+          <div className={`absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${cfg.chipCls} shadow-sm`}>
             {cfg.dot} {cfg.label}
           </div>
         )}
 
         {/* Tier on winner — bottom right */}
         {cfg && isWinner && (
-          <div className={`absolute top-2 right-2 text-[9px] font-black px-1.5 py-0.5 rounded-full ${cfg.chipCls}`}>
+          <div className={`absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${cfg.chipCls} shadow-sm`}>
             {cfg.dot} {cfg.label}
           </div>
         )}
 
         {/* Status */}
-        <div className={`absolute bottom-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-          isRTM ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'
+        <div className={`absolute bottom-2 left-2 text-[9px] font-medium px-1.5 py-0.5 rounded-full shadow-sm backdrop-blur-md ${
+          isRTM ? 'bg-emerald-500/90 text-white' : 'bg-zinc-800/80 text-zinc-100'
         }`}>
           {isRTM ? '✓ Ready' : (project.possession_label ?? 'UC')}
         </div>
@@ -465,14 +465,14 @@ function ProjectMiniCard({
 
       {/* Info */}
       <div className="p-3">
-        <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5 truncate">
+        <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5 truncate">
           {project.builder.name}
         </p>
-        <h4 className="text-[12px] font-black text-gray-900 dark:text-gray-100 leading-snug line-clamp-2">
+        <h4 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2 tracking-tight">
           {project.name}
         </h4>
-        <p className="text-[10px] text-gray-400 mt-0.5 truncate">{project.sector}</p>
-        <p className="text-[16px] font-black text-gray-900 dark:text-white mt-1.5 leading-none font-mono">
+        <p className="text-[11px] text-zinc-400 mt-0.5 truncate">{project.sector}</p>
+        <p className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 mt-2 leading-none">
           {project.price_range_label}
         </p>
       </div>
@@ -588,7 +588,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="w-full rounded-2xl overflow-hidden border border-gray-200/80 dark:border-gray-700/60 bg-white dark:bg-gray-900 shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
+      className="w-full rounded-[24px] overflow-hidden border border-black/[0.04] dark:border-white/[0.05] bg-white dark:bg-[#111] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]"
     >
       {/* ── AI Verdict Header ──────────────────────────────────────────────── */}
       {hasIntelligence && winner && winnerCfg && (

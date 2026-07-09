@@ -3,6 +3,7 @@ import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { supabaseAdmin } from '../lib/supabase'
+import { checkRateLimit } from '../lib/cache'
 
 const router = Router()
 
@@ -10,7 +11,6 @@ const BuilderApplicationSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   phone: z.string().regex(/^\+91\d{10}$/, 'Phone must be +91 followed by 10 digits'),
-  landline: z.string().optional(),
   cin: z.string().length(21, 'CIN must be exactly 21 characters').regex(/^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/, 'Invalid CIN format'),
   website: z.string().url().optional().or(z.literal('')),
   headquarters: z.string().optional(),
@@ -49,9 +49,27 @@ async function uploadLogoToSupabase(
     }
 
     const [, ext, base64data] = matches
+
+    // Validate extension allowlist
+    const ALLOWED_EXTS = ['png', 'jpg', 'jpeg', 'svg', 'webp']
+    const normalizedExt = ext.toLowerCase()
+    if (!ALLOWED_EXTS.includes(normalizedExt)) {
+      console.error(`[builderRegistration] File type .${ext} not allowed`)
+      return null
+    }
+
+    // Decode and validate byte size
     const buffer = Buffer.from(base64data, 'base64')
-    const path = `builders/applications/${applicationId}/logo.${ext}`
-    const contentType = `image/${ext}`
+    const MAX_SIZE_BYTES = 2 * 1024 * 1024 // 2MB
+    if (buffer.length > MAX_SIZE_BYTES) {
+      console.error(`[builderRegistration] File size ${buffer.length} exceeds 2MB limit`)
+      return null
+    }
+
+    // Sanitize filename: remove special chars, use app ID + timestamp
+    const sanitizedFilename = `logo-${applicationId}-${Date.now()}.${normalizedExt}`
+    const path = `builder-logos/${sanitizedFilename}`
+    const contentType = `image/${normalizedExt}`
 
     const { data, error } = await supabaseAdmin.storage
       .from('property-images')
@@ -74,6 +92,18 @@ async function uploadLogoToSupabase(
 }
 
 router.post('/', async (req: Request, res: Response) => {
+  try {
+    // Rate limit: 5 registrations per IP per hour
+    const ip = req.ip || 'unknown'
+    const { allowed } = await checkRateLimit(`builder:register:${ip}`, 5, 3600)
+    if (!allowed) {
+      return res.status(429).json({ error: 'Too many registration attempts. Please try again in an hour.' })
+    }
+  } catch (err) {
+    console.error('[builderRegistration] Rate limit check failed:', err)
+    return res.status(500).json({ error: 'Service error' })
+  }
+
   const parsed = BuilderApplicationSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({ error: 'Invalid request', details: parsed.error.issues })
@@ -84,7 +114,6 @@ router.post('/', async (req: Request, res: Response) => {
     name,
     email,
     phone,
-    landline,
     cin,
     website,
     headquarters,
@@ -103,7 +132,6 @@ router.post('/', async (req: Request, res: Response) => {
         name,
         email,
         phone,
-        landline: landline || null,
         cin,
         website: website || null,
         headquarters: headquarters || null,

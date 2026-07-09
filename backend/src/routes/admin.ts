@@ -10,6 +10,7 @@ import { isPrismaNotFound } from '../lib/db'
 import { clientIp } from '../lib/request'
 import { supabaseAdmin } from '../lib/supabase'
 import { computeCompleteness } from '../lib/completeness'
+import { canonicalSector, canonicalCity } from '../lib/discovery/normalize'
 import applicationsRouter from './builderApplications'
 
 const router = Router()
@@ -108,12 +109,43 @@ router.get('/stats', async (_req: Request, res: Response): Promise<void> => {
 // ---------------------------------------------------------------------------
 // GET /leads
 // ---------------------------------------------------------------------------
-router.get('/leads', async (_req: Request, res: Response): Promise<void> => {
-  const [siteVisits, callbacks] = await Promise.all([
-    prisma.siteVisitRequest.findMany({ orderBy: { created_at: 'desc' }, take: 50 }),
-    prisma.callbackRequest.findMany({ orderBy: { created_at: 'desc' }, take: 50 }),
+router.get('/leads', async (req: Request, res: Response): Promise<void> => {
+  const page = parseInt((req.query.page as string) ?? '1', 10)
+  const pageSize = 20
+  const skip = (page - 1) * pageSize
+
+  const [builderLeads, total] = await Promise.all([
+    prisma.builderLead.findMany({
+      skip,
+      take: pageSize,
+      orderBy: { created_at: 'desc' },
+      include: { builder: { select: { name: true } } },
+    }),
+    prisma.builderLead.count(),
   ])
-  res.json({ siteVisits, callbacks })
+
+  res.json({ leads: builderLeads, total, page, pageSize })
+})
+
+// ---------------------------------------------------------------------------
+// GET /news
+// ---------------------------------------------------------------------------
+router.get('/news', async (req: Request, res: Response): Promise<void> => {
+  const page = parseInt((req.query.page as string) ?? '1', 10)
+  const pageSize = 20
+  const skip = (page - 1) * pageSize
+
+  const [news, total] = await Promise.all([
+    prisma.builderNews.findMany({
+      skip,
+      take: pageSize,
+      orderBy: { published_at: 'desc' },
+      include: { builder: { select: { name: true } } },
+    }),
+    prisma.builderNews.count(),
+  ])
+
+  res.json({ news, total, page, pageSize })
 })
 
 // ---------------------------------------------------------------------------
@@ -159,6 +191,8 @@ const ProjectSchema = z.object({
 
 const ProjectPatchSchema = z.object({
   name:               z.string().min(2).optional(),
+  sector:             z.string().optional(),
+  city:               z.string().optional(),
   status:             z.enum(['under_construction', 'ready_to_move', 'new_launch']).optional(),
   tagline:            z.string().optional(),
   address:            z.string().optional(),
@@ -391,13 +425,22 @@ router.post('/projects', async (req: Request, res: Response): Promise<void> => {
     return
   }
   const d = parsed.data
+
+  // Normalize sector and city to canonical format
+  const canonSector = canonicalSector(d.sector)
+  const canonCity = canonicalCity(d.city)
+  if (!canonSector || !canonCity) {
+    res.status(400).json({ error: 'Invalid sector or city format' })
+    return
+  }
+
   const project = await prisma.project.create({
     data: {
       name:               d.name,
       slug:               d.slug,
       builder_id:         d.builder_id,
-      sector:             d.sector,
-      city:               d.city,
+      sector:             canonSector,
+      city:               canonCity,
       status:             d.status,
       tagline:            d.tagline,
       address:            d.address,
@@ -500,11 +543,31 @@ router.patch('/projects/:id', async (req: Request, res: Response): Promise<void>
     return
   }
   const d = parsed.data
+
+  // Normalize sector and city if being updated
+  const updateData: any = { ...d }
+  if (d.sector !== undefined) {
+    const canonSector = canonicalSector(d.sector)
+    if (!canonSector) {
+      res.status(400).json({ error: 'Invalid sector format' })
+      return
+    }
+    updateData.sector = canonSector
+  }
+  if (d.city !== undefined) {
+    const canonCity = canonicalCity(d.city)
+    if (!canonCity) {
+      res.status(400).json({ error: 'Invalid city format' })
+      return
+    }
+    updateData.city = canonCity
+  }
+
   try {
     const updated = await prisma.project.update({
       where: { id: req.params.id },
       data: {
-        ...d,
+        ...updateData,
         launch_date: d.launch_date ? new Date(d.launch_date) : undefined,
         possession_date: d.possession_date ? new Date(d.possession_date) : undefined,
       },
@@ -1033,10 +1096,29 @@ router.patch('/images/:imageId', async (req: Request, res: Response): Promise<vo
 // ---------------------------------------------------------------------------
 router.delete('/images/:imageId', async (req: Request, res: Response): Promise<void> => {
   try {
+    const image = await prisma.projectImage.findUnique({ where: { id: req.params.imageId } })
+    if (!image) { res.status(404).json({ error: 'Not found' }); return }
+
+    // Delete from Supabase if image source is 'admin' (seed images stay in bucket for backup)
+    if (image.source === 'admin' && image.url) {
+      const pathMatch = image.url.match(/property-images\/(.+)$/)
+      if (pathMatch) {
+        try {
+          await supabaseAdmin.storage.from('property-images').remove([pathMatch[1]])
+          console.log(`[IMAGE_DELETE] Removed from Supabase: ${pathMatch[1]}`)
+        } catch (storageErr) {
+          console.warn(`[IMAGE_DELETE] Supabase cleanup failed: ${storageErr}`)
+        }
+      }
+    }
+
+    // Delete from DB
     await prisma.projectImage.delete({ where: { id: req.params.imageId } })
+    console.log(`[IMAGE_DELETE] Removed from DB: imageId=${req.params.imageId} url=${image.url} source=${image.source}`)
     res.json({ ok: true })
   } catch (err: unknown) {
     if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
+    console.error('[IMAGE_DELETE_ERROR]', err)
     res.status(500).json({ error: 'Internal error' })
   }
 })

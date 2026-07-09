@@ -15,6 +15,9 @@ import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
+import rehypeRaw from 'rehype-raw'
+import RealtyChart from '@/components/RealtyChart'
+import RealtyBox from '@/components/RealtyBox'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatStreamingIntent(intent: Record<string, unknown> | null | undefined): string | null {
@@ -293,52 +296,51 @@ function MessageBubbleInner({
 
                 // Stage A: waiting — no properties, no content yet
                 if (!hasProperties && !message.content) {
-                  if (phase === 'extracting' || phase === 'searching') {
-                    const intentLabel = formatStreamingIntent(intent)
-                    const isSearching = phase === 'searching'
-                    return (
-                      <div className="py-2 space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex gap-1">
-                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  const intentLabel = formatStreamingIntent(intent)
+                  const isSearching = phase === 'searching'
+                  return (
+                    <div className="py-2 space-y-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative w-5 h-5 flex-shrink-0">
+                          <div className="absolute inset-0 rounded-full border-2 border-blue-100 dark:border-blue-900 border-t-blue-500 dark:border-t-blue-400 animate-spin" />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
                           </div>
-                          <span className="text-[13px] font-medium text-blue-600 dark:text-blue-400">
-                            {isSearching ? 'Searching projects…' : 'Understanding your request…'}
-                          </span>
                         </div>
-                        {isSearching && intentLabel && (
-                          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3.5 py-2.5 border border-blue-100 dark:border-blue-800/60">
-                            <p className="text-[13px] text-blue-700 dark:text-blue-300 font-medium leading-snug">
-                              {intentLabel}
-                            </p>
-                          </div>
-                        )}
-                        {isSearching && (
-                          <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {[0, 1, 2].map(i => (
-                              <div key={i} className="rounded-[24px] overflow-hidden bg-white border border-gray-100/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                                <div className="h-[220px] bg-gray-100 animate-pulse" />
-                                <div className="p-5 space-y-3">
-                                  <div className="h-4 bg-gray-100 rounded-full w-3/4 animate-pulse" />
-                                  <div className="h-3 bg-gray-100 rounded-full w-1/2 animate-pulse" />
-                                  <div className="h-6 bg-gray-100 rounded-full w-1/3 animate-pulse" />
-                                  <div className="flex gap-2 mt-1">
-                                    <div className="h-5 bg-gray-100 rounded-full w-16 animate-pulse" />
-                                    <div className="h-5 bg-gray-100 rounded-full w-20 animate-pulse" />
-                                  </div>
-                                  <div className="h-9 bg-gray-100 rounded-xl w-full animate-pulse mt-1" />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <span className="text-[13px] font-medium text-blue-600 dark:text-blue-400">
+                          Understanding your request…
+                        </span>
                       </div>
-                    )
-                  }
-                  // phase = null (aborted before properties) or fallback
-                  return <ChatLoader userQuery={message.userQuery ?? ''} isSearching={false} />
+                      
+                      {isSearching && intentLabel && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3.5 py-2.5 border border-blue-100 dark:border-blue-800/60">
+                          <p className="text-[13px] text-blue-700 dark:text-blue-300 font-medium leading-snug">
+                            {intentLabel}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {isSearching && (
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {[0, 1, 2].map(i => (
+                            <div key={i} className="rounded-[24px] overflow-hidden bg-white dark:bg-gray-800 border border-gray-100/80 dark:border-gray-700/60 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                              <div className="h-[220px] bg-gray-100 dark:bg-gray-700 animate-pulse" />
+                              <div className="p-5 space-y-3">
+                                <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-full w-3/4 animate-pulse" />
+                                <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-1/2 animate-pulse" />
+                                <div className="h-6 bg-gray-100 dark:bg-gray-700 rounded-full w-1/3 animate-pulse" />
+                                <div className="flex gap-2 mt-1">
+                                  <div className="h-5 bg-gray-100 dark:bg-gray-700 rounded-full w-16 animate-pulse" />
+                                  <div className="h-5 bg-gray-100 dark:bg-gray-700 rounded-full w-20 animate-pulse" />
+                                </div>
+                                <div className="h-9 bg-gray-100 dark:bg-gray-700 rounded-xl w-full animate-pulse mt-1" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
                 }
 
                 // Stage B: properties arrived, AI text not started yet
@@ -383,7 +385,14 @@ function MessageBubbleInner({
                           <ResponseBlockRenderer blocks={blocks} />
                         ) : (
                           <>
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            <ReactMarkdown 
+                              remarkPlugins={[remarkGfm]}
+                              rehypePlugins={[rehypeRaw]}
+                              components={{
+                                'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
+                                'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>
+                              } as any}
+                            >
                               {displayContent}
                             </ReactMarkdown>
                             {streaming && (

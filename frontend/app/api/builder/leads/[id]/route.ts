@@ -27,6 +27,20 @@ export async function PATCH(
       return NextResponse.json({ error: 'Builder account not found' }, { status: 404 })
     }
 
+    // Validate status enum
+    const validStatuses = ['new', 'contacted', 'converted', 'rejected']
+    if (body.status && !validStatuses.includes(body.status)) {
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+    }
+
+    // Check ownership before updating (prevent IDOR)
+    const existingLead = await prisma.builderLead.findUnique({
+      where: { id: params.id }
+    })
+    if (!existingLead || existingLead.builder_id !== account.builder_id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const lead = await prisma.builderLead.update({
       where: { id: params.id },
       data: {

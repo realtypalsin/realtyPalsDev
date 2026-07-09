@@ -22,12 +22,27 @@ export async function PATCH(
 
     const body = await request.json()
 
+    // Get caller's builder account
+    const account = await prisma.builderAccount.findFirst({
+      where: { user_id: userId }
+    })
+    if (!account) {
+      return NextResponse.json({ error: 'Builder account not found' }, { status: 404 })
+    }
+
+    // Check ownership before updating (prevent IDOR)
+    const existingNews = await prisma.builderNews.findUnique({
+      where: { id: params.id }
+    })
+    if (!existingNews || existingNews.builder_id !== account.builder_id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const news = await prisma.builderNews.update({
       where: { id: params.id },
       data: {
         ...(body.title && { title: body.title }),
         ...(body.description && { description: body.description }),
-        ...(body.category && { category: body.category }),
         ...(body.image_url !== undefined && { image_url: body.image_url })
       }
     })
@@ -50,6 +65,22 @@ export async function DELETE(
     const userId = await verifyUser(request)
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get caller's builder account
+    const account = await prisma.builderAccount.findFirst({
+      where: { user_id: userId }
+    })
+    if (!account) {
+      return NextResponse.json({ error: 'Builder account not found' }, { status: 404 })
+    }
+
+    // Check ownership before deleting (prevent IDOR)
+    const existingNews = await prisma.builderNews.findUnique({
+      where: { id: params.id }
+    })
+    if (!existingNews || existingNews.builder_id !== account.builder_id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     await prisma.builderNews.delete({
