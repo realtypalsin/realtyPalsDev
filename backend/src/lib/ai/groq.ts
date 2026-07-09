@@ -1,7 +1,8 @@
 // backend/src/lib/ai/groq.ts
 import Groq from 'groq-sdk'
+import { MODELS } from '../config'
 
-// ── Singleton + model constants (shared across routes) ────────────────────────
+// ── Singleton (shared across routes) ──────────────────────────────────────────
 
 let _groq: Groq | null = null
 
@@ -20,9 +21,6 @@ export const groq: Groq = new Proxy({} as Groq, {
     return (getGroq() as any)[prop]
   },
 })
-
-export const GROQ_FAST  = 'llama-3.1-8b-instant'
-export const GROQ_SMART = 'llama-3.3-70b-versatile'
 
 type Message = { role: 'system' | 'user' | 'assistant'; content: string }
 type SendFn = (event: string, data: Record<string, unknown>) => void
@@ -92,7 +90,7 @@ export async function streamWithGroq(
   try {
     stream = await groq.chat.completions.create(
       {
-        model: 'llama-3.3-70b-versatile',
+        model: MODELS.GROQ_SMART,
         messages: msgs,
         stream: true,
         max_tokens: 1024,

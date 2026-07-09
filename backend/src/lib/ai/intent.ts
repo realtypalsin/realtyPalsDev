@@ -70,7 +70,7 @@ async function extractWithGroq(msg: string, prev: Intent): Promise<Intent> {
   // 15s timeout — Groq is fast; this guards against unexpected Groq slowdowns.
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY!, timeout: 15000 })
   const completion = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: MODELS.GROQ_SMART,
     messages: [
       { role: 'system', content: INTENT_EXTRACTION_PROMPT },
       { role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` },

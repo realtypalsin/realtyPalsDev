@@ -8,7 +8,8 @@ import multer from 'multer'
 import type { ChatCompletionContentPart } from 'groq-sdk/resources/chat/completions'
 import { prisma } from '../lib/db'
 import { supabaseAdmin } from '../lib/supabase'
-import { groq, GROQ_SMART } from '../lib/ai/groq'
+import { groq } from '../lib/ai/groq'
+import { MODELS } from '../lib/config'
 import { requireAdmin } from '../lib/adminAuth'
 import { checkRateLimit } from '../lib/cache'
 import { clientIp } from '../lib/request'
@@ -62,7 +63,7 @@ router.post('/ask', async (req: Request, res: Response) => {
   let answer: string
   try {
     const resp = await groq.chat.completions.create({
-      model: GROQ_SMART,
+      model: MODELS.GROQ_SMART,
       messages: [
         {
           role: 'system',

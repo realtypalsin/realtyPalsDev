@@ -16,6 +16,7 @@ import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
 import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
 import { getChipInventory } from '../lib/discovery/chipInventory'
+import { FINANCIAL } from '../lib/config'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
 import { getBuilderRecord } from '../lib/builders'
@@ -641,8 +642,8 @@ router.post('/', async (req: Request, res: Response) => {
 
         if (name === 'calculate_emi') {
           const pCr = Number(args.principalCr);
-          const aRate = Number(args.annualRate ?? 8.75);
-          const tYears = Number(args.tenureYears ?? 20);
+          const aRate = Number(args.annualRate ?? FINANCIAL.EMI_RATE);
+          const tYears = Number(args.tenureYears ?? FINANCIAL.LOAN_TENURE_YEARS);
           if (isNaN(pCr) || isNaN(aRate) || isNaN(tYears) || pCr <= 0) {
             return { error: 'Invalid parameters for calculate_emi. principalCr must be a positive number.' };
           }

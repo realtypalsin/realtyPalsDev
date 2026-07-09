@@ -69,7 +69,7 @@ export async function maybeCompress(
     if (process.env.GROQ_API_KEY) {
       const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
       const res = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: MODELS.GROQ_SMART,
         messages: [
           { role: 'system', content: COMPRESSION_PROMPT },
           { role: 'user', content: context },

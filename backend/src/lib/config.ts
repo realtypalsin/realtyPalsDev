@@ -4,7 +4,8 @@
 export const MODELS = {
   MAIN: process.env.AI_MAIN_MODEL || 'gpt-4o',
   FALLBACK: process.env.AI_FALLBACK_MODEL || 'gpt-4o-mini',
-  GROQ_SMART: process.env.GROQ_SMART_MODEL || 'mixtral-8x7b-32768',
+  GROQ_FAST: process.env.GROQ_FAST_MODEL || 'llama-3.1-8b-instant',
+  GROQ_SMART: process.env.GROQ_SMART_MODEL || 'llama-3.3-70b-versatile',
 }
 
 export const FINANCIAL = {

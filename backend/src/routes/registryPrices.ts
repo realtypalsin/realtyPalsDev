@@ -4,7 +4,8 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { tavilySearch } from '../lib/ai/tavily'
-import { groq, GROQ_FAST } from '../lib/ai/groq'
+import { groq } from '../lib/ai/groq'
+import { MODELS } from '../lib/config'
 import { getCached, setCached } from '../lib/cache'
 
 const router = Router()
@@ -77,7 +78,7 @@ If data is unavailable, use appropriate placeholder text. Return only valid JSON
   let extracted: Partial<RegistryPriceData> = {}
   try {
     const resp = await groq.chat.completions.create({
-      model: GROQ_FAST,
+      model: MODELS.GROQ_FAST,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 400,
       temperature: 0,
