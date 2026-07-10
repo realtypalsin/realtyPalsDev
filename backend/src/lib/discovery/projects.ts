@@ -558,16 +558,11 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
         const distinctCities = [...new Set(rawProjects.map((p) => p.city))]
         if (distinctCities.length > 1) {
           console.log(`[DISCOVERY:B2] CITY MULTI-MATCH: "${effectiveIntent.sector}" found in ${distinctCities.length} cities:`, distinctCities)
+          // City disambiguation not implemented — would require a separate prompt/flow
+          // For now, return empty results to avoid serving wrong city
           return {
             exactResults: [],
-            nearbyResults: [],
-            cityDisambiguation: {
-              query: effectiveIntent.sector,
-              candidates: distinctCities.map((city) => ({
-                city,
-                label: `${effectiveIntent.sector} ${city}`
-              }))
-            }
+            nearbyResults: []
           }
         }
       }
