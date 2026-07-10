@@ -2,6 +2,9 @@ import posthog from 'posthog-js'
 
 type EventName =
   | 'chat_started'
+  | 'message_sent'
+  | 'chip_clicked'
+  | 'answer_feedback'
   | 'recommendation_generated'
   | 'property_viewed'
   | 'property_saved'

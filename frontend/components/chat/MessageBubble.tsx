@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { User, RotateCcw, Copy, ChevronDown, MapPin, ThumbsUp, ThumbsDown } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
+import { track } from '@/lib/analytics'
 import { parseResponseBlocks } from '@/lib/responseParser'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
 import ChatLoader from '@/components/ChatLoader'
@@ -51,6 +52,7 @@ export interface MessageBubbleProps {
   lastShortlist: ProjectCardType[]
   showMap: boolean
   userId: string | null
+  sessionId: string
   regeneratingIdx: number | null
   chipPicker: ChipPickerState | null
   chips: import('./types').ChipAction[]
@@ -140,7 +142,7 @@ function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
 // ── Component ──────────────────────────────────────────────────────────────
 function MessageBubbleInner({
   message, index, isLast, isSubmitting, chatPhase, isLastProperties,
-  isExpanded, carouselIndex, lastShortlist, showMap, userId, regeneratingIdx,
+  isExpanded, carouselIndex, lastShortlist, showMap, userId, sessionId, regeneratingIdx,
   chipPicker, chips,
   onCopy, onDetailOpen, onCallback, onRegenerate, onAction,
   onToggleExpanded, onToggleMap, onSetChipPicker, onSetCarouselIndex,

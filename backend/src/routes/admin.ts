@@ -1100,7 +1100,7 @@ router.delete('/images/:imageId', async (req: Request, res: Response): Promise<v
     if (!image) { res.status(404).json({ error: 'Not found' }); return }
 
     // Delete from Supabase if image source is 'admin' (seed images stay in bucket for backup)
-    if (image.source === 'admin' && image.url) {
+    if ((image as any).source === 'admin' && image.url) {
       const pathMatch = image.url.match(/property-images\/(.+)$/)
       if (pathMatch) {
         try {
@@ -1114,7 +1114,7 @@ router.delete('/images/:imageId', async (req: Request, res: Response): Promise<v
 
     // Delete from DB
     await prisma.projectImage.delete({ where: { id: req.params.imageId } })
-    console.log(`[IMAGE_DELETE] Removed from DB: imageId=${req.params.imageId} url=${image.url} source=${image.source}`)
+    console.log(`[IMAGE_DELETE] Removed from DB: imageId=${req.params.imageId} url=${image.url} source=${(image as any).source}`)
     res.json({ ok: true })
   } catch (err: unknown) {
     if (isPrismaNotFound(err)) { res.status(404).json({ error: 'Not found' }); return }
