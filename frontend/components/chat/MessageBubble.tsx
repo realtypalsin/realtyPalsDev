@@ -299,12 +299,17 @@ function MessageBubbleInner({
                           <ResponseBlockRenderer blocks={blocks} />
                         ) : (
                           <>
-                            <ReactMarkdown 
+                            <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
                               rehypePlugins={[rehypeRaw]}
                               components={{
                                 'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
-                                'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>
+                                'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
+                                table: ({ node, ...props }: any) => (
+                                  <div className="overflow-x-auto">
+                                    <table {...props} />
+                                  </div>
+                                )
                               } as any}
                             >
                               {displayContent}

@@ -33,7 +33,7 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
       }}
       className={`
         flex items-center gap-2 px-4 py-2.5 rounded-[16px] text-[13px] font-medium
-        transition-all duration-200 border outline-none whitespace-nowrap
+        transition-all duration-200 border outline-none max-w-full
         ${disabled ? 'opacity-50 pointer-events-none' : ''}
         ${
           isActive
@@ -44,7 +44,7 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
       title={chip.label}
     >
       {chip.icon && <span className="text-[14px] leading-none flex-shrink-0">{chip.icon}</span>}
-      <span className="flex-shrink-0">{chip.label}</span>
+      <span className="truncate min-w-0">{chip.label}</span>
       {hasDropdown && (
         <span className={`text-[10px] ml-0.5 flex-shrink-0 ${isActive ? 'text-blue-200' : 'text-gray-400'}`}>
           ▾
