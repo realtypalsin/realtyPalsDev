@@ -860,7 +860,7 @@ export default function OverviewTab({
               { label: 'Configuration', val: unitTypes.length > 0 ? ([...new Set(unitTypes.map(u => u.bhk))].join(', ') + ' BHK') : '--', icon: BedDouble },
               { label: 'Land Area', val: d?.land_area_acres ? `${d.land_area_acres} Acres` : '--', icon: Leaf },
               { label: 'Floors', val: d?.floors ?? '--', icon: Building2 },
-              { label: 'Launch Date', val: d?.launch_date ? new Date(d.launch_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '—', icon: FileText },
+              { label: 'Launch Date', val: d?.launch_date ? (() => { const d2 = new Date(d.launch_date); return isNaN(d2.getTime()) ? '—' : d2.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })() : '—', icon: FileText },
               { label: 'Possession', val: d?.possession_label ?? '—', icon: FileText }
             ].slice(0, showAllDetails ? undefined : 4).map((detailItem, i) => {
               const Icon = detailItem.icon
