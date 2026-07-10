@@ -768,8 +768,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             } : m
           ));
         } else if (event.type === 'properties') {
-          const exact = event.exactResults as unknown as ProjectCardType[];
-          const nearby = event.nearbyResults as unknown as ProjectCardType[];
+          const exact = (event.exactResults ?? []) as unknown as ProjectCardType[];
+          const nearby = (event.nearbyResults ?? []) as unknown as ProjectCardType[];
           const expansion = event.expansion;
           const shortlist = exact.length > 0 ? exact : nearby;
           localProjects = shortlist;
@@ -892,6 +892,14 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           })
           return
         }
+        // If stream closed cleanly but message is still empty, replace with error
+        setChatHistory(prev => {
+          const msg = prev.find(m => m.id === streamId)
+          if (msg && !msg.content && !controller.signal.aborted) {
+            return prev.map(m => m.id === streamId ? { ...m, content: "I couldn't complete that. Please resend your message — your conversation is saved." } : m)
+          }
+          return prev
+        })
         if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
           setHasShownLengthWarning(true);
           setShowContextWarning(true);
@@ -1103,7 +1111,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                     'Find a 3 BHK in Sector 150...',
                     'Which are the best RERA-approved projects?',
                     'Show me luxury apartments on Noida Expressway...',
-                    'Properties with possession by 2025...',
+                    'Ready-to-move or possession by 2027...',
                   ]
               }
               onChange={(e) => setChatInput(e.target.value)}

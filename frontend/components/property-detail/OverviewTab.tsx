@@ -660,8 +660,8 @@ export default function OverviewTab({
   const matchReasons = project?.matchReasons ?? []
   const concerns = project?.concerns ?? []
 
-  const marketingClaims = detail?.marketing_claims ?? (d as any)?.marketing_claims ?? []
-  const amenities = (detail?.all_amenities ?? (detail as any)?.amenities ?? d?.top_amenities ?? []) as { name: string; category: string }[]
+  const marketingClaims = detail?.marketing_claims ?? []
+  const amenities = (detail?.all_amenities ?? []) as { name: string; category: string }[]
   const groupedAmenities = amenities.reduce((acc, a) => { (acc[a.category] = acc[a.category] ?? []).push(a.name); return acc }, {} as Record<string, string[]>)
   const unitTypes = d?.unit_types ?? []
   const connections = detail?.all_connectivity ?? d?.top_connectivity ?? []

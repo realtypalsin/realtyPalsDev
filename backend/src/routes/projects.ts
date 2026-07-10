@@ -140,7 +140,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
 
   const reportUrl = `/api/projects/${project.slug}/report`;
 
-  res.json({ project: { ...project, builder_detail: project.builder, dna: publicDna, recommendation_score, reportUrl } })
+  res.json({ project: { ...project, builder_detail: project.builder, dna: publicDna, recommendation_score, reportUrl, all_amenities: project.amenities, all_connectivity: project.connectivity } })
 })
 
 router.get('/:slug/documents', async (req: Request, res: Response) => {

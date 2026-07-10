@@ -33,6 +33,14 @@ import {
 
 const router = Router()
 
+// Async error wrapper for Express handlers
+const asyncHandler = (fn: (req: any, res: any) => Promise<void>) => (req: any, res: any) => {
+  Promise.resolve(fn(req, res)).catch((err) => {
+    console.error('[CHAT:ERROR]', err)
+    res.status(500).json({ error: 'Internal error' })
+  })
+}
+
 // ── Fixes 1/2/8/9/12: Centralized cache-reuse decision ──────────────────────
 
 // Fix 8: order-independent array comparison
@@ -215,18 +223,15 @@ DO NOT say "typically", "approximately", "usually", or "from general knowledge" 
 Keep responses concise — you have a 1024-token limit in this mode.`
 
 const BodySchema = z.object({
-  action: z.object({
-    type: z.enum([
-      'TEXT_MESSAGE',
-      'INTENT_PATCH',
-      'COMPARE_PROPERTIES',
-      'CALCULATE_EMI',
-      'BOOK_VISIT',
-      'REMOVE_FILTER',
-      'OPEN_TOOL',
-    ]),
-    payload: z.record(z.unknown()),
-  }),
+  action: z.discriminatedUnion('type', [
+    z.object({ type: z.literal('TEXT_MESSAGE'), payload: z.object({ text: z.string() }) }),
+    z.object({ type: z.literal('INTENT_PATCH'), payload: z.record(z.unknown()) }),
+    z.object({ type: z.literal('COMPARE_PROPERTIES'), payload: z.record(z.unknown()) }),
+    z.object({ type: z.literal('CALCULATE_EMI'), payload: z.record(z.unknown()) }),
+    z.object({ type: z.literal('BOOK_VISIT'), payload: z.record(z.unknown()) }),
+    z.object({ type: z.literal('REMOVE_FILTER'), payload: z.record(z.unknown()) }),
+    z.object({ type: z.literal('OPEN_TOOL'), payload: z.record(z.unknown()) }),
+  ]),
   sessionId: z.string().uuid().optional(),
   guestToken: z.string().optional(),
   intent: z.record(z.unknown()).optional(),
@@ -298,7 +303,6 @@ router.post('/', async (req: Request, res: Response) => {
   let nearbyProjects: Awaited<ReturnType<typeof discoverProjects>>['nearbyResults'] = []
   let projectDisambiguation: Awaited<ReturnType<typeof discoverProjects>>['disambiguation'] | undefined
   let sectorDisambiguation: { query: string; candidates: string[] } | undefined
-  let cityDisambiguation: { query: string; candidates: Array<{ city: string; label: string }> } | undefined
 
   try {
     console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
@@ -419,6 +423,7 @@ router.post('/', async (req: Request, res: Response) => {
       chatHistory,
       undefined,
       undefined,
+      undefined,
       chipInventory
     )
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
@@ -535,15 +540,6 @@ router.post('/', async (req: Request, res: Response) => {
         console.log('[CHAT:DISAMBIG] sector ambiguity detected', { query, count: candidates.length })
       }
 
-      // Handle city disambiguation (same sector across multiple cities) — progressive clarification
-      if (discoveryResult.cityDisambiguation) {
-        cityDisambiguation = discoveryResult.cityDisambiguation
-        const { query, candidates } = discoveryResult.cityDisambiguation
-        const list = candidates.map((c) => c.label).join(' / ')
-        disambiguationText = `${query} is in multiple locations: ${list}. Which one are you interested in?`
-        console.log('[CHAT:DISAMBIG] city ambiguity detected', { query, count: candidates.length })
-      }
-
       // Always send the properties event when intent is ready — even empty exactResults
       // is meaningful (triggers empty state UI and nearby section on the frontend, and clears previous results).
       send('properties', {
@@ -567,7 +563,7 @@ router.post('/', async (req: Request, res: Response) => {
       chatHistory,
       projectDisambiguation,
       sectorDisambiguation,
-      cityDisambiguation,
+      undefined,
       chipInventory // Reuse inventory loaded earlier for consistency
     )
     send('ui_state', postSearchUiState as unknown as Record<string, unknown>)
@@ -963,7 +959,7 @@ async function buildRestoreUiState(
   const chatHistory = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
   const intentState = getIntentState(intent, projects.length > 0)
   const chipInventory = await getChipInventory('Noida') // TODO: extract city from intent if available
-  return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, chipInventory)
+  return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory)
 }
 
 // GET /chat/session/list — must come before GET /chat/session (order matters in Express)
@@ -1024,7 +1020,7 @@ router.get('/session/list', async (req: Request, res: Response) => {
 })
 
 // GET /chat/session?id= — restore or find/create latest session
-router.get('/session', async (req: Request, res: Response) => {
+router.get('/session', asyncHandler(async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
   const guestToken = req.query.guestToken as string | undefined
 
@@ -1107,10 +1103,10 @@ router.get('/session', async (req: Request, res: Response) => {
       session.messages as Parameters<typeof formatMessages>[0]
     ),
   })
-})
+}))
 
 // PATCH /chat/session/:id — rename session
-router.patch('/session/:id', async (req: Request, res: Response) => {
+router.patch('/session/:id', asyncHandler(async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
   const guestToken = req.query.guestToken as string | undefined
 
@@ -1149,10 +1145,10 @@ router.patch('/session/:id', async (req: Request, res: Response) => {
   }
 
   res.json({ ok: true, title })
-})
+}))
 
 // DELETE /chat/session/:id — remove session
-router.delete('/session/:id', async (req: Request, res: Response) => {
+router.delete('/session/:id', asyncHandler(async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
   const guestToken = req.query.guestToken as string | undefined
 
@@ -1185,7 +1181,7 @@ router.delete('/session/:id', async (req: Request, res: Response) => {
   }
 
   res.json({ ok: true })
-})
+}))
 
 // DELETE /chat/intent — reset intent + start fresh session
 // Security: uses verifyUser(req) — NEVER x-user-id header (that was the Next.js bug)

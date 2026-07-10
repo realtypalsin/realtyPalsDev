@@ -16,10 +16,25 @@ import {
   extractSingleProjectBullets,
 } from '@/lib/responseParser'
 import rehypeRaw from 'rehype-raw'
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import RealtyChart from '@/components/RealtyChart'
 import RealtyBox from '@/components/RealtyBox'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
+
+// Sanitization schema: allow realty-chart and realty-box custom elements + their attributes
+const sanitizeSchema = {
+  ...defaultSchema,
+  tagNameFilter: (tagName: string) => {
+    if (tagName === 'realty-chart' || tagName === 'realty-box') return true
+    return defaultSchema.tagNameFilter?.(tagName) ?? false
+  },
+  attributes: {
+    ...defaultSchema.attributes,
+    'realty-chart': ['type', 'data', 'title'],
+    'realty-box': ['type', 'title'],
+  },
+}
 
 // ── Card shell ────────────────────────────────────────────────────────────────
 
@@ -209,9 +224,9 @@ function TextBlock({ block }: { block: ResponseBlock }) {
   if (!block.body) return null
   return (
     <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-table:text-sm">
-      <ReactMarkdown 
+      <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw]}
+        rehypePlugins={[[rehypeRaw], [rehypeSanitize, sanitizeSchema]]}
         components={{
           'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
           'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>

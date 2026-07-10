@@ -52,7 +52,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
   const projectLng = project?.lng || SECTOR_CENTROIDS[project?.sector || '']?.[1] || 77.391
 
   // Build markers from real connectivity data from DB; no hardcoded fabricated POIs
-  const connectivity = (detail as any)?.connectivity || []
+  const connectivity = detail?.all_connectivity || []
   const categoryMap: Record<string, string> = {
     'metro': 'Transport',
     'road': 'Transport',
