@@ -395,6 +395,7 @@ export default function IntelligenceTab({
         </div>
 
         {/* Pricing Intelligence */}
+        {dbIntel.pricingIntelligence && (
         <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-[24px] p-6">
           <h3 className="text-[16px] font-bold text-gray-900 mb-6">Is this fairly priced?</h3>
           <div className="space-y-4 mb-6">
@@ -414,7 +415,7 @@ export default function IntelligenceTab({
                 </div>
                 <span className="text-[13px] text-gray-600">Noida West Average</span>
               </div>
-              <span className="text-[13px] font-bold text-gray-900">{dbIntel.pricingIntelligence.marketAvg}</span>
+              <span className="text-[13px] font-bold text-gray-900">{dbIntel.pricingIntelligence?.marketAvg || '—'}</span>
             </div>
           </div>
 
@@ -423,10 +424,10 @@ export default function IntelligenceTab({
               <p className="text-[12px] text-gray-600 mb-1">You Pay</p>
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp size={16} className="text-blue-600" />
-                <span className="text-[24px] font-black text-blue-600 leading-none">{dbIntel.pricingIntelligence.premium}</span>
+                <span className="text-[24px] font-black text-blue-600 leading-none">{dbIntel.pricingIntelligence?.premium || '—'}</span>
               </div>
               <p className="text-[11px] text-gray-500 mb-3">Above Market Avg.</p>
-              <p className="text-[11px] text-gray-600"><span className="font-medium text-gray-900">Justified by:</span> {dbIntel.pricingIntelligence.justification}</p>
+              <p className="text-[11px] text-gray-600"><span className="font-medium text-gray-900">Justified by:</span> {dbIntel.pricingIntelligence?.justification || '—'}</p>
             </div>
             {/* Background graphic */}
             <div className="absolute right-0 bottom-0 opacity-20 pointer-events-none">
@@ -439,6 +440,7 @@ export default function IntelligenceTab({
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* 5. Risk & Concern Radar */}

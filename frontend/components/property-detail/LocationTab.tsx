@@ -284,14 +284,14 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
                 </div>
                 <h4 className="text-[16px] font-black text-gray-900 mb-4">{category}</h4>
                 <div className="space-y-3">
-                  {visiblePlaces.map((place: any, j: number) => (
+                  {Array.isArray(visiblePlaces) && visiblePlaces.map((place: any, j: number) => (
                     <div
                       key={j}
-                      onClick={() => triggerCommuteCalculator(place.name)}
+                      onClick={() => triggerCommuteCalculator(place?.name)}
                       className="flex justify-between items-center border-b border-gray-50 pb-2 last:border-0 cursor-pointer hover:text-blue-600 transition-colors"
                     >
-                      <span className="text-[13px] font-medium text-gray-700 truncate pr-2 hover:underline">{place.name}</span>
-                      <span className="text-[12px] text-gray-400 whitespace-nowrap">{place.dist || place.distance}</span>
+                      <span className="text-[13px] font-medium text-gray-700 truncate pr-2 hover:underline">{place?.name || '—'}</span>
+                      <span className="text-[12px] text-gray-400 whitespace-nowrap">{place?.dist || place?.distance || '—'}</span>
                     </div>
                   ))}
                 </div>
@@ -314,7 +314,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
         <h3 className="text-[22px] font-black text-gray-900 mb-8">Neighborhood Advantages</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(locationData.neighborhood_advantages || []).map((adv: any, i: number) => {
+          {(Array.isArray(locationData.neighborhood_advantages) ? locationData.neighborhood_advantages : []).map((adv: any, i: number) => {
             const Icon = ICONS[adv.icon] || MapPin
             return (
               <div key={i} className="group">
