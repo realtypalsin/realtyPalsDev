@@ -18,24 +18,24 @@ const mockProject = {
   slug: 'test-project',
   sector: 'Sector 10',
   city: 'Noida',
-  builder: { name: 'Builder A', slug: 'builder-a', credai_member: false, delivered_units: 0, awards_count: 0, legal_flag: null },
+  builder: { name: 'Builder A', slug: 'builder-a' },
   status: 'ready_to_move' as const,
   price_range_label: '₹1-2 Cr',
   images: [],
   hero_image_url: null,
   unit_types: [
-    { bhk: 3, carpet_area_sqft: 1500, super_area_sqft: 2000, price_min_cr: 1.0, price_max_cr: 1.5 }
+    { name: '3 BHK A', bhk: 3, bathrooms: 2, carpet_area_sqft: 1500, super_area_sqft: 2000, price_min_cr: 1.0, price_max_cr: 1.5 }
   ],
-  amenities: [],
-  connections: [],
+  top_amenities: [],
+  top_connectivity: [],
   rera_number: 'REG123',
   best_for: 'Working Families',
-  match_score: 45,
-  match_reason: 'Good fit for budget',
-  match_signals: ['sector_match', 'bhk_match'],
-  match_reasons: ['3 BHK available', 'Within budget'],
+  matchScore: 45,
+  matchReason: 'Good fit for budget',
+  matchReasons: ['3 BHK available', 'Within budget'],
   concerns: [],
-};
+  possession_date: null,
+} as const;
 
 describe('Discovery Scoring', () => {
   it('scores projects by sector match', () => {
