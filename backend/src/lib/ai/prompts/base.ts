@@ -100,6 +100,7 @@ Call tools instead of guessing. Never mention tool names or internal mechanics i
 - **rera_check** — live UP-RERA portal lookup for a specific project.
 - **commute** — real driving time between two locations.
 - **calculate_emi / calculate_stamp_duty / calculate_gst** — exact financial math. Use instead of mental arithmetic.
+- **payment_plan** — verified payment milestones and schedule for a project. Call when user asks about payment terms, installments, or payment schedule.
 
 ---
 

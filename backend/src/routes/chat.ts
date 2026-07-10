@@ -575,7 +575,10 @@ router.post('/', async (req: Request, res: Response) => {
       ? null
       : (discoveryExpansion?.searchedSectors[0] ?? intent.sector)
     console.log('[CHAT] START getSectorContext', Date.now(), { sectorForContext: sectorForContext ?? null })
-    const sectorCtx = sectorForContext ? await getSectorContext(sectorForContext) : null
+    // Try to infer city from discovered projects; otherwise use DEFAULT_CITY
+    // This ensures getSectorContext matches projects on both city + sector
+    const cityForContext = projects.length > 0 ? projects[0].city : DEFAULT_CITY
+    const sectorCtx = sectorForContext ? await getSectorContext(sectorForContext, cityForContext) : null
     console.log('[CHAT] END getSectorContext', Date.now(), { found: !!sectorCtx })
 
     console.log('[CHAT] START maybeCompress', Date.now(), { historyLen: chatHistory.length })
@@ -683,6 +686,20 @@ router.post('/', async (req: Request, res: Response) => {
           const st = args.status === 'ready_to_move' ? 'ready_to_move' : 'under_construction';
           const r = calcGst(pCr, st, cSqm);
           return { gst: formatInr(r.gst), rate_pct: r.rate, category: r.category };
+        }
+
+        if (name === 'payment_plan') {
+          const projectId = args.project_id ?? '';
+          if (!projectId) {
+            return { error: 'project_id is required to fetch payment plan' };
+          }
+          const plan = await (prisma as any).paymentPlan.findUnique({
+            where: { project_id: projectId },
+          });
+          if (!plan) {
+            return { available: false, message: 'Payment schedule not yet verified. This information may be available directly from the builder.' };
+          }
+          return { available: true, plan };
         }
 
         return { error: 'Tool not recognized' };

@@ -67,12 +67,16 @@ function computeStage(
   intentState: IntentState,
   results: ScoredProject[],
   isComparison: boolean,
+  hasHistory: boolean = false,
 ): ConversationStage {
   if (isComparison) return 'COMPARING'
   if (results.length > 0 && intentState === 'SHORTLISTED') return 'DECIDING'
   if (results.length > 0) return 'RESEARCH'
   if (intentState === 'READY_TO_SEARCH') return 'SEARCHING'
   if (intentState === 'GATHERING') return 'CLARIFYING'
+  // Only show discovery chips on first message (homepage). If user is already
+  // in chat and sends garbage/empty input, don't show discovery chips.
+  if (hasHistory && intentState === 'COLD') return 'CLARIFYING'
   return 'DISCOVERY'
 }
 
@@ -339,13 +343,13 @@ export function computeConversationState(
   cityDisambiguation?: { query: string; candidates: Array<{ city: string; label: string }> },
   chipInventory: ChipInventory | null = null
 ): ConversationState {
-  const stage = computeStage(intent, intentState, results, isComparison)
+  const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0)
   const missingFields = getMissingFields(intent, intentState)
   const confidence = computeConfidenceLevel(intent)
   const thinking = getThinkingMessage(stage, intent)
 
   let chips: ChipAction[] = []
-  
+
   if (disambiguation) {
     chips = disambiguation.candidates.map((c, idx) => {
       const label = `${c.name} (${c.sector})`
