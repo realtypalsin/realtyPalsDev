@@ -178,8 +178,8 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
                   <Icon size={20} />
                 </div>
                 <div>
-                  <p className="text-[18px] font-black text-gray-900">{commute.time}</p>
-                  <p className="text-[12px] text-gray-500 font-medium leading-tight">to {commute.destination}</p>
+                  <p className="text-[18px] font-black text-gray-900">{typeof commute.time === 'string' ? commute.time : '—'}</p>
+                  <p className="text-[12px] text-gray-500 font-medium leading-tight">to {typeof commute.destination === 'string' ? commute.destination : '—'}</p>
                 </div>
               </div>
             )
@@ -243,9 +243,9 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
                 <div className="w-12 h-12 rounded-xl bg-gray-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <Icon size={22} />
                 </div>
-                <h4 className="text-[16px] font-bold text-gray-900 mb-1">{highlight.title}</h4>
-                <p className="text-[16px] font-black text-gray-900 mb-3">{highlight.time}</p>
-                <p className="text-[13px] text-gray-500 leading-relaxed">{highlight.description}</p>
+                <h4 className="text-[16px] font-bold text-gray-900 mb-1">{typeof highlight.title === 'string' ? highlight.title : '—'}</h4>
+                <p className="text-[16px] font-black text-gray-900 mb-3">{typeof highlight.time === 'string' ? highlight.time : '—'}</p>
+                <p className="text-[13px] text-gray-500 leading-relaxed">{typeof highlight.description === 'string' ? highlight.description : '—'}</p>
                 <div className="mt-4 pt-4 border-t border-gray-50 flex justify-end">
                   <ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-600 transition-colors" />
                 </div>
