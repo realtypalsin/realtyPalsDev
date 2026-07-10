@@ -115,9 +115,9 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
               <h2 className="text-[32px] md:text-[40px] font-black text-gray-900 tracking-tight leading-tight mb-4">
                 Sector {d.sector}, {d.city},<br />Uttar Pradesh
               </h2>
-              {locationData?.location_highlights?.[0] ? (
+              {locationData?.location_highlights?.[0]?.description ? (
                 <p className="text-[14px] text-gray-500 leading-relaxed mb-8">
-                  {locationData.location_highlights[0]}
+                  {locationData.location_highlights[0].description}
                 </p>
               ) : (
                 <p className="text-[14px] text-gray-400 leading-relaxed mb-8 italic">
