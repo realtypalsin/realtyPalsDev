@@ -232,7 +232,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
       <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
         <h3 className="text-[22px] font-black text-gray-900 mb-8">Why people choose this location</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {(locationData.location_highlights || []).map((highlight: any, i: number) => {
+          {(Array.isArray(locationData.location_highlights) ? locationData.location_highlights : []).map((highlight: any, i: number) => {
             const Icon = ICONS[highlight.icon] || MapPin
             return (
               <div

@@ -354,9 +354,9 @@ export default function IntelligenceTab({
         </div>
       </div>
 
-      <SocialProofAndTransparency 
-        social={(rawIntel as any)?.social_proof}
-        transparency={(rawIntel as any)?.transparency_checks_additions}
+      <SocialProofAndTransparency
+        social={(dbIntel as any)?.social_proof}
+        transparency={(dbIntel as any)?.transparency_checks_additions}
       />
 
       {/* 4. Investment & Pricing Grid */}
