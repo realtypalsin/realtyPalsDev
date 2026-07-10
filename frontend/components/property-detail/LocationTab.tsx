@@ -30,7 +30,7 @@ const ICONS: Record<string, any> = {
 }
 
 export default function LocationTab({ project, detail, d, projectAddress }: LocationTabProps) {
-  const waUrl = d ? buildWhatsAppUrl(d as any, 'panel') : 'https://wa.me/'
+  const waUrl = d ? buildWhatsAppUrl(d, 'panel') : 'https://wa.me/'
 
   // State handles
   const [selectedMapFilter, setSelectedMapFilter] = useState<'All' | 'Transport' | 'Education' | 'Healthcare' | 'Lifestyle' | 'Work'>('All')

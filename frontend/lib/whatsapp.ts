@@ -14,7 +14,7 @@ export interface WhatsAppProject {
  * variant 'panel' — used in ProjectDetailPanel (detail view intro)
  */
 export function buildWhatsAppUrl(
-  project: WhatsAppProject,
+  project: WhatsAppProject | Record<string, unknown>,
   variant: 'card' | 'panel' = 'card',
 ): string | null {
   const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER

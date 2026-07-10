@@ -12,7 +12,7 @@ import PricingCharts from './PricingCharts'
 
 export interface ProjectPricingTabProps {
   unitTypes: UnitTypeSummary[]
-  detail: ProjectDetail | null
+  detail: (ProjectDetail & { payment_plan?: Record<string, any>; cost_sheet?: Record<string, any> }) | null
   onGoToCosts: () => void
 }
 
@@ -77,7 +77,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const [activePlanId, setActivePlanId] = useState<string>('0')
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
-  const waUrl = detail ? buildWhatsAppUrl(detail as any, 'panel') : null
+  const waUrl = detail ? buildWhatsAppUrl(detail, 'panel') : null
 
   // ── Derive from real DB data ─────────────────────────────────────────────
   const withPrice = unitTypes.filter(u => u.price_min_cr != null)
@@ -102,7 +102,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const reraNum = detail?.rera_number ?? null
 
   // Payment plan from DB (paymentPlan is loaded via getPaymentPlan and passed as detail.payment_plan)
-  const dbPaymentPlan = (detail as any)?.payment_plan ?? null
+  const dbPaymentPlan = detail?.payment_plan ?? null
   const dbMilestones: any[] = dbPaymentPlan?.milestones ?? []
   const hasPaymentPlan = dbMilestones.length > 0
   const planName = dbPaymentPlan?.plan_name ?? 'Payment Schedule'
@@ -111,7 +111,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const bookingAmtPct = firstMilestone?.pct != null ? `${firstMilestone.pct}%` : null
 
   // Cost sheet from DB
-  const dbCostSheet = (detail as any)?.cost_sheet ?? null
+  const dbCostSheet = detail?.cost_sheet ?? null
   const hasCostSheet = dbCostSheet != null
 
   // Compute cost breakdown from real cost sheet data

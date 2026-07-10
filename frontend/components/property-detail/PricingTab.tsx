@@ -495,7 +495,7 @@ export default function PricingTab({
         <PricingCharts 
           priceHistory={detail?.decision_profile?.intelligence_data?.investment_insights?.price_history}
           unitPriceCr={lowestEntry?.price_min_cr || undefined}
-          otherCharges={_costSheet?.data?.other_charges as any[]}
+          otherCharges={(_costSheet?.data?.other_charges ?? []) as Array<{ label: string; amount: number }>}
         />
 
       </div>
