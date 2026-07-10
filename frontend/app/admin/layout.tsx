@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   Building2, Users, LayoutDashboard, LogOut, Menu, X,
-  ChevronRight, Search, Command, FileText, MessageSquare, Newspaper, PanelLeftClose, PanelLeftOpen
+  ChevronRight, Search, Command, FileText, MessageSquare, Newspaper, PanelLeftClose, PanelLeftOpen, BarChart3
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { API_BASE } from '@/lib/env'
@@ -19,6 +19,7 @@ const NAV = [
   { href: '/admin/builder-applications',  label: 'Registrations',        icon: FileText },
   { href: '/admin/leads',                 label: 'Leads',                icon: MessageSquare },
   { href: '/admin/news',                  label: 'News',                 icon: Newspaper },
+  { href: '/admin/analytics',             label: 'Analytics',            icon: BarChart3 },
 ]
 
 function breadcrumb(pathname: string): { label: string; href?: string }[] {

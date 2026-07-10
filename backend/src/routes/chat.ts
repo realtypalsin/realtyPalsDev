@@ -379,7 +379,8 @@ router.post('/', async (req: Request, res: Response) => {
 
     // ─── ANALYTICS: Track intent identification
     if (action.type === 'TEXT_MESSAGE' && message && sessionId) {
-      await trackIntentIdentified(sessionId, intent, message)
+      const clarificationCount = needsClarification ? 1 : 0
+      await trackIntentIdentified(sessionId, intent, message, clarificationCount)
     }
 
     // ─── GATHERING Loop Fallback
