@@ -20,31 +20,32 @@ export function buildWhatsAppUrl(
   const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
   if (!number) return null
 
-  const bhkList = [...new Set(project.unit_types.map((u) => `${u.bhk}BHK`))].join(' / ')
+  const projectTyped = project as WhatsAppProject
+  const bhkList = [...new Set(projectTyped.unit_types.map((u) => `${u.bhk}BHK`))].join(' / ')
   const statusLabel =
-    project.status === 'ready_to_move' ? 'Ready to Move'
-    : project.status === 'new_launch' ? 'New Launch'
+    projectTyped.status === 'ready_to_move' ? 'Ready to Move'
+    : projectTyped.status === 'new_launch' ? 'New Launch'
     : 'Under Construction'
 
   const lines =
     variant === 'panel'
       ? [
-          `Hi! I came across *${project.name}* on RealtyPal and I'm interested.`,
+          `Hi! I came across *${projectTyped.name}* on RealtyPal and I'm interested.`,
           ``,
-          `📍 ${project.sector}, Noida — ${project.builder.name}`,
-          `🏠 ${bhkList} · ${project.price_range_label}`,
+          `📍 ${projectTyped.sector}, Noida — ${projectTyped.builder.name}`,
+          `🏠 ${bhkList} · ${projectTyped.price_range_label}`,
           `📋 ${statusLabel}`,
-          ...(project.rera_number ? [`✅ RERA: ${project.rera_number}`] : []),
+          ...(projectTyped.rera_number ? [`✅ RERA: ${projectTyped.rera_number}`] : []),
           ``,
           `Could you share more details and help me book a site visit?`,
         ]
       : [
-          `Hi! I'm interested in *${project.name}* by ${project.builder.name} in ${project.sector}, Noida.`,
+          `Hi! I'm interested in *${projectTyped.name}* by ${projectTyped.builder.name} in ${projectTyped.sector}, Noida.`,
           ``,
           `Configuration: ${bhkList}`,
-          `Price: ${project.price_range_label}`,
+          `Price: ${projectTyped.price_range_label}`,
           `Status: ${statusLabel}`,
-          ...(project.rera_number ? [`RERA: ${project.rera_number}`] : []),
+          ...(projectTyped.rera_number ? [`RERA: ${projectTyped.rera_number}`] : []),
           ``,
           `Could you help me with more details and a site visit?`,
         ]
