@@ -6,7 +6,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "prisma migrate deploy --schema=../frontend/prisma/schema.prisma && node dist/index.js",
-    "test": "node --require tsx/cjs --test src/lib/ai/__tests__/intent-extraction.test.ts",
+    "test": "node --require tsx/cjs --test src/lib/**/__tests__/*.test.ts",
     "db:generate": "prisma generate --schema=../frontend/prisma/schema.prisma"
   },
   "prisma": {

@@ -243,9 +243,11 @@ export async function streamWithOpenAI(
 
     let stream: Awaited<ReturnType<typeof client.chat.completions.create>>;
     try {
+      // Use MAIN model when tools needed (larger context window for gpt-4o vs gpt-4o-mini 8KB limit)
+      const model = allowTools ? MODELS.MAIN : MODELS.FALLBACK;
       stream = await client.chat.completions.create(
         {
-          model: MODELS.FALLBACK,
+          model,
           messages: currentMsgs as any,
           ...(allowTools ? { tools } : {}),
           stream: true,

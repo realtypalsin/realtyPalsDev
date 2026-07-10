@@ -495,6 +495,17 @@ router.post('/', async (req: Request, res: Response) => {
         logRouting('CACHE_REUSED', { exact: projects.length, nearby: nearbyProjects.length })
       }
 
+      // If user specified specific project names, filter cached results to match
+      if (intent.projectNames?.length && intent.projectNames.length <= 2) {
+        const requestedNames = intent.projectNames.map((n) => n.toLowerCase())
+        projects = projects.filter((p) =>
+          requestedNames.some((rn) => p.name.toLowerCase().includes(rn) || rn.includes(p.name.toLowerCase()))
+        )
+        nearbyProjects = nearbyProjects.filter((p) =>
+          requestedNames.some((rn) => p.name.toLowerCase().includes(rn) || rn.includes(p.name.toLowerCase()))
+        )
+      }
+
       // Fix 3: sync frontend cards with filtered/reused result set
       if (projects.length > 0 || nearbyProjects.length > 0) {
         send('properties', { exactResults: projects, nearbyResults: nearbyProjects, expansion: null })
@@ -716,7 +727,13 @@ router.post('/', async (req: Request, res: Response) => {
           if (!connectivity.length) {
             return { nearby: [], message: 'Connectivity data not available.' };
           }
-          const grouped = Object.groupBy(connectivity, (c) => String(c.type));
+          // Manual groupBy (Object.groupBy requires ES2024)
+          const grouped: Record<string, typeof connectivity> = {};
+          for (const c of connectivity) {
+            const type = String(c.type);
+            if (!grouped[type]) grouped[type] = [];
+            grouped[type].push(c);
+          }
           return { nearby: connectivity, grouped };
         }
 
@@ -732,7 +749,12 @@ router.post('/', async (req: Request, res: Response) => {
           if (!amenities.length) {
             return { amenities: [], message: 'Amenity information not available.' };
           }
-          const grouped = Object.groupBy(amenities, (a) => a.category);
+          // Manual groupBy (Object.groupBy requires ES2024)
+          const grouped: Record<string, typeof amenities> = {};
+          for (const a of amenities) {
+            if (!grouped[a.category]) grouped[a.category] = [];
+            grouped[a.category].push(a);
+          }
           return { amenities, grouped };
         }
 
