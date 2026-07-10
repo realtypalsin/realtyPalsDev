@@ -13,9 +13,9 @@ const mockProject: ProjectCard = {
   possession_label: null,
   price_range_label: '₹1-2 Cr',
   images: [
-    { url: 'https://example.com/hero.jpg', image_type: 'hero' },
-    { url: 'https://example.com/exterior.jpg', image_type: 'exterior' },
-    { url: 'https://example.com/other.jpg', image_type: 'other' }
+    { id: 'i1', url: 'https://example.com/hero.jpg', type: 'hero', caption: null, bhk: null, size_sqft: null, sort_order: 0 },
+    { id: 'i2', url: 'https://example.com/exterior.jpg', type: 'exterior', caption: null, bhk: null, size_sqft: null, sort_order: 1 },
+    { id: 'i3', url: 'https://example.com/other.jpg', type: 'other', caption: null, bhk: null, size_sqft: null, sort_order: 2 }
   ],
   hero_image_url: 'https://example.com/fallback.jpg',
   unit_types: [],
@@ -39,7 +39,7 @@ describe('usePreferredImages', () => {
   });
 
   it('falls back to exterior image if hero missing', () => {
-    const project = { ...mockProject, images: [{ url: 'https://example.com/exterior.jpg', image_type: 'exterior' }] };
+    const project = { ...mockProject, images: [{ id: 'i1', url: 'https://example.com/exterior.jpg', type: 'exterior', caption: null, bhk: null, size_sqft: null, sort_order: 0 }] };
     const { result } = renderHook(() => usePreferredImages(project));
     expect(result.current.activeUrl).toBe('https://example.com/exterior.jpg');
   });
@@ -80,12 +80,12 @@ describe('usePreferredImages', () => {
     expect(result.current.imgIdx).toBe(0);
 
     act(() => {
-      result.current.nextImg();
+      result.current.nextImg({ stopPropagation: () => {} } as any);
     });
     expect(result.current.imgIdx).toBe(1);
 
     act(() => {
-      result.current.prevImg();
+      result.current.prevImg({ stopPropagation: () => {} } as any);
     });
     expect(result.current.imgIdx).toBe(0);
   });
@@ -96,15 +96,15 @@ describe('usePreferredImages', () => {
   });
 
   it('returns hasMultiple = false with 1 image', () => {
-    const project = { ...mockProject, images: [{ url: 'https://example.com/hero.jpg', image_type: 'hero' }] };
+    const project = { ...mockProject, images: [{ url: 'https://example.com/hero.jpg', type: 'hero', id: 'i1', caption: null, bhk: null, size_sqft: null, sort_order: 0 }] };
     const { result } = renderHook(() => usePreferredImages(project));
     expect(result.current.hasMultiple).toBe(false);
   });
 
   it('supports detailImages parameter override', () => {
     const detailImages = [
-      { url: 'https://example.com/detail1.jpg', image_type: 'hero' },
-      { url: 'https://example.com/detail2.jpg', image_type: 'exterior' }
+      { url: 'https://example.com/detail1.jpg', type: 'hero', id: 'i1', caption: null, bhk: null, size_sqft: null, sort_order: 0 },
+      { url: 'https://example.com/detail2.jpg', type: 'exterior', id: 'i2', caption: null, bhk: null, size_sqft: null, sort_order: 1 }
     ];
     const { result } = renderHook(() => usePreferredImages(mockProject, detailImages));
     expect(result.current.activeUrl).toBe('https://example.com/detail1.jpg');
@@ -112,7 +112,7 @@ describe('usePreferredImages', () => {
 
   it('handles null project gracefully', () => {
     const { result } = renderHook(() => usePreferredImages(null));
-    expect(result.current.activeUrl).toBeUndefined();
+    expect(result.current.activeUrl).toBeNull();
     expect(result.current.workingImages.length).toBe(0);
     expect(result.current.allFailed).toBe(true);
   });
@@ -122,7 +122,7 @@ describe('usePreferredImages', () => {
 
     act(() => {
       result.current.setImgIdx(2); // last image
-      result.current.nextImg();
+      result.current.nextImg({ stopPropagation: () => {} } as any);
     });
     expect(result.current.imgIdx).toBe(0); // wraps to start
   });

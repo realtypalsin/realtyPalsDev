@@ -160,7 +160,7 @@ describe('MessageBubble Component', () => {
       />
     );
 
-    // Look for ChatLoader or typing indicator dots
-    expect(screen.getByTestId('chat-loader')).toBeInTheDocument();
+    // Look for inline loading UI "Understanding your request..."
+    expect(screen.getByText('Understanding your request…')).toBeInTheDocument();
   });
 });

@@ -506,10 +506,34 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
   // Use effectiveIntent so budget/sector signals still apply even when
   // generic names were stripped from projectNames above.
   const where = buildHardFilters(effectiveIntent)
-  const rawProjects = await prisma.project.findMany({
+  let rawProjects = await prisma.project.findMany({
     where,
     include: PROJECT_INCLUDE,
   })
+
+  // Fallback: if sector-only query returned 0 results, try simplified sector-only search
+  // This catches cases where complex hard filters (BHK, budget combinations) fail but
+  // the sector itself has projects.
+  if (
+    rawProjects.length === 0 &&
+    effectiveIntent.sector &&
+    !isCityLevel(effectiveIntent.sector) &&
+    !effectiveIntent.projectNames?.length
+  ) {
+    console.log(`[DISCOVERY:B2-FALLBACK] No results with full filters. Trying sector-only query for "${effectiveIntent.sector}"`)
+    rawProjects = await prisma.project.findMany({
+      where: {
+        OR: [
+          { sector: { equals: effectiveIntent.sector, mode: 'insensitive' } },
+          { sector: { startsWith: `${effectiveIntent.sector} `, mode: 'insensitive' } },
+        ],
+      },
+      include: PROJECT_INCLUDE,
+    })
+    if (rawProjects.length > 0) {
+      console.log(`[DISCOVERY:B2-FALLBACK] Found ${rawProjects.length} projects in sector-only fallback`)
+    }
+  }
 
   if (rawProjects.length > 0) {
     if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)) {

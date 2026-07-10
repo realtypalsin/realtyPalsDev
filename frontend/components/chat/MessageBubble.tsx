@@ -12,6 +12,7 @@ import ChatLoader from '@/components/ChatLoader'
 import ProjectCard from '@/components/ProjectCard'
 import PropertyCardWithRecommendation from '@/components/chat/PropertyCardWithRecommendation'
 import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
+import { SuggestionChip } from '@/components/chat/SuggestionChip'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
@@ -94,70 +95,7 @@ function buildPickerMessage(action: string, selected: ProjectCardType[]): string
   }
 }
 
-// ── Progressive suggestion chip — one visual per Conversation Engine emphasis ─
-// 'primary'/'secondary'/'tertiary' come from the engine's group metadata; chips
-// with no group (every stage besides DISCOVERY today) keep the original
-// priority/actionType-driven styling untouched.
-export function renderSuggestionChip(
-  chip: import('./types').ChipAction,
-  chipPicker: ChipPickerState | null,
-  onSetChipPicker: (picker: ChipPickerState | null) => void,
-  onAction: (action: import('./types').ChipAction) => void,
-  emphasis?: 'primary' | 'secondary' | 'tertiary' | 'notebook',
-) {
-  const isActive = chipPicker?.label === chip.label
-  const hasDropdown = chip.actionType === 'COMPARE_PROPERTIES' || chip.actionType === 'CALCULATE_EMI' || chip.actionType === 'BOOK_VISIT'
-
-  const activeClass = 'bg-blue-600 dark:bg-blue-500 text-white shadow-[0_2px_8px_rgba(37,99,235,0.2)] ring-1 ring-inset ring-blue-700/20 dark:ring-blue-400/20'
-
-  let sizeClass: string
-  let colorClass: string
-  switch (emphasis) {
-    case 'notebook':
-      sizeClass = 'px-4 py-3 text-[13px] font-medium rounded-xl w-full justify-start'
-      colorClass = 'bg-gray-100/80 dark:bg-[#1e1e1e] border-transparent text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-[#2a2a2a]'
-      break
-    case 'primary':
-      sizeClass = 'px-5 py-3 text-[14px] font-semibold rounded-[14px] justify-center'
-      colorClass = 'bg-blue-600 dark:bg-blue-500 text-white shadow-[0_2px_12px_rgba(37,99,235,0.15)] hover:bg-blue-700 dark:hover:bg-blue-600 hover:scale-[1.02] active:scale-95'
-      break
-    case 'tertiary':
-      sizeClass = 'px-2.5 py-1 text-[11px] font-medium rounded-full justify-center'
-      colorClass = 'bg-transparent ring-1 ring-inset ring-gray-200 dark:ring-gray-800 text-gray-500 hover:ring-gray-300 hover:text-gray-700 dark:hover:text-gray-300'
-      break
-    case 'secondary':
-      sizeClass = 'px-3.5 py-1.5 sm:px-4 sm:py-2 text-[12.5px] font-semibold rounded-full justify-center'
-      colorClass = 'bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 text-gray-700 dark:text-gray-300 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:ring-black/10 dark:hover:ring-white/20 active:scale-95'
-      break
-    default:
-      sizeClass = 'px-3.5 py-1.5 sm:px-4 sm:py-2 text-[12.5px] font-semibold rounded-full justify-center'
-      colorClass =
-        chip.priority === 1 && chip.actionType !== 'TEXT_MESSAGE' && chip.actionType !== 'INTENT_PATCH'
-          ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-[0_2px_8px_rgba(37,99,235,0.15)] hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-95'
-          : chip.actionType !== 'TEXT_MESSAGE' && chip.actionType !== 'INTENT_PATCH'
-            ? 'bg-gray-100 dark:bg-[#222] text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95'
-            : 'bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 text-gray-700 dark:text-gray-300 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:ring-black/10 active:scale-95'
-  }
-
-  return (
-    <motion.button
-      whileTap={{ scale: 0.96 }}
-      key={chip.id}
-      onClick={() => {
-        if (isActive) { onSetChipPicker(null); return }
-        onAction(chip)
-      }}
-      className={`flex items-center gap-2 transition-all shadow-sm ${emphasis !== 'notebook' ? 'whitespace-nowrap' : 'text-left'} border ${sizeClass} ${isActive ? activeClass : colorClass}`}
-    >
-      {chip.icon && emphasis !== 'notebook' && <span>{chip.icon}</span>}
-      <span>{chip.label}</span>
-      {hasDropdown && <span className={`text-[10px] ml-0.5 ${isActive || chip.priority === 1 ? 'text-blue-200' : 'text-gray-400'}`}>▾</span>}
-    </motion.button>
-  )
-}
-
-// ── Suggestion chip groups — shared by in-chat progressive chips and the
-// homepage welcome screen, so there is one chip presentation, not two. ──
+// ── Unified suggestion chips — all chips use same premium NotebookLM style
 export function SuggestionChipGroups({
   chips,
   chipPicker,
@@ -171,39 +109,13 @@ export function SuggestionChipGroups({
 }) {
   if (chips.length === 0) return null
 
-  const groupedChips = chips.filter((c) => c.group)
-  const ungroupedChips = chips.filter((c) => !c.group)
+  const sorted = [...chips].sort((a, b) => a.priority - b.priority)
 
   return (
-    <div className="flex flex-col gap-4">
-      {groupedChips.length > 0 && (
-        <div className="flex flex-col gap-4">
-          {Array.from(
-            groupedChips.reduce((groups, c) => {
-              const key = c.group!.id
-              if (!groups.has(key)) groups.set(key, { group: c.group!, items: [] as typeof chips })
-              groups.get(key)!.items.push(c)
-              return groups
-            }, new Map<string, { group: NonNullable<(typeof chips)[number]['group']>; items: typeof chips }>())
-              .values()
-          ).map(({ group, items }) => (
-            <div key={group.id}>
-              <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
-                {group.label}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {items.map((chip) => renderSuggestionChip(chip, chipPicker, onSetChipPicker, onAction, group.emphasis))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {ungroupedChips.length > 0 && (
-        <div className={`flex flex-col gap-2 ${groupedChips.length > 0 ? 'pt-2 border-t border-gray-100 dark:border-gray-800' : ''}`}>
-          {ungroupedChips.map((chip) => renderSuggestionChip(chip, chipPicker, onSetChipPicker, onAction, 'notebook'))}
-        </div>
-      )}
+    <div className="flex flex-wrap gap-2">
+      {sorted.map((chip) => (
+        <SuggestionChip key={chip.id} chip={chip} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} />
+      ))}
     </div>
   )
 }

@@ -26,18 +26,19 @@ export function usePreferredImages(project: ProjectCard | null, detailImages?: a
   const imageSource = detailImages ?? project?.images ?? []
 
   // Extract hero + exterior images, sorted by preference
-  const imageTypeRank = (type: string) => {
+  const imageTypeRank = (type: string | undefined) => {
+    if (!type) return 2
     const t = type.toLowerCase()
     return t === 'hero' ? 0 : t === 'exterior' ? 1 : 2
   }
   const sortedImages = [...imageSource].sort((a: any, b: any) => imageTypeRank(a.type) - imageTypeRank(b.type))
 
   const heroImages = sortedImages
-    .filter((i: any) => i.type.toLowerCase() === 'hero')
+    .filter((i: any) => i.type && i.type.toLowerCase() === 'hero')
     .map((i: any) => i.url)
 
   const exteriorImages = sortedImages
-    .filter((i: any) => i.type.toLowerCase() === 'exterior')
+    .filter((i: any) => i.type && i.type.toLowerCase() === 'exterior')
     .map((i: any) => i.url)
 
   // Combine uploaded images; fallback to legacy hero_image_url if empty
