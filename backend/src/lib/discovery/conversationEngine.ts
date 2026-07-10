@@ -268,7 +268,8 @@ function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[
   if (hasMultiple) {
     // Frictionless Comparison: Bypasses picker if exactly 2 or 3 projects.
     const directCompare = results.length <= 3
-    chips.push(chip('compare', 'COMPARE_PROPERTIES', `Compare ${topProjectName} vs others`, '⚖️',
+    const shortName = topProjectName.length > 12 ? topProjectName.substring(0, 12) + '…' : topProjectName
+    chips.push(chip('compare', 'COMPARE_PROPERTIES', `Compare ${shortName} vs others`, '⚖️',
       directCompare ? { mode: 'direct', selected: results.slice(0, 3).map(r => r.slug) } : { mode: 'multi' }, 1))
   }
 
@@ -346,14 +347,18 @@ export function computeConversationState(
   let chips: ChipAction[] = []
   
   if (disambiguation) {
-    chips = disambiguation.candidates.map((c, idx) => chip(
-      `disambig_${idx}`,
-      'TEXT_MESSAGE',
-      `${c.name} (${c.sector})`,
-      '🏢',
-      { text: `Show me ${c.name} in ${c.sector}` },
-      idx + 1
-    ))
+    chips = disambiguation.candidates.map((c, idx) => {
+      const label = `${c.name} (${c.sector})`
+      const shortLabel = label.length > 24 ? label.substring(0, 21) + '…' : label
+      return chip(
+        `disambig_${idx}`,
+        'TEXT_MESSAGE',
+        shortLabel,
+        '🏢',
+        { text: `Show me ${c.name} in ${c.sector}` },
+        idx + 1
+      )
+    })
   } else if (sectorDisambiguation) {
     chips = sectorDisambiguation.candidates.map((s, idx) => chip(
       `disambig_sec_${idx}`,
