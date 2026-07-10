@@ -688,18 +688,67 @@ router.post('/', async (req: Request, res: Response) => {
           return { gst: formatInr(r.gst), rate_pct: r.rate, category: r.category };
         }
 
-        if (name === 'payment_plan') {
+        if (name === 'project_costs') {
           const projectId = args.project_id ?? '';
           if (!projectId) {
-            return { error: 'project_id is required to fetch payment plan' };
+            return { error: 'project_id is required' };
           }
-          const plan = await (prisma as any).paymentPlan.findUnique({
+          const [costSheet, paymentPlan] = await Promise.all([
+            (prisma as any).costSheet.findUnique({ where: { project_id: projectId } }),
+            (prisma as any).paymentPlan.findUnique({ where: { project_id: projectId } }),
+          ]);
+          return {
+            cost_sheet: costSheet || null,
+            payment_plan: paymentPlan || null,
+            message: !costSheet && !paymentPlan ? 'Cost details not yet verified in database.' : undefined,
+          };
+        }
+
+        if (name === 'project_nearby') {
+          const projectId = args.project_id ?? '';
+          if (!projectId) {
+            return { error: 'project_id is required' };
+          }
+          const connectivity = await prisma.connectivity.findMany({
             where: { project_id: projectId },
+            take: 30,
           });
-          if (!plan) {
-            return { available: false, message: 'Payment schedule not yet verified. This information may be available directly from the builder.' };
+          if (!connectivity.length) {
+            return { nearby: [], message: 'Connectivity data not available.' };
           }
-          return { available: true, plan };
+          const grouped = Object.groupBy(connectivity, (c) => String(c.type));
+          return { nearby: connectivity, grouped };
+        }
+
+        if (name === 'project_amenities') {
+          const projectId = args.project_id ?? '';
+          if (!projectId) {
+            return { error: 'project_id is required' };
+          }
+          const amenities = await prisma.amenity.findMany({
+            where: { project_id: projectId },
+            take: 50,
+          });
+          if (!amenities.length) {
+            return { amenities: [], message: 'Amenity information not available.' };
+          }
+          const grouped = Object.groupBy(amenities, (a) => a.category);
+          return { amenities, grouped };
+        }
+
+        if (name === 'project_documents') {
+          const projectId = args.project_id ?? '';
+          if (!projectId) {
+            return { error: 'project_id is required' };
+          }
+          const docs = await (prisma as any).projectDocument.findMany({
+            where: { project_id: projectId },
+            take: 20,
+          });
+          if (!docs.length) {
+            return { documents: [], message: 'No downloadable documents available.' };
+          }
+          return { documents: docs };
         }
 
         return { error: 'Tool not recognized' };
