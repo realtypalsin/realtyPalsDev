@@ -16,7 +16,7 @@ interface SuggestionChipProps {
  * Filled dark surface, 14-18px border radius, fit-content width, vertical layout.
  * All chips use same premium, subtle aesthetic regardless of type.
  */
-export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction }: SuggestionChipProps) {
+export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, disabled }: SuggestionChipProps) {
   const isActive = chipPicker?.label === chip.label
   const hasDropdown = chip.actionType === 'COMPARE_PROPERTIES' || chip.actionType === 'CALCULATE_EMI' || chip.actionType === 'BOOK_VISIT'
 

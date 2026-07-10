@@ -1010,12 +1010,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       return;
     }
 
-    // Exhaustive: INTENT_PATCH, TEXT_MESSAGE, REMOVE_FILTER, COMPARE_PROPERTIES, OPEN_TOOL
+    // Exhaustive: INTENT_PATCH, TEXT_MESSAGE, REMOVE_FILTER, COMPARE_PROPERTIES
     switch (action.actionType) {
       case 'INTENT_PATCH':
       case 'TEXT_MESSAGE':
       case 'REMOVE_FILTER':
-      case 'OPEN_TOOL':
         dispatchAction({
           type: action.actionType,
           payload: action.payload
