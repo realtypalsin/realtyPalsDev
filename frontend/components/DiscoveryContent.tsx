@@ -471,7 +471,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const welcomeMessage: ChatMessage = {
       id: crypto.randomUUID(),
       type: 'ai',
-      content: "Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.",
+      content: "Hi, I'm RealtyPal — your advisor for Noida & Greater Noida. Ask me anything: budgets in ₹ Lakh/Cr, RERA status, builder track records, or which sector fits your family. I'll give you straight answers, tradeoffs included.",
       timestamp: new Date().toISOString(),
     };
     setChatHistory([welcomeMessage]);
@@ -1231,15 +1231,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           {/* Dropdown Menu */}
           {showHeaderDropdown && hasUserReplied && (
             <div className="absolute top-full left-4 mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
-              <div className="group/star relative">
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <Star size={16} className="text-gray-400" />
-                  <span>Star</span>
-                </button>
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 py-1 px-2 bg-gray-900 text-white text-[11px] font-medium rounded-md opacity-0 group-hover/star:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100]">
-                  Coming soon
-                </div>
-              </div>
               <button onClick={handleStartRename} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <Pencil size={16} className="text-gray-400" />
                 <span>Rename</span>
@@ -1312,6 +1303,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-1 font-[family-name:var(--font-afacad)]">
                 Buy Better.
               </h2>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">AI property advisor · Noida & Greater Noida</p>
             </div>
 
             {showReEngagement && !hasUserReplied && (
@@ -1613,7 +1605,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               {callbackError && (
                 <p className="text-[12px] text-red-500 text-center mt-2" role="alert">{callbackError}</p>
               )}
-              <p className="text-[11px] text-gray-400 text-center mt-2">We&apos;ll call within 2 hours · Business hours only</p>
+              <p className="text-[11px] text-gray-400 text-center mt-2">We&apos;ll call the same business day</p>
             </motion.div>
           </motion.div>
         )}

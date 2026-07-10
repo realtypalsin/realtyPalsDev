@@ -179,7 +179,7 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
   }
 
   // BHK options
-  const bhkGroup: ChipGroup = { id: 'bhk_options', label: 'Configurations', order: 2, emphasis: 'tertiary' }
+  const bhkGroup: ChipGroup = { id: 'bhk_options', label: 'BHK', order: 2, emphasis: 'tertiary' }
   for (const bhk of inventory.bhkOptions) {
     chips.push(chip(
       `discovery_bhk_${bhk}`,

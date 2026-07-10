@@ -34,7 +34,7 @@ export default function ReEngagementBanner({ userId, guestToken, onResume, onDis
               <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Previous Search</span>
             </div>
             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-              {session.title || 'Continue your property discovery'}
+              {session.title || 'This chat is getting long — starting a fresh one keeps my answers sharp. Your saved properties carry over.'}
             </p>
           </div>
 

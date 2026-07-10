@@ -18,7 +18,7 @@ export default function GetListedPage() {
             List Your Project
           </h1>
           <p className="text-[16px] text-zinc-500 font-medium max-w-xl mx-auto leading-relaxed">
-            Submit your property details. Our intelligence team will review and approve your listing for the RealtyPals platform.
+            Submit your project details. Our verification team reviews every listing against RERA records before it goes live — buyers only see verified projects.
           </p>
         </div>
         <PropertyListingForm />

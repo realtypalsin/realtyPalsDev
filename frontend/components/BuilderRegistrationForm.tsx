@@ -117,7 +117,7 @@ export default function BuilderRegistrationForm() {
             <CheckCircle2 size={28} strokeWidth={2.5} />
           </div>
           <h2 className="text-[22px] font-semibold text-zinc-900 tracking-tight mb-2">Application Received</h2>
-          <p className="text-[14px] text-zinc-500 mb-8 leading-relaxed">Your profile is currently under review by our diligence team. We will notify you once verification is complete.</p>
+          <p className="text-[14px] text-zinc-500 mb-8 leading-relaxed">Our verification team is reviewing your profile — expect a response within 2–3 business days at your registered email.</p>
           <div className="bg-zinc-50 rounded-xl p-4 border border-zinc-200/60 flex flex-col items-center justify-center gap-1.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
             <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">Reference ID</span>
             <code className="text-[14px] font-mono font-medium text-zinc-800 tracking-wider">{applicationId}</code>
@@ -151,8 +151,24 @@ export default function BuilderRegistrationForm() {
               Developer Onboarding
             </h1>
             <p className="text-[13px] text-zinc-500 leading-relaxed mb-10">
-              Join India's premier real estate network. Complete your profile to list inventory and connect with buyers.
+              Showcase your projects to serious Noida & Greater Noida buyers. Verified builder profiles, direct qualified leads, no broker middle layer. Verification typically takes 2–3 business days.
             </p>
+
+            {/* Value Bullets */}
+            <div className="space-y-2.5 mb-10">
+              <div className="flex items-start gap-3">
+                <span className="text-zinc-900 font-semibold">•</span>
+                <p className="text-[13px] text-zinc-600 leading-relaxed">Buyers who've already shortlisted — not cold enquiries</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-zinc-900 font-semibold">•</span>
+                <p className="text-[13px] text-zinc-600 leading-relaxed">Your RERA-verified profile, presented professionally</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-zinc-900 font-semibold">•</span>
+                <p className="text-[13px] text-zinc-600 leading-relaxed">Leads with name, phone, and the exact project they asked about</p>
+              </div>
+            </div>
 
             {/* Elegant Vertical Stepper */}
             <div className="space-y-6 relative ml-1">

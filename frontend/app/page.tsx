@@ -28,7 +28,7 @@ export default function LandingPage() {
   if (checking) {
     return (
       <div className="flex items-center justify-center min-h-[100dvh] bg-black">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto" />
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-white border-t-transparent mx-auto" />
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function LandingPage() {
           className="text-4xl md:text-6xl lg:text-[72px] leading-[1.1] md:leading-[1.05] text-white font-semibold max-w-4xl tracking-tighter animate-fade-in-up transform transition-all duration-700"
           style={{ animationDelay: '0.1s' }}
         >
-          Intelligence layer for smarter property decisions.
+          Buy the right home in Noida. Not the one someone's paid to sell you.
         </h1>
         
         {/* Subtitle */}
@@ -74,7 +74,7 @@ export default function LandingPage() {
           className="mt-6 text-[15px] md:text-[17px] text-white/50 max-w-xl tracking-tight leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
-          Research properties, compare investments, and navigate the Noida real estate market with absolute precision.
+          Research RERA-verified projects, compare builders and prices in ₹ Lakh/Cr, and get straight answers — no listings spam, no broker calls.
         </p>
 
         {/* CTA */}
@@ -83,8 +83,8 @@ export default function LandingPage() {
             onClick={() => router.push('/discover')}
             className="group px-8 py-3.5 bg-white hover:bg-gray-50 text-black font-semibold rounded-full text-[14px] transition-all duration-300 shadow-[0_2px_10px_rgba(255,255,255,0.1)] active:scale-95 flex items-center justify-center gap-2"
           >
-            Enter Discovery
-            <span className="group-hover:translate-x-0.5 transition-transform duration-300 opacity-80">→</span>
+            Ask about a property →
+            <span className="group-hover:translate-x-0.5 transition-transform duration-300 opacity-80"></span>
           </button>
           <button
             onClick={() => router.push('/auth')}
@@ -96,12 +96,24 @@ export default function LandingPage() {
 
         {/* Features row - Subheading Typography Rule */}
         <div className="mt-24 flex flex-wrap justify-center gap-x-10 gap-y-6 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-          {['Zero Commission Bias', 'RERA-Verified Intelligence', 'Hyperlocal Noida Expertise', 'Predictive ROI Models'].map((f) => (
+          {['RERA-Checked Data', 'Honest Tradeoffs, Every Time', 'Hyperlocal Noida Expertise'].map((f) => (
             <span key={f} className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em] text-white/40 font-semibold">
               <span className="w-1 h-1 rounded-full bg-white/20" />
               {f}
             </span>
           ))}
+        </div>
+
+        {/* Builder footer strip */}
+        <div className="mt-12 pt-8 border-t border-white/10">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-gray-400 text-sm">
+              Are you a builder? Showcase your RERA-registered projects to serious Noida buyers — verified profiles, qualified leads, zero spam.
+            </p>
+            <Link href="/builder-register" className="text-white font-semibold hover:text-gray-200 transition-colors whitespace-nowrap flex items-center gap-2">
+              List with RealtyPals →
+            </Link>
+          </div>
         </div>
       </div>
     </div>

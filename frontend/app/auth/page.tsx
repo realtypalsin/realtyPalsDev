@@ -123,7 +123,7 @@ export default function AuthPage() {
           <Image src="/images/icons/ExpandedRealtyPalsWhite.png" alt="RealtyPals" width={180} height={40} className="object-contain" priority />
           <div className="text-center">
             <h1 className="text-white font-semibold text-[22px] tracking-tight">Welcome to RealtyPals</h1>
-            <p className="text-white/50 text-[13px] mt-1 font-medium tracking-wide">Your intelligent property advisor</p>
+            <p className="text-white/50 text-[13px] mt-1 font-medium tracking-wide">Unbiased property guidance for Noida & Greater Noida</p>
           </div>
         </div>
 
@@ -180,7 +180,7 @@ export default function AuthPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={mode === 'register' ? 'Password (min 6 chars)' : 'Password'}
+                placeholder={mode === 'register' ? 'Password (6+ characters)' : 'Password'}
                 required
                 minLength={6}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
@@ -245,6 +245,12 @@ export default function AuthPage() {
 
 
       </div>
+
+      {/* Trust line */}
+      <p className="text-center text-white/40 text-[12px] mt-6 font-medium tracking-wide">
+        Free for buyers. We never sell your number to brokers.
+      </p>
+
       {toast && <Toast message={toast} duration={3000} onClose={() => setToast(null)} />}
     </div>
   );

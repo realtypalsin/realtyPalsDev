@@ -98,7 +98,7 @@ export default function DiscoverPage() {
       />
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
         <ChatErrorBoundary>
-          <Suspense fallback={<div className="flex-1 flex items-center justify-center text-gray-500">Loading...</div>}>
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center text-gray-500">Opening your advisor…</div>}>
             <DiscoveryContent 
               key="new" 
               initialSessionId={null} 
