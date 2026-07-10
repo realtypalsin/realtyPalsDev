@@ -76,7 +76,7 @@ export default function AuthPage() {
           setError('An account with this email already exists. Sign in instead.');
         } else {
           // Registration successful — show toast and switch to login with prefilled creds
-          track('signup_completed', { email: email.trim().toLowerCase() })
+          track('signup_completed')
           setToast('Account created! Please sign in.');
           setMode('login');
           // email and password stay filled — user just clicks Sign In

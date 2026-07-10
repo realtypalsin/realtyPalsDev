@@ -929,7 +929,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const text = (textOverride ?? chatInput).trim();
     if (!text) return;
     dispatchAction({ type: 'TEXT_MESSAGE', payload: { text } });
-  }, [chatInput, dispatchAction]);
+    track('message_sent', { session_id: sessionId, turn: chatTurnCount });
+  }, [chatInput, chatTurnCount, dispatchAction, sessionId]);
 
   // ── Regenerate: re-send the last user message ──
   const handleRegenerate = useCallback((aiMsgIndex: number) => {
@@ -942,6 +943,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
   // ── Unified Chip Action Handler ──
   const handleChipAction = useCallback((action: import('@/components/chat/types').ChipAction) => {
+    track('chip_clicked', { chip_id: action.id, action_type: action.actionType, label: action.label });
     if (action.actionType === 'OPEN_TOOL') {
       const tool = action.payload.tool as string;
       if (tool === 'calculator') setShowCalculator(true);

@@ -4,7 +4,7 @@ import { memo, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { User, RotateCcw, Copy, ChevronDown, MapPin } from 'lucide-react'
+import { User, RotateCcw, Copy, ChevronDown, MapPin, ThumbsUp, ThumbsDown } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import { parseResponseBlocks } from '@/lib/responseParser'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
@@ -341,13 +341,29 @@ function MessageBubbleInner({
           </span>
         )}
         {!isUser && displayContent && (
-          <button
-            onClick={() => { onCopy(displayContent); onToast('Copied to clipboard'); }}
-            title="Copy response"
-            className="text-gray-400 hover:text-blue-500 transition-colors opacity-0 group-hover/msg:opacity-100"
-          >
-            <Copy size={12} />
-          </button>
+          <>
+            <button
+              onClick={() => { onCopy(displayContent); onToast('Copied to clipboard'); }}
+              title="Copy response"
+              className="text-gray-400 hover:text-blue-500 transition-colors opacity-0 group-hover/msg:opacity-100"
+            >
+              <Copy size={12} />
+            </button>
+            <button
+              onClick={() => { track('answer_feedback', { helpful: true, session_id: sessionId }); onToast('Thanks for the feedback'); }}
+              title="Helpful"
+              className="text-gray-400 hover:text-green-500 transition-colors opacity-0 group-hover/msg:opacity-100"
+            >
+              <ThumbsUp size={12} />
+            </button>
+            <button
+              onClick={() => { track('answer_feedback', { helpful: false, session_id: sessionId }); onToast('Thanks for the feedback'); }}
+              title="Not helpful"
+              className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover/msg:opacity-100"
+            >
+              <ThumbsDown size={12} />
+            </button>
+          </>
         )}
       </div>
 
