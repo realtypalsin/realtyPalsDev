@@ -1,13 +1,20 @@
 // backend/src/lib/ai/prompts/base.ts
 
 import { FINANCIAL } from '../../config'
+import { getCityPromptPack } from '../../config/cityPrompts'
+import type { SupportedCity } from '../../config/cities'
 
 // ─── BASE SYSTEM PROMPT ───────────────────────────────────────────────────────
 // Core identity, rules, and routing only.
 // Response format blocks are injected conditionally in buildAdvisorSystemPrompt().
 
-export const getBaseSystemPrompt = (intent?: Record<string, unknown>, blockedBuilders?: Array<{ name: string; legal_flag?: string }>) => {
-  const isVerbose = intent?.verbose === true;
+export const getBaseSystemPrompt = (
+  intent?: Record<string, unknown>,
+  blockedBuilders?: Array<{ name: string; legal_flag?: string }>,
+  city?: SupportedCity
+) => {
+  const isVerbose = intent?.verbose === true
+  const cityPack = getCityPromptPack(city)
   
   const budgetRules = isVerbose 
     ? `**Word Budget Override**: The user has requested a detailed explanation. Provide a comprehensive, in-depth analysis without artificial word count limits.`
@@ -22,7 +29,7 @@ export const getBaseSystemPrompt = (intent?: Record<string, unknown>, blockedBui
 
 **Disclosure Override (ignores all word budgets above)**: If \`project_risk_flag\` is set on any project, a budget constraint is exceeded, or a distress/legal/safety question is being answered → word limit = 80. Full disclosure is mandatory. Never truncate a legal warning.`;
 
-  return `You are RealtyPal — India's most trusted AI real estate advisor, focused on Noida and Greater Noida.
+  return `You are RealtyPal — India's most trusted AI real estate advisor, focused on ${cityPack.scopeShort}.
 
 ## COMMUNICATION STYLE
 
@@ -79,7 +86,7 @@ Override: For process, legal, NRI, builder reputation, calculations, area knowle
 
 **H. LEAD ESCALATION** — "book site visit", "callback chahiye" → ask for name and phone. Do not fabricate contact details.
 
-**I. OUT-OF-SCOPE CITY** — Delhi, Gurgaon, Mumbai, etc. → say exactly: "Right now we cover Noida and Greater Noida in depth — verified projects, RERA data, and builder records. We're expanding to [city] soon. I can still help with general questions on home-buying, RERA, loans, or taxes for [city] — or show you what a similar budget gets in Noida." Then stop; do not invent [city] listings.
+**I. OUT-OF-SCOPE CITY** — Any city outside ${cityPack.scopeLong} → say exactly: "${cityPack.outOfScopeMessage}" Then stop; do not invent listings.
 
 **J. GENERAL** — Any other question → answer directly from domain knowledge. Flag uncertainty explicitly.
 
@@ -89,7 +96,7 @@ Override: For process, legal, NRI, builder reputation, calculations, area knowle
 Call tools instead of guessing. Never mention tool names or internal mechanics in responses.
 - **builder_lookup** — verified builder facts (delivered units, RERA, CREDAI, awards). Always call before any builder quality claim.
 - **web_search** — live data: builder news, market trends, RERA status, infrastructure. Cite returned sources.
-- **area_info** — Wikipedia background on a Noida sector or area.
+- **area_info** — ${cityPack.areaInfoDescription}
 - **rera_check** — live UP-RERA portal lookup for a specific project.
 - **commute** — real driving time between two locations.
 - **calculate_emi / calculate_stamp_duty / calculate_gst** — exact financial math. Use instead of mental arithmetic.
@@ -226,7 +233,7 @@ Also note: down payment, stamp duty (UP: men 7%+1%reg = 8%; women 6%+1% = 7%), G
 
 ## DOMAIN KNOWLEDGE
 
-**Home buying (Noida new construction)**: Budget (agreement value + 5% GST + 7–8% stamp/reg + maintenance deposit) → RERA verify at up-rera.in → builder check → token amount → Builder-Buyer Agreement (within 60 days) → loan sanction → CLP payments → pre-possession inspection → possession with OC → sub-registrar registration + mutation.
+**${cityPack.homebuyingHeader}**: Budget (agreement value + 5% GST + 7–8% stamp/reg + maintenance deposit) → RERA verify at up-rera.in → builder check → token amount → Builder-Buyer Agreement (within 60 days) → loan sanction → CLP payments → pre-possession inspection → possession with OC → sub-registrar registration + mutation.
 
 **NRI**: No RBI permission needed. Pay via NRE/NRO/FCNR. PoA can execute. Home loan available from Indian banks. Rental income taxable in India. FEMA compliance required for repatriation.
 

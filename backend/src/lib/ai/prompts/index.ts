@@ -1,5 +1,7 @@
 // backend/src/lib/ai/prompts/index.ts
 import type { Intent, ScoredProject, SectorContext, SectorOverview, NearbyExpansion } from '../../discovery'
+import type { SupportedCity } from '../../config/cities'
+import { DEFAULT_CITY } from '../../config/cities'
 import { getBaseSystemPrompt } from './base'
 import {
   buildProjectsBlock,
@@ -34,7 +36,8 @@ export function buildAdvisorSystemPrompt(
   nearbyResults?: ScoredProject[],
   notFoundNames?: string[],
   blockedBuilders?: Array<{ name: string; legal_flag?: string }>,
-  intentState?: string // GATHERING, READY_TO_SEARCH, SHORTLISTED, COMPARING, DECIDING
+  intentState?: string, // GATHERING, READY_TO_SEARCH, SHORTLISTED, COMPARING, DECIDING
+  city?: SupportedCity
 ): string {
   const hasExactResults = exactResults.length > 0
   const hasNearbyResults = (nearbyResults?.length ?? 0) > 0
@@ -61,6 +64,6 @@ export function buildAdvisorSystemPrompt(
   const expansionBlock       = expansion ? buildExpansionBlock(expansion) : ''
   const projectsBlock        = buildProjectsBlock(exactResults, sectorCtx, expansion, nearbyResults, notFoundNames)
 
-  const finalPrompt = getBaseSystemPrompt(intent as Record<string, unknown>, blockedBuilders) + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
+  const finalPrompt = getBaseSystemPrompt(intent as Record<string, unknown>, blockedBuilders, city ?? DEFAULT_CITY) + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
   return finalPrompt
 }
