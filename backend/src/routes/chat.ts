@@ -744,7 +744,6 @@ router.post('/', async (req: Request, res: Response) => {
             violations: gr.violations,
             session_id: sessionId,
           })
-          // TODO: Post-pilot — flag in session metadata + emit PostHog event for team review
         }
       }).catch(err => {
         console.error('[GUARDRAIL_ERROR] Failed to run outputGuardrail', err)
