@@ -741,18 +741,9 @@ router.post('/', async (req: Request, res: Response) => {
             reason: gr.reason,
             confidence: gr.confidence,
             violations: gr.violations,
+            session_id: sessionId,
           })
-          // Flag violation in session data for team review
-          if (sessionId) {
-            prisma.chatSession.update({
-              where: { id: sessionId },
-              data: {
-                metadata: { guardrail_violation: true }
-              }
-            }).catch(err => console.error('[GUARDRAIL:PERSIST] Failed to flag violation', err))
-          }
-          // Emit PostHog event for monitoring
-          track('guardrail_violation', { session_id: sessionId, reason: gr.reason, violations: gr.violations })
+          // TODO: Post-pilot — flag in session metadata + emit PostHog event for team review
         }
       }).catch(err => {
         console.error('[GUARDRAIL_ERROR] Failed to run outputGuardrail', err)
