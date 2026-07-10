@@ -698,7 +698,14 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, []);
 
   const dispatchAction = useCallback((action: import('@/components/chat/types').ConversationAction): void => {
-    if ((!userId && !guestToken) || isSubmitting || submitLockRef.current) return;
+    if (!userId && !guestToken) {
+      // Not authenticated — show sign-in prompt
+      const message = 'Sign in or continue as guest to start chatting';
+      console.log('[CHAT:AUTH_REQUIRED]', message);
+      // TODO: emit toast/banner with link to /auth
+      return;
+    }
+    if (isSubmitting || submitLockRef.current) return;
     submitLockRef.current = true;
     setIsSubmitting(true);
     setStatusPhase('extracting');
@@ -971,34 +978,65 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       }
     }
 
-    if (action.actionType === 'CALCULATE_EMI' && action.payload.mode === 'single') {
-      setChipPicker({
-        mode: 'single',
-        action: 'emi',
-        label: 'Calculate EMI',
-        isModal: false,
-        selected: []
-      });
+    if (action.actionType === 'CALCULATE_EMI') {
+      if (action.payload.mode === 'single') {
+        setChipPicker({
+          mode: 'single',
+          action: 'emi',
+          label: 'Calculate EMI',
+          isModal: false,
+          selected: []
+        });
+        return;
+      }
+      // Unmatched EMI mode → open EMI tool
+      setShowCalculator(true);
       return;
     }
 
-    if (action.actionType === 'BOOK_VISIT' && action.payload.mode === 'single') {
-      setChipPicker({
-        mode: 'single',
-        action: 'visit',
-        label: 'Book Visit',
-        isModal: false,
-        selected: []
-      });
+    if (action.actionType === 'BOOK_VISIT') {
+      if (action.payload.mode === 'single') {
+        setChipPicker({
+          mode: 'single',
+          action: 'visit',
+          label: 'Book Visit',
+          isModal: false,
+          selected: []
+        });
+        return;
+      }
+      // Unmatched VISIT mode → log warning, no action
+      console.warn('[CHIP] unmatched BOOK_VISIT mode:', action.payload.mode);
       return;
     }
 
-    // For INTENT_PATCH, TEXT_MESSAGE, REMOVE_FILTER, just dispatch to backend
-    dispatchAction({
-      type: action.actionType,
-      payload: action.payload
-    });
-  }, [dispatchAction, lastShortlist.length]);
+    // Exhaustive: INTENT_PATCH, TEXT_MESSAGE, REMOVE_FILTER, COMPARE_PROPERTIES, OPEN_TOOL
+    switch (action.actionType) {
+      case 'INTENT_PATCH':
+      case 'TEXT_MESSAGE':
+      case 'REMOVE_FILTER':
+      case 'OPEN_TOOL':
+        dispatchAction({
+          type: action.actionType,
+          payload: action.payload
+        });
+        return;
+      case 'COMPARE_PROPERTIES':
+        // COMPARE_PROPERTIES with <2 resolvable slugs → open compare picker
+        setChipPicker({
+          mode: 'multi',
+          action: 'compare',
+          label: 'Compare Properties',
+          isModal: true,
+          selected: []
+        });
+        return;
+      default:
+        const _: never = action.actionType;
+        console.error('[CHIP:EXHAUSTIVE] unhandled action type:', _);
+        return;
+    }
+  }, [dispatchAction, lastShortlist.map(p => p.id).join(',')]);
 
 
 

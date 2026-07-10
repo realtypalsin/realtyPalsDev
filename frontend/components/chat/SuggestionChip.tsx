@@ -8,6 +8,7 @@ interface SuggestionChipProps {
   chipPicker: ChipPickerState | null
   onSetChipPicker: (picker: ChipPickerState | null) => void
   onAction: (chip: ChipAction) => void
+  disabled?: boolean
 }
 
 /**
@@ -33,6 +34,7 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction }: 
       className={`
         flex items-center gap-2 px-4 py-2.5 rounded-[16px] text-[13px] font-medium
         transition-all duration-200 border outline-none whitespace-nowrap
+        ${disabled ? 'opacity-50 pointer-events-none' : ''}
         ${
           isActive
             ? 'bg-blue-600 dark:bg-blue-500 text-white border-blue-700 dark:border-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.25)]'

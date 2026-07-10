@@ -26,8 +26,8 @@ function formatStreamingIntent(intent: Record<string, unknown> | null | undefine
   const parts: string[] = []
   if (Array.isArray(intent.bhk) && intent.bhk.length > 0) parts.push(`${(intent.bhk as number[]).join('/')} BHK`)
   if (typeof intent.sector === 'string') parts.push(intent.sector)
-  if (typeof intent.budgetMax === 'number') parts.push(`under ₹${intent.budgetMax}Cr`)
-  else if (typeof intent.budgetMin === 'number') parts.push(`from ₹${intent.budgetMin}Cr`)
+  if (Number.isFinite(intent.budgetMax)) parts.push(`under ₹${intent.budgetMax}Cr`)
+  else if (Number.isFinite(intent.budgetMin)) parts.push(`from ₹${intent.budgetMin}Cr`)
   return parts.length > 0 ? `Looking for ${parts.join(' · ')}` : 'Scanning available projects…'
 }
 
@@ -101,11 +101,13 @@ export function SuggestionChipGroups({
   chipPicker,
   onSetChipPicker,
   onAction,
+  isDisabled,
 }: {
   chips: import('./types').ChipAction[]
   chipPicker: ChipPickerState | null
   onSetChipPicker: (picker: ChipPickerState | null) => void
   onAction: (action: import('./types').ChipAction) => void
+  isDisabled?: boolean
 }) {
   if (chips.length === 0) return null
 
@@ -114,7 +116,7 @@ export function SuggestionChipGroups({
   return (
     <div className="flex flex-wrap gap-2">
       {sorted.map((chip) => (
-        <SuggestionChip key={chip.id} chip={chip} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} />
+        <SuggestionChip key={chip.id} chip={chip} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} disabled={isDisabled} />
       ))}
     </div>
   )
@@ -730,7 +732,7 @@ function MessageBubbleInner({
                             )}
                             <div className="min-w-0">
                               <div className="font-semibold text-[13px] truncate">{p.name}</div>
-                              <div className="text-[11px] text-gray-400 dark:text-gray-500">{p.price_range_label} · {p.sector}</div>
+                              <div className="text-[11px] text-gray-400 dark:text-gray-500">{[p.price_range_label || '', p.sector || ''].filter(Boolean).join(' · ')}</div>
                             </div>
                           </div>
                           {chipPicker.mode === 'single' && (

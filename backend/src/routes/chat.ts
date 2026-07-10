@@ -972,6 +972,14 @@ router.get('/session/list', async (req: Request, res: Response) => {
     return
   }
 
+  // Rate limit per IP
+  const ip = clientIp(req)
+  const rateLimit = await checkRateLimit(`ip:${ip}`, 40, 60)
+  if (rateLimit.remaining <= 0) {
+    res.status(429).json({ error: 'Rate limit exceeded' })
+    return
+  }
+
   // Guest path — no caching (guest tokens are ephemeral, no stable cache key)
   if (!userId && guestToken) {
     try {
@@ -1026,6 +1034,14 @@ router.get('/session', asyncHandler(async (req: Request, res: Response) => {
 
   if (!userId && !guestToken) {
     res.status(401).json({ error: 'Auth required' })
+    return
+  }
+
+  // Rate limit per IP
+  const ip = clientIp(req)
+  const rateLimit = await checkRateLimit(`ip:${ip}`, 40, 60)
+  if (rateLimit.remaining <= 0) {
+    res.status(429).json({ error: 'Rate limit exceeded' })
     return
   }
 
