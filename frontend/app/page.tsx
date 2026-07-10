@@ -67,7 +67,7 @@ export default function LandingPage() {
           className="text-4xl md:text-6xl lg:text-[72px] leading-[1.1] md:leading-[1.05] text-white font-semibold max-w-4xl tracking-tighter animate-fade-in-up transform transition-all duration-700"
           style={{ animationDelay: '0.1s' }}
         >
-          Buy the right home in Noida. Not the one someone's paid to sell you.
+          Buy the right home in Noida. Not the one someone&apos;s paid to sell you.
         </h1>
         
         {/* Subtitle */}
