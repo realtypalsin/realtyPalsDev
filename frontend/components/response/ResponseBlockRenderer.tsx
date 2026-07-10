@@ -25,9 +25,10 @@ const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 // Sanitization schema: allow realty-chart and realty-box custom elements + their attributes
 const sanitizeSchema = {
   ...defaultSchema,
+  // @ts-ignore
   tagNameFilter: (tagName: string) => {
     if (tagName === 'realty-chart' || tagName === 'realty-box') return true
-    return defaultSchema.tagNameFilter?.(tagName) ?? false
+    return (defaultSchema as any).tagNameFilter?.(tagName) ?? false
   },
   attributes: {
     ...defaultSchema.attributes,

@@ -235,7 +235,7 @@ export default function IntelligenceTab({
 
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-            {dimensionsForChart.map((dim, i) => (
+            {dimensionsForChart.map((dim, i) => dim && (
               <div key={i} className="flex flex-col gap-2 group">
                 <div className="flex items-end justify-between">
                   <div className="flex items-center gap-2">

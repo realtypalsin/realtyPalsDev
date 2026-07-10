@@ -856,7 +856,7 @@ export default function OverviewTab({
             {[
               { label: 'Status', val: d?.status ? d.status.replace(/_/g, ' ').toUpperCase() : '--', icon: Building2 },
               { label: 'Total Towers', val: d?.total_towers ? `${d.total_towers}` : '--', icon: Building2 },
-              { label: 'Total Units', val: d?.total_units ? `${d.total_units}` : '--', icon: Sparkles },
+              { label: 'Total Units', val: (d as any)?.total_units ? `${(d as any).total_units}` : '--', icon: Sparkles },
               { label: 'Configuration', val: unitTypes.length > 0 ? ([...new Set(unitTypes.map(u => u.bhk))].join(', ') + ' BHK') : '--', icon: BedDouble },
               { label: 'Land Area', val: d?.land_area_acres ? `${d.land_area_acres} Acres` : '--', icon: Leaf },
               { label: 'Floors', val: d?.floors ?? '--', icon: Building2 },
