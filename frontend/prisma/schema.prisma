@@ -380,6 +380,7 @@ model ChatSession {
   // Analytics relations
   analytics     ChatAnalytics[]
   query_metrics QueryMetrics[]
+  property_events PropertyEvent[]
 
   @@index([user_id])
   @@index([guest_token])
@@ -645,6 +646,11 @@ model ChatAnalytics {
   promotional_id        String?
   promo_clicked         Boolean @default(false)
 
+  // AI performance metrics
+  latency_ms            Int?
+  llm_tokens            Int?
+  ai_confidence         Int?
+
   created_at            DateTime @default(now())
   session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
@@ -671,6 +677,14 @@ model QueryMetrics {
 
   clicked           Boolean @default(false)
   converted         Boolean @default(false)
+
+  // Search quality metrics
+  results_count     Int?
+  had_results       Boolean?
+  builder           String?
+  purpose           String?
+  possession        String?
+  clarification_count Int @default(0)
 
   created_at        DateTime @default(now())
   session           ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
@@ -703,6 +717,31 @@ model WeeklyMetricsSummary {
   @@unique([week_start])
   @@index([week_start])
   @@map("weekly_metrics_summary")
+}
+
+// ──────────────────────────────────────────────────────────────
+// PROPERTY EVENTS (Analytics — Phase 2+)
+// ──────────────────────────────────────────────────────────────
+
+model PropertyEvent {
+  id                String   @id @default(uuid())
+  session_id        String
+  user_id           String?
+  guest_token       String?
+  project_id        String
+
+  // action: view | save | compare | share | brochure | gallery | location | call | whatsapp | site_visit | remove_saved
+  action            String
+
+  created_at        DateTime @default(now())
+  session           ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([project_id])
+  @@index([user_id])
+  @@index([action])
+  @@index([created_at])
+  @@map("property_events")
 }
 
 // ──────────────────────────────────────────────────────────────

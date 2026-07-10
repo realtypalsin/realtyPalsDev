@@ -53,6 +53,7 @@ export async function trackIntentIdentified(
   sessionId: string,
   intent: Intent,
   userMessage: string,
+  clarificationCount: number = 0,
 ) {
   try {
     const analyticsRecord = await prisma.chatAnalytics.findFirst({
@@ -90,6 +91,10 @@ export async function trackIntentIdentified(
         session_id: sessionId,
         user_id: analyticsRecord.user_id || null,
         week_start: weekStart,
+        builder: intent.builderName || null,
+        purpose: intent.purpose || null,
+        possession: null,
+        clarification_count: clarificationCount,
         clicked: false,
         converted: false,
       }
@@ -119,10 +124,20 @@ export async function trackResultsShown(
 
     if (!analyticsRecord) return
 
+    // Update chat analytics
     await prisma.chatAnalytics.update({
       where: { id: analyticsRecord.id },
       data: {
         results_shown_at: new Date(),
+      }
+    })
+
+    // Update latest query metrics with result count
+    await prisma.queryMetrics.updateMany({
+      where: { session_id: sessionId },
+      data: {
+        results_count: projectCount,
+        had_results: projectCount > 0,
       }
     })
 
@@ -317,6 +332,66 @@ export async function trackPromotionalClick(
     console.log('[ANALYTICS] Promo click:', { promotional_id: promotionalId })
   } catch (err) {
     console.error('[ANALYTICS] Failed to track click:', err)
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 8. PROPERTY EVENTS (fine-grained interaction tracking)
+// ─────────────────────────────────────────────────────────────
+
+export async function trackPropertyEvent(
+  sessionId: string,
+  projectId: string,
+  action: 'view' | 'save' | 'compare' | 'share' | 'brochure' | 'gallery' | 'location' | 'call' | 'whatsapp' | 'site_visit' | 'remove_saved',
+  userId?: string,
+  guestToken?: string,
+) {
+  try {
+    await prisma.propertyEvent.create({
+      data: {
+        session_id: sessionId,
+        project_id: projectId,
+        action,
+        user_id: userId || null,
+        guest_token: guestToken || null,
+      }
+    })
+
+    console.log('[ANALYTICS] Property event:', { session_id: sessionId, project_id: projectId, action })
+  } catch (err) {
+    console.error('[ANALYTICS] Failed to track property event:', err)
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 9. AI PERFORMANCE METRICS
+// ─────────────────────────────────────────────────────────────
+
+export async function trackAIMetrics(
+  sessionId: string,
+  latencyMs: number,
+  tokensUsed: number,
+  confidence?: number,
+) {
+  try {
+    const analyticsRecord = await prisma.chatAnalytics.findFirst({
+      where: { session_id: sessionId }
+    })
+
+    if (!analyticsRecord) return
+
+    await prisma.chatAnalytics.update({
+      where: { id: analyticsRecord.id },
+      data: {
+        latency_ms: latencyMs,
+        llm_tokens: tokensUsed,
+        ai_confidence: confidence || null,
+      }
+    })
+
+    console.log('[ANALYTICS] AI metrics:', { session_id: sessionId, latency_ms: latencyMs, tokens: tokensUsed })
+  } catch (err) {
+    console.error('[ANALYTICS] Failed to track AI metrics:', err)
   }
 }
 

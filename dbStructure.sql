@@ -147,6 +147,7 @@ CREATE TABLE public.project_images (
   sort_order integer NOT NULL DEFAULT 0,
   bhk integer,
   size_sqft integer,
+  source text NOT NULL DEFAULT 'admin'::text,
   CONSTRAINT project_images_pkey PRIMARY KEY (id),
   CONSTRAINT project_images_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
