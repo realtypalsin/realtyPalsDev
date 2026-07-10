@@ -17,6 +17,7 @@ import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
 import { getChipInventory } from '../lib/discovery/chipInventory'
 import { FINANCIAL } from '../lib/config'
+import { DEFAULT_CITY, PILOT_SCOPE_LABEL } from '../lib/config/cities'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
 import { getBuilderRecord } from '../lib/builders'
@@ -289,7 +290,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   const guardrailCheck = await inputGuardrail(message || JSON.stringify(action.payload));
   if (guardrailCheck.blocked) {
-    send('token', { token: "I'm not able to help with that. I'm here to assist with Noida real estate — property search, builder info, and home-buying decisions." });
+    send('token', { token: `I'm not able to help with that. I'm here to assist with ${PILOT_SCOPE_LABEL} real estate — property search, builder info, and home-buying decisions.` });
     send('done', { sessionId: sessionId ?? null, intentState: 'COLD', intent: {} });
     res.end();
     return;
@@ -414,7 +415,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Emit ui_state FIRST TIME (pre-search, sets stage and thinking loader)
     const { computeConversationState } = await import('../lib/discovery/conversationEngine')
-    const chipInventory = await getChipInventory('Noida') // TODO: extract city from intent if available
+    const chipInventory = await getChipInventory(DEFAULT_CITY)
     const preSearchUiState = computeConversationState(
       intent,
       intentState,
@@ -628,7 +629,7 @@ router.post('/', async (req: Request, res: Response) => {
         }
 
         if (name === 'area_info') {
-          const info = await areaInfo(args.sector ?? '', args.city ?? 'Noida');
+          const info = await areaInfo(args.sector ?? '', args.city ?? DEFAULT_CITY);
           return info ? { info } : { info: null, message: 'No Wikipedia article found. Answer from general knowledge of Noida and label it as such.' };
         }
 
@@ -960,7 +961,7 @@ async function buildRestoreUiState(
   const projects = (lastProjects as unknown as ScoredProject[]) ?? []
   const chatHistory = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
   const intentState = getIntentState(intent, projects.length > 0)
-  const chipInventory = await getChipInventory('Noida') // TODO: extract city from intent if available
+  const chipInventory = await getChipInventory(DEFAULT_CITY)
   return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory)
 }
 

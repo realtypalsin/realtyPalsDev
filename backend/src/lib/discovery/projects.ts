@@ -24,6 +24,7 @@ import {
 } from './scoring'
 import { getNearbySectors } from './sectors'
 import { isCityLevel } from './intent'
+import { SUPPORTED_CITIES } from '../config/cities'
 
 /** Bidirectional substring match — mirrors SQL ILIKE fallback used in discovery Branch 1. */
 export function matchesProjectName(term: string, projectName: string): boolean {
@@ -133,7 +134,10 @@ function buildHardFilters(intent: Intent): Prisma.ProjectWhereInput {
   if (intent.sector && !isCityLevel(intent.sector)) {
     // Sanitize sector by removing common city suffixes that LLM might append
     let cleanSector = intent.sector
-    const cityTerms = [' noida', ' greater noida', ' gurgaon', ' gurugram', ' delhi', ' mumbai', ' bangalore', ' hyderabad', ' pune', ' chennai']
+    const cityTerms = [
+      ...SUPPORTED_CITIES.map((c) => ` ${c.toLowerCase()}`),
+      ' gurgaon', ' gurugram', ' delhi', ' mumbai', ' bangalore', ' hyderabad', ' pune', ' chennai'
+    ]
     for (const city of cityTerms) {
       if (cleanSector.toLowerCase().endsWith(city)) {
         cleanSector = cleanSector.slice(0, -city.length).trim()
@@ -553,19 +557,8 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
         }
       }
 
-      // City disambiguation: if sector-only query matches same sector across multiple cities, ask for clarification
-      if (!effectiveIntent.city) {
-        const distinctCities = [...new Set(rawProjects.map((p) => p.city))]
-        if (distinctCities.length > 1) {
-          console.log(`[DISCOVERY:B2] CITY MULTI-MATCH: "${effectiveIntent.sector}" found in ${distinctCities.length} cities:`, distinctCities)
-          // City disambiguation not implemented — would require a separate prompt/flow
-          // For now, return empty results to avoid serving wrong city
-          return {
-            exactResults: [],
-            nearbyResults: []
-          }
-        }
-      }
+      // Note: City disambiguation skipped — we operate in single-city context (Noida/Greater Noida).
+      // Intent type does not include a city field; all queries search within supported cities.
     }
 
     // Builder-only queries (no BHK/budget/sector) bypass score threshold

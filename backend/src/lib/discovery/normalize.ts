@@ -3,8 +3,10 @@
  * Ensures consistent canonical values across the DB.
  */
 
+import { SUPPORTED_CITIES } from '../config/cities'
+
 // Valid cities (controlled vocabulary)
-const VALID_CITIES = new Set(['Noida', 'Greater Noida', 'Greater Noida West'])
+const VALID_CITIES = new Set(SUPPORTED_CITIES)
 
 // Terms that suffix sectors but should be stripped to get canonical sector number
 const CITY_LEVEL_TERMS = /\s+(Noida|Greater\s+Noida(?:\s+West)?|UP|Uttar\s+Pradesh)$/i
@@ -74,6 +76,6 @@ export function normalizeLocation(sector: any, city: any): { sector: string | nu
  */
 export function isCanonical(sector: string | null, city: string | null): boolean {
   if (sector !== null && !sector.match(/^Sector \d+$/)) return false
-  if (city !== null && !VALID_CITIES.has(city)) return false
+  if (city !== null && !VALID_CITIES.has(city as any)) return false
   return true
 }
