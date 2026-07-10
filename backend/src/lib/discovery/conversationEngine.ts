@@ -335,6 +335,7 @@ export function computeConversationState(
   chatHistory: { role: string; content: string }[] = [],
   disambiguation?: { query: string; candidates: Array<{ name: string; sector: string; builder: string }> },
   sectorDisambiguation?: { query: string; candidates: string[] },
+  cityDisambiguation?: { query: string; candidates: Array<{ city: string; label: string }> },
   chipInventory: ChipInventory | null = null
 ): ConversationState {
   const stage = computeStage(intent, intentState, results, isComparison)
@@ -360,6 +361,16 @@ export function computeConversationState(
       s,
       '📍',
       { patch: { sector: s }, label: s },
+      idx + 1
+    ))
+  } else if (cityDisambiguation) {
+    // Progressive clarification: city selection chips (max 3-4, NotebookLM style)
+    chips = cityDisambiguation.candidates.slice(0, 4).map((c, idx) => chip(
+      `disambig_city_${idx}`,
+      'INTENT_PATCH',
+      c.label,
+      '🏘️',
+      { patch: { sector: cityDisambiguation.query, city: c.city }, label: c.label },
       idx + 1
     ))
   } else {
@@ -400,9 +411,16 @@ export function computeConversationState(
     return groupOrderDiff !== 0 ? groupOrderDiff : a.priority - b.priority
   })
 
-  // The 5-chip cap exists to keep a flat suggestion row from overwhelming the
-  // UI. Grouped chips are rendered as separate sections instead, so the cap
-  // doesn't apply — the engine already decides how many chips each group gets.
+  // Smart, predictive chip selection: max 3-4 for clean NotebookLM style
+  // Priority ranking: critical clarifications (1) → high-value actions (2-3) → exploratory (4+)
+  // Grouped chips rendered as separate sections; ungrouped chips follow predictive ranking
   const hasGroups = chips.some(c => c.group)
-  return { stage, thinking, chips: hasGroups ? chips : chips.slice(0, 5), missingFields, confidence }
+  if (!hasGroups && chips.length > 4) {
+    // Sort by priority, take top 3-4 most relevant chips
+    // Lower priority number = more critical (appears first)
+    const critical = chips.filter(c => c.priority <= 2).slice(0, 2)
+    const secondary = chips.filter(c => c.priority > 2 && c.priority <= 3).slice(0, 2)
+    chips = [...critical, ...secondary].slice(0, 4)
+  }
+  return { stage, thinking, chips: hasGroups ? chips : chips.slice(0, 4), missingFields, confidence }
 }

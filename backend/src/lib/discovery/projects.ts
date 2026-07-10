@@ -549,6 +549,25 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
           }
         }
       }
+
+      // City disambiguation: if sector-only query matches same sector across multiple cities, ask for clarification
+      if (!effectiveIntent.city) {
+        const distinctCities = [...new Set(rawProjects.map((p) => p.city))]
+        if (distinctCities.length > 1) {
+          console.log(`[DISCOVERY:B2] CITY MULTI-MATCH: "${effectiveIntent.sector}" found in ${distinctCities.length} cities:`, distinctCities)
+          return {
+            exactResults: [],
+            nearbyResults: [],
+            cityDisambiguation: {
+              query: effectiveIntent.sector,
+              candidates: distinctCities.map((city) => ({
+                city,
+                label: `${effectiveIntent.sector} ${city}`
+              }))
+            }
+          }
+        }
+      }
     }
 
     // Builder-only queries (no BHK/budget/sector) bypass score threshold

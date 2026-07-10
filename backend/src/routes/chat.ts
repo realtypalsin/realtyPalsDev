@@ -298,6 +298,7 @@ router.post('/', async (req: Request, res: Response) => {
   let nearbyProjects: Awaited<ReturnType<typeof discoverProjects>>['nearbyResults'] = []
   let projectDisambiguation: Awaited<ReturnType<typeof discoverProjects>>['disambiguation'] | undefined
   let sectorDisambiguation: { query: string; candidates: string[] } | undefined
+  let cityDisambiguation: { query: string; candidates: Array<{ city: string; label: string }> } | undefined
 
   try {
     console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
@@ -523,7 +524,7 @@ router.post('/', async (req: Request, res: Response) => {
         console.log('[CHAT:DISAMBIG] multi-match detected', { query, count: candidates.length })
       }
 
-      // Handle sector disambiguation (multi-sector match) — FIXED: was dropped before
+      // Handle sector disambiguation (multi-sector match)
       if (discoveryResult.sectorDisambiguation) {
         sectorDisambiguation = discoveryResult.sectorDisambiguation
         const { query, candidates } = discoveryResult.sectorDisambiguation
@@ -532,6 +533,15 @@ router.post('/', async (req: Request, res: Response) => {
           ? disambiguationText + `\n\nOr did you mean sector(s): ${list}?`
           : `Did you mean: ${list}?`
         console.log('[CHAT:DISAMBIG] sector ambiguity detected', { query, count: candidates.length })
+      }
+
+      // Handle city disambiguation (same sector across multiple cities) — progressive clarification
+      if (discoveryResult.cityDisambiguation) {
+        cityDisambiguation = discoveryResult.cityDisambiguation
+        const { query, candidates } = discoveryResult.cityDisambiguation
+        const list = candidates.map((c) => c.label).join(' / ')
+        disambiguationText = `${query} is in multiple locations: ${list}. Which one are you interested in?`
+        console.log('[CHAT:DISAMBIG] city ambiguity detected', { query, count: candidates.length })
       }
 
       // Always send the properties event when intent is ready — even empty exactResults
@@ -557,6 +567,7 @@ router.post('/', async (req: Request, res: Response) => {
       chatHistory,
       projectDisambiguation,
       sectorDisambiguation,
+      cityDisambiguation,
       chipInventory // Reuse inventory loaded earlier for consistency
     )
     send('ui_state', postSearchUiState as unknown as Record<string, unknown>)

@@ -343,7 +343,7 @@ function FloorPlansCard({ images, loading, onViewAll, onGoToPricing }: { images:
 function PersonaCard({ label, isPrimary, incomeRange, description }: { label: string; isPrimary: boolean; incomeRange?: string | null; description?: string | null }) {
   return (
     <div className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 ${isPrimary ? 'border-indigo-200 bg-indigo-50/60' : 'border-gray-100 bg-white'}`}>
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isPrimary ? 'bg-indigo-500 text-white' : 'bg-gray-50 text-gray-400'}`}>
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isPrimary ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>
         <UserCircle size={18} />
       </div>
       <div className="min-w-0 flex-1">
@@ -675,13 +675,13 @@ export default function OverviewTab({
       quickInfoItems.push({ label: `${amenities.length}+ Amenities`, icon: Dumbbell, color: 'bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400' })
     if (metroConn)
       quickInfoItems.push({ label: metroConn.distance_km != null ? `${metroConn.distance_km} km to Metro` : 'Metro Nearby', icon: TrainFront, color: 'bg-[#E0F2F1] text-[#00695C] dark:bg-[#122c28] dark:text-[#4db6ac]' })
-    if ((d as any)?.open_space_pct)
-      quickInfoItems.push({ label: `${(d as any).open_space_pct}% Open Spaces`, icon: Leaf, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400' })
+    if (d?.open_space_pct != null)
+      quickInfoItems.push({ label: `${d.open_space_pct}% Open Spaces`, icon: Leaf, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400' })
     if (hasSecurityAmenity)
       quickInfoItems.push({ label: '24×7 Security', icon: Shield, color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400' })
-    if ((d as any)?.green_rating)
-      quickInfoItems.push({ label: (d as any).green_rating, icon: DropletLeafIcon, color: 'bg-lime-50 text-lime-700 dark:bg-lime-950/30 dark:text-lime-400' })
-    if ((d as any)?.rera_number)
+    if (d?.green_rating)
+      quickInfoItems.push({ label: d.green_rating, icon: DropletLeafIcon, color: 'bg-lime-50 text-lime-700 dark:bg-lime-950/30 dark:text-lime-400' })
+    if (d?.rera_number)
       quickInfoItems.push({ label: 'RERA Registered', icon: FileText, color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/30 dark:text-purple-400' })
 
     return (
@@ -854,12 +854,12 @@ export default function OverviewTab({
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: 'Project Type', val: (d as any)?.project_type ?? '--', icon: Building2 },
+              { label: 'Status', val: d?.status ? d.status.replace(/_/g, ' ').toUpperCase() : '--', icon: Building2 },
               { label: 'Total Towers', val: d?.total_towers ? `${d.total_towers}` : '--', icon: Building2 },
-              { label: 'Total Units', val: (d as any)?.total_units ? `${(d as any).total_units}` : '--', icon: Sparkles },
+              { label: 'Total Units', val: d?.total_units ? `${d.total_units}` : '--', icon: Sparkles },
               { label: 'Configuration', val: unitTypes.length > 0 ? ([...new Set(unitTypes.map(u => u.bhk))].join(', ') + ' BHK') : '--', icon: BedDouble },
               { label: 'Land Area', val: d?.land_area_acres ? `${d.land_area_acres} Acres` : '--', icon: Leaf },
-              { label: 'Floors', val: (d as any)?.floors ?? '--', icon: Building2 },
+              { label: 'Floors', val: d?.floors ?? '--', icon: Building2 },
               { label: 'Launch Date', val: d?.launch_date ? new Date(d.launch_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '—', icon: FileText },
               { label: 'Possession', val: d?.possession_label ?? '—', icon: FileText }
             ].slice(0, showAllDetails ? undefined : 4).map((detailItem, i) => {
@@ -1006,34 +1006,21 @@ export default function OverviewTab({
                 What&apos;s Nearby
               </h2>
               {(() => {
-                const nearbyData = [
-                  { name: 'Schools', count: (d as any)?.schools_nearby_count },
-                  { name: 'Hospitals', count: (d as any)?.hospitals_nearby_count },
-                  { name: 'Shopping', count: (d as any)?.shopping_nearby_count },
-                  { name: 'IT Parks', count: (d as any)?.it_parks_nearby_count },
-                  { name: 'Banks', count: (d as any)?.banks_nearby_count },
-                  { name: 'Restaurants', count: (d as any)?.restaurants_nearby_count },
-                ]
-                const hasAnyNearby = nearbyData.some(n => n.count != null)
-                if (!hasAnyNearby) {
+                // No hardcoded nearby data available from backend yet
+                // Will be populated when neighborhood intelligence is added
+                const hasConnectivity = (detail?.all_connectivity?.length ?? 0) > 0
+                if (!hasConnectivity) {
                   return (
                     <div className="py-4 text-center">
                       <ShoppingBag size={20} className="text-gray-300 mx-auto mb-2" />
-                      <p className="text-[13px] text-gray-400 font-medium">Nearby count data not available</p>
-                      <p className="text-[12px] text-gray-400 mt-1">Add nearby details from the admin panel.</p>
+                      <p className="text-[13px] text-gray-400 font-medium">Nearby intelligence coming soon</p>
+                      <p className="text-[12px] text-gray-400 mt-1">Check the Location tab for connectivity details.</p>
                     </div>
                   )
                 }
                 return (
-                  <div className="grid grid-cols-2 gap-3">
-                    {nearbyData.map((item, i) => (
-                      <div key={i} className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-[#201c18] border border-gray-100 dark:border-gray-800/40 rounded-xl">
-                        <span className="text-[13px] font-bold text-gray-600 dark:text-gray-400">{item.name}</span>
-                        <span className="text-[13px] font-black text-blue-600 dark:text-blue-400">
-                          {item.count != null ? `${item.count}+` : '--'}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="text-center py-4">
+                    <p className="text-[13px] text-gray-500 font-medium">See Location tab for detailed connectivity</p>
                   </div>
                 )
               })()}
