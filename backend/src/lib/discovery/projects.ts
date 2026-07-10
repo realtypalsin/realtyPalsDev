@@ -449,6 +449,7 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
         })),
       },
       include: PROJECT_INCLUDE,
+      take: 50,
     })
     const foundNames = byName.map((p) => p.name)
     console.log(`[DISCOVERY:B1] matched ${byName.length}/${effectiveIntent.projectNames!.length}:`, JSON.stringify(foundNames))
@@ -509,6 +510,7 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
   let rawProjects = await prisma.project.findMany({
     where,
     include: PROJECT_INCLUDE,
+    take: 200,
   })
 
   // Fallback: if sector-only query returned 0 results, try simplified sector-only search
@@ -529,6 +531,7 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
         ],
       },
       include: PROJECT_INCLUDE,
+      take: 50,
     })
     if (rawProjects.length > 0) {
       console.log(`[DISCOVERY:B2-FALLBACK] Found ${rawProjects.length} projects in sector-only fallback`)
@@ -595,6 +598,7 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
           prisma.project.findMany({
             where: buildHardFilters({ ...effectiveIntent, sector: nearbySector }),
             include: PROJECT_INCLUDE,
+            take: 50,
           })
         )
       )

@@ -700,9 +700,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const dispatchAction = useCallback((action: import('@/components/chat/types').ConversationAction): void => {
     if (!userId && !guestToken) {
       // Not authenticated — show sign-in prompt
-      const message = 'Sign in or continue as guest to start chatting';
-      console.log('[CHAT:AUTH_REQUIRED]', message);
-      // TODO: emit toast/banner with link to /auth
+      setToast({ message: 'Sign in or continue as guest to start chatting' });
+      router.push('/auth');
       return;
     }
     if (isSubmitting || submitLockRef.current) return;

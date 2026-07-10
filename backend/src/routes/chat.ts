@@ -644,7 +644,7 @@ router.post('/', async (req: Request, res: Response) => {
 
         if (name === 'commute') {
           const r = await commute(args.origin ?? '', args.destination ?? '');
-          return r ? { commute: r } : { commute: null, message: 'Could not calculate commute precisely. Give an approximate from general knowledge and say it is approximate.' };
+          return r ? { commute: r } : { commute: null, message: 'Tell the user commute data is temporarily unavailable. Do not provide approximate times from memory.' };
         }
 
         if (name === 'calculate_emi') {
@@ -742,6 +742,17 @@ router.post('/', async (req: Request, res: Response) => {
             confidence: gr.confidence,
             violations: gr.violations,
           })
+          // Flag violation in session data for team review
+          if (sessionId) {
+            prisma.chatSession.update({
+              where: { id: sessionId },
+              data: {
+                metadata: { guardrail_violation: true }
+              }
+            }).catch(err => console.error('[GUARDRAIL:PERSIST] Failed to flag violation', err))
+          }
+          // Emit PostHog event for monitoring
+          track('guardrail_violation', { session_id: sessionId, reason: gr.reason, violations: gr.violations })
         }
       }).catch(err => {
         console.error('[GUARDRAIL_ERROR] Failed to run outputGuardrail', err)
