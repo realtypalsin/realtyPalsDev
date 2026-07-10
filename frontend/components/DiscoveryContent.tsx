@@ -1395,7 +1395,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                       lastShortlist={lastShortlist}
                       showMap={showMap}
                       userId={userId}
-                      sessionId={sessionId}
+                      sessionId={sessionId ?? ''}
                       regeneratingIdx={regeneratingIdx}
                       chipPicker={chipPicker}
                       chips={conversationState?.chips ?? []}
