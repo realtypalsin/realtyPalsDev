@@ -26,3 +26,10 @@ export async function authHeaders(base: Record<string, string> = {}): Promise<Re
   const token = await getAccessToken()
   return token ? { ...base, Authorization: `Bearer ${token}` } : { ...base }
 }
+
+/** Get admin Authorization header from localStorage token. */
+export function adminAuthHeaders(base: Record<string, string> = {}): Record<string, string> {
+  if (typeof window === 'undefined') return base
+  const token = localStorage.getItem('admin_token')
+  return token ? { ...base, Authorization: `Bearer ${token}` } : { ...base }
+}

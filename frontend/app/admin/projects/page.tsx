@@ -8,6 +8,7 @@ import { Search, Plus, CheckCircle2, Clock, Zap, Trash2, Building2, User, MapPin
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 interface UnitType { bhk: number; price_min_cr: number | null; price_max_cr: number | null }
 
@@ -100,7 +101,7 @@ export default function AdminProjects() {
   async function load(q = '') {
     setLoading(true)
     try {
-      const res  = await fetch(`${API_BASE}/admin/projects?q=${encodeURIComponent(q)}`, { credentials: 'include' })
+      const res  = await fetch(`${API_BASE}/admin/projects?q=${encodeURIComponent(q)}`, { headers: adminAuthHeaders() })
       const data = await res.json()
       setProjects(data.projects ?? [])
     } catch (e) {
