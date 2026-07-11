@@ -41,9 +41,8 @@ export default function BuilderApplicationsPage() {
     try {
       const res = await fetch(`${API_BASE}/builder-applications/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
-        credentials: 'include'
       })
       if (!res.ok) throw new Error('Update failed')
       toast.success(`Application marked as ${newStatus}`)

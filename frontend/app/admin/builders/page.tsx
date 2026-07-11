@@ -188,7 +188,7 @@ export default function AdminBuilders() {
     try {
       const res = await fetch(`${API_BASE}/admin/builders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: addForm.name,
           slug: addForm.slug,
@@ -197,7 +197,6 @@ export default function AdminBuilders() {
           website: addForm.website || null,
           credai_member: addForm.credai_member,
         }),
-        credentials: 'include'
       })
       if (!res.ok) throw new Error('Failed to create')
       const created = await res.json()
@@ -229,7 +228,7 @@ export default function AdminBuilders() {
     try {
       const res = await fetch(`${API_BASE}/admin/builders/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: editForm.name,
           slug: editForm.slug,
@@ -238,7 +237,6 @@ export default function AdminBuilders() {
           website: editForm.website || null,
           credai_member: editForm.credai_member,
         }),
-        credentials: 'include'
       })
       if (!res.ok) throw new Error('Failed to update')
       const updated = await res.json()

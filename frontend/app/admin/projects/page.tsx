@@ -167,7 +167,7 @@ export default function AdminProjects() {
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
     setDeleting(id)
-    const promise = fetch(`${API_BASE}/admin/projects/${id}`, { method: 'DELETE', credentials: 'include' })
+    const promise = fetch(`${API_BASE}/admin/projects/${id}`, { method: 'DELETE', headers: adminAuthHeaders() })
     
     toast.promise(promise, {
       loading: 'Deleting project...',
