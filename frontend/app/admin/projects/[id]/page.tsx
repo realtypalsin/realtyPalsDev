@@ -16,6 +16,7 @@ import InvestmentInsightsEditor from '@/components/admin/InvestmentInsightsEdito
 import LocationIntelligenceEditor from '@/components/admin/LocationIntelligenceEditor'
 import { Loader2, LayoutPanelLeft, Cpu, Images, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface CompletenessResult {
@@ -164,9 +165,9 @@ export default function EditProject() {
 
   async function loadProject() {
     const [projectRes, docsRes, completenessRes] = await Promise.all([
-      fetch(`${API_BASE}/admin/projects/${id}`, { credentials: 'include' }),
-      fetch(`${API_BASE}/admin/projects/${id}/documents`, { credentials: 'include' }),
-      fetch(`${API_BASE}/admin/projects/${id}/completeness`, { credentials: 'include' }),
+      fetch(`${API_BASE}/admin/projects/${id}`, { headers: adminAuthHeaders() }),
+      fetch(`${API_BASE}/admin/projects/${id}/documents`, { headers: adminAuthHeaders() }),
+      fetch(`${API_BASE}/admin/projects/${id}/completeness`, { headers: adminAuthHeaders() }),
     ])
     const projectJson     = await projectRes.json()
     const docsJson        = docsRes.ok ? await docsRes.json() : { documents: [] }
@@ -193,9 +194,9 @@ export default function EditProject() {
   const handleSaved = useCallback(async () => {
     setRefreshing(true)
     const [projectRes, docsRes, completenessRes] = await Promise.all([
-      fetch(`${API_BASE}/admin/projects/${id}`, { credentials: 'include' }),
-      fetch(`${API_BASE}/admin/projects/${id}/documents`, { credentials: 'include' }),
-      fetch(`${API_BASE}/admin/projects/${id}/completeness`, { credentials: 'include' }),
+      fetch(`${API_BASE}/admin/projects/${id}`, { headers: adminAuthHeaders() }),
+      fetch(`${API_BASE}/admin/projects/${id}/documents`, { headers: adminAuthHeaders() }),
+      fetch(`${API_BASE}/admin/projects/${id}/completeness`, { headers: adminAuthHeaders() }),
     ])
     const projectJson     = await projectRes.json()
     const docsJson        = docsRes.ok ? await docsRes.json() : { documents: [] }

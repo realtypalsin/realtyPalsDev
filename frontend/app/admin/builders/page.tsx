@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { Plus, Building2, Globe, CheckCircle2, Pencil, X, Save, Loader2, Trash2, Search, CornerDownLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 interface Builder {
   id: string
@@ -119,7 +120,7 @@ export default function AdminBuilders() {
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/builders`, { credentials: 'include' })
+    fetch(`${API_BASE}/admin/builders`, { headers: adminAuthHeaders() })
       .then((r) => r.json())
       .then((d) => { setBuilders(d.builders ?? []) })
       .catch(() => toast.error('Failed to load builders'))
