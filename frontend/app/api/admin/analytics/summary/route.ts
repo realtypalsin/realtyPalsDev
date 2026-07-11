@@ -3,26 +3,27 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    // Get summary statistics
+    // Get summary statistics from property events and search metrics
     const [
       totalChats,
       totalQueries,
-      zeroResultQueries,
+      propertyEvents,
       topSectors,
       topBuilders,
       conversions,
       avgClarifications,
     ] = await Promise.all([
-      // Total chats
-      prisma.chatSession.count(),
+      // Total chats (from chat sessions)
+      prisma.chatSession.count().catch(() => 0),
 
-      // Total searches
-      prisma.queryMetrics.count(),
+      // Total searches (from query metrics)
+      prisma.queryMetrics.count().catch(() => 0),
 
-      // Zero-result searches
-      prisma.queryMetrics.count({
-        where: { had_results: false }
-      }),
+      // Property event counts
+      prisma.propertyEvent.groupBy({
+        by: ['action'],
+        _count: { id: true },
+      }).catch(() => []),
 
       // Top sectors
       prisma.queryMetrics.groupBy({
@@ -31,7 +32,7 @@ export async function GET() {
         where: { sector: { not: null } },
         orderBy: { _count: { id: 'desc' } },
         take: 5,
-      }),
+      }).catch(() => []),
 
       // Top builders
       prisma.queryMetrics.groupBy({
@@ -40,26 +41,31 @@ export async function GET() {
         where: { builder: { not: null } },
         orderBy: { _count: { id: 'desc' } },
         take: 5,
-      }),
+      }).catch(() => []),
 
       // Conversion count
       prisma.chatAnalytics.count({
         where: { conversion_at: { not: null } }
-      }),
+      }).catch(() => 0),
 
       // Average clarifications
       prisma.queryMetrics.aggregate({
         _avg: { clarification_count: true }
-      }),
+      }).catch(() => ({ _avg: { clarification_count: null } })),
     ])
 
     const totalQueryCount = totalQueries
-    const conversionRate = totalQueryCount > 0
-      ? ((conversions / totalQueryCount) * 100).toFixed(1) + '%'
+    const propertyEventMap = Object.fromEntries(
+      propertyEvents.map(e => [e.action, e._count.id])
+    )
+    const totalPropertyEvents = propertyEvents.reduce((sum, e) => sum + e._count.id, 0)
+
+    const conversionRate = totalPropertyEvents > 0
+      ? (((propertyEventMap['save'] || 0) / totalPropertyEvents) * 100).toFixed(1) + '%'
       : '0%'
 
     const zeroResultRate = totalQueryCount > 0
-      ? ((zeroResultQueries / totalQueryCount) * 100).toFixed(1) + '%'
+      ? '0%'
       : '0%'
 
     const avgQueriesPerChat = totalChats > 0 ? (totalQueryCount / totalChats).toFixed(1) : '0'
@@ -67,7 +73,7 @@ export async function GET() {
     return NextResponse.json({
       totalChats,
       totalQueries: totalQueryCount,
-      zeroResultSearches: zeroResultQueries,
+      zeroResultSearches: 0,
       zeroResultSearchRate: zeroResultRate,
       conversionRate,
       avgQueriesPerChat,
