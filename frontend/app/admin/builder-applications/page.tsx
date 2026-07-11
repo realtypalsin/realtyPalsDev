@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Clock, XCircle, Search, Building2, User, Phone, Mail } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 import { toast } from 'sonner'
 
 interface BuilderApplication {
@@ -23,7 +24,7 @@ export default function BuilderApplicationsPage() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/builder-applications?status=all`, { credentials: 'include' })
+      const res = await fetch(`${API_BASE}/builder-applications?status=all`, { headers: adminAuthHeaders() })
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
       setApplications(data.applications || [])

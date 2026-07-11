@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer
@@ -22,7 +23,7 @@ export default function SearchAnalytics() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/admin/analytics/summary`, { credentials: 'include' })
+      const res = await fetch(`${API_BASE}/admin/analytics/summary`, { headers: adminAuthHeaders() })
       const summary = await res.json()
       setData(summary)
     } catch (err) {

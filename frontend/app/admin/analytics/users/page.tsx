@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
 
 interface UserMetrics {
@@ -29,7 +30,7 @@ export default function UsersAnalytics() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/admin/analytics/users`, { credentials: 'include' })
+      const res = await fetch(`${API_BASE}/admin/analytics/users`, { headers: adminAuthHeaders() })
       const users = await res.json()
       setData(users)
     } catch (err) {
