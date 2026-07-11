@@ -463,6 +463,9 @@ CREATE TABLE public.chat_analytics (
   promotional_id text,
   promo_clicked boolean NOT NULL DEFAULT false,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ai_confidence integer,
+  latency_ms integer,
+  llm_tokens integer,
   CONSTRAINT chat_analytics_pkey PRIMARY KEY (id),
   CONSTRAINT chat_analytics_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
 );
@@ -480,6 +483,12 @@ CREATE TABLE public.query_metrics (
   clicked boolean NOT NULL DEFAULT false,
   converted boolean NOT NULL DEFAULT false,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  builder text,
+  clarification_count integer NOT NULL DEFAULT 0,
+  had_results boolean,
+  possession text,
+  purpose text,
+  results_count integer,
   CONSTRAINT query_metrics_pkey PRIMARY KEY (id),
   CONSTRAINT query_metrics_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
 );
@@ -643,4 +652,15 @@ CREATE TABLE public.builder_themes (
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT builder_themes_pkey PRIMARY KEY (id),
   CONSTRAINT builder_themes_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
+);
+CREATE TABLE public.property_events (
+  id text NOT NULL,
+  session_id text NOT NULL,
+  user_id text,
+  guest_token text,
+  project_id text NOT NULL,
+  action text NOT NULL,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT property_events_pkey PRIMARY KEY (id),
+  CONSTRAINT property_events_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
 );

@@ -37,6 +37,7 @@ jest.mock('next/image', () => ({
 
 jest.mock('@/lib/analytics', () => ({
   track: jest.fn(),
+  trackPropertyEvent: jest.fn(() => Promise.resolve()),
 }));
 
 jest.mock('@/components/property-detail/OverviewTab', () => () => <div data-testid="overview-tab">OverviewTab</div>);
