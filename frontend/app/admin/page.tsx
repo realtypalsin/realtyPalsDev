@@ -29,7 +29,10 @@ export default function AdminDashboard() {
 
   async function load() {
     setLoading(true)
-    const res  = await fetch(`${API_BASE}/admin/projects`, { credentials: 'include' })
+    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null
+    const res  = await fetch(`${API_BASE}/admin/projects`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    })
     const data = await res.json()
     const projects = data.projects ?? []
     const builderCounts: Record<string, number> = {}
