@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { BarChart3, TrendingUp, Target, Users, AlertCircle, RefreshCw } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend
@@ -53,10 +54,11 @@ export default function AnalyticsDashboard() {
   async function load() {
     setLoading(true)
     try {
+      const headers = adminAuthHeaders()
       const [summaryRes, qualityRes, usersRes] = await Promise.all([
-        fetch(`${API_BASE}/admin/analytics/summary`, { credentials: 'include' }),
-        fetch(`${API_BASE}/admin/analytics/quality`, { credentials: 'include' }),
-        fetch(`${API_BASE}/admin/analytics/users`, { credentials: 'include' }),
+        fetch(`${API_BASE}/admin/analytics/summary`, { headers }),
+        fetch(`${API_BASE}/admin/analytics/quality`, { headers }),
+        fetch(`${API_BASE}/admin/analytics/users`, { headers }),
       ])
 
       const [summaryData, qualityData, usersData] = await Promise.all([
