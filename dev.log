@@ -1,0 +1,63 @@
+
+> dev
+> concurrently "npm run dev:backend" "npm run dev:frontend"
+
+[0] 
+[0] > dev:backend
+[0] > npm run dev --workspace=backend
+[0] 
+[1] 
+[1] > dev:frontend
+[1] > npm run dev --workspace=frontend
+[1] 
+[0] 
+[0] > realtypals-backend@1.0.0 dev
+[0] > tsx watch src/index.ts
+[0] 
+[1] 
+[1] > realtypals@0.1.0 dev
+[1] > next dev
+[1] 
+[1]  ⚠ Port 3000 is in use, trying 3001 instead.
+[0] [startup] database: ok
+[0] [startup] redis: ok
+[0] node:events:487
+[0]       throw er; // Unhandled 'error' event
+[0]       ^
+[0] 
+[0] Error: listen EADDRINUSE: address already in use :::3002
+[0]     at Server.setupListenHandle [as _listen2] (node:net:2009:16)
+[0]     at listenInCluster (node:net:2066:12)
+[0]     at Server.listen (node:net:2171:7)
+[0]     at app.listen (C:\Users\Furqan\Desktop\UiRealtyPals\node_modules\express\lib\application.js:635:24)
+[0]     at startup (C:\Users\Furqan\Desktop\UiRealtyPals\backend\src\index.ts:133:22)
+[0]     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[0] Emitted 'error' event on Server instance at:
+[0]     at emitErrorNT (node:net:2045:8)
+[0]     at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+[0]   code: 'EADDRINUSE',
+[0]   errno: -4091,
+[0]   syscall: 'listen',
+[0]   address: '::',
+[0]   port: 3002
+[0] }
+[0] 
+[0] Node.js v24.18.0
+[1]   ▲ Next.js 14.2.5
+[1]   - Local:        http://localhost:3001
+[1]   - Environments: .env.local, .env
+[1]   - Experiments (use with caution):
+[1]     · instrumentationHook
+[1] 
+[1]  ✓ Starting...
+[1] (node:34136) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+[1] (Use `node --trace-warnings ...` to show where the warning was created)
+[1]  ○ Compiling /instrumentation ...
+[1]  ✓ Compiled /instrumentation in 1320ms (424 modules)
+[1]  ✓ Ready in 4.4s
+[1]  ✓ Compiled in 238ms (424 modules)
+[1]  ✓ Compiled in 2s (424 modules)
+[1]  ✓ Compiled in 200ms (424 modules)
+[1]  ✓ Compiled in 213ms (424 modules)
+[1]  ✓ Compiled in 1271ms (424 modules)
+[1] <w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\Users\Furqan\Desktop\UiRealtyPals\frontend\.next\cache\webpack\edge-server-development\1.pack.gz_' -> 'C:\Users\Furqan\Desktop\UiRealtyPals\frontend\.next\cache\webpack\edge-server-development\1.pack.gz'

@@ -1,0 +1,9 @@
+[    1322ms] [ERROR] Refused to apply style from 'http://localhost:3000/_next/static/css/app/layout.css?v=1782990203192' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled. @ http://localhost:3000/discover:0
+[    1343ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/app/discover/error.js:0
+[    1343ms] [ERROR] Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/discover/error.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled. @ http://localhost:3000/discover:0
+[    1351ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/app-pages-internals.js:0
+[    1351ms] [ERROR] Refused to execute script from 'http://localhost:3000/_next/static/chunks/app-pages-internals.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled. @ http://localhost:3000/discover:0
+[    1351ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/main-app.js?v=1782990203192:0
+[    1351ms] [ERROR] Refused to execute script from 'http://localhost:3000/_next/static/chunks/main-app.js?v=1782990203192' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled. @ http://localhost:3000/discover:0
+[    1365ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/chunks/app/global-error.js:0
+[    1365ms] [ERROR] Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/global-error.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled. @ http://localhost:3000/discover:0

@@ -1,0 +1,31 @@
+require('dotenv').config();
+const OpenAI = require('openai');
+const fs = require('fs');
+const code = fs.readFileSync('./src/lib/ai/prompts/intent-extraction.ts', 'utf8');
+const p1 = code.indexOf('\`') + 1;
+const p2 = code.lastIndexOf('\`');
+const INTENT_EXTRACTION_PROMPT = code.slice(p1, p2);
+
+async function run() {
+  const client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: 'https://models.inference.ai.azure.com',
+  });
+  
+  const msg = 'Best 3 BHK in Noida';
+  const prev = {};
+  
+  const completion = await client.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: INTENT_EXTRACTION_PROMPT + '\n\nIf you return an empty object, explain why you did not extract bhk.' },
+      { role: 'user', content: `Input: "${msg}"\nOutput:` },
+    ],
+    max_tokens: 256,
+    temperature: 0.1,
+  });
+  
+  console.log('OpenAI response without json_object constraint:');
+  console.log(completion.choices[0].message.content);
+}
+run().catch(console.error);

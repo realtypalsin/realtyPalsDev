@@ -1,0 +1,453 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e4]
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - generic [ref=e25]:
+        - img "RealtyPals Logo" [ref=e26]
+        - generic [ref=e28]: RealtyPals
+      - button "New Chat" [ref=e30] [cursor=pointer]:
+        - img [ref=e31]
+        - generic [ref=e32]: New Chat
+      - generic [ref=e33]:
+        - generic [ref=e34]: Menu
+        - generic [ref=e35]:
+          - link "Property Discovery" [ref=e36] [cursor=pointer]:
+            - /url: /discover
+            - img [ref=e39]
+            - generic [ref=e42]: Property Discovery
+          - link "Saved Property" [ref=e43] [cursor=pointer]:
+            - /url: /saved
+            - img [ref=e45]
+            - generic [ref=e47]: Saved Property
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - generic [ref=e50]: Recent
+            - generic [ref=e339]: double-click to rename
+          - generic [ref=e340]:
+            - generic [ref=e341]: Today
+            - generic [ref=e343] [cursor=pointer]:
+              - img [ref=e344]
+              - generic [ref=e346]: 3 BHK in Sector 150 under 2 Cr
+              - generic [ref=e347]: just now
+              - generic [ref=e348]:
+                - button "Rename" [ref=e349]:
+                  - img [ref=e350]
+                - button "Delete" [ref=e353]:
+                  - img [ref=e354]
+      - button "Sign in" [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - generic [ref=e57]: Sign in
+    - main [ref=e58]:
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e63]: RealtyPals
+          - generic [ref=e64]:
+            - button "Switch to dark mode" [ref=e66] [cursor=pointer]:
+              - img [ref=e67]
+            - img [ref=e71]
+        - generic:
+          - log "Conversation with RealtyPal advisor" [ref=e136]:
+            - generic [ref=e137]:
+              - generic [ref=e138]:
+                - paragraph [ref=e143]: Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.
+                - generic [ref=e144]:
+                  - generic [ref=e145]: 07:40 pm
+                  - button "Copy response" [ref=e146] [cursor=pointer]:
+                    - img [ref=e147]
+              - generic [ref=e150]:
+                - paragraph [ref=e153]: 3 BHK in Sector 150 under 2 Cr
+                - generic [ref=e155]: 07:40 pm
+              - generic [ref=e156]:
+                - generic [ref=e159]:
+                  - generic [ref=e358]: AI Advisor
+                  - generic [ref=e359]:
+                    - paragraph [ref=e360]:
+                      - text: 🏆 ACE Parkway
+                      - text: Good value for a 3BHK at ₹1.52Cr in the upscale Sector 150, with RERA registration and sports-oriented amenities. Verify builder's possession timeline and track record at up-rera.in.
+                    - paragraph [ref=e361]: "For immediate possession: Not available in your budget in this sector."
+                - generic [ref=e166]:
+                  - generic [ref=e167]: 07:40 pm
+                  - button "Copy response" [ref=e362] [cursor=pointer]:
+                    - img [ref=e363]
+                - generic [ref=e168]:
+                  - generic [ref=e169]:
+                    - generic [ref=e170]:
+                      - generic [ref=e171]: ✓
+                      - generic [ref=e172]: 2 properties found
+                      - generic [ref=e173]: · Sector 150
+                      - generic [ref=e174]: Ranked by fit
+                    - button "Hide" [ref=e175] [cursor=pointer]:
+                      - text: Hide
+                      - img [ref=e176]
+                  - generic [ref=e178]:
+                    - generic [ref=e179]:
+                      - generic [ref=e182] [cursor=pointer]:
+                        - generic [ref=e183]:
+                          - img [ref=e185]
+                          - button [ref=e188]:
+                            - img [ref=e189]
+                          - button [ref=e191]:
+                            - img [ref=e192]
+                          - generic [ref=e194]:
+                            - button [ref=e195]
+                            - button [ref=e196]
+                          - generic [ref=e197]: ✦ Top Pick
+                          - button "Save property" [ref=e199]:
+                            - img [ref=e200]
+                        - generic [ref=e202]:
+                          - generic [ref=e203]:
+                            - heading "ACE Parkway" [level=3] [ref=e205]
+                            - generic [ref=e207]:
+                              - img [ref=e208]
+                              - generic [ref=e211]: ACE Group
+                              - generic [ref=e212]: ·
+                              - generic [ref=e213]: Sector 150, Noida
+                              - generic [ref=e214]: ·
+                              - generic [ref=e215]:
+                                - img [ref=e216]
+                                - text: RERA
+                          - generic [ref=e218]:
+                            - paragraph [ref=e219]: ₹1.52–4.82Cr
+                            - generic [ref=e220]:
+                              - generic [ref=e221]:
+                                - strong [ref=e222]: "2 BHK:"
+                                - text: 700sqft, 716sqft
+                              - generic [ref=e223]:
+                                - strong [ref=e224]: "3 BHK:"
+                                - text: 882sqft, 1159sqft, 1355sqft, 1505sqft
+                              - button "+ 1 more configurations" [ref=e225]
+                              - generic [ref=e226]:
+                                - img [ref=e227]
+                                - text: Verify with builder
+                          - generic [ref=e229]:
+                            - generic [ref=e230]:
+                              - img [ref=e231]
+                              - text: 3 BHK available
+                            - generic [ref=e233]:
+                              - img [ref=e234]
+                              - text: ₹1.52Cr — good value vs your budget
+                            - generic [ref=e236]:
+                              - img [ref=e237]
+                              - text: in Sector 150
+                            - generic [ref=e239]:
+                              - img [ref=e240]
+                              - text: RERA registered
+                          - generic [ref=e242]:
+                            - button "View Details" [ref=e243]:
+                              - text: View Details
+                              - img [ref=e244]
+                            - button "Request callback" [ref=e246]:
+                              - img [ref=e247]
+                            - button "Ask AI about this" [ref=e249]:
+                              - img [ref=e250]
+                      - generic [ref=e255] [cursor=pointer]:
+                        - generic [ref=e256]:
+                          - img [ref=e258]
+                          - button "Save property" [ref=e262]:
+                            - img [ref=e263]
+                        - generic [ref=e265]:
+                          - generic [ref=e266]:
+                            - heading "Eldeco Live By The Greens" [level=3] [ref=e268]
+                            - generic [ref=e270]:
+                              - img [ref=e271]
+                              - generic [ref=e274]: Eldeco
+                              - generic [ref=e275]: ·
+                              - generic [ref=e276]: Sector 150, Noida
+                              - generic [ref=e277]: ·
+                              - generic [ref=e278]:
+                                - img [ref=e279]
+                                - text: RERA
+                          - generic [ref=e281]:
+                            - paragraph [ref=e282]: ₹1.53–1.91Cr
+                            - generic [ref=e283]:
+                              - generic [ref=e284]:
+                                - strong [ref=e285]: "2 BHK:"
+                                - text: 668sqft, 676sqft
+                              - generic [ref=e286]:
+                                - strong [ref=e287]: "3 BHK:"
+                                - text: 828sqft
+                              - generic [ref=e288]:
+                                - img [ref=e289]
+                                - text: Verify with builder
+                          - generic [ref=e291]:
+                            - generic [ref=e292]:
+                              - img [ref=e293]
+                              - text: 3 BHK available
+                            - generic [ref=e295]:
+                              - img [ref=e296]
+                              - text: ₹1.53Cr — good value vs your budget
+                            - generic [ref=e298]:
+                              - img [ref=e299]
+                              - text: in Sector 150
+                            - generic [ref=e301]:
+                              - img [ref=e302]
+                              - text: RERA registered
+                          - generic [ref=e304]:
+                            - button "View Details" [ref=e305]:
+                              - text: View Details
+                              - img [ref=e306]
+                            - button "Request callback" [ref=e308]:
+                              - img [ref=e309]
+                            - button "Ask AI about this" [ref=e311]:
+                              - img [ref=e312]
+                    - button "🗺️ View all 2 on map" [ref=e316] [cursor=pointer]:
+                      - generic [ref=e317]: 🗺️
+                      - text: View all 2 on map
+          - generic [ref=e320]:
+            - generic [ref=e324]:
+              - generic [ref=e326]:
+                - textbox [ref=e327]
+                - button [disabled] [ref=e329]:
+                  - img [ref=e330]
+                - generic:
+                  - paragraph: Properties with possession by 2025...
+              - button "Voice Input" [ref=e334] [cursor=pointer]:
+                - img [ref=e335]
+            - generic [ref=e338]: AI can make mistakes. Verify important information.
+        - generic [ref=e368]:
+          - generic [ref=e369]:
+            - generic [ref=e370]:
+              - img [ref=e373]
+              - button [ref=e377] [cursor=pointer]:
+                - img [ref=e378]
+            - generic [ref=e381]:
+              - generic [ref=e382]:
+                - generic [ref=e383]:
+                  - generic [ref=e384]:
+                    - heading "Eldeco Live By The Greens" [level=2] [ref=e385]
+                    - generic [ref=e388]: Under Construction
+                  - paragraph [ref=e389]: Come, Live More
+                  - generic [ref=e390]:
+                    - generic [ref=e391]: Sector 150, Noida
+                    - generic [ref=e392]: ·
+                    - generic [ref=e393]: Eldeco
+                    - generic [ref=e394]: ·
+                    - generic [ref=e395]:
+                      - img [ref=e396]
+                      - text: RERA Verified
+                - generic [ref=e399]:
+                  - paragraph [ref=e400]
+                  - paragraph [ref=e401]: 2BHK · 3BHK
+              - generic [ref=e402]:
+                - generic [ref=e403]:
+                  - paragraph [ref=e404]: Towers
+                  - paragraph [ref=e405]: "11"
+                - generic [ref=e406]:
+                  - paragraph [ref=e407]: Units
+                  - paragraph [ref=e408]: —
+                - generic [ref=e409]:
+                  - paragraph [ref=e410]: Land Area
+                  - paragraph [ref=e411]: 20 Ac
+              - generic [ref=e412]:
+                - generic [ref=e413]:
+                  - button "Overview" [ref=e414] [cursor=pointer]: Overview
+                  - button "Intelligence" [ref=e415] [cursor=pointer]
+                  - button "Pricing" [ref=e416] [cursor=pointer]
+                  - button "Costs" [ref=e417] [cursor=pointer]
+                  - button "Location" [ref=e418] [cursor=pointer]
+                  - button "Documents" [ref=e419] [cursor=pointer]
+                - generic [ref=e422]:
+                  - generic [ref=e424]:
+                    - paragraph [ref=e425]: Why It Matches
+                    - generic [ref=e426]:
+                      - generic [ref=e427]:
+                        - img [ref=e428]
+                        - text: 3 BHK available
+                      - generic [ref=e430]:
+                        - img [ref=e431]
+                        - text: ₹1.53Cr — good value vs your budget
+                      - generic [ref=e433]:
+                        - img [ref=e434]
+                        - text: in Sector 150
+                      - generic [ref=e436]:
+                        - img [ref=e437]
+                        - text: RERA registered
+                      - generic [ref=e439]:
+                        - img [ref=e440]
+                        - text: possession Verify with builder
+                  - generic [ref=e442]:
+                    - generic [ref=e444]:
+                      - paragraph [ref=e445]: Market Rating
+                      - generic [ref=e446]:
+                        - generic [ref=e447]: "49.7"
+                        - generic [ref=e448]: /100
+                        - generic [ref=e449]: Hold
+                    - generic [ref=e450]:
+                      - generic [ref=e451]:
+                        - generic [ref=e452]: Developer Track Record
+                        - generic [ref=e459]: "50"
+                      - generic [ref=e460]:
+                        - generic [ref=e461]: Value Proposition
+                        - generic [ref=e468]: "50"
+                      - generic [ref=e469]:
+                        - generic [ref=e470]: Location & Connectivity
+                        - generic [ref=e477]: "50"
+                      - generic [ref=e478]:
+                        - generic [ref=e479]: Risk Assessment
+                        - generic [ref=e486]: "50"
+                      - generic [ref=e487]:
+                        - generic [ref=e488]: Lifestyle & Amenities
+                        - generic [ref=e495]: "50"
+                      - generic [ref=e496]:
+                        - generic [ref=e497]: Exit Liquidity
+                        - generic [ref=e504]: "50"
+                      - generic [ref=e505]:
+                        - generic [ref=e506]: Rental Yield Potential
+                        - generic [ref=e513]: "50"
+                      - generic [ref=e514]:
+                        - generic [ref=e515]: Capital Appreciation
+                        - generic [ref=e522]: "44"
+                  - generic [ref=e523]:
+                    - paragraph [ref=e524]: About
+                    - paragraph [ref=e525]: Nature-focused residential township on 20 acres offering 2 and 3 BHK apartments with cricket academy, river views and large green spaces. 11 towers (Life 1-4, Verve 1-7).
+                  - generic [ref=e526]:
+                    - paragraph [ref=e527]: Floor Plans
+                    - generic [ref=e528]:
+                      - img [ref=e529]
+                      - text: No floor plans uploaded yet
+                  - generic [ref=e532]:
+                    - paragraph [ref=e533]: Who Typically Buys Here?
+                    - generic [ref=e534]:
+                      - paragraph [ref=e535]:
+                        - img [ref=e536]
+                        - text: Buyer Profile
+                      - list [ref=e540]:
+                        - listitem [ref=e541]: Families
+                        - listitem [ref=e543]: IT Professionals
+                        - listitem [ref=e545]: Daily Commuters
+                        - listitem [ref=e547]: Long-Term End Users
+                  - generic [ref=e549]:
+                    - paragraph [ref=e550]: Connectivity
+                    - paragraph [ref=e551]:
+                      - img [ref=e552]
+                      - text: No connectivity data available
+                  - generic [ref=e556]:
+                    - paragraph [ref=e557]: Key Highlights
+                    - generic [ref=e558]:
+                      - generic [ref=e559]:
+                        - img [ref=e560]
+                        - text: Live More
+                      - generic [ref=e562]:
+                        - img [ref=e563]
+                        - text: Low Density Living
+                      - generic [ref=e565]:
+                        - img [ref=e566]
+                        - text: Sports City
+                      - generic [ref=e568]:
+                        - img [ref=e569]
+                        - text: Celebrity Cricket Academy
+                      - generic [ref=e571]:
+                        - img [ref=e572]
+                        - text: River Views
+                      - generic [ref=e574]:
+                        - img [ref=e575]
+                        - text: Golf Course Views
+                      - generic [ref=e577]:
+                        - img [ref=e578]
+                        - text: 80 Percent Green Cover
+                      - generic [ref=e580]:
+                        - img [ref=e581]
+                        - text: Healthy Living
+                      - generic [ref=e583]:
+                        - img [ref=e584]
+                        - text: Family Friendly Living
+                  - generic [ref=e586]:
+                    - paragraph [ref=e587]: Amenities
+                    - generic [ref=e588]:
+                      - generic [ref=e589]:
+                        - img [ref=e591]
+                        - paragraph [ref=e597]: Sports
+                      - generic [ref=e598]:
+                        - generic "Cricket Academy" [ref=e599]:
+                          - img [ref=e601]
+                          - generic [ref=e607]: Cricket Academy
+                        - generic "Lawn Tennis Court" [ref=e608]:
+                          - img [ref=e610]
+                          - generic [ref=e616]: Lawn Tennis Court
+                        - generic "Badminton Courts" [ref=e617]:
+                          - img [ref=e619]
+                          - generic [ref=e625]: Badminton Courts
+                        - generic "Basketball Court" [ref=e626]:
+                          - img [ref=e628]
+                          - generic [ref=e634]: Basketball Court
+                        - generic "Jogging Track" [ref=e635]:
+                          - img [ref=e637]
+                          - generic [ref=e640]: Jogging Track
+                        - generic "Skating Rink" [ref=e641]:
+                          - img [ref=e643]
+                          - generic [ref=e649]: Skating Rink
+                        - generic "Zumba Hall" [ref=e650]:
+                          - img [ref=e652]
+                          - generic [ref=e656]: Zumba Hall
+                        - generic "Aerobics Hall" [ref=e657]:
+                          - img [ref=e659]
+                          - generic [ref=e665]: Aerobics Hall
+                        - generic "Half Basketball Court" [ref=e666]:
+                          - img [ref=e668]
+                          - generic [ref=e674]: Half Basketball Court
+                    - generic [ref=e675]:
+                      - generic [ref=e676]:
+                        - img [ref=e678]
+                        - paragraph [ref=e681]: Wellness
+                      - generic [ref=e682]:
+                        - generic "Yoga Area" [ref=e683]:
+                          - img [ref=e685]
+                          - generic [ref=e687]: Yoga Area
+                        - generic "Meditation Area" [ref=e688]:
+                          - img [ref=e690]
+                          - generic [ref=e692]: Meditation Area
+                        - generic "Walking Trails" [ref=e693]:
+                          - img [ref=e695]
+                          - generic [ref=e698]: Walking Trails
+                    - generic [ref=e699]:
+                      - generic [ref=e700]:
+                        - img [ref=e702]
+                        - paragraph [ref=e704]: Lifestyle
+                      - generic [ref=e705]:
+                        - generic "Clubhouse" [ref=e706]:
+                          - img [ref=e708]
+                          - generic [ref=e712]: Clubhouse
+                        - generic "Swimming Pool" [ref=e713]:
+                          - img [ref=e715]
+                          - generic [ref=e719]: Swimming Pool
+                        - generic "Kids Pool" [ref=e720]:
+                          - img [ref=e722]
+                          - generic [ref=e726]: Kids Pool
+                        - generic "Mini Theatre" [ref=e727]:
+                          - img [ref=e729]
+                          - generic [ref=e732]: Mini Theatre
+                        - generic "Party Lawn" [ref=e733]:
+                          - img [ref=e735]
+                          - generic [ref=e739]: Party Lawn
+                        - generic "Café" [ref=e740]:
+                          - img [ref=e742]
+                          - generic [ref=e744]: Café
+                        - generic "Elder Seating Areas" [ref=e745]:
+                          - img [ref=e747]
+                          - generic [ref=e749]: Elder Seating Areas
+                    - generic [ref=e750]:
+                      - generic [ref=e751]:
+                        - img [ref=e753]
+                        - paragraph [ref=e756]: Kids
+                      - generic [ref=e757]:
+                        - generic "Kids Play Area" [ref=e758]:
+                          - img [ref=e760]
+                          - generic [ref=e763]: Kids Play Area
+                        - generic "Rock Climbing Wall" [ref=e764]:
+                          - img [ref=e766]
+                          - generic [ref=e772]: Rock Climbing Wall
+                  - generic [ref=e773]:
+                    - paragraph [ref=e774]: Downloads
+                    - paragraph [ref=e775]:
+                      - img [ref=e776]
+                      - text: No brochures available
+                  - generic [ref=e779] [cursor=pointer]:
+                    - generic [ref=e780]:
+                      - img [ref=e781]
+                      - generic [ref=e785]:
+                        - paragraph [ref=e786]: Commute Calculator
+                        - paragraph [ref=e787]: How long from here to your office?
+                    - img [ref=e788]
+          - button "Book Site Visit" [ref=e792] [cursor=pointer]:
+            - img [ref=e793]
+            - text: Book Site Visit

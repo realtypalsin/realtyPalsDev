@@ -1,0 +1,223 @@
+[    4073ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:38559
+[    5737ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ webpack-internal:///(app-pages-browser)/./components/ui/placeholders-and-vanish-input.tsx:76
+[    6467ms] [WARNING] Image with src "/images/logo/realtypals.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio. @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/shared/lib/utils/warn-once.js:15
+[   67269ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[   71071ms] [LOG] [Fast Refresh] done in 3802ms @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[   95530ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[   96523ms] [LOG] [NAV] 1. sidebar-click  t=0ms @ webpack-internal:///(app-pages-browser)/./components/Sidebar/SessionItem.tsx:194
+[   96524ms] [LOG] [NAV] 2. router.push      +2.6ms @ webpack-internal:///(app-pages-browser)/./components/Sidebar.tsx:425
+[   96537ms] [LOG] [NAV] RSC fetch: start +-94356.5ms | ttfb +-92164.9ms | duration 1273.5ms | end +-93083.0ms | url %5BsessionId%5D/page.js @ webpack-internal:///(app-pages-browser)/./components/Sidebar/SessionItem.tsx:206
+[   97843ms] [LOG] [Fast Refresh] done in 2314ms @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  167793ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  178383ms] [LOG] [Fast Refresh] done in 10591ms @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  191480ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ webpack-internal:///(app-pages-browser)/./components/ui/placeholders-and-vanish-input.tsx:76
+[  384369ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  391031ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  391072ms] [LOG] [Fast Refresh] done in 42ms @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  392297ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/ProjectDetailPanel.tsx
+./components/DiscoveryContent.tsx
+./app/discover/page.tsx @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/app-index.js:32
+[  393081ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/ProjectDetailPanel.tsx
+./components/DiscoveryContent.tsx
+./app/discover/page.tsx @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/app-index.js:32
+[  393573ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/ProjectDetailPanel.tsx
+./components/DiscoveryContent.tsx
+./app/discover/page.tsx @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/app-index.js:32
+[  394515ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/ProjectDetailPanel.tsx
+./components/DiscoveryContent.tsx
+./app/discover/page.tsx @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/client/app-index.js:32
+[  394591ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/discover/ec13bb17-7d92-48a0-b9a7-339470c5586f?_rsc=ghmmw:0
+[  395281ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/discover/ec13bb17-7d92-48a0-b9a7-339470c5586f:0
+[  396632ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ webpack-internal:///../node_modules/react-dom/cjs/react-dom-client.development.js:28004
+[  397073ms] ModuleBuildError: Module build failed (from ../node_modules/next/dist/build/webpack/loaders/next-swc-loader.js):
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+
+Caused by:
+    Syntax Error
+    at processResult (file://C:\Users\Furqan\Desktop\UiRealtyPals\node_modules\next\dist\compiled\webpack\bundle5.js:28:400590)
+    at <unknown> (file://C:\Users\Furqan\Desktop\UiRealtyPals\node_modules\next\dist\compiled\webpack\bundle5.js:28:402302)
+    at <unknown> (file://C:\Users\Furqan\Desktop\UiRealtyPals\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js:1:8645)
+    at <unknown> (file://C:\Users\Furqan\Desktop\UiRealtyPals\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js:1:5019)
+    at r.callback (file://C:\Users\Furqan\Desktop\UiRealtyPals\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js:1:4039)
+[  397071ms] [LOG] [HMR] connected @ webpack-internal:///../node_modules/next/dist/client/components/react-dev-overlay/pages/websocket.js:45
+[  397078ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error @ webpack-internal:///../node_modules/next/dist/client/components/react-dev-overlay/internal/helpers/hydration-error-info.js:62
+[  397080ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error @ webpack-internal:///../node_modules/next/dist/client/components/react-dev-overlay/internal/helpers/hydration-error-info.js:62
+[  397139ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0
+[  397666ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/ProjectDetailPanel.tsx
+./components/DiscoveryContent.tsx
+./app/discover/[sessionId]/page.tsx @ webpack-internal:///../node_modules/next/dist/client/components/react-dev-overlay/internal/helpers/hydration-error-info.js:62
+[  398391ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error @ webpack-internal:///../node_modules/next/dist/client/components/react-dev-overlay/internal/helpers/hydration-error-info.js:62
+[  403987ms] [ERROR] ./components/ProjectDetailPanel.tsx
+Error: 
+  × Unexpected token `div`. Expected jsx identifier
+      ╭─[C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx:1540:1]
+ 1540 │ 
+ 1541 │   // ── Modal ──────────────────────────────────────────────────────────────────
+ 1542 │   return (
+ 1543 │     <div className="project-detail-wrapper">
+      ·      ───
+ 1544 │       <AnimatePresence mode="wait">
+ 1545 │         {isOpen && (
+ 1546 │           <>
+      ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/ProjectDetailPanel.tsx
+./components/DiscoveryContent.tsx
+./app/discover/page.tsx @ webpack-internal:///../node_modules/next/dist/client/components/react-dev-overlay/internal/helpers/hydration-error-info.js:62
+[  404807ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///../node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:221
+[  407207ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/webpack/7bf93ff952b58df7.webpack.hot-update.json:0
+[  407207ms] [WARNING] [Fast Refresh] performing full reload because your application had an unrecoverable error @ webpack-internal:///../node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:349
+[  410789ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:38559
+[  411840ms] [WARNING] Image with src "/images/logo/realtypals.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio. @ webpack-internal:///(app-pages-browser)/../node_modules/next/dist/shared/lib/utils/warn-once.js:15
+[  412072ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ webpack-internal:///(app-pages-browser)/./components/ui/placeholders-and-vanish-input.tsx:76
