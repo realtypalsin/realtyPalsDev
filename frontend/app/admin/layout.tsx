@@ -87,7 +87,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   async function handleLogout() {
-    await fetch(`${API_BASE}/admin/auth`, { method: 'DELETE', credentials: 'include' })
+    const token = localStorage.getItem('admin_token')
+    await fetch(`${API_BASE}/admin/auth`, {
+      method: 'DELETE',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    })
+    localStorage.removeItem('admin_token')
     router.push('/admin/login')
   }
 
