@@ -65,7 +65,9 @@ export async function destroyAdminSession(token: string): Promise<void> {
 
 export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
   const token = req.cookies?.admin_token as string | undefined
+  console.log('[requireAdmin] token from cookie:', token ? 'present' : 'missing')
   const session = await validateAdminSession(token)
+  console.log('[requireAdmin] session lookup result:', session ? 'found' : 'not found')
   if (!session) {
     res.status(401).json({ error: 'Unauthorized' })
     return
