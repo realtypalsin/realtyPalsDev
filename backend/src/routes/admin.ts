@@ -35,6 +35,8 @@ router.post('/auth', async (req: Request, res: Response): Promise<void> => {
   const adminPassword = process.env.ADMIN_PASSWORD ?? ''
   const ip = clientIp(req)
 
+  console.log(`[admin] login attempt ip=${ip}, password received=${!!password}, admin_password_set=${!!adminPassword}`)
+
   const { allowed } = await checkRateLimit(`admin:login:${ip}`, 5, 900)
   if (!allowed) {
     console.log(`[admin] login rate-limited ip=${ip}`)
@@ -44,11 +46,12 @@ router.post('/auth', async (req: Request, res: Response): Promise<void> => {
 
   const inputHash    = sha256(password ?? '')
   const expectedHash = sha256(adminPassword)
+  console.log(`[admin] hash comparison: inputHash length=${inputHash.length}, expectedHash length=${expectedHash.length}`)
   const match = inputHash.length === expectedHash.length
     && timingSafeEqual(inputHash, expectedHash)
 
   if (!adminPassword || !match) {
-    console.log(`[admin] login failed ip=${ip}`)
+    console.log(`[admin] login failed ip=${ip}, adminPassword_empty=${!adminPassword}, hash_match=${match}`)
     res.status(401).json({ error: 'Invalid password' })
     return
   }
