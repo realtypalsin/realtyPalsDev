@@ -13,7 +13,7 @@ import {
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 import { API_BASE } from '@/lib/env'
-import { track } from '@/lib/analytics'
+import { track, trackPropertyEvent } from '@/lib/analytics'
 import { authHeaders } from '@/lib/authedFetch'
 import { resolveImgUrl } from '@/lib/utils'
 import { usePreferredImages } from '@/lib/hooks'
@@ -100,6 +100,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         })
         if (!res.ok) throw new Error('Save failed')
         track('property_saved', { project_slug: project.slug, project_name: project.name })
+        trackPropertyEvent(project.id, 'save', undefined, userId).catch(() => {})
         onToast?.('Property saved! ✓')
       }
     } catch (err) {

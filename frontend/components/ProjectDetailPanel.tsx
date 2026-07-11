@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
-import { track } from '@/lib/analytics'
+import { track, trackPropertyEvent } from '@/lib/analytics'
 import { authHeaders } from '@/lib/authedFetch'
 import { getAqi, type AqiResult } from '@/lib/waqi'
 import { usePreferredImages } from '@/lib/hooks'
@@ -143,6 +143,11 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     if (!project) return
     getAqi(project.lat, project.lng, 'noida').then(setAqi).catch(() => {})
   }, [project?.slug])
+
+  useEffect(() => {
+    if (!project) return
+    trackPropertyEvent(project.id, 'view', undefined, userId).catch(() => {})
+  }, [project?.id, userId])
 
   // Lazy-load payment plan when 'Pricing' tab is opened.
   useEffect(() => {
@@ -374,7 +379,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => track('whatsapp_handoff', { project_slug: (d as any)?.slug, project_name: (d as any)?.name })}
+            onClick={() => {
+              track('whatsapp_handoff', { project_slug: (d as any)?.slug, project_name: (d as any)?.name })
+              trackPropertyEvent((d as any)?.id, 'whatsapp_inquiry', undefined, userId).catch(() => {})
+            }}
             className="w-full border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-gray-800 py-3 rounded-2xl text-[13px] transition-colors flex items-center justify-center gap-2"
           >
             <WhatsAppIcon size={14} />

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { User, RotateCcw, Copy, ChevronDown, MapPin, ThumbsUp, ThumbsDown } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
-import { track } from '@/lib/analytics'
+import { track, trackPropertyEvent } from '@/lib/analytics'
 import { parseResponseBlocks } from '@/lib/responseParser'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
 import ChatLoader from '@/components/ChatLoader'
@@ -162,6 +162,13 @@ function MessageBubbleInner({
     window.addEventListener('click', handleClick);
     return () => window.removeEventListener('click', handleClick);
   }, []);
+
+  useEffect(() => {
+    if (!message.showComparisonTable || !message.comparisonProjects?.length) return
+    message.comparisonProjects.forEach(p => {
+      trackPropertyEvent(p.id, 'compare', sessionId, userId).catch(() => {})
+    })
+  }, [message.showComparisonTable, message.comparisonProjects, sessionId, userId])
 
   const handleContextMenu = (e: React.MouseEvent) => {
     if (isUser || !message.content) return;

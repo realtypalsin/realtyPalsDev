@@ -35,3 +35,20 @@ export function identifyUser(userId: string, traits?: Record<string, unknown>) {
     posthog.identify(userId, traits)
   } catch {}
 }
+
+type PropertyAction = 'view' | 'save' | 'compare' | 'share' | 'whatsapp_inquiry'
+
+export async function trackPropertyEvent(projectId: string, action: PropertyAction, sessionId?: string | null, userId?: string | null, guestToken?: string | null) {
+  try {
+    const { API_BASE } = await import('@/lib/env')
+    const { authHeaders } = await import('@/lib/authedFetch')
+    const headers = await authHeaders()
+    await fetch(`${API_BASE}/analytics/property-event`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_id: projectId, action, session_id: sessionId, user_id: userId, guest_token: guestToken }),
+    })
+  } catch {
+    // never crash app on analytics failure
+  }
+}

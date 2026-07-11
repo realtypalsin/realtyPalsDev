@@ -9,7 +9,7 @@ import type { ProjectCard as ProjectCardType } from '@/types/project';
 import Image from 'next/image';
 import Toast from '@/components/Toast';
 import { API_BASE } from '@/lib/env'
-import { track } from '@/lib/analytics';
+import { track, trackPropertyEvent } from '@/lib/analytics';
 import { streamChat as streamChatBackend } from '@/lib/backend-api'
 import { authHeaders } from '@/lib/authedFetch'
 import StatusSteps from '@/components/chat/StatusSteps'
