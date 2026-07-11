@@ -15,35 +15,35 @@ export async function GET() {
       topSectors,
     ] = await Promise.all([
       // Total chats
-      prisma.chatSession.count(),
+      prisma.chatSession.count().catch(() => 0),
 
       // Total searches
-      prisma.queryMetrics.count(),
+      prisma.queryMetrics.count().catch(() => 0),
 
       // Total clicks
       prisma.chatAnalytics.aggregate({
         _sum: { projects_clicked: true }
-      }),
+      }).catch(() => ({ _sum: { projects_clicked: null } })),
 
       // Total saves
       prisma.chatAnalytics.aggregate({
         _sum: { projects_saved: true }
-      }),
+      }).catch(() => ({ _sum: { projects_saved: null } })),
 
       // Total conversions
       prisma.chatAnalytics.count({
         where: { conversion_at: { not: null } }
-      }),
+      }).catch(() => 0),
 
       // Average session duration
       prisma.chatAnalytics.aggregate({
         _avg: { time_spent_seconds: true }
-      }),
+      }).catch(() => ({ _avg: { time_spent_seconds: null } })),
 
       // Total unique users
       prisma.chatSession.count({
         where: { user_id: { not: null } }
-      }),
+      }).catch(() => 0),
 
       // Users with multiple sessions
       prisma.chatSession.groupBy({
@@ -55,7 +55,7 @@ export async function GET() {
         },
         _count: { id: true },
         where: { user_id: { not: null } }
-      }),
+      }).catch(() => []),
 
       // Top searched sectors
       prisma.queryMetrics.groupBy({
@@ -64,7 +64,7 @@ export async function GET() {
         where: { sector: { not: null } },
         orderBy: { _count: { id: 'desc' } },
         take: 5,
-      }),
+      }).catch(() => []),
     ])
 
     return NextResponse.json({

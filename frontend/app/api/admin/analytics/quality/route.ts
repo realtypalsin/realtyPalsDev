@@ -12,32 +12,32 @@ export async function GET() {
       avgResults,
     ] = await Promise.all([
       // Total searches
-      prisma.queryMetrics.count(),
+      prisma.queryMetrics.count().catch(() => 0),
 
       // Zero-result searches
       prisma.queryMetrics.count({
         where: { had_results: false }
-      }),
+      }).catch(() => 0),
 
       // Searches with results
       prisma.queryMetrics.count({
         where: { had_results: true }
-      }),
+      }).catch(() => 0),
 
       // Searches without results
       prisma.queryMetrics.count({
         where: { had_results: false }
-      }),
+      }).catch(() => 0),
 
       // Average clarifications
       prisma.queryMetrics.aggregate({
         _avg: { clarification_count: true }
-      }),
+      }).catch(() => ({ _avg: { clarification_count: null } })),
 
       // Average results count
       prisma.queryMetrics.aggregate({
         _avg: { results_count: true }
-      }),
+      }).catch(() => ({ _avg: { results_count: null } })),
     ])
 
     const zeroResultRate = totalSearches > 0
