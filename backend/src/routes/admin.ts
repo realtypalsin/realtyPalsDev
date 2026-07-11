@@ -74,6 +74,7 @@ router.post('/auth', async (req: Request, res: Response): Promise<void> => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     secure: isProduction,
     path: '/',
+    domain: isProduction ? '.onrender.com' : 'localhost',
   })
   res.json({ ok: true })
 })
