@@ -17,14 +17,17 @@ export default function AdminLogin() {
     setLoading(true)
     setError('')
     const res = await fetch(`${API_BASE}/admin/auth`, {
-      credentials: 'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     })
     setLoading(false)
     if (res.ok) {
-      router.push('/admin')
+      const data = await res.json()
+      if (data.token) {
+        localStorage.setItem('admin_token', data.token)
+        router.push('/admin')
+      }
     } else {
       setError('Wrong password.')
     }

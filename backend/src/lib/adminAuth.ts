@@ -64,8 +64,9 @@ export async function destroyAdminSession(token: string): Promise<void> {
 }
 
 export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const token = req.cookies?.admin_token as string | undefined
-  console.log('[requireAdmin] token from cookie:', token ? 'present' : 'missing')
+  const authHeader = req.headers.authorization as string | undefined
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
+  console.log('[requireAdmin] token from header:', token ? 'present' : 'missing')
   const session = await validateAdminSession(token)
   console.log('[requireAdmin] session lookup result:', session ? 'found' : 'not found')
   if (!session) {

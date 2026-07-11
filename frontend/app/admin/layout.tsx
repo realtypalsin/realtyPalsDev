@@ -65,9 +65,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (pathname === '/admin/login') { setChecking(false); return }
-    fetch(`${API_BASE}/admin/projects?q=_check`, { credentials: 'include' })
+    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null
+    if (!token) { router.replace('/admin/login'); return }
+    const headers = { 'Authorization': `Bearer ${token}` }
+    fetch(`${API_BASE}/admin/projects?q=_check`, { headers })
       .then((r) => {
-        if (r.status === 401) router.replace('/admin/login')
+        if (r.status === 401) { localStorage.removeItem('admin_token'); router.replace('/admin/login') }
         else setChecking(false)
       })
       .catch(() => router.replace('/admin/login'))
