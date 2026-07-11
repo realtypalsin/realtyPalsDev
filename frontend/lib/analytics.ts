@@ -36,9 +36,9 @@ export function identifyUser(userId: string, traits?: Record<string, unknown>) {
   } catch {}
 }
 
-type PropertyAction = 'view' | 'save' | 'compare' | 'share' | 'whatsapp_inquiry'
+type PropertyAction = 'view' | 'save' | 'compare' | 'share' | 'whatsapp_inquiry' | 'call' | 'ask_ai' | 'site_visit' | 'image_viewed' | 'tab_opened' | 'floorplan_viewed' | 'document_download' | 'calculator_used' | 'card_click' | 'filter_applied'
 
-export async function trackPropertyEvent(projectId: string, action: PropertyAction, sessionId?: string | null, userId?: string | null, guestToken?: string | null) {
+export async function trackPropertyEvent(projectId: string, action: PropertyAction, sessionId?: string | null, userId?: string | null, guestToken?: string | null, metadata?: Record<string, unknown>) {
   try {
     const { API_BASE } = await import('@/lib/env')
     const { authHeaders } = await import('@/lib/authedFetch')
@@ -46,7 +46,7 @@ export async function trackPropertyEvent(projectId: string, action: PropertyActi
     await fetch(`${API_BASE}/analytics/property-event`, {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_id: projectId, action, session_id: sessionId, user_id: userId, guest_token: guestToken }),
+      body: JSON.stringify({ project_id: projectId, action, session_id: sessionId, user_id: userId, guest_token: guestToken, metadata }),
     })
   } catch {
     // never crash app on analytics failure

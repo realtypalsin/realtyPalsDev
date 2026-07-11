@@ -149,6 +149,11 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     trackPropertyEvent(project.id, 'view', undefined, userId).catch(() => {})
   }, [project?.id, userId])
 
+  useEffect(() => {
+    if (!project) return
+    trackPropertyEvent(project.id, 'tab_opened', undefined, userId, undefined, { tab: activeTab }).catch(() => {})
+  }, [activeTab, project?.id, userId])
+
   // Lazy-load payment plan when 'Pricing' tab is opened.
   useEffect(() => {
     if (activeTab !== 'Pricing' || !project?.slug || paymentPlan.loaded) return
@@ -206,6 +211,11 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleOpenSiteVisit = () => {
+    if (project) trackPropertyEvent(project.id, 'site_visit', undefined, userId).catch(() => {})
+    setShowVisitScheduler(true)
   }
 
   // Hero/exterior images lead the carousel — same priority ProjectCard and the
@@ -320,7 +330,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         <ProjectPricingTab
           unitTypes={d?.unit_types ?? []}
           detail={{ ...(detail as any), payment_plan: paymentPlan.data, cost_sheet: costSheet.data }}
-          onGoToCosts={() => setShowVisitScheduler(true)}
+          onGoToCosts={() => handleOpenSiteVisit()}
         />
       )}
 
@@ -350,10 +360,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           }
         })
         return (
-          <DocumentsTab 
-            documents={mappedDocs} 
-            loading={loading && !detail} 
+          <DocumentsTab
+            documents={mappedDocs}
+            loading={loading && !detail}
             projectSlug={(d as any)?.slug}
+            projectId={project?.id}
+            userId={userId}
             transparency_checks={transparencyChecks}
           />
         )
@@ -366,7 +378,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const ctaFooter = (
     <div className="flex-shrink-0 border-t border-gray-100 p-4 bg-white space-y-2">
       <button
-        onClick={() => setShowVisitScheduler(true)}
+        onClick={() => handleOpenSiteVisit()}
         className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl text-[14px] transition-colors flex items-center justify-center gap-2"
       >
         <CalendarDays size={16} />
@@ -474,7 +486,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         {/* Right: Action (Always injected for new layout) */}
         <div className={`flex items-center justify-end gap-4 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden max-w-[300px] opacity-100 translate-x-0 ml-4`}>
            <p className="text-[13px] font-semibold text-gray-500 hidden xl:block whitespace-nowrap">{d?.price_range_label}</p>
-           <button onClick={() => setShowVisitScheduler(true)} className="px-4 py-2 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-semibold rounded-full text-[12px] transition-all whitespace-nowrap flex-shrink-0 shadow-sm">
+           <button onClick={() => handleOpenSiteVisit()} className="px-4 py-2 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-semibold rounded-full text-[12px] transition-all whitespace-nowrap flex-shrink-0 shadow-sm">
              Book Site Visit
            </button>
         </div>
@@ -559,8 +571,11 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             </div>
 
             {/* Right Hero Image Card */}
-            <div 
-              onClick={() => setShowFloorPlan({ plans: allImages.length > 0 ? allImages : floorPlanImages })}
+            <div
+              onClick={() => {
+                if (project) trackPropertyEvent(project.id, 'floorplan_viewed', undefined, userId).catch(() => {})
+                setShowFloorPlan({ plans: allImages.length > 0 ? allImages : floorPlanImages })
+              }}
               className="lg:col-span-5 relative rounded-3xl overflow-hidden h-[260px] lg:h-[280px] shadow-md group cursor-pointer"
             >
               <Image 
@@ -753,7 +768,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               {/* Floating Footer CTA (Pill Dock) */}
               <div className="absolute bottom-8 inset-x-0 z-50 hidden md:flex justify-center pointer-events-none">
                 <div className="flex gap-3 bg-white/90 backdrop-blur-xl p-2 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-200/50 pointer-events-auto">
-                  <button onClick={() => setShowVisitScheduler(true)} className="px-8 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-full text-[14px] transition-all flex items-center gap-2 shadow-sm">
+                  <button onClick={() => handleOpenSiteVisit()} className="px-8 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-full text-[14px] transition-all flex items-center gap-2 shadow-sm">
                     <CalendarDays size={16} />
                     Book Site Visit
                   </button>

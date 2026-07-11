@@ -5,7 +5,7 @@ import {
   FileText, Download, Search, File, ChevronRight, CheckCircle2, FolderOpen,
   Eye, FileArchive, LayoutTemplate, Scale, Receipt, ClipboardList, Clock
 } from 'lucide-react'
-import { track } from '@/lib/analytics'
+import { track, trackPropertyEvent } from '@/lib/analytics'
 import type { ProjectDocumentPublic } from '@/components/ProjectDetailPanel'
 import { Card } from './Card'
 
@@ -26,6 +26,8 @@ export interface DocumentsTabProps {
   documents: EnhancedDocument[]
   loading: boolean
   projectSlug?: string
+  projectId?: string
+  userId?: string | null
   transparency_checks?: { label: string; ok: boolean }[] // Should come from DB
 }
 
@@ -126,7 +128,7 @@ function DocumentRow({ doc, onDownload, isPriority = false }: { doc: EnhancedDoc
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
-export default function DocumentsTab({ documents, loading, projectSlug, transparency_checks }: DocumentsTabProps) {
+export default function DocumentsTab({ documents, loading, projectSlug, projectId, userId, transparency_checks }: DocumentsTabProps) {
   const [query, setQuery] = useState('')
   const [activeType, setActiveType] = useState<string | 'all'>('all')
 
@@ -147,7 +149,10 @@ export default function DocumentsTab({ documents, loading, projectSlug, transpar
   // Fallback to old behavior if no DB flags are set for quick access
   const displayQuickAccess = quickAccessDocs.length > 0 ? quickAccessDocs : documents.slice(0, 2)
 
-  const handleDownload = (doc: EnhancedDocument) => track('document_download', { project_slug: projectSlug, doc_type: doc.doc_type })
+  const handleDownload = (doc: EnhancedDocument) => {
+    track('document_download', { project_slug: projectSlug, doc_type: doc.doc_type })
+    if (projectId) trackPropertyEvent(projectId, 'document_download', undefined, userId, undefined, { doc_type: doc.doc_type }).catch(() => {})
+  }
 
   if (loading) {
     return (

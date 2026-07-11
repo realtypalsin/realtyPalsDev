@@ -112,9 +112,14 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
     }
   }
 
+  const handleCardClick = () => {
+    trackPropertyEvent(project.id, 'card_click', undefined, userId).catch(() => {})
+    onDetailOpen?.(project)
+  }
+
   return (
     <div
-      onClick={() => onDetailOpen?.(project)}
+      onClick={handleCardClick}
       className={`group relative w-full h-full flex flex-col rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-300 ease-out cursor-pointer ${
         isTopPick
           ? 'ring-1 ring-inset ring-amber-500/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.2)]'
@@ -269,7 +274,11 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         <div className="mt-auto flex items-center justify-between gap-3 pt-2">
           {onAskAI ? (
             <button
-              onClick={(e) => { e.stopPropagation(); onAskAI(project) }}
+              onClick={(e) => {
+                e.stopPropagation()
+                trackPropertyEvent(project.id, 'ask_ai', undefined, userId).catch(() => {})
+                onAskAI(project)
+              }}
               className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-[12px] text-[13px] font-semibold transition-all shadow-[0_2px_8px_rgba(37,99,235,0.15)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)] hover:-translate-y-0.5 active:scale-95"
             >
               <Sparkle size={14} weight="fill" />
@@ -283,6 +292,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
             <button
               onClick={(e) => {
                 e.stopPropagation()
+                trackPropertyEvent(project.id, 'call', undefined, userId).catch(() => {})
                 onCall?.(project)
               }}
               className="w-10 h-10 rounded-[12px] ring-1 ring-inset ring-black/5 dark:ring-white/10 bg-white dark:bg-[#111] text-gray-700 dark:text-gray-300 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-[#222] transition-colors shadow-[0_1px_2px_rgba(0,0,0,0.02)] active:scale-95"
