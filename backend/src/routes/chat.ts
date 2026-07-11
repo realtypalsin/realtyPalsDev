@@ -377,12 +377,6 @@ router.post('/', async (req: Request, res: Response) => {
     ) ? { ...rawIntent, purpose: 'endUse' } : rawIntent
     console.log('[CHAT] END extractIntent', Date.now(), { intent })
 
-    // ─── ANALYTICS: Track intent identification
-    if (action.type === 'TEXT_MESSAGE' && message && sessionId) {
-      const clarificationCount = needsClarification ? 1 : 0
-      await trackIntentIdentified(sessionId, intent, message, clarificationCount)
-    }
-
     // ─── GATHERING Loop Fallback
     const currentIntentState = getIntentState(intent)
     const prevIntentState = prevIntent ? getIntentState(prevIntent as Intent) : 'COLD'
@@ -447,6 +441,12 @@ router.post('/', async (req: Request, res: Response) => {
       (!!intent.budgetMax && !intent.sector && !(intent.bhk?.length ?? 0) && !(intent.lifestyleKeywords?.length ?? 0)) ||
       (!!intent.sector && !isCityLevel(intent.sector) && !(intent.bhk?.length ?? 0) && !intent.budgetMax && !(intent.lifestyleKeywords?.length ?? 0))
     )
+
+    // ─── ANALYTICS: Track intent identification (moved after needsClarification definition)
+    if (action.type === 'TEXT_MESSAGE' && message && sessionId) {
+      const clarificationCount = needsClarification ? 1 : 0
+      await trackIntentIdentified(sessionId, intent, message, clarificationCount)
+    }
 
     // NEVER ask purpose when intentState is READY_TO_SEARCH — the state machine owns this.
     // If we have enough to search, we search. Purpose is inferred post-results.
@@ -823,10 +823,11 @@ router.post('/', async (req: Request, res: Response) => {
     } // end: !needsClarification && disambiguationText === null
 
     if (fullText) {
-      // Observe-mode guardrail: runs asynchronously after response assembly
+      // Guardrail check: runs asynchronously. On violations, log for compliance audit.
       outputGuardrail(fullText, systemPrompt).then((gr) => {
         if (gr.violations.length > 0) {
-          console.warn('[GUARDRAIL_VIOLATION] Output guardrail triggered in observe mode', {
+          const severity = gr.blocked ? 'CRITICAL' : 'WARNING'
+          console.error(`[GUARDRAIL_${severity}] Output guardrail triggered`, {
             blocked: gr.blocked,
             reason: gr.reason,
             confidence: gr.confidence,

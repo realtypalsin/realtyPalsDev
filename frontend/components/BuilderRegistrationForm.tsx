@@ -140,58 +140,58 @@ export default function BuilderRegistrationForm() {
       <div className="absolute bottom-0 left-0 w-[70vw] h-[70vw] bg-gradient-to-tr from-indigo-500/5 to-transparent rounded-full blur-[100px] pointer-events-none -translate-x-1/4 translate-y-1/4" />
 
       {/* Main Split Card */}
-      <div className="w-full max-w-[1000px] h-[720px] bg-white rounded-[24px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)] relative z-10 flex flex-col md:flex-row overflow-hidden">
+      <div className="w-full max-w-[1050px] min-h-[720px] md:h-[780px] bg-white rounded-[24px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)] relative z-10 flex flex-col md:flex-row overflow-hidden">
         
         {/* Left Sidebar: Minimalist Light Theme */}
-        <div className="w-full md:w-[340px] bg-zinc-50/50 border-r border-black/[0.04] p-10 flex flex-col shrink-0">
+        <div className="w-full md:w-[340px] bg-zinc-50/50 border-r border-black/[0.04] p-6 md:p-8 flex flex-col shrink-0 justify-center">
           <div>
-            <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals" width={110} height={26} className="object-contain mb-10 opacity-90" unoptimized />
+            <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals" width={100} height={24} className="object-contain mb-6 opacity-90" unoptimized />
             
-            <h1 className="text-[20px] font-semibold text-zinc-900 tracking-tight leading-snug mb-2.5">
+            <h1 className="text-[18px] font-semibold text-zinc-900 tracking-tight leading-snug mb-2">
               Developer Onboarding
             </h1>
-            <p className="text-[13px] text-zinc-500 leading-relaxed mb-10">
+            <p className="text-[12px] text-zinc-500 leading-relaxed mb-6">
               Showcase your projects to serious Noida & Greater Noida buyers. Verified builder profiles, direct qualified leads, no broker middle layer. Verification typically takes 2–3 business days.
             </p>
 
             {/* Value Bullets */}
-            <div className="space-y-2.5 mb-10">
-              <div className="flex items-start gap-3">
-                <span className="text-zinc-900 font-semibold">•</span>
-                <p className="text-[13px] text-zinc-600 leading-relaxed">Buyers who&apos;ve already shortlisted — not cold enquiries</p>
+            <div className="space-y-2 mb-6">
+              <div className="flex items-start gap-2.5">
+                <span className="text-zinc-900 font-semibold text-[12px]">•</span>
+                <p className="text-[12px] text-zinc-600 leading-relaxed">Buyers who've already shortlisted — not cold enquiries</p>
               </div>
-              <div className="flex items-start gap-3">
-                <span className="text-zinc-900 font-semibold">•</span>
-                <p className="text-[13px] text-zinc-600 leading-relaxed">Your RERA-verified profile, presented professionally</p>
+              <div className="flex items-start gap-2.5">
+                <span className="text-zinc-900 font-semibold text-[12px]">•</span>
+                <p className="text-[12px] text-zinc-600 leading-relaxed">Your RERA-verified profile, presented professionally</p>
               </div>
-              <div className="flex items-start gap-3">
-                <span className="text-zinc-900 font-semibold">•</span>
-                <p className="text-[13px] text-zinc-600 leading-relaxed">Leads with name, phone, and the exact project they asked about</p>
+              <div className="flex items-start gap-2.5">
+                <span className="text-zinc-900 font-semibold text-[12px]">•</span>
+                <p className="text-[12px] text-zinc-600 leading-relaxed">Leads with name, phone, and the exact project</p>
               </div>
             </div>
 
             {/* Elegant Vertical Stepper */}
-            <div className="space-y-6 relative ml-1">
+            <div className="space-y-4 relative ml-1">
               {/* Connecting line */}
-              <div className="absolute left-[11px] top-[28px] bottom-[28px] w-[1px] bg-black/[0.06]" />
+              <div className="absolute left-[11px] top-[24px] bottom-[24px] w-[1px] bg-black/[0.06]" />
               
               {STEPS.map((step, idx) => {
                 const isActive = idx === currentIdx
                 const isPassed = idx < currentIdx
                 return (
-                  <div key={step} onClick={() => setActiveStep(step)} className={`flex items-start gap-4 relative z-10 group cursor-pointer ${!isActive && !isPassed ? 'hover:opacity-80' : ''}`}>
-                    <div className={`w-[24px] h-[24px] rounded-full flex items-center justify-center shrink-0 transition-all duration-300 relative mt-0.5
+                  <div key={step} onClick={() => setActiveStep(step)} className={`flex items-start gap-3 relative z-10 group cursor-pointer ${!isActive && !isPassed ? 'hover:opacity-80' : ''}`}>
+                    <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center shrink-0 transition-all duration-300 relative mt-0.5
                       ${isActive ? 'bg-white shadow-sm ring-1 ring-black/10' : isPassed ? 'bg-zinc-100 text-zinc-400' : 'bg-transparent border border-black/10 text-zinc-300 group-hover:border-black/20 group-hover:text-zinc-400'}
                     `}>
-                      {isActive && <motion.div layoutId="active-dot" className="w-[8px] h-[8px] bg-blue-600 rounded-full" />}
-                      {isPassed && <CheckCircle2 size={12} strokeWidth={3} />}
+                      {isActive && <motion.div layoutId="active-dot" className="w-[6px] h-[6px] bg-blue-600 rounded-full" />}
+                      {isPassed && <CheckCircle2 size={10} strokeWidth={3} />}
                     </div>
                     <div>
-                      <h3 className={`text-[13px] font-medium transition-colors ${isActive ? 'text-zinc-900' : isPassed ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                      <h3 className={`text-[12px] font-medium transition-colors ${isActive ? 'text-zinc-900' : isPassed ? 'text-zinc-600' : 'text-zinc-400'}`}>
                         {STEP_TITLES[step].title}
                       </h3>
                       {isActive && (
-                        <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-[12px] text-zinc-500 mt-1 leading-relaxed pr-4">
+                        <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed pr-4">
                           {STEP_TITLES[step].desc}
                         </motion.p>
                       )}

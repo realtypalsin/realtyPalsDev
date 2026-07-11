@@ -261,6 +261,61 @@ function getClarifyingChips(
   return chips // Do not fallback to getDiscoveryChips, return whatever we built or empty
 }
 
+/**
+ * Search refinement chips: while in SEARCHING stage, offer context-aware options
+ * to refine the current search, NOT discovery homepage chips.
+ */
+function getSearchRefinementChips(
+  intent: Intent,
+  results: ScoredProject[],
+  chatHistory: { role: string; content: string }[],
+  inventory: ChipInventory | null,
+): ChipAction[] {
+  const chips: ChipAction[] = []
+  let priority = 1
+
+  // If sector specified but BHK missing, offer BHK refinement
+  if (intent.sector && !intent.bhk?.length && inventory?.bhkOptions) {
+    for (const bhk of inventory.bhkOptions) {
+      chips.push(chip(
+        `refine_bhk_${bhk}`,
+        'INTENT_PATCH', `${bhk} BHK`, '🏠',
+        { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
+        priority++,
+      ))
+    }
+    if (chips.length >= 3) return chips.slice(0, 3)
+  }
+
+  // If sector and BHK specified but budget missing, offer budget refinement
+  if (intent.sector && intent.bhk?.length && !intent.budgetMax && !intent.budgetMin && inventory?.budgetBuckets) {
+    for (const bucket of inventory.budgetBuckets.slice(0, 3)) {
+      chips.push(chip(
+        `refine_budget_${bucket.label.replace(/[₹\s,–-]/g, '_')}`,
+        'INTENT_PATCH', bucket.label, '💰',
+        { patch: { budgetMin: bucket.min, budgetMax: bucket.max }, label: bucket.label },
+        priority++,
+      ))
+    }
+    if (chips.length >= 3) return chips.slice(0, 3)
+  }
+
+  // Default: offer lifestyle filters if available
+  if (intent.sector && chips.length === 0) {
+    const lifestyleOptions = ['Gym & Fitness', 'Swimming Pool', 'Co-working', 'Security Gate', 'Parking']
+    for (const lifestyle of lifestyleOptions.slice(0, 3)) {
+      chips.push(chip(
+        `refine_lifestyle_${lifestyle.replace(/\s/g, '_').toLowerCase()}`,
+        'INTENT_PATCH', lifestyle, '⭐',
+        { patch: { lifestyleKeywords: [...(intent.lifestyleKeywords ?? []), lifestyle] }, label: lifestyle },
+        priority++,
+      ))
+    }
+  }
+
+  return chips.slice(0, 3)
+}
+
 function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[] {
   const chips: ChipAction[] = []
   const hasMultiple = results.length >= 2
@@ -392,7 +447,8 @@ export function computeConversationState(
         chips = getDiscoveryChips(chipInventory)
         break
       case 'SEARCHING':
-        chips = getDiscoveryChips(chipInventory) // Offer discovery chips while searching so user can refine
+        // While searching, offer context-aware refinement chips (not discovery chips)
+        chips = getSearchRefinementChips(intent, results, chatHistory, chipInventory)
         break
       case 'RESEARCH':
         chips = getResearchChips(intent, results)

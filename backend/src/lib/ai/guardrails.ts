@@ -12,16 +12,20 @@ export interface GuardrailResult {
 
 // Observe mode: violations are logged but responses are never blocked.
 // Flip to false only after false-positive rate is confirmed acceptable in production.
-const OUTPUT_OBSERVE_MODE = true
+const OUTPUT_OBSERVE_MODE = false
 
 export async function inputGuardrail(message: string): Promise<GuardrailResult> {
   const injectionPatterns = [
     /ignore (the )?(previous|above|all|prior) (instructions|prompts?|rules)/i,
     /disregard (the )?(previous|above|all|prior)/i,
     /you are now (a|an|the)?/i,
-    /(reveal|print|show|repeat|output) (your|the) (system )?(prompt|instructions)/i,
+    /(reveal|print|show|repeat|output|quote) (your|the|entire) (system )?(prompt|instructions|document|context)/i,
+    /quote (the )?entire document/i,
+    /print.{0,100}(first|last|entire).{0,50}(lines|section|document)/i,
+    /print.{0,100}(context|document|system prompt|instructions)/i,
     /forget (everything|all|your instructions)/i,
     /pretend (you are|to be)/i,
+    /what (is|was|did you use) (the|your) (context|document|system prompt|instructions)/i,
   ]
 
   if (injectionPatterns.some(p => p.test(message))) {
@@ -72,6 +76,25 @@ export async function outputGuardrail(
 ): Promise<GuardrailResult> {
   const violations: GuardrailViolation[] = []
 
+  // Check if response is leaking system prompt/context (fallback protection)
+  if (systemPrompt) {
+    const keyMarkers = [
+      /realtypals (ai |data |behavior |communication )/i,
+      /hard rule|strong rule/i,
+      /fallback mode/i,
+      /prohibited|never invent|never share/i,
+    ]
+    for (const marker of keyMarkers) {
+      if (marker.test(response) && marker.test(systemPrompt)) {
+        violations.push({
+          type: 'prompt_injection',
+          detail: 'response contains system prompt content — blocked',
+        })
+        break
+      }
+    }
+  }
+
   // Competitor mention check
   const competitorPatterns: Array<{ pattern: RegExp; name: string }> = [
     { pattern: /magicbricks/i, name: 'MagicBricks' },
@@ -117,7 +140,10 @@ export async function outputGuardrail(
   }
 
   // In observe mode: log everything, block nothing.
-  const blocked = !OUTPUT_OBSERVE_MODE && violations.some(v => v.type === 'competitor_mention')
+  // Block violations: prompt_injection (always), competitor_mention (when not observe mode)
+  const blocked = OUTPUT_OBSERVE_MODE
+    ? false
+    : violations.some(v => v.type === 'prompt_injection' || v.type === 'competitor_mention')
 
   return {
     blocked,
