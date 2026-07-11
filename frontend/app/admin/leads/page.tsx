@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Phone, Mail, MapPin, Calendar, Filter } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { adminAuthHeaders } from '@/lib/authedFetch'
+import { API_BASE } from '@/lib/env'
 
 interface Lead {
   id: string
