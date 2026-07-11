@@ -158,7 +158,7 @@ export default function BuilderRegistrationForm() {
             <div className="space-y-2 mb-6">
               <div className="flex items-start gap-2.5">
                 <span className="text-zinc-900 font-semibold text-[12px]">•</span>
-                <p className="text-[12px] text-zinc-600 leading-relaxed">Buyers who've already shortlisted — not cold enquiries</p>
+                <p className="text-[12px] text-zinc-600 leading-relaxed">Buyers who&apos;ve already shortlisted — not cold enquiries</p>
               </div>
               <div className="flex items-start gap-2.5">
                 <span className="text-zinc-900 font-semibold text-[12px]">•</span>
