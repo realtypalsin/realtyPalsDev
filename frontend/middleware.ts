@@ -22,28 +22,28 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/v1/site-visit')
 
   if (isUserApi) {
-    const claimedUserId = request.headers.get('x-user-id')
-    if (claimedUserId) {
-      const supabaseToken = request.cookies.get('sb-eargxntetfmtdpwedjbd-auth-token')?.value
-      if (supabaseToken) {
-        try {
-          const parsed = JSON.parse(supabaseToken)
-          const accessToken: string | undefined = Array.isArray(parsed) ? parsed[0] : parsed?.access_token
-          if (accessToken) {
-            const parts = accessToken.split('.')
-            if (parts.length === 3) {
-              // base64url → base64 → decode (Edge-safe, no Buffer)
-              const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
-              const payload = JSON.parse(atob(base64)) as { sub?: string }
-              if (payload.sub && payload.sub !== claimedUserId) {
-                return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-              }
-            }
-          }
-        } catch {
-          // cookie parse failure → pass through for backward compat
-        }
+    const supabaseToken = request.cookies.get('sb-eargxntetfmtdpwedjbd-auth-token')?.value
+    if (!supabaseToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    try {
+      const parsed = JSON.parse(supabaseToken)
+      const accessToken: string | undefined = Array.isArray(parsed) ? parsed[0] : parsed?.access_token
+      if (!accessToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
+      const parts = accessToken.split('.')
+      if (parts.length !== 3) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+      const payload = JSON.parse(atob(base64)) as { sub?: string }
+      if (!payload.sub) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      // userId is now verified from the cookie. downstream routes MUST NOT trust x-user-id header.
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
   }
 

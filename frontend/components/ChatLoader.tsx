@@ -89,10 +89,9 @@ interface Props {
 }
 
 export default function ChatLoader({ userQuery, isSearching, searchingTool }: Props) {
-  const chips = parseQuery(userQuery)
   const steps = searchingTool && TOOL_STEPS[searchingTool]
     ? TOOL_STEPS[searchingTool]
-    : chips.length > 0 || isSearching
+    : isSearching
     ? SEARCH_STEPS
     : GENERAL_STEPS
 
@@ -123,25 +122,6 @@ export default function ChatLoader({ userQuery, isSearching, searchingTool }: Pr
 
   return (
     <div className="flex flex-col gap-3 py-0.5">
-
-      {/* Criteria chips — materialise one-by-one */}
-      {chips.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {chips.map((chip, i) => (
-            <motion.span
-              key={chip.label}
-              initial={{ opacity: 0, scale: 0.65, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: i * 0.09, duration: 0.32, type: 'spring', stiffness: 340, damping: 22 }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[12px] font-semibold select-none ${CHIP_STYLE[chip.variant]}`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-              {chip.label}
-            </motion.span>
-          ))}
-        </div>
-      )}
-
       {/* Progress steps */}
       <div className="flex flex-col gap-2.5">
         {steps.map((label, i) => {

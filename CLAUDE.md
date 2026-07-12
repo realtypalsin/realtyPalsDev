@@ -263,19 +263,13 @@ Do not swallow errors. Use: Structured logging, Error boundaries, Retry mechanis
 
 ---
 
-## Folder Structure
-frontend/app/
-frontend/components/
-frontend/components/ui/
-frontend/lib/
-frontend/types/
-frontend/public/
-backend/src/routes/
-backend/src/lib/ai/
-backend/src/repositories/
-prisma/
-prompts/
-types/
+## Folder Structure (Live)
+frontend/app/ — Next.js App Router (routes, API v1 handlers)
+frontend/components/ — React components (chat UI, admin panels, forms)
+frontend/lib/ — utilities (AI prompts, API client, Redis, validators)
+frontend/types/ — TypeScript types (project, property, intent, session)
+frontend/public/ — static assets
+prisma/ — Prisma schema + migrations (DB source of truth)
 
 ---
 

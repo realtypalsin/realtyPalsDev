@@ -7,7 +7,6 @@ import dynamic from 'next/dynamic';
 import { ChatMessage } from '@/types/property';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
 import ProjectDetailPanel from '@/components/ProjectDetailPanel';
-import ThemeToggle from '@/components/ThemeToggle';
 import VisualGuide from './VisualGuide';
 import Image from 'next/image';
 import Toast from '@/components/Toast';
@@ -26,58 +25,40 @@ import {
 const SiteVisitScheduler = dynamic(() => import('@/components/SiteVisitScheduler'), { ssr: false })
 const CalculatorPanel = dynamic(() => import('@/components/CalculatorPanel'), { ssr: false })
 
-// ── Follow-up chip generator — contextual per phase ───────────────────────
-function getFollowUpChips(
-  phase: 'DISCOVERY' | 'ADVISOR',
-  shortlist: ProjectCardType[],
-  turnCount: number,
-): Chip[] {
-  if (phase === 'ADVISOR' && shortlist.length > 0) {
-    const hasUnderConstruction = shortlist.some(
-      (p) => p.status === 'under_construction' || p.status === 'new_launch',
-    )
-    const hasRTM = shortlist.some((p) => p.status === 'ready_to_move')
-    const topProject = shortlist[0]
+// ── Progressive chip disclosure — driven by server missingDimension ────────
+function getFollowUpChips(missingDimension: 'budget' | 'bhk' | 'location' | null): Chip[] {
+  if (!missingDimension) return [] // All dimensions filled, no more chips
 
-    return [
-      { emoji: '📅', label: 'Book Site Visit', picker: 'single', pickerAction: 'site_visit', pickerModal: true },
-      { emoji: '📞', label: 'Get Callback', picker: 'single', pickerAction: 'callback', pickerModal: true },
-      { emoji: '📊', label: 'Calculate EMI', picker: 'single', pickerAction: 'emi' },
-      ...(shortlist.length >= 2
-        ? [{ emoji: '⚖️', label: 'Compare', picker: 'multi' as const, pickerAction: 'compare' }]
-        : []),
-      ...(hasUnderConstruction
-        ? [{ emoji: '🏗️', label: 'Builder delivery risk?', picker: 'single' as const, pickerAction: 'risks' }]
-        : []),
-      ...(hasRTM
-        ? [{ emoji: '🔑', label: 'Why still available?', msg: `Why is ${topProject.name} still available as ready-to-move? Is there a catch I should know about?` }]
-        : []),
-      { emoji: '🏗️', label: 'Builder track record', picker: 'single', pickerAction: 'builder' },
-      { emoji: '📍', label: 'Area overview', picker: 'single', pickerAction: 'area' },
-    ]
+  const chips: Record<'budget' | 'bhk' | 'location', Chip[]> = {
+    budget: [
+      { emoji: '💰', label: 'Under 1 Cr', msg: 'I want properties under 1 Cr' },
+      { emoji: '💰', label: '1–2 Cr', msg: 'My budget is 1 to 2 Cr' },
+      { emoji: '💰', label: '2–3 Cr', msg: 'I can spend 2 to 3 Cr' },
+      { emoji: '💰', label: 'Above 3 Cr', msg: 'My budget is above 3 Cr' },
+    ],
+    bhk: [
+      { emoji: '🏠', label: '1 BHK', msg: 'I need a 1 BHK' },
+      { emoji: '🏠', label: '2 BHK', msg: 'Looking for a 2 BHK' },
+      { emoji: '🏠', label: '3 BHK', msg: 'I want a 3 BHK' },
+      { emoji: '🏠', label: '3+ BHK', msg: 'I need 3 or more bedrooms' },
+    ],
+    location: [
+      { emoji: '📍', label: 'Sector 150', msg: 'Show me properties in Sector 150' },
+      { emoji: '📍', label: 'Sector 137', msg: 'I prefer Sector 137' },
+      { emoji: '📍', label: 'Central Noida', msg: 'Looking in Central Noida' },
+      { emoji: '📍', label: 'Other sectors', msg: 'Show me other sectors nearby' },
+    ],
   }
-  if (phase === 'DISCOVERY' && turnCount >= 2) {
-    return [
-      { emoji: '🏠', label: 'Show properties', msg: 'Show me available 3BHK properties in Noida Sector 150' },
-      { emoji: '📊', label: 'EMI calculator', msg: 'How do I calculate EMI for a 1.5 Cr flat?' },
-      { emoji: '🏆', label: 'Best sectors', msg: 'Which sectors in Noida have the best appreciation right now?' },
-      { emoji: '📋', label: 'RERA explained', msg: 'What is RERA and how does it protect home buyers?' },
-    ]
-  }
-  return []
+
+  return chips[missingDimension].slice(0, 5) // Cap at 5 chips
 }
 
-const SUGGESTION_POOL = [
-  'Show me 3BHK under 1.5 Cr in Noida',
-  'Best sectors for families',
-  'Compare Sector 150 vs Sector 137',
-  'Builder track records in Noida',
-  'Calculate EMI for 1.2 Cr',
-  'RERA registered projects',
-  'Ready to move under 2 Cr',
-  'Metro-connected properties',
-  'New launches 2024-25',
-  'Properties near good schools',
+// Welcome screen starter chips — show one from each dimension
+const WELCOME_CHIPS = [
+  { emoji: '💰', label: 'Budget 1–2 Cr', msg: 'My budget is 1 to 2 Cr' },
+  { emoji: '🏠', label: '3 BHK', msg: 'I want a 3 BHK' },
+  { emoji: '📍', label: 'Sector 150', msg: 'Show me properties in Sector 150' },
+  { emoji: '🏠', label: 'Ready to move', msg: 'I want a property ready to move' },
 ];
 
 function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => void }) {
@@ -112,7 +93,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [chatInput, setChatInput] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [toast, setToast] = useState<{ message: string } | null>(null);
-  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [, setShowRecommendations] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -122,6 +103,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [showContextWarning, setShowContextWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
+  const [missingDimension, setMissingDimension] = useState<'budget' | 'bhk' | 'location' | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   // Tracks which ?session= URL param was last fully restored — prevents re-init loops
   const lastRestoredSessionParamRef = useRef<string | null>(null)
@@ -144,7 +126,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [shareCopied, setShareCopied] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
-  const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
+  const [regeneratingIdx] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const streamingMsgIdRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -596,6 +578,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             const d = payload.data;
             if (d.session_id) setSessionId(d.session_id);
             if (d.chatPhase) setChatPhase(d.chatPhase);
+            if (d.missingDimension !== undefined) setMissingDimension(d.missingDimension);
             // Use localProjects (not stale closure) to correctly detect comparison intent
             setChatHistory(prev => prev.map(m =>
               m.id === streamId
@@ -650,12 +633,6 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     if (userMsg) await streamChat(userMsg);
   }, [chatHistory, streamChat]);
 
-  const handleQuickReply = useCallback(async (field: string, value: string) => {
-    let message = value;
-    if (field === 'bhk') message = `${parseInt(value)} BHK`;
-    await streamChat(message);
-  }, [streamChat]);
-
   const stripMarkdown = (text: string): string => {
     return text
       .replace(/```[\s\S]*?```/g, '[code]')
@@ -686,17 +663,13 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   }, [streamChat]);
 
   const followUpChips = useMemo(
-    () => getFollowUpChips(chatPhase, lastShortlist, chatTurnCount),
-    [chatPhase, lastShortlist, chatTurnCount],
+    () => getFollowUpChips(missingDimension),
+    [missingDimension],
   );
 
   const suggestionChips = useMemo(() => {
-    const offset = sessionId ? (sessionId.charCodeAt(0) % 7) : 0;
-    const chips: string[] = [];
-    for (let i = 0; i < 4; i++) {
-      chips.push(SUGGESTION_POOL[(offset + i) % SUGGESTION_POOL.length]);
-    }
-    return chips;
+    const offset = sessionId ? (sessionId.charCodeAt(0) % WELCOME_CHIPS.length) : 0;
+    return WELCOME_CHIPS.slice(offset, Math.min(offset + 4, WELCOME_CHIPS.length));
   }, [sessionId]);
 
   // ── Stable MessageBubble callbacks ──────────────────────────────────────────
@@ -833,12 +806,12 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md w-full mb-10">
               {suggestionChips.map((chip) => (
                 <button
-                  key={chip}
+                  key={chip.label}
                   type="button"
-                  onClick={() => submitMessage(chip)}
+                  onClick={() => submitMessage(chip.msg)}
                   className="px-4 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:border-violet-200 dark:hover:border-violet-700 hover:text-violet-700 dark:hover:text-violet-400 transition-all text-left shadow-sm font-medium"
                 >
-                  {chip}
+                  {chip.emoji} {chip.label}
                 </button>
               ))}
             </div>
