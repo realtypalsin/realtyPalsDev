@@ -1,17 +1,29 @@
 {
   "compilerOptions": {
     "target": "ES2022",
+<<<<<<< HEAD
     "module": "commonjs",
     "lib": ["ES2022", "DOM"],
+=======
+    "module": "CommonJS",
+    "moduleResolution": "node",
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+<<<<<<< HEAD
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
+=======
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/__tests__/**"]
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 }

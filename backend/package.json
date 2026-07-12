@@ -1,6 +1,7 @@
 {
   "name": "realtypals-backend",
   "version": "1.0.0",
+<<<<<<< HEAD
   "description": "RealtyPals backend service — lead processing and notifications",
   "main": "dist/index.js",
   "scripts": {
@@ -24,5 +25,43 @@
   },
   "engines": {
     "node": ">=20.0.0"
+=======
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "prisma migrate deploy --schema=../frontend/prisma/schema.prisma && node dist/index.js",
+    "test": "node --require tsx/cjs --test src/lib/**/__tests__/*.test.ts",
+    "db:generate": "prisma generate --schema=../frontend/prisma/schema.prisma"
+  },
+  "prisma": {
+    "schema": "../frontend/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@prisma/client": "^5.20.0",
+    "@supabase/supabase-js": "^2.49.8",
+    "@upstash/redis": "^1.38.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-async-errors": "^3.1.1",
+    "groq-sdk": "^0.7.0",
+    "helmet": "^8.2.0",
+    "multer": "^1.4.5-lts.2",
+    "openai": "^6.42.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^20.14.12",
+    "prisma": "^5.20.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   }
 }

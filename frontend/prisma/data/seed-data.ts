@@ -17,6 +17,24 @@ export const BUILDERS = [
     awards: [],
     awards_count: null,
     description: 'Premium real estate developer delivering 5000+ units across Noida.',
+<<<<<<< HEAD
+=======
+    cin: 'U70109DL2014PTC271794',
+    // ponytail: no RERA Promoter ID in source docs for ACE Group — do not fabricate
+    financial_hygiene_score: 95,
+    outstanding_dues_cr: 0.00,
+    legal_entities: [
+      { name: 'LA Buildtech Private Limited', cin: 'U70109DL2014PTC271794', role: 'primary' },
+      { name: 'L.A. Infraventures Pvt. Ltd.', cin: null, role: 'secondary' },
+    ],
+    executives: [
+      { name: 'Ajay Chaudhary', designation: 'CMD' },
+      { name: 'Pratap Singh Bhadauria', designation: 'Director' },
+      { name: 'Rahul Misra', designation: 'Director' },
+    ],
+    funding_banks: ['HDFC Bank', 'ICICI Bank'],
+    audit_flags_log: 'Income Tax department search conducted in January 2022; operations remained unimpeded',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   },
   {
     name: 'ATS Infrastructure Ltd',
@@ -103,6 +121,24 @@ export const BUILDERS = [
     ongoing_projects: ['Mahagun Mezzaria'],
     awards: [], awards_count: null,
     description: 'Leading NCR developer with 16,000+ delivered units across luxury residential developments.',
+<<<<<<< HEAD
+=======
+    cin: 'U74899DL1995PTC072752',
+    // ponytail: no RERA Promoter ID in source docs for Mahagun Group — do not fabricate
+    financial_hygiene_score: 75,
+    outstanding_dues_cr: 117.00,
+    legal_entities: [
+      { name: 'Mahagun (India) Private Limited', cin: 'U74899DL1995PTC072752', role: 'primary' },
+      { name: 'Mahagun Real Estate Pvt. Ltd.', cin: 'U45200DL2008PTC174063', role: 'secondary' },
+      { name: 'Nexgen Infracon Pvt. Ltd.', cin: null, role: 'secondary' },
+    ],
+    executives: [
+      { name: 'Dhiraj Jain', designation: 'Director' },
+      { name: 'Amit Jain', designation: 'Director' },
+    ],
+    funding_banks: ['IDBI Bank', 'Union Bank of India'],
+    audit_flags_log: 'NCLT CIRP admitted on Aug 5, 2025; successfully settled and officially dismissed by NCLAT on Feb 22, 2026. Sector 78 project owes 117 Cr outstanding dues.',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   },
   {
     name: 'Sikka Group',
@@ -174,6 +210,10 @@ export const BUILDERS = [
     delivered_projects: ['Supertech Ecociti', 'Supertech Cape Town'], ongoing_projects: [],
     awards: [], awards_count: null,
     description: 'One of NCR\'s largest residential and commercial developers with projects across Noida.',
+<<<<<<< HEAD
+=======
+    legal_flag: 'LEGAL_RISK: Multiple projects under court proceedings for delayed possession. Allahabad High Court and RERA authorities have taken action against Supertech. Do not recommend for new purchase.',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   },
   {
     name: 'Prateek Group',
@@ -191,6 +231,25 @@ export const BUILDERS = [
     awards_count: null,
     description: 'Luxury residential developer with projects in Noida.',
   },
+<<<<<<< HEAD
+=======
+  {
+    name: 'Tata Housing Development Company Ltd',
+    slug: 'tata-housing',
+    tagline: null,
+    parent_group: 'Tata Group',
+    founded_year: 1984,
+    headquarters: 'Mumbai',
+    website: 'https://www.tatahousing.in',
+    credai_member: true,
+    delivered_units: null,
+    delivered_projects: [],
+    ongoing_projects: ['Tata Eureka Park'],
+    awards: [],
+    awards_count: null,
+    description: 'Real estate subsidiary of the Tata Group, developing residential and commercial properties across India since 1984.',
+  },
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 ]
 
 export const PROJECTS = [
@@ -200,7 +259,11 @@ export const PROJECTS = [
     tagline: 'A Work of Art for Exquisite Living',
     builder_slug: 'ace-group',
     rera_number: 'UPRERAPRJ4514',
+<<<<<<< HEAD
     rera_url: 'https://www.up-rera.in',
+=======
+    rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida',
     sector: 'Sector 150',
     address: 'Sector 150 Sports City, Noida, Uttar Pradesh',
@@ -272,8 +335,13 @@ export const PROJECTS = [
     name: 'ATS Pristine',
     tagline: 'An Invitation To Reconnect With Nature',
     builder_slug: 'ats-infrastructure',
+<<<<<<< HEAD
     rera_number: null,
     rera_url: null,
+=======
+    rera_number: 'UPRERAPRJ2875',
+    rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida',
     sector: 'Sector 150',
     address: 'Sector 150, Noida Expressway, Noida, Uttar Pradesh',
@@ -298,10 +366,16 @@ export const PROJECTS = [
       { url: '/images/properties/ats-pristine/exterior.jpg', type: 'exterior' as const, caption: 'ATS Pristine — exterior view',  sort_order: 1 },
     ],
     unit_types: [
+<<<<<<< HEAD
       { name: 'Plan C (3BHK)', bhk: 3, super_area_sqft: 1750, carpet_area_sqft: 1202, balcony_area_sqft: null, bathrooms: 3, utility_room: true,  dress_area: true,  towers: [], price_min_cr: 2.71, price_max_cr: 2.71, price_label: '₹2.71 Cr (est.)',       price_is_estimated: true },
       { name: 'Plan B (3BHK)', bhk: 3, super_area_sqft: 2300, carpet_area_sqft: null,  balcony_area_sqft: null, bathrooms: 3, utility_room: true,  dress_area: true,  towers: [], price_min_cr: 3.17, price_max_cr: 3.57, price_label: '₹3.17–3.57 Cr (est.)', price_is_estimated: true },
       { name: 'Plan A (4BHK)', bhk: 4, super_area_sqft: 3200, carpet_area_sqft: null,  balcony_area_sqft: null, bathrooms: 4, utility_room: true,  dress_area: true,  towers: [], price_min_cr: 4.80, price_max_cr: 5.12, price_label: '₹4.80–5.12 Cr (est.)', price_is_estimated: true },
       { name: '5BHK',          bhk: 5, super_area_sqft: null,  carpet_area_sqft: null,  balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: [], price_min_cr: 5.60, price_max_cr: 5.60, price_label: '₹5.60 Cr (est.)',       price_is_estimated: true },
+=======
+      { name: 'Plan C (3BHK)', bhk: 3, super_area_sqft: 1750, carpet_area_sqft: 1202, balcony_area_sqft: null, bathrooms: 3, utility_room: true, dress_area: true, towers: [], price_min_cr: 2.71, price_max_cr: 2.71, price_label: '₹2.71 Cr (est.)',       price_is_estimated: true },
+      { name: 'Plan B (3BHK)', bhk: 3, super_area_sqft: 2300, carpet_area_sqft: null,  balcony_area_sqft: null, bathrooms: 3, utility_room: true, dress_area: true, towers: [], price_min_cr: 3.17, price_max_cr: 3.57, price_label: '₹3.17–3.57 Cr (est.)', price_is_estimated: true },
+      { name: 'Plan A (4BHK)', bhk: 4, super_area_sqft: 3200, carpet_area_sqft: null,  balcony_area_sqft: null, bathrooms: 4, utility_room: true, dress_area: true, towers: [], price_min_cr: 4.80, price_max_cr: 5.12, price_label: '₹4.80–5.12 Cr (est.)', price_is_estimated: true },
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     ],
     amenities: [
       { name: 'Swimming Pool',        category: 'lifestyle' as const },
@@ -330,7 +404,11 @@ export const PROJECTS = [
     tagline: "It's not a home, it's a hideaway",
     builder_slug: 'homekraft',
     rera_number: 'UPRERAPRJ442430',
+<<<<<<< HEAD
     rera_url: 'https://www.up-rera.in',
+=======
+    rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida',
     sector: 'Sector 150',
     address: 'Plot No. SC-02/J&K, Sector 150, Noida, Uttar Pradesh',
@@ -400,18 +478,30 @@ export const PROJECTS = [
     tagline: 'Where Wellness Resides',
     builder_slug: 'ats-infrastructure',
     rera_number: 'UPRERAPRJ694037',
+<<<<<<< HEAD
     rera_url: 'https://www.up-rera.in',
+=======
+    rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida',
     sector: 'Sector 150',
     address: 'Sector 150, Noida, Uttar Pradesh',
     lat: null,
     lng: null,
     land_area_acres: 30,
+<<<<<<< HEAD
     total_units: null,
     total_towers: 9,
     status: 'under_construction' as const,
     possession_date: null,
     possession_label: 'Verify with builder',
+=======
+    total_units: 479,
+    total_towers: 9,
+    status: 'under_construction' as const,
+    possession_date: null,
+    possession_label: 'Aug 2026',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     description: "NCR's first wellness homes in Sector 150 Noida.",
     long_description: 'Biophilic wellness residences spread across 30 acres featuring golf views, wellness gardens, organic farming zones, sports infrastructure and luxury lifestyle amenities.',
     design_theme: 'Biophilic Wellness',
@@ -477,7 +567,11 @@ export const PROJECTS = [
     tagline: 'Come, Live More',
     builder_slug: 'eldeco',
     rera_number: 'UPRERAPRJ315072',
+<<<<<<< HEAD
     rera_url: 'https://www.up-rera.in',
+=======
+    rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida',
     sector: 'Sector 150',
     address: 'Sports City, Sector 150, Noida, Uttar Pradesh',
@@ -547,7 +641,11 @@ export const PROJECTS = [
     tagline: '#Bliss',
     builder_slug: 'godrej-properties',
     rera_number: 'UPRERAPRJ745601',
+<<<<<<< HEAD
     rera_url: 'https://www.up-rera.in',
+=======
+    rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida',
     sector: 'Sector 150',
     address: 'Sector 150, Noida, Uttar Pradesh',
@@ -576,10 +674,17 @@ export const PROJECTS = [
       { url: '/images/properties/godrej-palm-retreat/view.jpg',       type: 'exterior' as const,   caption: 'Godrej Palm Retreat — project view',          sort_order: 5 },
     ],
     unit_types: [
+<<<<<<< HEAD
       { name: '2BHK',           bhk: 2, super_area_sqft: 894,  carpet_area_sqft: 895,  balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: ['C1','C2','C3','C4','C5'], price_min_cr: 1.34, price_max_cr: 2.12, price_label: '₹1.34–2.12 Cr (est.)', price_is_estimated: true },
       { name: '3BHK',           bhk: 3, super_area_sqft: 1383, carpet_area_sqft: 1383, balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: ['C1','C2','C3','C4','C5'], price_min_cr: 2.07, price_max_cr: 3.34, price_label: '₹2.07–3.34 Cr (est.)', price_is_estimated: true },
       { name: '3BHK + Utility', bhk: 3, super_area_sqft: 1741, carpet_area_sqft: 1741, balcony_area_sqft: null, bathrooms: null, utility_room: true,  dress_area: false, towers: ['C1','C2','C3','C4','C5'], price_min_cr: 2.60, price_max_cr: 2.60, price_label: '₹2.60 Cr (est.)',       price_is_estimated: true },
       { name: '4BHK + Utility', bhk: 4, super_area_sqft: 2293, carpet_area_sqft: 2293, balcony_area_sqft: null, bathrooms: null, utility_room: true,  dress_area: false, towers: ['C1','C2','C3','C4','C5'], price_min_cr: 3.44, price_max_cr: 4.21, price_label: '₹3.44–4.21 Cr (est.)', price_is_estimated: true },
+=======
+      { name: '2BHK',           bhk: 2, super_area_sqft: 894,  carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 2, utility_room: false, dress_area: false, towers: ['C1','C2','C3','C4','C5'], price_min_cr: 1.34, price_max_cr: 2.12, price_label: '₹1.34–2.12 Cr (est.)', price_is_estimated: true },
+      { name: '3BHK',           bhk: 3, super_area_sqft: 1383, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 3, utility_room: false, dress_area: false, towers: ['C1','C2','C3','C4','C5'], price_min_cr: 2.07, price_max_cr: 3.34, price_label: '₹2.07–3.34 Cr (est.)', price_is_estimated: true },
+      { name: '3BHK + Utility', bhk: 3, super_area_sqft: 1741, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 3, utility_room: true,  dress_area: false, towers: ['C1','C2','C3','C4','C5'], price_min_cr: 2.60, price_max_cr: 2.60, price_label: '₹2.60 Cr (est.)',       price_is_estimated: true },
+      { name: '4BHK + Utility', bhk: 4, super_area_sqft: 2293, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 4, utility_room: true,  dress_area: false, towers: ['C1','C2','C3','C4','C5'], price_min_cr: 3.44, price_max_cr: 4.21, price_label: '₹3.44–4.21 Cr (est.)', price_is_estimated: true },
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     ],
     amenities: [
       { name: 'Tennis Court',                  category: 'sports' as const },
@@ -626,8 +731,13 @@ export const PROJECTS = [
     name: 'Prateek Canary',
     tagline: 'A world where life sings with joy',
     builder_slug: 'prateek-group',
+<<<<<<< HEAD
     rera_number: null,
     rera_url: null,
+=======
+    rera_number: 'UPRERAPRJ591510',
+    rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida',
     sector: 'Sector 150',
     address: 'Sector 150, Noida, Uttar Pradesh',
@@ -698,6 +808,65 @@ export const PROJECTS = [
     ],
   },
 
+<<<<<<< HEAD
+=======
+  {
+    slug: 'tata-eureka-park-sector-150-noida',
+    name: 'Tata Eureka Park',
+    tagline: 'Find Your Happy Place',
+    builder_slug: 'tata-housing',
+    rera_number: null,
+    rera_url: 'https://www.up-rera.in/verify',
+    city: 'Noida',
+    sector: 'Sector 150',
+    address: 'Sports City, Sector 150, Noida, Uttar Pradesh',
+    lat: null,
+    lng: null,
+    land_area_acres: null,
+    total_units: null,
+    total_towers: null,
+    status: 'under_construction' as const,
+    possession_date: null,
+    possession_label: 'Verify with builder',
+    description: '2 & 3 BHK residences by Tata Housing in Sports City Sector 150 Noida.',
+    long_description: 'Tata Eureka Park is a residential development by Tata Housing Development Company in Sector 150, Noida. The project offers 2 BHK and 3 BHK apartments with landscaped greens, clubhouse, sports facilities and quality Tata Group construction standards.',
+    design_theme: null,
+    architect: null,
+    interior_designer: null,
+    marketing_claims: ['Find Your Happy Place', 'Tata Quality', 'Sports City', 'Sector 150', 'RERA Approved', 'Low Density'],
+    ai_search_keywords: ['tata eureka park', 'tata housing', 'sector 150 noida', '2 bhk', '3 bhk', 'sports city', 'clubhouse', 'swimming pool', 'low density', 'noida expressway'],
+    hero_image_url: '/images/properties/tata-eureka-park-sector-150-noida/hero.jpg',
+    project_images: [
+      { url: '/images/properties/tata-eureka-park-sector-150-noida/hero.jpg', type: 'hero' as const, caption: 'Tata Eureka Park — Sector 150', sort_order: 0 },
+    ],
+    unit_types: [
+      { name: '2 BHK', bhk: 2, super_area_sqft: 1095, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 2, utility_room: false, dress_area: false, towers: [], price_min_cr: 1.65, price_max_cr: 1.80, price_label: '₹1.65–1.80 Cr (est.)', price_is_estimated: true },
+      { name: '3 BHK', bhk: 3, super_area_sqft: 1485, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 3, utility_room: false, dress_area: false, towers: [], price_min_cr: 2.20, price_max_cr: 2.50, price_label: '₹2.20–2.50 Cr (est.)', price_is_estimated: true },
+      { name: '3 BHK + Study', bhk: 3, super_area_sqft: 1750, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 3, utility_room: true, dress_area: false, towers: [], price_min_cr: 2.60, price_max_cr: 2.85, price_label: '₹2.60–2.85 Cr (est.)', price_is_estimated: true },
+    ],
+    amenities: [
+      { name: 'Swimming Pool',     category: 'lifestyle' as const },
+      { name: 'Clubhouse',         category: 'lifestyle' as const },
+      { name: 'Gymnasium',         category: 'sports' as const },
+      { name: 'Jogging Track',     category: 'sports' as const },
+      { name: 'Tennis Court',      category: 'sports' as const },
+      { name: 'Basketball Court',  category: 'sports' as const },
+      { name: 'Badminton Court',   category: 'sports' as const },
+      { name: 'Yoga Area',         category: 'wellness' as const },
+      { name: 'Meditation Garden', category: 'wellness' as const },
+      { name: 'Landscaped Greens', category: 'wellness' as const },
+      { name: 'Kids Play Area',    category: 'kids' as const },
+    ],
+    connectivity: [
+      { type: 'metro' as const,    name: 'Sector 148 Metro Station',       distance_km: null, data_source: 'brochure' as const },
+      { type: 'road' as const,     name: 'Noida Greater Noida Expressway', distance_km: null, data_source: 'brochure' as const },
+      { type: 'road' as const,     name: 'Yamuna Expressway',              distance_km: null, data_source: 'brochure' as const },
+      { type: 'school' as const,   name: 'Genesis Global School',          distance_km: null, data_source: 'brochure' as const },
+      { type: 'hospital' as const, name: 'Yatharth Hospital',              distance_km: null, data_source: 'brochure' as const },
+    ],
+  },
+
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   // ─── SECTOR 78 ───────────────────────────────────────────────────────────
 
   {
@@ -705,11 +874,19 @@ export const PROJECTS = [
     name: 'Assotech Windsor Court',
     tagline: 'Homes That Do More',
     builder_slug: 'assotech-limited',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
     city: 'Noida', sector: 'Sector 78',
     address: 'GH-04A, Plot No. 89, Sector 78, Noida, Uttar Pradesh',
     lat: null, lng: null,
     land_area_acres: null, total_units: null, total_towers: 6,
+=======
+    rera_number: 'UPRERAPRJ6078', rera_url: 'https://www.up-rera.in/verify',
+    city: 'Noida', sector: 'Sector 78',
+    address: 'GH-04A, Plot No. 89, Sector 78, Noida, Uttar Pradesh',
+    lat: null, lng: null,
+    land_area_acres: null, total_units: 728, total_towers: 6,
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     status: 'under_construction' as const,
     possession_date: null, possession_label: 'Verify with builder',
     description: 'Premium residential township with flexible MUVS homes in Sector 78 Noida.',
@@ -761,11 +938,19 @@ export const PROJECTS = [
     name: 'Mahagun Mezzaria',
     tagline: 'Luxury Beyond The Four Walls',
     builder_slug: 'mahagun-group',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
     city: 'Noida', sector: 'Sector 78',
     address: 'Sector 78, Noida, Uttar Pradesh',
     lat: null, lng: null,
     land_area_acres: null, total_units: null, total_towers: null,
+=======
+    rera_number: 'UPRERAPRJ3306', rera_url: 'https://www.up-rera.in/verify',
+    city: 'Noida', sector: 'Sector 78',
+    address: 'Sector 78, Noida, Uttar Pradesh',
+    lat: null, lng: null,
+    land_area_acres: null, total_units: 730, total_towers: null,
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     status: 'under_construction' as const,
     possession_date: null, possession_label: 'Verify with builder',
     description: 'Ultra luxury residential project in Sector 78 Noida.',
@@ -778,9 +963,15 @@ export const PROJECTS = [
       { url: '/images/properties/mahagun-mezzaria/hero.jpg', type: 'hero' as const, caption: 'Mahagun Mezzaria — ultra luxury residences', sort_order: 0 },
     ],
     unit_types: [
+<<<<<<< HEAD
       { name: '3 BHK', bhk: 3, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: [], price_min_cr: 4.00, price_max_cr: 5.56,  price_label: '₹4.00–5.56 Cr (est.)',  price_is_estimated: true },
       { name: '4 BHK', bhk: 4, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: [], price_min_cr: 5.50, price_max_cr: 11.79, price_label: '₹5.50–11.79 Cr (est.)', price_is_estimated: true },
       { name: '5 BHK', bhk: 5, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: null, utility_room: false, dress_area: false, towers: [], price_min_cr: 6.50, price_max_cr: 6.50,  price_label: '₹6.50 Cr (est.)',       price_is_estimated: true },
+=======
+      { name: '3 BHK', bhk: 3, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 4, utility_room: false, dress_area: false, towers: [], price_min_cr: 4.00, price_max_cr: 5.56,  price_label: '₹4.00–5.56 Cr (est.)',  price_is_estimated: true },
+      { name: '4 BHK', bhk: 4, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 5, utility_room: false, dress_area: false, towers: [], price_min_cr: 5.50, price_max_cr: 11.79, price_label: '₹5.50–11.79 Cr (est.)', price_is_estimated: true },
+      { name: '5 BHK', bhk: 5, super_area_sqft: null, carpet_area_sqft: null, balcony_area_sqft: null, bathrooms: 5, utility_room: false, dress_area: false, towers: [], price_min_cr: 6.50, price_max_cr: 6.50,  price_label: '₹6.50 Cr (est.)',       price_is_estimated: true },
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     ],
     amenities: [
       { name: 'Swimming Pool',               category: 'lifestyle' as const },
@@ -815,7 +1006,11 @@ export const PROJECTS = [
     name: 'Mahagun Moderne',
     tagline: 'Live The Grand Mahagun Way Of Life',
     builder_slug: 'mahagun-group',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
+=======
+    rera_number: 'UPRERAPRJ1957', rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida', sector: 'Sector 78',
     address: 'Plot GH-02, Sector 78, Noida, Uttar Pradesh',
     lat: null, lng: null,
@@ -868,7 +1063,11 @@ export const PROJECTS = [
     name: 'Sikka Karmic Greens',
     tagline: 'Peace • Happiness • Prosperity',
     builder_slug: 'sikka-group',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
+=======
+    rera_number: 'UPRERAPRJ4452', rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida', sector: 'Sector 78',
     address: 'Sector 78, Noida, Uttar Pradesh',
     lat: null, lng: null,
@@ -922,11 +1121,19 @@ export const PROJECTS = [
     name: 'The Hyde Park',
     tagline: 'Affordable Living at Sector 78 Noida',
     builder_slug: 'iitl-nimbus',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
     city: 'Noida', sector: 'Sector 78',
     address: 'Sector 78, Noida, Uttar Pradesh',
     lat: null, lng: null,
     land_area_acres: 15, total_units: null, total_towers: 20,
+=======
+    rera_number: 'UPRERAPRJ9689', rera_url: 'https://www.up-rera.in/verify',
+    city: 'Noida', sector: 'Sector 78',
+    address: 'Sector 78, Noida, Uttar Pradesh',
+    lat: null, lng: null,
+    land_area_acres: 15, total_units: 2092, total_towers: 20,
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     status: 'ready_to_move' as const,
     possession_date: null, possession_label: 'Partially Delivered',
     description: 'Affordable energy-efficient township across 15 acres in Sector 78 Noida.',
@@ -939,7 +1146,10 @@ export const PROJECTS = [
       { url: '/images/properties/the-hyde-park/hero.jpg', type: 'hero' as const, caption: 'The Hyde Park — affordable township', sort_order: 0 },
     ],
     unit_types: [
+<<<<<<< HEAD
       { name: '1 BHK',          bhk: 1, super_area_sqft: null, carpet_area_sqft: 312,  balcony_area_sqft: 44,  bathrooms: 1, utility_room: false, dress_area: false, towers: [], price_min_cr: null, price_max_cr: null, price_label: 'Price on request', price_is_estimated: true },
+=======
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
       { name: '2 BHK',          bhk: 2, super_area_sqft: null, carpet_area_sqft: 574,  balcony_area_sqft: 85,  bathrooms: 2, utility_room: false, dress_area: false, towers: [], price_min_cr: 0.95, price_max_cr: 1.19, price_label: '₹95L–1.19 Cr (est.)', price_is_estimated: true },
       { name: '3 BHK',          bhk: 3, super_area_sqft: null, carpet_area_sqft: 789,  balcony_area_sqft: 108, bathrooms: 2, utility_room: false, dress_area: false, towers: [], price_min_cr: 1.38, price_max_cr: 1.70, price_label: '₹1.38–1.70 Cr (est.)', price_is_estimated: true },
       { name: '3 BHK + Study',  bhk: 3, super_area_sqft: null, carpet_area_sqft: 1152, balcony_area_sqft: 194, bathrooms: 2, utility_room: false, dress_area: false, towers: [], price_min_cr: 1.70, price_max_cr: 2.02, price_label: '₹1.70–2.02 Cr (est.)', price_is_estimated: true },
@@ -979,11 +1189,19 @@ export const PROJECTS = [
     name: 'Exotica Fresco',
     tagline: 'Homes Close To Nature',
     builder_slug: 'exotica-housing',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
     city: 'Noida', sector: 'Sector 137',
     address: 'Sector 137, Noida Expressway, Noida, Uttar Pradesh',
     lat: null, lng: null,
     land_area_acres: null, total_units: null, total_towers: 16,
+=======
+    rera_number: 'UPRERAPRJ4172', rera_url: 'https://www.up-rera.in/verify',
+    city: 'Noida', sector: 'Sector 137',
+    address: 'Sector 137, Noida Expressway, Noida, Uttar Pradesh',
+    lat: null, lng: null,
+    land_area_acres: null, total_units: 834, total_towers: 16,
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     status: 'ready_to_move' as const,
     possession_date: null, possession_label: 'Delivered',
     description: 'Delivered nature-inspired apartments on Noida Expressway Sector 137.',
@@ -1026,7 +1244,11 @@ export const PROJECTS = [
     name: 'Logix Blossom County',
     tagline: 'The Green Side Of Life',
     builder_slug: 'logix-group',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
+=======
+    rera_number: 'UPRERAPRJ4466', rera_url: 'https://www.up-rera.in/verify',
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     city: 'Noida', sector: 'Sector 137',
     address: 'Sector 137, Noida Expressway, Noida, Uttar Pradesh',
     lat: null, lng: null,
@@ -1075,11 +1297,19 @@ export const PROJECTS = [
     name: 'Paramount Floraville',
     tagline: 'Beyond The Ordinary',
     builder_slug: 'paramount-group',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
     city: 'Noida', sector: 'Sector 137',
     address: 'Sector 137, Noida Expressway, Noida, Uttar Pradesh',
     lat: null, lng: null,
     land_area_acres: null, total_units: null, total_towers: 14,
+=======
+    rera_number: 'UPRERAPRJ677294', rera_url: 'https://www.up-rera.in/verify',
+    city: 'Noida', sector: 'Sector 137',
+    address: 'Sector 137, Noida Expressway, Noida, Uttar Pradesh',
+    lat: null, lng: null,
+    land_area_acres: null, total_units: 1530, total_towers: 14,
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     status: 'ready_to_move' as const,
     possession_date: null, possession_label: 'Delivered',
     description: 'Premium delivered residential township on Noida Expressway Sector 137.',
@@ -1122,11 +1352,19 @@ export const PROJECTS = [
     name: 'Paras Tierea',
     tagline: 'A home your heart deserves',
     builder_slug: 'paras-buildtech',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
     city: 'Noida', sector: 'Sector 137',
     address: 'Sector 137, Noida Expressway, Noida, Uttar Pradesh',
     lat: null, lng: null,
     land_area_acres: null, total_units: null, total_towers: 20,
+=======
+    rera_number: 'UPRERAPRJ14831', rera_url: 'https://www.up-rera.in/verify',
+    city: 'Noida', sector: 'Sector 137',
+    address: 'Sector 137, Noida Expressway, Noida, Uttar Pradesh',
+    lat: null, lng: null,
+    land_area_acres: null, total_units: 4087, total_towers: 20,
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     status: 'ready_to_move' as const,
     possession_date: null, possession_label: 'Delivered',
     description: 'Integrated township with studio to duplex homes on Noida Expressway.',
@@ -1163,11 +1401,19 @@ export const PROJECTS = [
     name: 'Supertech Ecociti',
     tagline: 'Inspired By Nature',
     builder_slug: 'supertech-limited',
+<<<<<<< HEAD
     rera_number: null, rera_url: null,
     city: 'Noida', sector: 'Sector 137',
     address: 'Plot No. 3, Sector 137, Noida Expressway, Noida, Uttar Pradesh',
     lat: null, lng: null,
     land_area_acres: null, total_units: null, total_towers: 22,
+=======
+    rera_number: 'UPRERAPRJ9744', rera_url: 'https://www.up-rera.in/verify',
+    city: 'Noida', sector: 'Sector 137',
+    address: 'Plot No. 3, Sector 137, Noida Expressway, Noida, Uttar Pradesh',
+    lat: null, lng: null,
+    land_area_acres: null, total_units: 1619, total_towers: 22,
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     status: 'ready_to_move' as const,
     possession_date: null, possession_label: 'Delivered',
     description: 'Nature-inspired integrated township with 22 towers on Noida Expressway.',

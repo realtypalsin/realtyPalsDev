@@ -1,0 +1,625 @@
+{
+  "_instructions": {
+    "usage": "Fill in every field below with real project data, then seed it with: npx tsx scripts/seed-from-json.ts path/to/this-file.json",
+    "rules": [
+      "Do NOT remove any key — if unknown, leave as null or empty string.",
+      "Dates must be ISO 8601 format: '2024-06-15T00:00:00.000Z'",
+      "status: 'under_construction' | 'ready_to_move' | 'new_launch'",
+      "intelligence status: 'DRAFT' | 'IN_REVIEW' | 'PUBLISHED'",
+      "AmenityCategory: 'sports' | 'lifestyle' | 'wellness' | 'kids' | 'security' | 'parking'",
+      "ConnectivityType: 'metro' | 'road' | 'expressway' | 'school' | 'hospital' | 'mall' | 'landmark' | 'airport' | 'university'",
+      "DataSource: 'brochure' | 'google' | 'estimated' | 'manual'",
+      "recommendation tier: 'STRONG_BUY' | 'BUY' | 'BUY_WITH_CAUTION' | 'HOLD' | 'AVOID'",
+      "Leave image/document storage_url and url as empty string '' — add via admin Media panel"
+    ]
+  },
+
+  "project": {
+    "name": "PROJECT NAME",
+    "slug": "project-name-sector-xx-city",
+    "city": "Noida",
+    "sector": "Sector 75",
+    "address": "Plot No. GH-01, Sector 75, Noida, Uttar Pradesh 201301",
+    "tagline": "Where Luxury Meets Nature",
+    "description": "Short 1-2 sentence description used by the AI for matching. Keep it concise and keyword-rich.",
+    "long_description": "Full multi-paragraph description shown in the property detail panel. Include construction tech, tower config, unique selling points, and location advantages.",
+    "hero_image_url": "",
+    "status": "ready_to_move",
+    "rera_number": "UPRERAPRJXXXXXX",
+    "rera_url": "https://up-rera.in/...",
+    "lat": 28.5355,
+    "lng": 77.3910,
+    "total_towers": 5,
+    "total_units": 546,
+    "floors": "G+26",
+    "land_area_acres": 5.1,
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold",
+    "has_duplex": false,
+    "has_penthouse": false,
+    "project_type": "Residential",
+    "launch_date": "2019-09-01T00:00:00.000Z",
+    "possession_date": "2024-06-15T00:00:00.000Z",
+    "possession_label": "Delivered (June 2024)",
+    "price_min_cr": 2.64,
+    "price_range_label": "Rs 2.64 Cr - Rs 4.70 Cr",
+    "architect": "Architect Firm Name",
+    "interior_designer": "Interior Designer Name",
+    "design_theme": "Eco-Luxury Vertical Gardens",
+    "marketing_claims": [
+      "Cascading Vertical Gardens",
+      "Ultra-Luxury Living",
+      "Zero Structural Delays",
+      "Low-Density Layout",
+      "Five-Star Amenities",
+      "Flawless Legal Title",
+      "CC/OC Received",
+      "Active Registries"
+    ],
+    "ai_search_keywords": [
+      "ivy county",
+      "sector 75 noida",
+      "county group",
+      "luxury apartments",
+      "3 bhk",
+      "4 bhk",
+      "vertical gardens",
+      "ready to move",
+      "central noida",
+      "rtm luxury"
+    ],
+    "schools_nearby_count": 8,
+    "hospitals_nearby_count": 5,
+    "shopping_nearby_count": 4,
+    "it_parks_nearby_count": 10,
+    "banks_nearby_count": 1,
+    "restaurants_nearby_count": 20,
+    "project_risk_flag": null,
+    "escrow_verified": true,
+    "escrow_bank_name": "HDFC Bank",
+    "registry_status": "Active",
+    "registry_embargo_reasons": [],
+    "nclt_moratorium_active": false
+  },
+
+  "builder": {
+    "name": "County Group",
+    "slug": "county-group",
+    "tagline": "Building Trust, Delivering Excellence",
+    "founder": "Founder Name",
+    "company_overview": "Full paragraph about the builder — their history, total deliveries, areas of specialization, reputation, and any notable projects. Minimum 3 sentences.",
+    "logo_url": "",
+    "founded_year": 2005,
+    "headquarters": "Noida, Uttar Pradesh",
+    "website": "https://www.countygroup.in",
+    "email": "contact@countygroup.in",
+    "phone": "+919XXXXXXXXX",
+    "parent_group": "County Group Pvt Ltd",
+    "experience_years": "20+ Years",
+    "projects_delivered_count": 6,
+    "total_projects_count": 7,
+    "delivered_units": 3000,
+    "delayed_projects_count": 0,
+    "average_delay_months": 0,
+    "delivery_score": 95,
+    "construction_quality_score": 92,
+    "after_sales_score": 88,
+    "buyer_satisfaction_score": 90,
+    "rera_compliance_score": 100,
+    "litigation_count": 0,
+    "awards": [
+      "Best Luxury Developer NCR 2023",
+      "Times Realty Icon Award"
+    ],
+    "certifications": [
+      "ISO 9001:2015"
+    ],
+    "luxury_specialization": true,
+    "township_specialization": false
+  },
+
+  "unit_types": [
+    {
+      "bhk": 3,
+      "name": "3 BHK",
+      "super_area_sqft": 1656,
+      "carpet_area_sqft": 1010,
+      "balcony_area_sqft": 120,
+      "bathrooms": 2,
+      "utility_room": false,
+      "dress_area": false,
+      "towers": ["T1", "T2"],
+      "price_min_cr": 2.64,
+      "price_max_cr": 2.64,
+      "price_label": "Rs 2.64 Cr",
+      "price_is_estimated": false,
+      "subtitle": "Elegant 3 bedroom with lush garden views",
+      "description": "Full unit description — layout details, room sizes, balcony orientation, floor, and any unique features.",
+      "category_badge": "Premium Family",
+      "inventory_left": 4,
+      "perfect_for": [
+        "Growing Families",
+        "Working Professionals",
+        "NRI Buyers"
+      ],
+      "key_highlights": [
+        { "icon": "Bed",     "text": "3 Spacious Bedrooms" },
+        { "icon": "Bath",    "text": "2 Full Bathrooms" },
+        { "icon": "Balcony", "text": "2 Private Balconies" }
+      ],
+      "whats_included": [
+        "Imported Italian marble flooring in living areas",
+        "Laminated wooden flooring in bedrooms",
+        "Modular kitchen with granite countertop",
+        "Premium branded sanitary ware",
+        "Concealed copper wiring with modular switches"
+      ],
+      "views": [
+        {
+          "image_url": "",
+          "title": "3D Floor Layout - 1656 Sqft",
+          "subtitle": "Standard Configuration"
+        }
+      ]
+    },
+    {
+      "bhk": 3,
+      "name": "3 BHK + Utility",
+      "super_area_sqft": 2124,
+      "carpet_area_sqft": 1264,
+      "balcony_area_sqft": 160,
+      "bathrooms": 3,
+      "utility_room": true,
+      "dress_area": false,
+      "towers": ["T3", "T4"],
+      "price_min_cr": 3.39,
+      "price_max_cr": 3.39,
+      "price_label": "Rs 3.39 Cr",
+      "price_is_estimated": false,
+      "subtitle": "Ultra-spacious 3 BHK with dedicated utility room",
+      "description": "Full unit description for 3 BHK + Utility variant.",
+      "category_badge": "Luxury Executive",
+      "inventory_left": 3,
+      "perfect_for": [
+        "Large Families",
+        "Corporate Executives"
+      ],
+      "key_highlights": [
+        { "icon": "Bed",     "text": "3 Bedrooms + Utility Room" },
+        { "icon": "Bath",    "text": "3 Full Bathrooms" },
+        { "icon": "Balcony", "text": "3 Wrap Balconies" }
+      ],
+      "whats_included": [
+        "Premium flooring throughout",
+        "Dedicated utility room for laundry and storage",
+        "Fully modular kitchen setup",
+        "High-speed fiber internet ducting"
+      ],
+      "views": [
+        {
+          "image_url": "",
+          "title": "3D Floor Layout - 2124 Sqft",
+          "subtitle": "Utility Configuration"
+        }
+      ]
+    },
+    {
+      "bhk": 4,
+      "name": "4 BHK + Utility",
+      "super_area_sqft": 2511,
+      "carpet_area_sqft": 1534,
+      "balcony_area_sqft": 200,
+      "bathrooms": 4,
+      "utility_room": true,
+      "dress_area": true,
+      "towers": ["T5"],
+      "price_min_cr": 4.01,
+      "price_max_cr": 4.70,
+      "price_label": "Rs 4.01 - 4.70 Cr",
+      "price_is_estimated": false,
+      "subtitle": "Palatial 4 BHK with walk-in wardrobe and servant room",
+      "description": "Full unit description for the flagship 4 BHK layout.",
+      "category_badge": "Ultra Flagship",
+      "inventory_left": 2,
+      "perfect_for": [
+        "HNI Families",
+        "NRIs",
+        "Corporate Leadership"
+      ],
+      "key_highlights": [
+        { "icon": "Bed",     "text": "4 Bedrooms + Utility" },
+        { "icon": "Bath",    "text": "4 Full Bathrooms" },
+        { "icon": "Balcony", "text": "4 Expansive Balconies" }
+      ],
+      "whats_included": [
+        "Full imported marble across living and dining zones",
+        "Walk-in wardrobe in master bedroom suite",
+        "Multi-split air conditioning pre-ducted",
+        "Premium Kohler / Jaguar sanitary ware",
+        "Home automation ready wiring"
+      ],
+      "views": [
+        {
+          "image_url": "",
+          "title": "3D Floor Layout - 2511 Sqft",
+          "subtitle": "Flagship Configuration"
+        }
+      ]
+    }
+  ],
+
+  "amenities": [
+    { "name": "Cascading Vertical Gardens",    "category": "lifestyle"  },
+    { "name": "Swimming Pool",                 "category": "sports"     },
+    { "name": "Kids Pool",                     "category": "kids"       },
+    { "name": "Clubhouse",                     "category": "lifestyle"  },
+    { "name": "Gymnasium",                     "category": "sports"     },
+    { "name": "Lawn Tennis Court",             "category": "sports"     },
+    { "name": "Badminton Court",               "category": "sports"     },
+    { "name": "Jogging Track",                 "category": "sports"     },
+    { "name": "Kids Play Area",                "category": "kids"       },
+    { "name": "Amphitheatre",                  "category": "lifestyle"  },
+    { "name": "Party Lawn",                    "category": "lifestyle"  },
+    { "name": "Yoga Deck",                     "category": "wellness"   },
+    { "name": "Meditation Area",               "category": "wellness"   },
+    { "name": "CCTV Surveillance",             "category": "security"   },
+    { "name": "Video Intercom",                "category": "security"   }
+  ],
+
+  "connectivity": [
+    {
+      "name": "Sector 76 Metro Station (Aqua Line)",
+      "type": "metro",
+      "distance_km": 1.5,
+      "notes": "Nearest Aqua Line metro station",
+      "data_source": "google"
+    },
+    {
+      "name": "FNG Expressway",
+      "type": "road",
+      "distance_km": 0.5,
+      "notes": "Faridabad-Noida-Ghaziabad expressway — quick NCR connection",
+      "data_source": "google"
+    },
+    {
+      "name": "Noida-Greater Noida Expressway",
+      "type": "road",
+      "distance_km": 7.0,
+      "notes": "Access to Greater Noida and Yamuna Expressway",
+      "data_source": "google"
+    },
+    {
+      "name": "Spectrum Metro Mall Sector 75",
+      "type": "mall",
+      "distance_km": 1.0,
+      "notes": "High-street retail and multiplex",
+      "data_source": "google"
+    },
+    {
+      "name": "Neo Hospital Sector 50",
+      "type": "hospital",
+      "distance_km": 5.0,
+      "notes": "Multi-speciality hospital",
+      "data_source": "google"
+    },
+    {
+      "name": "Manthan School Sector 78",
+      "type": "school",
+      "distance_km": 4.0,
+      "notes": "CBSE school in neighboring sector",
+      "data_source": "google"
+    }
+  ],
+
+  "cost_sheet": {
+    "base_price_per_sqft": 15500.0,
+    "floor_rise_per_floor": 50.0,
+    "plc_charges": [
+      { "label": "Garden / Pool Facing PLC",  "amount_per_sqft": 500 },
+      { "label": "Corner Tower PLC",           "amount_per_sqft": 200 }
+    ],
+    "parking_cost": 500000.0,
+    "ifms": 120.0,
+    "club_membership": 250000.0,
+    "other_charges": [
+      { "label": "Utilities (5kVA connection)", "amount": 150000 }
+    ],
+    "gst_rate_pct": 5.0,
+    "stamp_duty_pct": 6.0,
+    "registration_pct": 1.0,
+    "assumptions": [
+      "All prices are based on current builder/resale market rates as of Q3 2026.",
+      "GST is 0% for ready-to-move projects with Completion Certificate (CC).",
+      "Stamp duty and registration charges are subject to UP Government circular rates at time of registry."
+    ]
+  },
+
+  "payment_plan": {
+    "plan_name": "Construction Linked / Ready-to-Move Plan",
+    "source": "Official Brochure / Builder",
+    "notes": "For resale units, timeline adjusts based on home loan disbursement and NOC clearances.",
+    "milestones": [
+      { "milestone": "Booking",             "pct": 10.0, "amt": 0, "due": "At time of booking",      "done": true  },
+      { "milestone": "Agreement (30 Days)", "pct": 15.0, "amt": 0, "due": "Within 30 days of booking","done": false },
+      { "milestone": "Registry (60 Days)", "pct": 75.0,  "amt": 0, "due": "On registry / possession", "done": false }
+    ]
+  },
+
+  "project_dna": {
+    "builder_track_record_score": 95,
+    "builder_track_record_label": "Proven",
+    "price_position_score": 95,
+    "price_position_label": "Value Buy",
+    "locality_score": 90,
+    "locality_label": "Prime",
+    "rera_compliance_score": 100,
+    "rera_compliance_label": "Fully Compliant",
+    "amenity_depth_score": 95,
+    "amenity_depth_label": "Luxury",
+    "possession_certainty_score": 100,
+    "possession_certainty_label": "Certain",
+    "verified_by": "seed"
+  },
+
+  "decision_profile": {
+    "status": "PUBLISHED",
+    "decision_thesis": "Ivy County is the premier luxury wealth-preservation asset in Central Noida because it delivers uncompromising construction quality, flawless legal compliance, and an exclusive, low-density community.",
+    "why_buy": [
+      "Impeccable Delivery Pedigree: Builder consistently delivers exactly what is rendered — zero compromise on material quality or finish.",
+      "Absolute Title Security: 100% physically complete and legally clear — immediate, stress-free registry execution.",
+      "Exclusive Low-Density: Limited towers ensure premium privacy and uncrowded amenities unlike neighboring mega-townships."
+    ],
+    "why_avoid": [
+      "Capped Profit Potential: Extremely high entry price leaves very little room for future capital growth or quick flipping.",
+      "Heavy Upkeep Costs: Sustaining signature vertical gardens results in massive monthly maintenance bills.",
+      "Car Dependent: Project is tucked inside the sector — not a quick walk to metro or main road retail."
+    ],
+    "best_for": "Wealthy end-users, HNI families, NRIs seeking zero legal stress and immediate luxury living.",
+    "not_ideal_for": "Cash-flow investors, short-term flippers, or buyers with budgets under Rs 2.5 Cr.",
+    "confidence_sources": [
+      "RERA",
+      "Project Documents",
+      "Site Visit",
+      "Builder Claim"
+    ],
+    "recommendation_notes": "Internal notes about this project's recommendation.",
+    "advisor_notes": "Absolute best property for a wealthy family wanting zero daily stress. Some sellers ask for cash above registry value — advise buyer to not cross safe limits.",
+    "intelligence_data": {
+      "topLevelMetrics": {
+        "overallScore": 95,
+        "tier": "STRONG_BUY",
+        "investmentGrade": "A+",
+        "priceAdvantage": "At Market",
+        "priceAdvantageSubtext": "Justified Premium",
+        "confidenceLevel": "Very High",
+        "confidenceLabel": "Verified on Site"
+      },
+      "dimensionScores": {
+        "builderTrust":          { "score": 95, "status": "Verified" },
+        "locationQuality":       { "score": 90, "status": "Verified" },
+        "lifestyleAmenities":    { "score": 95, "status": "Verified" },
+        "valueForMoney":         { "score": 88, "status": "Verified" },
+        "appreciationPotential": { "score": 85, "status": "Verified" },
+        "legalSafety":           { "score": 100,"status": "Verified" }
+      },
+      "buyerPersonas": [
+        {
+          "type": "HNI Families",
+          "stars": 5,
+          "headline": "Luxury and Prestige First",
+          "reasons": [
+            "Low-density exclusive towers with private lobbies and vertical garden views.",
+            "CC/OC received — zero construction or legal risk."
+          ]
+        },
+        {
+          "type": "NRI Buyers",
+          "stars": 5,
+          "headline": "Hassle-Free Remote Purchase",
+          "reasons": [
+            "Builder has zero-delay track record, clean documentation, and active registries.",
+            "Ready to occupy immediately — no construction monitoring required."
+          ]
+        },
+        {
+          "type": "Capital Preservers",
+          "stars": 4,
+          "headline": "Wealth Preservation Play",
+          "reasons": [
+            "Stable 5-7% annual appreciation in a mature Central Noida micro-market.",
+            "Low density and premium brand command durable resale premiums."
+          ]
+        }
+      ],
+      "riskRadar": [
+        {
+          "type": "Construction Risk",
+          "level": "None",
+          "description": "Project fully delivered with Completion Certificate. Zero construction risk."
+        },
+        {
+          "type": "Legal / Title Risk",
+          "level": "Low",
+          "description": "RERA registered, CC/OC received, registries active. Clean chain of title."
+        },
+        {
+          "type": "Liquidity Risk",
+          "level": "Low",
+          "description": "Premium sector with steady demand from HNI buyer pool. Fast exit possible."
+        },
+        {
+          "type": "Maintenance Cost Risk",
+          "level": "Medium",
+          "description": "Signature vertical gardens require high maintenance — expect above-average monthly charges."
+        }
+      ],
+      "transparency_checks": [
+        { "label": "RERA Registered",     "ok": true,  "details": "Registered as UPRERAPRJXXXXXX." },
+        { "label": "OC / CC Received",    "ok": true,  "details": "Completion Certificate issued June 2024." },
+        { "label": "Registry Active",     "ok": true,  "details": "Flat registries actively being executed." },
+        { "label": "Escrow Account",      "ok": true,  "details": "Escrow maintained with HDFC Bank." },
+        { "label": "NCLT Moratorium",     "ok": true,  "details": "No NCLT proceedings. Builder financially stable." }
+      ],
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "appreciation_desc":   "Driven by premium branding, low density, and sector maturity. Not a high-alpha market.",
+        "rental_yield":        "4-5%",
+        "rental_desc":         "Strong demand from IT corridor executives. Premium units command Rs 60,000 - Rs 90,000/month.",
+        "market_trend":        "Bullish",
+        "market_desc":         "Strong demand in Sector 75 from HNI and NRI segment. Limited ready supply.",
+        "liquidity_score":     "High",
+        "liquidity_desc":      "Easy exit options. Motivated sellers can move units within 30-45 days in this micro-market."
+      },
+      "quick_commutes": [
+        { "destination": "Sector 76 Metro Station", "time": "8 Mins Drive",  "icon": "train"    },
+        { "destination": "FNG Expressway",          "time": "3 Mins Drive",  "icon": "car"      },
+        { "destination": "Spectrum Metro Mall",     "time": "5 Mins Drive",  "icon": "shopping" },
+        { "destination": "IGI Airport",             "time": "50 Mins Drive", "icon": "plane"    }
+      ],
+      "location_highlights": [
+        {
+          "title": "FNG Expressway",
+          "time": "0.5 km",
+          "description": "Direct access to cross-NCR corridors.",
+          "icon": "road"
+        },
+        {
+          "title": "Spectrum Metro Mall",
+          "time": "1 km",
+          "description": "Premium retail, dining, and multiplex at doorstep.",
+          "icon": "shopping"
+        }
+      ],
+      "nearby_essentials": {
+        "Schools":   [
+          { "name": "Manthan School Sector 78",      "dist": "4.0 km" },
+          { "name": "DPS Sector 122",                "dist": "6.0 km" }
+        ],
+        "Hospitals": [
+          { "name": "Neo Hospital Sector 50",         "dist": "5.0 km" },
+          { "name": "Yatharth Super Speciality",      "dist": "7.0 km" }
+        ],
+        "Shopping":  [
+          { "name": "Spectrum Metro Mall Sector 75",  "dist": "1.0 km" },
+          { "name": "The Grand Venice Mall",          "dist": "8.0 km" }
+        ]
+      },
+      "neighborhood_advantages": [
+        {
+          "title": "Eco-Luxury Corridor",
+          "description": "Sector 75 is Noida's emerging high-end residential hub with premium branded projects.",
+          "icon": "leaf"
+        },
+        {
+          "title": "Excellent Road Network",
+          "description": "Direct access to FNG Expressway and Noida-Greater Noida Expressway.",
+          "icon": "road"
+        }
+      ]
+    },
+    "verified_by": "seed"
+  },
+
+  "persona_profile": {
+    "primary_persona": "NRI",
+    "secondary_personas": [
+      "FAMILY",
+      "UPGRADER",
+      "INVESTOR"
+    ],
+    "persona_descriptions": {
+      "UPGRADER": "Upgrade buyers from older Noida sectors (Sector 50, 51, 62) moving to a premium ready product with better amenities, legal clarity, and a higher social address.",
+      "FAMILY":   "Established nuclear families with 2+ children who want a clean, car-free, luxury living environment with top-tier schools and hospitals within 5 km.",
+      "NRI":      "NRI buyers from UAE, UK, USA seeking a premium ready-to-register asset with a trusted builder and a hassle-free remote purchase experience. Prioritize zero construction risk.",
+      "PROFESSIONAL": "Senior executives and C-suite professionals working in Noida Sector 62/63 or Sector 125-142 who value proximity to work and premium lifestyle.",
+      "INVESTOR": "Wealth preservation investors seeking long-term capital appreciation in a mature, premium micro-market. Not a yield-first play."
+    },
+    "income_range": "Rs 5 Lakh+ per month",
+    "risk_appetite": "Conservative — prefers delivered, legally clean assets",
+    "family_stage": "Established family or high-income nuclear couple",
+    "work_location": "Sector 62/63 IT Hub or Sector 125-142 Corporate Hub",
+    "timeline_horizon": "5-10 years",
+    "motivation_note": "Status symbol and premium lifestyle. Not a yield play. Buyers prioritize address prestige, builder brand, and zero operational risk.",
+    "verified_by": "seed"
+  },
+
+  "recommendation_profile": {
+    "status": "PUBLISHED",
+    "tier": "STRONG_BUY",
+    "primary_thesis": "The absolute safest and most beautiful ready-to-move luxury home in Central Noida. Ivy County delivers zero-compromise construction quality with a builder who has never missed a delivery date.",
+    "end_use_thesis": "Best-in-class RTM luxury for families demanding zero operational risk. Immediate registry, immediate possession, immediate luxury.",
+    "investment_thesis": "Wealth preservation play. Expect steady 5-7% annual appreciation. Not a flipping asset — buy to hold for 7-10 years.",
+    "family_thesis": "Exceptional for families. Huge landscaped parks, clean air, low density, secured gated community, and proximity to top schools within 4-5 km.",
+    "investor_thesis": "Low rental yield (2.8-3.1%) but rock-solid capital preservation. Premium demand from HNI buyers ensures fast exit when needed. Hold 5-10 years.",
+    "luxury_thesis": "Defines the luxury benchmark for Sector 75. County Group never compromises on specification — Italian marble, high-speed lifts, and signature vertical gardens.",
+    "risk_thesis": "Lowest-risk luxury asset in Central Noida. Clean title, zero structural disputes, CC/OC received, no NCLT proceedings. Only risk is sustained maintenance costs.",
+    "walk_away_conditions": [
+      "Budget under Rs 2.5 Cr — entry is uncompromising at this price tier.",
+      "Require immediate walking-distance transit — vehicular dependence is inherent to this sector.",
+      "Executing high-yield or short-term flipping — capital values have plateaued and rental yield is low."
+    ],
+    "negotiation_leverage": [
+      "Builder-held inventory is limited — use long-pending resale listings as leverage.",
+      "Highlight high maintenance cost of vertical gardens to negotiate price down with motivated sellers.",
+      "Benchmark against Mahagun Mirabella which offers lower entry with slightly lesser spec."
+    ],
+    "timeline_advice": "Ready to move immediately. No construction risk whatsoever. Act now if a registered unit is available below Rs 15,000/sqft super area.",
+    "internal_confidence": "VERIFIED",
+    "admin_notes": "Internal notes about this recommendation — do not expose to users.",
+    "verified_by": "seed"
+  },
+
+  "competitors": [
+    {
+      "competitor_name": "Mahagun Mirabella",
+      "competitor_slug": "mahagun-mirabella-sector-79-noida",
+      "this_project_advantage": "Better landscaping and builder quality. Vertical gardens are a unique differentiator. County Group has zero-delay delivery track record.",
+      "competitor_advantage": "Lower price per sqft and striking Roman architecture with larger balconies.",
+      "verdict": "Ivy County wins on build quality, prestige, and legal safety. Mahagun wins on price and architectural aesthetics.",
+      "price_delta_note": "Ivy County is Rs 1,000-1,500/sqft more expensive than Mahagun Mirabella.",
+      "sort_order": 1
+    },
+    {
+      "competitor_name": "NBCC Aspire Silicon City",
+      "competitor_slug": "nbcc-aspire-silicon-city-sector-76-noida",
+      "this_project_advantage": "Immediate possession and premium private-builder finish vs government-grade specifications.",
+      "competitor_advantage": "Larger carpet area ratios and PSU sovereign safety (NBCC is a Government of India enterprise).",
+      "verdict": "NBCC wins on unit size and sovereign safety; Ivy County wins on immediate possession, lifestyle, and finish quality.",
+      "price_delta_note": "NBCC is priced roughly at par — comparable sqft rates with better carpet efficiency.",
+      "sort_order": 2
+    }
+  ],
+
+  "documents": [
+    {
+      "name": "Official Project Brochure",
+      "storage_url": "",
+      "doc_type": "brochure",
+      "file_size_bytes": 0
+    },
+    {
+      "name": "Floor Plans",
+      "storage_url": "",
+      "doc_type": "floor_plan",
+      "file_size_bytes": 0
+    },
+    {
+      "name": "UP RERA Registration Certificate",
+      "storage_url": "",
+      "doc_type": "rera",
+      "file_size_bytes": 0
+    }
+  ],
+
+  "images": [
+    { "url": "", "type": "hero",        "caption": "Grand front elevation of the project",   "sort_order": 1 },
+    { "url": "", "type": "exterior",    "caption": "Cascading vertical gardens and landscaping","sort_order": 2 },
+    { "url": "", "type": "clubhouse",   "caption": "Central clubhouse exterior",              "sort_order": 3 },
+    { "url": "", "type": "pool",        "caption": "Swimming pool and sundeck area",           "sort_order": 4 },
+    { "url": "", "type": "amenity",     "caption": "Kids play area and open ground",           "sort_order": 5 },
+    { "url": "", "type": "interior",    "caption": "Sample flat interior — living room",       "sort_order": 6 },
+    { "url": "", "type": "floor_plan",  "caption": "3 BHK floor plan layout",                 "sort_order": 7 },
+    { "url": "", "type": "master_plan", "caption": "Site master plan",                         "sort_order": 8 },
+    { "url": "", "type": "location_map","caption": "Location map showing key landmarks",       "sort_order": 9 }
+  ]
+}

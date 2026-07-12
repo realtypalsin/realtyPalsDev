@@ -2,15 +2,27 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+<<<<<<< HEAD
 import Sidebar from '@/components/Sidebar';
 import Toast from '@/components/Toast';
 import PriceTimeline from '@/components/PriceTimeline';
+=======
+import Image from 'next/image';
+import Sidebar from '@/components/Sidebar';
+import Toast from '@/components/Toast';
+import PriceTimeline from '@/components/PriceTimeline';
+import ThemeToggle from '@/components/ThemeToggle';
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 import { API_BASE } from '@/lib/env';
 import { Sector } from '@/types/property';
 import { formatPriceCr } from '@/lib/format';
 import { BorderBeam } from '@/components/ui/border-beam';
 import Header from '@/components/Header';
+<<<<<<< HEAD
 import { ClipboardList, BarChart3, ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, Building2, MapPin, Sparkles, Database, Brain, Target } from 'lucide-react';
+=======
+import { Share2, Settings, User, ClipboardList, BarChart3, ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, Building2, MapPin, Sparkles, Database, Brain, Target } from 'lucide-react';
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
 // ── AI Analysis Loading Steps ──
 const ANALYSIS_STEPS = [
@@ -111,11 +123,23 @@ function ValueEstimatorContent() {
   const [sizeSqft, setSizeSqft] = useState(1850);
   const [bhk, setBhk] = useState(3);
   const [floor, setFloor] = useState<number | undefined>(undefined);
+<<<<<<< HEAD
+=======
+  const [age, setAge] = useState(0);
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   const [propertyStatus, setPropertyStatus] = useState<'ready' | 'under_construction'>('ready');
   const [builder, setBuilder] = useState('');
   const [projectName, setProjectName] = useState('');
   const [quotedPrice, setQuotedPrice] = useState<number | undefined>(undefined);
 
+<<<<<<< HEAD
+=======
+  // Connectivity perks (locked for MVP)
+  const [metroNearby, setMetroNearby] = useState(false);
+  const [expresswayAccess, setExpresswayAccess] = useState(false);
+  const [corporateHubProximity, setCorporateHubProximity] = useState(false);
+
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   // Advanced options toggle
   // Advanced options visible by default
   const [showAdvanced, setShowAdvanced] = useState(true);

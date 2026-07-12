@@ -1,15 +1,25 @@
+<<<<<<< HEAD
 // WAQI — World Air Quality Index free API
 // Register for a real token at https://aqicn.org/api/
 // "demo" token works for testing but has limited station coverage.
+=======
+// Fetches AQI via server-side route — keeps GOOGLE_MAPS_API_KEY off the client bundle.
+import { API_BASE } from '@/lib/env'
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
 export interface AqiResult {
   aqi: number
   label: string
+<<<<<<< HEAD
   color: string         // Tailwind text-color class
+=======
+  color: string
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   dominantPollutant: string | null
   station: string
 }
 
+<<<<<<< HEAD
 function aqiLabel(aqi: number): { label: string; color: string } {
   if (aqi <= 50)  return { label: 'Good',                           color: 'text-green-600' }
   if (aqi <= 100) return { label: 'Moderate',                       color: 'text-yellow-600' }
@@ -55,6 +65,23 @@ export async function getAqi(
       dominantPollutant: data.data.dominantpol ?? null,
       station: data.data.city?.name ?? cityFallback,
     }
+=======
+export async function getAqi(
+  lat?: number | null,
+  lng?: number | null,
+  _cityFallback = 'noida',
+): Promise<AqiResult | null> {
+  if (!lat || !lng) return null
+
+  try {
+    const res = await fetch(`${API_BASE}/aqi?lat=${lat}&lng=${lng}`, {
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data.aqi) return null
+    return data as AqiResult
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   } catch {
     return null
   }

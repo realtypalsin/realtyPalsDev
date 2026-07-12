@@ -1,18 +1,31 @@
 'use client'
 
 import { useState } from 'react'
+<<<<<<< HEAD
 import { X, Calculator, Receipt, TrendingDown, IndianRupee } from 'lucide-react'
 import { calculateEmi, calculateStampDuty, calculateGst, formatInr } from '@/lib/calculators'
+=======
+import { X, Calculator, Receipt, TrendingDown } from 'lucide-react'
+import { calculateEmi, calculateStampDuty, calculateGst } from '@/lib/calculators'
+import { formatInr } from '@/lib/format'
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
 interface Props {
   onClose: () => void
   defaultPriceCr?: number
 }
 
+<<<<<<< HEAD
 type Tab = 'emi' | 'stamp' | 'gst' | 'total'
 
 export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props) {
   const [tab, setTab] = useState<Tab>('total')
+=======
+type Tab = 'emi' | 'stamp' | 'gst'
+
+export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props) {
+  const [tab, setTab] = useState<Tab>('emi')
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
   const [principal, setPrincipal]     = useState(String((defaultPriceCr * 0.8).toFixed(2)))
   const [rate, setRate]               = useState('8.5')
@@ -41,6 +54,7 @@ export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props
     return calculateGst(p, gstStatus, parseFloat(carpetSqm) || 0)
   })()
 
+<<<<<<< HEAD
   // Total cost tab state
   const [totalPrice, setTotalPrice]   = useState(String(defaultPriceCr))
   const [totalGender, setTotalGender] = useState<'male' | 'female' | 'joint'>('male')
@@ -67,6 +81,12 @@ export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props
     { id: 'emi',   label: 'EMI',         icon: <Calculator size={13} /> },
     { id: 'stamp', label: 'Stamp Duty',  icon: <Receipt size={13} /> },
     { id: 'gst',   label: 'GST',         icon: <TrendingDown size={13} /> },
+=======
+  const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: 'emi',   label: 'EMI',        icon: <Calculator size={13} /> },
+    { id: 'stamp', label: 'Stamp Duty', icon: <Receipt size={13} /> },
+    { id: 'gst',   label: 'GST',        icon: <TrendingDown size={13} /> },
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   ]
 
   const inputCls = 'w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors'
@@ -196,6 +216,7 @@ export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props
             </>
           )}
 
+<<<<<<< HEAD
           {/* Total True Cost */}
           {tab === 'total' && (
             <>
@@ -278,6 +299,8 @@ export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props
             </>
           )}
 
+=======
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
           {/* GST */}
           {tab === 'gst' && (
             <>

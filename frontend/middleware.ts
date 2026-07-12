@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+<<<<<<< HEAD
 import { validateAdminToken } from '@/lib/adminToken'
+=======
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+<<<<<<< HEAD
   // ── Admin API protection ────────────────────────────────────────────────
   if (pathname.startsWith('/api/v1/admin') && pathname !== '/api/v1/admin/auth') {
     const token = request.cookies.get('admin_token')?.value
@@ -50,6 +54,10 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
 
   // ── Request logging ─────────────────────────────────────────────────────
+=======
+  // ── Request logging ─────────────────────────────────────────────────────
+  const response = NextResponse.next()
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   if (pathname.startsWith('/api/')) {
     console.log(`[mw] ${request.method} ${pathname} uid=${request.headers.get('x-user-id')?.slice(0, 8) ?? '-'}`)
   }
@@ -58,5 +66,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+<<<<<<< HEAD
   matcher: ['/api/v1/admin/:path*', '/api/:path*'],
+=======
+  matcher: ['/api/:path*'],
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 }

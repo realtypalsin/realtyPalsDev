@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
+<<<<<<< HEAD
+=======
+import { API_BASE } from '@/lib/env'
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('')
@@ -15,14 +19,26 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
     setError('')
+<<<<<<< HEAD
     const res = await fetch('/api/v1/admin/auth', {
+=======
+    const res = await fetch(`${API_BASE}/admin/auth`, {
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     })
     setLoading(false)
     if (res.ok) {
+<<<<<<< HEAD
       router.push('/admin')
+=======
+      const data = await res.json()
+      if (data.token) {
+        localStorage.setItem('admin_token', data.token)
+        router.push('/admin')
+      }
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     } else {
       setError('Wrong password.')
     }

@@ -1,5 +1,14 @@
 import type { ProjectCard } from './project'
 
+<<<<<<< HEAD
+=======
+export interface NearbyExpansion {
+  requestedSector: string
+  searchedSectors: string[]
+  reason: 'no_results_in_requested_sector'
+}
+
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 export interface Sector {
   id: string;
   city: string;
@@ -11,6 +20,7 @@ export interface Sector {
   volatility_flag: boolean;
 }
 
+<<<<<<< HEAD
 export interface PropertyValidation {
   market_range: { low: number; high: number };
   verdict: 'Within market' | 'Slightly high' | 'Aggressive' | 'Market range only';
@@ -68,11 +78,14 @@ export interface PropertyDetail {
   images: { url: string; caption?: string; type: string }[];
 }
 
+=======
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 export interface ChatMessage {
   id: string;
   type: 'user' | 'ai';
   content: string;
   properties?: ProjectCard[];
+<<<<<<< HEAD
   images?: { url: string; caption?: string; type: string }[];
   highlights?: string[];
   amenities?: string[];
@@ -83,6 +96,27 @@ export interface ChatMessage {
   searchingTool?: 'search_properties' | 'search_web' | 'commute' | 'rera';
   userQuery?: string;
   timestamp: string;
+=======
+  exactResults?: ProjectCard[];
+  nearbyResults?: ProjectCard[];
+  expansion?: NearbyExpansion | null;
+  images?: { url: string; caption?: string; type: string }[];
+  highlights?: string[];
+  amenities?: string[];
+  showSectorIntelligence?: boolean;
+  showComparisonTable?: boolean;
+  comparisonProjects?: ProjectCard[];
+  isSearching?: boolean;
+  userQuery?: string;
+  timestamp: string;
+  // Response mode — drives which UI components render (mutually exclusive)
+  responseMode?: 'search' | 'comparison' | 'chat'
+  // Inline thinking UI — tracks which phase the streaming message is in
+  streamingPhase?: 'extracting' | 'searching' | 'generating' | null;
+  streamingIntent?: Record<string, unknown> | null;
+  streamingIntentState?: string | null;
+  streamingResultCount?: number | null;
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   intent?: {
     completenessScore?: number;
     bhk?: number;

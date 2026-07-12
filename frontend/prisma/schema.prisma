@@ -1,0 +1,1024 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Builder {
+  id                 String    @id @default(uuid())
+
+  // Identity
+  name               String    @unique
+  slug               String    @unique
+  tagline            String?
+  founder            String?
+  company_overview   String?
+  logo_url           String?
+  parent_group       String?
+  founded_year       Int?
+  headquarters       String?
+  website            String?
+  email              String?
+  phone              String?
+  description        String?
+
+  // Track Record
+  experience_years          String?
+  projects_delivered_count  Int?      @default(18)
+  total_projects_count      Int?
+  delivered_units           Int?
+  delivered_projects        String[]
+  ongoing_projects          String[]
+  delayed_projects_count    Int?
+  average_delay_months      Float?
+  delivery_score            Int?
+
+  // Quality (0-100 admin-set scores)
+  construction_quality_score Int?
+  after_sales_score          Int?
+  buyer_satisfaction_score   Int?
+
+  // Compliance
+  rera_compliance_score      Int?
+  litigation_count           Int?
+  insolvency_history         Boolean   @default(false)
+  legal_flag                 String?
+  cin                        String?
+  rera_promoter_id           String?
+  financial_hygiene_score    Int?
+  outstanding_dues_cr        Float?
+  legal_entities             Json?     // [{name, cin, role}]
+  executives                 Json?     // [{name, designation}]
+  funding_banks              String[]
+  audit_flags_log            String?
+
+  // Market Position
+  luxury_specialization      Boolean   @default(false)
+  township_specialization    Boolean   @default(false)
+  affordable_specialization  Boolean   @default(false)
+  average_project_size       Int?
+
+  // Recognition
+  awards                     String[]
+  awards_count               Int?
+  certifications             String[]
+  credai_member              Boolean   @default(false)
+  iso_certified              Boolean   @default(false)
+
+  // Confidence
+  verification_level         String?
+  last_verified_at           DateTime?
+  data_source                String?
+  intelligence_completeness  Int?
+
+  created_at                 DateTime  @default(now())
+
+  // Relations
+  projects                   Project[]
+  news                       BuilderNews[]
+  account                    BuilderAccount?
+  leads                      BuilderLead[]
+  theme                      BuilderTheme?
+
+  @@map("builders")
+}
+
+model Project {
+  id                       String                 @id @default(uuid())
+  slug                     String                 @unique
+  name                     String
+  tagline                  String?
+  builder_id               String
+  rera_number              String?
+  rera_url                 String?
+  city                     String                 @default("Noida")
+  sector                   String
+  address                  String?
+  lat                      Float?
+  lng                      Float?
+  land_area_acres          Float?
+  total_units              Int?
+  total_towers             Int?
+  floors                   String?
+  open_space_pct           Int?
+  green_rating             String?
+  has_duplex               Boolean                @default(false)
+  has_penthouse            Boolean                @default(false)
+  project_type             String?                @default("Residential")
+  schools_nearby_count     Int?
+  hospitals_nearby_count   Int?
+  shopping_nearby_count    Int?
+  it_parks_nearby_count    Int?
+  banks_nearby_count       Int?
+  restaurants_nearby_count Int?
+  status                   ProjectStatus
+  launch_date              DateTime?
+  possession_date          DateTime?
+  possession_label         String?
+  description              String?
+  long_description         String?
+  design_theme             String?
+  architect                String?
+  interior_designer        String?
+  marketing_claims         String[]
+  ai_search_keywords       String[]
+  hero_image_url           String?
+  price_min_cr             Float?
+  price_range_label        String?
+  builder_theme            Json?    // {primaryColor, secondaryColor, logoUrl, active_until}
+  created_at               DateTime               @default(now())
+  updated_at               DateTime               @updatedAt
+  embedding                Unsupported("vector")?
+  project_risk_flag        String?
+  escrow_verified          Boolean?
+  escrow_bank_name         String?
+  registry_status          String?
+  registry_embargo_reasons String[]
+  nclt_moratorium_active   Boolean?
+  amenities                Amenity[]
+  connectivity             Connectivity[]
+  decision_profile         DecisionProfile?
+  persona_profile          PersonaProfile?
+  referenced_as_competitor ProjectCompetitor[]    @relation("CompetitorProject")
+  competitors              ProjectCompetitor[]    @relation("SourceProject")
+  dna                      ProjectDna?
+  images                   ProjectImage[]
+  builder                  Builder                @relation(fields: [builder_id], references: [id])
+  recommendation_profile   RecommendationProfile?
+  saved_by                 SavedProperty[]
+  unit_types               UnitType[]
+  payment_plan             PaymentPlan?
+  cost_sheet               CostSheet?
+
+  @@index([city, sector])
+  @@index([status])
+  @@index([possession_date])
+  @@index([builder_id])
+  @@map("projects")
+}
+
+model ProjectDna {
+  id                         String    @id @default(uuid())
+  project_id                 String    @unique
+  builder_track_record_score Int?
+  builder_track_record_label String?
+  price_position_score       Int?
+  price_position_label       String?
+  locality_score             Int?
+  locality_label             String?
+  rera_compliance_score      Int?
+  rera_compliance_label      String?
+  amenity_depth_score        Int?
+  amenity_depth_label        String?
+  possession_certainty_score Int?
+  possession_certainty_label String?
+  last_verified_at           DateTime?
+  verified_by                String?
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @updatedAt
+  project                    Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("project_dna")
+}
+
+model DecisionProfile {
+  id                   String             @id @default(uuid())
+  project_id           String             @unique
+  status               IntelligenceStatus @default(DRAFT)
+  decision_thesis      String?
+  why_buy              String[]           @default([])
+  why_avoid            String[]           @default([])
+  best_for             String?
+  not_ideal_for        String?
+  confidence_sources   String[]           @default([])
+  recommendation_notes String?
+  advisor_notes        String?
+  intelligence_data    Json?
+  last_verified_at     DateTime?
+  verified_by          String?
+  created_at           DateTime           @default(now())
+  updated_at           DateTime           @updatedAt
+  project              Project            @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("decision_profiles")
+}
+
+model PersonaProfile {
+  id                 String    @id @default(uuid())
+  project_id         String    @unique
+  primary_persona    String?
+  secondary_personas String[]  @default([])
+  persona_descriptions Json?
+  income_range       String?
+  family_stage       String?
+  work_location      String?
+  risk_appetite      String?
+  timeline_horizon   String?
+  motivation_note    String?
+  last_verified_at   DateTime?
+  verified_by        String?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  project            Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("persona_profiles")
+}
+
+model RecommendationProfile {
+  id                   String             @id @default(uuid())
+  project_id           String             @unique
+  status               IntelligenceStatus @default(DRAFT)
+  tier                 String?
+  primary_thesis       String?
+  end_use_thesis       String?
+  investment_thesis    String?
+  family_thesis        String?
+  investor_thesis      String?
+  luxury_thesis        String?
+  risk_thesis          String?
+  walk_away_conditions String[]           @default([])
+  timeline_advice      String?
+  negotiation_leverage String[]           @default([])
+  internal_confidence  String?
+  admin_notes          String?
+  last_verified_at     DateTime?
+  verified_by          String?
+  created_at           DateTime           @default(now())
+  updated_at           DateTime           @updatedAt
+  project              Project            @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("recommendation_profiles")
+}
+
+model ProjectCompetitor {
+  id                     String    @id @default(uuid())
+  project_id             String
+  competitor_project_id  String?
+  competitor_name        String
+  competitor_slug        String?
+  this_project_advantage String?
+  competitor_advantage   String?
+  verdict                String?
+  price_delta_note       String?
+  sort_order             Int       @default(0)
+  last_verified_at       DateTime?
+  verified_by            String?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  competitor_project     Project?  @relation("CompetitorProject", fields: [competitor_project_id], references: [id])
+  project                Project   @relation("SourceProject", fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id])
+  @@map("project_competitors")
+}
+
+model IntelligenceAudit {
+  id          String   @id @default(uuid())
+  project_id  String
+  section     String
+  action      String
+  before_data Json?
+  after_data  Json?
+  created_by  String?
+  created_at  DateTime @default(now())
+
+  @@index([project_id])
+  @@index([project_id, section])
+  @@map("intelligence_audits")
+}
+
+model UnitType {
+  id                 String   @id @default(uuid())
+  project_id         String
+  name               String
+  bhk                Int
+  super_area_sqft    Int?
+  carpet_area_sqft   Int?
+  balcony_area_sqft  Int?
+  bathrooms          Int?
+  utility_room       Boolean  @default(false)
+  dress_area         Boolean  @default(false)
+  towers             String[]
+  price_min_cr       Float?
+  price_max_cr       Float?
+  price_label        String?
+  price_is_estimated Boolean  @default(true)
+  subtitle           String?
+  description        String?
+  category_badge     String?
+  inventory_left     Int?
+  perfect_for        String[]
+  key_highlights     Json?
+  whats_included     Json?
+  views              Json?
+  project            Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, bhk])
+  @@index([project_id, price_min_cr, price_max_cr])
+  @@map("unit_types")
+}
+
+model ProjectImage {
+  id         String    @id @default(uuid())
+  project_id String
+  url        String
+  type       ImageType
+  source     String    @default("admin")
+  caption    String?
+  bhk        Int?
+  size_sqft  Int?
+  sort_order Int       @default(0)
+  project    Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, type])
+  @@index([project_id, source])
+  @@map("project_images")
+}
+
+model Amenity {
+  id         String          @id @default(uuid())
+  project_id String
+  name       String
+  category   AmenityCategory
+  project    Project         @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id])
+  @@map("amenities")
+}
+
+model Connectivity {
+  id          String           @id @default(uuid())
+  project_id  String
+  type        ConnectivityType
+  name        String
+  distance_km Float?
+  data_source DataSource       @default(brochure)
+  notes       String?
+  project     Project          @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id])
+  @@map("connectivity")
+}
+
+model ChatSession {
+  id            String        @id @default(uuid())
+  user_id       String?
+  guest_token   String?
+  title         String?
+  message_count Int           @default(0)
+  created_at    DateTime      @default(now())
+  last_active   DateTime      @default(now())
+  chat_phase    String        @default("DISCOVERY")
+  last_projects Json?
+  summary       String?
+  messages      ChatMessage[]
+
+  // Analytics relations
+  analytics     ChatAnalytics[]
+  query_metrics QueryMetrics[]
+  property_events PropertyEvent[]
+
+  @@index([user_id])
+  @@index([guest_token])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id              String      @id @default(uuid())
+  session_id      String
+  role            MessageRole
+  content         String
+  intent_snapshot Json?
+  created_at      DateTime    @default(now())
+  artifacts       Json?
+  session         ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id, created_at])
+  @@map("chat_messages")
+}
+
+model UserMemory {
+  id                     String   @id @default(uuid())
+  user_id                String?  @unique
+  bhk_preference         Int?
+  budget_min_cr          Float?
+  budget_max_cr          Float?
+  sector_preference      String?
+  purpose                String?
+  possession_pref        String?
+  viewed_slugs           String[]
+  rejected_slugs         String[]
+  saved_slugs            String[]
+  summary_text           String?
+  updated_at             DateTime @updatedAt
+  work_location          String?
+  home_loan_pre_approved Boolean?
+  timeline_months        Int?
+  contact_phone          String?
+  guest_token            String?  @unique
+
+  @@map("user_memory")
+}
+
+model SavedProperty {
+  id         String   @id @default(uuid())
+  user_id    String
+  project_id String
+  saved_at   DateTime @default(now())
+  project    Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, project_id])
+  @@index([user_id])
+  @@map("saved_properties")
+}
+
+model SiteVisitRequest {
+  id           String          @id @default(uuid())
+  project_id   String
+  project_slug String
+  project_name String
+  name         String
+  phone        String
+  email        String?
+  visit_date   DateTime
+  time_slot    String
+  message      String?
+  created_at   DateTime        @default(now())
+  status       SiteVisitStatus @default(pending)
+
+  @@index([project_slug])
+  @@map("site_visit_requests")
+}
+
+model CallbackRequest {
+  id           String   @id @default(uuid())
+  name         String
+  phone        String
+  project_name String?
+  project_slug String?
+  user_id      String?
+  guest_token  String?
+  status       String   @default("new")
+  created_at   DateTime @default(now())
+
+  @@index([project_slug])
+  @@map("callback_requests")
+}
+
+model PriceAlert {
+  id              String   @id @default(uuid())
+  user_id         String?
+  guest_token     String?
+  project_id      String
+  project_slug    String
+  target_price_cr Float
+  notified        Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  @@index([project_slug])
+  @@map("price_alerts")
+}
+
+model ProjectDocument {
+  id           String   @id @default(uuid())
+  project_id   String
+  project_slug String
+  name         String
+  storage_url  String
+  content_text String?
+  doc_type     String   @default("brochure")
+  file_size_bytes Int?
+  created_at   DateTime @default(now())
+
+  @@index([project_slug])
+  @@map("project_documents")
+}
+
+enum ProjectStatus {
+  under_construction
+  ready_to_move
+  new_launch
+}
+
+enum ImageType {
+  hero
+  exterior
+  interior
+  floor_plan
+  amenity
+  master_plan
+  clubhouse
+  pool
+  location_map
+}
+
+enum AmenityCategory {
+  sports
+  lifestyle
+  wellness
+  kids
+  security
+  parking
+}
+
+enum ConnectivityType {
+  metro
+  road
+  expressway
+  school
+  hospital
+  mall
+  landmark
+  airport
+  university
+}
+
+model PaymentPlan {
+  id              String   @id @default(uuid())
+  project_id      String   @unique
+  plan_name       String?
+  milestones      Json     @default("[]")
+  source          String?
+  source_url      String?
+  verified_at     DateTime?
+  verified_by     String?
+  notes           String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  project         Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("payment_plans")
+}
+
+model CostSheet {
+  id                    String   @id @default(uuid())
+  project_id            String   @unique
+  base_price_per_sqft   Float?
+  floor_rise_per_floor  Float?
+  plc_charges           Json     @default("[]")
+  parking_cost          Float?
+  ifms                  Float?
+  club_membership       Float?
+  other_charges         Json     @default("[]")
+  gst_rate_pct          Float    @default(5.0)
+  stamp_duty_pct        Float    @default(6.0)
+  registration_pct      Float    @default(1.0)
+  assumptions           String[]
+  verified_at           DateTime?
+  verified_by           String?
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  project               Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("cost_sheets")
+}
+
+enum DataSource {
+  brochure
+  google
+  estimated
+  manual
+}
+
+enum MessageRole {
+  user
+  assistant
+}
+
+enum IntelligenceStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+}
+
+enum SiteVisitStatus {
+  pending
+  confirmed
+  cancelled
+  completed
+}
+
+// ──────────────────────────────────────────────────────────────
+// ANALYTICS & TRACKING (Phase 1+)
+// ──────────────────────────────────────────────────────────────
+
+model ChatAnalytics {
+  id                    String    @id @default(uuid())
+  session_id            String
+  user_id               String?
+  guest_token           String?
+
+  // Funnel stages
+  chat_started_at       DateTime
+  intent_identified_at  DateTime?
+  results_shown_at      DateTime?
+  first_engagement_at   DateTime?
+  conversion_at         DateTime?
+
+  // Extracted intent (from intent_snapshot JSON in ChatMessage)
+  intent_type           String?   // "budget_search", "location_search", "property_type", etc.
+  extracted_sector      String?
+  extracted_bhk         Int?
+  extracted_budget_min  Float?
+  extracted_budget_max  Float?
+
+  // Engagement metrics
+  projects_viewed       Int @default(0)
+  projects_clicked      Int @default(0)
+  projects_saved        Int @default(0)
+  time_spent_seconds    Int @default(0)
+
+  // Conversion tracking
+  conversion_type       String?   // "callback_requested", "site_visit_requested", "property_saved"
+  converted_project_id  String?
+  converted_builder_id  String?
+
+  // Drop-off analysis
+  drop_off_stage        String?   // "no_intent", "no_results", "no_engagement", "no_action", null if converted
+  drop_off_at           DateTime?
+  idle_seconds_before_drop_off Int?
+
+  // Promotional tracking
+  promotional_id        String?
+  promo_clicked         Boolean @default(false)
+
+  // AI performance metrics
+  latency_ms            Int?
+  llm_tokens            Int?
+  ai_confidence         Int?
+
+  created_at            DateTime @default(now())
+  session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([user_id])
+  @@index([created_at])
+  @@index([converted_builder_id])
+  @@index([conversion_type])
+  @@map("chat_analytics")
+}
+
+model QueryMetrics {
+  id                String   @id @default(uuid())
+  query_text        String   // Raw user query
+  intent_type       String?
+  sector            String?
+  bhk               Int?
+  budget_min_cr     Float?
+  budget_max_cr     Float?
+  session_id        String
+  user_id           String?
+
+  week_start        DateTime // ISO week start (Monday)
+
+  clicked           Boolean @default(false)
+  converted         Boolean @default(false)
+
+  // Search quality metrics
+  results_count     Int?
+  had_results       Boolean?
+  builder           String?
+  purpose           String?
+  possession        String?
+  clarification_count Int @default(0)
+
+  created_at        DateTime @default(now())
+  session           ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([created_at])
+  @@index([sector])
+  @@index([week_start])
+  @@index([intent_type])
+  @@map("query_metrics")
+}
+
+model WeeklyMetricsSummary {
+  id                String   @id @default(uuid())
+  week_start        DateTime
+  week_end          DateTime
+
+  total_queries     Int
+  unique_sessions   Int
+  conversion_rate   Float
+  drop_off_rate     Float
+  avg_time_spent_s  Int
+
+  top_sectors       Json     // [{sector, count, conversions}]
+  intent_breakdown  Json     // [{type, count}]
+  budget_distribution Json   // [{range, count}]
+  bhk_preferences   Json     // [{bhk, count}]
+
+  created_at        DateTime @default(now())
+
+  @@unique([week_start])
+  @@index([week_start])
+  @@map("weekly_metrics_summary")
+}
+
+// ──────────────────────────────────────────────────────────────
+// PROPERTY EVENTS (Analytics — Phase 2+)
+// ──────────────────────────────────────────────────────────────
+
+model PropertyEvent {
+  id                String   @id @default(uuid())
+  session_id        String
+  user_id           String?
+  guest_token       String?
+  project_id        String
+
+  // action: view | save | compare | share | brochure | gallery | location | call | whatsapp | site_visit | remove_saved
+  action            String
+
+  created_at        DateTime @default(now())
+  session           ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([project_id])
+  @@index([user_id])
+  @@index([action])
+  @@index([created_at])
+  @@map("property_events")
+}
+
+// ──────────────────────────────────────────────────────────────
+// PROMOTIONAL SYSTEM (Phase 2+)
+// ──────────────────────────────────────────────────────────────
+
+model Promotional {
+  id                String   @id @default(uuid())
+  title             String
+  description       String?
+
+  type              PromotionalType // "button", "toast_text", "news_feature"
+  content           String
+
+  link_type         String?  // "project", "builder", "external_url"
+  link_target       String?  // project_id, builder_id, or URL
+
+  image_url         String?
+  icon_url          String?
+  builder_id        String?
+
+  starts_at         DateTime
+  ends_at           DateTime
+  is_active         Boolean @default(true)
+
+  target_sectors    String[] @default([])  // Empty = show to all
+  target_bhk        Int[]    @default([])
+
+  impressions       Int @default(0)
+  clicks            Int @default(0)
+  conversions       Int @default(0)
+
+  created_by        String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  interactions      PromotionalInteraction[]
+
+  @@index([is_active, starts_at, ends_at])
+  @@index([builder_id])
+  @@map("promotionals")
+}
+
+model PromotionalInteraction {
+  id                String   @id @default(uuid())
+  promotional_id    String
+  session_id        String?
+  user_id           String?
+  guest_token       String?
+
+  interaction_type  String   // "impression", "click", "conversion"
+  converted_project_id String?
+
+  created_at        DateTime @default(now())
+  promotional       Promotional @relation(fields: [promotional_id], references: [id], onDelete: Cascade)
+
+  @@index([promotional_id, created_at])
+  @@index([interaction_type])
+  @@map("promotional_interactions")
+}
+
+enum PromotionalType {
+  button
+  toast_text
+  news_feature
+}
+
+// ──────────────────────────────────────────────────────────────
+// BUILDER NEWS (Phase 3+)
+// ──────────────────────────────────────────────────────────────
+
+model BuilderNews {
+  id              String   @id @default(uuid())
+  builder_id      String
+
+  title           String
+  description     String
+  image_url       String?
+
+  link_type       String?  // "project", "external_url"
+  link_target     String?
+
+  status          NewsStatus
+  submitted_by    String?
+  approved_by     String?
+  approval_notes  String?
+
+  run_as_promo    Boolean @default(false)
+  promo_id        String?
+
+  archived_at     DateTime?
+  created_at      DateTime @default(now())
+  published_at    DateTime?
+
+  builder         Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@index([builder_id])
+  @@index([status])
+  @@index([published_at])
+  @@map("builder_news")
+}
+
+enum NewsStatus {
+  draft
+  pending_approval
+  published
+  archived
+  rejected
+}
+
+// ──────────────────────────────────────────────────────────────
+// BUILDER SELF-SERVICE FORM (Phase 3+)
+// ──────────────────────────────────────────────────────────────
+
+model BuilderApplicationForm {
+  id              String   @id @default(uuid())
+
+  name            String
+  cin             String
+  email           String
+  phone           String
+  landline        String?
+  website         String?
+  headquarters    String?
+  logo_url        String?
+  description     String?
+
+  legal_entities  Json?    // [{name, cin, role, incorporated_date}]
+  executives      Json?    // [{name, designation}]
+  projects        String[]
+  delivery_track  String?
+
+  ip_address      String
+  user_agent      String
+  submitted_at    DateTime @default(now())
+
+  status          FormStatus
+  reviewed_by     String?
+  review_notes    String?
+  linked_builder  String?  // builder_id if approved
+
+  @@index([status])
+  @@index([email])
+  @@index([submitted_at])
+  @@map("builder_application_forms")
+}
+
+enum FormStatus {
+  new
+  reviewing
+  approved
+  rejected
+  clarification_requested
+}
+
+// ──────────────────────────────────────────────────────────────
+// BUILDER DASHBOARD (Phase 4+)
+// ──────────────────────────────────────────────────────────────
+
+model BuilderAccount {
+  id              String   @id @default(uuid())
+  builder_id      String   @unique
+  user_id         String?  // Supabase auth user ID for dashboard login
+  email           String
+  password_hash   String?  // Bcrypt hash for password auth
+  auth_method     String   // "password", "magic_link"
+
+  last_login      DateTime?
+  last_activity   DateTime?
+  is_active       Boolean @default(true)
+
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  builder         Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@unique([email])
+  @@index([user_id])
+  @@index([is_active])
+  @@map("builder_accounts")
+}
+
+model BuilderLead {
+  id              String   @id @default(uuid())
+  builder_id      String
+  project_id      String?
+
+  lead_type       String   // "callback_requested", "site_visit_requested", "inquiry"
+
+  // Lead info
+  name            String?
+  email           String?
+  phone           String?
+  message         String?
+
+  // Source
+  source_session  String?  // chat_session_id
+  source_intent   Json?    // Original user intent snapshot
+
+  // Status
+  status          LeadStatus
+  assigned_to     String?  // Future: broker/sales person ID
+  notes           String?
+
+  // Tracking
+  contacted_at    DateTime?
+  converted_at    DateTime?  // Did this lead convert to customer?
+
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  builder         Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@index([builder_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("builder_leads")
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  lost
+  converted
+  archived
+}
+
+model BuilderAnalytics {
+  id              String   @id @default(uuid())
+  builder_id      String
+  date            DateTime // Daily snapshot
+
+  leads_generated Int @default(0)
+  callbacks_requested Int @default(0)
+  site_visits_requested Int @default(0)
+
+  impressions     Int @default(0)      // From promotionals
+  clicks_on_promo Int @default(0)
+  conversions_from_promo Int @default(0)
+
+  projects_viewed Int @default(0)
+  projects_saved  Int @default(0)
+
+  created_at      DateTime @default(now())
+
+  @@unique([builder_id, date])
+  @@index([builder_id])
+  @@map("builder_analytics")
+}
+
+// ──────────────────────────────────────────────────────────────
+// BRAND THEME SYSTEM (Phase 4+)
+// ──────────────────────────────────────────────────────────────
+
+model BuilderTheme {
+  id              String   @id @default(uuid())
+  builder_id      String   @unique
+
+  // Colors
+  primary_color   String   // Hex color code
+  secondary_color String?
+
+  // Media
+  logo_url        String?
+  favicon_url     String?
+
+  // Dates
+  active_from     DateTime
+  active_until    DateTime?  // null = indefinite
+
+  is_active       Boolean @default(true)
+  created_at      DateTime @default(now())
+
+  builder         Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@index([builder_id])
+  @@index([active_from, active_until])
+  @@map("builder_themes")
+}

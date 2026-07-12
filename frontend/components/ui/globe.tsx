@@ -60,8 +60,12 @@ export default function Globe() {
                 location: [location.lat, location.lng],
                 size: location.size,
             })),
+<<<<<<< HEAD
             // @ts-expect-error - onRender is supported by cobe runtime but missing from type definitions
             onRender: (state) => {
+=======
+            onRender: (state: Record<string, any>) => {
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
                 if (!pointerInteracting.current) {
                     phi += 0.005;
                 }
@@ -69,7 +73,11 @@ export default function Globe() {
                 state.width = width * 2;
                 state.height = width * 2;
             },
+<<<<<<< HEAD
         });
+=======
+        } as any);
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
         return () => {
             globe.destroy();

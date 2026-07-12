@@ -47,13 +47,18 @@ const CHIP_STYLE: Record<string, string> = {
   pink:    'bg-pink-50   border-pink-100   text-pink-700   dark:bg-pink-900/30   dark:border-pink-800/60   dark:text-pink-300',
 }
 
+<<<<<<< HEAD
 const SEARCH_STEPS = [
+=======
+const SEARCH_STEPS  = [
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   'Reading your requirements',
   'Scanning Noida inventory',
   'Shortlisting best matches',
   'Preparing recommendations',
 ]
 
+<<<<<<< HEAD
 const WEB_STEPS = [
   'Searching the web',
   'Reading latest news',
@@ -70,11 +75,14 @@ const RERA_STEPS = [
   'Verifying registration',
 ]
 
+=======
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 const GENERAL_STEPS = [
   'Thinking',
   'Preparing your answer',
 ]
 
+<<<<<<< HEAD
 const TOOL_STEPS: Record<string, string[]> = {
   search_properties: SEARCH_STEPS,
   search_web: WEB_STEPS,
@@ -94,6 +102,17 @@ export default function ChatLoader({ userQuery, isSearching, searchingTool }: Pr
     : isSearching
     ? SEARCH_STEPS
     : GENERAL_STEPS
+=======
+interface Props {
+  userQuery: string
+  isSearching: boolean
+}
+
+export default function ChatLoader({ userQuery, isSearching }: Props) {
+  const chips = parseQuery(userQuery)
+  const isPropertySearch = chips.length > 0 || isSearching
+  const steps = isPropertySearch ? SEARCH_STEPS : GENERAL_STEPS
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
   const [activeStep, setActiveStep] = useState(0)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -122,6 +141,28 @@ export default function ChatLoader({ userQuery, isSearching, searchingTool }: Pr
 
   return (
     <div className="flex flex-col gap-3 py-0.5">
+<<<<<<< HEAD
+=======
+
+      {/* Criteria chips — materialise one-by-one */}
+      {chips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {chips.map((chip, i) => (
+            <motion.span
+              key={chip.label}
+              initial={{ opacity: 0, scale: 0.65, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: i * 0.09, duration: 0.32, type: 'spring', stiffness: 340, damping: 22 }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[12px] font-semibold select-none ${CHIP_STYLE[chip.variant]}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+              {chip.label}
+            </motion.span>
+          ))}
+        </div>
+      )}
+
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
       {/* Progress steps */}
       <div className="flex flex-col gap-2.5">
         {steps.map((label, i) => {

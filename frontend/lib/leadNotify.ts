@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 import { prisma } from '@/lib/db'
 
+=======
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 interface LeadPayload {
   type: 'callback' | 'site_visit'
   name: string
@@ -12,6 +15,7 @@ interface LeadPayload {
   timestamp: string
 }
 
+<<<<<<< HEAD
 const RETRY_DELAYS_MS = [0, 2000, 5000] // 3 attempts: immediate, 2s, 5s
 
 async function fireWebhook(url: string, payload: LeadPayload): Promise<void> {
@@ -82,4 +86,21 @@ export async function notifyLead(payload: LeadPayload): Promise<void> {
   }).catch((dbErr: any) => {
     console.error('[lead] ❌ Also failed to persist to DB:', dbErr instanceof Error ? dbErr.message : dbErr)
   })
+=======
+export async function notifyLead(payload: LeadPayload): Promise<void> {
+  const url = process.env.LEAD_WEBHOOK_URL
+  if (!url) return
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(5000),
+    })
+  } catch (err) {
+    // never let notification failure break the lead save
+    console.warn('[lead] webhook failed:', err instanceof Error ? err.message : err)
+  }
+>>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 }
