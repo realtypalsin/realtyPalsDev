@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, X, ChevronRight, ChevronLeft, Map, MessageSquare, Zap, Target, RotateCcw } from 'lucide-react';
+import { HelpCircle, X, ChevronRight, ChevronLeft, MessageSquare, Zap, RotateCcw } from 'lucide-react';
 
 interface GuideStep {
   id: string;

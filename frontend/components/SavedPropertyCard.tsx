@@ -4,7 +4,7 @@ import { Property } from '@/types/property';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { formatPriceCr } from '@/lib/format';
-import { MapPin, Heart, Share2, Trash2, Home, Building2, CheckCircle2, HardHat, Maximize2, BedDouble, Calendar } from 'lucide-react';
+import { MapPin, Share2, Trash2, Home, Building2, Maximize2, BedDouble, Calendar } from 'lucide-react';
 
 interface SavedPropertyCardProps {
   property: Property;

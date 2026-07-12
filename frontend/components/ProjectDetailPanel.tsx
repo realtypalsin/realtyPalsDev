@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 import {
-  X, CheckCircle2, Clock, Shield, MapPin, Building2, Award,
-  Ruler, BedDouble, Bath, ChevronRight, ExternalLink,
-  Sparkles, Star, Trophy, Layers, Phone, TrendingUp, Calendar,
+  X, CheckCircle2, Clock, Shield, MapPin, Building2,
+  Ruler, BedDouble, ChevronRight, ExternalLink,
+  Sparkles, Star, Trophy, Layers, TrendingUp, Calendar,
   FileText, Route, BarChart3, ZoomIn,
 } from 'lucide-react'
 import {
-  Subway, AirplaneTakeoff, Path, Buildings, Heart, Tree,
-  SoccerBall, Leaf, Baby, SealCheck, MapTrifold,
+  Subway, AirplaneTakeoff, Path, Buildings, Heart,
+  Leaf, Baby, SealCheck,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
   Barbell, Star as StarPhosphor,
 } from '@phosphor-icons/react'
@@ -130,7 +130,6 @@ export default function ProjectDetailPanel({ project, onClose, inline }: Props) 
 
   const isOpen = !!project
 
-  const heroImages = detail?.images?.filter((i) => i.type === 'hero' || i.type === 'exterior') ?? []
   const allImages  = detail?.images ?? []
   const currentImg = allImages[imgIdx]?.url ?? project?.hero_image_url
 

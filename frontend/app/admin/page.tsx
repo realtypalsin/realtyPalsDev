@@ -61,15 +61,15 @@ export default function AdminDashboard() {
     setLoading(true)
     const res  = await fetch('/api/v1/admin/projects')
     const data = await res.json()
-    const projects = data.projects ?? []
+    const projects: Array<{ status: string; hero_image_url?: string | null; rera_number?: string | null; builder?: { id: string } }> = data.projects ?? []
     setStats({
       total:              projects.length,
-      ready:              projects.filter((p: any) => p.status === 'ready_to_move').length,
-      under_construction: projects.filter((p: any) => p.status === 'under_construction').length,
-      new_launch:         projects.filter((p: any) => p.status === 'new_launch').length,
-      no_image:           projects.filter((p: any) => !p.hero_image_url).length,
-      no_rera:            projects.filter((p: any) => !p.rera_number).length,
-      builders:           new Set(projects.map((p: any) => p.builder?.id)).size,
+      ready:              projects.filter((p) => p.status === 'ready_to_move').length,
+      under_construction: projects.filter((p) => p.status === 'under_construction').length,
+      new_launch:         projects.filter((p) => p.status === 'new_launch').length,
+      no_image:           projects.filter((p) => !p.hero_image_url).length,
+      no_rera:            projects.filter((p) => !p.rera_number).length,
+      builders:           new Set(projects.map((p) => p.builder?.id)).size,
     })
     setLoading(false)
   }

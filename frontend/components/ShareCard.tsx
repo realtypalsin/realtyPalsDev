@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { X, Copy, Share2, Check, Download } from 'lucide-react';
+import { X, Copy, Share2, Check } from 'lucide-react';
 import { Property } from '@/types/property';
 import { formatPriceCr } from '@/lib/format';
 

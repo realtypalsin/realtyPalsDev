@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { makeAdminToken, validateAdminToken } from '@/lib/adminToken'
+import { makeAdminToken } from '@/lib/adminToken'
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json().catch(() => ({ password: '' }))

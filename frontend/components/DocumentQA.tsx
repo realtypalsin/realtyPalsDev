@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { FileText, Upload, Send, Loader2, X, MessageCircle } from 'lucide-react'
+import { FileText, Upload, Send, Loader2, MessageCircle } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 
 interface Doc {

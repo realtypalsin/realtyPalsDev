@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { TrendingUp, BarChart3, Loader2, Building2 } from 'lucide-react'
+import { BarChart3, Loader2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 
 interface ComparisonData {

@@ -7,7 +7,7 @@ import ImageUpload from './ImageUpload'
 
 interface Builder { id: string; name: string }
 
-interface ProjectData {
+export interface ProjectData {
   id?: string
   name: string
   slug: string

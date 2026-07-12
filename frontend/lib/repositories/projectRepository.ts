@@ -14,27 +14,6 @@ export interface SearchFilters {
   possession_year_max?: number
 }
 
-function toRerankDoc(p: ProjectCard): string {
-  const bhks = p.unit_types.map((u) => `${u.bhk}BHK`).join(', ')
-  const amenities = p.top_amenities.map((a) => a.name).join(', ')
-  const conn = p.top_connectivity
-    .map((c) => `${c.name}${c.distance_km ? ` ${c.distance_km}km` : ''}`)
-    .join(', ')
-  return [
-    `${p.name} by ${p.builder.name}`,
-    `${p.sector}, ${p.city}`,
-    `Price: ${p.price_range_label}`,
-    `Configs: ${bhks}`,
-    `Status: ${p.status.replace(/_/g, ' ')}`,
-    p.possession_label ? `Possession: ${p.possession_label}` : '',
-    amenities ? `Amenities: ${amenities}` : '',
-    conn ? `Nearby: ${conn}` : '',
-    p.tagline ?? '',
-  ]
-    .filter(Boolean)
-    .join('. ')
-}
-
 /**
  * Deterministic scoring — replaces external Jina/Cohere rerankers.
  * Scores each property 0–100 based on match quality. No latency, no external deps.
@@ -84,8 +63,8 @@ function scoreProject(p: ProjectCard, filters: SearchFilters): number {
   }
 
   // Data quality signals — projects with complete data rank higher
-  const unitTypes = (p as any).unit_types ?? []
-  const hasVerifiedPrice = unitTypes.length > 0 && unitTypes.some((u: any) => !u.price_is_estimated)
+  const unitTypes = p.unit_types ?? []
+  const hasVerifiedPrice = unitTypes.length > 0 && unitTypes.some((u) => !u.price_is_estimated)
   if (hasVerifiedPrice) score += 10
   if (p.hero_image_url) score += 8
   if (p.rera_number) score += 7
@@ -203,12 +182,12 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
 
   return {
     ...card,
-    long_description: (project as any).long_description ?? null,
-    design_theme: (project as any).design_theme ?? null,
-    total_units: (project as any).total_units ?? null,
-    marketing_claims: (project as any).marketing_claims ?? [],
-    all_amenities: project.amenities.map((a: any) => ({ name: a.name, category: a.category })),
-    all_connectivity: project.connectivity.map((c: any) => ({ type: c.type, name: c.name, distance_km: c.distance_km })),
+    long_description: project.long_description ?? null,
+    design_theme: project.design_theme ?? null,
+    total_units: project.total_units ?? null,
+    marketing_claims: project.marketing_claims ?? [],
+    all_amenities: project.amenities.map((a: { name: string; category: string }) => ({ name: a.name, category: a.category })),
+    all_connectivity: project.connectivity.map((c: { type: string; name: string; distance_km: number | null }) => ({ type: c.type, name: c.name, distance_km: c.distance_km })),
     builder_detail: {
       name: b.name,
       slug: b.slug,
@@ -227,10 +206,52 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toProjectCard(p: any): ProjectCard {
+export function toProjectCard(p: {
+  id: string
+  name: string
+  builder: { slug: string; name: string }
+  rera_number?: string | null
+  rera_url?: string | null
+  slug: string
+  sector: string
+  city: string
+  address?: string | null
+  lat?: number | null
+  lng?: number | null
+  land_area_acres?: number | null
+  total_towers?: number | null
+  status: string
+  possession_label?: string | null
+  possession_date: string | null
+  architect?: string | null
+  interior_designer?: string | null
+  design_theme?: string | null
+  marketing_claims: string[]
+  hero_image_url?: string | null
+  unit_types: Array<{
+    bhk: number
+    bathrooms?: number | null
+    super_area_sqft?: number | null
+    carpet_area_sqft?: number | null
+    price_min_cr?: number | null
+    price_max_cr?: number | null
+    price_label?: string | null
+    price_is_estimated?: boolean | null
+  }>
+  amenities: Array<{ name: string; category: string }>
+  connectivity: Array<{ type: string; name: string; distance_km: number | null }>
+  images: Array<{
+    id: string
+    url: string
+    type: string
+    caption: string | null
+    sort_order: number
+  }>
+  tagline?: string | null
+}): ProjectCard {
   const allPrices = p.unit_types
-    .flatMap((u: any) => [u.price_min_cr, u.price_max_cr])
-    .filter((v: any): v is number => v != null)
+    .flatMap((u) => [u.price_min_cr, u.price_max_cr])
+    .filter((v): v is number => v != null)
 
   const price_min_cr = allPrices.length ? Math.min(...allPrices) : null
   const price_max_cr = allPrices.length ? Math.max(...allPrices) : null
@@ -245,18 +266,18 @@ export function toProjectCard(p: any): ProjectCard {
       : 'Price on request'
 
   const sortedAmenities = [...p.amenities].sort(
-    (a: any, b: any) =>
+    (a, b) =>
       CATEGORY_ORDER.indexOf(a.category as any) - CATEGORY_ORDER.indexOf(b.category as any),
   )
-  const top_amenities: AmenitySummary[] = sortedAmenities.slice(0, 6).map((a: any) => ({
+  const top_amenities: AmenitySummary[] = sortedAmenities.slice(0, 6).map((a) => ({
     name: a.name,
-    category: a.category,
+    category: a.category as any,
   }))
 
   const top_connectivity: ConnSummary[] = []
   for (const type of CONN_PRIORITY) {
-    const found = p.connectivity.find((c: any) => c.type === type)
-    if (found) top_connectivity.push({ type: found.type, name: found.name, distance_km: found.distance_km })
+    const found = p.connectivity.find((c: { type: string; name: string; distance_km: number | null }) => c.type === type)
+    if (found) top_connectivity.push({ type: found.type as any, name: found.name, distance_km: found.distance_km })
   }
 
   return {
@@ -274,9 +295,9 @@ export function toProjectCard(p: any): ProjectCard {
     address: p.address,
     land_area_acres: p.land_area_acres,
     total_towers: p.total_towers,
-    status: p.status,
+    status: p.status as any,
     possession_label: p.possession_label,
-    possession_date: p.possession_date?.toISOString() ?? null,
+    possession_date: p.possession_date ? new Date(p.possession_date).toISOString() : null,
     architect: p.architect,
     interior_designer: p.interior_designer,
     design_theme: p.design_theme,
@@ -300,10 +321,10 @@ export function toProjectCard(p: any): ProjectCard {
     ),
     top_amenities,
     top_connectivity,
-    images: p.images?.map((img: any) => ({
+    images: p.images?.map((img: { id: string; url: string; type: string; caption: string | null; sort_order: number }) => ({
       id: img.id,
       url: img.url,
-      type: img.type as string,
+      type: img.type,
       caption: img.caption,
       sort_order: img.sort_order,
     })) ?? [],

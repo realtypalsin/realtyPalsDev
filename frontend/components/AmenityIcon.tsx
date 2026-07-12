@@ -4,19 +4,19 @@
 import {
   Zap, Wind, IceCreamCone, Clapperboard, Binoculars,
   Home, Sofa, PartyPopper, CloudSun, Car, ShieldCheck,
-  Lightbulb, ArrowUpDown, Sparkles,
+  Lightbulb, Sparkles,
 } from 'lucide-react';
 
 // Phosphor — comprehensive sports, fitness, wellness, nature icons
 import {
   // Sports
-  Cricket, Basketball, CourtBasketball, TennisBall, SoccerBall,
+  Cricket, CourtBasketball, TennisBall, SoccerBall,
   Volleyball, Hockey, Golf, PingPong, BoxingGlove, Barbell, Bicycle,
   PersonSimpleRun, PersonSimpleBike, PersonSimpleSwim, PersonSimpleTaiChi,
   PersonSimpleHike, PersonSimpleThrow, PersonSimpleWalk,
   // Water / Wellness
   SwimmingPool, BowlSteam, Bathtub, FlowerLotus, Leaf,
-  Waves, Drop, ThermometerHot, Heartbeat, HandHeart, Sparkle,
+  Waves, ThermometerHot, Heartbeat, HandHeart, Sparkle,
   // Nature / Outdoor
   Tree, TreeEvergreen, Flower, Park, Mountains, PicnicTable,
   // Home / Tech / Services

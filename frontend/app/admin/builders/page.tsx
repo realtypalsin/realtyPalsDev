@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Building2, Globe, CheckCircle2, Pencil, X, Save, Loader2, Trash2 } from 'lucide-react'
+import { Plus, Building2, Globe, CheckCircle2, Pencil, X, Save, Loader2 } from 'lucide-react'
 
 interface Builder {
   id: string
@@ -77,7 +77,7 @@ function BuilderFormFields({
           onChange={(e) => set('credai_member')(e.target.checked)}
           className="w-4 h-4 rounded accent-blue-600"
         />
-        <label htmlFor="credai" className="text-sm text-gray-600 font-medium">CREDAI Member</label>
+        <label htmlFor="credai" className="text-sm text-gray-700 font-medium">CREDAI Member</label>
       </div>
     </div>
   )
@@ -266,7 +266,7 @@ export default function AdminBuilders() {
                             href={b.website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-500 transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-500 transition-colors"
                             title="Website"
                           >
                             <Globe size={13} />
@@ -274,7 +274,7 @@ export default function AdminBuilders() {
                         )}
                         <button
                           onClick={() => editingId === b.id ? setEditingId(null) : startEdit(b)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
+                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors"
                           title="Edit"
                         >
                           <Pencil size={13} />

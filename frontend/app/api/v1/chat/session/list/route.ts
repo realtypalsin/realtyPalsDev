@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       select: { id: true, title: true, last_active: true },
     })
 
-    const result = sessions.map((s) => ({
+    const result = sessions.map((s: any) => ({
       id: s.id,
       label: s.title ??
         `Chat ${new Date(s.last_active).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,

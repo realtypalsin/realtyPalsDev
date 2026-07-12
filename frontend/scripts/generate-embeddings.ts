@@ -106,7 +106,7 @@ async function main() {
   }
 
   const full = await prisma.project.findMany({
-    where: { id: { in: projects.map((p) => p.id) } },
+    where: { id: { in: projects.map((p: any) => p.id) } },
     include: {
       builder: { select: { name: true } },
       unit_types: true,

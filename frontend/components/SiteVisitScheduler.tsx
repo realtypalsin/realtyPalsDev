@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, Clock, User, Phone, Mail, X, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, User, X, CheckCircle2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics'
 import LeadSuccessModal from '@/components/LeadSuccessModal'

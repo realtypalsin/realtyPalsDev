@@ -26,17 +26,6 @@ const PatchSchema = z.object({
   ai_search_keywords: z.array(z.string()).optional(),
 })
 
-const UnitTypeSchema = z.object({
-  id:              z.string().uuid().optional(),
-  name:            z.string().min(1),
-  bhk:             z.number().int(),
-  super_area_sqft: z.number().int().optional(),
-  carpet_area_sqft: z.number().int().optional(),
-  price_min_cr:    z.number().optional(),
-  price_max_cr:    z.number().optional(),
-  price_label:     z.string().optional(),
-})
-
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const token = req.cookies.get('admin_token')?.value
   if (!await validateAdminToken(token)) return Response.json({ error: 'Unauthorized' }, { status: 401 })

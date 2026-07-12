@@ -2,7 +2,6 @@
 
 const LAKH_RE = /(\d+(?:\.\d+)?)\s*(?:lakh|lac|lakhs|लाख)/gi
 const CRORE_RE = /(\d+(?:\.\d+)?)\s*(?:crore|cr|crores|करोड़|karod)/gi
-const K_RE = /(\d+(?:\.\d+)?)\s*k\b/gi
 
 const TERM_MAP: [RegExp, string][] = [
   // Transaction type

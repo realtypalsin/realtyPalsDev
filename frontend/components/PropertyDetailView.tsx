@@ -4,9 +4,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { PropertyDetail } from '@/types/property';
-import { AmenityGrid, getMappedAmenities } from '@/components/AmenityIcon';
+import { getMappedAmenities } from '@/components/AmenityIcon';
 import { AnimatedTooltip } from '@/components/ui/animated-tooltip';
-import { Maximize2, Download, Eye, BedDouble, Ruler, CheckCircle2, HardHat, X, Image as LucideImage } from 'lucide-react';
+import { Maximize2, Eye, Ruler, X, Image as LucideImage } from 'lucide-react';
 
 interface PropertyDetailViewProps {
   propertyDetail: PropertyDetail;

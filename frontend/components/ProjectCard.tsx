@@ -5,7 +5,7 @@ import Image from 'next/image'
 import {
   ClockCountdown, CheckCircle, SealCheck,
   Subway, AirplaneTakeoff, Path,
-  SoccerBall, Leaf, Baby, Heart, Tree,
+  Leaf, Baby, Heart,
   MapPin, ArrowRight, Sparkle, BookmarkSimple,
   CaretLeft, CaretRight, Phone,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,

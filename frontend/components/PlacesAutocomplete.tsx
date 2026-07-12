@@ -5,7 +5,7 @@
  * Loads the Maps JS API (Places library) once per session.
  * Falls back to a plain text input when the API key is missing.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { MapPin } from 'lucide-react'
 
 interface Props {

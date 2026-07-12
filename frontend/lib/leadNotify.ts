@@ -79,7 +79,7 @@ export async function notifyLead(payload: LeadPayload): Promise<void> {
       error: errorMsg,
       retries: RETRY_DELAYS_MS.length,
     },
-  }).catch((dbErr) => {
+  }).catch((dbErr: any) => {
     console.error('[lead] ❌ Also failed to persist to DB:', dbErr instanceof Error ? dbErr.message : dbErr)
   })
 }

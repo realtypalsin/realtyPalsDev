@@ -6,10 +6,9 @@
  * POST /api/v1/documents/ask      — ask a question about a stored document
  */
 import { NextRequest } from 'next/server'
-import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { createClient } from '@/lib/supabase'
-import { groq, GROQ_SMART } from '@/lib/ai/groq'
+import { groq } from '@/lib/ai/groq'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()

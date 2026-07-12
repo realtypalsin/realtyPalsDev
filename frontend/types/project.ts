@@ -79,6 +79,7 @@ export interface ProjectDetail extends ProjectCard {
   design_theme: string | null
   total_units: number | null
   marketing_claims: string[]
+  ai_search_keywords?: string[]
   all_amenities: { name: string; category: string }[]
   all_connectivity: { type: string; name: string; distance_km: number | null }[]
   builder_detail: BuilderDetail

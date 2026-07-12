@@ -1,5 +1,5 @@
 // prisma/seed.ts
-import { PrismaClient, ProjectStatus, AmenityCategory, ConnectivityType, DataSource, ImageType } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { BUILDERS, PROJECTS } from './data/seed-data'
 import { NEW_BUILDERS, NEW_PROJECTS } from './data/seed-data-new'
 
@@ -40,8 +40,8 @@ async function main() {
     // Upsert project
     const project = await prisma.project.upsert({
       where: { slug: p.slug },
-      update: { ...projectData, builder_id, status: projectData.status as ProjectStatus },
-      create: { ...projectData, builder_id, status: projectData.status as ProjectStatus },
+      update: { ...projectData, builder_id, status: projectData.status as any },
+      create: { ...projectData, builder_id, status: projectData.status as any },
     })
 
     // Delete and re-insert related records (idempotent seed)
@@ -63,7 +63,7 @@ async function main() {
         data: amenities.map(a => ({
           ...a,
           project_id: project.id,
-          category: a.category as AmenityCategory,
+          category: a.category as any,
         })),
       })
     }
@@ -74,8 +74,8 @@ async function main() {
         data: connectivity.map(c => ({
           ...c,
           project_id: project.id,
-          type: c.type as ConnectivityType,
-          data_source: c.data_source as DataSource,
+          type: c.type as any,
+          data_source: c.data_source as any,
         })),
       })
     }
@@ -86,7 +86,7 @@ async function main() {
         data: project_images.map(img => ({
           ...img,
           project_id: project.id,
-          type: img.type as ImageType,
+          type: img.type as any,
         })),
       })
     }

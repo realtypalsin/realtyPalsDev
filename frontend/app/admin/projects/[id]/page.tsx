@@ -2,36 +2,104 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import ProjectForm from '@/components/admin/ProjectForm'
+import ProjectForm, { type ProjectData } from '@/components/admin/ProjectForm'
 import ProjectPreview from '@/components/admin/ProjectPreview'
 import { Loader2, LayoutPanelLeft } from 'lucide-react'
 
+// Raw shape returned by GET /api/v1/admin/projects/[id] (Prisma model + relations)
+interface AdminProjectRaw {
+  id: string
+  name: string
+  slug: string
+  builder_id: string
+  sector: string
+  city: string
+  status: ProjectData['status']
+  tagline: string | null
+  address: string | null
+  lat: number | null
+  lng: number | null
+  rera_number: string | null
+  rera_url: string | null
+  total_units: number | null
+  total_towers: number | null
+  land_area_acres: number | null
+  possession_label: string | null
+  possession_date: string | null
+  description: string | null
+  long_description: string | null
+  design_theme: string | null
+  architect: string | null
+  hero_image_url: string | null
+  marketing_claims: string[]
+  ai_search_keywords: string[]
+  builder: { name: string; slug: string }
+  unit_types: Array<{ bhk: number; price_min_cr: number | null; price_max_cr: number | null; super_area_sqft: number | null }>
+  images: Array<{ id: string; url: string; type: string; caption: string | null; sort_order: number }>
+  amenities: Array<{ name: string; category: string }>
+}
+
+function toFormData(data: AdminProjectRaw): ProjectData {
+  return {
+    id:               data.id,
+    name:             data.name,
+    slug:             data.slug,
+    builder_id:       data.builder_id,
+    sector:           data.sector,
+    city:             data.city,
+    status:           data.status,
+    tagline:          data.tagline ?? '',
+    address:          data.address ?? '',
+    description:      data.description ?? '',
+    rera_number:      data.rera_number ?? '',
+    rera_url:         data.rera_url ?? '',
+    architect:        data.architect ?? '',
+    design_theme:     data.design_theme ?? '',
+    hero_image_url:   data.hero_image_url ?? '',
+    long_description: data.long_description ?? '',
+    possession_label: data.possession_label ?? '',
+    lat:              data.lat?.toString() ?? '',
+    lng:              data.lng?.toString() ?? '',
+    total_units:      data.total_units?.toString() ?? '',
+    total_towers:     data.total_towers?.toString() ?? '',
+    land_area_acres:  data.land_area_acres?.toString() ?? '',
+    possession_date:  data.possession_date ? new Date(data.possession_date).toISOString().split('T')[0] : '',
+    marketing_claims:   data.marketing_claims ?? [],
+    ai_search_keywords: data.ai_search_keywords ?? [],
+  }
+}
+
 export default function EditProject() {
   const { id } = useParams<{ id: string }>()
-  const [data, setData]         = useState<any>(null)
+  const [data, setData]         = useState<AdminProjectRaw | null>(null)
   const [loading, setLoading]   = useState(true)
-  const [preview, setPreview]   = useState<any>(null)
+  const [preview, setPreview]   = useState<AdminProjectRaw | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  async function loadProject() {
+  const loadProject = useCallback(async () => {
     const res  = await fetch(`/api/v1/admin/projects/${id}`)
     const json = await res.json()
     setData(json.project)
     setPreview(json.project)
     setLoading(false)
-  }
+  }, [id])
 
-  useEffect(() => { loadProject() }, [id])
+  useEffect(() => { loadProject() }, [loadProject])
 
   // Called by ProjectForm when form values change — updates preview in real time
-  const handleFormChange = useCallback((formValues: any) => {
-    setPreview((prev: any) => ({
+  const toNum = (v: string | undefined, fallback: number | null): number | null =>
+    v !== undefined ? (v === '' ? null : Number(v)) : fallback
+
+  const handleFormChange = useCallback((formValues: Partial<ProjectData>) => {
+    setPreview((prev) => prev ? {
       ...prev,
       ...formValues,
-      // keep builder/unit_types from saved data (not editable inline)
-      builder:    prev?.builder,
-      unit_types: prev?.unit_types,
-    }))
+      lat: toNum(formValues.lat, prev.lat),
+      lng: toNum(formValues.lng, prev.lng),
+      total_units: toNum(formValues.total_units, prev.total_units),
+      total_towers: toNum(formValues.total_towers, prev.total_towers),
+      land_area_acres: toNum(formValues.land_area_acres, prev.land_area_acres),
+    } : prev)
   }, [])
 
   // Called after successful save — re-fetch to sync preview with DB
@@ -54,17 +122,7 @@ export default function EditProject() {
 
   if (!data) return <p className="text-gray-500">Project not found.</p>
 
-  const formData = {
-    ...data,
-    lat:              data.lat?.toString() ?? '',
-    lng:              data.lng?.toString() ?? '',
-    total_units:      data.total_units?.toString() ?? '',
-    total_towers:     data.total_towers?.toString() ?? '',
-    land_area_acres:  data.land_area_acres?.toString() ?? '',
-    possession_date:  data.possession_date ? new Date(data.possession_date).toISOString().split('T')[0] : '',
-    marketing_claims:   data.marketing_claims ?? [],
-    ai_search_keywords: data.ai_search_keywords ?? [],
-  }
+  const formData = toFormData(data)
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -97,7 +155,7 @@ export default function EditProject() {
         <div>
           {preview && (
             <ProjectPreview
-              project={preview}
+              project={preview as any}
               onRefresh={handleSaved}
               refreshing={refreshing}
             />

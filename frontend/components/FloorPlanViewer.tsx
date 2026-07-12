@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 
 interface FloorPlan {
   id: string
