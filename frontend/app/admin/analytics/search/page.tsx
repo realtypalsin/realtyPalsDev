@@ -58,6 +58,22 @@ export default function SearchAnalytics() {
         </button>
       </div>
 
+      {/* Top Navigation Tabs */}
+      <div className="flex items-center gap-3 overflow-x-auto pb-2 border-b border-gray-100">
+        <Link href="/admin/analytics" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          Dashboard
+        </Link>
+        <Link href="/admin/analytics/search" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-slate-900 text-white shadow-sm whitespace-nowrap">
+          Search Analytics
+        </Link>
+        <Link href="/admin/analytics/properties" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          Property Engagement
+        </Link>
+        <Link href="/admin/analytics/users" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          User Behavior
+        </Link>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Total Searches */}

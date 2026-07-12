@@ -8,27 +8,21 @@ const mockProject: ProjectCard = {
   slug: 'test-project',
   sector: 'Sector 10',
   city: 'Noida',
-  builder: { name: 'Builder A', slug: 'builder-a', credai_member: false, delivered_units: 0, awards_count: 0, legal_flag: null },
+  builder: { name: 'Builder A', slug: 'builder-a' },
   status: 'ready_to_move',
+  possession_date: null,
   possession_label: null,
   price_range_label: '₹1-2 Cr',
+  marketing_claims: [],
   images: [
     { id: 'i1', url: 'https://example.com/hero.jpg', type: 'hero', caption: null, bhk: null, size_sqft: null, sort_order: 0 },
     { id: 'i2', url: 'https://example.com/exterior.jpg', type: 'exterior', caption: null, bhk: null, size_sqft: null, sort_order: 1 },
-    { id: 'i3', url: 'https://example.com/other.jpg', type: 'other', caption: null, bhk: null, size_sqft: null, sort_order: 2 }
+    { id: 'i3', url: 'https://example.com/other.jpg', type: 'other', caption: null, bhk: null, size_sqft: null, sort_order: 2 },
   ],
   hero_image_url: 'https://example.com/fallback.jpg',
   unit_types: [],
-  amenities: [],
-  connections: [],
-  rera_number: null,
-  best_for: null,
-  match_score: 50,
-  match_reason: null,
-  match_signals: [],
-  match_reasons: [],
-  concerns: [],
-  decisionIntelligence: null,
+  top_amenities: [],
+  top_connectivity: [],
 };
 
 describe('usePreferredImages', () => {

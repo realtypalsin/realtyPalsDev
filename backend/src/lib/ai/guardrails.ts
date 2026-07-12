@@ -26,13 +26,16 @@ export async function inputGuardrail(message: string): Promise<GuardrailResult> 
     /forget (everything|all|your instructions)/i,
     /pretend (you are|to be)/i,
     /what (is|was|did you use) (the|your) (context|document|system prompt|instructions)/i,
+    /bypass (all )?filters/i,
+    /enter (developer|jailbreak) mode/i,
+    /system override/i,
   ]
 
   if (injectionPatterns.some(p => p.test(message))) {
     return {
       blocked: true,
       reason: 'prompt_injection',
-      confidence: 0.9,
+      confidence: 1.0,
       violations: [{ type: 'prompt_injection', detail: 'injection pattern matched in user message' }],
     }
   }

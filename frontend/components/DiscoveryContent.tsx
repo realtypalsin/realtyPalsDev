@@ -1,68 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-<<<<<<< HEAD
 import { useRouter, useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
-import dynamic from 'next/dynamic';
-import { ChatMessage } from '@/types/property';
-import type { ProjectCard as ProjectCardType } from '@/types/project';
-import ProjectDetailPanel from '@/components/ProjectDetailPanel';
-import VisualGuide from './VisualGuide';
-import Image from 'next/image';
-import Toast from '@/components/Toast';
-import { API_BASE } from '@/lib/env'
-import { track } from '@/lib/analytics';
-import Header from '@/components/Header';
-import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
-import LeadSuccessModal from '@/components/LeadSuccessModal';
-import MessageBubble from '@/components/chat/MessageBubble';
-import type { Chip, ChipPickerState } from '@/components/chat/types';
-import {
-  MessageSquare, AlertTriangle, Mic, Plus,
-} from 'lucide-react';
-
-// ── Dynamic imports — modal-gated, excluded from initial bundle ────────────
-const SiteVisitScheduler = dynamic(() => import('@/components/SiteVisitScheduler'), { ssr: false })
-const CalculatorPanel = dynamic(() => import('@/components/CalculatorPanel'), { ssr: false })
-
-// ── Progressive chip disclosure — driven by server missingDimension ────────
-function getFollowUpChips(missingDimension: 'budget' | 'bhk' | 'location' | null): Chip[] {
-  if (!missingDimension) return [] // All dimensions filled, no more chips
-
-  const chips: Record<'budget' | 'bhk' | 'location', Chip[]> = {
-    budget: [
-      { emoji: '💰', label: 'Under 1 Cr', msg: 'I want properties under 1 Cr' },
-      { emoji: '💰', label: '1–2 Cr', msg: 'My budget is 1 to 2 Cr' },
-      { emoji: '💰', label: '2–3 Cr', msg: 'I can spend 2 to 3 Cr' },
-      { emoji: '💰', label: 'Above 3 Cr', msg: 'My budget is above 3 Cr' },
-    ],
-    bhk: [
-      { emoji: '🏠', label: '1 BHK', msg: 'I need a 1 BHK' },
-      { emoji: '🏠', label: '2 BHK', msg: 'Looking for a 2 BHK' },
-      { emoji: '🏠', label: '3 BHK', msg: 'I want a 3 BHK' },
-      { emoji: '🏠', label: '3+ BHK', msg: 'I need 3 or more bedrooms' },
-    ],
-    location: [
-      { emoji: '📍', label: 'Sector 150', msg: 'Show me properties in Sector 150' },
-      { emoji: '📍', label: 'Sector 137', msg: 'I prefer Sector 137' },
-      { emoji: '📍', label: 'Central Noida', msg: 'Looking in Central Noida' },
-      { emoji: '📍', label: 'Other sectors', msg: 'Show me other sectors nearby' },
-    ],
-  }
-
-  return chips[missingDimension].slice(0, 5) // Cap at 5 chips
-}
-
-// Welcome screen starter chips — show one from each dimension
-const WELCOME_CHIPS = [
-  { emoji: '💰', label: 'Budget 1–2 Cr', msg: 'My budget is 1 to 2 Cr' },
-  { emoji: '🏠', label: '3 BHK', msg: 'I want a 3 BHK' },
-  { emoji: '📍', label: 'Sector 150', msg: 'Show me properties in Sector 150' },
-  { emoji: '🏠', label: 'Ready to move', msg: 'I want a property ready to move' },
-];
-=======
-import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { ChatMessage, NearbyExpansion } from '@/types/property';
@@ -94,8 +33,6 @@ const LeadSuccessModal = dynamic(() => import('@/components/LeadSuccessModal'), 
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false })
 const ReEngagementBanner = dynamic(() => import('@/components/chat/ReEngagementBanner'), { ssr: false })
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
-
 function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => void }) {
   const [secsLeft, setSecsLeft] = useState(Math.ceil((until - Date.now()) / 1000));
   useEffect(() => {
@@ -120,17 +57,6 @@ function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => v
 
 interface DiscoveryContentProps {
   userId: string | null;
-<<<<<<< HEAD
-}
-
-export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [chatInput, setChatInput] = useState('');
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-  const [toast, setToast] = useState<{ message: string } | null>(null);
-  const [, setShowRecommendations] = useState(false);
-=======
   guestToken?: string | null;
   onSessionChange?: (sessionId: string | null) => void;
   initialSessionId?: string | null;
@@ -148,34 +74,16 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [visibleCount, setVisibleCount] = useState(15);
   const [toast, setToast] = useState<{ message: string } | null>(null);
   const [showRecommendations, setShowRecommendations] = useState(false);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   const [isInitialized, setIsInitialized] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
   const [rateLimitUntil, setRateLimitUntil] = useState<number | null>(null);
-<<<<<<< HEAD
-=======
   const [sessionTitle, setSessionTitle] = useState<string | null>(null);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   const [chatTurnCount, setChatTurnCount] = useState(0);
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [showContextWarning, setShowContextWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
-<<<<<<< HEAD
-  const [missingDimension, setMissingDimension] = useState<'budget' | 'bhk' | 'location' | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  // Tracks which ?session= URL param was last fully restored — prevents re-init loops
-  const lastRestoredSessionParamRef = useRef<string | null>(null)
-  const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
-  const openDetailProject = useCallback((project: ProjectCardType | null) => {
-    setDetailProject(project)
-    if (project) track('property_viewed', { project_slug: project.slug, project_name: project.name })
-  }, []);
-  const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
-  const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
-  const [showMap, setShowMap] = useState(false);
-=======
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null);
@@ -279,7 +187,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const [showCalculator, setShowCalculator] = useState(false);
   const [chipPicker, setChipPicker] = useState<ChipPickerState | null>(null);
   const [siteVisitProject, setSiteVisitProject] = useState<ProjectCardType | null>(null);
@@ -287,34 +195,27 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [callbackForm, setCallbackForm] = useState({ name: '', phone: '' });
   const [callbackSubmitting, setCallbackSubmitting] = useState(false);
   const [callbackDone, setCallbackDone] = useState(false);
-<<<<<<< HEAD
-=======
   const [callbackError, setCallbackError] = useState<string | null>(null);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
-<<<<<<< HEAD
-  const [regeneratingIdx] = useState<number | null>(null);
-=======
   const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
   const [statusPhase, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
   const [resultCount, setResultCount] = useState<number | null>(null)
   const [showReEngagement, setShowReEngagement] = useState(true)
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const chatEndRef = useRef<HTMLDivElement>(null);
   const streamingMsgIdRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
   const userScrolledUp = useRef(false);
-<<<<<<< HEAD
-=======
   const performResetRef = useRef<() => void>(() => { });
   // [TIMING] holds in-progress restore stage timestamps; cleared after summary printed
   const navTimingsRef = useRef<{ restoreStart: number; authMs: number; fetchMs: number; mapperMs: number; setHistoryAt: number } | null>(null);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
   // ── Image carousel state for in-chat galleries ──
   const [carouselIndexes, setCarouselIndexes] = useState<Record<number, number>>({});
@@ -330,8 +231,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-<<<<<<< HEAD
-=======
   // [TIMING] DiscoveryContent mount — distinct from page-mount (page has auth init first)
   useEffect(() => {
     const nt = (window as any).__navTimings
@@ -361,7 +260,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
   // ── Voice input (Web Speech API) ──
   const [isListening, setIsListening] = useState(false);
@@ -435,11 +334,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         const fd = new FormData();
         fd.append('audio', blob, 'recording.webm');
         try {
-<<<<<<< HEAD
-          const res = await fetch('/api/v1/transcribe', { method: 'POST', body: fd });
-=======
           const res = await fetch(`${API_BASE}/transcribe`, { method: 'POST', body: fd });
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           const data = await res.json();
           if (data.text) setChatInput(data.text);
         } catch { /* silent */ }
@@ -539,8 +435,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     return () => window.removeEventListener('realtypals:ask-ai', handler);
   }, []);
 
-<<<<<<< HEAD
-=======
   // ── Sidebar "New Chat" button triggers reset via CustomEvent ──
   useEffect(() => {
     const handler = () => performResetRef.current();
@@ -548,7 +442,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     return () => window.removeEventListener('realtypals:new-chat', handler);
   }, []);
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const performReset = async () => {
     setChatHistory([]);
     setChatInput('');
@@ -560,8 +454,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setShowContextWarning(false);
     setIsSubmitting(false);
     setCarouselIndexes({});
-<<<<<<< HEAD
-=======
     setCurrentIntent(null);
     setLastShortlist([]);
     setSessionTitle(null);
@@ -570,16 +462,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setDetailProject(null);
     setExpandedShortlists(new Set());
     setRateLimitUntil(null);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     if (userId) {
       try {
         const res = await fetch(`${API_BASE}/chat/intent`, {
           method: 'DELETE',
-<<<<<<< HEAD
-          headers: { 'X-User-Id': userId },
-=======
           headers: await authHeaders(),
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         });
         const data = await res.json();
         if (data.session_id) setSessionId(data.session_id);
@@ -590,58 +479,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const welcomeMessage: ChatMessage = {
       id: crypto.randomUUID(),
       type: 'ai',
-<<<<<<< HEAD
-      content: "Hi! I'm RealtyPal — your AI advisor for Noida real estate. What are you looking for?",
-=======
       content: "Hi, I'm RealtyPal — your advisor for Noida & Greater Noida. Ask me anything: budgets in ₹ Lakh/Cr, RERA status, builder track records, or which sector fits your family. I'll give you straight answers, tradeoffs included.",
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       timestamp: new Date().toISOString(),
     };
     setChatHistory([welcomeMessage]);
     setIsInitialized(true);
-<<<<<<< HEAD
-  };
-
-  // Handle ?new=1
-  useEffect(() => {
-    if (searchParams.get('new') !== '1' || !userId) return;
-    (async () => {
-      await performReset();
-      router.replace('/discover');
-    })();
-  }, [searchParams, userId]);
-
-  // Initialize: fetch session from server and restore history
-  useEffect(() => {
-    if (!userId || isInitialized || searchParams.get('new') === '1') return;
-
-    (async () => {
-      try {
-        const sessionFromUrl = searchParams.get('session')
-        const sessionUrl = sessionFromUrl
-          ? `${API_BASE}/chat/session?id=${sessionFromUrl}`
-          : `${API_BASE}/chat/session`
-        const res = await fetch(sessionUrl, {
-          headers: { 'X-User-Id': userId },
-        });
-        if (!res.ok) throw new Error('session fetch failed');
-        const data = await res.json();
-
-        setSessionId(data.session_id);
-        // Clean up ?session= from URL without triggering a navigation
-        const urlSession = searchParams.get('session')
-        if (urlSession) {
-          lastRestoredSessionParamRef.current = urlSession
-          router.replace('/discover', { scroll: false });
-        }
-
-        // Restore chat phase
-        if (data.chat_phase === 'ADVISOR') {
-          setChatPhase('ADVISOR');
-        }
-
-        // Restore last property shortlist (re-surfaces cards after page reload / session resume)
-=======
     window.history.replaceState({}, '', '/discover');
   };
   performResetRef.current = performReset;
@@ -727,21 +570,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
         if (data.ui_state) setConversationState(data.ui_state);
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         if (Array.isArray(data.last_projects) && data.last_projects.length > 0) {
           setLastShortlist(data.last_projects);
           setShowRecommendations(true);
         }
 
         if (data.messages && data.messages.length > 0) {
-<<<<<<< HEAD
-          const restored: ChatMessage[] = data.messages.map((m: { id: string; role: string; content: string; created_at: string }) => ({
-            id: m.id,
-            type: m.role === 'user' ? 'user' : 'ai',
-            content: m.content,
-            timestamp: m.created_at,
-          }));
-=======
           type RawMessage = {
             id: string
             role: string
@@ -794,77 +629,19 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             restored
           });
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           setChatHistory(restored);
           setTimeout(() => scrollToBottom('instant'), 50);
         } else {
           setChatHistory([{
             id: crypto.randomUUID(),
             type: 'ai',
-<<<<<<< HEAD
-            content: "Hi! I'm RealtyPal — your AI advisor for Noida real estate. What are you looking for?",
-=======
             content: "Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.",
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             timestamp: new Date().toISOString(),
           }]);
         }
       } catch (err) {
-<<<<<<< HEAD
-        console.error('[session-restore] failed:', err);
-        const sessionFromUrl = searchParams.get('session');
-        if (sessionFromUrl) {
-          setRestoreError(true);
-        } else {
-          setChatHistory([{
-            id: crypto.randomUUID(),
-            type: 'ai',
-            content: "Hi! I'm RealtyPal — your AI advisor for Noida real estate. What are you looking for?",
-            timestamp: new Date().toISOString(),
-          }]);
-        }
-      } finally {
-        setIsInitialized(true);
-      }
-    })();
-  }, [userId, isInitialized, searchParams]);
-
-  // When user clicks a different session from sidebar while already initialized
-  useEffect(() => {
-    const urlSession = searchParams.get('session')
-    if (!userId || !isInitialized) return
-    if (!urlSession) return
-    if (urlSession === lastRestoredSessionParamRef.current) return
-    // Different session requested — reset state and trigger re-initialization
-    setChatHistory([])
-    setLastShortlist([])
-    setShowRecommendations(false)
-    setChatPhase('DISCOVERY')
-    setChatTurnCount(0)
-    setExpandedShortlists(new Set())
-    setIsInitialized(false)
-  }, [userId, isInitialized, searchParams])
-
-  // Pick up prefill query from compare page (sessionStorage)
-  useEffect(() => {
-    if (!isInitialized) return;
-    const prefill = sessionStorage.getItem('rp_prefill_chat');
-    if (prefill) {
-      sessionStorage.removeItem('rp_prefill_chat');
-      setTimeout(() => submitMessage(prefill), 200);
-    }
-  }, [isInitialized]);
-
-  // Expose reset function for Sidebar "New Chat"
-  useEffect(() => {
-    (window as any).__resetDiscoveryChat = async () => {
-      await performReset();
-    };
-    return () => {
-      delete (window as any).__resetDiscoveryChat;
-    };
-  }, [userId]);
-=======
         if (cancelled) return;
         console.error('[session-restore] failed:', err);
         setRestoreError(true);
@@ -925,7 +702,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatHistory])
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
   useEffect(() => {
     return () => {
@@ -933,16 +710,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     };
   }, []);
 
-<<<<<<< HEAD
-  const streamChat = useCallback(async (userText: string): Promise<void> => {
-    if (!userId || isSubmitting || submitLockRef.current) return;
-    submitLockRef.current = true;
-    setIsSubmitting(true);
-    userScrolledUp.current = false;
-    setChipPicker(null); // close any open picker
-
-    // Add user message
-=======
   const dispatchAction = useCallback((action: import('@/components/chat/types').ConversationAction): void => {
     if (!userId && !guestToken) {
       // Not authenticated — show sign-in prompt
@@ -960,31 +727,24 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const isText = action.type === 'TEXT_MESSAGE';
     const userText = isText ? (action.payload.text as string) : String(action.payload.label ?? action.type);
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       type: 'user',
       content: userText,
       timestamp: new Date().toISOString(),
     };
-<<<<<<< HEAD
-    setChatHistory(prev => [...prev, userMsg]);
-=======
-
     // Only add a user message bubble if it's an explicit text message or a selected chip that isn't a silent patch
     if (isText || action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
       setChatHistory(prev => [...prev, userMsg]);
     }
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     setChatTurnCount(c => c + 1);
     if (chatTurnCount === 0) track('chat_started', { session_id: sessionId })
     setChatInput('');
 
-<<<<<<< HEAD
-    // Add streaming placeholder AI message
-=======
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     const streamId = crypto.randomUUID();
     streamingMsgIdRef.current = streamId;
     setChatHistory(prev => [...prev, {
@@ -994,129 +754,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       isSearching: false,
       userQuery: userText,
       timestamp: new Date().toISOString(),
-<<<<<<< HEAD
-    }]);
-
-    try {
-      abortControllerRef.current?.abort();
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      const response = await fetch(`${API_BASE}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({ message: userText, session_id: sessionId }),
-        signal: controller.signal,
-      });
-
-      if (response.status === 429) {
-        const retryAfter = parseInt(response.headers.get('Retry-After') ?? '60', 10)
-        setRateLimitUntil(Date.now() + retryAfter * 1000)
-        setChatHistory(prev => prev.filter(m => m.id !== streamId))
-        return
-      }
-      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let localProjects: ProjectCardType[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let payload: any;
-          try { payload = JSON.parse(line.slice(6)); } catch { continue; }
-
-          if (payload.type === 'text') {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, content: m.content + payload.delta, isSearching: false }
-                : m
-            ));
-          } else if (payload.type === 'searching') {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId ? { ...m, isSearching: true, searchingTool: payload.tool ?? undefined, content: '' } : m
-            ));
-          } else if (payload.type === 'properties') {
-            // Cards arrive immediately after DB query — render before Groq writes text
-            const props = payload.data as ProjectCardType[];
-            localProjects = props;
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, isSearching: false, properties: props }
-                : m
-            ));
-            setLastShortlist(props);
-            setShowRecommendations(true);
-            track('recommendation_generated', { count: props.length, session_id: sessionId });
-          } else if (payload.type === 'error') {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, content: payload.message || 'Something went wrong. Please try again.', isSearching: false }
-                : m
-            ));
-          } else if (payload.type === 'done') {
-            const d = payload.data;
-            if (d.session_id) setSessionId(d.session_id);
-            if (d.chatPhase) setChatPhase(d.chatPhase);
-            if (d.missingDimension !== undefined) setMissingDimension(d.missingDimension);
-            // Use localProjects (not stale closure) to correctly detect comparison intent
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? {
-                    ...m,
-                    isSearching: false,
-                    showComparisonTable: (
-                      userText.toLowerCase().includes('compare') && localProjects.length >= 2
-                    ),
-                  }
-                : m
-            ));
-            setExpandedShortlists(new Set());
-          }
-        }
-      }
-
-      // Length warning
-      if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
-        setHasShownLengthWarning(true);
-        setShowContextWarning(true);
-      }
-
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') return;
-      const errorMsg = err instanceof Error ? err.message : '';
-      setChatHistory(prev => prev.map(m =>
-        m.id === streamId
-          ? { ...m, content: `Sorry, something went wrong. ${errorMsg ? `(${errorMsg})` : ''} Please try again.`, isSearching: false }
-          : m
-      ));
-    } finally {
-      streamingMsgIdRef.current = null;
-      setIsSubmitting(false);
-      submitLockRef.current = false;
-    }
-  }, [userId, isSubmitting, sessionId, chatTurnCount, hasShownLengthWarning]);
-
-  const handleChatSubmit = useCallback(async (e: React.FormEvent, textOverride?: string) => {
-    e.preventDefault();
-    const text = (textOverride ?? chatInput).trim();
-    if (!text) return;
-    await streamChat(text);
-  }, [chatInput, streamChat]);
-
-  // ── Regenerate: re-send the last user message ──
-  const handleRegenerate = useCallback(async (aiMsgIndex: number) => {
-=======
       streamingPhase: 'extracting',
       streamingIntent: null,
       streamingResultCount: null,
@@ -1312,15 +949,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
   // ── Regenerate: re-send the last user message ──
   const handleRegenerate = useCallback((aiMsgIndex: number) => {
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     let userMsg = '';
     for (let i = aiMsgIndex - 1; i >= 0; i--) {
       if (chatHistory[i].type === 'user') { userMsg = chatHistory[i].content; break; }
     }
-<<<<<<< HEAD
-    if (userMsg) await streamChat(userMsg);
-  }, [chatHistory, streamChat]);
-=======
     if (userMsg) dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: userMsg } });
   }, [chatHistory, dispatchAction]);
 
@@ -1422,7 +1055,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, [dispatchAction, lastShortlist.map(p => p.id).join(',')]);
 
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
   const stripMarkdown = (text: string): string => {
     return text
@@ -1437,34 +1070,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(stripMarkdown(text))
       .then(() => setToast({ message: 'Copied!' }))
-<<<<<<< HEAD
       .catch(() => {})
-  }, []);
-
-  const hasUserReplied = chatHistory.some((m) => m.type === 'user');
-
-  // Index of the last chat message that has property cards — only that one shows full grid
-  const lastPropertiesIndex = useMemo(() =>
-    chatHistory.reduce((last, msg, i) =>
-      (msg.properties && msg.properties.length > 0 ? i : last), -1
-    ), [chatHistory]);
-
-  // ── Submit a message programmatically (used by suggestion chips and advisor chips) ──
-  const submitMessage = useCallback((text: string) => {
-    streamChat(text);
-  }, [streamChat]);
-
-  const followUpChips = useMemo(
-    () => getFollowUpChips(missingDimension),
-    [missingDimension],
-  );
-
-  const suggestionChips = useMemo(() => {
-    const offset = sessionId ? (sessionId.charCodeAt(0) % WELCOME_CHIPS.length) : 0;
-    return WELCOME_CHIPS.slice(offset, Math.min(offset + 4, WELCOME_CHIPS.length));
-  }, [sessionId]);
-=======
-      .catch(() => { })
   }, []);
 
   const hasUserReplied = chatHistory.some((m) => m.type === 'user');
@@ -1503,9 +1109,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     return lastIdx;
   }, [chatHistory]);
 
-
-
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+  // ── Submit a message programmatically (used by suggestion chips and advisor chips) ──
+  const submitMessage = useCallback((text: string) => {
+    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text } });
+  }, [dispatchAction]);
 
   // ── Stable MessageBubble callbacks ──────────────────────────────────────────
   const handleToggleExpanded = useCallback((id: string) => {
@@ -1526,85 +1133,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const handleOpenCalculator = useCallback(() => setShowCalculator(true), [])
   const handleOpenShareSheet = useCallback(() => setShareSheetOpen(true), [])
 
-<<<<<<< HEAD
-  // ── Chat input form ──
-  const chatInputForm = (
-    <div className="w-full">
-      {rateLimitUntil && (
-        <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
-      )}
-      {isSubmitting && (
-        <div className="flex justify-end mb-2">
-          <button
-            type="button"
-            onClick={() => abortControllerRef.current?.abort()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-red-500 border border-gray-300 dark:border-gray-600 rounded-full transition-colors"
-          >
-            <span className="w-2 h-2 bg-current rounded-sm" />
-            Stop generating
-          </button>
-        </div>
-      )}
-      <div className="relative flex items-center gap-2">
-        {/* Reset / New Chat Button */}
-        <div id="new-chat-guide">
-          <button
-            onClick={performReset}
-            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95 group flex items-center justify-center"
-            title="Reset conversation"
-          >
-            <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
-          </button>
-        </div>
-
-        <div id="chat-input-guide" className="relative flex-1 group">
-          <PlaceholdersAndVanishInput
-            placeholders={
-              chatPhase === 'ADVISOR'
-                ? ['Ask anything about these properties...', 'Any risks associated?', 'Compare prices...']
-                : ["Tell me what you're looking for...", "Find me a 3 BHK in Sector 150...", "Show me properties under 2 Crores..."]
-            }
-            onChange={(e) => setChatInput(e.target.value)}
-            onSubmit={handleChatSubmit}
-            value={chatInput}
-          />
-        </div>
-
-        {/* Voice Input Button */}
-        <button
-          type="button"
-          onClick={toggleVoiceInput}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 touch-target-min ${isListening
-            ? 'text-red-500 animate-pulse scale-105 bg-red-100 dark:bg-red-900/40'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          title="Voice Input"
-        >
-          {isListening ? (
-            <div className="relative flex items-center justify-center">
-              <div className="absolute inset-0 -m-1 rounded-full bg-red-100 dark:bg-red-900/30 animate-ping opacity-50" />
-              <Mic size={18} className="relative text-red-500 fill-current" />
-            </div>
-          ) : (
-            <Mic size={18} className="text-gray-500 dark:text-gray-400" />
-          )}
-        </button>
-
-        {/* Help / Guide Button */}
-        <div id="help-guide">
-          <VisualGuide />
-        </div>
-      </div>
-      {isListening && (
-        <div className="flex items-center justify-center gap-2 mt-3">
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-          <span className="text-xs text-red-500 font-medium">Listening... Speak now</span>
-        </div>
-      )}
-      <p className="text-xs text-gray-500 mt-2 text-center">
-        AI can make mistakes. Verify Critical property details.
-      </p>
-=======
   // ── Floating Chat Input Bar (LobeHub Style) ──
   const chatInputForm = (
     <div className={`relative w-full transition-all duration-300 ${isInputMinimized ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
@@ -1683,53 +1211,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         </div>
 
       </div>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     </div>
   );
 
   return (
     <div
-<<<<<<< HEAD
-      className="flex-1 flex flex-col min-h-0 bg-transparent dark:bg-gray-900 overflow-hidden"
-      style={isMobile ? { height: viewportHeight } : undefined}
-    >
-      <Header title="RealtyPal Intelligence Engine™" onToast={(msg: string) => setToast({ message: msg })} />
-
-      {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}
-      <div className={`flex-1 flex flex-col min-h-0 overflow-hidden relative z-10 ${!hasUserReplied ? 'justify-center' : ''}`}>
-
-        {/* Static gradient background — no animation = no repaints */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[5%] left-[15%] w-[500px] h-[500px] bg-blue-400/15 dark:bg-blue-600/8 blur-[160px] rounded-full" />
-          <div className="absolute top-[45%] right-[5%] w-[550px] h-[550px] bg-indigo-400/10 dark:bg-purple-600/8 blur-[180px] rounded-full" />
-          <div className="absolute bottom-[0%] left-[35%] w-[400px] h-[400px] bg-teal-400/8 dark:bg-teal-600/8 blur-[140px] rounded-full" />
-        </div>
-
-        {!hasUserReplied ? (
-          /* Welcome screen */
-          <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative z-10">
-            <div className="text-center mb-10 max-w-lg">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl glass-surface border border-white/50 dark:border-white/10 flex items-center justify-center shadow-lg overflow-hidden">
-                <Image src="/images/logo/realtypals.png" alt="RealtyPal" width={44} height={44} />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
-                Find your perfect property
-              </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-base">
-                Ask me anything about real estate across India — or pick a suggestion to start.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md w-full mb-10">
-              {suggestionChips.map((chip) => (
-                <button
-                  key={chip.label}
-                  type="button"
-                  onClick={() => submitMessage(chip.msg)}
-                  className="px-4 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:border-violet-200 dark:hover:border-violet-700 hover:text-violet-700 dark:hover:text-violet-400 transition-all text-left shadow-sm font-medium"
-                >
-                  {chip.emoji} {chip.label}
-=======
       className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
@@ -1870,27 +1357,17 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 >
                   <span className="text-[14px]">{chip.icon}</span>
                   <span>{chip.label}</span>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
                 </button>
               ))}
             </div>
 
-<<<<<<< HEAD
-            <div className="w-full max-w-2xl">
-=======
             <div className="w-full max-w-[880px]">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
               {chatInputForm}
             </div>
           </div>
         ) : (
           /* Feed layout */
-<<<<<<< HEAD
-          <>
-            <div
-              ref={chatContainerRef}
-              className="flex-1 h-full min-h-0 overflow-y-auto px-4 md:px-8 pt-6 pb-36 relative z-10"
-=======
+
           <div className="flex flex-col w-full h-full relative">
             <div
               ref={chatContainerRef}
@@ -1899,78 +1376,20 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               aria-relevant="additions text"
               aria-label="Conversation with RealtyPal advisor"
               className="flex-1 w-full h-full overflow-y-auto px-4 md:px-8 pt-6 pb-32 relative z-10"
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
               onScroll={(e) => {
                 const el = e.currentTarget;
                 userScrolledUp.current = (el.scrollHeight - el.scrollTop - el.clientHeight) > 100;
               }}
             >
-<<<<<<< HEAD
-              <div className="max-w-4xl mx-auto space-y-6">
-                {restoreError && (
-                  <div className="flex flex-col items-center justify-center flex-1 gap-4 p-8 text-center">
-                    <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                      <AlertTriangle size={24} className="text-red-500" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Could not load chat</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">This session may have expired or been deleted.</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setRestoreError(false);
-                        setIsInitialized(false);
-                      }}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      Start new chat
-                    </button>
-                  </div>
-                )}
-=======
               <div className="max-w-[880px] mx-auto space-y-6">
                 {/* ReEngagementBanner moved to chat input area */}
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                 {showContextWarning && (
                   <div className="mx-auto max-w-lg px-4 py-2 my-2 text-xs text-center text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     Long conversation detected. Start a new chat for the best AI responses.
                   </div>
                 )}
-<<<<<<< HEAD
-                {chatHistory.map((message, index) => (
-                  <MessageBubble
-                    key={message.id}
-                    message={message}
-                    index={index}
-                    isLast={index === chatHistory.length - 1}
-                    isSubmitting={isSubmitting}
-                    chatPhase={chatPhase}
-                    isLastProperties={index === lastPropertiesIndex}
-                    isExpanded={expandedShortlists.has(message.id)}
-                    carouselIndex={carouselIndexes[index] ?? 0}
-                    lastShortlist={lastShortlist}
-                    showMap={showMap}
-                    userId={userId}
-                    regeneratingIdx={regeneratingIdx}
-                    chipPicker={chipPicker}
-                    followUpChips={followUpChips}
-                    onCopy={handleCopy}
-                    onDetailOpen={openDetailProject}
-                    onCallback={setCallbackProject}
-                    onRegenerate={handleRegenerate}
-                    onSubmitMessage={submitMessage}
-                    onToggleExpanded={handleToggleExpanded}
-                    onToggleMap={handleToggleMap}
-                    onSetChipPicker={setChipPicker}
-                    onSetCarouselIndex={handleSetCarouselIndex}
-                    onSetSiteVisit={setSiteVisitProject}
-                    onOpenCalculator={handleOpenCalculator}
-                    onOpenShareSheet={handleOpenShareSheet}
-                    onToast={handleToast}
-                  />
-                ))}
-=======
-
                 {chatHistory.length > visibleCount && (
                   <div className="text-center py-2">
                     <button
@@ -2019,7 +1438,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   );
                 })}
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
                 <div ref={chatEndRef} />
               </div>
@@ -2061,20 +1480,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               )}
             </div>
 
-<<<<<<< HEAD
-            {/* Frosted glass input bar — absolute so it sits flush at the container bottom */}
-            <AnimatePresence initial={false}>
-              {!isInputMinimized && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className={`absolute bottom-0 left-0 right-0 w-full z-10 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 dark:to-transparent pt-10 pb-4 ${keyboardOpen ? 'pb-safe' : ''}`}
-                  style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
-                >
-                  <div className="px-4 md:px-8 max-w-4xl mx-auto flex flex-col justify-center w-full">
-=======
             {/* (View on Map Toggle moved to MessageBubble) */}
 
             {/* Stable flex-bottom input island */}
@@ -2089,17 +1494,14 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
                 >
                   <div className="px-4 w-full max-w-[880px] flex flex-col justify-center pointer-events-auto">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                     {chatInputForm}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-<<<<<<< HEAD
-          </>
-=======
           </div>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         )}
       </div>
 
@@ -2118,11 +1520,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       )}
 
       {/* ── Site Visit Scheduler modal ── */}
-<<<<<<< HEAD
-      <AnimatePresence>
-=======
       <AnimatePresence mode="wait">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         {siteVisitProject && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -2150,11 +1549,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       </AnimatePresence>
 
       {/* ── Callback request modal ── */}
-<<<<<<< HEAD
-      <AnimatePresence>
-=======
       <AnimatePresence mode="wait">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         {callbackProject && !callbackDone && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -2208,18 +1604,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 disabled={!callbackForm.name.trim() || callbackForm.phone.trim().length < 10 || callbackSubmitting}
                 onClick={async () => {
                   setCallbackSubmitting(true)
-<<<<<<< HEAD
-                  try {
-                    await fetch(`${API_BASE}/callback`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-=======
                   setCallbackError(null)
                   try {
                     const res = await fetch(`${API_BASE}/leads/callback`, {
                       method: 'POST',
                       headers: await authHeaders({ 'Content-Type': 'application/json' }),
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                       body: JSON.stringify({
                         name: callbackForm.name.trim(),
                         phone: callbackForm.phone.trim(),
@@ -2228,10 +1618,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                         project_name: callbackProject.name,
                       }),
                     })
-<<<<<<< HEAD
-                    setCallbackDone(true)
-                  } catch { /* silent */ } finally {
-=======
                     if (!res.ok) throw new Error('callback request failed')
                     track('callback_requested', { project_slug: callbackProject.slug, project_name: callbackProject.name })
                     track('lead_created', { type: 'callback', project_slug: callbackProject.slug })
@@ -2240,7 +1626,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                     // Never show a fake success — surface the failure so the lead isn't silently lost.
                     setCallbackError('Could not send your request. Please check your number and try again.')
                   } finally {
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                     setCallbackSubmitting(false)
                   }
                 }}
@@ -2248,14 +1634,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               >
                 {callbackSubmitting ? 'Sending...' : '📞 Request Callback'}
               </button>
-<<<<<<< HEAD
-              <p className="text-[11px] text-gray-400 text-center mt-2">We&apos;ll call within 2 hours · Business hours only</p>
-=======
               {callbackError && (
                 <p className="text-[12px] text-red-500 text-center mt-2" role="alert">{callbackError}</p>
               )}
               <p className="text-[11px] text-gray-400 text-center mt-2">We&apos;ll call the same business day</p>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             </motion.div>
           </motion.div>
         )}
@@ -2271,11 +1654,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       )}
 
       {/* ── Share shortlist sheet ── */}
-<<<<<<< HEAD
-      <AnimatePresence>
-=======
       <AnimatePresence mode="wait">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         {shareSheetOpen && lastShortlist.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -2318,11 +1698,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 py-3.5 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl text-sm transition-colors"
                   >
-<<<<<<< HEAD
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-=======
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                     Share on WhatsApp
                   </a>
                 )}

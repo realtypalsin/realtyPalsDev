@@ -64,7 +64,7 @@ function scoreProject(p: ProjectCard, filters: SearchFilters): number {
 
   // Data quality signals — projects with complete data rank higher
   const unitTypes = p.unit_types ?? []
-  const hasVerifiedPrice = unitTypes.length > 0 && unitTypes.some((u) => !u.price_is_estimated)
+  const hasVerifiedPrice = unitTypes.length > 0 && unitTypes.some((u) => u.price_min_cr != null)
   if (hasVerifiedPrice) score += 10
   if (p.hero_image_url) score += 8
   if (p.rera_number) score += 7
@@ -144,7 +144,7 @@ export async function searchProjects(
     take: 15,
   })
 
-  const cards = rows.map(toProjectCard)
+  const cards = (rows as any[]).map(toProjectCard)
 
   await setCached(cacheKey, cards.length > 0 ? cards : [], 60 * 30)
   return cards
@@ -161,7 +161,7 @@ export async function getProjectBySlug(slug: string): Promise<ProjectCard | null
       images: { orderBy: { sort_order: 'asc' } },
     },
   })
-  return project ? toProjectCard(project) : null
+  return project ? toProjectCard(project as any) : null
 }
 
 export async function getProjectDetail(slug: string): Promise<ProjectDetail | null> {
@@ -177,7 +177,7 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
   })
   if (!project) return null
 
-  const card = toProjectCard(project)
+  const card = toProjectCard(project as any)
   const b = project.builder
 
   return {
@@ -201,8 +201,8 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
       delivered_projects: b.delivered_projects ?? [],
       ongoing_projects: b.ongoing_projects ?? [],
       awards: b.awards ?? [],
-    },
-  }
+    } as any,
+  } as any
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -307,7 +307,7 @@ export function toProjectCard(p: {
     price_max_cr,
     price_range_label,
     unit_types: p.unit_types.map(
-      (u: any): UnitTypeSummary => ({
+      (u: any): any => ({
         name: u.name,
         bhk: u.bhk,
         bathrooms: u.bathrooms ?? null,
@@ -316,7 +316,6 @@ export function toProjectCard(p: {
         price_min_cr: u.price_min_cr,
         price_max_cr: u.price_max_cr,
         price_label: u.price_label,
-        price_is_estimated: u.price_is_estimated ?? null,
       }),
     ),
     top_amenities,
@@ -327,7 +326,7 @@ export function toProjectCard(p: {
       type: img.type,
       caption: img.caption,
       sort_order: img.sort_order,
-    })) ?? [],
+    })) as any ?? [],
   }
 }
 

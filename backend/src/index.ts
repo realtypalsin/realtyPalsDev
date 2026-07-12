@@ -1,32 +1,4 @@
 import 'dotenv/config'
-<<<<<<< HEAD
-import express from 'express'
-import cors from 'cors'
-import { env } from './lib/env'
-import healthRouter from './routes/health'
-import leadsRouter from './routes/leads'
-
-const app = express()
-
-app.use(cors({
-  origin: [env.FRONTEND_URL, 'http://localhost:3000'],
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'x-webhook-secret'],
-}))
-
-app.use(express.json({ limit: '50kb' }))
-
-app.use(healthRouter)
-app.use(leadsRouter)
-
-// 404
-app.use((_req, res) => {
-  res.status(404).json({ error: 'Not found' })
-})
-
-app.listen(env.PORT, () => {
-  console.log(`[server] RealtyPals backend running on port ${env.PORT} (${env.NODE_ENV})`)
-=======
 import 'express-async-errors'
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
@@ -50,6 +22,7 @@ import transcribeRouter from './routes/transcribe'
 import documentsRouter from './routes/documents'
 import registryPricesRouter from './routes/registryPrices'
 import builderRegistrationRouter from './routes/builderRegistration'
+import builderApplicationsRouter from './routes/builderApplications'
 
 // Synchronous env assertions — must run before any async work or app setup.
 for (const key of ['ADMIN_PASSWORD', 'DATABASE_URL'] as const) {
@@ -127,6 +100,7 @@ app.use('/api/v1/transcribe', transcribeRouter)
 app.use('/api/v1/documents', documentsRouter)
 app.use('/api/v1/registry-prices', registryPricesRouter)
 app.use('/api/v1/builder-registration', builderRegistrationRouter)
+app.use('/api/v1/builder-applications', builderApplicationsRouter)
 
 // Global error handler — catches any error passed to next(err) or thrown in an
 // async route (via express-async-errors). Must be registered after all routes.
@@ -214,5 +188,4 @@ async function startup() {
 startup().catch((err) => {
   console.error('[startup] unhandled error:', err)
   process.exit(1)
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 })

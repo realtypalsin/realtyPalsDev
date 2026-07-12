@@ -118,6 +118,22 @@ export default function AnalyticsDashboard() {
         </button>
       </div>
 
+      {/* Top Navigation Tabs */}
+      <div className="flex items-center gap-3 overflow-x-auto sticky top-4 z-40 py-2 px-2 bg-white/70 backdrop-blur-xl border border-gray-200/50 shadow-sm rounded-full w-fit mx-auto sm:mx-0 mb-6">
+        <Link href="/admin/analytics" className="px-4 py-2 text-sm font-semibold rounded-full bg-slate-900 text-white shadow-sm shrink-0">
+          Dashboard
+        </Link>
+        <Link href="/admin/analytics/search" className="px-4 py-2 text-sm font-medium rounded-full bg-white text-slate-600 hover:bg-slate-50 border border-gray-200 transition-colors shrink-0">
+          Search Analytics
+        </Link>
+        <Link href="/admin/analytics/properties" className="px-4 py-2 text-sm font-medium rounded-full bg-white text-slate-600 hover:bg-slate-50 border border-gray-200 transition-colors shrink-0">
+          Property Engagement
+        </Link>
+        <Link href="/admin/analytics/users" className="px-4 py-2 text-sm font-medium rounded-full bg-white text-slate-600 hover:bg-slate-50 border border-gray-200 transition-colors shrink-0">
+          User Behavior
+        </Link>
+      </div>
+
       {/* KPI Row */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -205,7 +221,16 @@ export default function AnalyticsDashboard() {
 
         {/* Conversion Funnel */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Conversion Funnel</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-semibold text-slate-900">Conversion Funnel</h2>
+            <div className="group relative">
+              <AlertCircle size={16} className="text-slate-400 cursor-help" />
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-slate-900 text-white text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 text-center shadow-xl">
+                This shows the user journey from starting a Chat, searching, clicking a property, saving it, and ultimately converting to a Lead.
+                <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-slate-900"></div>
+              </div>
+            </div>
+          </div>
           {funnelData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={funnelData}>
@@ -228,7 +253,16 @@ export default function AnalyticsDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Results Distribution */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Search Results Distribution</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-semibold text-slate-900">Search Results Distribution</h2>
+            <div className="group relative">
+              <AlertCircle size={16} className="text-slate-400 cursor-help" />
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-slate-900 text-white text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 text-center shadow-xl">
+                The proportion of searches that successfully found matching properties versus those that returned zero results.
+                <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-slate-900"></div>
+              </div>
+            </div>
+          </div>
           {resultDistribution.length > 0 && quality && (quality.searchWithResults || quality.searchWithoutResults) > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -267,11 +301,11 @@ export default function AnalyticsDashboard() {
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-sm text-slate-600">Avg Results Per Search</span>
-                <span className="font-semibold text-slate-900">{quality.avgResultsCount.toFixed(1)}</span>
+                <span className="font-semibold text-slate-900">{quality.avgResultsCount}</span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-sm text-slate-600">Avg Clarifications</span>
-                <span className="font-semibold text-slate-900">{quality.avgClarifications.toFixed(2)}</span>
+                <span className="font-semibold text-slate-900">{quality.avgClarifications}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">Zero-Result Rate</span>

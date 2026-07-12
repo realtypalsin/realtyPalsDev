@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Clock, XCircle, Search, Building2, User, Phone, Mail } from 'lucide-react'
+import { CheckCircle2, Clock, XCircle, Search, Building2, Phone, Mail } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import { toast } from 'sonner'
@@ -28,7 +28,7 @@ export default function BuilderApplicationsPage() {
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
       setApplications(data.applications || [])
-    } catch (err) {
+    } catch {
       toast.error('Failed to load applications')
     } finally {
       setLoading(false)
@@ -47,7 +47,7 @@ export default function BuilderApplicationsPage() {
       if (!res.ok) throw new Error('Update failed')
       toast.success(`Application marked as ${newStatus}`)
       load()
-    } catch (err) {
+    } catch {
       toast.error('Failed to update status')
     }
   }

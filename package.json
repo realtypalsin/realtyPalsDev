@@ -1,19 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "realtypals-root",
-  "private": true,
-  "scripts": {
-    "dev": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build",
-    "db:studio": "cd frontend && npx prisma studio",
-    "db:migrate": "cd frontend && npx prisma migrate dev",
-    "db:push": "cd frontend && npx prisma db push",
-    "db:generate": "cd frontend && npx prisma generate",
-    "db:seed": "cd frontend && npm run db:seed"
-  },
-  "devDependencies": {
-    "prisma": "^5.22.0"
-=======
   "name": "realtypals-monorepo",
   "private": true,
   "workspaces": [
@@ -23,10 +8,16 @@
   "scripts": {
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "db:studio": "cd frontend && npx prisma studio",
+    "db:migrate": "cd frontend && npx prisma migrate dev",
+    "db:push": "cd frontend && npx prisma db push",
+    "db:generate": "cd frontend && npx prisma generate",
+    "db:seed": "cd frontend && npm run db:seed"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0"
+    "concurrently": "^9.1.0",
+    "prisma": "^5.22.0"
   },
   "dependencies": {
     "baseline-browser-mapping": "^2.10.33",
@@ -35,6 +26,5 @@
   "overrides": {
     "react": "18.3.1",
     "react-dom": "18.3.1"
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   }
 }

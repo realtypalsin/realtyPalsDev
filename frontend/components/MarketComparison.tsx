@@ -1,12 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-<<<<<<< HEAD
-import { BarChart3, Loader2 } from 'lucide-react'
-=======
 import { TrendingUp, BarChart3, Loader2, Building2, MapPin, ArrowUpRight } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts'
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 import { API_BASE } from '@/lib/env'
 
 interface ComparisonData {
@@ -23,13 +20,8 @@ interface ComparisonData {
 interface Props {
   sector: string
   city?: string
-<<<<<<< HEAD
-  /** Project's own price per sqft to highlight on chart */
-  projectPriceSqft?: number | null
-  projectName?: string
-=======
   currentPriceSqft?: number
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 }
 
 function statusLabel(s: string): string {
@@ -43,24 +35,16 @@ function statusLabel(s: string): string {
 
 function statusColor(s: string): string {
   const map: Record<string, string> = {
-<<<<<<< HEAD
-    under_construction: 'bg-amber-400',
-    ready_to_move:      'bg-green-400',
-    new_launch:         'bg-blue-400',
-=======
     under_construction: 'bg-amber-500',
     ready_to_move:      'bg-emerald-500',
     new_launch:         'bg-blue-500',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   }
   return map[s] ?? 'bg-gray-400'
 }
 
-<<<<<<< HEAD
-export default function MarketComparison({ sector, city = 'Noida', projectPriceSqft, projectName }: Props) {
-=======
 export default function MarketComparison({ sector, city = 'Noida', currentPriceSqft }: Props) {
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const [data, setData] = useState<ComparisonData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -75,70 +59,14 @@ export default function MarketComparison({ sector, city = 'Noida', currentPriceS
 
   if (loading) {
     return (
-<<<<<<< HEAD
-      <div className="flex items-center gap-2 py-4">
-        <Loader2 size={14} className="animate-spin text-gray-400" />
-        <span className="text-xs text-gray-400">Loading market data...</span>
-=======
       <div className="flex items-center justify-center gap-3 py-12 bg-white rounded-3xl border border-gray-100 shadow-sm">
         <Loader2 size={18} className="animate-spin text-blue-500" />
         <span className="text-[13px] text-gray-500 font-medium">Analyzing sector market dynamics...</span>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       </div>
     )
   }
 
-<<<<<<< HEAD
-  if (!data) return <p className="text-xs text-gray-400 py-2">No market data available for {sector}.</p>
-
-  const priceComparison = projectPriceSqft && data.avg_price_sqft
-    ? ((projectPriceSqft - data.avg_price_sqft) / data.avg_price_sqft) * 100
-    : null
-
-  return (
-    <div className="space-y-4">
-      {/* Price comparison bar */}
-      {data.avg_price_sqft && (
-        <div className="bg-gray-50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <BarChart3 size={14} className="text-blue-500" />
-            <span className="text-xs font-semibold text-gray-700">{sector} Sector Price Range</span>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between text-[10px] text-gray-500">
-              <span>Min: ₹{data.min_price_sqft?.toLocaleString()}/sqft</span>
-              <span>Max: ₹{data.max_price_sqft?.toLocaleString()}/sqft</span>
-            </div>
-            <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
-              <div className="absolute inset-y-0 left-0 right-0 bg-gradient-to-r from-green-300 via-blue-400 to-purple-400 rounded-full" />
-              {/* Avg marker */}
-              {data.min_price_sqft && data.max_price_sqft && (
-                <>
-                  <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-white"
-                    style={{
-                      left: `${((data.avg_price_sqft - data.min_price_sqft) / (data.max_price_sqft - data.min_price_sqft)) * 100}%`
-                    }}
-                  />
-                  {projectPriceSqft && (
-                    <div
-                      className="absolute top-0 bottom-0 w-1 bg-yellow-400 rounded"
-                      style={{
-                        left: `${Math.min(100, Math.max(0, ((projectPriceSqft - data.min_price_sqft) / (data.max_price_sqft - data.min_price_sqft)) * 100))}%`
-                      }}
-                    />
-                  )}
-                </>
-              )}
-            </div>
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="text-gray-500">Sector avg: <strong className="text-gray-700">₹{data.avg_price_sqft.toLocaleString()}/sqft</strong></span>
-              {priceComparison !== null && (
-                <span className={`font-bold ${priceComparison > 10 ? 'text-red-500' : priceComparison < -10 ? 'text-green-500' : 'text-amber-500'}`}>
-                  {projectName}: {priceComparison > 0 ? '+' : ''}{priceComparison.toFixed(0)}% vs avg
-                </span>
-              )}
-=======
   if (!data) return <p className="text-xs text-gray-400 py-2">No market data available for Sector {sector}.</p>
 
   // Calculate percentages for indicators
@@ -281,52 +209,12 @@ export default function MarketComparison({ sector, city = 'Noida', currentPriceS
             <div className="text-right">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em]">Sector Max</p>
               <p className="text-[14px] font-black text-gray-900 dark:text-white mt-0.5">₹{max.toLocaleString()}/sqft</p>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             </div>
           </div>
         </div>
       )}
 
-<<<<<<< HEAD
-      {/* Status breakdown */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gray-50 rounded-xl p-3">
-          <p className="text-[9px] text-gray-400 uppercase font-semibold mb-2">{data.project_count} Projects in Sector</p>
-          <div className="space-y-1.5">
-            {Object.entries(data.status_breakdown).map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <div className={`w-2 h-2 rounded-sm ${statusColor(k)}`} />
-                  <span className="text-[10px] text-gray-600">{statusLabel(k)}</span>
-                </div>
-                <span className="text-[10px] font-bold text-gray-700">{v}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3">
-          <p className="text-[9px] text-gray-400 uppercase font-semibold mb-2">Unit Mix</p>
-          <div className="space-y-1.5">
-            {Object.entries(data.bhk_distribution)
-              .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-              .map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between">
-                <span className="text-[10px] text-gray-600">{k}</span>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-400 rounded-full"
-                      style={{ width: `${(v / Math.max(...Object.values(data.bhk_distribution))) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold text-gray-700 w-4 text-right">{v}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-=======
       {/* Stats breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {data.status_breakdown && (
@@ -369,7 +257,7 @@ export default function MarketComparison({ sector, city = 'Noida', currentPriceS
             </div>
           </div>
         )}
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       </div>
     </div>
   )

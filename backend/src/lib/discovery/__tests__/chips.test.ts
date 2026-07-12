@@ -15,6 +15,8 @@ const mockInventory: ChipInventory = {
     { label: 'Under ₹1.1 Cr', min: 0, max: 1.1 },
     { label: '₹1.1–1.9 Cr', min: 1.1, max: 1.9 },
   ],
+  city: 'Noida',
+  cachedAt: new Date(),
 }
 
 // Mock projects
@@ -32,6 +34,8 @@ const mockProjects: ScoredProject[] = [
     top_amenities: [],
     top_connectivity: [],
     images: [],
+    possession_date: null,
+    marketing_claims: [],
     matchScore: 95,
     matchReason: 'Budget + BHK match',
     matchReasons: ['3 BHK', 'Under ₹2Cr'],
@@ -196,9 +200,9 @@ describe('Chips: Adaptive & Predictive', () => {
   describe('Chips: Predict Next Step', () => {
     it('suggests logical next action based on stage', () => {
       const scenarios = [
-        { stage: 'CLARIFYING' as const, expects: 'missing field suggestions' },
-        { stage: 'RESEARCH' as const, expects: 'compare/analyze actions' },
-        { stage: 'DECIDING' as const, expects: 'booking/contact actions' },
+        { stage: 'GATHERING' as const, expects: 'missing field suggestions' },
+        { stage: 'READY_TO_SEARCH' as const, expects: 'compare/analyze actions' },
+        { stage: 'SHORTLISTED' as const, expects: 'booking/contact actions' },
       ]
 
       for (const scenario of scenarios) {

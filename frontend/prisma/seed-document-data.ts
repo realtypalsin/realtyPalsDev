@@ -121,19 +121,18 @@ async function seedDocumentData() {
           name: doc.category.name,
           doc_type: doc.category.category_icon_name,
           storage_url: `/documents/${doc.file_name}`,
-          file_size_bytes: 2500000,
         }
       })
       console.log(`Added ProjectDocument database entry: ${doc.category.name}`)
     }
 
     // 3. Upsert DecisionProfile and save advanced intelligence metadata (documents + checks)
-    const decisionProfile = await prisma.decisionProfile.findUnique({
+    const decisionProfile = await (prisma as any).decisionProfile.findUnique({
       where: { project_id: actualProjectId }
     })
 
     if (!decisionProfile) {
-      await prisma.decisionProfile.create({
+      await (prisma as any).decisionProfile.create({
         data: {
           project_id: actualProjectId,
           intelligence_data: {
@@ -152,7 +151,7 @@ async function seedDocumentData() {
         transparency_checks: inputData.transparency_checks
       }
 
-      await prisma.decisionProfile.update({
+      await (prisma as any).decisionProfile.update({
         where: { project_id: actualProjectId },
         data: {
           intelligence_data: mergedData

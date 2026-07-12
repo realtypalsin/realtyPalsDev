@@ -31,12 +31,25 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
   const freshProjectLookup =
     (update.projectNames?.length ?? 0) > 0 && update.sector === undefined
 
+  // If the user specifies a brand new sector and nothing else (e.g. "what about sector 75?")
+  // we want to ensure we don't accidentally constrain it to highly specific previous filters
+  // unless explicitly provided in the new query.
+  const isSectorSwitch = update.sector && previous.sector && update.sector !== previous.sector
+  
   const result = {
     ...previous,
     projectNames: undefined,           // reset — only populated if this turn names projects
     is_comparison_query: undefined,    // reset — only populated if this turn is a compare request
     // Only clear sector/lifestyle if this is a TRULY fresh lookup (no prior context)
     ...(freshProjectLookup && !previous.sector ? { lifestyleKeywords: undefined } : {}),
+    ...(isSectorSwitch ? { 
+        bhk: undefined, 
+        budgetMin: undefined, 
+        budgetMax: undefined, 
+        lifestyleKeywords: undefined,
+        areaMin: undefined,
+        areaMax: undefined
+    } : {}),
     ...Object.fromEntries(Object.entries(update).filter(([, v]) => v !== undefined)),
   } as Intent
 

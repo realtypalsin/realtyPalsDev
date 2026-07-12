@@ -153,8 +153,8 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
   const chips: ChipAction[] = []
   const sectorGroup: ChipGroup = { id: 'popular_sectors', label: `Popular sectors in ${inventory.city}`, order: 0, emphasis: 'primary' }
 
-  // Top sectors by project count
-  for (const { sector, projectCount } of inventory.sectors.slice(0, 3)) {
+  // Top sectors by project count (Max 2)
+  for (const { sector, projectCount } of inventory.sectors.slice(0, 2)) {
     chips.push(chip(
       `discovery_sector_${sector.replace(/\s+/g, '_').toLowerCase()}`,
       'INTENT_PATCH',
@@ -166,9 +166,9 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
     ))
   }
 
-  // Budget buckets
+  // Budget buckets (Max 1)
   const budgetGroup: ChipGroup = { id: 'budget_buckets', label: 'Budget ranges', order: 1, emphasis: 'secondary' }
-  for (let i = 0; i < Math.min(3, inventory.budgetBuckets.length); i++) {
+  for (let i = 0; i < Math.min(1, inventory.budgetBuckets.length); i++) {
     const bucket = inventory.budgetBuckets[i]
     const budgetMax = bucket.max || 10
     chips.push(chip(
@@ -182,9 +182,9 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
     ))
   }
 
-  // BHK options
+  // BHK options (Max 1)
   const bhkGroup: ChipGroup = { id: 'bhk_options', label: 'BHK', order: 2, emphasis: 'tertiary' }
-  for (const bhk of inventory.bhkOptions) {
+  for (const bhk of inventory.bhkOptions.slice(0, 1)) {
     chips.push(chip(
       `discovery_bhk_${bhk}`,
       'INTENT_PATCH',

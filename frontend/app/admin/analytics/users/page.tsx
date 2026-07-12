@@ -5,7 +5,12 @@ import Link from 'next/link'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+  ResponsiveContainer, Cell
+} from 'recharts'
+
+const PALETTE = ['#002663', '#00509E', '#0077C8', '#60A3D9', '#9ED3F2']
 
 interface UserMetrics {
   totalUsers: number
@@ -75,6 +80,22 @@ export default function UsersAnalytics() {
         </button>
       </div>
 
+      {/* Top Navigation Tabs */}
+      <div className="flex items-center gap-3 overflow-x-auto pb-2 border-b border-gray-100">
+        <Link href="/admin/analytics" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          Dashboard
+        </Link>
+        <Link href="/admin/analytics/search" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          Search Analytics
+        </Link>
+        <Link href="/admin/analytics/properties" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          Property Engagement
+        </Link>
+        <Link href="/admin/analytics/users" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-slate-900 text-white shadow-sm whitespace-nowrap">
+          User Behavior
+        </Link>
+      </div>
+
       {/* KPI Row */}
       {data ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -88,7 +109,7 @@ export default function UsersAnalytics() {
           </div>
           <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
             <p className="text-sm text-slate-600 font-medium">Avg Searches/User</p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">{data.avgQueriesPerUser.toFixed(1)}</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">{(data.avgQueriesPerUser || 0).toFixed(1)}</p>
           </div>
           <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
             <p className="text-sm text-slate-600 font-medium">Total Conversions</p>
@@ -110,7 +131,11 @@ export default function UsersAnalytics() {
                 <RechartsTooltip
                   contentStyle={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}
                 />
-                <Bar dataKey="value" fill="#10B981" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="value" fill="#00509E" radius={[8, 8, 0, 0]}>
+                  {funnelData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PALETTE[index % PALETTE.length]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -136,7 +161,7 @@ export default function UsersAnalytics() {
         </div>
       </div>
 
-      {/* Funnel Details */}
+      {/* Overview Stats */}
       <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Funnel Details</h2>
         {data?.conversionFunnel ? (

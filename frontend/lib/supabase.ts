@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-import { createBrowserClient } from '@supabase/ssr'
-
-export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  // Support both new publishable key and legacy anon key formats
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-    ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  return createBrowserClient(url, key)
-=======
 import type { createBrowserClient } from '@supabase/ssr'
 
 type SupabaseBrowserClient = ReturnType<typeof createBrowserClient>
@@ -31,5 +21,5 @@ export function getSupabaseClient(): Promise<SupabaseBrowserClient> {
     })
   }
   return clientPromise
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 }

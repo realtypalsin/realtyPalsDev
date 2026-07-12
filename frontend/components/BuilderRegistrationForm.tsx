@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, Upload, CheckCircle2, Plus, X, ArrowLeft, ArrowRight, Globe } from 'lucide-react'
+import { Loader2, Upload, CheckCircle2, Plus, X, ArrowLeft, ArrowRight, Globe, Info } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Toast from './Toast'
 import Image from 'next/image'
@@ -127,9 +127,47 @@ export default function BuilderRegistrationForm() {
     )
   }
 
-  // Refined input classes for that Emil Kowalski / Linear feel
+  const [infoTooltip, setInfoTooltip] = useState<string | null>(null)
+  
+  // Validation helpers
+  const cinRegex = /^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/i
+  const phoneRegex = /^\+91\d{10}$/
+  const landlineRegex = /^0\d{2,4}-\d{6,8}$/
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  const getInputStyle = (val: string, regex?: RegExp) => {
+    const base = "w-full bg-white text-zinc-900 text-[14px] px-3.5 py-2.5 rounded-[12px] outline-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] focus:ring-[3px] transition-all placeholder:text-zinc-400 border "
+    if (!val || !regex) return base + "border-black/10 focus:border-blue-500 focus:ring-blue-500/20"
+    return regex.test(val)
+      ? base + "border-green-500 focus:border-green-500 focus:ring-green-500/20"
+      : base + "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+  }
+
   const inputBase = "w-full bg-white border border-black/10 text-zinc-900 text-[14px] px-3.5 py-2.5 rounded-[12px] outline-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20 transition-all placeholder:text-zinc-400"
+  
   const labelBase = "block text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-1.5 ml-0.5"
+
+  const renderLabel = (text: string, tooltip?: string) => (
+    <div className="flex items-center gap-1.5 mb-1.5 ml-0.5 relative">
+      <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">{text}</label>
+      {tooltip && (
+        <div 
+          className="relative flex items-center justify-center cursor-pointer text-zinc-400 hover:text-zinc-700 transition-colors"
+          onMouseEnter={() => setInfoTooltip(text)}
+          onMouseLeave={() => setInfoTooltip(null)}
+          onClick={() => setInfoTooltip(infoTooltip === text ? null : text)}
+        >
+          <Info size={14} />
+          {infoTooltip === text && (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-zinc-900 text-white text-[11px] rounded-lg shadow-lg z-50 text-center pointer-events-none">
+              {tooltip}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-900" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] relative overflow-hidden p-4 sm:p-8 font-sans selection:bg-blue-100 selection:text-blue-900">
@@ -225,28 +263,28 @@ export default function BuilderRegistrationForm() {
                     <div className="space-y-5">
                       <div>
                         <label className={labelBase}>Company Name *</label>
-                        <input type="text" placeholder="e.g. DLF Limited" value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} className={inputBase} />
+                        <input type="text" placeholder="e.g. DLF Limited" value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} className={getInputStyle(formData.name)} />
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                          <label className={labelBase}>Company CIN *</label>
-                          <input type="text" placeholder="L70101DL1963GOI..." maxLength={21} value={formData.cin} onChange={(e) => setFormData(p => ({...p, cin: e.target.value.toUpperCase()}))} className={inputBase} />
+                          {renderLabel("Company CIN *", "Must be a 21-character alphanumeric string starting with L or U (e.g., L70101DL1963GOI002484)")}
+                          <input type="text" placeholder="L70101DL1963GOI..." maxLength={21} value={formData.cin} onChange={(e) => setFormData(p => ({...p, cin: e.target.value.toUpperCase()}))} className={getInputStyle(formData.cin, cinRegex)} />
                         </div>
                         <div>
-                          <label className={labelBase}>Phone Number *</label>
+                          {renderLabel("Phone Number *", "Must be +91 followed by exactly 10 digits")}
                           <input type="tel" placeholder="+919876543210" maxLength={13} value={formData.phone} onChange={(e) => {
                             let val = e.target.value
                             if (!val.startsWith('+91')) val = '+91' + val.replace(/^\+?9?1?/, '')
                             setFormData(p => ({...p, phone: val}))
-                          }} className={inputBase} />
+                          }} className={getInputStyle(formData.phone, phoneRegex)} />
                         </div>
                         <div>
-                          <label className={labelBase}>Landline (Optional)</label>
-                          <input type="tel" placeholder="011-1234567" value={formData.landline} onChange={(e) => setFormData(p => ({...p, landline: e.target.value}))} className={inputBase} />
+                          {renderLabel("Landline (Optional)", "Format: STDCode-Number (e.g., 011-1234567)")}
+                          <input type="tel" placeholder="011-1234567" value={formData.landline} onChange={(e) => setFormData(p => ({...p, landline: e.target.value}))} className={getInputStyle(formData.landline, landlineRegex)} />
                         </div>
                         <div>
-                          <label className={labelBase}>Official Email *</label>
-                          <input type="email" placeholder="contact@builder.com" value={formData.email} onChange={(e) => setFormData(p => ({...p, email: e.target.value}))} className={inputBase} />
+                          {renderLabel("Official Email *", "Must be a valid email address")}
+                          <input type="email" placeholder="contact@builder.com" value={formData.email} onChange={(e) => setFormData(p => ({...p, email: e.target.value}))} className={getInputStyle(formData.email, emailRegex)} />
                         </div>
                       </div>
                     </div>

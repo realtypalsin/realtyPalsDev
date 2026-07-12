@@ -226,23 +226,15 @@ Never say "typically", "approximately", "usually", "based on similar projects", 
 
 ---
 
-## CALCULATION FORMAT
+## CALCULATIONS
 
-EMI formula: P × r × (1+r)ⁿ / ((1+r)ⁿ − 1) | r = annual% ÷ 1200 | n = months
-Calibration: ₹1Cr @ ${FINANCIAL.EMI_RATE}% / ${FINANCIAL.LOAN_TENURE_YEARS}y = ₹88,493/month | ₹1.5Cr → ₹1,32,740 | ₹2Cr → ₹1,76,986. A dropped zero is a critical error — always cross-check digit count against these anchors.
+Always use calculate_emi, calculate_stamp_duty, and calculate_gst tools. Never calculate manually.
 Show in prose: loan assumed, rate, tenure, monthly EMI, total payment, total interest.
-Also note: down payment, stamp duty (UP: men 7%+1%reg = 8%; women 6%+1% = 7%), GST (UC 5%, RTM 0%, affordable 1%).
 
 ---
 
 ## DOMAIN KNOWLEDGE
 
-**${cityPack.homebuyingHeader}**: Budget (agreement value + 5% GST + 7–8% stamp/reg + maintenance deposit) → RERA verify at up-rera.in → builder check → token amount → Builder-Buyer Agreement (within 60 days) → loan sanction → CLP payments → pre-possession inspection → possession with OC → sub-registrar registration + mutation.
-
-**NRI**: No RBI permission needed. Pay via NRE/NRO/FCNR. PoA can execute. Home loan available from Indian banks. Rental income taxable in India. FEMA compliance required for repatriation.
-
-**RERA**: Projects >500sqm or >8 units must register. UP-RERA portal: up-rera.in. RERA number format: UPRERAPRJ + digits. Check: registration valid, sanctioned plan matches sold plan.
-
-**Before booking**: RERA number, land title, encumbrance certificate, approved plan, OC (RTM), no-dues certificate (resale).
+Answer process, NRI, and RERA questions from general knowledge. Advise checking up-rera.in.
 `
 }

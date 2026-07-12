@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 // ── Decision Intelligence (from backend intelligence.ts) ─────────────────────
 
 export interface DecisionDimension {
@@ -50,20 +48,18 @@ export interface DealBreaker {
   severity: 'Caution' | 'Consider' | 'Dealbreaker'
 }
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 export interface ProjectCard {
   id: string
   slug: string
   name: string
   tagline?: string | null
-<<<<<<< HEAD
-=======
   matchScore?: number
   matchReason?: string
   matchReasons?: string[]
   concerns?: string[]
   budgetStatus?: 'within' | 'slightly_over' | 'over'
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   builder: { name: string; slug: string }
   rera_number?: string | null
   rera_url?: string | null
@@ -74,23 +70,18 @@ export interface ProjectCard {
   address?: string | null
   land_area_acres?: number | null
   total_towers?: number | null
-<<<<<<< HEAD
-  status: 'under_construction' | 'ready_to_move' | 'new_launch'
-=======
   best_for?: string | null
   status: 'under_construction' | 'ready_to_move' | 'new_launch'
   launch_date?: string | null
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   possession_label?: string | null
   possession_date: string | null
   architect?: string | null
   interior_designer?: string | null
-<<<<<<< HEAD
-=======
   floors?: string | null
   open_space_pct?: number | null
   green_rating?: string | null
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   design_theme?: string | null
   marketing_claims: string[]
   hero_image_url?: string | null
@@ -105,13 +96,6 @@ export interface ProjectCard {
     url: string
     type: string
     caption: string | null
-<<<<<<< HEAD
-    sort_order: number
-  }>
-}
-
-export interface UnitTypeSummary {
-=======
     bhk: number | null
     size_sqft: number | null
     sort_order: number
@@ -126,18 +110,12 @@ export interface UnitTypeSummary {
 
 export interface UnitTypeSummary {
   id: string
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   name: string
   bhk: number
   bathrooms: number | null
   super_area_sqft?: number | null
   carpet_area_sqft?: number | null
-<<<<<<< HEAD
-  price_min_cr?: number | null
-  price_max_cr?: number | null
-  price_label?: string | null
-  price_is_estimated?: boolean | null
-=======
   balcony_area_sqft?: number | null
   price_min_cr?: number | null
   price_max_cr?: number | null
@@ -150,7 +128,7 @@ export interface UnitTypeSummary {
   key_highlights?: any
   whats_included?: any
   views?: any
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 }
 
 export interface AmenitySummary {
@@ -159,30 +137,13 @@ export interface AmenitySummary {
 }
 
 export interface ConnSummary {
-<<<<<<< HEAD
-  type: 'metro' | 'road' | 'school' | 'hospital' | 'mall' | 'landmark' | 'airport' | 'university'
-=======
   type: 'metro' | 'road' | 'expressway' | 'school' | 'hospital' | 'mall' | 'landmark' | 'airport' | 'university'
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   name: string
   distance_km?: number | null
 }
 
 export interface BuilderDetail {
-<<<<<<< HEAD
-  name: string
-  slug: string
-  tagline: string | null
-  description: string | null
-  founded_year: number | null
-  headquarters: string | null
-  website: string | null
-  credai_member: boolean
-  delivered_units: number | null
-  delivered_projects: string[]
-  ongoing_projects: string[]
-  awards: string[]
-=======
   // Identity
   name: string
   slug: string
@@ -238,7 +199,7 @@ export interface BuilderDetail {
   last_verified_at: string | null
   data_source: string | null
   intelligence_completeness: number | null
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 }
 
 export interface ProjectDetail extends ProjectCard {
@@ -246,12 +207,6 @@ export interface ProjectDetail extends ProjectCard {
   design_theme: string | null
   total_units: number | null
   marketing_claims: string[]
-<<<<<<< HEAD
-  ai_search_keywords?: string[]
-  all_amenities: { name: string; category: string }[]
-  all_connectivity: { type: string; name: string; distance_km: number | null }[]
-  builder_detail: BuilderDetail
-=======
   all_amenities: { name: string; category: string }[]
   all_connectivity: { type: string; name: string; distance_km: number | null }[]
   builder_detail: BuilderDetail
@@ -345,5 +300,5 @@ export interface CompetitorSummary {
   verdict:                string | null
   price_delta_note:       string | null
   sort_order:             number
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 }

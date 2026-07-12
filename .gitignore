@@ -57,3 +57,5 @@ audit*.md
 
 # Backup files
 *.bak
+ 
+.tokensave/*.db*

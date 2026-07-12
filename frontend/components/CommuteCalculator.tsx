@@ -1,12 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-<<<<<<< HEAD
-import { Navigation, MapPin, Loader2, Clock } from 'lucide-react'
-import { Car, Train, Path, ArrowRight, Subway } from '@phosphor-icons/react'
-=======
 import { Route, MapPin, Clock, ArrowRight, Loader2, Navigation, Car, TrainFront } from 'lucide-react';
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 import { API_BASE } from '@/lib/env'
 import PlacesAutocomplete from '@/components/PlacesAutocomplete'
 
@@ -20,16 +16,11 @@ interface CommuteResult {
 
 interface Props {
   projectAddress: string
-<<<<<<< HEAD
-}
-
-export default function CommuteCalculator({ projectAddress }: Props) {
-=======
   initialDestination?: string
 }
 
 export default function CommuteCalculator({ projectAddress, initialDestination }: Props) {
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const [destination, setDestination] = useState('')
   const [result, setResult] = useState<CommuteResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -42,8 +33,6 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
     if (saved) setSavedOffice(saved)
   }, [])
 
-<<<<<<< HEAD
-=======
   // Sync initialDestination if passed externally
   useEffect(() => {
     if (initialDestination) {
@@ -52,7 +41,7 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
     }
   }, [initialDestination])
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   async function calculate(dest?: string) {
     const target = (dest ?? destination).trim()
     if (!target) return
@@ -80,27 +69,18 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
   return (
     <div className="space-y-4">
       {/* Input card */}
-<<<<<<< HEAD
-      <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-7 h-7 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-            <Path size={14} weight="duotone" className="text-gray-500" />
-=======
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-7 h-7 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
             <Route size={14} className="text-gray-500" />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           </div>
           <p className="text-[12px] font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Commute Calculator</p>
         </div>
 
         {/* Origin (property) */}
-<<<<<<< HEAD
-        <div className="flex items-center gap-2.5 mb-3 px-3 py-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-=======
         <div className="flex items-center gap-2.5 mb-3 px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           <MapPin size={13} className="text-gray-400 flex-shrink-0" />
           <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{projectAddress}</span>
         </div>
@@ -109,21 +89,13 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
         {savedOffice && savedOffice !== destination && (
           <button
             onClick={() => { setDestination(savedOffice); calculate(savedOffice) }}
-<<<<<<< HEAD
-            className="w-full mb-2 flex items-center gap-2 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl text-left hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-          >
-            <Clock size={12} className="text-blue-400 flex-shrink-0" />
-            <span className="text-[11px] font-medium text-blue-700 dark:text-blue-300 truncate flex-1">{savedOffice}</span>
-            <span className="text-[10px] text-blue-400 flex-shrink-0">Saved office</span>
-            <ArrowRight size={12} weight="bold" className="text-blue-400 flex-shrink-0" />
-=======
             className="w-full mb-2 flex items-center gap-2 px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <Clock size={12} className="text-gray-400 flex-shrink-0" />
             <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate flex-1">{savedOffice}</span>
             <span className="text-[10px] text-gray-400 flex-shrink-0">Saved office</span>
             <ArrowRight size={12} className="text-gray-400 flex-shrink-0" />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           </button>
         )}
 
@@ -160,15 +132,10 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
       {result && (
         <div className="space-y-2.5">
           {result.drive && (
-<<<<<<< HEAD
-            <div className="flex items-center gap-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-4 shadow-sm">
-              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Car size={18} weight="duotone" className="text-gray-500" />
-=======
             <div className="flex items-center gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
               <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Car size={18} className="text-gray-500" />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-bold text-gray-900 dark:text-white">By Car</p>
@@ -182,15 +149,10 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
           )}
 
           {result.transit && (
-<<<<<<< HEAD
-            <div className="flex items-center gap-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-4 shadow-sm">
-              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Train size={18} weight="duotone" className="text-gray-500" />
-=======
             <div className="flex items-center gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
               <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center flex-shrink-0">
                 <TrainFront size={18} className="text-gray-500" />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-bold text-gray-900 dark:text-white">By Metro / Transit</p>
@@ -203,16 +165,6 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
             </div>
           )}
 
-<<<<<<< HEAD
-          {result.nearby_metro.length > 0 && (
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-100 dark:border-gray-700">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Nearby Metro Stations</p>
-              <div className="space-y-2">
-                {result.nearby_metro.slice(0, 3).map((m, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Subway size={12} weight="duotone" className="text-gray-500" />
-=======
           {(result.nearby_metro ?? []).length > 0 && (
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Nearby Metro Stations</p>
@@ -221,7 +173,7 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
                   <div key={i} className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
                       <TrainFront size={12} className="text-gray-500" />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                     </div>
                     <div className="min-w-0">
                       <p className="text-[12px] font-semibold text-gray-700 dark:text-gray-300 truncate">{m.name}</p>

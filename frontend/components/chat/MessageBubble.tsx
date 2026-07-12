@@ -1,28 +1,5 @@
 'use client'
 
-<<<<<<< HEAD
-import { memo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import dynamic from 'next/dynamic'
-import Image from 'next/image'
-import { User, RotateCcw, Copy, ChevronDown } from 'lucide-react'
-import remarkGfm from 'remark-gfm'
-import ChatLoader from '@/components/ChatLoader'
-import ProjectCard from '@/components/ProjectCard'
-import type { ChatMessage } from '@/types/property'
-import type { ProjectCard as ProjectCardType } from '@/types/project'
-import type { Chip, ChipPickerState } from './types'
-
-// ── Dynamic imports — excluded from initial JS bundle ──────────────────────
-const ReactMarkdown = dynamic(() => import('react-markdown'), {
-  ssr: false,
-  loading: () => <span className="inline-block w-16 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />,
-})
-
-const SectorMap = dynamic(() => import('@/components/SectorMap'), { ssr: false })
-const ComparisonTable = dynamic(() => import('@/components/ComparisonTable'), { ssr: false })
-const PropertyDetailView = dynamic(() => import('@/components/PropertyDetailView'), { ssr: false })
-=======
 import { memo, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
@@ -61,7 +38,7 @@ import ReactMarkdown from 'react-markdown'
 
 const SectorMap = dynamic(() => import('@/components/SectorMap'), { ssr: false })
 const ComparisonTable = dynamic(() => import('@/components/ComparisonTable'), { ssr: false })
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
 // ── Props ──────────────────────────────────────────────────────────────────
 export interface MessageBubbleProps {
@@ -76,26 +53,18 @@ export interface MessageBubbleProps {
   lastShortlist: ProjectCardType[]
   showMap: boolean
   userId: string | null
-<<<<<<< HEAD
-  regeneratingIdx: number | null
-  chipPicker: ChipPickerState | null
-  followUpChips: Chip[]
-=======
   sessionId: string
   regeneratingIdx: number | null
   chipPicker: ChipPickerState | null
   chips: import('./types').ChipAction[]
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   // Callbacks — all stable (useCallback in parent)
   onCopy: (text: string) => void
   onDetailOpen: (project: ProjectCardType | null) => void
   onCallback: (project: ProjectCardType) => void
   onRegenerate: (index: number) => void
-<<<<<<< HEAD
-  onSubmitMessage: (text: string) => void
-=======
   onAction: (action: import('./types').ChipAction) => void
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   onToggleExpanded: (messageId: string) => void
   onToggleMap: () => void
   onSetChipPicker: (picker: ChipPickerState | null) => void
@@ -131,8 +100,6 @@ function buildPickerMessage(action: string, selected: ProjectCardType[]): string
   }
 }
 
-<<<<<<< HEAD
-=======
 // ── Unified suggestion chips — all chips use same premium NotebookLM style
 export function SuggestionChipGroups({
   chips,
@@ -160,66 +127,34 @@ export function SuggestionChipGroups({
   )
 }
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 // ── Custom equality — only the actively-streaming (last) message re-renders ─
 function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
   if (prev.isLast || next.isLast) return false
   return (
     prev.message.content === next.message.content &&
     prev.message.properties === next.message.properties &&
-<<<<<<< HEAD
-    prev.message.isSearching === next.message.isSearching &&
-    prev.isExpanded === next.isExpanded &&
-    prev.carouselIndex === next.carouselIndex
-=======
     prev.message.exactResults === next.message.exactResults &&
     prev.message.nearbyResults === next.message.nearbyResults &&
     prev.message.isSearching === next.message.isSearching &&
     prev.isExpanded === next.isExpanded &&
     prev.carouselIndex === next.carouselIndex &&
     prev.chips === next.chips
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   )
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
 function MessageBubbleInner({
   message, index, isLast, isSubmitting, chatPhase, isLastProperties,
-<<<<<<< HEAD
-  isExpanded, carouselIndex, lastShortlist, showMap, userId, regeneratingIdx,
-  chipPicker, followUpChips,
-  onCopy, onDetailOpen, onCallback, onRegenerate, onSubmitMessage,
-=======
   isExpanded, carouselIndex, lastShortlist, showMap, userId, sessionId, regeneratingIdx,
   chipPicker, chips,
   onCopy, onDetailOpen, onCallback, onRegenerate, onAction,
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   onToggleExpanded, onToggleMap, onSetChipPicker, onSetCarouselIndex,
   onSetSiteVisit, onOpenCalculator, onOpenShareSheet, onToast,
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
-<<<<<<< HEAD
-
-  return (
-    <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} animate-message-in group/msg`}>
-      <div className={`flex w-full ${isUser ? 'items-end gap-4 flex-row-reverse' : 'items-start gap-4'}`}>
-        {/* Avatar */}
-        {isUser ? (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <User size={20} className="text-white" />
-          </div>
-        ) : (
-          <div className="w-10 h-10 rounded-full glass-surface flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden border border-white/50 dark:border-white/10">
-            <Image src="/images/logo/realtypals.png" alt="RP" width={36} height={36} />
-          </div>
-        )}
-
-        {/* Message bubble */}
-        <div
-          className={`rounded-[20px] px-5 py-3.5 shadow-sm transition-all duration-300 ${isUser
-            ? 'max-w-[78%] bg-[#0064E5] text-white shadow-blue-500/10'
-            : 'flex-1 min-w-0 glass-surface text-gray-900 dark:text-gray-100 border border-white/40 dark:border-white/5 relative overflow-hidden shadow-lg'
-=======
   const [showAllProperties, setShowAllProperties] = useState(false)
 
   const displayContent = message.content || ''
@@ -274,37 +209,14 @@ function MessageBubbleInner({
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
           className={`px-5 py-3.5 transition-all duration-300 ${isUser
-            ? 'max-w-[85%] sm:max-w-[78%] bg-blue-600 dark:bg-blue-500 text-white shadow-[0_2px_8px_rgba(37,99,235,0.15)] rounded-[24px] rounded-br-[4px]'
+            ? 'max-w-[85%] sm:max-w-[78%] bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white shadow-[0_4px_16px_rgba(37,99,235,0.25)] rounded-[24px] rounded-br-[4px] border border-blue-500/50'
             : 'max-w-[95%] sm:max-w-[85%] bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100 relative overflow-hidden rounded-[24px] rounded-tl-[4px] cursor-pointer sm:cursor-default shadow-[0_2px_12px_rgba(0,0,0,0.03)]'
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
             }`}
         >
           {!isUser && <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] pointer-events-none" />}
 
           {!isUser ? (
             <div className="relative z-10">
-<<<<<<< HEAD
-              {!message.content && !message.properties?.length ? (
-                <ChatLoader userQuery={message.userQuery ?? ''} isSearching={!!message.isSearching} searchingTool={message.searchingTool} />
-              ) : message.content ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.25 }}
-                  className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-blue-700 dark:prose-headings:text-blue-400 prose-a:text-blue-500 prose-strong:text-blue-600 dark:prose-strong:text-blue-400 prose-table:w-full prose-table:text-sm prose-table:my-4 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-100 dark:prose-th:bg-blue-900/40 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-gray-800 dark:prose-th:text-blue-200 prose-th:border prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-gray-200 dark:prose-td:border-gray-700"
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {message.content}
-                  </ReactMarkdown>
-                  {isLast && isSubmitting && message.type === 'ai' && (
-                    <span className="inline-block w-0.5 h-[1em] bg-current animate-pulse ml-0.5 align-middle opacity-70" />
-                  )}
-                </motion.div>
-              ) : null}
-            </div>
-          ) : (
-            <p className="whitespace-pre-wrap text-[16px] font-medium leading-relaxed relative z-10">{message.content}</p>
-=======
               {(() => {
                 const hasProperties = (message.exactResults?.length ?? 0) > 0 || (message.nearbyResults?.length ?? 0) > 0
                 const phase = message.streamingPhase
@@ -432,50 +344,10 @@ function MessageBubbleInner({
             </div>
           ) : (
             <p className="whitespace-pre-wrap text-[16px] font-medium leading-relaxed relative z-10">{displayContent}</p>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           )}
         </div>
       </div>
-
-<<<<<<< HEAD
-      {/* Copy button */}
-      {!isUser && message.content && (
-        <div className="ml-14 mt-1 flex items-center gap-0.5 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200">
-          <button
-            onClick={() => onCopy(message.content)}
-            title="Copy response"
-            className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all text-[11px]"
-          >
-            <Copy size={12} />
-          </button>
-        </div>
-      )}
-
-      {/* Regenerate */}
-      {!isUser && chatPhase === 'ADVISOR' && index > 0 && !message.properties?.length && (
-        <button
-          onClick={() => onRegenerate(index)}
-          disabled={regeneratingIdx === index || isSubmitting}
-          className="ml-[56px] mt-1 inline-flex items-center gap-1 px-3 py-1.5 text-[11px] text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-full hover:bg-white/50 dark:hover:bg-gray-800 disabled:opacity-40 touch-target-min"
-          title="Regenerate response"
-        >
-          <RotateCcw size={11} className={regeneratingIdx === index ? 'animate-spin' : ''} />
-          {regeneratingIdx === index ? 'Regenerating...' : 'Regenerate'}
-        </button>
-      )}
-
-      {/* Rich Property Detail View */}
-      {message.propertyDetail && (
-        <PropertyDetailView
-          propertyDetail={message.propertyDetail}
-          onToast={onToast}
-        />
-      )}
-
-      {/* In-chat image gallery */}
-      {!message.propertyDetail && message.images && message.images.length > 0 && (
-        <div className="mt-3 ml-12 w-full max-w-[80%]">
-=======
 
       <div className={`mt-1.5 flex items-center w-full ${isUser ? 'justify-end' : 'justify-start'} gap-2 px-1`}>
         {message.timestamp && (
@@ -513,7 +385,7 @@ function MessageBubbleInner({
       {/* In-chat image gallery */}
       {message.images && message.images.length > 0 && (
         <div className="mt-3 w-full max-w-[90%] md:max-w-[80%]">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           <div className="relative rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm">
             {message.images[carouselIndex]?.type && (
               <div className="absolute top-3 left-3 z-10">
@@ -522,15 +394,6 @@ function MessageBubbleInner({
                 </span>
               </div>
             )}
-<<<<<<< HEAD
-            <Image
-              src={message.images[carouselIndex]?.url ?? message.images[0]?.url ?? ''}
-              alt={message.images[carouselIndex]?.caption ?? 'Property image'}
-              width={680}
-              height={400}
-              className="w-full h-72 object-cover"
-            />
-=======
             {(() => {
               const src = message.images[carouselIndex]?.url ?? message.images[0]?.url;
               return src ? (
@@ -543,7 +406,7 @@ function MessageBubbleInner({
                 />
               ) : null;
             })()}
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             {message.images.length > 1 && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
                 {message.images.map((_, imgIdx) => (
@@ -568,13 +431,9 @@ function MessageBubbleInner({
       )}
 
       {/* Highlights */}
-<<<<<<< HEAD
-      {!message.propertyDetail && message.highlights && message.highlights.length > 0 && (
-        <div className="mt-3 ml-12 max-w-[80%] bg-[#F7F7F7] dark:bg-gray-800 border border-[#E8E8E8] dark:border-gray-700 rounded-2xl px-5 py-4 shadow-sm">
-=======
       {message.highlights && message.highlights.length > 0 && (
         <div className="mt-3 max-w-[90%] md:max-w-[80%] bg-[#F7F7F7] dark:bg-gray-800 border border-[#E8E8E8] dark:border-gray-700 rounded-2xl px-5 py-4 shadow-sm">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Key Highlights</p>
           <ul className="space-y-2">
             {message.highlights.map((h, hIdx) => (
@@ -588,13 +447,9 @@ function MessageBubbleInner({
       )}
 
       {/* Amenities */}
-<<<<<<< HEAD
-      {!message.propertyDetail && message.amenities && message.amenities.length > 0 && (
-        <div className="mt-4 ml-12 sm:ml-14 w-full max-w-[95%] sm:max-w-[85%] md:max-w-[75%]">
-=======
       {message.amenities && message.amenities.length > 0 && (
         <div className="mt-4 w-full max-w-[95%] sm:max-w-[85%] md:max-w-[75%]">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3">
             {message.amenities.map((amenity, idx) => (
               <div key={idx} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-blue-100 dark:border-blue-900/30 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 flex items-center justify-center text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 group">
@@ -605,48 +460,6 @@ function MessageBubbleInner({
         </div>
       )}
 
-<<<<<<< HEAD
-      {/* Property cards */}
-      {(() => {
-        const isGeneralOrComparison =
-          message.content.includes('| Property |') ||
-          message.content.includes('| ---') ||
-          message.intent?.is_general_query === true
-        if (!message.properties || message.properties.length === 0 || isGeneralOrComparison) return null
-
-        if (!isLastProperties) {
-          return (
-            <div className="mt-2">
-              <button
-                onClick={() => onToggleExpanded(message.id)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-100 rounded-xl text-[12px] font-semibold text-gray-500 hover:text-blue-700 transition-all"
-              >
-                <span>🏠</span>
-                {isExpanded ? 'Hide' : 'View'} {message.properties.length} properties from this search
-                <ChevronDown size={13} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-              </button>
-              {isExpanded && (
-                <div className="mt-3 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-x-auto snap-x snap-mandatory sm:overflow-x-visible pb-2 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
-                  {message.properties.map((property, pi) => (
-                    <motion.div
-                      key={property.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
-                      className="min-w-[85vw] sm:min-w-0 snap-center flex-shrink-0 sm:flex-shrink"
-                    >
-                      <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onCallback={onCallback} onToast={onToast} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )
-        }
-
-        return (
-          <>
-=======
       {/* Property cards — suppressed in comparison mode (ComparisonTable owns that UI) */}
       {(() => {
         if (message.responseMode === 'comparison') return null
@@ -690,55 +503,11 @@ function MessageBubbleInner({
 
         return (
           <div className="mt-2 w-full">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-<<<<<<< HEAD
-              className="mt-4 flex items-center gap-3"
-            >
-              <div className="flex-1 flex items-center gap-2">
-                <span className="text-[15px]">🏘️</span>
-                <span className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
-                  {message.properties.length} {message.properties.length === 1 ? 'property' : 'properties'} found
-                </span>
-                {message.properties[0]?.sector && (
-                  <span className="text-[11px] text-gray-400">· {message.properties[0].sector}</span>
-                )}
-              </div>
-              <span className="text-[10px] font-semibold text-gray-400 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2.5 py-1 rounded-full">
-                Ranked by fit
-              </span>
-            </motion.div>
-
-            <div className="mt-3 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-x-auto snap-x snap-mandatory sm:overflow-x-visible pb-2 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0 w-full">
-              {message.properties.map((property, pi) => (
-                <motion.div
-                  key={property.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
-                  className="min-w-[85vw] sm:min-w-0 snap-center flex-shrink-0 sm:flex-shrink"
-                >
-                  <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={onDetailOpen} onCallback={onCallback} onToast={onToast} />
-                </motion.div>
-              ))}
-            </div>
-
-            {message.properties.length >= 2 && (
-              <div className="mt-3 w-full">
-                <button
-                  onClick={onToggleMap}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-100 rounded-xl text-[12px] font-semibold text-gray-600 hover:text-blue-700 transition-all mb-2"
-                >
-                  <span>🗺️</span>
-                  {showMap ? 'Hide map' : `View on map — ${message.properties.length} properties`}
-                </button>
-                {showMap && (
-                  <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                    <SectorMap properties={message.properties} />
-=======
               className="mt-4 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 p-2.5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
             >
               <div className="flex items-center gap-2">
@@ -785,7 +554,7 @@ function MessageBubbleInner({
                     We couldn&apos;t find an exact match in {expansion.requestedSector}
                   </p>
                   <p className="text-[12px] text-amber-700 dark:text-amber-400 mt-0.5 font-medium">
-                    Verified N/a
+                    Verified --
                   </p>
                 </div>
               </motion.div>
@@ -880,27 +649,20 @@ function MessageBubbleInner({
                     >
                       {showAllProperties ? 'Show less properties' : `View all ${totalCards} properties`}
                     </button>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                   </div>
                 )}
               </div>
             )}
-<<<<<<< HEAD
-          </>
-=======
           </div>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         )
       })()}
 
       {/* Advisor shortlist re-surface */}
-<<<<<<< HEAD
-      {message.type === 'ai' && chatPhase === 'ADVISOR' && !message.properties?.length && lastShortlist.length > 0 && isLast && (
-        <div className="mt-3 ml-14 w-full">
-=======
       {message.type === 'ai' && chatPhase === 'ADVISOR' && !message.exactResults?.length && !message.nearbyResults?.length && !message.properties?.length && lastShortlist.length > 0 && isLast && (
         <div className="mt-3 w-full">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           <button
             onClick={() => onToggleExpanded(message.id)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl text-[12px] font-semibold text-blue-700 transition-all"
@@ -911,9 +673,6 @@ function MessageBubbleInner({
           {isExpanded && (
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {lastShortlist.map((p, pi) => (
-<<<<<<< HEAD
-                <ProjectCard key={p.id} project={p} userId={userId} index={pi} onDetailOpen={onDetailOpen} onToast={onToast} />
-=======
                 <div key={p.id} className="flex flex-col">
                   <ProjectCard 
                     project={p} 
@@ -933,58 +692,20 @@ function MessageBubbleInner({
                     }
                   />
                 </div>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
               ))}
             </div>
           )}
         </div>
       )}
 
-<<<<<<< HEAD
-      {/* Follow-up chips */}
-      {message.type === 'ai' && message.content && isLast && !isSubmitting && followUpChips.length > 0 && (
-=======
       {/* Progressive chips from Conversation Engine */}
       {message.type === 'ai' && displayContent && isLast && !isSubmitting && combinedChips.length > 0 && (
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.15 }}
-<<<<<<< HEAD
-          className="mt-3 ml-0 sm:ml-14"
-        >
-          <div className="flex flex-wrap gap-2">
-            {followUpChips.map((chip) => {
-              const isActive = chipPicker?.label === chip.label
-              return (
-                <button
-                  key={chip.label}
-                  onClick={() => {
-                    if (chip.special === '__open_calculator__') { onOpenCalculator(); onSetChipPicker(null); return }
-                    if (chip.special === '__share_shortlist__') { onOpenShareSheet(); onSetChipPicker(null); return }
-                    if (chip.msg) { onSetChipPicker(null); onSubmitMessage(chip.msg); return }
-                    if (chip.picker && chip.pickerAction) {
-                      if (isActive) { onSetChipPicker(null); return }
-                      onSetChipPicker({ mode: chip.picker, action: chip.pickerAction, label: chip.label, isModal: chip.pickerModal ?? false, selected: [] })
-                    }
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-[12px] font-semibold transition-all shadow-sm whitespace-nowrap border ${
-                    isActive
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900'
-                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
-                  }`}
-                >
-                  <span>{chip.emoji}</span>
-                  {chip.label}
-                  {chip.picker && <span className={`text-[10px] ml-0.5 ${isActive ? 'text-blue-200' : 'text-gray-400'}`}>▾</span>}
-                </button>
-              )
-            })}
-          </div>
-
-          <AnimatePresence>
-=======
           className="mt-3"
         >
           <SuggestionChipGroups
@@ -995,7 +716,7 @@ function MessageBubbleInner({
           />
 
           <AnimatePresence mode="wait">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             {chipPicker && (
               <motion.div
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
@@ -1024,9 +745,6 @@ function MessageBubbleInner({
                                 if (chipPicker.action === 'site_visit') { onSetSiteVisit(p); return }
                                 if (chipPicker.action === 'callback') { onCallback(p); return }
                               }
-<<<<<<< HEAD
-                              onSubmitMessage(buildPickerMessage(chipPicker.action, [p]))
-=======
                               onAction({
                                 id: crypto.randomUUID(),
                                 actionType: 'TEXT_MESSAGE',
@@ -1036,7 +754,7 @@ function MessageBubbleInner({
                                 priority: 1,
                                 payload: { text: buildPickerMessage(chipPicker.action, [p]) }
                               })
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                             } else {
                               onSetChipPicker({
                                 ...chipPicker,
@@ -1062,11 +780,8 @@ function MessageBubbleInner({
                             )}
                             <div className="min-w-0">
                               <div className="font-semibold text-[13px] truncate">{p.name}</div>
-<<<<<<< HEAD
-                              <div className="text-[11px] text-gray-400 dark:text-gray-500">{p.price_range_label} · {p.sector}</div>
-=======
                               <div className="text-[11px] text-gray-400 dark:text-gray-500">{[p.price_range_label || '', p.sector || ''].filter(Boolean).join(' · ')}</div>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                             </div>
                           </div>
                           {chipPicker.mode === 'single' && (
@@ -1082,9 +797,6 @@ function MessageBubbleInner({
                         onClick={() => {
                           const selected = lastShortlist.filter(p => chipPicker.selected.includes(p.slug))
                           onSetChipPicker(null)
-<<<<<<< HEAD
-                          onSubmitMessage(buildPickerMessage(chipPicker.action, selected))
-=======
                           onAction({
                             id: crypto.randomUUID(),
                             actionType: 'TEXT_MESSAGE',
@@ -1094,7 +806,7 @@ function MessageBubbleInner({
                             priority: 1,
                             payload: { text: buildPickerMessage(chipPicker.action, selected) }
                           })
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                         }}
                         className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[13px] font-semibold rounded-xl transition-all"
                       >
@@ -1110,14 +822,6 @@ function MessageBubbleInner({
       )}
 
       {/* Comparison table */}
-<<<<<<< HEAD
-      {message.type === 'ai' && message.showComparisonTable && lastShortlist.length >= 2 && (
-        <div className="mt-3 ml-14 w-full">
-          <ComparisonTable left={lastShortlist[0]} right={lastShortlist[1]} />
-        </div>
-      )}
-    </div>
-=======
       {message.type === 'ai' && message.showComparisonTable && (message.comparisonProjects?.length ?? 0) >= 2 && (
         <div className="mt-3 w-full">
           <ComparisonTable projects={message.comparisonProjects!} />
@@ -1158,7 +862,7 @@ function MessageBubbleInner({
         )}
       </AnimatePresence>
     </motion.div>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   )
 }
 

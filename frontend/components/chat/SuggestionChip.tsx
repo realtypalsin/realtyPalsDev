@@ -38,7 +38,7 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
         ${
           isActive
             ? 'bg-blue-600 dark:bg-blue-500 text-white border-blue-700 dark:border-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.25)]'
-            : 'bg-[#2a2a2a] dark:bg-[#1a1a1a] text-gray-200 dark:text-gray-300 border-[#3a3a3a] dark:border-[#2a2a2a] hover:bg-[#363636] dark:hover:bg-[#252525] hover:border-[#464646] dark:hover:border-[#353535] shadow-[0_2px_8px_rgba(0,0,0,0.2)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.5)]'
+            : 'bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#2a2a2a] hover:bg-gray-50 dark:hover:bg-[#252525] hover:border-gray-300 dark:hover:border-[#353535] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.5)]'
         }
       `}
       title={chip.label}

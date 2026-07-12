@@ -1,6 +1,7 @@
-// backend/src/lib/discovery/projects.ts
 import { Prisma } from '@prisma/client'
+import crypto from 'crypto'
 import { prisma } from '../db'
+import { getCached, setCached } from '../cache'
 import { Intent, ScoredProject, DiscoveryResult } from './types'
 import {
   buildDecisionIntelligence,
@@ -126,30 +127,33 @@ type RawProject = Prisma.ProjectGetPayload<{ include: typeof PROJECT_INCLUDE }>
  * project with "3BHK @ 2.5Cr + 1BHK @ 1.2Cr" would falsely match
  * "3BHK under 1.5Cr".
  */
-function buildHardFilters(intent: Intent): Prisma.ProjectWhereInput {
+function buildHardFilters(intent: Intent, overrideSectors?: string[]): Prisma.ProjectWhereInput {
   const where: Prisma.ProjectWhereInput = {}
 
   // Sector — whole-word match (case-insensitive).
   // This ensures 'Sector 10' matches 'Sector 10 Greater Noida West' but NOT 'Sector 107'.
-  if (intent.sector && !isCityLevel(intent.sector)) {
-    // Sanitize sector by removing common city suffixes that LLM might append
-    let cleanSector = intent.sector
-    const cityTerms = [
-      ...SUPPORTED_CITIES.map((c) => ` ${c.toLowerCase()}`),
-      ' gurgaon', ' gurugram', ' delhi', ' mumbai', ' bangalore', ' hyderabad', ' pune', ' chennai'
-    ]
-    for (const city of cityTerms) {
-      if (cleanSector.toLowerCase().endsWith(city)) {
-        cleanSector = cleanSector.slice(0, -city.length).trim()
-      }
-    }
+  const sectorsToSearch = overrideSectors || (intent.sector && !isCityLevel(intent.sector) ? [intent.sector] : [])
 
-    where.OR = [
-      { sector: { equals: cleanSector, mode: 'insensitive' } },
-      { sector: { startsWith: `${cleanSector} `, mode: 'insensitive' } },
-      { sector: { endsWith: ` ${cleanSector}`, mode: 'insensitive' } },
-      { sector: { contains: ` ${cleanSector} `, mode: 'insensitive' } }
-    ]
+  if (sectorsToSearch.length > 0) {
+    where.OR = sectorsToSearch.flatMap((sectorStr) => {
+      // Sanitize sector by removing common city suffixes that LLM might append
+      let cleanSector = sectorStr
+      const cityTerms = [
+        ...SUPPORTED_CITIES.map((c) => ` ${c.toLowerCase()}`),
+        ' gurgaon', ' gurugram', ' delhi', ' mumbai', ' bangalore', ' hyderabad', ' pune', ' chennai'
+      ]
+      for (const city of cityTerms) {
+        if (cleanSector.toLowerCase().endsWith(city)) {
+          cleanSector = cleanSector.slice(0, -city.length).trim()
+        }
+      }
+      return [
+        { sector: { equals: cleanSector, mode: 'insensitive' } },
+        { sector: { startsWith: `${cleanSector} `, mode: 'insensitive' } },
+        { sector: { endsWith: ` ${cleanSector}`, mode: 'insensitive' } },
+        { sector: { contains: ` ${cleanSector} `, mode: 'insensitive' } }
+      ]
+    })
   }
 
   // BHK + budget — single AND condition on the same unit type
@@ -427,6 +431,13 @@ function isGenericName(name: string): boolean {
 }
 
 export async function discoverProjects(intent: Intent): Promise<DiscoveryResult> {
+  const cacheKey = `discovery:${crypto.createHash('sha256').update(JSON.stringify(intent)).digest('hex')}`
+  const cached = await getCached<DiscoveryResult>(cacheKey)
+  if (cached) {
+    console.log('[DISCOVERY:CACHE] HIT', cacheKey)
+    return cached
+  }
+
   // ── Branch 1: explicit project names → direct fetch, skip all filters ──
   // Filter out generic descriptors that the LLM may have incorrectly placed
   // in projectNames (e.g. "Best project", "affordable flat").
@@ -475,7 +486,7 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
     if (effectiveIntent.projectNames!.length === 1 && byName.length > 1) {
       const query = effectiveIntent.projectNames![0]
       console.log(`[DISCOVERY:B1] MULTI-MATCH: "${query}" matched ${byName.length} projects — disambiguation required`)
-      return {
+      const res: DiscoveryResult = {
         exactResults: [],
         nearbyResults: [],
         disambiguation: {
@@ -483,6 +494,8 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
           candidates: byName.map((p) => ({ name: p.name, sector: p.sector, builder: p.builder.name })),
         },
       }
+      await setCached(cacheKey, res, 300)
+      return res
     }
 
     const notFoundNames = effectiveIntent.projectNames!.filter(
@@ -493,7 +506,7 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
       )
     )
 
-    return {
+    const res: DiscoveryResult = {
       exactResults: byName.map((p) => ({
         ...mapToScored(p, {}),
         matchScore: 100,
@@ -505,6 +518,8 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
       nearbyResults: [],
       ...(notFoundNames.length > 0 ? { notFoundNames } : {}),
     }
+    await setCached(cacheKey, res, 300)
+    return res
   }
 
   // ── Branch 2: primary hard-filter query ────────────────────────────────
@@ -547,7 +562,7 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
       const distinctSectors = [...new Set(rawProjects.map((p) => p.sector))]
       if (distinctSectors.length > 1) {
         console.log(`[DISCOVERY:B2] SECTOR MULTI-MATCH: "${effectiveIntent.sector}" matched ${distinctSectors.length} distinct sectors:`, distinctSectors)
-        return {
+        const res: DiscoveryResult = {
           exactResults: [],
           nearbyResults: [],
           sectorDisambiguation: {
@@ -555,6 +570,8 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
             candidates: distinctSectors
           }
         }
+        await setCached(cacheKey, res, 300)
+        return res
       }
 
       // Note: City disambiguation skipped — we operate in single-city context (Noida/Greater Noida).
@@ -571,7 +588,9 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
 
     const threshold = isBuilderOnly ? BUILDER_ONLY_THRESHOLD : SCORE_THRESHOLD
     const scored = scoreAndSort(rawProjects, effectiveIntent, threshold)
-    return { exactResults: scored, nearbyResults: [] }
+    const res: DiscoveryResult = { exactResults: scored, nearbyResults: [] }
+    await setCached(cacheKey, res, 300)
+    return res
   }
 
   // ── Branch 3: nearby sector expansion (parallel) ─────────────────────
@@ -581,22 +600,17 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
   if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)) {
     const nearbySectors = getNearbySectors(effectiveIntent.sector)
     if (nearbySectors.length > 0) {
-      const perSector = await Promise.all(
-        nearbySectors.map((nearbySector) =>
-          prisma.project.findMany({
-            where: buildHardFilters({ ...effectiveIntent, sector: nearbySector }),
-            include: PROJECT_INCLUDE,
-            take: 50,
-          })
-        )
-      )
+      const allExpandedRaw = await prisma.project.findMany({
+        where: buildHardFilters({ ...effectiveIntent, sector: undefined }, nearbySectors),
+        include: PROJECT_INCLUDE,
+        take: Math.min(200, nearbySectors.length * 50),
+      })
 
-      const allExpandedRaw = perSector.flat()
       if (allExpandedRaw.length > 0) {
         const scored = scoreAndSort(allExpandedRaw, effectiveIntent, SCORE_THRESHOLD)
         if (scored.length > 0) {
-          const searchedSectors = nearbySectors.filter((_, i) => perSector[i].length > 0)
-          return {
+          const searchedSectors = [...new Set(allExpandedRaw.map(p => p.sector))]
+          const res: DiscoveryResult = {
             exactResults: [],
             nearbyResults: scored,
             expansion: {
@@ -605,10 +619,14 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
               reason: 'no_results_in_requested_sector',
             },
           }
+          await setCached(cacheKey, res, 300)
+          return res
         }
       }
     }
   }
 
-  return { exactResults: [], nearbyResults: [] }
+  const res: DiscoveryResult = { exactResults: [], nearbyResults: [] }
+  await setCached(cacheKey, res, 300)
+  return res
 }

@@ -6,8 +6,6 @@ import { Moon, Sun } from 'lucide-react';
 export default function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
-<<<<<<< HEAD
-=======
   const updateFavicon = (isDark: boolean) => {
     const iconUrl = isDark ? '/images/icons/faviconWhite.svg' : '/images/icons/faviconBlack.svg';
     document.querySelectorAll("link[rel*='icon']").forEach((link) => {
@@ -15,17 +13,15 @@ export default function ThemeToggle() {
     });
   };
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   useEffect(() => {
     const stored = localStorage.getItem('theme');
     // Default to light mode as requested. Only use dark mode if explicitly set.
     const isDark = stored === 'dark';
     setDark(isDark);
     document.documentElement.classList.toggle('dark', isDark);
-<<<<<<< HEAD
-=======
     updateFavicon(isDark);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   }, []);
 
   const toggle = () => {
@@ -33,10 +29,8 @@ export default function ThemeToggle() {
     setDark(next);
     document.documentElement.classList.toggle('dark', next);
     localStorage.setItem('theme', next ? 'dark' : 'light');
-<<<<<<< HEAD
-=======
     updateFavicon(next);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   };
 
   return (

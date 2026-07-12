@@ -32,7 +32,7 @@ async function seedEliteGroup() {
     console.log('Seeding Elite Group builder...')
 
     // First, create or update the builder
-    const builder = await prisma.builder.upsert({
+    const builder = await (prisma as any).builder.upsert({
       where: { slug: 'elite-group' },
       update: {
         parent_group: 'Golfgreen Mansions Private Limited',
@@ -81,7 +81,7 @@ The builder's approach emphasizes quality over quantity, with structural integri
     const now = new Date()
     const threeYearsFromNow = new Date(now.getTime() + 3 * 365 * 24 * 60 * 60 * 1000)
 
-    const theme = await prisma.builderTheme.upsert({
+    const theme = await (prisma as any).builderTheme.upsert({
       where: { builder_id: builder.id },
       update: {
         primary_color: ELITE_GROUP_THEME.colors.primary,
@@ -105,7 +105,7 @@ The builder's approach emphasizes quality over quantity, with structural integri
     console.log(`  Active until: ${threeYearsFromNow.toLocaleDateString()}`)
 
     // Verify
-    const verify = await prisma.builder.findUnique({
+    const verify = await (prisma as any).builder.findUnique({
       where: { id: builder.id },
       include: { theme: true }
     })

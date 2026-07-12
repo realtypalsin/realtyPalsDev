@@ -4,61 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
 
-// ── Parse user message client-side for display chips (no AI, instant) ──
-interface Chip {
-  label: string
-  variant: 'blue' | 'indigo' | 'emerald' | 'violet' | 'amber' | 'purple' | 'pink'
-}
-
-function parseQuery(q: string): Chip[] {
-  const lo = q.toLowerCase()
-  const chips: Chip[] = []
-
-  const bhk = lo.match(/(\d)\s*bhk/)
-  if (bhk) chips.push({ label: `${bhk[1]} BHK`, variant: 'blue' })
-
-  const sector = lo.match(/sector\s*(\d+)/)
-  if (sector) chips.push({ label: `Sector ${sector[1]}`, variant: 'indigo' })
-
-  const crore = lo.match(/(\d+\.?\d*)\s*(?:cr(?:ore)?)\b/)
-  if (crore) chips.push({ label: `₹${crore[1]} Cr`, variant: 'emerald' })
-  else {
-    const lakh = lo.match(/(\d+)\s*(?:lac|lakh)\b/)
-    if (lakh) chips.push({ label: `₹${lakh[1]}L`, variant: 'emerald' })
-  }
-
-  if (/ready\s*to\s*move|rtm/.test(lo)) chips.push({ label: 'Ready to Move', variant: 'violet' })
-  else if (/new\s*launch/.test(lo)) chips.push({ label: 'New Launch', variant: 'purple' })
-  else if (/under\s*const/.test(lo)) chips.push({ label: 'Under Construction', variant: 'amber' })
-
-  if (/luxury|premium|ultra/.test(lo)) chips.push({ label: 'Luxury', variant: 'purple' })
-  if (/3\s*side\s*open|corner|penthouse/.test(lo)) chips.push({ label: 'Special Unit', variant: 'pink' })
-
-  return chips
-}
-
-const CHIP_STYLE: Record<string, string> = {
-  blue:    'bg-blue-50   border-blue-100   text-blue-700   dark:bg-blue-900/30   dark:border-blue-800/60   dark:text-blue-300',
-  indigo:  'bg-indigo-50 border-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800/60 dark:text-indigo-300',
-  emerald: 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800/60 dark:text-emerald-300',
-  violet:  'bg-violet-50 border-violet-100 text-violet-700 dark:bg-violet-900/30 dark:border-violet-800/60 dark:text-violet-300',
-  amber:   'bg-amber-50  border-amber-100  text-amber-700  dark:bg-amber-900/30  dark:border-amber-800/60  dark:text-amber-300',
-  purple:  'bg-purple-50 border-purple-100 text-purple-700 dark:bg-purple-900/30 dark:border-purple-800/60 dark:text-purple-300',
-  pink:    'bg-pink-50   border-pink-100   text-pink-700   dark:bg-pink-900/30   dark:border-pink-800/60   dark:text-pink-300',
-}
-
-<<<<<<< HEAD
 const SEARCH_STEPS = [
-=======
-const SEARCH_STEPS  = [
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   'Reading your requirements',
   'Scanning Noida inventory',
   'Shortlisting best matches',
   'Preparing recommendations',
 ]
 
-<<<<<<< HEAD
 const WEB_STEPS = [
   'Searching the web',
   'Reading latest news',
@@ -75,14 +27,11 @@ const RERA_STEPS = [
   'Verifying registration',
 ]
 
-=======
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 const GENERAL_STEPS = [
   'Thinking',
   'Preparing your answer',
 ]
 
-<<<<<<< HEAD
 const TOOL_STEPS: Record<string, string[]> = {
   search_properties: SEARCH_STEPS,
   search_web: WEB_STEPS,
@@ -96,23 +45,12 @@ interface Props {
   searchingTool?: 'search_properties' | 'search_web' | 'commute' | 'rera'
 }
 
-export default function ChatLoader({ userQuery, isSearching, searchingTool }: Props) {
+export default function ChatLoader({ isSearching, searchingTool }: Props) {
   const steps = searchingTool && TOOL_STEPS[searchingTool]
     ? TOOL_STEPS[searchingTool]
     : isSearching
     ? SEARCH_STEPS
     : GENERAL_STEPS
-=======
-interface Props {
-  userQuery: string
-  isSearching: boolean
-}
-
-export default function ChatLoader({ userQuery, isSearching }: Props) {
-  const chips = parseQuery(userQuery)
-  const isPropertySearch = chips.length > 0 || isSearching
-  const steps = isPropertySearch ? SEARCH_STEPS : GENERAL_STEPS
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
   const [activeStep, setActiveStep] = useState(0)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -141,28 +79,6 @@ export default function ChatLoader({ userQuery, isSearching }: Props) {
 
   return (
     <div className="flex flex-col gap-3 py-0.5">
-<<<<<<< HEAD
-=======
-
-      {/* Criteria chips — materialise one-by-one */}
-      {chips.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {chips.map((chip, i) => (
-            <motion.span
-              key={chip.label}
-              initial={{ opacity: 0, scale: 0.65, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: i * 0.09, duration: 0.32, type: 'spring', stiffness: 340, damping: 22 }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[12px] font-semibold select-none ${CHIP_STYLE[chip.variant]}`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-              {chip.label}
-            </motion.span>
-          ))}
-        </div>
-      )}
-
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
       {/* Progress steps */}
       <div className="flex flex-col gap-2.5">
         {steps.map((label, i) => {
@@ -239,3 +155,4 @@ export default function ChatLoader({ userQuery, isSearching }: Props) {
     </div>
   )
 }
+

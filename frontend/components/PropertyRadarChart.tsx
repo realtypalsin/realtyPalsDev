@@ -9,11 +9,8 @@ interface RadarAxis {
 }
 
 interface PropertyRadarChartProps {
-<<<<<<< HEAD
-  axes: RadarAxis[];
-=======
   axes?: RadarAxis[];
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   size?: number;
 }
 
@@ -23,22 +20,14 @@ const PREMIUM_BUILDERS = ['Godrej', 'Tata', 'DLF', 'Prestige', 'ATS', 'Ace', 'Ma
  * Generate radar scores from property data
  */
 export function generateRadarScores(property: {
-<<<<<<< HEAD
-  price_per_sqft?: number | null;
-=======
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   amenities?: string[];
   builder?: string;
   status?: string;
 }): RadarAxis[] {
-<<<<<<< HEAD
-  // Value: inverse of price (cheaper = higher score relative to sector avg ~10,000)
-  const ppsq = property.price_per_sqft ?? 10000;
-  const valueScore = Math.min(95, Math.max(40, Math.round(120 - (ppsq / 200))));
-=======
   // Value score static without per-sqft
   const valueScore = 80;
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
   // Location: Sector 150 is always high (hardcoded for now)
   const locationScore = 82;
@@ -64,11 +53,8 @@ export function generateRadarScores(property: {
   ];
 }
 
-<<<<<<< HEAD
-export default function PropertyRadarChart({ axes, size = 200 }: PropertyRadarChartProps) {
-=======
 export default function PropertyRadarChart({ axes = [], size = 200 }: PropertyRadarChartProps) {
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const [animated, setAnimated] = useState(false);
 
   useEffect(() => {
@@ -80,11 +66,8 @@ export default function PropertyRadarChart({ axes = [], size = 200 }: PropertyRa
   const cy = size / 2;
   const maxR = size * 0.38;
   const levels = 4;
-<<<<<<< HEAD
-  const angleStep = (2 * Math.PI) / axes.length;
-=======
   const angleStep = axes.length > 0 ? (2 * Math.PI) / axes.length : 0;
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
   // Get point coordinates
   const getPoint = (index: number, value: number) => {
@@ -126,12 +109,7 @@ export default function PropertyRadarChart({ axes = [], size = 200 }: PropertyRa
     return { ...a, x: p.x, y: p.y };
   });
 
-<<<<<<< HEAD
-  // Overall score
-  const overall = Math.round(axes.reduce((sum, a) => sum + a.value, 0) / axes.length);
 
-=======
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   return (
     <div className="flex flex-col items-center">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -186,41 +164,16 @@ export default function PropertyRadarChart({ axes = [], size = 200 }: PropertyRa
           </text>
         ))}
 
-<<<<<<< HEAD
-        {/* Center score */}
-        <text
-          x={cx}
-          y={cy - 6}
-          textAnchor="middle"
-          className="fill-gray-900 dark:fill-white text-lg font-bold"
-        >
-          {animated ? overall : 0}
-        </text>
-        <text
-          x={cx}
-          y={cy + 8}
-          textAnchor="middle"
-          className="fill-gray-400 text-[8px]"
-        >
-          AI Score
-        </text>
-      </svg>
-
-      {/* Legend */}
-=======
       </svg>
 
       {/* Legend — axis labels only, no fabricated scores */}
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 justify-center">
         {axes.map((a, i) => (
           <div key={i} className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: a.color }} />
-<<<<<<< HEAD
-            <span className="text-[10px] text-gray-500 dark:text-gray-400">{a.label}: {a.value}</span>
-=======
             <span className="text-[10px] text-gray-500 dark:text-gray-400">{a.label}</span>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
           </div>
         ))}
       </div>

@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-<<<<<<< HEAD
-import { Outfit } from "next/font/google";
-=======
 import { Outfit, Playfair_Display, Afacad } from "next/font/google";
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 import { PostHogProvider } from "@/components/PostHogProvider";
 
 const outfit = Outfit({
@@ -13,15 +10,6 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-<<<<<<< HEAD
-export const metadata: Metadata = {
-  title: "RealtyPal - Property Discovery",
-  description: "Chatbot validation and property discovery",
-  icons: {
-    icon: "/images/logo/favicon.png",
-    shortcut: "/images/logo/favicon.png",
-    apple: "/images/logo/favicon.png",
-=======
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
@@ -46,7 +34,7 @@ export const metadata: Metadata = {
     icon: "/images/icons/faviconBlack.svg",
     shortcut: "/images/icons/faviconBlack.svg",
     apple: "/images/icons/faviconBlack.svg",
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   },
 };
 
@@ -57,30 +45,23 @@ export const viewport = {
   viewportFit: 'cover' as const,
 };
 
-<<<<<<< HEAD
-=======
 import { Toaster } from "sonner";
 import { PingBackend } from "@/components/PingBackend";
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-<<<<<<< HEAD
-    <html lang="en" suppressHydrationWarning className={`${outfit.variable} font-sans`}>
-      <body className="antialiased glass-app font-sans">
-        <PostHogProvider>{children}</PostHogProvider>
-=======
     <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
       <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#E4E4E5]">
         <PingBackend />
         <div className="noise-overlay" />
         <PostHogProvider>{children}</PostHogProvider>
         <Toaster position="bottom-right" richColors closeButton theme="light" />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       </body>
     </html>
   );

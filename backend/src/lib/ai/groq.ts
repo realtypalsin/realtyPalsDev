@@ -39,9 +39,9 @@ export class GroqStreamStallError extends Error {
   }
 }
 
-// 30 seconds: same budget as OpenAI. Generous enough for a slow Llama 70b
+// 60 seconds: same budget as OpenAI. Generous enough for a slow Llama 70b
 // first-token latency; tight enough to fail-fast on a genuine stall.
-const INACTIVITY_MS = 30_000
+const INACTIVITY_MS = 60_000
 
 export async function streamWithGroq(
   system: string,

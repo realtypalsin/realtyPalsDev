@@ -47,10 +47,6 @@ export const SECTOR_CENTROIDS: Record<string, [number, number]> = {
 
 export const NOIDA_CENTER: [number, number] = [28.535, 77.391]
 
-<<<<<<< HEAD
-interface Props {
-  properties: ProjectCard[]
-=======
 interface ExtraMarker {
   name: string
   pos: [number, number]
@@ -60,35 +56,25 @@ interface ExtraMarker {
 interface Props {
   properties: ProjectCard[]
   extraMarkers?: ExtraMarker[]
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 }
 
 const MapInner = dynamic(() => import('./SectorMapInner'), {
   ssr: false,
   loading: () => (
-<<<<<<< HEAD
-    <div className="h-[280px] rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
-=======
     <div className="h-[400px] rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
     </div>
   ),
 })
 
-<<<<<<< HEAD
-export default function SectorMap({ properties }: Props) {
-  if (!properties.length) return null
-  return (
-    <MapErrorBoundary>
-      <MapInner properties={properties} />
-=======
 export default function SectorMap({ properties, extraMarkers }: Props) {
   if (!properties.length) return null
   return (
     <MapErrorBoundary>
       <MapInner properties={properties} extraMarkers={extraMarkers} />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     </MapErrorBoundary>
   )
 }

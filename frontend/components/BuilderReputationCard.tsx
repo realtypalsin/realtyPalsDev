@@ -84,12 +84,10 @@ export default function BuilderReputationCard({ builderName, reraNumber }: Props
 
   if (!data) return null
 
-<<<<<<< HEAD
-=======
   const positiveSignals = data.signals.filter((s) => s.type === 'positive')
   const negativeSignals = data.signals.filter((s) => s.type === 'negative')
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const scoreBg =
     data.score >= 80 ? 'bg-green-50 border-green-100' :
     data.score >= 65 ? 'bg-blue-50 border-blue-100' :

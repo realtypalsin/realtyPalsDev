@@ -102,7 +102,7 @@ export default function SavedPropertyCard({
               {formatPriceCr(property.price)}
             </div>
             <div className="text-[11px] text-gray-500 font-semibold tracking-wider uppercase mt-1">
-              ₹{property.price_per_sqft?.toLocaleString('en-IN') ?? 'N/A'} / sq.ft
+              ₹{property.price_per_sqft?.toLocaleString('en-IN') ?? '--'} / sq.ft
             </div>
           </div>
         </div>

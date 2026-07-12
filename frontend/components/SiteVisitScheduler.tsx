@@ -2,11 +2,8 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-<<<<<<< HEAD
-import { Calendar, Clock, User, X, CheckCircle2 } from 'lucide-react'
-=======
 import { Calendar, Clock, User, Phone, Mail, X, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics'
 import LeadSuccessModal from '@/components/LeadSuccessModal'
@@ -59,11 +56,8 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
     setSubmitting(true)
     setError(null)
     try {
-<<<<<<< HEAD
-      const res = await fetch(`${API_BASE}/site-visit`, {
-=======
       const res = await fetch(`${API_BASE}/leads/site-visit`, {
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

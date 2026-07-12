@@ -57,6 +57,22 @@ export default function PropertiesAnalytics() {
         </button>
       </div>
 
+      {/* Top Navigation Tabs */}
+      <div className="flex items-center gap-3 overflow-x-auto pb-2 border-b border-gray-100">
+        <Link href="/admin/analytics" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          Dashboard
+        </Link>
+        <Link href="/admin/analytics/search" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          Search Analytics
+        </Link>
+        <Link href="/admin/analytics/properties" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-slate-900 text-white shadow-sm whitespace-nowrap">
+          Property Engagement
+        </Link>
+        <Link href="/admin/analytics/users" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
+          User Behavior
+        </Link>
+      </div>
+
       {/* Engagement Table */}
       <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Top Performing Properties</h2>

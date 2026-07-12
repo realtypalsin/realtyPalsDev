@@ -4,11 +4,6 @@ const createJestConfig = nextJest({ dir: './' })
 
 module.exports = createJestConfig({
   testEnvironment: 'jest-environment-jsdom',
-<<<<<<< HEAD
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
-  },
-=======
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
@@ -17,5 +12,5 @@ module.exports = createJestConfig({
   transformIgnorePatterns: [
     'node_modules/(?!(rehype-raw|hast-util-parse-selector|property-information|unist-util-position|unist-util-visit|unist-util-is)/)',
   ],
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 })

@@ -9,11 +9,6 @@ import SkeletonCard from '@/components/SkeletonCard';
 import ProjectDetailPanel from '@/components/ProjectDetailPanel';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
 import { API_BASE } from '@/lib/env';
-<<<<<<< HEAD
-import { Bookmark } from 'lucide-react';
-import Toast from '@/components/Toast';
-import { motion } from 'framer-motion';
-=======
 import { authHeaders } from '@/lib/authedFetch';
 import { Bookmark, PanelLeftClose, PanelLeftOpen, Sun, SquarePen, Compass } from 'lucide-react';
 import Toast from '@/components/Toast';
@@ -21,7 +16,7 @@ import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false });
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
 export default function SavedPropertiesPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -30,22 +25,17 @@ export default function SavedPropertiesPage() {
   const [error, setError] = useState(false);
   const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
   const [toast, setToast] = useState('');
-<<<<<<< HEAD
-=======
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   const router = useRouter();
 
   useEffect(() => {
     const uid = localStorage.getItem('user_id');
     if (!uid) { router.replace('/auth'); return; }
     setUserId(uid);
-<<<<<<< HEAD
-    fetch(`${API_BASE}/saved`, { headers: { 'X-User-Id': uid } })
-=======
     authHeaders()
       .then((headers) => fetch(`${API_BASE}/saved`, { headers }))
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -59,11 +49,6 @@ export default function SavedPropertiesPage() {
   }, []);
 
   return (
-<<<<<<< HEAD
-    <div className="flex h-[100dvh] bg-[#E6E6E6] overflow-hidden">
-      <Sidebar userId={userId} />
-      <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden">
-=======
     <div className="flex h-[100dvh] bg-slate-50/50 dark:bg-gray-900 overflow-hidden">
       <Sidebar 
         userId={userId} 
@@ -71,17 +56,11 @@ export default function SavedPropertiesPage() {
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         <motion.div
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-<<<<<<< HEAD
-          className="flex-1 flex flex-col min-h-0 overflow-hidden"
-        >
-          <Header title="Saved Properties" onToast={(m: string) => setToast(m)} />
-          <div className="flex-1 overflow-y-auto px-6 py-6">
-=======
           className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10"
         >
           {/* Claude-style Seamless Header */}
@@ -100,7 +79,7 @@ export default function SavedPropertiesPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-6 pt-16">
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             {error ? (
               <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                 <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center">
@@ -123,15 +102,6 @@ export default function SavedPropertiesPage() {
                 </div>
               </div>
             ) : projects.length === 0 ? (
-<<<<<<< HEAD
-              <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center">
-                  <Bookmark size={32} className="text-amber-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">No saved properties</h2>
-                <p className="text-gray-500 max-w-sm">Save properties from the chat to compare and revisit them here.</p>
-                <button onClick={() => router.push('/discover')} className="mt-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all text-sm">
-=======
               <div className="flex flex-col items-center justify-center h-full gap-4 text-center mt-[-10vh]">
                 <div className="relative">
                   <div className="absolute inset-0 bg-amber-400/20 dark:bg-amber-500/20 blur-2xl rounded-full scale-150 pointer-events-none" />
@@ -148,7 +118,7 @@ export default function SavedPropertiesPage() {
                   className="mt-4 px-6 py-2.5 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 rounded-full font-medium transition-all text-[13px] shadow-sm flex items-center gap-2"
                 >
                   <Compass size={16} className="opacity-70" />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                   Start Discovery
                 </button>
               </div>

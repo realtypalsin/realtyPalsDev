@@ -3,10 +3,8 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
-<<<<<<< HEAD
-=======
 import { motion } from 'framer-motion'
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
 interface FloorPlan {
   id: string
@@ -55,20 +53,6 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
   if (!plan) return null
 
   return (
-<<<<<<< HEAD
-    <div className="fixed inset-0 z-[70] bg-black/90 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <div>
-          <p className="text-white text-sm font-semibold">{title ?? 'Floor Plans'}</p>
-          {plan.caption && <p className="text-gray-400 text-xs mt-0.5">{plan.caption}</p>}
-          {floorPlans.length > 1 && (
-            <p className="text-gray-500 text-[10px] mt-0.5">{idx + 1} / {floorPlans.length}</p>
-          )}
-        </div>
-        <button onClick={onClose} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white">
-          <X size={16} />
-=======
     <motion.div
       className="fixed inset-0 z-[70] bg-black/90 flex flex-col"
       initial={{ opacity: 0, scale: 0.98 }}
@@ -84,7 +68,7 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
         </div>
         <button onClick={onClose} className="w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-md pointer-events-auto transition-colors">
           <X size={18} />
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         </button>
       </div>
 
@@ -117,43 +101,6 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
         </div>
       </div>
 
-<<<<<<< HEAD
-      {/* Controls */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-        {/* Prev/Next */}
-        <div className="flex gap-2">
-          <button
-            onClick={prev}
-            disabled={!canPrev}
-            className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-30"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <button
-            onClick={next}
-            disabled={!canNext}
-            className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-30"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-
-        {/* Zoom */}
-        <div className="flex items-center gap-2">
-          <button onClick={zoomOut} disabled={zoom <= 1} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-30">
-            <ZoomOut size={16} />
-          </button>
-          <span className="text-white text-xs w-10 text-center font-mono">{Math.round(zoom * 100)}%</span>
-          <button onClick={zoomIn} disabled={zoom >= 4} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white disabled:opacity-30">
-            <ZoomIn size={16} />
-          </button>
-          <button onClick={resetView} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white">
-            <RotateCcw size={14} />
-          </button>
-        </div>
-      </div>
-    </div>
-=======
       {/* Controls & Thumbnails */}
       <div className="flex flex-col bg-black/60 backdrop-blur-xl border-t border-white/10 flex-shrink-0 pb-safe">
         
@@ -214,6 +161,6 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
         </div>
       </div>
     </motion.div>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   )
 }

@@ -22,10 +22,8 @@ export const NEW_BUILDERS = [
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
-<<<<<<< HEAD
-=======
     legal_flag: 'LEGAL_RISK: Under Supreme Court of India intervention. NBCC (National Buildings Construction Corporation) has been appointed to complete stalled projects. Do not recommend for new purchase. Buyers with existing bookings should check NBCC portal for project-specific status.',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   },
   {
     slug: 'county-107-developer',
@@ -116,8 +114,6 @@ export const NEW_BUILDERS = [
     ongoing_projects: [] as string[],
     awards: [] as string[],
     awards_count: null,
-<<<<<<< HEAD
-=======
     legal_flag: 'LEGAL_RISK: Parent company Jaypee Associates Limited under NCLT insolvency proceedings since 2017. Projects within Jaypee Wish Town (Sector 128) that are already delivered (RTM) are generally occupied, but verify individual project completion certificate and society formation status independently before any transaction.',
   },
   {
@@ -157,7 +153,7 @@ export const NEW_BUILDERS = [
     awards: [] as string[],
     awards_count: null,
     legal_flag: 'LEGAL_RISK: Multiple projects facing RERA cancellations and significant buyer complaints for delayed possession. Several cases filed at UP RERA. Verify individual project RERA status at up-rera.in before any transaction.',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   },
   {
     slug: 'kalpataru',
@@ -249,8 +245,6 @@ export const NEW_BUILDERS = [
     awards: [] as string[],
     awards_count: null,
   },
-<<<<<<< HEAD
-=======
   // ── Pilot project builders ────────────────────────────────────────────
   {
     slug: 'county-group',
@@ -471,7 +465,7 @@ export const NEW_BUILDERS = [
     funding_banks: [] as string[], // ponytail: no corporate funding bank named in source docs — do not fabricate
     audit_flags_log: 'Clean registry. Flagged in 2023 CAG audit for irregular lease rent installment permissions, but zero NCLT filings and zero outstanding land dues.',
   },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 ];
 
 // ---------------------------------------------------------------------------
@@ -487,13 +481,9 @@ export const NEW_PROJECTS = [
     name: 'Amrapali Heartbeat City',
     tagline: 'The Heart Has A New Beat',
     builder_slug: 'amrapali-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ12202',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 107',
     address: 'GH-01C, 01D, 01A (Part), Sector-107, Noida',
@@ -505,10 +495,8 @@ export const NEW_PROJECTS = [
     status: 'under_construction' as const,
     possession_date: null,
     possession_label: 'Verify with builder',
-<<<<<<< HEAD
-=======
     project_risk_flag: 'BUILDER_LEGAL_RISK: This project is by Amrapali Group which is under Supreme Court of India intervention. NBCC has been appointed to oversee stalled Amrapali projects. Do not recommend for new purchase. Verify this specific project\'s status at the NBCC portal and up-rera.in before advising.',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     description: '2, 3 and 4 BHK Sky Bungalows in Sector 107, Noida.',
     long_description: 'Residential township in Sector 107, Noida featuring Sky Bungalows, private lift lobbies, sports facilities, clubhouse amenities, high security and smart-home features.',
     design_theme: null,
@@ -569,13 +557,9 @@ export const NEW_PROJECTS = [
     name: 'County 107',
     tagline: 'A Luxurious Residential Project With A Strong Sense Of Its Own Identity',
     builder_slug: 'county-107-developer',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ837374',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 107',
     address: 'Sector 107, Noida',
@@ -635,13 +619,9 @@ export const NEW_PROJECTS = [
     name: '3C Lotus 300',
     tagline: 'Dream Homes',
     builder_slug: 'the-3c-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ6828',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 107',
     address: '3C Lotus 300, Sector 107, Noida, Uttar Pradesh',
@@ -687,13 +667,9 @@ export const NEW_PROJECTS = [
     name: 'Mahagun Medalleo',
     tagline: 'Ultra Premium Low-Rise Independent Floors',
     builder_slug: 'mahagun-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ125561',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 107',
     address: 'Sector 107, Noida',
@@ -741,11 +717,8 @@ export const NEW_PROJECTS = [
     tagline: 'Desire Platinum Living',
     builder_slug: 'prateek-group',
     rera_number: 'UPRERAPRJ2683',
-<<<<<<< HEAD
-    rera_url: null,
-=======
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 107',
     address: 'Sector 107, Noida',
@@ -801,24 +774,17 @@ export const NEW_PROJECTS = [
     name: 'Sharanam',
     tagline: 'Welcome To A Blissful Experience',
     builder_slug: 'greatvalue-projects',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ9966',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 107',
     address: 'GH-02, Sector 107, Noida',
     lat: null,
     lng: null,
     land_area_acres: null,
-<<<<<<< HEAD
-    total_units: null,
-=======
     total_units: 748,
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     total_towers: null,
     status: 'ready_to_move' as const,
     possession_date: null,
@@ -863,11 +829,8 @@ export const NEW_PROJECTS = [
     ],
     connectivity: [
       { type: 'road' as const, name: 'Noida Expressway', distance_km: null, data_source: 'brochure' as const },
-<<<<<<< HEAD
-      { type: 'metro' as const, name: 'Nearby Metro Station', distance_km: null, data_source: 'brochure' as const },
-=======
       { type: 'metro' as const, name: 'Sector 76 Metro Station', distance_km: null, data_source: 'brochure' as const },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       { type: 'landmark' as const, name: 'Golf Course', distance_km: null, data_source: 'brochure' as const },
       { type: 'school' as const, name: 'Lotus Valley School', distance_km: null, data_source: 'brochure' as const },
     ],
@@ -878,24 +841,17 @@ export const NEW_PROJECTS = [
     name: 'Sunworld Vanalika',
     tagline: 'High End Apartments',
     builder_slug: 'sunworld',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ11577',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 107',
     address: 'GH-1B, Sector 107, Noida - 201301, Uttar Pradesh',
     lat: null,
     lng: null,
     land_area_acres: 7.5,
-<<<<<<< HEAD
-    total_units: null,
-=======
     total_units: 774,
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     total_towers: 12,
     status: 'ready_to_move' as const,
     possession_date: null,
@@ -934,11 +890,8 @@ export const NEW_PROJECTS = [
     connectivity: [
       { type: 'road' as const, name: 'Noida Expressway', distance_km: null, data_source: 'brochure' as const },
       { type: 'road' as const, name: 'DND Flyway', distance_km: null, data_source: 'brochure' as const },
-<<<<<<< HEAD
-      { type: 'metro' as const, name: 'Proposed Metro Station', distance_km: null, data_source: 'brochure' as const },
-=======
       { type: 'metro' as const, name: 'Sector 76 Metro Station', distance_km: null, data_source: 'brochure' as const },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       { type: 'school' as const, name: 'Pathways School', distance_km: null, data_source: 'brochure' as const },
       { type: 'landmark' as const, name: 'Sector 44 Golf Course', distance_km: null, data_source: 'brochure' as const },
     ],
@@ -953,24 +906,17 @@ export const NEW_PROJECTS = [
     name: 'Imperial Court',
     tagline: 'Another Place. Another World.',
     builder_slug: 'jaypee-greens',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ3906',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 128',
     address: 'Imperial Court, Jaypee Greens, Sector 128, Noida, Uttar Pradesh, India',
     lat: null,
     lng: null,
     land_area_acres: null,
-<<<<<<< HEAD
-    total_units: null,
-=======
     total_units: 378,
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     total_towers: 3,
     status: 'ready_to_move' as const,
     possession_date: null,
@@ -1008,13 +954,9 @@ export const NEW_PROJECTS = [
     name: 'Jaypee Greens Kalypso Court',
     tagline: null,
     builder_slug: 'jaypee-greens',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ4695',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 128',
     address: 'Kalypso Court, Jaypee Greens, Sector 128, Noida',
@@ -1061,24 +1003,17 @@ export const NEW_PROJECTS = [
     name: 'Jaypee Greens Knights Court',
     tagline: null,
     builder_slug: 'jaypee-greens',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ3890',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 128',
     address: 'Jaypee Greens Knights Court, Sector 128, Wish Town, Noida',
     lat: null,
     lng: null,
     land_area_acres: null,
-<<<<<<< HEAD
-    total_units: null,
-=======
     total_units: 304,
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     total_towers: 8,
     status: 'ready_to_move' as const,
     possession_date: null,
@@ -1121,11 +1056,8 @@ export const NEW_PROJECTS = [
     tagline: 'A home that shares its address with one of the most renowned golf courses in India',
     builder_slug: 'kalpataru',
     rera_number: 'UPRERAPRJ14980',
-<<<<<<< HEAD
-    rera_url: 'http://up-rera.in/',
-=======
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 128',
     address: 'Kalpataru Vista, Plot B24 C, Wish Town, Sector 128, Noida - 201304',
@@ -1149,17 +1081,11 @@ export const NEW_PROJECTS = [
       { url: '/images/properties/kalpataru-vista-sector-128-noida/hero.jpg', type: 'hero' as const, caption: 'Kalpataru Vista', sort_order: 0 },
     ],
     unit_types: [
-<<<<<<< HEAD
-      { name: '3 BHK (Type A3)', bhk: 3, super_area_sqft: 1608, carpet_area_sqft: 1609, balcony_area_sqft: 343, bathrooms: 3, utility_room: true, dress_area: false, towers: ['Tower B'], price_min_cr: 1.61, price_max_cr: 1.93, price_label: '₹1.61–1.93 Cr (est.)', price_is_estimated: true },
-      { name: '3 BHK (Type A4)', bhk: 3, super_area_sqft: 1630, carpet_area_sqft: 1630, balcony_area_sqft: 345, bathrooms: 3, utility_room: true, dress_area: false, towers: ['Tower B'], price_min_cr: 1.63, price_max_cr: 1.96, price_label: '₹1.63–1.96 Cr (est.)', price_is_estimated: true },
-      { name: '4 BHK (Type A1)', bhk: 4, super_area_sqft: 2122, carpet_area_sqft: 2122, balcony_area_sqft: 450, bathrooms: 4, utility_room: true, dress_area: false, towers: ['Tower A', 'Tower B'], price_min_cr: 2.12, price_max_cr: 2.55, price_label: '₹2.12–2.55 Cr (est.)', price_is_estimated: true },
-      { name: '4 BHK (Type A2)', bhk: 4, super_area_sqft: 2100, carpet_area_sqft: 2102, balcony_area_sqft: 450, bathrooms: 4, utility_room: true, dress_area: false, towers: ['Tower A', 'Tower B'], price_min_cr: 2.10, price_max_cr: 2.52, price_label: '₹2.10–2.52 Cr (est.)', price_is_estimated: true },
-=======
       { name: '3 BHK (Type A3)', bhk: 3, super_area_sqft: 1608, carpet_area_sqft: null, balcony_area_sqft: 343, bathrooms: 3, utility_room: true, dress_area: false, towers: ['Tower B'], price_min_cr: 1.61, price_max_cr: 1.93, price_label: '₹1.61–1.93 Cr (est.)', price_is_estimated: true },
       { name: '3 BHK (Type A4)', bhk: 3, super_area_sqft: 1630, carpet_area_sqft: null, balcony_area_sqft: 345, bathrooms: 3, utility_room: true, dress_area: false, towers: ['Tower B'], price_min_cr: 1.63, price_max_cr: 1.96, price_label: '₹1.63–1.96 Cr (est.)', price_is_estimated: true },
       { name: '4 BHK (Type A1)', bhk: 4, super_area_sqft: 2122, carpet_area_sqft: null, balcony_area_sqft: 450, bathrooms: 4, utility_room: true, dress_area: false, towers: ['Tower A', 'Tower B'], price_min_cr: 2.12, price_max_cr: 2.55, price_label: '₹2.12–2.55 Cr (est.)', price_is_estimated: true },
       { name: '4 BHK (Type A2)', bhk: 4, super_area_sqft: 2100, carpet_area_sqft: null, balcony_area_sqft: 450, bathrooms: 4, utility_room: true, dress_area: false, towers: ['Tower A', 'Tower B'], price_min_cr: 2.10, price_max_cr: 2.52, price_label: '₹2.10–2.52 Cr (est.)', price_is_estimated: true },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     ],
     amenities: [
       { name: 'Swimming Pool', category: 'sports' as const },
@@ -1182,24 +1108,17 @@ export const NEW_PROJECTS = [
     name: 'Mahagun Manorialle',
     tagline: 'The M Collection from Mahagun',
     builder_slug: 'mahagun-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ2051',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 128',
     address: 'Sector 128, Noida-Greater Noida Expressway, Noida',
     lat: null,
     lng: null,
     land_area_acres: null,
-<<<<<<< HEAD
-    total_units: null,
-=======
     total_units: 386,
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     total_towers: null,
     status: 'under_construction' as const,
     possession_date: null,
@@ -1245,11 +1164,8 @@ export const NEW_PROJECTS = [
     tagline: 'Holistic Wellness Living',
     builder_slug: 'max-estates',
     rera_number: 'UPRERAPRJ294911/12/2024',
-<<<<<<< HEAD
-    rera_url: 'https://www.up-rera.in/',
-=======
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 128',
     address: 'Sector 128, Noida Expressway, Noida',
@@ -1305,11 +1221,8 @@ export const NEW_PROJECTS = [
     tagline: 'Not Just An Address But A Statement',
     builder_slug: 'gulshan-homz',
     rera_number: 'UPRERAPRJ8806',
-<<<<<<< HEAD
-    rera_url: null,
-=======
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 143',
     address: 'Plot No. GH-03/A, Sector 143, Noida, Uttar Pradesh',
@@ -1355,11 +1268,8 @@ export const NEW_PROJECTS = [
       { name: 'Kids Lounge', category: 'kids' as const },
     ],
     connectivity: [
-<<<<<<< HEAD
-      { type: 'metro' as const, name: 'Proposed Metro Station', distance_km: null, data_source: 'brochure' as const },
-=======
       { type: 'metro' as const, name: 'Sector 143 Metro Station', distance_km: null, data_source: 'brochure' as const },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       { type: 'road' as const, name: 'Noida Expressway', distance_km: null, data_source: 'brochure' as const },
       { type: 'landmark' as const, name: 'Sector 18 Atta Market', distance_km: null, data_source: 'brochure' as const },
     ],
@@ -1370,13 +1280,9 @@ export const NEW_PROJECTS = [
     name: 'Logix Blossom Greens',
     tagline: 'A Gift of Freshness',
     builder_slug: 'logix-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ4186',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 143',
     address: 'Sector 143, Noida Expressway',
@@ -1417,11 +1323,8 @@ export const NEW_PROJECTS = [
     ],
     connectivity: [
       { type: 'road' as const, name: 'Noida Expressway', distance_km: null, data_source: 'brochure' as const },
-<<<<<<< HEAD
-      { type: 'metro' as const, name: 'Proposed Metro Station', distance_km: null, data_source: 'brochure' as const },
-=======
       { type: 'metro' as const, name: 'Sector 143 Metro Station', distance_km: null, data_source: 'brochure' as const },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       { type: 'school' as const, name: 'Amity University', distance_km: null, data_source: 'brochure' as const },
       { type: 'landmark' as const, name: 'Film City', distance_km: null, data_source: 'brochure' as const },
     ],
@@ -1432,13 +1335,9 @@ export const NEW_PROJECTS = [
     name: 'Logix Blossom Zest',
     tagline: 'A Vibrant Beginning To Life',
     builder_slug: 'logix-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ5597',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 143',
     address: 'Sector 143, Noida - 201301, Uttar Pradesh',
@@ -1484,13 +1383,9 @@ export const NEW_PROJECTS = [
     name: 'Saha Amadeus',
     tagline: 'Crafted by SAHA',
     builder_slug: 'saha-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ9195',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 143',
     address: 'Sector 143, Noida',
@@ -1541,24 +1436,17 @@ export const NEW_PROJECTS = [
     name: 'Sikka Kaamna Greens',
     tagline: 'May all your aspirations come true',
     builder_slug: 'sikka-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ5596',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 143',
     address: 'Sector 143, Noida',
     lat: null,
     lng: null,
     land_area_acres: null,
-<<<<<<< HEAD
-    total_units: null,
-=======
     total_units: 1655,
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     total_towers: 11,
     status: 'under_construction' as const,
     possession_date: null,
@@ -1597,11 +1485,8 @@ export const NEW_PROJECTS = [
     connectivity: [
       { type: 'road' as const, name: 'FNG Expressway', distance_km: null, data_source: 'brochure' as const },
       { type: 'road' as const, name: 'Noida Expressway', distance_km: null, data_source: 'brochure' as const },
-<<<<<<< HEAD
-      { type: 'metro' as const, name: 'Proposed Metro Station', distance_km: null, data_source: 'brochure' as const },
-=======
       { type: 'metro' as const, name: 'Sector 143 Metro Station', distance_km: null, data_source: 'brochure' as const },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     ],
   },
 
@@ -1610,13 +1495,9 @@ export const NEW_PROJECTS = [
     name: 'SKA Orion',
     tagline: 'Your Own Universe',
     builder_slug: 'ska-group',
-<<<<<<< HEAD
-    rera_number: null,
-    rera_url: null,
-=======
     rera_number: 'UPRERAPRJ186008',
     rera_url: 'https://www.up-rera.in/verify',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
     city: 'Noida',
     sector: 'Sector 143',
     address: 'Plot No. GH-01A/2, Sector 143B, Noida, Uttar Pradesh 201301',
@@ -1675,9 +1556,6 @@ export const NEW_PROJECTS = [
       { type: 'landmark' as const, name: 'Mall of India', distance_km: null, data_source: 'brochure' as const },
     ],
   },
-<<<<<<< HEAD
-=======
-
   // =========================================================================
   // PILOT PROJECTS — Central Noida (Sectors 75, 76, 78, 79)
   // =========================================================================
@@ -2184,5 +2062,5 @@ export const NEW_PROJECTS = [
       { type: 'landmark' as const, name: 'Gaur City Mall', distance_km: 6.0, data_source: 'estimated' as const },
     ],
   },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 ];

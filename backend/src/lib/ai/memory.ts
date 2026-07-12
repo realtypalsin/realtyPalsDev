@@ -45,7 +45,9 @@ export async function upsertMemory(
   if (intent.bhk?.length) data.bhk_preference = intent.bhk[0]
   if (intent.budgetMin !== undefined) data.budget_min_cr = intent.budgetMin
   if (intent.budgetMax !== undefined) data.budget_max_cr = intent.budgetMax
-  if (intent.sector) data.sector_preference = intent.sector
+  if (intent.sector && /^Sector \d{1,3}$/i.test(intent.sector) && intent.sector.length <= 15) {
+    data.sector_preference = intent.sector
+  }
   if (intent.purpose) data.purpose = intent.purpose
 
   try {

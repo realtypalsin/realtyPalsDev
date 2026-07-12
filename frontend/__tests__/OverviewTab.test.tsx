@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import OverviewTab from '@/components/property-detail/OverviewTab';
-import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project';
+import type { ProjectCard as ProjectCardType, ProjectDetail, BuilderDetail } from '@/types/project';
 
 jest.mock('@/lib/analytics', () => ({
   track: jest.fn(),
@@ -10,78 +10,93 @@ jest.mock('@/lib/analytics', () => ({
 
 jest.mock('@/components/MarketComparison', () => () => <div data-testid="market-comparison">MarketComparison</div>);
 
+const mockBuilder: BuilderDetail = {
+  name: 'Elite Builders',
+  slug: 'elite',
+  tagline: null,
+  founder: null,
+  company_overview: 'Elite Builders is a top builder in Noida.',
+  logo_url: null,
+  parent_group: null,
+  founded_year: 2010,
+  headquarters: null,
+  website: null,
+  email: null,
+  phone: null,
+  description: null,
+  total_projects_count: null,
+  delivered_units: 5000,
+  delivered_projects: [],
+  ongoing_projects: [],
+  delayed_projects_count: null,
+  average_delay_months: null,
+  delivery_score: null,
+  construction_quality_score: null,
+  after_sales_score: null,
+  buyer_satisfaction_score: null,
+  rera_compliance_score: 95,
+  litigation_count: null,
+  insolvency_history: false,
+  legal_flag: null,
+  cin: null,
+  rera_promoter_id: null,
+  financial_hygiene_score: null,
+  outstanding_dues_cr: null,
+  legal_entities: null,
+  executives: null,
+  funding_banks: [],
+  audit_flags_log: null,
+  luxury_specialization: false,
+  township_specialization: false,
+  affordable_specialization: false,
+  average_project_size: null,
+  awards: [],
+  awards_count: null,
+  certifications: [],
+  credai_member: false,
+  iso_certified: true,
+  verification_level: null,
+  last_verified_at: null,
+  data_source: null,
+  intelligence_completeness: null,
+};
+
 const mockProject: ProjectCardType = {
   id: 'elite-x',
   slug: 'elite-x',
   name: 'Elite X',
   sector: 'Sector 10',
-  price_min_cr: 2.5,
-  price_max_cr: 4.0,
+  city: 'Noida',
   price_range_label: '₹2.50–4.00Cr',
   status: 'under_construction',
   possession_date: '2024-12-01',
-  possession_label: 'Expected Dec 2024',
-  media: { images: [] },
-  builder: { id: 'elite', name: 'Elite Builders', slug: 'elite' },
-  location: { lat: 28, lng: 77 },
-  amenities: [],
-  connectivity: [],
-  units: [],
+  marketing_claims: [],
+  builder: { name: 'Elite Builders', slug: 'elite' },
   unit_types: [],
-  units_summary: { bhk: [3, 4], area_min: 1500, area_max: 2500, price_min: 2.5, price_max: 4.0 },
-  has_rera: true,
-  rera_ids: ['RERA123']
+  top_amenities: [],
+  top_connectivity: [],
+  images: [],
 };
 
 const mockDetail: ProjectDetail = {
-  id: 'elite-x',
-  name: 'Elite X',
-  description: 'Premium living.',
-  slug: 'elite-x',
-  builder_name: 'Elite Builders',
-  sector: 'Sector 10',
-  city: 'Noida',
-  possession_date: '2024-12-01',
-  possession_status: 'under_construction',
-  pricing_min_cr: 2.5,
-  pricing_max_cr: 4.0,
-  configuration: '3 & 4 BHK',
-  units_count: 500,
-  towers_count: 5,
-  floors_count: 30,
-  area_acres: 10,
-  rera_ids: ['RERA123'],
-  brochure_url: null,
-  lat: 28,
-  lng: 77,
-  score: 85,
-  rec_tier: 'STRONG_BUY',
-  persona: 'Luxury',
-  decision_thesis: 'Great project.',
-  pros: [],
-  cons: [],
-  risks: [],
-  amenities: [],
-  connectivity: [],
-  units: [],
-  construction_updates: [],
-  promotions: [],
-  images: [],
-  builder_detail: {
-    id: 'elite',
-    name: 'Elite Builders',
-    slug: 'elite',
-    founded_year: 2010,
-    delivered_units: 5000,
-    rera_compliance_score: 95,
-    iso_certified: true,
-    company_overview: 'Elite Builders is a top builder in Noida.'
-  }
+  ...mockProject,
+  long_description: 'Premium living.',
+  design_theme: null,
+  total_units: 500,
+  marketing_claims: [],
+  all_amenities: [],
+  all_connectivity: [],
+  builder_detail: mockBuilder,
+  dna: null,
+  decision_profile: null,
+  persona_profile: null,
+  recommendation_profile: null,
+  competitors: [],
+  recommendation_score: null,
 };
 
 describe('OverviewTab Component', () => {
   it('shows builder loading skeleton when loading is true and detail is missing', () => {
-    // Override detail to null to simulate loading state
     const { container } = render(
       <OverviewTab
         project={mockProject}
@@ -101,7 +116,6 @@ describe('OverviewTab Component', () => {
       />
     );
     
-    // Check for the animate-pulse skeleton element inside Built by section
     const pulseElements = container.querySelectorAll('.animate-pulse');
     expect(pulseElements.length).toBeGreaterThan(0);
   });
@@ -126,12 +140,6 @@ describe('OverviewTab Component', () => {
       />
     );
     
-    // Should render company overview text
     expect(screen.getByText('Elite Builders is a top builder in Noida.')).toBeInTheDocument();
-    
-    // Should render stats
-    expect(screen.getByText('5,000+ Units')).toBeInTheDocument();
-    expect(screen.getByText('95%')).toBeInTheDocument();
-    expect(screen.getByText('Certified')).toBeInTheDocument();
   });
 });

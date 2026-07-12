@@ -1,10 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Phone, Mail, MapPin, Calendar, Filter } from 'lucide-react'
+import { Phone, Mail } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { adminAuthHeaders } from '@/lib/authedFetch'
-import { API_BASE } from '@/lib/env'
 
 interface Lead {
   id: string
@@ -28,6 +26,7 @@ export default function BuilderLeadsPage() {
 
   useEffect(() => {
     fetchLeads()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter])
 
   const fetchLeads = async () => {
@@ -36,8 +35,8 @@ export default function BuilderLeadsPage() {
       if (res.ok) {
         setLeads(await res.json())
       }
-    } catch (err) {
-      console.error('Failed to fetch leads:', err)
+    } catch {
+      console.error('Failed to fetch leads')
     } finally {
       setLoading(false)
     }

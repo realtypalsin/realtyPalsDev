@@ -1,31 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-<<<<<<< HEAD
-import { X, Calculator, Receipt, TrendingDown, IndianRupee } from 'lucide-react'
-import { calculateEmi, calculateStampDuty, calculateGst, formatInr } from '@/lib/calculators'
-=======
 import { X, Calculator, Receipt, TrendingDown } from 'lucide-react'
 import { calculateEmi, calculateStampDuty, calculateGst } from '@/lib/calculators'
 import { formatInr } from '@/lib/format'
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
 interface Props {
   onClose: () => void
   defaultPriceCr?: number
 }
 
-<<<<<<< HEAD
-type Tab = 'emi' | 'stamp' | 'gst' | 'total'
-
-export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props) {
-  const [tab, setTab] = useState<Tab>('total')
-=======
 type Tab = 'emi' | 'stamp' | 'gst'
 
 export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props) {
   const [tab, setTab] = useState<Tab>('emi')
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
   const [principal, setPrincipal]     = useState(String((defaultPriceCr * 0.8).toFixed(2)))
   const [rate, setRate]               = useState('8.5')
@@ -54,39 +44,11 @@ export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props
     return calculateGst(p, gstStatus, parseFloat(carpetSqm) || 0)
   })()
 
-<<<<<<< HEAD
-  // Total cost tab state
-  const [totalPrice, setTotalPrice]   = useState(String(defaultPriceCr))
-  const [totalGender, setTotalGender] = useState<'male' | 'female' | 'joint'>('male')
-  const [totalStatus, setTotalStatus] = useState<'under_construction' | 'ready_to_move'>('under_construction')
-  const [totalDown, setTotalDown]     = useState('20')
-  const [totalRate, setTotalRate]     = useState('8.5')
-  const [totalTenure, setTotalTenure] = useState('20')
-
-  const totalResult = (() => {
-    const p = parseFloat(totalPrice), dp = parseFloat(totalDown), r = parseFloat(totalRate), t = parseFloat(totalTenure)
-    if (!p || !dp || !r || !t) return null
-    const stamp = calculateStampDuty(p, totalGender)
-    const gst = calculateGst(p, totalStatus)
-    const loanCr = p * (1 - dp / 100)
-    const emi = calculateEmi(loanCr, r, t)
-    const downPayment = p * 1e7 * (dp / 100)
-    const upfrontTotal = downPayment + stamp.total_charges + gst.gst_amount
-    const lifetimeTotal = upfrontTotal + emi.total_payment
-    return { stamp, gst, emi, downPayment, upfrontTotal, lifetimeTotal, loanCr, p }
-  })()
-
-  const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'total', label: 'True Cost',   icon: <IndianRupee size={13} /> },
-    { id: 'emi',   label: 'EMI',         icon: <Calculator size={13} /> },
-    { id: 'stamp', label: 'Stamp Duty',  icon: <Receipt size={13} /> },
-    { id: 'gst',   label: 'GST',         icon: <TrendingDown size={13} /> },
-=======
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'emi',   label: 'EMI',        icon: <Calculator size={13} /> },
     { id: 'stamp', label: 'Stamp Duty', icon: <Receipt size={13} /> },
     { id: 'gst',   label: 'GST',        icon: <TrendingDown size={13} /> },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
   ]
 
   const inputCls = 'w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors'
@@ -216,91 +178,7 @@ export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props
             </>
           )}
 
-<<<<<<< HEAD
-          {/* Total True Cost */}
-          {tab === 'total' && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>Property Price (Cr)</label>
-                  <input type="number" value={totalPrice} onChange={(e) => setTotalPrice(e.target.value)} step="0.1" min="0" className={inputCls} placeholder="1.50" />
-                </div>
-                <div>
-                  <label className={labelCls}>Down Payment %</label>
-                  <input type="number" value={totalDown} onChange={(e) => setTotalDown(e.target.value)} step="5" min="10" max="90" className={inputCls} placeholder="20" />
-                </div>
-                <div>
-                  <label className={labelCls}>Loan Rate %</label>
-                  <input type="number" value={totalRate} onChange={(e) => setTotalRate(e.target.value)} step="0.05" min="0" className={inputCls} placeholder="8.5" />
-                </div>
-                <div>
-                  <label className={labelCls}>Tenure (yrs)</label>
-                  <input type="number" value={totalTenure} onChange={(e) => setTotalTenure(e.target.value)} step="1" min="1" max="30" className={inputCls} placeholder="20" />
-                </div>
-                <div>
-                  <label className={labelCls}>Buyer</label>
-                  <select value={totalGender} onChange={(e) => setTotalGender(e.target.value as 'male' | 'female' | 'joint')} className={inputCls}>
-                    <option value="male">Male (7%)</option>
-                    <option value="female">Female (6%)</option>
-                    <option value="joint">Joint (6.5%)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Property Status</label>
-                  <select value={totalStatus} onChange={(e) => setTotalStatus(e.target.value as 'under_construction' | 'ready_to_move')} className={inputCls}>
-                    <option value="under_construction">Under Construction</option>
-                    <option value="ready_to_move">Ready to Move</option>
-                  </select>
-                </div>
-              </div>
 
-              {totalResult && (
-                <div className="space-y-3">
-                  {/* Upfront cost breakdown */}
-                  <div className="bg-rose-50 dark:bg-rose-900/20 rounded-2xl p-4 border border-rose-100 dark:border-rose-800/40">
-                    <p className="text-[10px] text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider mb-2">Day 1 Upfront Cost</p>
-                    <p className="text-[26px] font-black text-rose-600 dark:text-rose-400 leading-none mb-3">
-                      {formatInr(totalResult.upfrontTotal)}
-                    </p>
-                    <div className={rowCls}>
-                      <span className="text-[12px] text-gray-500 dark:text-gray-400">Down payment ({totalDown}%)</span>
-                      <span className="text-[13px] font-bold text-gray-900 dark:text-white">{formatInr(totalResult.downPayment)}</span>
-                    </div>
-                    <div className={rowCls}>
-                      <span className="text-[12px] text-gray-500 dark:text-gray-400">Stamp duty + registration</span>
-                      <span className="text-[13px] font-bold text-gray-900 dark:text-white">{formatInr(totalResult.stamp.total_charges)}</span>
-                    </div>
-                    {totalResult.gst.gst_amount > 0 && (
-                      <div className={rowCls}>
-                        <span className="text-[12px] text-gray-500 dark:text-gray-400">GST ({totalResult.gst.gst_rate}%)</span>
-                        <span className="text-[13px] font-bold text-gray-900 dark:text-white">{formatInr(totalResult.gst.gst_amount)}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Lifetime cost */}
-                  <div className="bg-violet-50 dark:bg-violet-900/20 rounded-2xl p-4 border border-violet-100 dark:border-violet-800/40">
-                    <p className="text-[10px] text-violet-600 dark:text-violet-400 font-bold uppercase tracking-wider mb-2">Total Lifetime Cost (with loan)</p>
-                    <p className="text-[26px] font-black text-violet-600 dark:text-violet-400 leading-none mb-3">
-                      {formatInr(totalResult.lifetimeTotal)}
-                    </p>
-                    <div className={rowCls}>
-                      <span className="text-[12px] text-gray-500 dark:text-gray-400">Monthly EMI</span>
-                      <span className="text-[13px] font-bold text-gray-900 dark:text-white">{formatInr(totalResult.emi.emi_monthly)}/mo</span>
-                    </div>
-                    <div className={rowCls}>
-                      <span className="text-[12px] text-gray-500 dark:text-gray-400">Total interest over {totalTenure} yrs</span>
-                      <span className="text-[13px] font-bold text-red-500">{formatInr(totalResult.emi.total_interest)}</span>
-                    </div>
-                    <p className="text-[10px] text-violet-600/70 dark:text-violet-400/60 mt-2">Indicative. Excludes maintenance, brokerage, and interior costs.</p>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-=======
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
           {/* GST */}
           {tab === 'gst' && (
             <>

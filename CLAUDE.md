@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CLAUDE.md
 
 ## Core AI Developer Guardrails (Karpathy's Rules)
@@ -27,13 +26,10 @@
 
 ---
 
-=======
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 # RealtyPals
 
 AI-powered real estate advisor for Indian home buyers.
 
-<<<<<<< HEAD
 ## Purpose Of This File
 This file is the primary source of context for all AI-assisted development on RealtyPals.
 Before implementing any feature, modifying any schema, generating any UI, creating APIs, or writing any AI prompts, consult this document.
@@ -430,7 +426,6 @@ Fall back to Grep/Glob/Read **only** when the graph doesn't cover what you need.
 2. Use `detect_changes` for code review.
 3. Use `get_affected_flows` to understand impact.
 4. Use `query_graph` pattern="tests_for" to check coverage.
-=======
 ## Product Mission
 
 RealtyPals helps buyers make better property decisions faster.
@@ -625,4 +620,3 @@ Read when relevant:
 ## Task Master AI Instructions
 **Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
 @./.taskmaster/CLAUDE.md
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172

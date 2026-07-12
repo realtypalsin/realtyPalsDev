@@ -48,47 +48,56 @@ jest.mock('@/lib/analytics', () => ({
   track: jest.fn(),
 }));
 
+const sharedProps = {
+  index: 0,
+  isLast: true,
+  isSubmitting: false,
+  chatPhase: 'DISCOVERY' as const,
+  isLastProperties: false,
+  isExpanded: false,
+  carouselIndex: 0,
+  lastShortlist: [],
+  showMap: false,
+  userId: null,
+  sessionId: 'session-1',
+  regeneratingIdx: null,
+  chipPicker: null,
+  chips: [],
+  onCopy: jest.fn(),
+  onDetailOpen: jest.fn(),
+  onCallback: jest.fn(),
+  onRegenerate: jest.fn(),
+  onAction: jest.fn(),
+  onToggleExpanded: jest.fn(),
+  onToggleMap: jest.fn(),
+  onSetChipPicker: jest.fn(),
+  onSetCarouselIndex: jest.fn(),
+  onSetSiteVisit: jest.fn(),
+  onOpenCalculator: jest.fn(),
+  onOpenShareSheet: jest.fn(),
+  onToast: jest.fn(),
+};
+
 const mockUserMessage: ChatMessage = {
   id: 'msg-1',
-  role: 'user',
+  type: 'user',
   content: 'Show me projects in Sector 150',
-  timestamp: Date.now(),
+  timestamp: new Date().toISOString(),
 };
 
 const mockAssistantMessage: ChatMessage = {
   id: 'msg-2',
-  role: 'assistant',
+  type: 'ai',
   content: 'Here are some top projects in Sector 150.',
-  timestamp: Date.now(),
-  isStreaming: false,
+  timestamp: new Date().toISOString(),
 };
 
 describe('MessageBubble Component', () => {
   it('renders user message correctly', () => {
     render(
       <MessageBubble
+        {...sharedProps}
         message={mockUserMessage}
-        index={0}
-        isLast={true}
-        isSubmitting={false}
-        chatPhase="DISCOVERY"
-        isLastProperties={false}
-        isExpanded={false}
-        carouselIndex={0}
-        lastShortlist={[]}
-        showMap={false}
-        userId={null}
-        regeneratingIdx={null}
-        chipPicker={null}
-        chips={[]}
-        onCopy={jest.fn()}
-        onDetailOpen={jest.fn()}
-        onCallback={jest.fn()}
-        onRegenerate={jest.fn()}
-        onAction={jest.fn()}
-        onToggleExpanded={jest.fn()}
-        onToggleMap={jest.fn()}
-        setCarouselIndex={jest.fn()}
       />
     );
     
@@ -98,28 +107,9 @@ describe('MessageBubble Component', () => {
   it('renders assistant message correctly', () => {
     render(
       <MessageBubble
-        message={mockAssistantMessage}
+        {...sharedProps}
         index={1}
-        isLast={true}
-        isSubmitting={false}
-        chatPhase="DISCOVERY"
-        isLastProperties={false}
-        isExpanded={false}
-        carouselIndex={0}
-        lastShortlist={[]}
-        showMap={false}
-        userId={null}
-        regeneratingIdx={null}
-        chipPicker={null}
-        chips={[]}
-        onCopy={jest.fn()}
-        onDetailOpen={jest.fn()}
-        onCallback={jest.fn()}
-        onRegenerate={jest.fn()}
-        onAction={jest.fn()}
-        onToggleExpanded={jest.fn()}
-        onToggleMap={jest.fn()}
-        setCarouselIndex={jest.fn()}
+        message={mockAssistantMessage}
       />
     );
     
@@ -130,37 +120,19 @@ describe('MessageBubble Component', () => {
     const streamingMessage: ChatMessage = {
       ...mockAssistantMessage,
       content: '',
-      isStreaming: true,
+      streamingPhase: 'extracting',
     };
 
     render(
       <MessageBubble
+        {...sharedProps}
         message={streamingMessage}
         index={1}
-        isLast={true}
         isSubmitting={true}
-        chatPhase="DISCOVERY"
-        isLastProperties={false}
-        isExpanded={false}
-        carouselIndex={0}
-        lastShortlist={[]}
-        showMap={false}
-        userId={null}
-        regeneratingIdx={null}
-        chipPicker={null}
-        chips={[]}
-        onCopy={jest.fn()}
-        onDetailOpen={jest.fn()}
-        onCallback={jest.fn()}
-        onRegenerate={jest.fn()}
-        onAction={jest.fn()}
-        onToggleExpanded={jest.fn()}
-        onToggleMap={jest.fn()}
-        setCarouselIndex={jest.fn()}
       />
     );
 
-    // Look for inline loading UI "Understanding your request..."
-    expect(screen.getByText('Understanding your request…')).toBeInTheDocument();
+    // Look for inline loading UI
+    expect(screen.getByTestId('chat-loader')).toBeInTheDocument();
   });
 });

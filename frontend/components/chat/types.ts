@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-export type ChipPickerMode = 'single' | 'multi'
-
-export interface Chip {
-  emoji: string
-  label: string
-  msg?: string
-  picker?: ChipPickerMode
-  pickerAction?: string
-  pickerModal?: boolean
-  special?: string
-}
-
-=======
 // ─── Conversation Action Types ────────────────────────────────────────────────
 // Every user interaction is a ConversationAction. TEXT_MESSAGE runs LLM
 // extraction. INTENT_PATCH skips LLM — backend merges the patch directly.
@@ -88,7 +74,7 @@ export interface ConversationState {
 
 export type ChipPickerMode = 'single' | 'multi'
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 export interface ChipPickerState {
   mode: ChipPickerMode
   action: string

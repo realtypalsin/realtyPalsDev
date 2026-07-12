@@ -4,7 +4,7 @@ import { MODELS, FINANCIAL } from '../config'
 type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null; name?: string; tool_calls?: any[], tool_call_id?: string };
 type SendFn = (event: string, data: Record<string, unknown>) => void;
 
-const MAX_TOOL_CYCLES = 4;
+const MAX_TOOL_CYCLES = 3;
 
 // ── Inference configuration ───────────────────────────────────────────────────
 // Centralise token limits so they can vary per request type without touching
@@ -67,7 +67,7 @@ export class StreamStallError extends Error {
 
 // 30 seconds: generous enough for a slow tool call response, tight enough
 // to fail-fast on a genuine GitHub Models body stall.
-const INACTIVITY_MS = 30_000;
+const INACTIVITY_MS = 60_000;
 
 export async function streamWithOpenAI(
   system: string,

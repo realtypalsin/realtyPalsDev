@@ -10,41 +10,20 @@ export function PlaceholdersAndVanishInput({
     onSubmit,
     children,
     value: controlledValue,
-<<<<<<< HEAD
-=======
     disabled = false,
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 }: {
     placeholders: string[];
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     children?: React.ReactNode;
     value?: string;
-<<<<<<< HEAD
-=======
     disabled?: boolean;
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 }) {
     const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-<<<<<<< HEAD
-    const startAnimation = () => {
-        intervalRef.current = setInterval(() => {
-            setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
-        }, 3000);
-    };
-    const handleVisibilityChange = () => {
-        if (document.visibilityState !== "visible" && intervalRef.current) {
-            clearInterval(intervalRef.current); // Clear the interval when the tab is not visible
-            intervalRef.current = null;
-        } else if (document.visibilityState === "visible") {
-            startAnimation(); // Restart the interval when the tab becomes visible
-        }
-    };
-
-    useEffect(() => {
-=======
     useEffect(() => {
         const startAnimation = () => {
             intervalRef.current = setInterval(() => {
@@ -60,7 +39,7 @@ export function PlaceholdersAndVanishInput({
             }
         };
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         startAnimation();
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -82,13 +61,10 @@ export function PlaceholdersAndVanishInput({
     useEffect(() => {
         if (controlledValue !== undefined) {
             setValue(controlledValue);
-<<<<<<< HEAD
-            setTimeout(() => inputRef.current?.focus(), 50);
-=======
             if (controlledValue && document.activeElement !== inputRef.current) {
                 setTimeout(() => inputRef.current?.focus(), 50);
             }
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         }
     }, [controlledValue]);
 
@@ -96,11 +72,8 @@ export function PlaceholdersAndVanishInput({
         if (!inputRef.current) return;
         const canvas = canvasRef.current;
         if (!canvas) return;
-<<<<<<< HEAD
-        const ctx = canvas.getContext("2d");
-=======
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         if (!ctx) return;
 
         canvas.width = 800;
@@ -198,11 +171,8 @@ export function PlaceholdersAndVanishInput({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-<<<<<<< HEAD
-        if (e.key === "Enter" && !animating) {
-=======
         if (e.key === "Enter" && !animating && !disabled) {
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             vanishAndSubmit();
         }
     };
@@ -223,32 +193,24 @@ export function PlaceholdersAndVanishInput({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-<<<<<<< HEAD
-=======
         if (disabled) return;
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
         vanishAndSubmit();
         onSubmit && onSubmit(e);
     };
     return (
         <form
             className={cn(
-<<<<<<< HEAD
-                "w-full relative max-w-4xl mx-auto bg-gray-100 dark:bg-gray-800 h-12 rounded-full overflow-hidden shadow-sm border-0 transition duration-200"
-=======
                 "w-full relative max-w-4xl mx-auto bg-transparent h-12 rounded-full overflow-hidden border-0 transition duration-200",
                 disabled && "opacity-70 pointer-events-none"
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
             )}
             onSubmit={handleSubmit}
         >
             <canvas
                 className={cn(
-<<<<<<< HEAD
-                    "absolute pointer-events-none  text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
-=======
                     "absolute pointer-events-none text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                     !animating ? "opacity-0" : "opacity-100"
                 )}
                 ref={canvasRef}
@@ -264,65 +226,20 @@ export function PlaceholdersAndVanishInput({
                 ref={inputRef}
                 value={value}
                 type="text"
-<<<<<<< HEAD
-                className={cn(
-                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-6 pr-16 touch-target-min",
-=======
                 disabled={disabled}
                 className={cn(
                     "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-4 sm:pl-6 pr-4 touch-target-min disabled:cursor-not-allowed",
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                     animating && "text-transparent dark:text-transparent"
                 )}
             />
 
             <div className="absolute right-2 top-1/2 z-50 -translate-y-1/2 flex items-center gap-2">
                 {children}
-<<<<<<< HEAD
-                <button
-                    disabled={!value}
-                    type="submit"
-                    className="h-8 w-8 rounded-full disabled:bg-gray-300/70 dark:disabled:bg-gray-700 bg-blue-600 dark:bg-blue-600 transition duration-200 flex items-center justify-center touch-target-min"
-                >
-                    <motion.svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-gray-300 h-4 w-4"
-                    >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <motion.path
-                            d="M5 12l14 0"
-                            initial={{
-                                strokeDasharray: "50%",
-                                strokeDashoffset: "50%",
-                            }}
-                            animate={{
-                                strokeDashoffset: value ? 0 : "50%",
-                            }}
-                            transition={{
-                                duration: 0.3,
-                                ease: "linear",
-                            }}
-                        />
-                        <path d="M13 18l6 -6" />
-                        <path d="M13 6l6 6" />
-                    </motion.svg>
-                </button>
-            </div>
-
-            <div className="absolute inset-0 flex items-center rounded-full pointer-events-none">
-=======
             </div>
 
             <div className={cn("absolute inset-0 flex items-center rounded-full pointer-events-none transition-opacity duration-200", value ? "opacity-0" : "opacity-100")}>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                 <AnimatePresence mode="wait">
                     {!value && (
                         <motion.p
@@ -345,11 +262,8 @@ export function PlaceholdersAndVanishInput({
                             }}
                             className="dark:text-zinc-500 text-sm sm:text-base font-normal text-neutral-500 pl-4 sm:pl-12 text-left w-[calc(100%-2rem)] truncate"
                         >
-<<<<<<< HEAD
-                            {placeholders[currentPlaceholder]}
-=======
                             {disabled ? "AI is responding..." : placeholders[currentPlaceholder]}
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
                         </motion.p>
                     )}
                 </AnimatePresence>

@@ -2,15 +2,11 @@ const { withSentryConfig } = require('@sentry/nextjs')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-<<<<<<< HEAD
-  experimental: { instrumentationHook: true },
-=======
   experimental: {
     instrumentationHook: true,
     optimizePackageImports: ['lucide-react', '@phosphor-icons/react'],
     serverComponentsExternalPackages: ['@sentry/nextjs', '@sentry/node', '@apm-js-collab/tracing-hooks'],
   },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   transpilePackages: ['leaflet', 'react-leaflet'],
   images: {
     remotePatterns: [
@@ -34,14 +30,19 @@ const nextConfig = {
         protocol: 'https',
         hostname: '*.supabase.in',
       },
-<<<<<<< HEAD
-=======
       {
         protocol: 'https',
         hostname: 'storage.realtypals.com',
       },
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*`,
+      },
+    ]
   },
   async headers() {
     return [

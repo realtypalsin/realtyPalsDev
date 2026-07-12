@@ -336,7 +336,7 @@ router.post('/', async (req: Request, res: Response) => {
           guest_token: true,
           summary: true,
           last_projects: true,
-          messages: { orderBy: { created_at: 'asc' }, select: { role: true, content: true } },
+          messages: { orderBy: { created_at: 'desc' }, take: 50, select: { role: true, content: true } },
         },
       }) : null,
     ])
@@ -353,10 +353,12 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     const existingSummary = sessionData?.summary ?? null
-    const chatHistory: Array<{ role: 'user' | 'assistant'; content: string }> = sessionData?.messages.map((m) => ({
+    const chatHistoryRaw = sessionData?.messages ?? []
+    // If it was ordered desc, we must reverse it to ascending for the context window
+    const chatHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [...chatHistoryRaw].reverse().map((m) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
-    })) ?? []
+    }))
     const cachedProjectsFromSession: ScoredProject[] | null = sessionData?.last_projects
       ? (sessionData.last_projects as unknown as ScoredProject[])
       : null
@@ -628,7 +630,8 @@ router.post('/', async (req: Request, res: Response) => {
       if (!process.env.OPENAI_API_KEY) throw new Error('No OPENAI_API_KEY configured');
       console.log('[CHAT] START streamWithOpenAI', Date.now())
       fullText = await streamWithOpenAI(systemPrompt, messages, send, async (name, args: any) => {
-        if (name === 'builder_lookup') {
+        try {
+          if (name === 'builder_lookup') {
           const rec = await getBuilderRecord(args.name ?? '');
           return rec ?? {
             found: false,
@@ -774,7 +777,11 @@ router.post('/', async (req: Request, res: Response) => {
           return { documents: docs };
         }
 
-        return { error: 'Tool not recognized' };
+          return { error: 'Tool not recognized' };
+        } catch (toolErr) {
+          console.error(`[CHAT:TOOL_ERROR] ${name}:`, toolErr);
+          return { error: `Tool ${name} failed to execute. Tell the user this information is temporarily unavailable.` };
+        }
       });
       console.log('[CHAT] END streamWithOpenAI', Date.now(), { fullTextLen: fullText.length })
     } catch (err) {
@@ -787,8 +794,11 @@ router.post('/', async (req: Request, res: Response) => {
       // the user retries with a clean slate).
       if (err instanceof StreamStallError && err.tokensSent) {
         console.error('[chat] mid-stream stall after tokens sent — cannot fall back cleanly');
-        throw err;
-      }
+        send('token', { token: '\n\n[Response truncated due to timeout. Please ask me to continue.]' });
+        // Close cleanly so the user's session is persisted and they can just say 'continue'
+        fullText += '\n\n[Response truncated due to timeout. Please ask me to continue.]';
+        // We do NOT throw here, we let the normal flow persist the partial message.
+      } else {
 
       // Pre-first-chunk stall OR any other OpenAI error: no tokens sent yet.
       // Groq fallback is clean — client sees a seamless response from Groq.
@@ -819,7 +829,8 @@ router.post('/', async (req: Request, res: Response) => {
       } else {
         throw new Error('OpenAI failed and no GROQ_API_KEY fallback configured');
       }
-    }
+      }
+      }
     } // end: !needsClarification && disambiguationText === null
 
     if (fullText) {

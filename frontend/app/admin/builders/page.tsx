@@ -1,15 +1,10 @@
 'use client'
 
-<<<<<<< HEAD
-import { useEffect, useState } from 'react'
-import { Plus, Building2, Globe, CheckCircle2, Pencil, X, Save, Loader2 } from 'lucide-react'
-=======
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { Plus, Building2, Globe, CheckCircle2, Pencil, X, Save, Loader2, Trash2, Search, CornerDownLeft } from 'lucide-react'
+import { Plus, Building2, Globe, CheckCircle2, Pencil, X, Save, Loader2, Search, CornerDownLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
 interface Builder {
   id: string
@@ -63,11 +58,7 @@ function BuilderFormFields({
     <div className="grid sm:grid-cols-2 gap-3">
       {fields.map(({ label, key, ph, type }) => (
         <div key={key}>
-<<<<<<< HEAD
-          <label className="text-xs font-semibold text-gray-500 block mb-1">{label}</label>
-=======
           <label className="text-xs font-semibold text-zinc-500 block mb-1">{label}</label>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
           <input
             type={type ?? 'text'}
             value={String(form[key])}
@@ -77,21 +68,6 @@ function BuilderFormFields({
               if (key === 'name') onChange({ ...form, name: v, slug: toSlug(v) })
             }}
             placeholder={ph}
-<<<<<<< HEAD
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 transition-colors"
-          />
-        </div>
-      ))}
-      <div className="flex items-center gap-2 pt-1">
-        <input
-          type="checkbox"
-          id="credai"
-          checked={form.credai_member}
-          onChange={(e) => set('credai_member')(e.target.checked)}
-          className="w-4 h-4 rounded accent-blue-600"
-        />
-        <label htmlFor="credai" className="text-sm text-gray-700 font-medium">CREDAI Member</label>
-=======
             className="w-full border border-zinc-200 rounded-md px-3 py-2 text-[13px] text-zinc-900 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-all bg-white shadow-sm"
           />
         </div>
@@ -105,20 +81,11 @@ function BuilderFormFields({
           className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 accent-zinc-800"
         />
         <label htmlFor={`credai-${form.slug}`} className="text-[13px] text-zinc-700 font-medium cursor-pointer">CREDAI Member</label>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
       </div>
     </div>
   )
 }
 
-<<<<<<< HEAD
-export default function AdminBuilders() {
-  const [builders, setBuilders]     = useState<Builder[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [showAdd, setShowAdd]       = useState(false)
-  const [addForm, setAddForm]       = useState<FormState>(EMPTY_FORM)
-  const [saving, setSaving]         = useState(false)
-=======
 function SkeletonRow() {
   return (
     <div className="flex items-center px-4 py-3 border-b border-zinc-100 gap-4">
@@ -144,41 +111,10 @@ export default function AdminBuilders() {
   const [addForm, setAddForm]       = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving]         = useState(false)
   
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   const [editingId, setEditingId]   = useState<string | null>(null)
   const [editForm, setEditForm]     = useState<FormState>(EMPTY_FORM)
   const [editSaving, setEditSaving] = useState(false)
 
-<<<<<<< HEAD
-  useEffect(() => {
-    fetch('/api/v1/admin/builders')
-      .then((r) => r.json())
-      .then((d) => { setBuilders(d.builders ?? []); setLoading(false) })
-  }, [])
-
-  async function handleAdd(e: React.FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    const res = await fetch('/api/v1/admin/builders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name:          addForm.name,
-        slug:          addForm.slug,
-        founded_year:  addForm.founded_year ? parseInt(addForm.founded_year) : undefined,
-        headquarters:  addForm.headquarters || undefined,
-        website:       addForm.website || undefined,
-        credai_member: addForm.credai_member,
-      }),
-    })
-    const data = await res.json()
-    if (res.ok) {
-      setBuilders((b) => [...b, { ...data.builder, _count: { projects: 0 } }])
-      setShowAdd(false)
-      setAddForm(EMPTY_FORM)
-    }
-    setSaving(false)
-=======
   // Keyboard nav
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
@@ -273,79 +209,22 @@ export default function AdminBuilders() {
     } finally {
       setSaving(false)
     }
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
   }
 
   function startEdit(b: Builder) {
     setEditingId(b.id)
     setEditForm({
-<<<<<<< HEAD
-      name:          b.name,
-      slug:          b.slug,
-      founded_year:  b.founded_year?.toString() ?? '',
-      headquarters:  b.headquarters ?? '',
-      website:       b.website ?? '',
-=======
       name: b.name,
       slug: b.slug,
       founded_year: b.founded_year ? String(b.founded_year) : '',
       headquarters: b.headquarters || '',
       website: b.website || '',
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
       credai_member: b.credai_member,
     })
   }
 
   async function saveEdit(id: string) {
     setEditSaving(true)
-<<<<<<< HEAD
-    const res = await fetch(`/api/v1/admin/builders/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name:          editForm.name,
-        slug:          editForm.slug,
-        founded_year:  editForm.founded_year ? parseInt(editForm.founded_year) : null,
-        headquarters:  editForm.headquarters || null,
-        website:       editForm.website || null,
-        credai_member: editForm.credai_member,
-      }),
-    })
-    if (res.ok) {
-      setBuilders((bs) => bs.map((b) =>
-        b.id === id
-          ? {
-              ...b,
-              name:          editForm.name,
-              slug:          editForm.slug,
-              founded_year:  editForm.founded_year ? parseInt(editForm.founded_year) : null,
-              headquarters:  editForm.headquarters || null,
-              website:       editForm.website || null,
-              credai_member: editForm.credai_member,
-            }
-          : b,
-      ))
-      setEditingId(null)
-    }
-    setEditSaving(false)
-  }
-
-  return (
-    <div className="max-w-4xl mx-auto space-y-5">
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">Builders</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{builders.length} builder profiles</p>
-        </div>
-        <button
-          onClick={() => { setShowAdd(!showAdd); setEditingId(null) }}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm shadow-blue-200"
-        >
-          {showAdd ? <X size={15} /> : <Plus size={15} />}
-          {showAdd ? 'Cancel' : 'Add Builder'}
-=======
     try {
       const res = await fetch(`${API_BASE}/admin/builders/${id}`, {
         method: 'PATCH',
@@ -385,7 +264,6 @@ export default function AdminBuilders() {
         >
           {showAdd ? <X size={15} /> : <Plus size={15} />}
           {showAdd ? 'Cancel' : 'New Builder'}
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
         </button>
       </div>
 
@@ -393,27 +271,6 @@ export default function AdminBuilders() {
       {showAdd && (
         <form
           onSubmit={handleAdd}
-<<<<<<< HEAD
-          className="bg-white rounded-2xl border border-blue-100 p-5 shadow-sm space-y-4"
-        >
-          <h3 className="text-sm font-bold text-gray-700">New Builder</h3>
-          <BuilderFormFields form={addForm} onChange={setAddForm} />
-          <div className="flex gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => setShowAdd(false)}
-              className="px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold disabled:opacity-40 transition-colors"
-            >
-              {saving ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
-              {saving ? 'Adding…' : 'Add Builder'}
-=======
           className="bg-zinc-50 rounded-xl border border-zinc-200/80 p-6 mb-6 shadow-inner"
         >
           <div className="flex items-center justify-between border-b border-zinc-200/80 pb-3 mb-4">
@@ -428,117 +285,11 @@ export default function AdminBuilders() {
             >
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               {saving ? 'Saving...' : 'Save Profile'}
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
             </button>
           </div>
         </form>
       )}
 
-<<<<<<< HEAD
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-7 h-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : builders.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 text-sm">No builders yet</div>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/80">
-                {['Builder', 'Founded', 'HQ', 'Projects', ''].map((h, i) => (
-                  <th key={i} className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider px-4 py-3">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {builders.map((b) => (
-                <>
-                  <tr key={b.id} className="hover:bg-gray-50/50 group transition-colors">
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Building2 size={14} className="text-blue-400" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{b.name}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] text-gray-400 font-mono">{b.slug}</span>
-                            {b.credai_member && (
-                              <span className="flex items-center gap-0.5 text-[9px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full">
-                                <CheckCircle2 size={8} /> CREDAI
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-sm text-gray-500">{b.founded_year ?? '—'}</td>
-                    <td className="px-4 py-3.5 text-sm text-gray-500 max-w-[140px] truncate">{b.headquarters ?? '—'}</td>
-                    <td className="px-4 py-3.5">
-                      <span className="text-sm font-bold text-gray-900">{b._count.projects}</span>
-                      <span className="text-xs text-gray-400 ml-1">projects</span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {b.website && (
-                          <a
-                            href={b.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-500 transition-colors"
-                            title="Website"
-                          >
-                            <Globe size={13} />
-                          </a>
-                        )}
-                        <button
-                          onClick={() => editingId === b.id ? setEditingId(null) : startEdit(b)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors"
-                          title="Edit"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* Inline edit row */}
-                  {editingId === b.id && (
-                    <tr key={`${b.id}-edit`}>
-                      <td colSpan={5} className="px-4 py-4 bg-blue-50/30 border-b border-blue-100">
-                        <div className="space-y-4">
-                          <BuilderFormFields form={editForm} onChange={setEditForm} />
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setEditingId(null)}
-                              className="px-4 py-2 border border-gray-200 bg-white rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => saveEdit(b.id)}
-                              disabled={editSaving}
-                              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold disabled:opacity-40 transition-colors"
-                            >
-                              {editSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-                              {editSaving ? 'Saving…' : 'Save Changes'}
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-=======
       {/* Notion-style Unified Command Bar */}
       <div className="group flex items-center gap-3 px-4 py-3 bg-white border border-zinc-200/80 rounded-xl shadow-sm mb-6 focus-within:border-zinc-300 focus-within:shadow-md transition-all">
         <Search size={16} className="text-zinc-400 group-focus-within:text-zinc-600 transition-colors" />
@@ -695,7 +446,6 @@ export default function AdminBuilders() {
         </div>
       </div>
       
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
     </div>
   )
 }

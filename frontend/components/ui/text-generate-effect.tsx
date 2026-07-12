@@ -28,11 +28,8 @@ export const TextGenerateEffect = ({
                 delay: stagger(0.02),
             }
         );
-<<<<<<< HEAD
-    }, [scope.current, words]);
-=======
     }, [animate, filter, duration, words]);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
     const renderWords = () => {
         return (

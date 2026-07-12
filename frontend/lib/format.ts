@@ -1,9 +1,7 @@
-<<<<<<< HEAD
-=======
 /**
  * Format price in Crores only (compact, 2 decimals)
  */
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 export function formatPriceCr(price: number): string {
   const value = Number(price);
   if (!Number.isFinite(value)) return '₹0.00 Cr';
@@ -11,8 +9,6 @@ export function formatPriceCr(price: number): string {
   return `₹${crValue.toFixed(2)} Cr`;
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Format price with intelligent scaling: Cr, Lakh, or raw (with locale separator)
  */
@@ -37,7 +33,7 @@ export function formatBudget(value: number): string {
   return `₹${formattedLakhs} lakh`;
 }
 
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 export function formatPriceInrCompact(price: number): string {
   return formatPriceCr(price);
 }

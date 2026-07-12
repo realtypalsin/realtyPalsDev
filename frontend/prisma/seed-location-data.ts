@@ -82,12 +82,12 @@ async function seedLocationData() {
     const actualProjectId = project.id;
 
     // Check if decision profile exists
-    let decisionProfile = await prisma.decisionProfile.findUnique({
+    let decisionProfile = await (prisma as any).decisionProfile.findUnique({
       where: { project_id: actualProjectId }
     })
 
     if (!decisionProfile) {
-      decisionProfile = await prisma.decisionProfile.create({
+      decisionProfile = await (prisma as any).decisionProfile.create({
         data: {
           project_id: actualProjectId,
           intelligence_data: locationData,
@@ -98,7 +98,7 @@ async function seedLocationData() {
     } else {
       // Merge with existing intelligence_data
       const existingData = (decisionProfile.intelligence_data as any) || {}
-      decisionProfile = await prisma.decisionProfile.update({
+      decisionProfile = await (prisma as any).decisionProfile.update({
         where: { project_id: actualProjectId },
         data: {
           intelligence_data: {

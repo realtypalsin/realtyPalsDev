@@ -43,11 +43,8 @@ async function main() {
   let updated = 0
 
   for (const correction of CORRECTIONS) {
-<<<<<<< HEAD
-    const match = projects.find((p: any) =>
-=======
     const match = projects.find((p) =>
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       p.name.toLowerCase().includes(correction.nameContains.toLowerCase())
     )
     if (!match) {

@@ -1266,4 +1266,163 @@ router.post(
   },
 )
 
+// ---------------------------------------------------------------------------
+// ─── ANALYTICS ─────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+router.get('/analytics/summary', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const totalChats = await prisma.chatSession.count()
+    const totalQueries = await prisma.chatMessage.count({ where: { role: 'user' } })
+    const zeroResultSearches = await prisma.queryMetrics.count({ where: { had_results: false } })
+    const conversionsCount = await prisma.chatAnalytics.count({ where: { conversion_type: { not: null } } })
+    const clarificationsAgg = await prisma.queryMetrics.aggregate({ _avg: { clarification_count: true } })
+
+    const topSectorsData = await prisma.queryMetrics.groupBy({
+      by: ['sector'],
+      _count: { sector: true },
+      orderBy: { _count: { sector: 'desc' } },
+      where: { sector: { not: null } },
+      take: 5
+    })
+
+    const topBuildersData = await prisma.queryMetrics.groupBy({
+      by: ['builder'],
+      _count: { builder: true },
+      orderBy: { _count: { builder: 'desc' } },
+      where: { builder: { not: null } },
+      take: 5
+    })
+
+    const conversionRate = totalChats > 0 ? ((conversionsCount / totalChats) * 100).toFixed(1) + '%' : '0%'
+
+    res.json({
+      totalChats,
+      totalQueries,
+      avgQueriesPerChat: totalChats > 0 ? (totalQueries / totalChats).toFixed(1) : 0,
+      zeroResultSearches,
+      zeroResultSearchRate: totalQueries > 0 ? ((zeroResultSearches / totalQueries) * 100).toFixed(1) + '%' : '0%',
+      conversionRate,
+      avgClarifications: (clarificationsAgg._avg.clarification_count ?? 0).toFixed(1),
+      topSectors: topSectorsData.map(d => ({ sector: d.sector as string, count: d._count.sector })),
+      topBuilders: topBuildersData.map(d => ({ builder: d.builder as string, count: d._count.builder }))
+    })
+  } catch (err) {
+    console.error('[analytics/summary]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+router.get('/analytics/quality', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const totalSearches = await prisma.queryMetrics.count()
+    const zeroResultSearches = await prisma.queryMetrics.count({ where: { had_results: false } })
+    const searchWithResults = await prisma.queryMetrics.count({ where: { had_results: true } })
+    const agg = await prisma.queryMetrics.aggregate({
+      _avg: { clarification_count: true, results_count: true }
+    })
+
+    res.json({
+      totalSearches,
+      zeroResultSearches,
+      zeroResultRate: totalSearches > 0 ? ((zeroResultSearches / totalSearches) * 100).toFixed(1) + '%' : '0%',
+      searchWithResults,
+      searchWithoutResults: zeroResultSearches,
+      avgClarifications: (agg._avg.clarification_count ?? 0).toFixed(1),
+      avgResultsCount: (agg._avg.results_count ?? 0).toFixed(1)
+    })
+  } catch (err) {
+    console.error('[analytics/quality]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+router.get('/analytics/users', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const totalUsers = await prisma.userMemory.count()
+    const totalConversions = await prisma.chatAnalytics.count({ where: { conversion_type: { not: null } } })
+
+    const totalChats = await prisma.chatSession.count()
+    const searches = await prisma.queryMetrics.count()
+    const clicks = await prisma.propertyEvent.count({ where: { action: 'view' } })
+    const saves = await prisma.propertyEvent.count({ where: { action: 'save' } })
+
+    // A rough approximation of repeated visitors:
+    const sessionsGrouped = await prisma.chatSession.groupBy({
+      by: ['user_id'],
+      _count: { id: true },
+      where: { user_id: { not: null } }
+    })
+    const repeatedVisitors = sessionsGrouped.filter(s => s._count.id > 1).length
+
+    const avgQueriesPerUser = totalUsers > 0 ? (searches / totalUsers) : 0
+
+    const topSectorsData = await prisma.queryMetrics.groupBy({
+      by: ['sector'],
+      _count: { sector: true },
+      orderBy: { _count: { sector: 'desc' } },
+      where: { sector: { not: null } },
+      take: 5
+    })
+
+    res.json({
+      totalUsers,
+      repeatedVisitors,
+      totalConversions,
+      avgQueriesPerUser,
+      mostActiveSectors: topSectorsData.map(d => ({ sector: d.sector as string, searches: d._count.sector })),
+      conversionFunnel: {
+        chats: totalChats,
+        searches,
+        clicks,
+        saves,
+        conversions: totalConversions
+      }
+    })
+  } catch (err) {
+    console.error('[analytics/users]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+
+router.get('/analytics/properties', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const events = await prisma.propertyEvent.findMany({
+      include: {
+        project: { select: { name: true } }
+      }
+    })
+
+    const propertiesMap = new Map<string, any>()
+    for (const ev of events) {
+      if (!ev.project_id || !ev.project) continue
+      if (!propertiesMap.has(ev.project_id)) {
+        propertiesMap.set(ev.project_id, {
+          projectId: ev.project_id,
+          projectName: ev.project.name,
+          views: 0,
+          saves: 0,
+          comparisons: 0,
+          shares: 0,
+          whatsappInquiries: 0
+        })
+      }
+      const data = propertiesMap.get(ev.project_id)
+      if (ev.action === 'view') data.views++
+      if (ev.action === 'save') data.saves++
+      if (ev.action === 'compare') data.comparisons++
+      if (ev.action === 'share') data.shares++
+      if (ev.action === 'whatsapp') data.whatsappInquiries++
+    }
+
+    const properties = Array.from(propertiesMap.values()).sort((a, b) => (b.views + b.saves) - (a.views + a.saves))
+
+    res.json({ properties })
+  } catch (err) {
+    console.error('[analytics/properties]', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
 export default router
+

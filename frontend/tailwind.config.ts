@@ -11,10 +11,8 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["var(--font-outfit)"],
-<<<<<<< HEAD
-=======
         serif: ["var(--font-playfair)"],
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
       },
       colors: {
         background: "var(--background)",

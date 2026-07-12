@@ -8,13 +8,8 @@
 }
 
 .dark {
-<<<<<<< HEAD
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-=======
   --background: #09090b;
   --foreground: #f8fafc;
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 }
 
 body {
@@ -24,22 +19,6 @@ body {
 }
 
 body.glass-app {
-<<<<<<< HEAD
-  background: #e6e6e6;
-}
-
-.dark body.glass-app, .dark .bg-\[\#E6E6E6\] {
-  background: #0f172a;
-}
-
-.glass-surface {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  /* Use lighter blur for performance, especially on mobile */
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-=======
   background: #E4E4E5;
   color: #1E293B; /* slate-800 for better contrast */
 }
@@ -58,8 +37,10 @@ body.glass-app {
   opacity: 0.02; /* Extremely subtle paper feel */
   mix-blend-mode: multiply; /* Better for light backgrounds */
 }
+
 .dark .noise-overlay {
-  opacity: 0.06;
+  opacity: 0.035;
+  mix-blend-mode: overlay; /* Better for dark backgrounds */
 }
 
 /* ── Purple Hue Background ── */
@@ -109,7 +90,6 @@ h1, h2, h3, h4 {
 }
 .font-serif {
   font-family: var(--font-playfair), serif;
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 }
 
 @media (max-width: 768px) {
@@ -123,13 +103,8 @@ h1, h2, h3, h4 {
 
 .dark .glass-surface {
   background: rgba(15, 23, 42, 0.7);
-<<<<<<< HEAD
-  border: 1px solid rgba(51, 65, 85, 0.4);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-=======
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 10px 40px -10px rgba(0,0,0,0.3);
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 }
 
 @media (max-width: 768px) and (prefers-color-scheme: dark) {
@@ -324,13 +299,6 @@ input[type="range"]::-moz-range-thumb {
 
 /* ── Mobile-specific improvements ── */
 @media (max-width: 767px) {
-<<<<<<< HEAD
-  /* Safe area padding for iOS devices with notch/home bar */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 8px);
-  }
-=======
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 
   /* Remove tap highlight on mobile for cleaner touch interactions */
   button, a, [role="button"] {
@@ -407,31 +375,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: none;
 }
 
-<<<<<<< HEAD
-/* ── iOS input font-size fix: prevents auto-zoom on focus ── */
-@media (max-width: 767px) {
-  input[type="text"],
-  input[type="search"],
-  input[type="email"],
-  input[type="tel"],
-  input[type="number"],
-  textarea {
-    font-size: 16px !important;
-  }
-}
-
-/* ── Touch-action: eliminates 300ms tap delay on Android ── */
-button, a, [role="button"], input, textarea, select {
-  touch-action: manipulation;
-}
-
-/* ── Prevent text overflow on small screens (320px) ── */
-@media (max-width: 375px) {
-  .text-3xl { font-size: 1.5rem !important; }
-  .text-4xl { font-size: 1.75rem !important; }
-  .text-5xl { font-size: 2rem !important; }
-  .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
-=======
 /* ── Hide scrollbar class ── */
 .hide-scrollbar {
   -ms-overflow-style: none;
@@ -439,5 +382,4 @@ button, a, [role="button"], input, textarea, select {
 }
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
 }

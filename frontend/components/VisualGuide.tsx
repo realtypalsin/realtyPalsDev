@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-<<<<<<< HEAD
-import { HelpCircle, X, ChevronRight, ChevronLeft, MessageSquare, Zap, RotateCcw } from 'lucide-react';
-=======
 import { HelpCircle, X, ChevronRight, ChevronLeft, Map, MessageSquare, Zap, Target, RotateCcw } from 'lucide-react';
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+
 
 interface GuideStep {
   id: string;
