@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { User, RotateCcw, Copy, ChevronDown, MapPin, ThumbsUp, ThumbsDown } from 'lucide-react'
@@ -18,7 +18,12 @@ import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
 import rehypeRaw from 'rehype-raw'
-import RealtyChart from '@/components/RealtyChart'
+
+
+const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
+  ssr: false,
+  loading: () => <div className="h-48 bg-slate-100 animate-pulse rounded-xl flex items-center justify-center"><span className="text-sm text-slate-400">Loading chart...</span></div>
+})
 import RealtyBox from '@/components/RealtyBox'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -195,7 +200,7 @@ function MessageBubbleInner({
   };
 
   return (
-    <motion.div 
+    <m.div 
       initial={{ opacity: 0, x: isUser ? 20 : -20, scale: 0.95 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 260, damping: 20 }}
@@ -275,7 +280,7 @@ function MessageBubbleInner({
                 // Stage B: properties arrived, AI text not started yet
                 if (hasProperties && !message.content && phase === 'generating') {
                   return (
-                    <motion.div
+                    <m.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.2 }}
@@ -289,7 +294,7 @@ function MessageBubbleInner({
                       <span className="text-[12px] text-blue-600 dark:text-blue-400 font-medium">
                         Analyzing {resultCount != null && resultCount > 0 ? `${resultCount} ${resultCount === 1 ? 'property' : 'properties'}` : 'results'}…
                       </span>
-                    </motion.div>
+                    </m.div>
                   )
                 }
 
@@ -304,7 +309,7 @@ function MessageBubbleInner({
                           <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">AI Advisor</span>
                         </div>
                       )}
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.25 }}
@@ -334,7 +339,7 @@ function MessageBubbleInner({
                             )}
                           </>
                         )}
-                      </motion.div>
+                      </m.div>
                     </>
                   )
                 }
@@ -504,7 +509,7 @@ function MessageBubbleInner({
         return (
           <div className="mt-2 w-full">
 
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
@@ -538,11 +543,11 @@ function MessageBubbleInner({
                   <ChevronDown size={12} className={`text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
               </div>
-            </motion.div>
+            </m.div>
 
             {/* Empty sector banner — shown when requested sector has no exact matches */}
             {useNewFormat && !hasExact && hasNearby && expansion && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -557,7 +562,7 @@ function MessageBubbleInner({
                     Verified --
                   </p>
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {isOpen && (
@@ -567,7 +572,7 @@ function MessageBubbleInner({
                   <div className="mt-3">
                     <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {(useNewFormat ? exactList : legacyList).map((property, pi) => (
-                        <motion.div
+                        <m.div
                           key={property.id}
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -589,7 +594,7 @@ function MessageBubbleInner({
                             }}
                             onSetSiteVisit={onSetSiteVisit}
                           />
-                        </motion.div>
+                        </m.div>
                       ))}
                     </div>
                   </div>
@@ -607,7 +612,7 @@ function MessageBubbleInner({
                     )}
                     <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {nearbyList.map((property, pi) => (
-                        <motion.div
+                        <m.div
                           key={property.id}
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -629,7 +634,7 @@ function MessageBubbleInner({
                             }}
                             onSetSiteVisit={onSetSiteVisit}
                           />
-                        </motion.div>
+                        </m.div>
                       ))}
                     </div>
                   </div>
@@ -702,7 +707,7 @@ function MessageBubbleInner({
       {/* Progressive chips from Conversation Engine */}
       {message.type === 'ai' && displayContent && isLast && !isSubmitting && combinedChips.length > 0 && (
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.15 }}
@@ -718,7 +723,7 @@ function MessageBubbleInner({
           <AnimatePresence mode="wait">
 
             {chipPicker && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
                 animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
@@ -792,7 +797,7 @@ function MessageBubbleInner({
                     })}
                   </div>
                   {chipPicker.mode === 'multi' && chipPicker.selected.length >= 2 && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2.5 pt-2.5 border-t border-gray-100 dark:border-gray-700">
+                    <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2.5 pt-2.5 border-t border-gray-100 dark:border-gray-700">
                       <button
                         onClick={() => {
                           const selected = lastShortlist.filter(p => chipPicker.selected.includes(p.slug))
@@ -812,13 +817,13 @@ function MessageBubbleInner({
                       >
                         Compare {chipPicker.selected.length} properties →
                       </button>
-                    </motion.div>
+                    </m.div>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Comparison table */}
@@ -831,7 +836,7 @@ function MessageBubbleInner({
       {/* Context Menu (Right Click / Long Press) */}
       <AnimatePresence mode="wait">
         {contextMenu && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -858,10 +863,10 @@ function MessageBubbleInner({
                 {regeneratingIdx === index ? 'Regenerating...' : 'Regenerate'}
               </button>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
 
   )
 }

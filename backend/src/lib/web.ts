@@ -3,6 +3,38 @@
 // area background (Wikipedia), commute (Google Maps), and live page read (Jina).
 // All are best-effort: they degrade to null/empty rather than throwing so a
 // single tool failure never breaks a chat turn.
+// single tool failure never breaks a chat turn.
+
+// ── SSRF Protection ──────────────────────────────────────────────────────────
+// Blocks attempts to use the server as a proxy to reach internal infrastructure.
+const BLOCKED_HOSTS = new Set([
+  'localhost', '127.0.0.1', '0.0.0.0', '::1',
+  '169.254.169.254',   // AWS/GCP/Azure metadata
+  '169.254.170.2',     // ECS metadata
+  '100.100.100.200',   // Alibaba Cloud metadata
+  'metadata.google.internal',
+])
+
+export function isSafeUrl(urlString: string): boolean {
+  try {
+    const u = new URL(urlString)
+    // Only allow HTTPS
+    if (u.protocol !== 'https:') return false
+    // Block known internal/metadata hosts
+    if (BLOCKED_HOSTS.has(u.hostname)) return false
+    // Block private IP ranges
+    const ipv4Match = u.hostname.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/)
+    if (ipv4Match) {
+      const [, a, b] = ipv4Match.map(Number)
+      if (a === 10) return false                    // 10.0.0.0/8
+      if (a === 172 && b >= 16 && b <= 31) return false  // 172.16.0.0/12
+      if (a === 192 && b === 168) return false      // 192.168.0.0/16
+    }
+    return true
+  } catch {
+    return false
+  }
+}
 
 // ── Web search: Tavily primary, Serper fallback ────────────────────────────
 
@@ -123,6 +155,12 @@ export async function commute(origin: string, destination: string): Promise<stri
 // ── Live page read: Jina Reader (RERA / news / builder pages) ──────────────
 
 export async function readPage(url: string, maxChars = 2500): Promise<string | null> {
+  // Guard: SSRF protection
+  if (!isSafeUrl(url)) {
+    console.warn('[web] Blocked unsafe URL:', url)
+    return 'Error: This URL cannot be accessed.'
+  }
+
   const key = process.env.JINA_API_KEY
   try {
     const res = await fetch(`https://r.jina.ai/${encodeURIComponent(url)}`, {

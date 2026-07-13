@@ -125,7 +125,7 @@ model Project {
   created_at         DateTime      @default(now())
   updated_at         DateTime      @updatedAt
 
-  builder      Builder        @relation(fields: [builder_id], references: [id])
+  builder      Builder         @relation(fields: [builder_id], references: [id])
   unit_types   UnitType[]
   images       ProjectImage[]
   amenities    Amenity[]
@@ -170,6 +170,9 @@ model ProjectImage {
   type       ImageType
   caption    String?
   sort_order Int       @default(0)
+  bhk        Int?
+  size_sqft  Int?
+  source     String    @default("admin")
 
   project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
@@ -207,17 +210,20 @@ model Connectivity {
 // ── Chat & Session ────────────────────────────────────────────────────
 
 model ChatSession {
-  id            String    @id @default(uuid())
+  id            String   @id @default(uuid())
   user_id       String?
   guest_token   String?
   title         String?
-  message_count Int       @default(0)
-  chat_phase    String    @default("DISCOVERY")
+  message_count Int      @default(0)
+  chat_phase    String   @default("DISCOVERY")
   last_projects Json?
-  created_at    DateTime  @default(now())
-  last_active   DateTime  @updatedAt
+  created_at    DateTime @default(now())
+  last_active   DateTime @updatedAt
 
-  messages ChatMessage[]
+  messages      ChatMessage[]
+  ChatAnalytics ChatAnalytics[]
+  QueryMetrics  QueryMetrics[]
+  PropertyEvent PropertyEvent[]
 
   @@index([user_id])
   @@index([guest_token])
@@ -225,12 +231,12 @@ model ChatSession {
 }
 
 model ChatMessage {
-  id               String      @id @default(uuid())
-  session_id       String
-  role             MessageRole
-  content          String
-  intent_snapshot  Json?
-  created_at       DateTime    @default(now())
+  id              String      @id @default(uuid())
+  session_id      String
+  role            MessageRole
+  content         String
+  intent_snapshot Json?
+  created_at      DateTime    @default(now())
 
   session ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
@@ -241,23 +247,23 @@ model ChatMessage {
 // ── User Data ─────────────────────────────────────────────────────────
 
 model UserMemory {
-  id                       String   @id @default(uuid())
-  user_id                  String   @unique
-  bhk_preference           Int?
-  budget_min_cr            Float?
-  budget_max_cr            Float?
-  sector_preference        String?
-  purpose                  String?
-  possession_pref          String?
-  viewed_slugs             String[]
-  rejected_slugs           String[]
-  saved_slugs              String[]
-  summary_text             String?
-  work_location            String?
-  home_loan_pre_approved   Boolean?
-  timeline_months          Int?
-  contact_phone            String?
-  updated_at               DateTime @updatedAt
+  id                     String   @id @default(uuid())
+  user_id                String   @unique
+  bhk_preference         Int?
+  budget_min_cr          Float?
+  budget_max_cr          Float?
+  sector_preference      String?
+  purpose                String?
+  possession_pref        String?
+  viewed_slugs           String[]
+  rejected_slugs         String[]
+  saved_slugs            String[]
+  summary_text           String?
+  work_location          String?
+  home_loan_pre_approved Boolean?
+  timeline_months        Int?
+  contact_phone          String?
+  updated_at             DateTime @updatedAt
 
   @@map("user_memory")
 }
@@ -276,7 +282,7 @@ model SavedProperty {
 }
 
 model SiteVisitRequest {
-  id           String   @id @default(uuid())
+  id           String          @id @default(uuid())
   project_id   String
   project_slug String
   project_name String
@@ -287,7 +293,7 @@ model SiteVisitRequest {
   time_slot    String
   message      String?
   status       SiteVisitStatus @default(pending)
-  created_at   DateTime @default(now())
+  created_at   DateTime        @default(now())
 
   @@index([project_slug])
   @@map("site_visit_requests")
@@ -322,17 +328,68 @@ model ProjectDocument {
 }
 
 model FailedWebhook {
-  id          String   @id @default(uuid())
-  lead_type   String
-  name        String
-  phone       String
+  id           String   @id @default(uuid())
+  lead_type    String
+  name         String
+  phone        String
   project_name String?
-  payload     Json
-  error       String?
-  retries     Int      @default(0)
-  resolved    Boolean  @default(false)
-  created_at  DateTime @default(now())
+  payload      Json
+  error        String?
+  retries      Int      @default(0)
+  resolved     Boolean  @default(false)
+  created_at   DateTime @default(now())
 
   @@index([resolved, created_at])
   @@map("failed_webhooks")
+}
+
+model ChatAnalytics {
+  id              String   @id @default(uuid())
+  session_id      String
+  lead_type       String?
+  conversion_time Int?
+  promotional_id  String?
+  promo_clicked   Boolean  @default(false)
+  created_at      DateTime @default(now())
+  ai_confidence   Int?
+  latency_ms      Int?
+  llm_tokens      Int?
+
+  session ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@map("chat_analytics")
+}
+
+model QueryMetrics {
+  id                  String   @id @default(uuid())
+  session_id          String
+  query               String
+  extracted_intent    Json?
+  clicked             Boolean  @default(false)
+  converted           Boolean  @default(false)
+  created_at          DateTime @default(now())
+  builder             String?
+  clarification_count Int      @default(0)
+  had_results         Boolean?
+  possession          String?
+  purpose             String?
+  results_count       Int?
+
+  session ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@map("query_metrics")
+}
+
+model PropertyEvent {
+  id          String   @id @default(uuid())
+  session_id  String
+  user_id     String?
+  guest_token String?
+  project_id  String
+  action      String
+  created_at  DateTime @default(now())
+
+  session ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@map("property_events")
 }

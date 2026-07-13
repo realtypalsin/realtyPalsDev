@@ -3,6 +3,7 @@
 import React from 'react'
 import { Trophy, BarChart2, CheckCircle, Building2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { Skeleton } from '@/components/ui/skeleton'
 import remarkGfm from 'remark-gfm'
 import type { ResponseBlock, BlockType } from '@/lib/responseParser'
 import {
@@ -17,7 +18,12 @@ import {
 } from '@/lib/responseParser'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
-import RealtyChart from '@/components/RealtyChart'
+
+
+const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-48 w-full rounded-xl" />
+})
 import RealtyBox from '@/components/RealtyBox'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })

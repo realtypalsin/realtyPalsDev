@@ -12,6 +12,7 @@ import { supabaseAdmin } from '../lib/supabase'
 import { computeCompleteness } from '../lib/completeness'
 import { canonicalSector, canonicalCity } from '../lib/discovery/normalize'
 import applicationsRouter from './builderApplications'
+import { validateUploadedFile } from '../lib/uploadValidator'
 
 const router = Router()
 
@@ -121,6 +122,34 @@ router.get('/leads', async (req: Request, res: Response): Promise<void> => {
   ])
 
   res.json({ leads: builderLeads, total, page, pageSize })
+})
+
+// ---------------------------------------------------------------------------
+// PATCH /leads/:id
+// ---------------------------------------------------------------------------
+router.patch('/leads/:id', async (req: Request, res: Response): Promise<void> => {
+  const { status } = req.body
+  const leadId = req.params.id
+
+  if (!status || !['new', 'contacted', 'qualified', 'lost'].includes(status)) {
+    res.status(400).json({ error: 'Invalid status' })
+    return
+  }
+
+  try {
+    const updated = await prisma.builderLead.update({
+      where: { id: leadId },
+      data: { status }
+    })
+    res.json(updated)
+  } catch (err: unknown) {
+    if (isPrismaNotFound(err)) {
+      res.status(404).json({ error: 'Lead not found' })
+      return
+    }
+    console.error('[admin] lead patch', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
 })
 
 // ---------------------------------------------------------------------------
@@ -1249,6 +1278,12 @@ router.post(
       return
     }
 
+    const validation = await validateUploadedFile(file.buffer)
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error || 'Invalid file type' })
+      return
+    }
+
     const ext  = (file.originalname.split('.').pop()?.toLowerCase()) ?? 'jpg'
     const path = `projects/${slug}-${Date.now()}.${ext}`
 
@@ -1344,7 +1379,7 @@ router.get('/analytics/users', async (req: Request, res: Response): Promise<void
     const totalChats = await prisma.chatSession.count()
     const searches = await prisma.queryMetrics.count()
     const clicks = await prisma.propertyEvent.count({ where: { action: 'view' } })
-    const saves = await prisma.propertyEvent.count({ where: { action: 'save' } })
+    const saves = await prisma.savedProperty.count()
 
     // A rough approximation of repeated visitors:
     const sessionsGrouped = await prisma.chatSession.groupBy({
@@ -1387,39 +1422,52 @@ router.get('/analytics/users', async (req: Request, res: Response): Promise<void
 
 router.get('/analytics/properties', async (req: Request, res: Response): Promise<void> => {
   try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const events = await prisma.propertyEvent.findMany({
-      include: {
-        project: { select: { name: true } }
-      }
+      where: { created_at: { gte: thirtyDaysAgo } },
+      orderBy: { created_at: 'desc' },
+      take: 50000,
     })
+    const projectIds = [...new Set(events.map((e: any) => e.project_id))]
+    const projects = await prisma.project.findMany({
+      where: { id: { in: projectIds as string[] } },
+      select: { id: true, name: true }
+    })
+    const projectMap = new Map(projects.map((p: any) => [p.id, p.name]))
 
     const propertiesMap = new Map<string, any>()
-    for (const ev of events) {
-      if (!ev.project_id || !ev.project) continue
+    for (const ev of events as any[]) {
+      if (!ev.project_id) continue
+      const projectName = projectMap.get(ev.project_id)
+      if (!projectName) continue
+
       if (!propertiesMap.has(ev.project_id)) {
         propertiesMap.set(ev.project_id, {
           projectId: ev.project_id,
-          projectName: ev.project.name,
+          projectName: projectName,
           views: 0,
+          shares: 0,
           saves: 0,
           comparisons: 0,
-          shares: 0,
-          whatsappInquiries: 0
+          whatsappInquiries: 0,
+          leads: 0,
         })
       }
-      const data = propertiesMap.get(ev.project_id)
-      if (ev.action === 'view') data.views++
-      if (ev.action === 'save') data.saves++
-      if (ev.action === 'compare') data.comparisons++
-      if (ev.action === 'share') data.shares++
-      if (ev.action === 'whatsapp') data.whatsappInquiries++
+      
+      const p = propertiesMap.get(ev.project_id)
+      if (ev.action === 'view' || ev.action === 'gallery') p.views++
+      if (ev.action === 'share') p.shares++
+      if (ev.action === 'save') p.saves++
+      if (ev.action === 'compare') p.comparisons++
+      if (ev.action === 'whatsapp') p.whatsappInquiries++
+      if (['call', 'whatsapp', 'site_visit'].includes(ev.action)) p.leads++
     }
 
     const properties = Array.from(propertiesMap.values()).sort((a, b) => (b.views + b.saves) - (a.views + a.saves))
 
     res.json({ properties })
-  } catch (err) {
-    console.error('[analytics/properties]', err)
+  } catch (err: unknown) {
+    console.error('[admin] analytics properties', err)
     res.status(500).json({ error: 'Internal error' })
   }
 })

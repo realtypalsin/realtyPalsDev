@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
 
 const SEARCH_STEPS = [
@@ -86,7 +86,7 @@ export default function ChatLoader({ isSearching, searchingTool }: Props) {
           const active = i === activeStep
 
           return (
-            <motion.div
+            <m.div
               key={label}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -97,7 +97,7 @@ export default function ChatLoader({ isSearching, searchingTool }: Props) {
               <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                 <AnimatePresence mode="wait">
                   {done ? (
-                    <motion.div
+                    <m.div
                       key="check"
                       initial={{ scale: 0, rotate: -30 }}
                       animate={{ scale: 1, rotate: 0 }}
@@ -105,9 +105,9 @@ export default function ChatLoader({ isSearching, searchingTool }: Props) {
                       transition={{ type: 'spring', stiffness: 500, damping: 24 }}
                     >
                       <CheckCircle2 size={18} className="text-emerald-500" />
-                    </motion.div>
+                    </m.div>
                   ) : active ? (
-                    <motion.div
+                    <m.div
                       key="spin"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
@@ -117,9 +117,9 @@ export default function ChatLoader({ isSearching, searchingTool }: Props) {
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
                       </div>
-                    </motion.div>
+                    </m.div>
                   ) : (
-                    <motion.div
+                    <m.div
                       key="idle"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
@@ -139,16 +139,16 @@ export default function ChatLoader({ isSearching, searchingTool }: Props) {
               }`}>
                 {label}
                 {active && (
-                  <motion.span
+                  <m.span
                     animate={{ opacity: [1, 0.15, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                     className="ml-0.5"
                   >
                     ...
-                  </motion.span>
+                  </m.span>
                 )}
               </span>
-            </motion.div>
+            </m.div>
           )
         })}
       </div>

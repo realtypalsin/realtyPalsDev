@@ -1,6 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/lib/db'
 import { getCached, setCached, makeKey } from '@/lib/redis'
-import type { ProjectCard, ProjectDetail, UnitTypeSummary, AmenitySummary, ConnSummary } from '@/types/project'
+import type { ProjectCard, ProjectDetail, AmenitySummary, ConnSummary } from '@/types/project'
+
+import type { Prisma } from '@prisma/client'
+
+type ProjectWithRelations = Prisma.ProjectGetPayload<{
+  include: {
+    builder: { select: { name: true; slug: true } }
+    unit_types: true
+    amenities: true
+    connectivity: true
+    images: true
+  }
+}>
 
 const CATEGORY_ORDER = ['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking'] as const
 const CONN_PRIORITY = ['metro', 'airport', 'road'] as const
@@ -138,13 +151,13 @@ export async function searchProjects(
       unit_types: { orderBy: { bhk: 'asc' } },
       amenities: true,
       connectivity: true,
-      images: { orderBy: { sort_order: 'asc' } },
+      images: { orderBy: { sort_order: 'asc' }, take: 5 },
     },
     orderBy: { created_at: 'desc' },
     take: 15,
   })
 
-  const cards = (rows as any[]).map(toProjectCard)
+  const cards = rows.map((row) => toProjectCard(row as ProjectWithRelations))
 
   await setCached(cacheKey, cards.length > 0 ? cards : [], 60 * 30)
   return cards
@@ -158,7 +171,7 @@ export async function getProjectBySlug(slug: string): Promise<ProjectCard | null
       unit_types: { orderBy: { bhk: 'asc' } },
       amenities: true,
       connectivity: true,
-      images: { orderBy: { sort_order: 'asc' } },
+      images: { orderBy: { sort_order: 'asc' }, take: 5 },
     },
   })
   return project ? toProjectCard(project as any) : null
@@ -172,7 +185,7 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
       unit_types: { orderBy: { bhk: 'asc' } },
       amenities: true,
       connectivity: true,
-      images: { orderBy: { sort_order: 'asc' } },
+      images: { orderBy: { sort_order: 'asc' }, take: 10 },
     },
   })
   if (!project) return null
@@ -222,7 +235,7 @@ export function toProjectCard(p: {
   total_towers?: number | null
   status: string
   possession_label?: string | null
-  possession_date: string | null
+  possession_date: string | Date | null
   architect?: string | null
   interior_designer?: string | null
   design_theme?: string | null

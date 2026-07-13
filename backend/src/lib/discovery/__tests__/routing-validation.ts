@@ -85,7 +85,7 @@ for (const c of cases) {
   const icon = ok ? '✓' : '✗'
   const detail = ok ? '' : `  → got ${actual}`
   console.log(`${icon} ${c.label.padEnd(52)} [${c.expected}]${detail}`)
-  ok ? pass++ : fail++
+  if (ok) { pass++ } else { fail++ }
 }
 
 console.log('─'.repeat(72))

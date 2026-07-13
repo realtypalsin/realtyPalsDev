@@ -1,6 +1,6 @@
 'use client'
 
-import { Shield, Eye, TrendingUp, Search, Calendar, Star, Building, FileText, CheckCircle, XCircle } from 'lucide-react'
+import { Shield, Eye, TrendingUp, Calendar, Star, CheckCircle, XCircle } from 'lucide-react'
 
 interface Props {
   transparency?: { label: string; ok: boolean; details: string }[]

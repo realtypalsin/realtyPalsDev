@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import {  m  } from 'framer-motion'
 import {
   ArrowLeft, Building2, MapPin, Calendar, Users, Trophy,
   CheckCircle2, Clock, ExternalLink, Shield, ChevronRight,
@@ -154,7 +154,7 @@ export default function BuilderPage() {
         </button>
 
         {/* Hero card */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-sm overflow-hidden mb-4"
@@ -217,11 +217,11 @@ export default function BuilderPage() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* About */}
         {builder.description && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
@@ -229,12 +229,12 @@ export default function BuilderPage() {
           >
             <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">About {builder.name}</h2>
             <p className="text-[13px] text-gray-700 leading-relaxed">{builder.description}</p>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Awards */}
         {builder.awards.length > 0 && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -252,12 +252,12 @@ export default function BuilderPage() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Track record */}
         {(builder.delivered_projects.length > 0 || builder.ongoing_projects.length > 0) && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
@@ -294,11 +294,11 @@ export default function BuilderPage() {
                 </div>
               </div>
             )}
-          </motion.div>
+          </m.div>
         )}
 
         {/* Projects in Noida */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
@@ -332,7 +332,7 @@ export default function BuilderPage() {
               const cfg = STATUS_CONFIG[project.status]
               const heroImg = project.images[0]?.url
               return (
-                <motion.div
+                <m.div
                   key={project.id}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -392,7 +392,7 @@ export default function BuilderPage() {
                       </div>
                     </div>
                   </Link>
-                </motion.div>
+                </m.div>
               )
             })}
 
@@ -402,11 +402,11 @@ export default function BuilderPage() {
               </div>
             )}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Contact / Website */}
         {builder.website && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -429,7 +429,7 @@ export default function BuilderPage() {
               </div>
               <ChevronRight size={14} className="text-gray-300 group-hover:text-blue-500 transition-colors" />
             </a>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Honest note */}

@@ -12,7 +12,7 @@ import { API_BASE } from '@/lib/env';
 import { authHeaders } from '@/lib/authedFetch';
 import { Bookmark, PanelLeftClose, PanelLeftOpen, Sun, SquarePen, Compass } from 'lucide-react';
 import Toast from '@/components/Toast';
-import { motion } from 'framer-motion';
+import {  m  } from 'framer-motion';
 import dynamic from 'next/dynamic';
 
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false });
@@ -57,7 +57,7 @@ export default function SavedPropertiesPage() {
       />
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
@@ -134,7 +134,7 @@ export default function SavedPropertiesPage() {
             )}
           </div>
           <ProjectDetailPanel project={detailProject} onClose={() => setDetailProject(null)} />
-        </motion.div>
+        </m.div>
       </main>
       {toast && <Toast message={toast} onClose={() => setToast('')} />}
     </div>

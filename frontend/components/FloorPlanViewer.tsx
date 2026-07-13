@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import {  m  } from 'framer-motion'
 
 
 interface FloorPlan {
@@ -53,7 +53,7 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
   if (!plan) return null
 
   return (
-    <motion.div
+    <m.div
       className="fixed inset-0 z-[70] bg-black/90 flex flex-col"
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -160,7 +160,7 @@ export default function FloorPlanViewer({ floorPlans, onClose, title }: Props) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
 
   )
 }

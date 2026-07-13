@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 
 import { useState, useEffect, useRef } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import {  AnimatePresence, m  } from 'framer-motion'
 import Image from 'next/image'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
@@ -24,6 +24,7 @@ import DocumentsTab from '@/components/property-detail/DocumentsTab'
 import { API_BASE } from '@/lib/env'
 import { getPaymentPlan, getCostSheet } from '@/lib/backend-api'
 import { resolveImgUrl } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export interface ProjectDocumentPublic {
   id: string
@@ -75,7 +76,18 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const [marketVisible, setMarketVisible] = useState(false)
   const [isMobile, setIsMobile]       = useState(false)
   const marketRef                     = useRef<HTMLDivElement>(null)
+  const scrollContainerRef            = useRef<HTMLDivElement>(null)
+  const scrollContainerMobileRef      = useRef<HTMLDivElement>(null)
   const { imgIdx, markImageFailed, activeUrl, setImgIdx } = usePreferredImages(project, detail?.images)
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'auto' })
+    }
+    if (scrollContainerMobileRef.current) {
+      scrollContainerMobileRef.current.scrollTo({ top: 0, behavior: 'auto' })
+    }
+  }, [activeTab])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)')
@@ -276,7 +288,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   // (inline, desktop modal, mobile sheet) instead of each defining its own.
   const tabBody = (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key={activeTab}
         initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -375,7 +387,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           />
         )
       })()}
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   )
 
@@ -443,27 +455,27 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   )
 
   const stickyHeader = (
-    <div className="sticky top-4 z-40 w-full max-w-[calc(100%-2rem)] md:max-w-[calc(100%-4rem)] mx-auto bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-full shadow-lg shadow-black/5 transition-all duration-300 mt-4">
-      <div className={`flex items-center px-4 md:px-6 transition-all duration-300 overflow-visible h-[60px]`}>
+    <div className="sticky top-4 z-40 w-[max-content] max-w-[calc(100%-1rem)] mx-auto bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-full shadow-lg shadow-black/5 transition-all duration-300 mt-4">
+      <div className={`flex items-center px-2 md:px-4 transition-all duration-300 overflow-x-auto hide-scrollbar h-[60px]`}>
         
         {/* Left: Identity (Always injected for new layout) */}
-        <div className={`flex items-center gap-6 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden max-w-[300px] opacity-100 translate-x-0 mr-6`}>
-           <div className="flex items-center gap-3 flex-shrink-0">
+        <div className={`flex items-center gap-3 transition-all duration-400 flex-shrink-0 overflow-hidden opacity-100 translate-x-0 mr-2 md:mr-4`}>
+           <div className="flex items-center gap-2 flex-shrink-0 max-w-[120px] md:max-w-[200px]">
              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
              <span className="font-bold text-gray-900 dark:text-gray-100 text-[14px] truncate">{d?.name}</span>
            </div>
-           <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+           <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0 hidden md:block" />
         </div>
 
         {/* Center: Tabs */}
-        <div className="flex gap-2 md:gap-3 overflow-x-auto hide-scrollbar flex-1 justify-start px-2">
+        <div className="flex gap-1 md:gap-2 overflow-x-auto hide-scrollbar flex-1 px-1 md:px-2">
           {SECTION_TABS.map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-4 py-2 flex items-center gap-2 text-[13px] font-semibold rounded-full transition-all whitespace-nowrap border ${
+                className={`relative px-3 md:px-4 py-2 flex items-center gap-1.5 md:gap-2 text-[12px] md:text-[13px] font-semibold rounded-full transition-all whitespace-nowrap border ${
                   isActive 
                     ? 'bg-gray-900 text-white border-gray-900 shadow-sm dark:bg-white dark:text-gray-900 dark:border-white' 
                     : 'bg-gray-50 text-gray-500 border-gray-100 hover:bg-gray-100 hover:text-gray-900 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:bg-zinc-800'
@@ -477,8 +489,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         </div>
 
         {/* Right: Action (Always injected for new layout) */}
-        <div className={`flex items-center justify-end gap-4 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden max-w-[300px] opacity-100 translate-x-0 ml-4`}>
-           <p className="text-[13px] font-semibold text-gray-500 hidden xl:block whitespace-nowrap">{d?.price_range_label}</p>
+        <div className={`flex items-center justify-end gap-3 transition-all duration-400 flex-shrink-0 overflow-hidden opacity-100 translate-x-0 ml-2 md:ml-4`}>
+           <p className="text-[12px] font-semibold text-gray-500 hidden lg:block whitespace-nowrap">{d?.price_range_label}</p>
            <button onClick={() => handleOpenSiteVisit()} className="px-4 py-2 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-semibold rounded-full text-[12px] transition-all whitespace-nowrap flex-shrink-0 shadow-sm">
              Book Site Visit
            </button>
@@ -595,7 +607,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           {/* Bottom Price/Score Overlay Row */}
           <div className="mx-6 md:mx-8 mb-6 md:mb-8 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 md:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-12 gap-4 items-center divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/10">
             {/* Price & Possession */}
-            <div className="md:col-span-6 pb-4 md:pb-0 md:pr-4 flex items-center justify-between">
+            <div className="md:col-span-6 pb-4 md:pb-0 md:pr-4 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
               <div>
                 <p className="text-[26px] md:text-[32px] lg:text-[34px] font-black tracking-tighter text-gray-900 dark:text-white leading-none whitespace-nowrap">
                   {displayPrice}
@@ -657,7 +669,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   // ── Inline mode (property page) ─────────────────────────────────────────────
   if (inline) {
     return (
-      <motion.div
+      <m.div
         className="project-detail-wrapper"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -682,7 +694,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             <FloorPlanViewer floorPlans={showFloorPlan.plans} title={`${project?.name} — Floor Plans`} onClose={() => setShowFloorPlan(null)} />
           )}
         </AnimatePresence>
-      </motion.div>
+      </m.div>
     )
   }
 
@@ -714,7 +726,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         {isOpen && (
           <>
             {/* Backdrop & Centering Wrapper for Desktop */}
-            <motion.div
+            <m.div
               key="backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -724,7 +736,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               onClick={onClose}
             >
               {/* ── Desktop dialog ── */}
-              <motion.div
+              <m.div
                 key="dialog-desktop"
                 initial={{ opacity: 0, scale: 0.96, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -740,7 +752,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               */}
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto w-full relative pb-24 hide-scrollbar" onScroll={handleScroll}>
+              <div ref={scrollContainerRef} className="flex-1 overflow-y-auto w-full relative pb-24 hide-scrollbar" onScroll={handleScroll}>
                 {/* Hero Section */}
                 {renderHero()}
 
@@ -775,9 +787,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                   })()}
                 </div>
               </div>
-            </motion.div>
+            </m.div>
             {/* End Backdrop & Centering Wrapper for Desktop */}
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>
@@ -785,7 +797,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       {/* Mobile bottom sheet gets its own AnimatePresence */}
       <AnimatePresence mode="wait">
         {isOpen && (
-            <motion.div
+            <m.div
               key="dialog-mobile"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
@@ -820,9 +832,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               <div className="px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   {loading && !d?.name ? (
-                    <div className="flex-1 animate-pulse space-y-2">
-                      <div className="h-5 bg-gray-100 rounded w-3/4" />
-                      <div className="h-3 bg-gray-100 rounded w-1/2" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
                     </div>
                   ) : (
                     <div className="min-w-0">
@@ -865,7 +877,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
               {/* Footer CTA */}
               {ctaFooter}
-            </motion.div>
+            </m.div>
         )}
       </AnimatePresence>
 

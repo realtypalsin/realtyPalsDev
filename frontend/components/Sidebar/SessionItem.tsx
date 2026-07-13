@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Check, X, Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Session } from '@/hooks/useSessions';
@@ -82,7 +82,7 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
     try {
       await onRename(session.id, title);
       toast.success('Chat renamed successfully');
-    } catch (err) {
+    } catch {
       toast.error('Failed to rename chat');
       setRenameValue(session.label); // reset on error
     } finally {
@@ -96,7 +96,7 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
     try {
       await onDelete(session.id);
       toast.success('Chat deleted');
-    } catch (err) {
+    } catch {
       toast.error('Failed to delete chat');
     } finally {
       setIsProcessing(false);
@@ -178,7 +178,7 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
           try {
             const obs = getOrCreateObserver()
             obs.observe({ type: 'resource', buffered: true })
-          } catch (_) { /* unsupported */ }
+          } catch { /* unsupported */ }
         }
 
         // Call the parent onClick (which handles closeMobile)

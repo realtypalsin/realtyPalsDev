@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { formatPriceCr } from '@/lib/format';
 import { API_BASE } from '@/lib/env';
-import { Heart, ChevronLeft, ChevronRight, MessageCircle, LineChart, Info } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Heart, ChevronLeft, ChevronRight, MessageCircle, Info, ShieldCheck, LineChart } from 'lucide-react';
+import {  m  } from 'framer-motion';
 
 interface PropertyCardProps {
   property: Property;
@@ -64,16 +64,16 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
     setSaving(true);
     try {
       if (isSaved) {
-        await fetch(`${API_BASE}/saved-properties/${property.id}`, {
+        await fetch(`${API_BASE}/saved/${property.id}`, {
           method: 'DELETE',
           headers: { 'X-User-Id': userId },
         });
         setIsSaved(false);
       } else {
-        await fetch(`${API_BASE}/saved-properties`, {
+        await fetch(`${API_BASE}/saved`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-          body: JSON.stringify({ property_id: property.id }),
+          body: JSON.stringify({ project_id: property.id }),
         });
         setIsSaved(true);
       }
@@ -153,7 +153,7 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
   const hasTags = sectorLabel || configLabel || statusLabel || sqftLabel;
 
   return (
-    <motion.div
+    <m.div
       id={`property-card-${property.id}`}
       onClick={handleClick}
       className="group relative bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.14)] transition-shadow duration-300 cursor-pointer border border-gray-100 dark:border-gray-800 flex flex-col"
@@ -202,21 +202,25 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
         {/* Bottom scrim for depth */}
         <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
 
-        {/* Top-left: rank + match score */}
-        {(property.property_index !== undefined || property.match_score !== undefined) && (
-          <div className="absolute top-2.5 left-2.5 flex gap-1.5 z-10">
-            {property.property_index !== undefined && (
-              <span className="px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold rounded-full leading-5">
-                #{property.property_index + 1}
-              </span>
-            )}
-            {property.match_score !== undefined && (
-              <span className="px-2 py-0.5 bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-full leading-5">
-                {property.match_score}% Match
-              </span>
-            )}
-          </div>
-        )}
+        {/* Top-left: rank + match score + rera */}
+        <div className="absolute top-2.5 left-2.5 flex gap-1.5 z-10 flex-wrap">
+          {property.property_index !== undefined && (
+            <span className="px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold rounded-full leading-5">
+              #{property.property_index + 1}
+            </span>
+          )}
+          {property.match_score !== undefined && (
+            <span className="px-2 py-0.5 bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-full leading-5">
+              {property.match_score}% Match
+            </span>
+          )}
+          {(property as any).dna?.rera_compliance_label?.toLowerCase().includes('safe') && (
+            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100/95 backdrop-blur-sm text-emerald-800 border border-emerald-200 text-[10px] font-bold rounded-full leading-5">
+              <ShieldCheck size={12} className="text-emerald-700" />
+              RERA Verified
+            </span>
+          )}
+        </div>
 
         {/* Top-right: tier badge */}
         {tier && (
@@ -288,6 +292,7 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 hover:text-red-400 hover:border-red-200 dark:hover:border-red-800'
             }`}
             aria-label={isSaved ? 'Unsave property' : 'Save property'}
+            aria-pressed={isSaved}
           >
             <Heart size={14} fill={isSaved ? 'currentColor' : 'none'} />
           </button>
@@ -426,6 +431,6 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

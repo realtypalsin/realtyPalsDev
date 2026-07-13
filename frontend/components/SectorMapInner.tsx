@@ -94,6 +94,11 @@ export default function SectorMapInner({ properties, extraMarkers = [] }: Props)
               <p style={{ fontWeight: 700, fontSize: '13px', margin: '0 0 3px', color: '#111' }}>{p.name}</p>
               <p style={{ color: '#2563EB', fontWeight: 700, fontSize: '12px', margin: '0 0 2px' }}>{p.price_range_label}</p>
               <p style={{ color: '#666', fontSize: '11px', margin: 0 }}>{p.sector} · {statusLabel(p.status)}</p>
+              <div className="pt-2 pb-1">
+                <a href={`/property/${p.slug}`} target="_blank" rel="noreferrer" className="flex items-center justify-center w-full h-8 text-xs font-semibold bg-black text-white rounded-md hover:bg-gray-800 transition-colors">
+                  View Property
+                </a>
+              </div>
             </div>
           </Popup>
         </Marker>

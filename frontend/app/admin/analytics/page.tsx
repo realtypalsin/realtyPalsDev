@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { BarChart3, TrendingUp, Target, Users, AlertCircle, RefreshCw } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend
@@ -135,10 +136,16 @@ export default function AnalyticsDashboard() {
       </div>
 
       {/* KPI Row */}
-      {loading ? (
+    {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl p-6 h-32 animate-pulse shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100" />
+            <div key={i} className="bg-white rounded-2xl p-6 h-32 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col justify-between">
+              <Skeleton className="w-10 h-10 rounded-xl" />
+              <div className="space-y-2 mt-4">
+                <Skeleton className="h-3 w-1/2 rounded" />
+                <Skeleton className="h-6 w-1/3 rounded" />
+              </div>
+            </div>
           ))}
         </div>
       ) : summary ? (
@@ -202,7 +209,9 @@ export default function AnalyticsDashboard() {
         {/* Top Sectors */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Top Searched Sectors</h2>
-          {summary?.topSectors && summary.topSectors.length > 0 ? (
+          {loading ? (
+            <Skeleton className="w-full h-[300px] rounded-xl" />
+          ) : summary?.topSectors && summary.topSectors.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={summary.topSectors}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -231,7 +240,9 @@ export default function AnalyticsDashboard() {
               </div>
             </div>
           </div>
-          {funnelData.length > 0 ? (
+          {loading ? (
+            <Skeleton className="w-full h-[300px] rounded-xl" />
+          ) : funnelData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={funnelData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -263,7 +274,9 @@ export default function AnalyticsDashboard() {
               </div>
             </div>
           </div>
-          {resultDistribution.length > 0 && quality && (quality.searchWithResults || quality.searchWithoutResults) > 0 ? (
+          {loading ? (
+            <Skeleton className="w-full h-[300px] rounded-xl" />
+          ) : resultDistribution.length > 0 && quality && (quality.searchWithResults || quality.searchWithoutResults) > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -293,7 +306,13 @@ export default function AnalyticsDashboard() {
         {/* Quality Metrics */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Search Quality</h2>
-          {quality ? (
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="w-full h-8 rounded" />
+              <Skeleton className="w-full h-8 rounded" />
+              <Skeleton className="w-full h-8 rounded" />
+            </div>
+          ) : quality ? (
             <>
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-sm text-slate-600">Total Searches</span>

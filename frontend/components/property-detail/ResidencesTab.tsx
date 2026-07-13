@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 'use client'
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import Image from 'next/image'
 import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
@@ -142,10 +142,20 @@ export default function ResidencesTab({
           const descStr = unit.description || 'Exquisite layout prioritizing comfort, privacy, and expansive living spaces.'
           const categoryBadge = unit.category_badge || 'Premium Configuration'
           const inventoryLeft = unit.inventory_left || 8
-          const perfectFor = unit.perfect_for || ['Families', 'End Users']
-          const highlightsList = unit.key_highlights || []
-          const includedList = unit.whats_included || []
-          const viewsList = unit.views || []
+          const parseArray = (v: any) => {
+            if (Array.isArray(v)) return v;
+            if (typeof v === 'string') {
+              try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; }
+            }
+            return [];
+          }
+
+          const perfectFor = parseArray(unit.perfect_for)
+          if (perfectFor.length === 0) perfectFor.push('Families', 'End Users')
+          
+          const highlightsList = parseArray(unit.key_highlights)
+          const includedList = parseArray(unit.whats_included)
+          const viewsList = parseArray(unit.views)
 
           return (
             <div
@@ -193,7 +203,7 @@ export default function ResidencesTab({
               {/* Expanded Area */}
               <AnimatePresence initial={false}>
                 {isExpanded && (
-                  <motion.div
+                  <m.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -262,15 +272,19 @@ export default function ResidencesTab({
                               </h4>
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {highlightsList.map((hl: any, idx: number) => {
-                                  const IconComponent = ICON_MAP[hl.icon] || Sparkles
+                                  const isString = typeof hl === 'string'
+                                  const title = isString ? hl : hl.title
+                                  const desc = isString ? null : hl.description
+                                  const IconComponent = isString ? Sparkles : (ICON_MAP[hl.icon] || Sparkles)
+                                  if (!title) return null
                                   return (
                                     <div key={idx} className="flex gap-2">
                                       <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900/50 flex items-center justify-center flex-shrink-0 text-amber-600 border border-amber-100/30 dark:border-amber-900/10">
                                         <IconComponent size={14} />
                                       </div>
                                       <div>
-                                        <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight">{hl.title}</p>
-                                        <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">{hl.description}</p>
+                                        <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight">{title}</p>
+                                        {desc && <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">{desc}</p>}
                                       </div>
                                     </div>
                                   )
@@ -315,15 +329,19 @@ export default function ResidencesTab({
                               <h4 className="text-[13px] font-bold text-gray-900 dark:text-white uppercase tracking-wider">What&apos;s Included</h4>
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5">
                                 {includedList.map((inc: any, idx: number) => {
-                                  const IconComp = ICON_MAP[inc.icon] || CheckCircle2
+                                  const isString = typeof inc === 'string'
+                                  const title = isString ? inc : inc.title
+                                  const description = isString ? '' : inc.description
+                                  const IconComp = (!isString && inc.icon) ? (ICON_MAP[inc.icon] || CheckCircle2) : CheckCircle2
+
                                   return (
                                     <div key={idx} className="flex gap-2.5 p-3.5 bg-gray-50/50 dark:bg-gray-900/20 border border-gray-100 dark:border-gray-800/80 rounded-xl">
                                       <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-[#6366F1] flex-shrink-0 shadow-sm border border-gray-100/50 dark:border-gray-800">
                                         <IconComp size={15} />
                                       </div>
                                       <div>
-                                        <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight">{inc.title}</p>
-                                        <p className="text-[10px] text-gray-500 mt-0.5 leading-snug">{inc.description}</p>
+                                        <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight">{title}</p>
+                                        {description && <p className="text-[10px] text-gray-500 mt-0.5 leading-snug">{description}</p>}
                                       </div>
                                     </div>
                                   )
@@ -431,7 +449,7 @@ export default function ResidencesTab({
                         </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
             </div>

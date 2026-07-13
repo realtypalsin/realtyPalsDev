@@ -1,6 +1,6 @@
 'use client'
 import { useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import {
   FileText, Download, Search, File, ChevronRight, CheckCircle2, FolderOpen,
   Eye, FileArchive, LayoutTemplate, Scale, Receipt, ClipboardList, Clock
@@ -77,7 +77,7 @@ function DocumentRow({ doc, onDownload, isPriority = false }: { doc: EnhancedDoc
   const size = formatFileSize(doc.file_size_bytes)
   
   return (
-    <motion.a
+    <m.a
       whileHover={{ scale: 1.01, backgroundColor: 'rgba(250, 250, 250, 1)' }}
       whileTap={{ scale: 0.99 }}
       href={doc.storage_url}
@@ -122,7 +122,7 @@ function DocumentRow({ doc, onDownload, isPriority = false }: { doc: EnhancedDoc
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
         <Download size={14} className="text-gray-900" />
       </div>
-    </motion.a>
+    </m.a>
   )
 }
 
@@ -249,7 +249,7 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
           </div>
         ) : (
           filteredGroups.map((group) => (
-            <motion.div 
+            <m.div 
               key={group.docType} 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -266,7 +266,7 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
                   <DocumentRow key={doc.id} doc={doc} onDownload={() => handleDownload(doc)} />
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           ))
         )}
       </section>

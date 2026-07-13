@@ -6,6 +6,8 @@ import {
   Building2, Users, CheckCircle2, AlertTriangle, ArrowRight, RefreshCw,
   ImageOff, ShieldOff, Terminal, Plus
 } from 'lucide-react'
+import InfoTooltip from '@/components/InfoTooltip'
+import { Skeleton } from '@/components/ui/skeleton'
 import { API_BASE } from '@/lib/env'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -90,7 +92,7 @@ export default function AdminDashboard() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl p-6 h-32 animate-pulse shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100" />
+            <Skeleton key={i} className="bg-white rounded-2xl p-6 h-32 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100" />
           ))}
         </div>
       ) : stats ? (
@@ -194,10 +196,8 @@ export default function AdminDashboard() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="w-full h-full flex items-end justify-around pb-8 px-4 gap-4">
-                {[40, 70, 45, 90, 60].map((h, i) => (
-                  <div key={i} className="w-full bg-slate-100 rounded-t-lg animate-pulse" style={{ height: `${h}%` }} />
-                ))}
+              <div className="w-full h-full pb-8">
+                <Skeleton className="w-full h-full rounded-xl" />
               </div>
             )}
           </div>
@@ -259,7 +259,7 @@ export default function AdminDashboard() {
                 </ResponsiveContainer>
               </>
             ) : (
-              <div className="w-52 h-52 rounded-full border-[16px] border-slate-100 animate-pulse" />
+              <Skeleton className="w-52 h-52 rounded-full" />
             )}
           </div>
           

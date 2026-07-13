@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Clock, CheckCircle2, XCircle, Eye } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface BuilderNews {
   id: string
@@ -29,9 +32,10 @@ export default function BuilderNewsPage() {
 
   const fetchNews = async () => {
     try {
-      const res = await fetch('/api/builder/news')
+      const res = await fetch(`${API_BASE}/admin/news`, { headers: adminAuthHeaders() })
       if (res.ok) {
-        setNews(await res.json())
+        const data = await res.json()
+        setNews(data.news || [])
       }
     } catch (err) {
       console.error('Failed to fetch news:', err)
@@ -44,7 +48,10 @@ export default function BuilderNewsPage() {
     if (!confirm('Delete this news?')) return
 
     try {
-      const res = await fetch(`/api/builder/news/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API_BASE}/admin/news/${id}`, { 
+        method: 'DELETE',
+        headers: adminAuthHeaders()
+      })
       if (res.ok) {
         setNews(news.filter(n => n.id !== id))
       }
@@ -114,7 +121,26 @@ export default function BuilderNewsPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-white dark:bg-slate-900 rounded-lg border dark:border-slate-700 p-6 flex gap-4">
+              <Skeleton className="w-24 h-24 rounded shrink-0" />
+              <div className="flex-1 space-y-3 py-2">
+                <div className="flex items-start justify-between">
+                  <Skeleton className="h-6 w-1/3 rounded" />
+                  <Skeleton className="h-6 w-24 rounded" />
+                </div>
+                <Skeleton className="h-4 w-full rounded" />
+                <Skeleton className="h-4 w-2/3 rounded" />
+                <div className="flex gap-6 mt-4">
+                  <Skeleton className="h-5 w-20 rounded" />
+                  <Skeleton className="h-5 w-24 rounded" />
+                  <Skeleton className="h-5 w-32 rounded" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : news.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           No news posted yet. Click &quot;New Post&quot; to get started.

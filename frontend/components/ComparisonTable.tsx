@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import {  m  } from 'framer-motion'
 import { Trophy, TrendingUp, ShieldCheck, Users, Zap, ChevronDown, IndianRupee, Trees, HeartHandshake } from 'lucide-react'
 import { Building2, BadgeCheck } from 'lucide-react'
 import type { ProjectCard, ProjectDetail } from '@/types/project'
@@ -581,7 +581,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
 
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -688,57 +688,51 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
           {/* ── Decision Matrix ──────────────────────────────────────────── */}
           <Section title="Decision Matrix" icon={TrendingUp}>
             {isMulti ? (
-              // 3+ projects: scrollable table
-              <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700">
-                <table className="w-full min-w-max text-[11px] border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-gray-800/80">
-                      <th className="text-left px-3 py-2.5 text-[9px] font-black text-gray-400 uppercase tracking-wide border-b border-r border-gray-100 dark:border-gray-700 w-24">
-                        Category
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative scrollbar-hide">
+                <table className="w-full text-left border-collapse min-w-max">
+                  <thead className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        Feature
                       </th>
                       {projects.map((p, i) => (
                         <th
                           key={p.id}
-                          className={`px-3 py-2.5 text-[9px] font-black uppercase tracking-wide text-center border-b border-r border-gray-100 dark:border-gray-700 last:border-r-0 ${
+                          className={`px-4 py-3 text-[11px] font-bold tracking-wide text-center w-[160px] ${
                             overallWinnerIdx === i
-                              ? 'text-[#0064E5] dark:text-blue-400'
-                              : 'text-gray-400'
+                              ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20'
+                              : 'text-slate-700 dark:text-slate-300'
                           }`}
                         >
-                          {overallWinnerIdx === i && '🏆 '}
+                          {overallWinnerIdx === i && <span className="text-blue-500 mr-1">🏆</span>}
                           {p.name.split(' ').slice(0, 2).join(' ')}
                         </th>
                       ))}
-                      <th className="px-3 py-2.5 text-[9px] font-black text-gray-400 uppercase tracking-wide text-center border-b border-gray-100 dark:border-gray-700">
+                      <th className="px-4 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider text-center border-l border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50">
                         Winner
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#111]">
                     {matrixRows.map((row, ri) => (
-                      <tr
-                        key={row.label}
-                        className={`border-b border-gray-100 dark:border-gray-700/60 last:border-0 ${
-                          ri % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/40 dark:bg-gray-800/20'
-                        }`}
-                      >
-                        <td className="px-3 py-2.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 border-r border-gray-100 dark:border-gray-700/60">
+                      <tr key={row.label} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td className="px-4 py-3.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                           {row.label}
                         </td>
                         {row.values.map((val, i) => (
                           <td
                             key={i}
-                            className={`px-3 py-2.5 text-center border-r border-gray-100 dark:border-gray-700/60 last:border-r-0 ${
+                            className={`px-4 py-3.5 text-center transition-colors ${
                               row.winners.includes(i)
-                                ? 'bg-emerald-50 dark:bg-emerald-900/20'
+                                ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
                                 : ''
                             }`}
                           >
                             {typeof val === 'string' ? (
-                              <span className={`text-[11px] font-bold ${
+                              <span className={`text-[12px] ${
                                 row.winners.includes(i)
-                                  ? 'text-emerald-700 dark:text-emerald-400'
-                                  : 'text-gray-700 dark:text-gray-300'
+                                  ? 'font-semibold text-emerald-700 dark:text-emerald-400'
+                                  : 'text-slate-700 dark:text-slate-300'
                               }`}>
                                 {val}
                               </span>
@@ -763,7 +757,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
               </div>
             ) : (
               // 2 projects: center-label layout
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {matrixRows.map(row => {
                   const leftWins = row.winners.includes(0)
                   const rightWins = row.winners.includes(1)
@@ -771,54 +765,54 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                   return (
                     <div
                       key={row.label}
-                      className="flex items-stretch rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700/70"
+                      className="flex items-stretch rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm"
                     >
                       {/* Left cell */}
-                      <div className={`flex-1 px-3 py-2.5 flex items-center gap-1.5 min-w-0 ${
+                      <div className={`flex-1 px-4 py-3.5 flex items-center gap-2 min-w-0 ${
                         leftWins && !tied
-                          ? 'bg-emerald-50 dark:bg-emerald-900/15'
-                          : 'bg-white dark:bg-gray-800'
+                          ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
+                          : 'bg-white dark:bg-[#111]'
                       }`}>
                         {leftWins && !tied && (
-                          <span className="text-[8px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 px-1.5 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap">
+                          <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-900/40 px-2 py-1 rounded-md flex-shrink-0 whitespace-nowrap">
                             {row.winnerLabel}
                           </span>
                         )}
                         <div className={`min-w-0 ${
                           leftWins && !tied
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : 'text-gray-700 dark:text-gray-300'
+                            ? 'text-emerald-700 dark:text-emerald-400 font-medium'
+                            : 'text-slate-700 dark:text-slate-300'
                         }`}>
                           {typeof row.values[0] === 'string' ? (
-                            <span className="text-[11px] font-bold truncate">{row.values[0]}</span>
+                            <span className="text-[12px] truncate block">{row.values[0]}</span>
                           ) : row.values[0]}
                         </div>
                       </div>
 
                       {/* Center label */}
-                      <div className="flex items-center justify-center px-2.5 bg-gray-50 dark:bg-gray-900/80 border-x border-gray-100 dark:border-gray-700/70 flex-shrink-0">
-                        <span className="text-[8px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.08em] whitespace-nowrap">
+                      <div className="flex items-center justify-center px-4 bg-slate-50/80 dark:bg-slate-900/50 border-x border-slate-200 dark:border-slate-800 flex-shrink-0">
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
                           {row.label}
                         </span>
                       </div>
 
                       {/* Right cell */}
-                      <div className={`flex-1 px-3 py-2.5 flex items-center justify-end gap-1.5 min-w-0 ${
+                      <div className={`flex-1 px-4 py-3.5 flex items-center justify-end gap-2 min-w-0 ${
                         rightWins && !tied
-                          ? 'bg-emerald-50 dark:bg-emerald-900/15'
-                          : 'bg-white dark:bg-gray-800'
+                          ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
+                          : 'bg-white dark:bg-[#111]'
                       }`}>
                         <div className={`min-w-0 text-right ${
                           rightWins && !tied
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : 'text-gray-700 dark:text-gray-300'
+                            ? 'text-emerald-700 dark:text-emerald-400 font-medium'
+                            : 'text-slate-700 dark:text-slate-300'
                         }`}>
                           {typeof row.values[1] === 'string' ? (
-                            <span className="text-[11px] font-bold truncate">{row.values[1]}</span>
+                            <span className="text-[12px] truncate block">{row.values[1]}</span>
                           ) : row.values[1]}
                         </div>
                         {rightWins && !tied && (
-                          <span className="text-[8px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 px-1.5 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap">
+                          <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-900/40 px-2 py-1 rounded-md flex-shrink-0 whitespace-nowrap">
                             {row.winnerLabel}
                           </span>
                         )}
@@ -1138,7 +1132,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
 
           {/* ── Final Verdict ─────────────────────────────────────────────── */}
           {hasIntelligence && winner && overallWinnerIdx !== null && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.12 }}
@@ -1181,7 +1175,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                   </div>
                 )
               })()}
-            </motion.div>
+            </m.div>
           )}
 
           {/* ── No intelligence fallback ──────────────────────────────────── */}
@@ -1195,6 +1189,6 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
         </div>
       )}
 
-    </motion.div>
+    </m.div>
   )
 }

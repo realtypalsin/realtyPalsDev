@@ -1,51 +1,17 @@
-services:
+﻿services:
   - type: web
     name: realtypals-backend
-<<<<<<< HEAD
-    runtime: node
-    rootDir: backend
-    buildCommand: npm install --include=dev && npm run build
-    startCommand: npm start
-    healthCheckPath: /health
-=======
     env: node
     plan: starter
     rootDir: backend
-    buildCommand: npm install && npm run db:generate && npm run build
+    buildCommand: npm install --include=dev && npm run db:generate && npm run build
     startCommand: npm start
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+    healthCheckPath: /api/v1/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-<<<<<<< HEAD
-      - key: WEBHOOK_SECRET
-        sync: false
-      - key: FRONTEND_URL
-        sync: false
-      - key: WHATSAPP_PROVIDER
-        value: none
-      - key: META_WHATSAPP_TOKEN
-        sync: false
-      - key: META_PHONE_NUMBER_ID
-        sync: false
-      - key: META_RECIPIENT_NUMBER
-        sync: false
-      - key: TWILIO_ACCOUNT_SID
-        sync: false
-      - key: TWILIO_AUTH_TOKEN
-        sync: false
-      - key: TWILIO_WHATSAPP_FROM
-        sync: false
-      - key: TWILIO_WHATSAPP_TO
-        sync: false
-      - key: RESEND_API_KEY
-        sync: false
-      - key: EMAIL_FROM
-        sync: false
-      - key: EMAIL_TO
-=======
       - key: DATABASE_URL
         sync: false
       - key: DIRECT_URL
@@ -56,8 +22,35 @@ services:
         sync: false
       - key: OPENAI_API_KEY
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: GROQ_API_KEY
->>>>>>> dfb06771676bbc802c0b0a79842c555740c42172
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: WEBHOOK_SECRET
+        sync: false
+      - key: WHATSAPP_PROVIDER
+        value: none
+      - key: META_WHATSAPP_TOKEN
+        sync: false
+      - key: META_PHONE_NUMBER_ID
+        sync: false
+      - key: META_RECIPIENT_NUMBER
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_TO
         sync: false

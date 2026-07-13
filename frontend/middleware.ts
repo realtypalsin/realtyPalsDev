@@ -8,8 +8,9 @@ export async function middleware(request: NextRequest) {
   // Strip x-user-id to prevent spoofing
   requestHeaders.delete('x-user-id')
 
-  // Derive access token from the Supabase auth cookie
-  const supabaseToken = request.cookies.get('sb-eargxntetfmtdpwedjbd-auth-token')?.value
+  // Derive access token from the Supabase auth cookie dynamically
+  const cookieName = request.cookies.getAll().find(c => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'))?.name
+  const supabaseToken = cookieName ? request.cookies.get(cookieName)?.value : undefined
   if (supabaseToken) {
     try {
       const parsed = JSON.parse(supabaseToken)

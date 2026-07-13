@@ -68,15 +68,19 @@ function computeStage(
   results: ScoredProject[],
   isComparison: boolean,
   hasHistory: boolean = false,
+  isUserMessage: boolean = false
 ): ConversationStage {
   if (isComparison) return 'COMPARING'
   if (results.length > 0 && intentState === 'SHORTLISTED') return 'DECIDING'
   if (results.length > 0) return 'RESEARCH'
   if (intentState === 'READY_TO_SEARCH') return 'SEARCHING'
-  if (intentState === 'GATHERING') return 'CLARIFYING'
-  // Only show discovery chips on first message (homepage). If user is already
-  // in chat and sends garbage/empty input, don't show discovery chips.
-  if (hasHistory && intentState === 'COLD') return 'CLARIFYING'
+  
+  // If the user has sent a message or there is history, we are actively conversing.
+  // DISCOVERY stage should ONLY appear on an empty chat's initial load.
+  if (intentState === 'GATHERING' || (intentState === 'COLD' && (hasHistory || isUserMessage))) {
+    return 'CLARIFYING'
+  }
+  
   return 'DISCOVERY'
 }
 
@@ -212,12 +216,17 @@ function getClarifyingChips(
   // Extract previously suggested or rejected text from history to avoid repeats
   const historyText = chatHistory.map(m => m.content.toLowerCase()).join(' ')
 
-  // Missing sector — offer sectors based on actual returned projects (data-driven)
+  // Missing sector — offer sectors based on actual returned projects, fallback to inventory
   if (missingFields.includes('sector') && !intent.sector) {
-    const candidateSectors = Array.from(new Set(results.map(r => r.sector)))
+    let candidateSectors = Array.from(new Set(results.map(r => r.sector)))
       .filter(sector => sector && !historyText.includes(sector.toLowerCase()))
 
-    // Take top 3 sectors from actual inventory matching the rest of the intent
+    if (candidateSectors.length === 0 && inventory?.sectors) {
+      candidateSectors = inventory.sectors.map(s => s.sector)
+        .filter(sector => sector && !historyText.includes(sector.toLowerCase()))
+    }
+
+    // Take top 3 sectors
     const sectors = candidateSectors.slice(0, 3)
 
     for (const sector of sectors) {
@@ -325,29 +334,28 @@ function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[
   const topProjectName = results[0]?.name || 'these properties'
 
   if (hasMultiple) {
-    // Frictionless Comparison: Bypasses picker if exactly 2 or 3 projects.
     const directCompare = results.length <= 3
-    const shortName = topProjectName.length > 12 ? topProjectName.substring(0, 12) + '…' : topProjectName
-    chips.push(chip('compare', 'COMPARE_PROPERTIES', `Compare ${shortName} vs others`, '⚖️',
+    const shortName = topProjectName.split(' ')[0] || topProjectName
+    chips.push(chip('compare', 'COMPARE_PROPERTIES', `Compare ${shortName} vs others`, '',
       directCompare ? { mode: 'direct', selected: results.slice(0, 3).map(r => r.slug) } : { mode: 'multi' }, 1))
   }
 
-  chips.push(chip('price_trends', 'TEXT_MESSAGE', 'Price Trends', '📊',
+  chips.push(chip('price_trends', 'TEXT_MESSAGE', 'Price Trends', '',
     { text: `How have property prices trended for ${topProjectName} recently?` }, 2))
 
   if (hasUnderConstruction) {
-    chips.push(chip('builder_risk', 'TEXT_MESSAGE', 'Builder delivery risk', '🏗️',
+    chips.push(chip('builder_risk', 'TEXT_MESSAGE', 'Builder delivery risk', '',
       { text: `What are the builder delivery risks for ${topProjectName}?` }, 3))
   } else {
-    chips.push(chip('builder_track', 'TEXT_MESSAGE', 'Builder track record', '🏗️',
+    chips.push(chip('builder_track', 'TEXT_MESSAGE', 'Builder track record', '',
       { text: `Tell me about the builder for ${topProjectName} — delivery history and reputation` }, 3))
   }
 
   if (intent.purpose === 'investment' || !intent.purpose) {
-    chips.push(chip('roi', 'TEXT_MESSAGE', 'Investment ROI', '📈',
+    chips.push(chip('roi', 'TEXT_MESSAGE', 'Investment ROI', '',
       { text: `What is the rental yield and appreciation potential for ${topProjectName}?` }, 4))
   } else {
-    chips.push(chip('nearby', 'TEXT_MESSAGE', 'Nearby amenities', '🏫',
+    chips.push(chip('nearby', 'TEXT_MESSAGE', 'Nearby amenities', '',
       { text: `What schools, hospitals, and metro stations are near ${topProjectName}?` }, 4))
   }
 
@@ -357,13 +365,13 @@ function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[
 function getComparingChips(results: ScoredProject[]): ChipAction[] {
   const topNames = results.slice(0, 2).map(r => r.name).join(' and ') || 'these properties'
   return [
-    chip('roi_compare', 'TEXT_MESSAGE', 'Optimal ROI', '📈',
+    chip('roi_compare', 'TEXT_MESSAGE', 'Analyze ROI differences', '',
       { text: `Between ${topNames}, which offers the best return on investment?` }, 1),
-    chip('hidden_costs', 'TEXT_MESSAGE', 'Cost & Tax Transparency', '💸',
+    chip('hidden_costs', 'TEXT_MESSAGE', 'Cost & Tax breakdown', '',
       { text: `Provide a complete breakdown of maintenance, GST, and stamp duty for ${topNames}.` }, 2),
-    chip('family_fit', 'TEXT_MESSAGE', 'Lifestyle & Family Fit', '👨‍👩‍👧',
+    chip('family_fit', 'TEXT_MESSAGE', 'Lifestyle & Family fit', '',
       { text: `Which between ${topNames} offers the best ecosystem and lifestyle amenities for a family?` }, 3),
-    chip('payment_plan', 'TEXT_MESSAGE', 'Payment Structuring', '🗓️',
+    chip('payment_plan', 'TEXT_MESSAGE', 'Compare payment plans', '',
       { text: `Compare the payment plans and construction-linked structures for ${topNames}.` }, 4),
   ]
 }
@@ -371,15 +379,15 @@ function getComparingChips(results: ScoredProject[]): ChipAction[] {
 function getDecidingChips(results: ScoredProject[]): ChipAction[] {
   const topProjectName = results[0]?.name || 'my shortlist'
   const chips: ChipAction[] = [
-    chip('hidden_risks', 'TEXT_MESSAGE', 'Risk & Diligence Check', '⚠️',
+    chip('hidden_risks', 'TEXT_MESSAGE', 'Risk & Diligence check', '',
       { text: `Are there any hidden risks, legal issues, or delivery concerns for ${topProjectName}?` }, 1),
-    chip('negotiation', 'TEXT_MESSAGE', 'Strategic Acquisition', '🤝',
+    chip('negotiation', 'TEXT_MESSAGE', 'Negotiation strategy', '',
       { text: `What is a realistic negotiation margin and acquisition strategy for ${topProjectName}?` }, 2),
-    chip('legal_check', 'TEXT_MESSAGE', 'RERA & Compliance', '🛡️',
+    chip('legal_check', 'TEXT_MESSAGE', 'Verify RERA compliance', '',
       { text: `Verify the RERA compliance and legal clearances for ${topProjectName}.` }, 3),
   ]
   if (results.length >= 2) {
-    chips.unshift(chip('final_compare', 'COMPARE_PROPERTIES', 'Final comparison', '⚖️',
+    chips.unshift(chip('final_compare', 'COMPARE_PROPERTIES', 'Final comparison', '',
       { mode: 'multi' }, 0))
   }
   return chips.slice(0, 4)
@@ -391,14 +399,15 @@ export function computeConversationState(
   intent: Intent,
   intentState: IntentState,
   results: ScoredProject[],
-  isComparison: boolean,
+  isComparison: boolean = false,
   chatHistory: { role: string; content: string }[] = [],
   disambiguation?: { query: string; candidates: Array<{ name: string; sector: string; builder: string }> },
   sectorDisambiguation?: { query: string; candidates: string[] },
   cityDisambiguation?: { query: string; candidates: Array<{ city: string; label: string }> },
-  chipInventory: ChipInventory | null = null
+  chipInventory: ChipInventory | null = null,
+  isUserMessage: boolean = false
 ): ConversationState {
-  const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0)
+  const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0, isUserMessage)
   const missingFields = getMissingFields(intent, intentState)
   const confidence = computeConfidenceLevel(intent)
   const thinking = getThinkingMessage(stage, intent)

@@ -59,3 +59,8 @@ audit*.md
 *.bak
  
 .tokensave/*.db*
+
+# Root-level log files
+backend-err.txt
+backend-out.txt
+dev.log

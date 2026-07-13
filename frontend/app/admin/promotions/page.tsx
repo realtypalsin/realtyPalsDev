@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Clock, Eye, MousePointerClick, TrendingUp } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatDistanceToNow } from 'date-fns'
 
 interface Promotion {
@@ -130,7 +131,32 @@ export default function PromotionsAdminPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="grid gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-white dark:bg-slate-900 rounded-lg border dark:border-slate-700 p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-6 w-1/4 rounded" />
+                    <Skeleton className="h-4 w-16 rounded" />
+                    <Skeleton className="h-4 w-20 rounded" />
+                  </div>
+                  <Skeleton className="h-4 w-3/4 rounded" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-8 rounded" />
+                  <Skeleton className="h-8 w-8 rounded" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-4">
+                <Skeleton className="h-4 w-24 rounded" />
+                <Skeleton className="h-4 w-32 rounded" />
+                <Skeleton className="h-4 w-20 rounded" />
+                <Skeleton className="h-4 w-16 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : promotions.length === 0 ? (
         <div className="text-center py-12 text-gray-500">No promotions yet</div>
       ) : (

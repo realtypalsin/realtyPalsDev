@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
+import InfoTooltip from '@/components/InfoTooltip'
+import AnalyticsNav from '@/components/admin/AnalyticsNav'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Cell
@@ -81,23 +84,19 @@ export default function UsersAnalytics() {
       </div>
 
       {/* Top Navigation Tabs */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 border-b border-gray-100">
-        <Link href="/admin/analytics" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
-          Dashboard
-        </Link>
-        <Link href="/admin/analytics/search" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
-          Search Analytics
-        </Link>
-        <Link href="/admin/analytics/properties" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
-          Property Engagement
-        </Link>
-        <Link href="/admin/analytics/users" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-slate-900 text-white shadow-sm whitespace-nowrap">
-          User Behavior
-        </Link>
-      </div>
+      <AnalyticsNav />
 
       {/* KPI Row */}
-      {data ? (
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl p-6 h-[104px] shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col justify-center gap-3">
+              <Skeleton className="h-4 w-1/2 rounded" />
+              <Skeleton className="h-7 w-1/3 rounded" />
+            </div>
+          ))}
+        </div>
+      ) : data ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
             <p className="text-sm text-slate-600 font-medium">Total Users</p>
@@ -121,8 +120,13 @@ export default function UsersAnalytics() {
       {/* Funnel */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Conversion Funnel</h2>
-          {funnelData.length > 0 ? (
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            Conversion Funnel
+            <InfoTooltip text="Step-by-step breakdown of how users progress from starting a chat to finalizing a lead." />
+          </h2>
+          {loading ? (
+            <Skeleton className="w-full h-[300px] rounded-xl" />
+          ) : funnelData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={funnelData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -145,8 +149,17 @@ export default function UsersAnalytics() {
 
         {/* Top Sectors */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Most Searched Sectors</h2>
-          {data?.mostActiveSectors && data.mostActiveSectors.length > 0 ? (
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            Most Searched Sectors
+            <InfoTooltip text="Identifies which localities are retaining the highest engagement from returning users." />
+          </h2>
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : data?.mostActiveSectors && data.mostActiveSectors.length > 0 ? (
             <div className="space-y-2">
               {data.mostActiveSectors.map((item) => (
                 <div key={item.sector} className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
@@ -156,14 +169,17 @@ export default function UsersAnalytics() {
               ))}
             </div>
           ) : (
-            <p className="text-slate-500 text-center py-8">No data yet</p>
+            <p className="text-slate-500 text-center py-8">No sector searches yet</p>
           )}
         </div>
       </div>
 
       {/* Overview Stats */}
       <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Funnel Details</h2>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+          Funnel Details
+          <InfoTooltip text="Detailed numeric breakdown and conversion percentages for each step of the user journey." />
+        </h2>
         {data?.conversionFunnel ? (
           <div className="space-y-3">
             {funnelData.map((item, idx) => {

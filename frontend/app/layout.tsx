@@ -49,6 +49,9 @@ import { Toaster } from "sonner";
 import { PingBackend } from "@/components/PingBackend";
 
 
+import { LazyMotion, domAnimation } from 'framer-motion'
+import ProgressBar from '@/components/ProgressBar'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -57,9 +60,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
       <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#E4E4E5]">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:p-4 focus:bg-white focus:text-blue-600 focus:font-bold">
+          Skip to main content
+        </a>
+        <ProgressBar />
         <PingBackend />
         <div className="noise-overlay" />
-        <PostHogProvider>{children}</PostHogProvider>
+        <LazyMotion features={domAnimation} strict>
+          <PostHogProvider>{children}</PostHogProvider>
+        </LazyMotion>
         <Toaster position="bottom-right" richColors closeButton theme="light" />
 
       </body>

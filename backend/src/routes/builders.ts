@@ -1,10 +1,11 @@
 // backend/src/routes/builders.ts
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/db'
+import { routeCache } from '../lib/routeCache'
 
 const router = Router()
 
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', routeCache(300), async (_req: Request, res: Response) => {
   const builders = await prisma.builder.findMany({
     select: {
       id: true,
@@ -32,7 +33,7 @@ router.get('/', async (_req: Request, res: Response) => {
   res.json({ builders })
 })
 
-router.get('/:slug', async (req: Request, res: Response) => {
+router.get('/:slug', routeCache(3600), async (req: Request, res: Response) => {
   const builder = await prisma.builder.findUnique({
     where: { slug: req.params.slug },
     include: {

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, User as UserIcon, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User as UserIcon, ArrowLeft, Shield } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase'
 
 import { track, identifyUser } from '@/lib/analytics';
@@ -263,9 +263,12 @@ export default function AuthPage() {
       </div>
 
       {/* Trust line */}
-      <p className="text-center text-white/40 text-[12px] mt-6 font-medium tracking-wide">
-        Free for buyers. We never sell your number to brokers.
-      </p>
+      <div className="flex items-center justify-center gap-2 mt-8 text-white/90 bg-white/5 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/10 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)]">
+        <Shield size={15} className="text-emerald-400" />
+        <p className="text-center text-[12px] font-semibold tracking-wide">
+          100% Free for buyers. We strictly protect your privacy—no spam, no brokers.
+        </p>
+      </div>
 
 
       {toast && <Toast message={toast} duration={3000} onClose={() => setToast(null)} />}

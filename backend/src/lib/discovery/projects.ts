@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client'
 import crypto from 'crypto'
 import { prisma } from '../db'
 import { getCached, setCached } from '../cache'
+import { DISCOVERY } from '../config'
 import { Intent, ScoredProject, DiscoveryResult } from './types'
 import {
   buildDecisionIntelligence,
@@ -626,7 +627,27 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
     }
   }
 
-  const res: DiscoveryResult = { exactResults: [], nearbyResults: [] }
+  // ── Branch 4: Fallback to top city projects ─────────────────────────────
+  // If the sector was completely unknown, fetch top projects across the city
+  // so we can still push our own inventory instead of a dead end.
+  const fallbackRaw = await prisma.project.findMany({
+    where: { city: { equals: DISCOVERY.DEFAULT_CITY, mode: 'insensitive' } },
+    include: PROJECT_INCLUDE,
+    take: 5,
+    orderBy: { created_at: 'desc' },
+  })
+
+  const scoredFallback = scoreAndSort(fallbackRaw, effectiveIntent, 0)
+  
+  const res: DiscoveryResult = { 
+    exactResults: [], 
+    nearbyResults: scoredFallback,
+    expansion: {
+      requestedSector: effectiveIntent.sector || 'Unknown',
+      searchedSectors: ['Noida Citywide Top Properties'],
+      reason: 'no_results_in_requested_sector',
+    },
+  }
   await setCached(cacheKey, res, 300)
   return res
 }

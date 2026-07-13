@@ -6,11 +6,18 @@ import {
   TrendingUp, BarChart3, AlertTriangle, CheckCircle2,
   Building2, Scale, Lightbulb, User, Activity, Info
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import PropertyRadarChart from '@/components/PropertyRadarChart'
-import MarketComparison from '@/components/MarketComparison'
+import dynamic from 'next/dynamic'
+
+import { Skeleton } from '@/components/ui/skeleton'
+
+const MarketComparison = dynamic(() => import('@/components/MarketComparison'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-64 w-full" />
+})
 import SocialProofAndTransparency from './SocialProofAndTransparency'
 
 // Helper component for consistent paragraph rendering
@@ -56,7 +63,8 @@ export default function IntelligenceTab({
   const [showReportModal, setShowReportModal] = useState(false)
 
   // Only use real verified data from DB; no fabricated defaults
-  const dbIntel = (d as any)?.decision_profile?.intelligence_data || {}
+  const decisionProfile = (d as any)?.decision_profile || {}
+  const dbIntel = decisionProfile?.intelligence_data || {}
 
   const overallScore = dbIntel?.topLevelMetrics?.overallScore
   const tier = dbIntel?.topLevelMetrics?.tier
@@ -122,14 +130,16 @@ export default function IntelligenceTab({
           count++
         }
       })
-      return count > 0 ? Math.round(totalRate / count) : Number(String(dbIntel.pricingIntelligence.projectAvg || '').replace(/[^0-9]/g, ''))
+      return count > 0 ? Math.round(totalRate / count) : Number(String(dbIntel?.pricingIntelligence?.projectAvg || '').replace(/[^0-9]/g, ''))
     })()
-    : Number(String(dbIntel.pricingIntelligence.projectAvg || '').replace(/[^0-9]/g, ''))
+    : Number(String(dbIntel?.pricingIntelligence?.projectAvg || '').replace(/[^0-9]/g, ''))
 
-  const computedProjectAvg = computedProjectAvgNumber ? `₹${computedProjectAvgNumber.toLocaleString('en-IN')} /sqft` : dbIntel.pricingIntelligence.projectAvg
+  const computedProjectAvg = computedProjectAvgNumber ? `₹${computedProjectAvgNumber.toLocaleString('en-IN')} /sqft` : dbIntel?.pricingIntelligence?.projectAvg
 
-  // Show empty state if no intelligence data exists in DB
+  // Show fallback state if no AI intelligence data exists in DB but manual data exists
   if (!dbIntel?.topLevelMetrics) {
+    const hasManualData = decisionProfile.decision_thesis || decisionProfile.why_buy || decisionProfile.why_avoid;
+
     return (
       <div className="p-4 md:p-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100">
         <div className="flex items-center gap-2 mb-2">
@@ -138,10 +148,61 @@ export default function IntelligenceTab({
           </div>
           <h2 className="text-[22px] font-bold text-gray-900 dark:text-white tracking-tight">AI-Powered Analysis</h2>
         </div>
-        <div className="mt-6 p-6 bg-white dark:bg-[#111] rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Data not verified yet</p>
-          <p className="text-gray-400 dark:text-gray-600 text-xs mt-2">Our AI analysis will be available once verified by our team.</p>
-        </div>
+
+        {hasManualData ? (
+          <div className="mt-6 space-y-6">
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-3">
+              <Info className="text-amber-500 mt-0.5" size={18} />
+              <div>
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">AI Processing Pending</p>
+                <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">Detailed AI metrics are currently being generated. Below is the preliminary manual analysis by our advisory team.</p>
+              </div>
+            </div>
+
+            {decisionProfile.decision_thesis && (
+              <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                <h3 className="text-[14px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Activity size={16} className="text-blue-600" />
+                  Decision Thesis
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {decisionProfile.decision_thesis}
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {decisionProfile.why_buy && (
+                <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 rounded-xl p-6 shadow-sm">
+                  <h3 className="text-[14px] font-black text-emerald-900 dark:text-emerald-300 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-emerald-600" />
+                    Why Buy
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {decisionProfile.why_buy}
+                  </p>
+                </div>
+              )}
+
+              {decisionProfile.why_avoid && (
+                <div className="bg-rose-50/50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/30 rounded-xl p-6 shadow-sm">
+                  <h3 className="text-[14px] font-black text-rose-900 dark:text-rose-300 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <AlertTriangle size={16} className="text-rose-600" />
+                    Why Avoid
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {decisionProfile.why_avoid}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-6 p-6 bg-white dark:bg-[#111] rounded-lg border border-gray-200 dark:border-gray-800 text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Data not verified yet</p>
+            <p className="text-gray-400 dark:text-gray-600 text-xs mt-2">Our AI analysis will be available once verified by our team.</p>
+          </div>
+        )}
       </div>
     )
   }
@@ -285,13 +346,13 @@ export default function IntelligenceTab({
             const Icon = ICON_MAP[persona.iconName] || Users
             const isExpanded = expandedPersona === persona.type
             return (
-              <motion.div
+              <m.div
                 layout
                 key={idx}
                 className={`bg-white dark:bg-[#111] ring-1 ring-inset rounded-[24px] p-6 transition-all duration-300 flex flex-col cursor-pointer overflow-hidden ${isExpanded ? 'ring-gray-300 dark:ring-gray-600 bg-gray-50/50 dark:bg-white/5 shadow-md' : 'ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)] hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.06)]'}`}
                 onClick={() => setExpandedPersona(isExpanded ? null : persona.type)}
               >
-                <motion.div layout="position" className="flex items-start justify-between mb-4">
+                <m.div layout="position" className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center flex-shrink-0">
                       <Icon size={18} className="text-gray-900 dark:text-gray-100" />
@@ -310,15 +371,15 @@ export default function IntelligenceTab({
                   <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${persona.fitColor}`}>
                     {persona.fit}
                   </span>
-                </motion.div>
+                </m.div>
 
-                <motion.p layout="position" className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed mb-2">
+                <m.p layout="position" className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed mb-2">
                   {persona.reasons[0]?.split(':')[0] || 'Good overall fit.'}
-                </motion.p>
+                </m.p>
 
                 <AnimatePresence initial={false}>
                 {isExpanded && (
-                  <motion.div 
+                  <m.div 
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -338,17 +399,17 @@ export default function IntelligenceTab({
                         })}
                       </ul>
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
                 </AnimatePresence>
 
-                <motion.div layout="position" className="flex justify-start items-center mt-4 pt-4 border-t border-gray-50 dark:border-gray-800/30">
+                <m.div layout="position" className="flex justify-start items-center mt-4 pt-4 border-t border-gray-50 dark:border-gray-800/30">
                   <span className="text-[12px] text-gray-900 dark:text-gray-100 font-bold hover:underline flex items-center gap-1.5 transition-colors">
                     {isExpanded ? 'Hide Details' : 'View Deep Dive'}
                     <span className={`text-[16px] leading-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'translate-x-0.5'}`}>↓</span>
                   </span>
-                </motion.div>
-              </motion.div>
+                </m.div>
+              </m.div>
             )
           })}
         </div>
@@ -568,14 +629,14 @@ export default function IntelligenceTab({
       <AnimatePresence>
       {showReportModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setShowReportModal(false)} 
           />
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -646,7 +707,7 @@ export default function IntelligenceTab({
                 <span className="opacity-60">↓</span>
               </button>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
       </AnimatePresence>

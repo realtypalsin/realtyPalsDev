@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import {  m  } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { track } from '@/lib/analytics';
@@ -49,7 +49,7 @@ export default function ComparePage() {
       <Sidebar userId={userId} guestToken={guestToken} />
 
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
@@ -86,7 +86,7 @@ export default function ComparePage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       </main>
     </div>
   );

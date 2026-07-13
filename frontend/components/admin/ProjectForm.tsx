@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Save, Loader2, Plus, X } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
-
+import { adminAuthHeaders } from '@/lib/authedFetch'
 interface Builder { id: string; name: string }
 
 interface ProjectData {
@@ -209,8 +209,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
   const prevFormRef = useRef<string>('')
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/builders`, { credentials: 'include' })
-
+    fetch(`${API_BASE}/admin/builders`, { headers: adminAuthHeaders() })
       .then((r) => r.json())
       .then((d) => setBuilders(d.builders ?? []))
   }, [])

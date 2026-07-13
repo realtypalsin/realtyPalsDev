@@ -210,8 +210,19 @@ export default function EditProject() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-blue-500" />
+      <div className="max-w-[1400px] mx-auto pb-16 space-y-8 mt-8">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-10 w-1/4 rounded-lg" />
+          <Skeleton className="h-6 w-1/3 rounded-lg" />
+        </div>
+        <div className="flex gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-32 rounded-lg" />
+          ))}
+        </div>
+        <div className="bg-white rounded-3xl border border-gray-100 p-8 min-h-[500px]">
+          <Skeleton className="h-full w-full rounded-2xl min-h-[400px]" />
+        </div>
       </div>
     )
   }

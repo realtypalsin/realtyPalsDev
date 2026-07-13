@@ -3,6 +3,7 @@ import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { computeRecommendationScore } from '../lib/recommendation/score'
+import { routeCache } from '../lib/routeCache'
 
 const router = Router()
 
@@ -14,7 +15,7 @@ const QuerySchema = z.object({
   status: z.enum(['under_construction', 'ready_to_move', 'new_launch']).optional(),
 })
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', routeCache(300), async (req: Request, res: Response) => {
   const parsed = QuerySchema.safeParse(req.query)
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.errors[0]?.message ?? 'Invalid query params' })
@@ -42,7 +43,7 @@ router.get('/', async (req: Request, res: Response) => {
   res.json({ projects })
 })
 
-router.get('/:slug', async (req: Request, res: Response) => {
+router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
   const project = await prisma.project.findUnique({
     where: { slug: req.params.slug },
     include: {

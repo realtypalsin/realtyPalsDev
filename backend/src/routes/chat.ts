@@ -31,6 +31,7 @@ import {
   trackDropOff,
   trackPromotionalClick
 } from '../lib/analytics/tracking'
+import { sanitizeUserMessage } from '../lib/ai/sanitize'
 
 const router = Router()
 
@@ -254,6 +255,15 @@ router.post('/', async (req: Request, res: Response) => {
   const { action, sessionId, guestToken } = parsed.data
   const prevIntent = (parsed.data.intent ?? {}) as Record<string, unknown>
   let message = action.type === 'TEXT_MESSAGE' ? (action.payload.text as string) : ''
+
+  // Sanitize to prevent prompt injection (OWASP LLM01)
+  const { safe: sanitizedMessage, blocked } = sanitizeUserMessage(message)
+  if (blocked) {
+    res.json({ blocked: true, message: sanitizedMessage })
+    return
+  }
+  message = sanitizedMessage
+
   // Identity is derived from a VERIFIED Supabase token only — never a client-set header.
   const userId = (await verifyUser(req)) ?? undefined
 
@@ -422,7 +432,8 @@ router.post('/', async (req: Request, res: Response) => {
       undefined,
       undefined,
       undefined,
-      chipInventory
+      chipInventory,
+      true
     )
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
@@ -579,7 +590,8 @@ router.post('/', async (req: Request, res: Response) => {
       projectDisambiguation,
       sectorDisambiguation,
       undefined,
-      chipInventory // Reuse inventory loaded earlier for consistency
+      chipInventory, // Reuse inventory loaded earlier for consistency
+      true // isUserMessage
     )
     send('ui_state', postSearchUiState as unknown as Record<string, unknown>)
 
@@ -1062,7 +1074,7 @@ async function buildRestoreUiState(
   const chatHistory = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
   const intentState = getIntentState(intent, projects.length > 0)
   const chipInventory = await getChipInventory(DEFAULT_CITY)
-  return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory)
+  return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory, true)
 }
 
 // GET /chat/session/list — must come before GET /chat/session (order matters in Express)

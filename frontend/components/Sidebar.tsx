@@ -1,11 +1,12 @@
 "use client";
-import { MessageSquarePlus, Compass, Bookmark, PanelLeftClose, PanelLeftOpen, LogOut, MoreHorizontal, Check, Pen, Trash2, Plus, MessageSquare, SquarePen, Clock, User } from 'lucide-react';
+import { Compass, Bookmark, PanelLeftClose, PanelLeftOpen, LogOut, SquarePen, Clock } from 'lucide-react';
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatedText } from "@/components/ui/animated-shiny-text";
 import { getSupabaseClient } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import { API_BASE } from "@/lib/env";
 import { useSessions, Session } from "@/hooks/useSessions";
 import { SessionItem } from "@/components/Sidebar/SessionItem";
@@ -214,6 +215,8 @@ export default function Sidebar({
                   }}
                   className="p-2 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                   title="Close sidebar"
+                  aria-label="Toggle sidebar"
+                  aria-expanded={!isCollapsed}
                 >
                   <PanelLeftClose size={20} strokeWidth={1.5} />
                 </button>
@@ -229,6 +232,8 @@ export default function Sidebar({
                 onClick={onToggleCollapse}
                 className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-200"
                 title="Open sidebar"
+                aria-label="Toggle sidebar"
+                aria-expanded={!isCollapsed}
               >
                 <PanelLeftOpen size={20} strokeWidth={1.5} />
               </button>
@@ -336,8 +341,8 @@ export default function Sidebar({
                         key={i}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                       >
-                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse flex-shrink-0" />
-                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse flex-1" />
+                        <Skeleton className="w-4 h-4 rounded flex-shrink-0" />
+                        <Skeleton className="h-3 rounded flex-1" />
                       </div>
                     ))}
                   </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import type { ChipAction } from './types'
 
 interface ChipPickerProps {
@@ -32,7 +32,7 @@ export default function ChipPicker({ chips, onAction, className = '', variant = 
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key={sorted.map(c => c.id).join(',')}
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
@@ -53,7 +53,7 @@ export default function ChipPicker({ chips, onAction, className = '', variant = 
             <ChipButton key={chip.id} chip={chip} onAction={onAction} />
           ))}
         </div>
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   )
 }

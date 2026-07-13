@@ -4,8 +4,9 @@ import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
+import morgan from 'morgan'
 import { prisma } from './lib/db'
-import { pingRedis } from './lib/cache'
+import { pingRedis, checkRateLimit } from './lib/cache'
 import chatRouter from './routes/chat'
 import sessionsRouter from './routes/sessions'
 import projectsRouter from './routes/projects'
@@ -23,6 +24,7 @@ import documentsRouter from './routes/documents'
 import registryPricesRouter from './routes/registryPrices'
 import builderRegistrationRouter from './routes/builderRegistration'
 import builderApplicationsRouter from './routes/builderApplications'
+import analyticsRouter from './routes/analytics'
 
 // Synchronous env assertions — must run before any async work or app setup.
 for (const key of ['ADMIN_PASSWORD', 'DATABASE_URL'] as const) {
@@ -51,14 +53,37 @@ app.set('trust proxy', 1)
 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false,
 }))
 app.use(cors({
   origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
   credentials: true,
 }))
-app.use(express.json({ limit: '5mb' }))
+app.use(express.json({ limit: '100kb' }))
 app.use(cookieParser())
+
+// Structural Logging
+app.use(morgan('combined'))
+
+// Global Rate Limiting Middleware
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  // Exclude healthchecks and webhooks (webhooks have their own signature validation)
+  if (req.path.startsWith('/api/v1/health') || req.path.startsWith('/api/v1/leads/webhook')) {
+    return next()
+  }
+  
+  const ip = req.ip || '127.0.0.1'
+  // 100 requests per 60 seconds is a standard generous limit for public APIs
+  const rateLimit = await checkRateLimit(`global:${ip}`, 100, 60)
+  
+  res.setHeader('X-RateLimit-Limit', 100)
+  res.setHeader('X-RateLimit-Remaining', rateLimit.remaining)
+  
+  if (rateLimit.remaining <= 0) {
+    res.status(429).json({ error: 'Too many requests, please try again later.' })
+    return
+  }
+  next()
+})
 
 // Health endpoint — probes DB and Redis; only covers local infrastructure dependencies.
 // Returns 200 when healthy, 503 when the database is unreachable.
@@ -101,6 +126,7 @@ app.use('/api/v1/documents', documentsRouter)
 app.use('/api/v1/registry-prices', registryPricesRouter)
 app.use('/api/v1/builder-registration', builderRegistrationRouter)
 app.use('/api/v1/builder-applications', builderApplicationsRouter)
+app.use('/api/v1/analytics', analyticsRouter)
 
 // Global error handler — catches any error passed to next(err) or thrown in an
 // async route (via express-async-errors). Must be registered after all routes.
@@ -123,16 +149,16 @@ async function startup() {
 
   // Auto-resolve failed migrations (handles Render free tier deployments without shell access)
   try {
-    const failedMigration = await prisma.$queryRaw<Array<{ migration: string }>>`
-      SELECT migration FROM "_prisma_migrations"
-      WHERE migration = '20260711_add_analytics_columns' AND finished_at IS NULL
+    const failedMigration = await prisma.$queryRaw<Array<{ migration_name: string }>>`
+      SELECT migration_name FROM "_prisma_migrations"
+      WHERE migration_name = '20260711_add_analytics_columns' AND finished_at IS NULL
     `
     if (failedMigration && failedMigration.length > 0) {
       console.log('[startup] Resolving failed migration: 20260711_add_analytics_columns')
       await prisma.$executeRaw`
         UPDATE "_prisma_migrations"
         SET finished_at = NOW(), rolled_back_at = NOW()
-        WHERE migration = '20260711_add_analytics_columns'
+        WHERE migration_name = '20260711_add_analytics_columns'
       `
       console.log('[startup] Migration resolved. Safe migration will apply on next startup.')
     }

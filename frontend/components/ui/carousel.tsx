@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import {  m  } from 'framer-motion';
 import React, { useRef, useState, useEffect } from "react";
 
 export const Carousel = ({
@@ -51,7 +51,7 @@ export const Carousel = ({
             >
                 <div className="flex flex-row justify-start gap-4 pl-4 max-w-7xl mx-auto">
                     {items.map((item, index) => (
-                        <motion.div
+                        <m.div
                             initial={{
                                 opacity: 0,
                                 y: 20,
@@ -69,7 +69,7 @@ export const Carousel = ({
                             className="last:pr-4 md:last:pr-8 rounded-3xl shrink-0 snap-center w-full min-w-[300px] md:min-w-[500px]"
                         >
                             {item}
-                        </motion.div>
+                        </m.div>
                     ))}
                 </div>
             </div>

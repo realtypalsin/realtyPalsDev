@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { Phone, Mail } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Lead {
   id: string
@@ -31,9 +34,10 @@ export default function BuilderLeadsPage() {
 
   const fetchLeads = async () => {
     try {
-      const res = await fetch(`/api/builder/leads?status=${filter}`)
+      const res = await fetch(`${API_BASE}/admin/leads?status=${filter}`, { headers: adminAuthHeaders() })
       if (res.ok) {
-        setLeads(await res.json())
+        const data = await res.json()
+        setLeads(data.leads || [])
       }
     } catch {
       console.error('Failed to fetch leads')
@@ -44,9 +48,12 @@ export default function BuilderLeadsPage() {
 
   const updateLeadStatus = async (leadId: string, newStatus: string) => {
     try {
-      const res = await fetch(`/api/builder/leads/${leadId}`, {
+      const res = await fetch(`${API_BASE}/admin/leads/${leadId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...adminAuthHeaders()
+        },
         body: JSON.stringify({ status: newStatus })
       })
       if (res.ok) {
@@ -109,7 +116,36 @@ export default function BuilderLeadsPage() {
 
       {/* Leads Table */}
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="bg-white dark:bg-slate-900 rounded-lg border dark:border-slate-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-slate-800 border-b dark:border-slate-700">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Contact</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Project</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Type</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Date</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y dark:divide-slate-700">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-24 rounded" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-32 rounded" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-20 rounded" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-16 rounded" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-16 rounded" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-8 w-16 rounded" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : leads.length === 0 ? (
         <div className="text-center py-12 text-gray-500">No leads found</div>
       ) : (

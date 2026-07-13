@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 'use client'
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import Image from 'next/image'
 import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
@@ -10,7 +10,14 @@ import {
   Layout, Home, Users, Compass, Eye
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
-import PricingCharts from './PricingCharts'
+import dynamic from 'next/dynamic'
+
+import { Skeleton } from '@/components/ui/skeleton'
+
+const PricingCharts = dynamic(() => import('./PricingCharts'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-64 w-full" />
+})
 
 type FloorPlanImage = { id: string; url: string; caption?: string | null; bhk?: number | null; size_sqft?: number | null }
 type LazyState<T> = { loaded: boolean; available: boolean; data: T | null; message?: string }
@@ -140,10 +147,20 @@ export default function PricingTab({
           const descStr = unit.description || 'Exquisite layout prioritizing comfort, privacy, and expansive living spaces.'
           const categoryBadge = unit.category_badge || 'Premium Configuration'
           const inventoryLeft = unit.inventory_left || 8
-          const perfectFor = unit.perfect_for || ['Families', 'End Users']
-          const highlightsList = unit.key_highlights || []
-          const includedList = unit.whats_included || []
-          const viewsList = unit.views || []
+          const parseArray = (v: any) => {
+            if (Array.isArray(v)) return v;
+            if (typeof v === 'string') {
+              try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; }
+            }
+            return [];
+          }
+
+          const perfectFor = parseArray(unit.perfect_for)
+          if (perfectFor.length === 0) perfectFor.push('Families', 'End Users')
+          
+          const highlightsList = parseArray(unit.key_highlights)
+          const includedList = parseArray(unit.whats_included)
+          const viewsList = parseArray(unit.views)
 
           return (
             <div
@@ -190,7 +207,7 @@ export default function PricingTab({
               {/* Expanded Area */}
               <AnimatePresence initial={false}>
                 {isExpanded && (
-                  <motion.div
+                  <m.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -413,7 +430,7 @@ export default function PricingTab({
                         </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
             </div>

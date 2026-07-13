@@ -56,6 +56,17 @@ router.post('/', async (req: Request, res: Response) => {
       create: { user_id: userId, project_id },
       update: {},
     })
+
+    // Log engagement event for admin analytics
+    await prisma.propertyEvent.create({
+      data: {
+        session_id: req.cookies?.sessionId || 'unknown',
+        user_id: userId,
+        project_id,
+        action: 'save',
+      }
+    }).catch(err => console.error('[POST /saved] failed to create event:', err))
+
     res.status(201).json({ ok: true })
   } catch (err) {
     console.error('[POST /saved]', err)
@@ -86,6 +97,17 @@ router.delete('/:id', async (req: Request, res: Response) => {
   await prisma.savedProperty.deleteMany({
     where: { user_id: userId, project_id: req.params.id },
   })
+
+  // Log engagement event for admin analytics
+  await prisma.propertyEvent.create({
+    data: {
+      session_id: req.cookies?.sessionId || 'unknown',
+      user_id: userId,
+      project_id: req.params.id,
+      action: 'remove_saved',
+    }
+  }).catch(err => console.error('[DELETE /saved] failed to create event:', err))
+
   res.json({ ok: true })
 })
 

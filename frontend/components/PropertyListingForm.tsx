@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ArrowRight, ArrowLeft, Loader2, Home, CheckCircle2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import Toast from './Toast'
 
 type FormStep = 'basic' | 'location' | 'details' | 'review'
@@ -52,7 +52,7 @@ export default function PropertyListingForm() {
   if (submitted) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center">
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full text-center p-8 bg-white/70 backdrop-blur-2xl rounded-[32px] border border-zinc-200/60 shadow-[0_24px_64px_rgba(0,0,0,0.06)]">
+        <m.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full text-center p-8 bg-white/70 backdrop-blur-2xl rounded-[32px] border border-zinc-200/60 shadow-[0_24px_64px_rgba(0,0,0,0.06)]">
           <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 size={40} className="text-emerald-500" strokeWidth={2.5} />
           </div>
@@ -61,7 +61,7 @@ export default function PropertyListingForm() {
           <button onClick={() => window.location.href = '/'} className="px-8 py-3.5 text-[14px] font-bold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-xl transition-all shadow-sm active:scale-95">
             Return Home
           </button>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
@@ -80,7 +80,7 @@ export default function PropertyListingForm() {
         
         {/* Sleek Progress Bar */}
         <div className="max-w-xs mx-auto h-1 w-full bg-zinc-100 rounded-full overflow-hidden mt-6">
-          <motion.div 
+          <m.div 
             className="h-full bg-zinc-900 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
@@ -93,7 +93,7 @@ export default function PropertyListingForm() {
       <div className="bg-white rounded-[32px] border border-zinc-200/80 shadow-[0_24px_64px_rgba(0,0,0,0.06)] p-6 md:p-10 min-h-[350px] flex flex-col relative overflow-hidden">
         <div className="flex-1">
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={activeStep}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -173,7 +173,7 @@ export default function PropertyListingForm() {
                   </div>
                 </div>
               )}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
 

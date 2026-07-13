@@ -13,6 +13,7 @@ import { MODELS } from '../lib/config'
 import { requireAdmin } from '../lib/adminAuth'
 import { checkRateLimit } from '../lib/cache'
 import { clientIp } from '../lib/request'
+import { validateUploadedFile } from '../lib/uploadValidator'
 
 const router = Router()
 
@@ -118,6 +119,13 @@ router.post('/', requireAdmin, upload.single('file'), async (req: Request, res: 
 
   if (!ALLOWED_MIME.has(file.mimetype)) {
     res.status(400).json({ error: 'Only PDF and images (JPEG/PNG/WEBP) supported' })
+    return
+  }
+
+  // 1.7 Add File-Type Validation (Magic Bytes)
+  const validation = await validateUploadedFile(file.buffer)
+  if (!validation.valid) {
+    res.status(400).json({ error: validation.error || 'Invalid file type' })
     return
   }
 

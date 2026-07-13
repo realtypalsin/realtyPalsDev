@@ -8,7 +8,7 @@ import {
   Building2, Users, LayoutDashboard, LogOut, Menu,
   ChevronRight, Search, FileText, MessageSquare, Newspaper, PanelLeftClose, PanelLeftOpen, BarChart3
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import {  AnimatePresence, m  } from 'framer-motion'
 import { API_BASE } from '@/lib/env'
 
 const NAV = [
@@ -105,14 +105,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <AnimatePresence>
         {cmdOpen && (
           <>
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-zinc-900/20 backdrop-blur-sm z-50"
               onClick={() => setCmdOpen(false)}
             />
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.95, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
@@ -145,7 +145,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </button>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

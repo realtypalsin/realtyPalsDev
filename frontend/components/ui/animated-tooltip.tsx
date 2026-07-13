@@ -1,13 +1,13 @@
 "use client";
 import Image from "next/image";
 import React, { useState } from "react";
-import {
-    motion,
+import { 
+    m,
     useTransform,
     AnimatePresence,
     useMotionValue,
     useSpring,
-} from "framer-motion";
+ } from 'framer-motion';
 
 export const AnimatedTooltip = ({
     items,
@@ -49,7 +49,7 @@ export const AnimatedTooltip = ({
                 >
                     <AnimatePresence mode="popLayout">
                         {hoveredIndex === item.id && (
-                            <motion.div
+                            <m.div
                                 initial={{ opacity: 0, y: 20, scale: 0.6 }}
                                 animate={{
                                     opacity: 1,
@@ -75,7 +75,7 @@ export const AnimatedTooltip = ({
                                     {item.name}
                                 </div>
                                 <div className="text-white text-xs">{item.designation}</div>
-                            </motion.div>
+                            </m.div>
                         )}
                     </AnimatePresence>
                     {item.image ? (

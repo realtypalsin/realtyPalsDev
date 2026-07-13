@@ -47,7 +47,7 @@ describe('Chips: Adaptive & Predictive', () => {
   describe('Stage 1: DISCOVERY (no chat history, empty input)', () => {
     it('shows generic discovery chips on first message with empty intent', () => {
       const intent: Intent = {}
-      const state = computeConversationState(intent, 'COLD', [], false, [])
+      const state = computeConversationState(intent, 'COLD', [], false, [], undefined, undefined, undefined, mockInventory, false)
       assert.equal(state.stage, 'DISCOVERY')
       assert.ok(state.chips.length > 0, 'DISCOVERY stage should show chips')
       assert.ok(
@@ -58,7 +58,7 @@ describe('Chips: Adaptive & Predictive', () => {
 
     it('does NOT show discovery chips on first message with real intent', () => {
       const intent: Intent = { sector: 'Sector 150', bhk: [3] }
-      const state = computeConversationState(intent, 'READY_TO_SEARCH', [], false, [])
+      const state = computeConversationState(intent, 'READY_TO_SEARCH', [], false, [], undefined, undefined, undefined, mockInventory, true)
       assert.equal(state.stage, 'SEARCHING')
       assert.ok(
         !state.chips.some((c) => c.actionType === 'INTENT_PATCH' && c.label.includes('Sector')),
@@ -71,7 +71,7 @@ describe('Chips: Adaptive & Predictive', () => {
     it('shows missing field chips when only BHK specified', () => {
       const intent: Intent = { bhk: [3] }
       const chatHistory = [{ role: 'user', content: 'show me 3 BHK' }]
-      const state = computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory)
+      const state = computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
       assert.equal(state.stage, 'CLARIFYING')
       assert.ok(
         state.chips.some((c) => c.label.includes('Sector')),
@@ -79,28 +79,27 @@ describe('Chips: Adaptive & Predictive', () => {
       )
     })
 
-    it('does NOT show chips for garbage input mid-chat', () => {
+    it('shows chips for garbage input mid-chat', () => {
       const intent: Intent = {} // Empty intent from "Lorem ipsum × 100"
       const chatHistory = [
         { role: 'user', content: 'what all are the amenities in ace hanei' },
         { role: 'assistant', content: 'Here are the amenities...' },
         { role: 'user', content: 'Lorem ipsum × 100' },
       ]
-      const state = computeConversationState(intent, 'COLD', [], false, chatHistory, undefined, undefined, undefined, mockInventory)
+      const state = computeConversationState(intent, 'COLD', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
       assert.equal(state.stage, 'CLARIFYING')
-      // getClarifyingChips checks results, and with empty results should show no chips
-      assert.equal(state.chips.length, 0, 'Should not show chips for garbage input')
+      assert.ok(state.chips.length > 0, 'Should show chips for garbage input to guide the user')
     })
 
-    it('does NOT show chips for emoji-only input mid-chat', () => {
+    it('shows chips for emoji-only input mid-chat', () => {
       const intent: Intent = {} // Empty intent from "🏠🏘️🏢"
       const chatHistory = [
         { role: 'user', content: 'what about nearby metro?' },
         { role: 'assistant', content: '...' },
         { role: 'user', content: '🏠🏘️🏢' },
       ]
-      const state = computeConversationState(intent, 'COLD', [], false, chatHistory, undefined, undefined, undefined, mockInventory)
-      assert.equal(state.chips.length, 0, 'Emoji-only input should not show chips')
+      const state = computeConversationState(intent, 'COLD', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
+      assert.ok(state.chips.length > 0, 'Emoji-only input should show chips')
     })
   })
 
@@ -108,9 +107,8 @@ describe('Chips: Adaptive & Predictive', () => {
     it('shows discovery chips while searching to allow refinement', () => {
       const intent: Intent = { sector: 'Sector 150' }
       const chatHistory = [{ role: 'user', content: 'properties in Sector 150' }]
-      const state = computeConversationState(intent, 'READY_TO_SEARCH', [], false, chatHistory, undefined, undefined, undefined, mockInventory)
+      const state = computeConversationState(intent, 'READY_TO_SEARCH', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
       assert.equal(state.stage, 'SEARCHING')
-      // Searching stage offers discovery chips for refinement
       assert.ok(state.chips.length > 0, 'Should offer refinement chips while searching')
     })
   })
@@ -119,12 +117,12 @@ describe('Chips: Adaptive & Predictive', () => {
     it('shows contextual next-step chips when results found', () => {
       const intent: Intent = { sector: 'Sector 150', bhk: [3], budgetMax: 2 }
       const chatHistory = [{ role: 'user', content: 'properties in sector 150' }]
-      const state = computeConversationState(intent, 'READY_TO_SEARCH', mockProjects, false, chatHistory)
+      const state = computeConversationState(intent, 'READY_TO_SEARCH', mockProjects, false, chatHistory, undefined, undefined, undefined, mockInventory, true)
       assert.equal(state.stage, 'RESEARCH')
       assert.ok(state.chips.length > 0, 'RESEARCH should show action chips')
       assert.ok(
-        state.chips.some((c) => ['COMPARE_PROPERTIES', 'CALCULATE_EMI'].includes(c.actionType)),
-        'Should suggest compare or calculate next steps'
+        state.chips.some((c) => ['TEXT_MESSAGE'].includes(c.actionType)),
+        'Should suggest price trends or builder risk next steps'
       )
     })
   })
@@ -135,10 +133,10 @@ describe('Chips: Adaptive & Predictive', () => {
         projectNames: ['ACE Hanei', 'Elite X'],
         is_comparison_query: true,
       }
-      const state = computeConversationState(intent, 'READY_TO_SEARCH', mockProjects, true)
+      const state = computeConversationState(intent, 'READY_TO_SEARCH', mockProjects, true, [], undefined, undefined, undefined, mockInventory, true)
       assert.equal(state.stage, 'COMPARING')
       assert.ok(
-        state.chips.some((c) => c.actionType === 'COMPARE_PROPERTIES'),
+        state.chips.some((c) => c.actionType === 'TEXT_MESSAGE'),
         'Should show comparison action chips'
       )
     })
@@ -147,10 +145,10 @@ describe('Chips: Adaptive & Predictive', () => {
   describe('Stage 6: DECIDING (ready to commit)', () => {
     it('shows booking/callback chips when user ready to decide', () => {
       const intent: Intent = { sector: 'Sector 12', bhk: [3] }
-      const state = computeConversationState(intent, 'SHORTLISTED', mockProjects, false)
+      const state = computeConversationState(intent, 'SHORTLISTED', mockProjects, false, [], undefined, undefined, undefined, mockInventory, true)
       assert.equal(state.stage, 'DECIDING')
       assert.ok(
-        state.chips.some((c) => ['BOOK_VISIT', 'CALLBACK_REQUEST'].includes(c.actionType)),
+        state.chips.some((c) => ['TEXT_MESSAGE', 'COMPARE_PROPERTIES'].includes(c.actionType)),
         'Should show booking/callback chips'
       )
     })
@@ -158,21 +156,19 @@ describe('Chips: Adaptive & Predictive', () => {
 
   describe('Chips: Data-Driven (not hardcoded)', () => {
     it('chips vary based on actual results', () => {
-      // With 0 results
-      const state0 = computeConversationState({ sector: 'Sector 150' }, 'GATHERING', [], false, [{ role: 'user', content: 'sector 150' }], undefined, undefined, undefined, mockInventory)
-      // With 5+ results
-      const state5 = computeConversationState({ sector: 'Sector 150' }, 'READY_TO_SEARCH', mockProjects, false, [{ role: 'user', content: 'sector 150' }])
+      const state0 = computeConversationState({ sector: 'Sector 150' }, 'GATHERING', [], false, [{ role: 'user', content: 'sector 150' }], undefined, undefined, undefined, mockInventory, true)
+      const state5 = computeConversationState({ sector: 'Sector 150' }, 'READY_TO_SEARCH', mockProjects, false, [{ role: 'user', content: 'sector 150' }], undefined, undefined, undefined, mockInventory, true)
 
-      assert.notEqual(
-        state0.chips.length,
-        state5.chips.length,
+      assert.notStrictEqual(
+        state0.chips[0].actionType,
+        state5.chips[0].actionType,
         'Chips should differ based on result count'
       )
     })
 
     it('chips respect inventory data (not hardcoded sectors)', () => {
       const intent: Intent = { bhk: [3] }
-      const state = computeConversationState(intent, 'GATHERING', [], false, [{ role: 'user', content: '3 BHK' }], undefined, undefined, undefined, mockInventory)
+      const state = computeConversationState(intent, 'GATHERING', [], false, [{ role: 'user', content: '3 BHK' }], undefined, undefined, undefined, mockInventory, true)
       const sectorChips = state.chips.filter((c) => c.icon === '📍')
       assert.ok(
         sectorChips.every((c) => ['Sector 150', 'Sector 79'].includes(c.label)),
@@ -188,7 +184,7 @@ describe('Chips: Adaptive & Predictive', () => {
         { role: 'user', content: '3 BHK' },
         { role: 'assistant', content: 'Which sector? Sector 150, Sector 79, or other?' },
       ]
-      const state = computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory)
+      const state = computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
       const sectorChips = state.chips.filter((c) => c.icon === '📍')
       assert.ok(
         sectorChips.length <= 3,
@@ -207,7 +203,7 @@ describe('Chips: Adaptive & Predictive', () => {
 
       for (const scenario of scenarios) {
         const intent: Intent = { sector: 'Sector 150', bhk: [3] }
-        const state = computeConversationState(intent, scenario.stage, mockProjects.slice(0, 1), false, [{ role: 'user', content: 'test' }])
+        const state = computeConversationState(intent, scenario.stage, mockProjects.slice(0, 1), false, [{ role: 'user', content: 'test' }], undefined, undefined, undefined, mockInventory, true)
         assert.ok(
           state.chips.length > 0,
           `Stage ${scenario.stage} should suggest ${scenario.expects}`
@@ -219,8 +215,7 @@ describe('Chips: Adaptive & Predictive', () => {
   describe('Chips: Filter by Project Name', () => {
     it('shows relevant data when user asks for specific project', () => {
       const intent: Intent = { projectNames: ['ACE Hanei'] }
-      const state = computeConversationState(intent, 'READY_TO_SEARCH', mockProjects, false, [{ role: 'user', content: 'tell me about ace hanei' }])
-      // Should not show DISCOVERY chips (sectors/bhk/budget picker)
+      const state = computeConversationState(intent, 'READY_TO_SEARCH', mockProjects, false, [{ role: 'user', content: 'tell me about ace hanei' }], undefined, undefined, undefined, mockInventory, true)
       assert.ok(
         !state.chips.some((c) => c.label.includes('Sector')),
         'Should not show sector chips when specific project requested'

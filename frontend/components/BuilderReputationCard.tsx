@@ -52,6 +52,8 @@ function ScoreRing({ score }: { score: number }) {
   )
 }
 
+import { Skeleton } from '@/components/ui/skeleton'
+
 export default function BuilderReputationCard({ builderName, reraNumber }: Props) {
   const [data, setData] = useState<ReputationReport | null>(null)
   const [loading, setLoading] = useState(true)
@@ -75,9 +77,14 @@ export default function BuilderReputationCard({ builderName, reraNumber }: Props
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-xl">
-        <Loader2 size={16} className="animate-spin text-gray-400" />
-        <span className="text-xs text-gray-400">Checking builder reputation...</span>
+      <div className="border border-gray-100 rounded-xl p-4 bg-white">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-3 w-1/4" />
+          </div>
+        </div>
       </div>
     )
   }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Loader2, Upload, CheckCircle2, Plus, X, ArrowLeft, ArrowRight, Globe, Info } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import Toast from './Toast'
 import Image from 'next/image'
 
@@ -105,6 +105,8 @@ export default function BuilderRegistrationForm() {
     }
   }
 
+  const [infoTooltip, setInfoTooltip] = useState<string | null>(null)
+
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] relative overflow-hidden font-sans">
@@ -112,7 +114,7 @@ export default function BuilderRegistrationForm() {
         <div className="absolute top-[-10%] right-[-5%] w-[60vw] h-[60vh] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-10%] left-[-5%] w-[50vw] h-[50vh] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
         
-        <motion.div initial={{ opacity: 0, y: 10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="max-w-[440px] w-full text-center p-12 bg-white rounded-[24px] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05),0_0_0_1px_rgba(0,0,0,0.04)] mx-4 relative z-10">
+        <m.div initial={{ opacity: 0, y: 10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="max-w-[440px] w-full text-center p-12 bg-white rounded-[24px] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05),0_0_0_1px_rgba(0,0,0,0.04)] mx-4 relative z-10">
           <div className="w-14 h-14 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600 shadow-sm">
             <CheckCircle2 size={28} strokeWidth={2.5} />
           </div>
@@ -122,13 +124,11 @@ export default function BuilderRegistrationForm() {
             <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">Reference ID</span>
             <code className="text-[14px] font-mono font-medium text-zinc-800 tracking-wider">{applicationId}</code>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
 
-  const [infoTooltip, setInfoTooltip] = useState<string | null>(null)
-  
   // Validation helpers
   const cinRegex = /^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/i
   const phoneRegex = /^\+91\d{10}$/
@@ -221,7 +221,7 @@ export default function BuilderRegistrationForm() {
                     <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center shrink-0 transition-all duration-300 relative mt-0.5
                       ${isActive ? 'bg-white shadow-sm ring-1 ring-black/10' : isPassed ? 'bg-zinc-100 text-zinc-400' : 'bg-transparent border border-black/10 text-zinc-300 group-hover:border-black/20 group-hover:text-zinc-400'}
                     `}>
-                      {isActive && <motion.div layoutId="active-dot" className="w-[6px] h-[6px] bg-blue-600 rounded-full" />}
+                      {isActive && <m.div layoutId="active-dot" className="w-[6px] h-[6px] bg-blue-600 rounded-full" />}
                       {isPassed && <CheckCircle2 size={10} strokeWidth={3} />}
                     </div>
                     <div>
@@ -229,9 +229,9 @@ export default function BuilderRegistrationForm() {
                         {STEP_TITLES[step].title}
                       </h3>
                       {isActive && (
-                        <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed pr-4">
+                        <m.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed pr-4">
                           {STEP_TITLES[step].desc}
-                        </motion.p>
+                        </m.p>
                       )}
                     </div>
                   </div>
@@ -252,7 +252,7 @@ export default function BuilderRegistrationForm() {
               </div>
 
               <AnimatePresence mode="wait">
-                <motion.div
+                <m.div
                   key={activeStep}
                   initial={{ opacity: 0, filter: 'blur(4px)', y: 8 }}
                   animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
@@ -424,7 +424,7 @@ export default function BuilderRegistrationForm() {
                       </div>
                     </div>
                   )}
-                </motion.div>
+                </m.div>
               </AnimatePresence>
             </div>
           </div>

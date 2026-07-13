@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import {  m  } from 'framer-motion'
 import {
   FileText, CalendarDays, Percent, ShieldCheck, Download, CheckCircle2,
   TrendingUp, Home, ArrowUpRight, Lock, PhoneCall, HelpCircle, IndianRupee,
@@ -8,7 +8,12 @@ import {
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
-import PricingCharts from './PricingCharts'
+import dynamic from 'next/dynamic'
+
+const PricingCharts = dynamic(() => import('./PricingCharts'), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-slate-100 animate-pulse rounded-xl flex items-center justify-center"><span className="text-sm text-slate-400">Loading charts...</span></div>
+})
 
 export interface ProjectPricingTabProps {
   unitTypes: UnitTypeSummary[]

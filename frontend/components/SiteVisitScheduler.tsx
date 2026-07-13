@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, Clock, User, Phone, Mail, X, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
+import {  m, AnimatePresence  } from 'framer-motion'
+import { Calendar, Clock, User, X, CheckCircle2 } from 'lucide-react'
 
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics'
@@ -90,7 +90,7 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
   return (
     <>
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
-      <motion.div
+      <m.div
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 60, opacity: 0 }}
@@ -122,7 +122,7 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
           <AnimatePresence mode="wait">
             {/* Step 1: Date */}
             {step === 'date' && (
-              <motion.div key="date" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <m.div key="date" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
                   <Calendar size={15} className="text-blue-500" /> Select a date
                 </p>
@@ -150,12 +150,12 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
                 >
                   Continue →
                 </button>
-              </motion.div>
+              </m.div>
             )}
 
             {/* Step 2: Time */}
             {step === 'time' && (
-              <motion.div key="time" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <m.div key="time" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-2">
                   <Clock size={15} className="text-blue-500" /> Select a time slot
                 </p>
@@ -187,12 +187,12 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
                     Continue →
                   </button>
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {/* Step 3: Details */}
             {step === 'details' && (
-              <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <m.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
                   <User size={15} className="text-blue-500" /> Your details
                 </p>
@@ -251,12 +251,12 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
                     {submitting ? 'Booking...' : 'Confirm Visit'}
                   </button>
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {/* Success */}
             {step === 'success' && (
-              <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-6">
+              <m.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-6">
                 <div className="w-16 h-16 bg-green-100 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 size={32} className="text-green-500" />
                 </div>
@@ -269,11 +269,11 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
                 <button onClick={onClose} className="px-6 py-2.5 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 text-white text-sm font-semibold rounded-xl">
                   Done
                 </button>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+      </m.div>
     </div>
 
     {successData && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import {  AnimatePresence, m  } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -216,6 +216,7 @@ export function PlaceholdersAndVanishInput({
                 ref={canvasRef}
             />
             <input
+                aria-label="Type your property question"
                 onChange={(e) => {
                     if (!animating) {
                         setValue(e.target.value);
@@ -242,7 +243,7 @@ export function PlaceholdersAndVanishInput({
 
                 <AnimatePresence mode="wait">
                     {!value && (
-                        <motion.p
+                        <m.p
                             initial={{
                                 y: 5,
                                 opacity: 0,
@@ -264,7 +265,7 @@ export function PlaceholdersAndVanishInput({
                         >
                             {disabled ? "AI is responding..." : placeholders[currentPlaceholder]}
 
-                        </motion.p>
+                        </m.p>
                     )}
                 </AnimatePresence>
             </div>

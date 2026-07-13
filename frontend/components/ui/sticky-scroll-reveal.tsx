@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
 import { useMotionValueEvent, useScroll } from "framer-motion";
-import { motion } from "framer-motion";
+import {  m  } from 'framer-motion';
 import { cn } from "@/lib/utils";
 
 export const StickyScroll = ({
@@ -51,7 +51,7 @@ export const StickyScroll = ({
                 <div className="max-w-2xl w-full">
                     {content.map((item, index) => (
                         <div key={item.title + index} className="my-20">
-                            <motion.h2
+                            <m.h2
                                 initial={{
                                     opacity: 0,
                                 }}
@@ -61,8 +61,8 @@ export const StickyScroll = ({
                                 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-gray-100 transition-opacity duration-300"
                             >
                                 {item.title}
-                            </motion.h2>
-                            <motion.div
+                            </m.h2>
+                            <m.div
                                 initial={{
                                     opacity: 0,
                                 }}
@@ -72,7 +72,7 @@ export const StickyScroll = ({
                                 className="text-xl text-gray-800 dark:text-gray-200 mt-10 w-full transition-opacity duration-300"
                             >
                                 {item.description}
-                            </motion.div>
+                            </m.div>
                         </div>
                     ))}
                     <div className="h-40" />

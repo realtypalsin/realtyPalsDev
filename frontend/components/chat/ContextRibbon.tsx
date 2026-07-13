@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import {  m, AnimatePresence  } from 'framer-motion';
 import { X, Search } from 'lucide-react';
 import type { ConversationState } from './types';
 
@@ -37,7 +37,7 @@ export default function ContextRibbon({ intent, onRemove }: ContextRibbonProps) 
   if (activeFilters.length === 0) return null;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, height: 0 }}
@@ -51,7 +51,7 @@ export default function ContextRibbon({ intent, onRemove }: ContextRibbonProps) 
         <div className="w-[1px] h-3 bg-gray-300 dark:bg-gray-700 mx-1" />
         <AnimatePresence>
           {activeFilters.map(filter => (
-            <motion.div
+            <m.div
               layout
               key={filter.field}
               initial={{ scale: 0.9, opacity: 0 }}
@@ -68,10 +68,10 @@ export default function ContextRibbon({ intent, onRemove }: ContextRibbonProps) 
               >
                 <X size={10} />
               </button>
-            </motion.div>
+            </m.div>
           ))}
         </AnimatePresence>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

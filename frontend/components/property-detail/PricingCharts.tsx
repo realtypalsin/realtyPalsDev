@@ -3,15 +3,15 @@
 import { useMemo } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  BarChart, Bar, Cell,
-  PieChart, Pie
+  BarChart, Bar, Cell
 } from 'recharts'
-import { IndianRupee, TrendingUp, Calculator, PieChart as PieChartIcon } from 'lucide-react'
+import { TrendingUp, Calculator } from 'lucide-react'
 
 interface Props {
   priceHistory?: { year: number; price_psf: number }[]
   unitPriceCr?: number
   otherCharges?: { label: string; amount: number; frequency: string; per: string }[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   appreciationData?: any
 }
 

@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -77,14 +79,14 @@ function priceRange(units: UnitType[]): string {
 function SkeletonRow() {
   return (
     <div className="flex items-center px-4 py-3 border-b border-zinc-100 gap-4">
-      <div className="w-8 h-8 bg-zinc-100 rounded-md animate-pulse shrink-0" />
+      <Skeleton className="w-8 h-8 rounded-md shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-4 bg-zinc-100 rounded w-1/3 animate-pulse" />
-        <div className="h-3 bg-zinc-50 rounded w-1/4 animate-pulse" />
+        <Skeleton className="h-4 rounded w-1/3" />
+        <Skeleton className="h-3 rounded w-1/4" />
       </div>
-      <div className="w-24 h-4 bg-zinc-100 rounded animate-pulse shrink-0" />
-      <div className="w-16 h-4 bg-zinc-100 rounded animate-pulse shrink-0" />
-      <div className="w-8 h-8 bg-zinc-50 rounded-md animate-pulse shrink-0" />
+      <Skeleton className="w-24 h-4 rounded shrink-0" />
+      <Skeleton className="w-16 h-4 rounded shrink-0" />
+      <Skeleton className="w-8 h-8 rounded-md shrink-0" />
     </div>
   )
 }

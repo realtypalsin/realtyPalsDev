@@ -12,10 +12,7 @@ const SUPABASE_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
   process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Dev-only escape hatch. When Supabase env is not configured AND this is
-// explicitly enabled, fall back to the legacy (insecure) x-user-id header so
-// local development keeps working. Off by default — production stays secure.
-const ALLOW_INSECURE = process.env.ALLOW_INSECURE_USERID === '1'
+// Insecure backdoors have been permanently removed per security audit.
 
 // Small in-memory cache so we don't hit Supabase on every request in a burst.
 const tokenCache = new Map<string, { userId: string; exp: number }>()
@@ -38,11 +35,7 @@ export async function verifyUser(req: Request): Promise<string | null> {
   const token = bearer(req)
 
   if (!token) {
-    // No token. Only honour the legacy header in the explicit insecure dev mode.
-    if (ALLOW_INSECURE) {
-      const legacy = req.headers['x-user-id']
-      return typeof legacy === 'string' && legacy ? legacy : null
-    }
+    // No token. We no longer honour any legacy x-user-id headers.
     return null
   }
 
@@ -51,10 +44,6 @@ export async function verifyUser(req: Request): Promise<string | null> {
 
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('[auth] SUPABASE_URL / key not configured — cannot verify tokens')
-    if (ALLOW_INSECURE) {
-      const legacy = req.headers['x-user-id']
-      return typeof legacy === 'string' && legacy ? legacy : null
-    }
     return null
   }
 

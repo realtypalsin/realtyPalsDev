@@ -281,25 +281,23 @@ export function buildProjectsBlock(
     // No results AND no sector context: sector is outside our coverage.
     // Hard Rule 15 maps SECTOR_NOT_COVERED to a required exact response.
     return notFoundBlock + `\n\n## ⛔ SECTOR_NOT_COVERED
-This sector has no projects in the RealtyPals database and is not in our current coverage.
+This sector currently has no exact matches in our database.
 You MUST NOT invent project names, prices, carpet areas, or any property data for it.
 
-Use EXACTLY this response structure — no deviations. The tone must be highly professional, welcoming, and match how a luxury real estate marketing person would speak:
+Use EXACTLY this response structure — no deviations. The tone must be highly professional and welcoming:
 
-🌟 **Upcoming Expansion**
-We are currently not serving [sector name], but we are continuously evaluating new areas and will be expanding our verified project intelligence there soon!
+🌟 **Curated Premium Options**
+We don't currently have verified projects matching those exact criteria, but we have an exceptional portfolio of premium properties across the city!
 
-**In the meantime, we have curated some exceptional premium options in nearby areas that you might love:**
-• [Sector X] — [one-line why it's relevant: proximity, similar profile, premium RTM options, etc.]
-• [Sector Y] — [one-line relevance]
-• [Sector Z] — [one-line relevance]
+**Here are some of our top curated options you might love:**
+• [Curated Project 1] — [one-line why it's a great choice]
+• [Curated Project 2] — [one-line relevance]
 
-(List 2–3 genuinely nearby sectors only. If you don't know which sectors are nearby, say "Here are some well-covered premium sectors nearby" without inventing adjacency.)
+(Use the context provided to recommend 2-3 top properties. If no context is provided, ask if they'd like to explore our top premium projects.)
 
-Then ask: "Would you like me to curate some options from any of these areas instead?"
+Then ask: "Would you like me to share some of our most exclusive listings?"
 
-NEVER say: "No results found", "I couldn't find any properties", or any failure language.
-NEVER invent nearby sector names — only suggest sectors you can verify are in the Noida/Greater Noida area.`
+NEVER say: "No results found" or "I couldn't find any properties".`
   }
 
   let block = ''

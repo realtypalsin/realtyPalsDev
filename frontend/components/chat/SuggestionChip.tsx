@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import {  m  } from 'framer-motion'
 import type { ChipAction, ChipPickerState } from './types'
 
 interface SuggestionChipProps {
@@ -21,7 +21,7 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
   const hasDropdown = chip.actionType === 'COMPARE_PROPERTIES' || chip.actionType === 'CALCULATE_EMI' || chip.actionType === 'BOOK_VISIT'
 
   return (
-    <motion.button
+    <m.button
       whileTap={{ scale: 0.96 }}
       key={chip.id}
       onClick={() => {
@@ -50,6 +50,6 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
           ▾
         </span>
       )}
-    </motion.button>
+    </m.button>
   )
 }

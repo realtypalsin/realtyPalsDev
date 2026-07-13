@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, Variants } from "framer-motion";
+import {  AnimatePresence, m, Variants  } from 'framer-motion';
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -74,7 +74,7 @@ export function HyperText({
             onMouseEnter={triggerAnimation}
         >
             <AnimatePresence mode="wait">
-                <motion.div className="flex truncate max-w-full" {...framerProps}>
+                <m.div className="flex truncate max-w-full" {...framerProps}>
                     {displayText.map((letter, i) => (
                         <span
                             key={i}
@@ -83,7 +83,7 @@ export function HyperText({
                             {letter}
                         </span>
                     ))}
-                </motion.div>
+                </m.div>
             </AnimatePresence>
         </div>
     );

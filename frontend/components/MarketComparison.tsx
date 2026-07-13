@@ -43,6 +43,8 @@ function statusColor(s: string): string {
   return map[s] ?? 'bg-gray-400'
 }
 
+import { Skeleton } from '@/components/ui/skeleton'
+
 export default function MarketComparison({ sector, city = 'Noida', currentPriceSqft }: Props) {
 
   const [data, setData] = useState<ComparisonData | null>(null)
@@ -59,10 +61,26 @@ export default function MarketComparison({ sector, city = 'Noida', currentPriceS
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center gap-3 py-12 bg-white rounded-3xl border border-gray-100 shadow-sm">
-        <Loader2 size={18} className="animate-spin text-blue-500" />
-        <span className="text-[13px] text-gray-500 font-medium">Analyzing sector market dynamics...</span>
-
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8 space-y-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-6 w-48" />
+          </div>
+          <div className="text-right space-y-2">
+            <Skeleton className="h-4 w-16 ml-auto" />
+            <Skeleton className="h-6 w-32 ml-auto" />
+          </div>
+        </div>
+        
+        <Skeleton className="h-[200px] w-full rounded-xl" />
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-50">
+          <Skeleton className="h-12 w-full rounded-lg" />
+          <Skeleton className="h-12 w-full rounded-lg" />
+          <Skeleton className="h-12 w-full rounded-lg" />
+          <Skeleton className="h-12 w-full rounded-lg" />
+        </div>
       </div>
     )
   }

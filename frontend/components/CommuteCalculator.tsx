@@ -5,6 +5,7 @@ import { Route, MapPin, Clock, ArrowRight, Loader2, Navigation, Car, TrainFront 
 
 import { API_BASE } from '@/lib/env'
 import PlacesAutocomplete from '@/components/PlacesAutocomplete'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const OFFICE_STORAGE_KEY = 'rp_office_address'
 
@@ -129,7 +130,34 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
       </div>
 
       {/* Results */}
-      {result && (
+      {loading && !result && (
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+            <Skeleton className="w-10 h-10 rounded-xl flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-3 w-2/3" />
+            </div>
+            <div className="text-right space-y-1">
+              <Skeleton className="h-6 w-10 ml-auto" />
+              <Skeleton className="h-3 w-6 ml-auto" />
+            </div>
+          </div>
+          <div className="flex items-center gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+            <Skeleton className="w-10 h-10 rounded-xl flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-3 w-2/3" />
+            </div>
+            <div className="text-right space-y-1">
+              <Skeleton className="h-6 w-10 ml-auto" />
+              <Skeleton className="h-3 w-6 ml-auto" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {result && !loading && (
         <div className="space-y-2.5">
           {result.drive && (
             <div className="flex items-center gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">

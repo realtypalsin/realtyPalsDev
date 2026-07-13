@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, Variants } from "framer-motion";
+import {  m, Variants  } from 'framer-motion';
 import { cn } from "@/lib/utils";
 
 interface AnimatedTextProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -48,7 +48,7 @@ const AnimatedText = React.forwardRef<HTMLDivElement, AnimatedTextProps>(
                 className={cn("flex items-center", className)}
                 {...props}
             >
-                <motion.span
+                <m.span
                     className={cn("leading-normal", textClassName)}
                     style={{
                         background: gradientColors,
@@ -64,7 +64,7 @@ const AnimatedText = React.forwardRef<HTMLDivElement, AnimatedTextProps>(
                     onHoverEnd={() => hoverEffect && setIsHovered(false)}
                 >
                     {text}
-                </motion.span>
+                </m.span>
             </div>
         );
     }

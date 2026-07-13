@@ -25,7 +25,7 @@ export function useDropoffDetection({ sessionId }: UseAnalyticsTrackingProps) {
     hasDroppedOff.current = true
 
     try {
-      await fetch('/api/analytics/engagement', {
+      await fetch('/api/v1/analytics/engagement', {
         method: 'POST',
         body: JSON.stringify({
           session_id: sessionId,
@@ -93,7 +93,7 @@ export function useEngagementTracking({ sessionId }: UseAnalyticsTrackingProps) 
     hasEngagedRef.current = true
 
     try {
-      await fetch('/api/analytics/engagement', {
+      await fetch('/api/v1/analytics/engagement', {
         method: 'POST',
         body: JSON.stringify({
           session_id: sessionId,
@@ -116,7 +116,7 @@ export function useEngagementTracking({ sessionId }: UseAnalyticsTrackingProps) 
 export function usePromotionalTracking({ sessionId, userId, guestToken }: UseAnalyticsTrackingProps) {
   const trackImpression = useCallback(async (promotionalId: string) => {
     try {
-      await fetch('/api/analytics/promotions', {
+      await fetch('/api/v1/analytics/promotions', {
         method: 'POST',
         body: JSON.stringify({
           action: 'impression',
@@ -133,7 +133,7 @@ export function usePromotionalTracking({ sessionId, userId, guestToken }: UseAna
 
   const trackClick = useCallback(async (promotionalId: string) => {
     try {
-      await fetch('/api/analytics/promotions', {
+      await fetch('/api/v1/analytics/promotions', {
         method: 'POST',
         body: JSON.stringify({
           action: 'click',

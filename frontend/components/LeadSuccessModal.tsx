@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import {  m, AnimatePresence  } from 'framer-motion'
 import { CheckCircle2, Calendar, Phone, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -18,29 +18,29 @@ export default function LeadSuccessModal({ type, projectName, name, visitDate, t
 
   return (
     <AnimatePresence>
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
       >
-        <motion.div
+        <m.div
           initial={{ scale: 0.8, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl"
         >
-          <motion.div
+          <m.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.1, type: 'spring', damping: 15, stiffness: 300 }}
             className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-100 flex items-center justify-center"
           >
             <CheckCircle2 size={40} className="text-emerald-500" strokeWidth={2} />
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -97,9 +97,9 @@ export default function LeadSuccessModal({ type, projectName, name, visitDate, t
                 View saved properties
               </button>
             </div>
-          </motion.div>
-        </motion.div>
-      </motion.div>
+          </m.div>
+        </m.div>
+      </m.div>
     </AnimatePresence>
   )
 }

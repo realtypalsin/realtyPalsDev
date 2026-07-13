@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, X, ChevronRight, ChevronLeft, Map, MessageSquare, Zap, Target, RotateCcw } from 'lucide-react';
+import {  m, AnimatePresence  } from 'framer-motion';
+import { HelpCircle, X, ChevronRight, ChevronLeft, MessageSquare, Zap, RotateCcw } from 'lucide-react';
 
 
 interface GuideStep {
@@ -96,7 +96,7 @@ export default function VisualGuide() {
           {/* Overlay mask to highlight the target */}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] pointer-events-auto" onClick={closeGuide} />
           
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -152,7 +152,7 @@ export default function VisualGuide() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

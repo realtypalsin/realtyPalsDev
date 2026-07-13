@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
+import InfoTooltip from '@/components/InfoTooltip'
+import AnalyticsNav from '@/components/admin/AnalyticsNav'
+import { Skeleton } from '@/components/ui/skeleton'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import {
@@ -59,42 +62,47 @@ export default function SearchAnalytics() {
       </div>
 
       {/* Top Navigation Tabs */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 border-b border-gray-100">
-        <Link href="/admin/analytics" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
-          Dashboard
-        </Link>
-        <Link href="/admin/analytics/search" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-slate-900 text-white shadow-sm whitespace-nowrap">
-          Search Analytics
-        </Link>
-        <Link href="/admin/analytics/properties" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
-          Property Engagement
-        </Link>
-        <Link href="/admin/analytics/users" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-gray-100 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm whitespace-nowrap">
-          User Behavior
-        </Link>
-      </div>
+      <AnalyticsNav />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Total Searches */}
-        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <p className="text-sm text-slate-600 font-medium">Total Searches</p>
-          <p className="text-4xl font-bold text-slate-900 mt-2">{data?.totalQueries || 0}</p>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl p-6 h-[116px] shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col justify-center gap-3">
+            <Skeleton className="h-4 w-1/3 rounded" />
+            <Skeleton className="h-10 w-1/4 rounded" />
+          </div>
+          <div className="bg-white rounded-2xl p-6 h-[116px] shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col justify-center gap-3">
+            <Skeleton className="h-4 w-1/3 rounded" />
+            <Skeleton className="h-10 w-1/4 rounded" />
+          </div>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Total Searches */}
+          <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
+            <p className="text-sm text-slate-600 font-medium">Total Searches</p>
+            <p className="text-4xl font-bold text-slate-900 mt-2">{data?.totalQueries || 0}</p>
+          </div>
 
-        {/* Unique Sectors */}
-        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <p className="text-sm text-slate-600 font-medium">Sectors with Searches</p>
-          <p className="text-4xl font-bold text-slate-900 mt-2">{data?.topSectors?.length || 0}</p>
+          {/* Unique Sectors */}
+          <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
+            <p className="text-sm text-slate-600 font-medium">Sectors with Searches</p>
+            <p className="text-4xl font-bold text-slate-900 mt-2">{data?.topSectors?.length || 0}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Detailed Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Sectors */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Top 10 Searched Sectors</h2>
-          {data?.topSectors && data.topSectors.length > 0 ? (
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            Top 10 Searched Sectors
+            <InfoTooltip text="Detailed breakdown of the exact localities users are exploring most." />
+          </h2>
+          {loading ? (
+            <Skeleton className="w-full h-[400px] rounded-xl" />
+          ) : data?.topSectors && data.topSectors.length > 0 ? (
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={data.topSectors.slice(0, 10)}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -113,8 +121,17 @@ export default function SearchAnalytics() {
 
         {/* Top Builders */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Top Searched Builders</h2>
-          {data?.topBuilders && data.topBuilders.length > 0 ? (
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            Top Searched Builders
+            <InfoTooltip text="Real-time ranking of developers based on user queries." />
+          </h2>
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : data?.topBuilders && data.topBuilders.length > 0 ? (
             <div className="space-y-3">
               {data.topBuilders.slice(0, 10).map((builder) => (
                 <div key={builder.builder} className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
@@ -131,8 +148,17 @@ export default function SearchAnalytics() {
 
       {/* All Sectors Table */}
       <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">All Sectors (Detailed)</h2>
-        {data?.topSectors && data.topSectors.length > 0 ? (
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+          All Sectors (Detailed)
+          <InfoTooltip text="Complete ledger of all sector searches, useful for identifying long-tail demand." />
+        </h2>
+        {loading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded" />
+            ))}
+          </div>
+        ) : data?.topSectors && data.topSectors.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
