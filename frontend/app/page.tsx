@@ -13,19 +13,19 @@ export default function LandingPage() {
   useEffect(() => {
     let cancelled = false;
     getSupabaseClient().then((supabase) => supabase.auth.getSession()).then(({ data }) => {
-
       if (cancelled) return;
-      if (data.session?.user) {
-        localStorage.setItem('user_id', data.session.user.id);
+      if (data?.session?.user) {
+        try { localStorage.setItem('user_id', data.session.user.id); } catch {}
         router.replace('/discover');
       } else {
         setChecking(false);
       }
-    }).catch(() => {
+    }).catch((err) => {
+      console.warn('Auth session check failed on LandingPage', err);
       if (!cancelled) setChecking(false);
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [router]);
 
   if (checking) {
     return (

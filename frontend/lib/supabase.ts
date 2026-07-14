@@ -13,10 +13,12 @@ let clientPromise: Promise<SupabaseBrowserClient> | null = null
 export function getSupabaseClient(): Promise<SupabaseBrowserClient> {
   if (!clientPromise) {
     clientPromise = import('@supabase/ssr').then(({ createBrowserClient }) => {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
-      // Support both new publishable key and legacy anon key formats
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
       const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-        ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      if (!url || !key) {
+        console.warn('Supabase URL or Key is missing. Check your environment variables.');
+      }
       return createBrowserClient(url, key)
     })
   }

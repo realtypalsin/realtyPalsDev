@@ -31,13 +31,18 @@ export default function DiscoverPage() {
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;
 
-    const cachedId = localStorage.getItem('user_id');
-    if (cachedId) {
-      setUserId(cachedId);
-      setReady(true);
-    } else {
-      const token = getOrCreateGuestToken();
-      setGuestToken(token);
+    try {
+      const cachedId = localStorage.getItem('user_id');
+      if (cachedId) {
+        setUserId(cachedId);
+        setReady(true);
+      } else {
+        const token = getOrCreateGuestToken();
+        setGuestToken(token);
+        setReady(true);
+      }
+    } catch (err) {
+      console.warn('Storage access failed, initializing without tokens', err);
       setReady(true);
     }
 
@@ -47,34 +52,49 @@ export default function DiscoverPage() {
       supabase.auth.getSession().then(({ data }) => {
         if (data.session?.user) {
           const uid = data.session.user.id;
-          localStorage.setItem('user_id', uid);
-          setUserId(uid);
-          setGuestToken(null);
-        }
-      }).catch(() => {});
-
-      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (session) {
-          const uid = session.user.id;
-          const existingGuestToken = localStorage.getItem('guest_token');
+          const existingGuestToken = typeof window !== 'undefined' ? localStorage.getItem('guest_token') : null;
           if (existingGuestToken) {
             migrateSessions(uid, existingGuestToken).catch(() => {}).finally(() => {
-              localStorage.removeItem('guest_token');
+              try { localStorage.removeItem('guest_token'); } catch {}
             });
           }
-          localStorage.setItem('user_id', uid);
+          try { localStorage.setItem('user_id', uid); } catch {}
           setUserId(uid);
           setGuestToken(null);
         } else {
-          localStorage.removeItem('user_id');
+          try { localStorage.removeItem('user_id'); } catch {}
           setUserId(null);
-          const token = getOrCreateGuestToken();
-          setGuestToken(token);
+          try {
+            const token = getOrCreateGuestToken();
+            setGuestToken(token);
+          } catch {}
+        }
+      }).catch(console.error);
+
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          const uid = session.user.id;
+          const existingGuestToken = typeof window !== 'undefined' ? localStorage.getItem('guest_token') : null;
+          if (existingGuestToken) {
+            migrateSessions(uid, existingGuestToken).catch(() => {}).finally(() => {
+              try { localStorage.removeItem('guest_token'); } catch {}
+            });
+          }
+          try { localStorage.setItem('user_id', uid); } catch {}
+          setUserId(uid);
+          setGuestToken(null);
+        } else {
+          try { localStorage.removeItem('user_id'); } catch {}
+          setUserId(null);
+          try {
+            const token = getOrCreateGuestToken();
+            setGuestToken(token);
+          } catch {}
         }
       });
 
       unsubscribe = () => listener.subscription.unsubscribe();
-    });
+    }).catch(console.error);
 
     return () => { cancelled = true; unsubscribe?.(); };
   }, []);
