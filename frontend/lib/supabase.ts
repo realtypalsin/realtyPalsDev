@@ -14,8 +14,8 @@ export function getSupabaseClient(): Promise<SupabaseBrowserClient> {
   if (!clientPromise) {
     clientPromise = import('@supabase/ssr').then(({ createBrowserClient }) => {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-      const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-        ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      const key = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) || ''
       if (!url || !key) {
         console.warn('Supabase URL or Key is missing. Check your environment variables.');
       }
