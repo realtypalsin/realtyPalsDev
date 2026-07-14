@@ -18,14 +18,9 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: '**/package-lock.json'
+        cache-dependency-path: 'package-lock.json'
         
-    - name: Install dependencies (Frontend)
-      working-directory: ./frontend
-      run: npm ci
-      
-    - name: Install dependencies (Backend)
-      working-directory: ./backend
+    - name: Install dependencies (Root)
       run: npm ci
 
     - name: Generate Prisma Client
