@@ -16,7 +16,9 @@ export default function LandingPage() {
 
       if (cancelled) return;
       if (data.session?.user) {
-        localStorage.setItem('user_id', data.session.user.id);
+        try {
+          localStorage.setItem('user_id', data.session.user.id);
+        } catch(e) {}
         router.replace('/discover');
       } else {
         setChecking(false);
