@@ -33,7 +33,7 @@ export async function generateContextualLLMChips(
     if (!historyText) return []
 
     const response = await groq.chat.completions.create({
-      model: MODELS.GROQ_SMART, // e.g. llama3-8b-8192
+      model: MODELS.GROQ_FAST, // e.g. llama3-8b-8192
       messages: [
         { role: 'system', content: CHIP_SYSTEM_PROMPT },
         { role: 'user', content: historyText }
