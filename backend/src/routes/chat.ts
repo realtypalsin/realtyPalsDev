@@ -839,20 +839,14 @@ router.post('/', async (req: Request, res: Response) => {
           fullText = await streamWithGroq(fallbackSystemPrompt, messages, send);
           console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
         } catch (groqErr) {
-          if (groqErr instanceof GroqStreamStallError) {
-            console.error('[chat] Groq fallback also failed with stream stall:', (groqErr as Error).message);
-            // Both OpenAI and Groq failed; send error to client
-            send('error', { message: 'All AI services unavailable. Please try again in a moment.' });
-          } else {
-            // Other Groq errors (e.g. 429 Rate Limit)
-            console.error('[chat] Groq fallback error:', (groqErr as Error).message);
-            send('error', { message: 'AI services are currently experiencing high load. Please try again shortly.' });
-          }
-          // Do not throw; we handled it by sending the error event to the client.
+          console.error('[chat] Groq fallback error:', (groqErr as Error).message);
+          fullText = "I apologize, but my AI services are currently experiencing extremely high load and rate limits. Please try your request again in a few minutes.";
+          send('token', { token: fullText });
         }
       } else {
-        send('error', { message: 'AI services are currently unavailable.' });
         console.error('OpenAI failed and no GROQ_API_KEY fallback configured');
+        fullText = "I apologize, but my AI services are currently unavailable. Please try your request again in a few minutes.";
+        send('token', { token: fullText });
       }
       }
       }

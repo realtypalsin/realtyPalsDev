@@ -27,6 +27,7 @@ export function useDropoffDetection({ sessionId }: UseAnalyticsTrackingProps) {
     try {
       await fetch('/api/v1/analytics/engagement', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           session_id: sessionId,
           event: 'drop_off',
@@ -95,6 +96,7 @@ export function useEngagementTracking({ sessionId }: UseAnalyticsTrackingProps) 
     try {
       await fetch('/api/v1/analytics/engagement', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           session_id: sessionId,
           event: 'first_engagement',
