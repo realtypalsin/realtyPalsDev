@@ -9,6 +9,7 @@ const nextConfig = {
   },
   transpilePackages: ['leaflet', 'react-leaflet'],
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -37,17 +38,10 @@ const nextConfig = {
     ],
   },
   async rewrites() {
-    // Determine the base backend URL without trailing slash or /api/v1
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL 
-      ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '')
-      : process.env.NEXT_PUBLIC_API_URL
-        ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api(\/v1)?\/?$/, '')
-        : 'http://localhost:3002';
-        
     return [
       {
         source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*`,
       },
     ]
   },

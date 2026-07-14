@@ -8,27 +8,16 @@ import { getSupabaseClient } from '@/lib/supabase';
 import { migrateSessions } from '@/lib/backend-api';
 
 function generateGuestToken(): string {
-  try {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      return 'guest-' + crypto.randomUUID();
-    }
-  } catch (e) {
-    // ignore
-  }
-  return 'guest-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return 'guest-' + crypto.randomUUID()
 }
 
 function getOrCreateGuestToken(): string {
-  try {
-    let token = localStorage.getItem('guest_token');
-    if (!token) {
-      token = generateGuestToken();
-      localStorage.setItem('guest_token', token);
-    }
-    return token;
-  } catch (err) {
-    return generateGuestToken();
+  let token = localStorage.getItem('guest_token')
+  if (!token) {
+    token = generateGuestToken()
+    localStorage.setItem('guest_token', token)
   }
+  return token
 }
 
 export default function DiscoverPage() {
@@ -42,13 +31,7 @@ export default function DiscoverPage() {
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;
 
-    let cachedId = null;
-    try {
-      cachedId = localStorage.getItem('user_id');
-    } catch (e) {
-      // ignore
-    }
-
+    const cachedId = localStorage.getItem('user_id');
     if (cachedId) {
       setUserId(cachedId);
       setReady(true);

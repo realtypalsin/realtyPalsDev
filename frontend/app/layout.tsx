@@ -18,6 +18,8 @@ const playfair = Playfair_Display({
 const afacad = Afacad({
   subsets: ["latin"],
   variable: "--font-afacad",
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
   adjustFontFallback: false,
 });
 

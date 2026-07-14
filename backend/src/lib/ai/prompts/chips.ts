@@ -62,7 +62,6 @@ export async function generateContextualLLMChips(
       chip(
         `llm_chip_${idx}`,
         'TEXT_MESSAGE',
-        // eslint-disable-next-line no-misleading-character-class
         q.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]+/g, '').trim(), // strip any emojis LLM might add
         '',
         { text: q },
