@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { computeConversationState } from '../conversationEngine'
-import type { Intent, ScoredProject } from '../types'
-import type { ChipInventory } from '../chipInventory'
+import { Intent, ScoredProject } from '../types'
+import { ChipInventory } from '../chipInventory'
 
 // Mock chip inventory
 const mockInventory: ChipInventory = {

@@ -248,6 +248,7 @@ function sseWrite(res: Response, event: string, data: Record<string, unknown>): 
 router.post('/', async (req: Request, res: Response) => {
   const parsed = BodySchema.safeParse(req.body)
   if (!parsed.success) {
+    console.error('[CHAT_ROUTE_ERROR]', parsed.error);
     res.status(400).json({ error: 'Invalid request body' })
     return
   }
@@ -255,6 +256,11 @@ router.post('/', async (req: Request, res: Response) => {
   const { action, sessionId, guestToken } = parsed.data
   const prevIntent = (parsed.data.intent ?? {}) as Record<string, unknown>
   let message = action.type === 'TEXT_MESSAGE' ? (action.payload.text as string) : ''
+  if (action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
+    const isPatch = action.type === 'INTENT_PATCH'
+    const label = isPatch ? ((action.payload.label as string) || 'updated search') : `removed ${(action.payload.field as string)} filter`
+    message = `[User selected UI option: ${label}]`
+  }
 
   // Sanitize to prevent prompt injection (OWASP LLM01)
   const { safe: sanitizedMessage, blocked } = sanitizeUserMessage(message)
@@ -369,6 +375,11 @@ router.post('/', async (req: Request, res: Response) => {
       role: m.role as 'user' | 'assistant',
       content: m.content,
     }))
+
+    if (action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
+      chatHistory.push({ role: 'user', content: message })
+    }
+
     const cachedProjectsFromSession: ScoredProject[] | null = sessionData?.last_projects
       ? (sessionData.last_projects as unknown as ScoredProject[])
       : null
@@ -832,14 +843,16 @@ router.post('/', async (req: Request, res: Response) => {
             console.error('[chat] Groq fallback also failed with stream stall:', (groqErr as Error).message);
             // Both OpenAI and Groq failed; send error to client
             send('error', { message: 'All AI services unavailable. Please try again in a moment.' });
-            throw groqErr;
+          } else {
+            // Other Groq errors (e.g. 429 Rate Limit)
+            console.error('[chat] Groq fallback error:', (groqErr as Error).message);
+            send('error', { message: 'AI services are currently experiencing high load. Please try again shortly.' });
           }
-          // Other Groq errors
-          console.error('[chat] Groq fallback error:', (groqErr as Error).message);
-          throw groqErr;
+          // Do not throw; we handled it by sending the error event to the client.
         }
       } else {
-        throw new Error('OpenAI failed and no GROQ_API_KEY fallback configured');
+        send('error', { message: 'AI services are currently unavailable.' });
+        console.error('OpenAI failed and no GROQ_API_KEY fallback configured');
       }
       }
       }

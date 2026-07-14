@@ -129,6 +129,18 @@ export async function streamWithGroq(
       if (token) {
         fullText += token
         anyTokenSent = true
+        
+        if (
+          /realtypals (ai |data |behavior |communication )/i.test(fullText) ||
+          /hard rule|strong rule/i.test(fullText) ||
+          /fallback mode/i.test(fullText) ||
+          /prohibited|never invent|never share/i.test(fullText)
+        ) {
+          console.warn('[GROQ] Active Stream Filter: RAG Leak detected. Aborting.');
+          send('token', { token: '\n\n[Response blocked by security policy]' });
+          break;
+        }
+
         send('token', { token })
       }
     }

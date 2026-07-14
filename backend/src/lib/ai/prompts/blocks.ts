@@ -181,69 +181,32 @@ function serializeProjects(projects: ScoredProject[]): string {
         family_thesis:          p.recommendation_profile.family_thesis,
         investment_thesis:      p.recommendation_profile.investment_thesis,
         luxury_thesis:          p.recommendation_profile.luxury_thesis,
-        walk_away_conditions:   p.recommendation_profile.walk_away_conditions,
-        end_use_thesis:         p.recommendation_profile.end_use_thesis,
-        investor_thesis:        p.recommendation_profile.investor_thesis,
-        risk_thesis:            p.recommendation_profile.risk_thesis,
-        timeline_advice:        p.recommendation_profile.timeline_advice,
       } : {}),
       ...(p.decision_profile ? {
         decision_thesis:    p.decision_profile.decision_thesis,
-        why_buy:            p.decision_profile.why_buy,
-        why_avoid:          p.decision_profile.why_avoid,
         best_for:           p.decision_profile.best_for,
-        confidence_sources: p.decision_profile.confidence_sources,
-        not_ideal_for:      p.decision_profile.not_ideal_for,
       } : {}),
       ...(p.persona_profile ? {
         primary_persona:    p.persona_profile.primary_persona,
-        secondary_personas: p.persona_profile.secondary_personas,
-        persona_income_range:     p.persona_profile.income_range,
-        persona_family_stage:     p.persona_profile.family_stage,
-        persona_risk_appetite:    p.persona_profile.risk_appetite,
-        persona_timeline_horizon: p.persona_profile.timeline_horizon,
-      } : {}),
-      ...(p.marketing_claims?.length ? {
-        builder_claims: p.marketing_claims,
-      } : {}),
-      ...(p.competitors?.length ? {
-        vs_competitors: p.competitors.map(c => ({
-          name:            c.competitor_name,
-          advantage:       c.this_project_advantage,
-          competitor_edge: c.competitor_advantage,
-          verdict:         c.verdict,
-        })),
       } : {}),
       ...(p.dna ? {
-        // Buyer-friendly signal labels — never expose raw field names or numeric scores in responses
         builder_reputation:   p.dna.builder_track_record_label,
         rera_standing:        p.dna.rera_compliance_label,
         delivery_confidence:  p.dna.possession_certainty_label,
         value_positioning:    p.dna.price_position_label,
-        location_quality:     p.dna.locality_label,
-        lifestyle_depth:      p.dna.amenity_depth_label,
       } : {}),
       ...(p.decisionIntelligence ? {
-        // Decision Intelligence — use these for explanations, never raw scores
         decision_confidence:  p.decisionIntelligence.confidence,
         decision_tier:        p.decisionIntelligence.tier,
-        decision_top_strengths: p.decisionIntelligence.topStrengths,
-        decision_tradeoffs:   p.decisionIntelligence.tradeoffs,
         decision_bottom_line: p.decisionIntelligence.bottomLine,
       } : {}),
-      // Track C: Add intelligence_data fields to AI context
-      ...((p as any).intelligence_data?.transparency_checks ? {
-        transparency_checks: (p as any).intelligence_data.transparency_checks
-      } : {}),
+      // Track C: Add intelligence_data fields to AI context (compacted)
       ...((p as any).intelligence_data?.riskRadar ? {
-        riskRadar: (p as any).intelligence_data.riskRadar
+        risk_summary: (p as any).intelligence_data.riskRadar.summary_score || (p as any).intelligence_data.riskRadar.overall_risk_level
       } : {}),
       ...((p as any).intelligence_data?.investment_insights ? {
         rental_yield: (p as any).intelligence_data.investment_insights.rental_yield,
         appreciation_annual: (p as any).intelligence_data.investment_insights.appreciation_annual,
-      } : {}),
-      ...(p.whyNot?.reasons?.length ? {
-        why_ranked_lower: p.whyNot.reasons.map((r) => r.detail),
       } : {}),
     })
   }).join(',\n')

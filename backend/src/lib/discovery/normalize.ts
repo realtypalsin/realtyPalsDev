@@ -22,15 +22,23 @@ export function canonicalSector(raw: string | null | undefined): string | null {
   const trimmed = String(raw).trim()
   if (!trimmed) return null
 
-  // Strip city suffixes: "Sector 10 Greater Noida West" → "Sector 10"
-  const stripped = trimmed.replace(CITY_LEVEL_TERMS, '')
+  // If the user inputs just a number, prefix it
+  if (/^\d+[a-z]?$/i.test(trimmed)) {
+    return `Sector ${trimmed.toUpperCase()}`
+  }
 
-  // Extract number: "Sector 10" or "10" → "10"
-  const match = stripped.match(/\d+/)
-  if (!match) return null
+  // If it starts with sec or sector, normalize the prefix
+  const sectorMatch = trimmed.match(/^(?:sec|sector)\s*-?\s*(\d+[a-z]?)\b\s*(.*)$/i)
+  if (sectorMatch) {
+    const num = sectorMatch[1].toUpperCase()
+    const suffix = sectorMatch[2].trim()
+    // We intentionally do NOT strip city terms anymore so "Sector 10 Greater Noida West" remains intact
+    return suffix ? `Sector ${num} ${suffix}` : `Sector ${num}`
+  }
 
-  const sectorNum = match[0]
-  return `Sector ${sectorNum}`
+  // If it's something else like "Techzone 4" or "Knowledge Park 5", just return it as is but properly formatted
+  // Let's capitalize the first letter of each word
+  return trimmed.replace(/\b\w/g, l => l.toUpperCase())
 }
 
 /**

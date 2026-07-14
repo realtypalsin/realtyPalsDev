@@ -208,6 +208,8 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
   const [error, setError] = useState('')
   const prevFormRef = useRef<string>('')
 
+  const [dirty, setDirty] = useState(false)
+
   useEffect(() => {
     fetch(`${API_BASE}/admin/builders`, { headers: adminAuthHeaders() })
       .then((r) => r.json())
@@ -218,10 +220,23 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
   useEffect(() => {
     const serialized = JSON.stringify(form)
     if (serialized !== prevFormRef.current) {
+      if (prevFormRef.current !== '') {
+        setDirty(true)
+      }
       prevFormRef.current = serialized
       onFormChange?.(form)
     }
   }, [form, onFormChange])
+
+  // Autosave effect (only for existing projects)
+  useEffect(() => {
+    if (!dirty || !projectId) return
+    const timer = setTimeout(() => {
+      handleSubmit({ preventDefault: () => {} } as React.FormEvent)
+      setDirty(false)
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [dirty, form, projectId])
 
   function set(key: keyof ProjectData) {
     return (value: string) => setForm((f) => ({ ...f, [key]: value }))
@@ -269,7 +284,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
     const url    = projectId ? `${API_BASE}/admin/projects/${projectId}` : `${API_BASE}/admin/projects`
     const method = projectId ? 'PATCH' : 'POST'
 
-    const res  = await fetch(url, { method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    const res  = await fetch(url, { method, credentials: 'include', headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 
     const data = await res.json().catch(() => ({}))
 

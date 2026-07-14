@@ -232,7 +232,7 @@ function getClarifyingChips(
     for (const sector of sectors) {
       chips.push(chip(
         `sector_${sector.replace(/\s/g, '_').toLowerCase()}`,
-        'INTENT_PATCH', sector, '📍',
+        'INTENT_PATCH', sector, '',
         { patch: { sector }, label: sector },
         priority++,
       ))
@@ -245,7 +245,7 @@ function getClarifyingChips(
     for (const bhk of inventory.bhkOptions) {
       chips.push(chip(
         `bhk_${bhk}`,
-        'INTENT_PATCH', `${bhk} BHK`, '🏠',
+        'INTENT_PATCH', `${bhk} BHK`, '',
         { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
         priority++,
       ))
@@ -259,7 +259,7 @@ function getClarifyingChips(
       const budgetMax = bucket.max || 10
       chips.push(chip(
         `budget_${bucket.label.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
-        'INTENT_PATCH', bucket.label, '💰',
+        'INTENT_PATCH', bucket.label, '',
         { patch: { budgetMax }, label: bucket.label },
         priority++,
       ))
@@ -325,6 +325,28 @@ function getSearchRefinementChips(
   return chips.slice(0, 3)
 }
 
+function filterByHistory(pool: ChipAction[], chatHistory: any[]): ChipAction[] {
+  const historyText = chatHistory.map(m => m.content.toLowerCase()).join(' ')
+  return pool.filter(c => {
+    const labelLower = c.label.toLowerCase()
+    const isDiscussed = historyText.includes(labelLower) || 
+      ((c.payload?.text as string)?.toLowerCase() && historyText.includes((c.payload.text as string).toLowerCase()))
+    return !isDiscussed
+  })
+}
+
+function getFallbackChips(pool: ChipAction[], chips: ChipAction[], maxCount: number, chatHistory: any[]): ChipAction[] {
+  const needed = maxCount - chips.length
+  if (needed <= 0) return chips
+  
+  const turn = Math.floor(chatHistory.length / 2)
+  const maxStartIndex = Math.max(0, pool.length - needed)
+  const startIndex = maxStartIndex > 0 ? (turn % maxStartIndex) : 0
+  
+  chips.push(...pool.slice(startIndex, startIndex + needed))
+  return chips
+}
+
 function getResearchChips(intent: Intent, results: ScoredProject[], chatHistory: any[]): ChipAction[] {
   const chips: ChipAction[] = []
   const hasMultiple = results.length >= 2
@@ -340,31 +362,29 @@ function getResearchChips(intent: Intent, results: ScoredProject[], chatHistory:
       directCompare ? { mode: 'direct', selected: results.slice(0, 3).map(r => r.slug) } : { mode: 'multi' }, 1))
   }
 
+  const projectsList = results.map(r => ({ id: String(r.id), name: r.name }))
+
   const pool = [
     chip('price_trends', 'TEXT_MESSAGE', 'Price Trends', '',
-      { text: `How have property prices trended for ${topProjectName} recently?` }, 2),
+      { actionPrefix: 'How have property prices trended for', actionSuffix: 'recently?', projects: projectsList }, 2),
     hasUnderConstruction ? chip('builder_risk', 'TEXT_MESSAGE', 'Builder delivery risk', '',
-      { text: `What are the builder delivery risks for ${topProjectName}?` }, 3) 
+      { actionPrefix: 'What are the builder delivery risks for', actionSuffix: '?', projects: projectsList }, 3) 
       : chip('builder_track', 'TEXT_MESSAGE', 'Builder track record', '',
-      { text: `Tell me about the builder for ${topProjectName} — delivery history and reputation` }, 3),
+      { actionPrefix: 'Tell me about the builder for', actionSuffix: '— delivery history and reputation', projects: projectsList }, 3),
     intent.purpose === 'investment' || !intent.purpose ? chip('roi', 'TEXT_MESSAGE', 'Investment ROI', '',
-      { text: `What is the rental yield and appreciation potential for ${topProjectName}?` }, 4) 
+      { actionPrefix: 'What is the rental yield and appreciation potential for', actionSuffix: '?', projects: projectsList }, 4) 
       : chip('nearby', 'TEXT_MESSAGE', 'Nearby amenities', '',
-      { text: `What schools, hospitals, and metro stations are near ${topProjectName}?` }, 4),
+      { actionPrefix: 'What schools, hospitals, and metro stations are near', actionSuffix: '?', projects: projectsList }, 4),
     chip('payment_plan', 'TEXT_MESSAGE', 'Payment plans', '',
-      { text: `What are the payment plans and milestones for ${topProjectName}?` }, 5),
+      { actionPrefix: 'What are the payment plans and milestones for', actionSuffix: '?', projects: projectsList }, 5),
     chip('cost_sheet', 'TEXT_MESSAGE', 'Cost breakdown', '',
-      { text: `Can you break down the complete costs including PLC and taxes for ${topProjectName}?` }, 6),
+      { actionPrefix: 'Can you break down the complete costs including PLC and taxes for', actionSuffix: '?', projects: projectsList }, 6),
     chip('legal_check', 'TEXT_MESSAGE', 'Legal check', '',
-      { text: `Are there any legal or RERA red flags for ${topProjectName}?` }, 7)
+      { actionPrefix: 'Are there any legal or RERA red flags for', actionSuffix: '?', projects: projectsList }, 7)
   ]
 
-  const turn = Math.floor(chatHistory.length / 2)
-  const startIndex = turn % (pool.length - 2)
-  
-  chips.push(...pool.slice(startIndex, startIndex + 3))
-
-  return chips.slice(0, 4)
+  const filteredPool = filterByHistory(pool, chatHistory)
+  return getFallbackChips(filteredPool, chips, 4, chatHistory)
 }
 
 function getComparingChips(results: ScoredProject[], chatHistory: any[]): ChipAction[] {
@@ -383,9 +403,8 @@ function getComparingChips(results: ScoredProject[], chatHistory: any[]): ChipAc
     chip('location_compare', 'TEXT_MESSAGE', 'Compare connectivity', '',
       { text: `Which of ${topNames} has better access to metro and highways?` }, 6)
   ]
-  const turn = Math.floor(chatHistory.length / 2)
-  const startIndex = turn % (pool.length - 3)
-  return pool.slice(startIndex, startIndex + 4)
+  const filteredPool = filterByHistory(pool, chatHistory)
+  return getFallbackChips(filteredPool, [], 4, chatHistory)
 }
 
 function getDecidingChips(results: ScoredProject[], chatHistory: any[]): ChipAction[] {
@@ -397,27 +416,27 @@ function getDecidingChips(results: ScoredProject[], chatHistory: any[]): ChipAct
       { mode: 'multi' }, 0))
   }
   
+  const projectsList = results.map(r => ({ id: String(r.id), name: r.name }))
+  
   const pool = [
     chip('hidden_risks', 'TEXT_MESSAGE', 'Risk & Diligence check', '',
-      { text: `Are there any hidden risks, legal issues, or delivery concerns for ${topProjectName}?` }, 1),
+      { actionPrefix: 'Are there any hidden risks, legal issues, or delivery concerns for', actionSuffix: '?', projects: projectsList }, 1),
     chip('negotiation', 'TEXT_MESSAGE', 'Negotiation strategy', '',
-      { text: `What is a realistic negotiation margin and acquisition strategy for ${topProjectName}?` }, 2),
-    chip('legal_check', 'TEXT_MESSAGE', '🔍 Check RERA & Legal status', '',
-      { text: `Check RERA compliance and legal clearances for ${topProjectName}.` }, 3),
-    chip('booking_process', 'TEXT_MESSAGE', '📝 Explain the booking steps', '',
-      { text: `Explain typical initial booking amounts and next steps for ${topProjectName}.` }, 4),
-    chip('exit_strategy', 'TEXT_MESSAGE', '📈 Analyze 5-year exit strategy', '',
-      { text: `Analyze market liquidity if I want to sell ${topProjectName} in 5 years.` }, 5),
+      { actionPrefix: 'What is a realistic negotiation margin and acquisition strategy for', actionSuffix: '?', projects: projectsList }, 2),
+    chip('legal_check', 'TEXT_MESSAGE', 'Check RERA & Legal status', '',
+      { actionPrefix: 'Check RERA compliance and legal clearances for', actionSuffix: '.', projects: projectsList }, 3),
+    chip('booking_process', 'TEXT_MESSAGE', 'Explain the booking steps', '',
+      { actionPrefix: 'Explain typical initial booking amounts and next steps for', actionSuffix: '.', projects: projectsList }, 4),
+    chip('exit_strategy', 'TEXT_MESSAGE', 'Analyze 5-year exit strategy', '',
+      { actionPrefix: 'Analyze market liquidity if I want to sell', actionSuffix: 'in 5 years.', projects: projectsList }, 5),
   ]
   
-  const turn = Math.floor(chatHistory.length / 2)
-  const startIndex = turn % (pool.length - 2)
-  
-  chips.push(...pool.slice(startIndex, startIndex + 3))
-  return chips.slice(0, 4)
+  const filteredPool = filterByHistory(pool, chatHistory)
+  return getFallbackChips(filteredPool, chips, 4, chatHistory)
 }
 
 import { generateDynamicChips } from '../db/chipProvider'
+import { generateContextualLLMChips } from '../ai/prompts/chips'
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
@@ -448,7 +467,7 @@ export async function computeConversationState(
         `disambig_${idx}`,
         'TEXT_MESSAGE',
         shortLabel,
-        '🏢',
+        '',
         { text: `Show me ${c.name} in ${c.sector}` },
         idx + 1
       )
@@ -458,7 +477,7 @@ export async function computeConversationState(
       `disambig_sec_${idx}`,
       'INTENT_PATCH',
       s,
-      '📍',
+      '',
       { patch: { sector: s }, label: s },
       idx + 1
     ))
@@ -468,7 +487,7 @@ export async function computeConversationState(
       `disambig_city_${idx}`,
       'INTENT_PATCH',
       c.label,
-      '🏘️',
+      '',
       { patch: { sector: cityDisambiguation.query, city: c.city }, label: c.label },
       idx + 1
     ))

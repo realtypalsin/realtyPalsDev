@@ -187,6 +187,7 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
             alt={displayName}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+            unoptimized={currentImgUrl.startsWith('/')}
             className={`object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgError(true)}
@@ -215,8 +216,8 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
             </span>
           )}
           {(property as any).dna?.rera_compliance_label?.toLowerCase().includes('safe') && (
-            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100/95 backdrop-blur-sm text-emerald-800 border border-emerald-200 text-[10px] font-bold rounded-full leading-5">
-              <ShieldCheck size={12} className="text-emerald-700" />
+            <span className="flex items-center gap-1 px-2 py-0.5 bg-white/20 backdrop-blur-md text-emerald-900 dark:text-emerald-300 border border-emerald-300/50 dark:border-emerald-500/30 shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-[10px] font-semibold rounded-full leading-5">
+              <ShieldCheck size={12} className="text-emerald-700 dark:text-emerald-400" />
               RERA Verified
             </span>
           )}
@@ -271,10 +272,17 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
             <h3 className="text-[15px] font-bold text-gray-900 dark:text-white leading-snug truncate">
               {displayName}
             </h3>
-            {property.project_name && property.builder && property.builder !== displayName && (
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate font-medium">
-                {property.builder}
-              </p>
+            {(property.builder || possessionDisplay) && (
+              <div className="flex items-center justify-between mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-medium flex-1">
+                  {property.builder && property.builder !== displayName ? property.builder : ''}
+                </p>
+                {possessionDisplay && (
+                  <p className="text-[11px] text-gray-400 dark:text-gray-500 ml-2 whitespace-nowrap">
+                    Possession: {possessionDisplay}
+                  </p>
+                )}
+              </div>
             )}
             {locationLine && (
               <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
@@ -319,11 +327,6 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
             {statusLabel && (
               <span className={`inline-flex items-center px-2 py-0.5 border text-[10px] font-medium rounded-full ${statusStyle}`}>
                 {statusLabel}
-              </span>
-            )}
-            {possessionDisplay && (
-              <span className="inline-flex items-center px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-[10px] font-medium rounded-full">
-                Possession: {possessionDisplay}
               </span>
             )}
           </div>
@@ -373,7 +376,7 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
             {displayPrice ? (
               <>
                 <p className="text-[10px] text-gray-400 leading-none mb-1">{priceLabel}</p>
-                <p className="text-base font-bold text-gray-900 dark:text-white leading-none tabular-nums">
+                <p className="text-[15px] font-semibold text-gray-900 dark:text-white leading-none tabular-nums tracking-tight">
                   {displayPrice}
                   {property.price != null && !property.validation?.market_range && (
                     <span className="text-[10px] font-normal text-gray-400 ml-0.5">*</span>
