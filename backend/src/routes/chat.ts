@@ -423,7 +423,7 @@ router.post('/', async (req: Request, res: Response) => {
     // Emit ui_state FIRST TIME (pre-search, sets stage and thinking loader)
     const { computeConversationState } = await import('../lib/discovery/conversationEngine')
     const chipInventory = await getChipInventory(DEFAULT_CITY)
-    const preSearchUiState = computeConversationState(
+    const preSearchUiState = await computeConversationState(
       intent,
       intentState,
       cachedProjectsFromSession ?? [],
@@ -581,7 +581,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Emit ui_state SECOND TIME (post-search, populates progressive chips)
-    const postSearchUiState = computeConversationState(
+    const postSearchUiState = await computeConversationState(
       intent,
       intentState,
       projects,
@@ -1074,7 +1074,7 @@ async function buildRestoreUiState(
   const chatHistory = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
   const intentState = getIntentState(intent, projects.length > 0)
   const chipInventory = await getChipInventory(DEFAULT_CITY)
-  return computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory, true)
+  return await computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory, true)
 }
 
 // GET /chat/session/list — must come before GET /chat/session (order matters in Express)

@@ -69,7 +69,7 @@ function ChipButton({ chip, onAction }: { chip: ChipAction; onAction: (chip: Chi
     ? 'bg-[#3061F2]/10 dark:bg-[#3061F2]/15 text-[#3061F2] dark:text-blue-400 border border-[#3061F2]/20 dark:border-blue-500/20 hover:bg-[#3061F2]/15 dark:hover:bg-[#3061F2]/25 hover:border-[#3061F2]/30'
     : isClarification
     ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700/40 hover:bg-amber-100 dark:hover:bg-amber-900/30'
-    : 'bg-white dark:bg-white/6 text-gray-700 dark:text-gray-300 border border-gray-200/70 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 hover:border-gray-300 dark:hover:border-white/15 shadow-[0_1px_3px_rgba(0,0,0,0.04)]'
+    : 'bg-transparent text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
 
   return (
     <button

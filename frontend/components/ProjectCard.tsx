@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 
 import Image from 'next/image'
 import {
-  ClockCountdown, CheckCircle, SealCheck,
+  ClockCountdown, CheckCircle, ShieldCheck, SealCheck,
   Subway, AirplaneTakeoff, Path,
   Leaf, Baby, Heart,
   MapPin, ArrowRight, BookmarkSimple,
@@ -191,11 +191,11 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
           </>
         )}
 
-        {/* Status tag overlaid on image bottom-left */}
-        <div className="absolute bottom-3 left-3 z-10">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+        {/* Status tag overlaid on image top-left */}
+        <div className="absolute top-3 left-3 z-10">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-sm">
             <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-            <span className={`text-[10px] font-semibold tracking-wide ${isRTM ? 'text-emerald-400' : isNew ? 'text-blue-400' : 'text-amber-400'}`}>
+            <span className={`text-[10px] font-medium tracking-wide text-white`}>
               {statusLabel}
             </span>
           </div>
@@ -229,22 +229,22 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
             {project.name}
           </h3>
           {project.rera_number && (
-            <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-[9px] font-bold text-blue-600 dark:text-blue-400 tracking-wide uppercase">
-              <CheckCircle size={10} weight="fill" className="text-blue-500" />
+            <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 tracking-wide uppercase">
+              <ShieldCheck size={12} weight="fill" className="text-emerald-500" />
               RERA
             </span>
           )}
         </div>
 
         {/* Builder · Sector · Possession */}
-        <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 mb-3">
-          <div className="flex items-center gap-1 truncate">
+        <div className="flex items-center justify-between text-[12px] text-gray-600 dark:text-gray-300 mb-3 gap-2">
+          <div className="flex items-center gap-1.5 truncate flex-1">
             <span className="font-medium truncate">{project.builder.name}</span>
             <span className="opacity-40">·</span>
-            <span className="truncate">{project.sector}</span>
+            <span className="truncate opacity-80">{project.sector}</span>
           </div>
           {project.possession_label && !isRTM && (
-            <span className="text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap ml-2">
+            <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap flex-shrink-0">
               Possession: {project.possession_label}
             </span>
           )}
@@ -252,23 +252,21 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
 
         {/* Price — big hero number */}
         <div className="mb-4">
-          <p className="text-[26px] font-semibold text-gray-900 dark:text-gray-50 tracking-tight leading-none">
+          <p className="text-[24px] font-medium text-gray-900 dark:text-gray-50 tracking-tight leading-none">
             {project.price_range_label}
           </p>
         </div>
 
         {/* Configurations */}
-        <div className="flex flex-col gap-3 mb-5">
+        <div className="flex flex-col gap-1.5 mb-5">
           {(expandedUnits ? bhkGroups : bhkGroups.slice(0, 2)).map(g => (
-            <div key={g.bhk} className="flex items-center justify-between text-[13px]">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-                  <Bed size={14} className="text-blue-600 dark:text-blue-400" />
-                </div>
-                <span className="font-bold text-gray-900 dark:text-gray-100">{g.bhk} BHK</span>
+            <div key={g.bhk} className="flex items-end text-[13px] group">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="font-medium text-gray-800 dark:text-gray-200">{g.bhk} BHK</span>
               </div>
+              <div className="flex-1 mx-2 mb-[4px] border-b border-dotted border-gray-300 dark:border-gray-700/50 group-hover:border-gray-400 dark:group-hover:border-gray-600 transition-colors" />
               {g.areas.length > 0 && (
-                <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium text-right truncate pl-2">
+                <span className="text-[12px] text-gray-500 dark:text-gray-400 font-medium text-right truncate flex-shrink-0">
                   {g.areas.join(', ')}
                 </span>
               )}
@@ -293,7 +291,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                 trackPropertyEvent(project.id, 'ask_ai', undefined, userId).catch(() => {})
                 onAskAI(project)
               }}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-[12px] text-[13px] font-semibold transition-all shadow-[0_2px_8px_rgba(37,99,235,0.15)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)] hover:-translate-y-0.5 active:scale-95"
+              className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 py-2.5 px-4 rounded-[12px] text-[13px] font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95"
             >
               <Sparkle size={14} weight="fill" />
               Ask AI
@@ -302,14 +300,14 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
             <div className="flex-1" />
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 trackPropertyEvent(project.id, 'call', undefined, userId).catch(() => {})
                 onCall?.(project)
               }}
-              className="w-10 h-10 rounded-[12px] ring-1 ring-inset ring-black/5 dark:ring-white/10 bg-white dark:bg-[#111] text-gray-700 dark:text-gray-300 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-[#222] transition-colors shadow-[0_1px_2px_rgba(0,0,0,0.02)] active:scale-95"
+              className="w-10 h-10 rounded-full bg-transparent text-gray-700 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors active:scale-95"
               title="Call builder"
             >
               <Phone size={16} className="text-gray-500 dark:text-gray-400" />
@@ -319,7 +317,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                 e.stopPropagation()
                 onShare?.(project)
               }}
-              className="w-10 h-10 rounded-[12px] ring-1 ring-inset ring-black/5 dark:ring-white/10 bg-white dark:bg-[#111] text-gray-700 dark:text-gray-300 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-[#222] transition-colors shadow-[0_1px_2px_rgba(0,0,0,0.02)] active:scale-95"
+              className="w-10 h-10 rounded-full bg-transparent text-gray-700 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors active:scale-95"
               title="Share project"
             >
               <ShareNetwork size={16} className="text-gray-500 dark:text-gray-400" />

@@ -19,7 +19,7 @@ import MessageBubble from '@/components/chat/MessageBubble';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
 import ChipPicker from '@/components/chat/ChipPicker';
-import { Building2, Home, Key, MapPin, Search, Send, Upload, User, Loader2, Sparkles, Map, Info, AlertTriangle, ArrowRight, X, Clock, Navigation, CheckCircle2, Bot, StopCircle, ArrowDown, Mic, PanelLeft, ChevronDown, Star, Pencil, Trash2, Sun, Moon, ArrowUp, MessageSquare, PanelLeftClose, PanelLeftOpen, SquarePen } from 'lucide-react';
+import { Building2, Home, Key, MapPin, Search, Send, Upload, User, Loader2, Sparkles, Map, Info, AlertTriangle, ArrowRight, X, Clock, Navigation, CheckCircle2, Bot, StopCircle, ArrowDown, Mic, PanelLeft, ChevronDown, Star, Pencil, Trash2, Sun, Moon, ArrowUp, MessageSquare, PanelLeftClose, PanelLeftOpen, SquarePen, TrendingUp, ShieldCheck, Wallet, Scale, Palmtree } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { useSessions } from '@/hooks/useSessions';
 import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } from '@/hooks/useAnalyticsTracking';
@@ -1347,19 +1347,19 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             {/* Starter chips — scalable, no hardcoded locations */}
             <div className="flex flex-wrap items-center justify-center gap-2.5 w-full max-w-2xl mb-12">
               {[
-                { label: 'Ready to Move', icon: '🔑', prompt: 'Show me ready to move properties' },
-                { label: 'Best Investment', icon: '📈', prompt: 'Which projects have the best investment potential?' },
-                { label: 'Luxury Apartments', icon: '✨', prompt: 'Show luxury apartments' },
-                { label: 'Under ₹1.5Cr', icon: '💰', prompt: 'Properties under 1.5 crore' },
-                { label: 'Compare Top Projects', icon: '⚖️', prompt: 'Compare the top projects available' },
-                { label: 'Legally Safe Projects', icon: '🛡️', prompt: 'Show me projects with clean RERA and no registry issues' },
-              ].map(chip => (
+                { label: 'Zero-Wait Delivered Homes', icon: <Key size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Show me delivered, ready to move properties' },
+                { label: 'High-Yield Growth Corridors', icon: <TrendingUp size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Which projects have the best investment potential?' },
+                { label: 'Resort-Style Premium Living', icon: <Palmtree size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Show ultra luxury and resort-style apartments' },
+                { label: '100% RERA Cleared & Safe', icon: <ShieldCheck size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Show me projects with clean RERA and no registry issues' },
+                { label: 'Best Value Under ₹1.5Cr', icon: <Wallet size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Properties under 1.5 crore' },
+                { label: 'Data-Driven Comparisons', icon: <Scale size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Compare the top projects available' },
+              ].map((chip, idx) => (
                 <button
-                  key={chip.label}
+                  key={idx}
                   onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 text-[13px] text-gray-700 dark:text-gray-300 font-medium rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 active:scale-95"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 ring-1 ring-inset ring-zinc-200/80 dark:ring-zinc-800 hover:ring-zinc-300 dark:hover:ring-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-[13px] text-zinc-700 dark:text-zinc-300 font-medium rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 active:scale-95"
                 >
-                  <span className="text-[14px]">{chip.icon}</span>
+                  <span className="flex items-center justify-center">{chip.icon}</span>
                   <span>{chip.label}</span>
                 </button>
               ))}

@@ -131,7 +131,7 @@ export function getThinkingMessage(stage: ConversationStage, intent: Intent): st
 
 // ─── Chip generation ──────────────────────────────────────────────────────────
 
-function chip(
+export function chip(
   id: string,
   actionType: ConversationActionType,
   label: string,
@@ -325,7 +325,7 @@ function getSearchRefinementChips(
   return chips.slice(0, 3)
 }
 
-function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[] {
+function getResearchChips(intent: Intent, results: ScoredProject[], chatHistory: any[]): ChipAction[] {
   const chips: ChipAction[] = []
   const hasMultiple = results.length >= 2
   const hasUnderConstruction = results.some(
@@ -340,31 +340,36 @@ function getResearchChips(intent: Intent, results: ScoredProject[]): ChipAction[
       directCompare ? { mode: 'direct', selected: results.slice(0, 3).map(r => r.slug) } : { mode: 'multi' }, 1))
   }
 
-  chips.push(chip('price_trends', 'TEXT_MESSAGE', 'Price Trends', '',
-    { text: `How have property prices trended for ${topProjectName} recently?` }, 2))
+  const pool = [
+    chip('price_trends', 'TEXT_MESSAGE', 'Price Trends', '',
+      { text: `How have property prices trended for ${topProjectName} recently?` }, 2),
+    hasUnderConstruction ? chip('builder_risk', 'TEXT_MESSAGE', 'Builder delivery risk', '',
+      { text: `What are the builder delivery risks for ${topProjectName}?` }, 3) 
+      : chip('builder_track', 'TEXT_MESSAGE', 'Builder track record', '',
+      { text: `Tell me about the builder for ${topProjectName} — delivery history and reputation` }, 3),
+    intent.purpose === 'investment' || !intent.purpose ? chip('roi', 'TEXT_MESSAGE', 'Investment ROI', '',
+      { text: `What is the rental yield and appreciation potential for ${topProjectName}?` }, 4) 
+      : chip('nearby', 'TEXT_MESSAGE', 'Nearby amenities', '',
+      { text: `What schools, hospitals, and metro stations are near ${topProjectName}?` }, 4),
+    chip('payment_plan', 'TEXT_MESSAGE', 'Payment plans', '',
+      { text: `What are the payment plans and milestones for ${topProjectName}?` }, 5),
+    chip('cost_sheet', 'TEXT_MESSAGE', 'Cost breakdown', '',
+      { text: `Can you break down the complete costs including PLC and taxes for ${topProjectName}?` }, 6),
+    chip('legal_check', 'TEXT_MESSAGE', 'Legal check', '',
+      { text: `Are there any legal or RERA red flags for ${topProjectName}?` }, 7)
+  ]
 
-  if (hasUnderConstruction) {
-    chips.push(chip('builder_risk', 'TEXT_MESSAGE', 'Builder delivery risk', '',
-      { text: `What are the builder delivery risks for ${topProjectName}?` }, 3))
-  } else {
-    chips.push(chip('builder_track', 'TEXT_MESSAGE', 'Builder track record', '',
-      { text: `Tell me about the builder for ${topProjectName} — delivery history and reputation` }, 3))
-  }
-
-  if (intent.purpose === 'investment' || !intent.purpose) {
-    chips.push(chip('roi', 'TEXT_MESSAGE', 'Investment ROI', '',
-      { text: `What is the rental yield and appreciation potential for ${topProjectName}?` }, 4))
-  } else {
-    chips.push(chip('nearby', 'TEXT_MESSAGE', 'Nearby amenities', '',
-      { text: `What schools, hospitals, and metro stations are near ${topProjectName}?` }, 4))
-  }
+  const turn = Math.floor(chatHistory.length / 2)
+  const startIndex = turn % (pool.length - 2)
+  
+  chips.push(...pool.slice(startIndex, startIndex + 3))
 
   return chips.slice(0, 4)
 }
 
-function getComparingChips(results: ScoredProject[]): ChipAction[] {
+function getComparingChips(results: ScoredProject[], chatHistory: any[]): ChipAction[] {
   const topNames = results.slice(0, 2).map(r => r.name).join(' and ') || 'these properties'
-  return [
+  const pool = [
     chip('roi_compare', 'TEXT_MESSAGE', 'Analyze ROI differences', '',
       { text: `Between ${topNames}, which offers the best return on investment?` }, 1),
     chip('hidden_costs', 'TEXT_MESSAGE', 'Cost & Tax breakdown', '',
@@ -373,29 +378,50 @@ function getComparingChips(results: ScoredProject[]): ChipAction[] {
       { text: `Which between ${topNames} offers the best ecosystem and lifestyle amenities for a family?` }, 3),
     chip('payment_plan', 'TEXT_MESSAGE', 'Compare payment plans', '',
       { text: `Compare the payment plans and construction-linked structures for ${topNames}.` }, 4),
+    chip('legal_compare', 'TEXT_MESSAGE', 'Compare RERA & Legal', '',
+      { text: `How do ${topNames} compare in terms of RERA standing and legal safety?` }, 5),
+    chip('location_compare', 'TEXT_MESSAGE', 'Compare connectivity', '',
+      { text: `Which of ${topNames} has better access to metro and highways?` }, 6)
   ]
+  const turn = Math.floor(chatHistory.length / 2)
+  const startIndex = turn % (pool.length - 3)
+  return pool.slice(startIndex, startIndex + 4)
 }
 
-function getDecidingChips(results: ScoredProject[]): ChipAction[] {
+function getDecidingChips(results: ScoredProject[], chatHistory: any[]): ChipAction[] {
   const topProjectName = results[0]?.name || 'my shortlist'
-  const chips: ChipAction[] = [
+  const chips: ChipAction[] = []
+  
+  if (results.length >= 2) {
+    chips.push(chip('final_compare', 'COMPARE_PROPERTIES', 'Final comparison', '',
+      { mode: 'multi' }, 0))
+  }
+  
+  const pool = [
     chip('hidden_risks', 'TEXT_MESSAGE', 'Risk & Diligence check', '',
       { text: `Are there any hidden risks, legal issues, or delivery concerns for ${topProjectName}?` }, 1),
     chip('negotiation', 'TEXT_MESSAGE', 'Negotiation strategy', '',
       { text: `What is a realistic negotiation margin and acquisition strategy for ${topProjectName}?` }, 2),
-    chip('legal_check', 'TEXT_MESSAGE', 'Verify RERA compliance', '',
-      { text: `Verify the RERA compliance and legal clearances for ${topProjectName}.` }, 3),
+    chip('legal_check', 'TEXT_MESSAGE', '🔍 Check RERA & Legal status', '',
+      { text: `Check RERA compliance and legal clearances for ${topProjectName}.` }, 3),
+    chip('booking_process', 'TEXT_MESSAGE', '📝 Explain the booking steps', '',
+      { text: `Explain typical initial booking amounts and next steps for ${topProjectName}.` }, 4),
+    chip('exit_strategy', 'TEXT_MESSAGE', '📈 Analyze 5-year exit strategy', '',
+      { text: `Analyze market liquidity if I want to sell ${topProjectName} in 5 years.` }, 5),
   ]
-  if (results.length >= 2) {
-    chips.unshift(chip('final_compare', 'COMPARE_PROPERTIES', 'Final comparison', '',
-      { mode: 'multi' }, 0))
-  }
+  
+  const turn = Math.floor(chatHistory.length / 2)
+  const startIndex = turn % (pool.length - 2)
+  
+  chips.push(...pool.slice(startIndex, startIndex + 3))
   return chips.slice(0, 4)
 }
 
+import { generateDynamicChips } from '../db/chipProvider'
+
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export function computeConversationState(
+export async function computeConversationState(
   intent: Intent,
   intentState: IntentState,
   results: ScoredProject[],
@@ -406,7 +432,7 @@ export function computeConversationState(
   cityDisambiguation?: { query: string; candidates: Array<{ city: string; label: string }> },
   chipInventory: ChipInventory | null = null,
   isUserMessage: boolean = false
-): ConversationState {
+): Promise<ConversationState> {
   const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0, isUserMessage)
   const missingFields = getMissingFields(intent, intentState)
   const confidence = computeConfidenceLevel(intent)
@@ -460,13 +486,13 @@ export function computeConversationState(
         chips = getSearchRefinementChips(intent, results, chatHistory, chipInventory)
         break
       case 'RESEARCH':
-        chips = getResearchChips(intent, results)
+        chips = await generateDynamicChips('research', results, chatHistory)
         break
       case 'COMPARING':
-        chips = getComparingChips(results)
+        chips = await generateDynamicChips('compare', results, chatHistory)
         break
       case 'DECIDING':
-        chips = getDecidingChips(results)
+        chips = await generateDynamicChips('decide', results, chatHistory)
         break
       case 'CONVERTING':
         chips = []
