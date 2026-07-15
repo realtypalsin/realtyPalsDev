@@ -326,9 +326,21 @@ function MessageBubbleInner({
                                 'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
                                 'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
                                 table: ({ node, ...props }: any) => (
-                                  <div className="overflow-x-auto">
-                                    <table {...props} />
+                                  <div className="my-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#151b27] shadow-sm">
+                                    <table className="w-full border-collapse text-left text-sm text-gray-500 dark:text-gray-400" {...props} />
                                   </div>
+                                ),
+                                thead: ({ node, ...props }: any) => (
+                                  <thead className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800" {...props} />
+                                ),
+                                th: ({ node, ...props }: any) => (
+                                  <th className="px-4 py-3 font-semibold text-gray-900 dark:text-white" {...props} />
+                                ),
+                                td: ({ node, ...props }: any) => (
+                                  <td className="px-4 py-3 border-b border-gray-100 dark:border-gray-800/50 last:border-0 text-gray-700 dark:text-gray-300" {...props} />
+                                ),
+                                tr: ({ node, ...props }: any) => (
+                                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors" {...props} />
                                 )
                               } as any}
                             >
