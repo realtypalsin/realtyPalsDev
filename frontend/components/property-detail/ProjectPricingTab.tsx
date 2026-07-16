@@ -160,7 +160,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   }
 
   // Investment insights from intelligence_data
-  const investmentInsights = (detail as any)?.decision_profile?.intelligence_data?.investment_insights ?? null
+  const investmentInsights = (detail as any)?.decision_profile?.intelligence_data?.investmentReport ?? null
 
   // Donut chart math
   const radius = 50
@@ -531,22 +531,23 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {[
-                { name: 'Price Appreciation', val: investmentInsights.appreciation_annual ?? '--', desc: investmentInsights.appreciation_desc ?? 'Annual growth estimate', icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50' },
-                { name: 'Rental Yield', val: investmentInsights.rental_yield ?? '--', desc: investmentInsights.rental_desc ?? 'Expected annual rental yield', icon: Home, color: 'text-blue-500 bg-blue-50' },
-                { name: 'Market Trend', val: investmentInsights.market_trend ?? '--', desc: investmentInsights.market_desc ?? '', icon: TrendingUp, color: 'text-purple-500 bg-purple-50' },
-                { name: 'Liquidity Score', val: investmentInsights.liquidity_score ?? '--', desc: investmentInsights.liquidity_desc ?? '', icon: ArrowUpRight, color: 'text-amber-500 bg-amber-50' },
+                { name: 'Appreciation Estimate', val: investmentInsights.appreciation_1yr ?? '--', desc: '1-Year growth estimate', icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50' },
+                { name: 'Rental Yield', val: investmentInsights.rental_yield ?? '--', desc: 'Expected annual rental yield', icon: Home, color: 'text-blue-500 bg-blue-50' },
+                { name: 'Market Catalyst', val: investmentInsights.market_catalyst ?? '--', desc: 'Primary growth driver', icon: TrendingUp, color: 'text-purple-500 bg-purple-50' },
+                { name: 'Funding Pattern', val: investmentInsights.funding_pattern ?? '--', desc: 'Financial health metric', icon: ArrowUpRight, color: 'text-amber-500 bg-amber-50' },
               ].map((insight, i) => {
                 const Icon = insight.icon
                 return (
-                  <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${insight.color}`}>
+                  <div key={i} className="group relative bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-transparent dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 flex items-center gap-3 mb-4">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${insight.color} shadow-sm`}>
                         <Icon size={18} />
                       </div>
-                      <p className="text-[13px] font-semibold text-gray-700">{insight.name}</p>
+                      <p className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{insight.name}</p>
                     </div>
-                    <p className="text-[20px] font-black text-gray-900">{insight.val}</p>
-                    {insight.desc && <p className="text-[12px] text-gray-400 mt-1">{insight.desc}</p>}
+                    <p className="relative z-10 text-[22px] font-black tracking-tight text-gray-900 dark:text-white">{insight.val}</p>
+                    {insight.desc && <p className="relative z-10 text-[12px] font-medium text-gray-400 dark:text-gray-500 mt-1">{insight.desc}</p>}
                   </div>
                 )
               })}
@@ -579,19 +580,24 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
       </div>
 
       {/* CTA Footer */}
-      <div className="bg-gradient-to-r from-pink-50 via-white to-orange-50 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-pink-100/50">
-        <div>
-          <h3 className="text-[20px] font-black text-gray-900 tracking-tight">Ready to book {detail?.name ?? 'this project'}?</h3>
-          <p className="text-[14px] text-gray-600 mt-1 max-w-md">Our relationship manager will help you choose the best plan and guide you through the process.</p>
+      <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-[#1a1a2e] to-indigo-950 dark:from-gray-950 dark:via-black dark:to-indigo-950/50 rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl border border-gray-800">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+        
+        <div className="relative z-10 text-center md:text-left">
+          <h3 className="text-[24px] md:text-[28px] font-black text-white tracking-tight leading-tight">Ready to book <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">{detail?.name ?? 'this project'}</span>?</h3>
+          <p className="text-[14px] md:text-[15px] text-indigo-200/80 mt-2 max-w-md font-medium leading-relaxed">Our relationship manager will help you choose the best plan and guide you through the process seamlessly.</p>
         </div>
         {waUrl && (
           <a
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0 px-8 py-3.5 bg-gray-900 hover:bg-black text-white font-bold rounded-full text-[14px] transition-all flex items-center gap-2"
+            className="relative z-10 flex-shrink-0 px-8 py-4 bg-white text-gray-900 hover:bg-gray-50 hover:scale-105 active:scale-95 font-bold rounded-2xl text-[15px] transition-all flex items-center gap-2.5 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
           >
-            <PhoneCall size={16} />
+            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+              <PhoneCall size={14} />
+            </div>
             Talk to an Advisor
           </a>
         )}

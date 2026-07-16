@@ -20,40 +20,40 @@ CREATE TABLE public.builders (
   awards_count integer,
   description text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  legal_flag text,
   affordable_specialization boolean NOT NULL DEFAULT false,
   after_sales_score integer,
+  audit_flags_log text,
   average_delay_months double precision,
   average_project_size integer,
   buyer_satisfaction_score integer,
   certifications ARRAY,
+  cin text,
   company_overview text,
   construction_quality_score integer,
   data_source text,
   delayed_projects_count integer,
   delivery_score integer,
+  executives jsonb,
+  experience_years text,
+  financial_hygiene_score integer,
   founder text,
+  funding_banks ARRAY,
   insolvency_history boolean NOT NULL DEFAULT false,
   intelligence_completeness integer,
   iso_certified boolean NOT NULL DEFAULT false,
   last_verified_at timestamp without time zone,
+  legal_entities jsonb,
+  legal_flag text,
   litigation_count integer,
   logo_url text,
   luxury_specialization boolean NOT NULL DEFAULT false,
+  outstanding_dues_cr double precision,
+  projects_delivered_count integer NOT NULL DEFAULT 18,
   rera_compliance_score integer,
+  rera_promoter_id text,
   total_projects_count integer,
   township_specialization boolean NOT NULL DEFAULT false,
   verification_level text,
-  audit_flags_log text,
-  cin text,
-  executives jsonb,
-  financial_hygiene_score integer,
-  funding_banks ARRAY,
-  legal_entities jsonb,
-  outstanding_dues_cr double precision,
-  rera_promoter_id text,
-  experience_years text,
-  projects_delivered_count integer DEFAULT 18,
   CONSTRAINT builders_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.projects (
@@ -85,29 +85,29 @@ CREATE TABLE public.projects (
   hero_image_url text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
+  banks_nearby_count integer,
+  builder_theme jsonb,
   embedding USER-DEFINED,
-  project_risk_flag text,
-  launch_date timestamp without time zone,
   escrow_bank_name text,
   escrow_verified boolean,
-  nclt_moratorium_active boolean,
-  registry_embargo_reasons ARRAY,
-  registry_status text,
-  builder_theme jsonb,
-  banks_nearby_count integer,
   floors text,
   green_rating text,
   has_duplex boolean NOT NULL DEFAULT false,
   has_penthouse boolean NOT NULL DEFAULT false,
   hospitals_nearby_count integer,
   it_parks_nearby_count integer,
+  launch_date timestamp without time zone,
+  nclt_moratorium_active boolean,
   open_space_pct integer,
-  project_type text DEFAULT 'Residential'::text,
+  price_min_cr double precision,
+  price_range_label text,
+  project_risk_flag text,
+  project_type text NOT NULL DEFAULT 'Residential'::text,
+  registry_embargo_reasons ARRAY,
+  registry_status text,
   restaurants_nearby_count integer,
   schools_nearby_count integer,
   shopping_nearby_count integer,
-  price_min_cr double precision,
-  price_range_label text,
   CONSTRAINT projects_pkey PRIMARY KEY (id),
   CONSTRAINT projects_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
 );
@@ -126,7 +126,7 @@ CREATE TABLE public.unit_types (
   price_min_cr double precision,
   price_max_cr double precision,
   price_label text,
-  price_is_estimated boolean NOT NULL DEFAULT true,
+  price_is_estimated boolean NOT NULL DEFAULT false,
   category_badge text,
   description text,
   inventory_left integer,
@@ -177,9 +177,10 @@ CREATE TABLE public.chat_sessions (
   title text,
   message_count integer NOT NULL DEFAULT 0,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_active timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_active timestamp without time zone NOT NULL,
   chat_phase text NOT NULL DEFAULT 'DISCOVERY'::text,
   last_projects jsonb,
+  shown_chip_ids jsonb DEFAULT '[]'::jsonb,
   summary text,
   CONSTRAINT chat_sessions_pkey PRIMARY KEY (id)
 );
@@ -217,7 +218,7 @@ CREATE TABLE public.user_memory (
 );
 CREATE TABLE public.saved_properties (
   id text NOT NULL,
-  user_id text NOT NULL,
+  user_id text,
   project_id text NOT NULL,
   saved_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT saved_properties_pkey PRIMARY KEY (id),
@@ -258,7 +259,6 @@ CREATE TABLE public.project_documents (
   content_text text,
   doc_type text NOT NULL DEFAULT 'brochure'::text,
   created_at timestamp without time zone NOT NULL DEFAULT now(),
-  file_size_bytes integer,
   CONSTRAINT project_documents_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public._prisma_migrations (
@@ -272,17 +272,73 @@ CREATE TABLE public._prisma_migrations (
   applied_steps_count integer NOT NULL DEFAULT 0,
   CONSTRAINT _prisma_migrations_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.callback_requests (
+CREATE TABLE public.chat_analytics (
   id text NOT NULL,
-  name text NOT NULL,
-  phone text NOT NULL,
-  project_name text,
-  project_slug text,
+  session_id text NOT NULL,
+  promotional_id text,
+  promo_clicked boolean NOT NULL DEFAULT false,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ai_confidence integer,
+  latency_ms integer,
+  llm_tokens integer,
+  chat_started_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  conversion_at timestamp without time zone,
+  conversion_type text,
+  converted_builder_id text,
+  converted_project_id text,
+  drop_off_at timestamp without time zone,
+  drop_off_stage text,
+  extracted_bhk integer,
+  extracted_budget_max double precision,
+  extracted_budget_min double precision,
+  extracted_sector text,
+  first_engagement_at timestamp without time zone,
+  guest_token text,
+  idle_seconds_before_drop_off integer,
+  intent_identified_at timestamp without time zone,
+  intent_type text,
+  projects_clicked integer NOT NULL DEFAULT 0,
+  projects_saved integer NOT NULL DEFAULT 0,
+  projects_viewed integer NOT NULL DEFAULT 0,
+  results_shown_at timestamp without time zone,
+  time_spent_seconds integer NOT NULL DEFAULT 0,
+  user_id text,
+  CONSTRAINT chat_analytics_pkey PRIMARY KEY (id),
+  CONSTRAINT chat_analytics_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
+);
+CREATE TABLE public.query_metrics (
+  id text NOT NULL,
+  session_id text NOT NULL,
+  clicked boolean NOT NULL DEFAULT false,
+  converted boolean NOT NULL DEFAULT false,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  builder text,
+  clarification_count integer NOT NULL DEFAULT 0,
+  had_results boolean,
+  possession text,
+  purpose text,
+  results_count integer,
+  bhk integer,
+  budget_max_cr double precision,
+  budget_min_cr double precision,
+  intent_type text,
+  query_text text NOT NULL DEFAULT ''::text,
+  sector text,
+  user_id text,
+  week_start timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT query_metrics_pkey PRIMARY KEY (id),
+  CONSTRAINT query_metrics_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
+);
+CREATE TABLE public.property_events (
+  id text NOT NULL,
+  session_id text NOT NULL,
   user_id text,
   guest_token text,
-  status text NOT NULL DEFAULT 'new'::text,
+  project_id text NOT NULL,
+  action text NOT NULL,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT callback_requests_pkey PRIMARY KEY (id)
+  CONSTRAINT property_events_pkey PRIMARY KEY (id),
+  CONSTRAINT property_events_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
 );
 CREATE TABLE public.project_dna (
   id text NOT NULL,
@@ -318,11 +374,11 @@ CREATE TABLE public.decision_profiles (
   confidence_sources ARRAY DEFAULT ARRAY[]::text[],
   recommendation_notes text,
   advisor_notes text,
+  intelligence_data jsonb,
   last_verified_at timestamp without time zone,
   verified_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
-  intelligence_data jsonb,
   CONSTRAINT decision_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT decision_profiles_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
@@ -331,6 +387,7 @@ CREATE TABLE public.persona_profiles (
   project_id text NOT NULL,
   primary_persona text,
   secondary_personas ARRAY DEFAULT ARRAY[]::text[],
+  persona_descriptions jsonb,
   income_range text,
   family_stage text,
   work_location text,
@@ -341,7 +398,6 @@ CREATE TABLE public.persona_profiles (
   verified_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
-  persona_descriptions jsonb,
   CONSTRAINT persona_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT persona_profiles_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
@@ -385,8 +441,8 @@ CREATE TABLE public.project_competitors (
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
   CONSTRAINT project_competitors_pkey PRIMARY KEY (id),
-  CONSTRAINT project_competitors_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id),
-  CONSTRAINT project_competitors_competitor_project_id_fkey FOREIGN KEY (competitor_project_id) REFERENCES public.projects(id)
+  CONSTRAINT project_competitors_competitor_project_id_fkey FOREIGN KEY (competitor_project_id) REFERENCES public.projects(id),
+  CONSTRAINT project_competitors_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
 CREATE TABLE public.intelligence_audits (
   id text NOT NULL,
@@ -398,6 +454,18 @@ CREATE TABLE public.intelligence_audits (
   created_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT intelligence_audits_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.callback_requests (
+  id text NOT NULL,
+  name text NOT NULL,
+  phone text NOT NULL,
+  project_name text,
+  project_slug text,
+  user_id text,
+  guest_token text,
+  status text NOT NULL DEFAULT 'new'::text,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT callback_requests_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.payment_plans (
   id text NOT NULL,
@@ -435,63 +503,6 @@ CREATE TABLE public.cost_sheets (
   CONSTRAINT cost_sheets_pkey PRIMARY KEY (id),
   CONSTRAINT cost_sheets_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
-CREATE TABLE public.chat_analytics (
-  id text NOT NULL,
-  session_id text NOT NULL,
-  user_id text,
-  guest_token text,
-  chat_started_at timestamp without time zone NOT NULL,
-  intent_identified_at timestamp without time zone,
-  results_shown_at timestamp without time zone,
-  first_engagement_at timestamp without time zone,
-  conversion_at timestamp without time zone,
-  intent_type text,
-  extracted_sector text,
-  extracted_bhk integer,
-  extracted_budget_min double precision,
-  extracted_budget_max double precision,
-  projects_viewed integer NOT NULL DEFAULT 0,
-  projects_clicked integer NOT NULL DEFAULT 0,
-  projects_saved integer NOT NULL DEFAULT 0,
-  time_spent_seconds integer NOT NULL DEFAULT 0,
-  conversion_type text,
-  converted_project_id text,
-  converted_builder_id text,
-  drop_off_stage text,
-  drop_off_at timestamp without time zone,
-  idle_seconds_before_drop_off integer,
-  promotional_id text,
-  promo_clicked boolean NOT NULL DEFAULT false,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  ai_confidence integer,
-  latency_ms integer,
-  llm_tokens integer,
-  CONSTRAINT chat_analytics_pkey PRIMARY KEY (id),
-  CONSTRAINT chat_analytics_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
-);
-CREATE TABLE public.query_metrics (
-  id text NOT NULL,
-  query_text text NOT NULL,
-  intent_type text,
-  sector text,
-  bhk integer,
-  budget_min_cr double precision,
-  budget_max_cr double precision,
-  session_id text NOT NULL,
-  user_id text,
-  week_start timestamp without time zone NOT NULL,
-  clicked boolean NOT NULL DEFAULT false,
-  converted boolean NOT NULL DEFAULT false,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  builder text,
-  clarification_count integer NOT NULL DEFAULT 0,
-  had_results boolean,
-  possession text,
-  purpose text,
-  results_count integer,
-  CONSTRAINT query_metrics_pkey PRIMARY KEY (id),
-  CONSTRAINT query_metrics_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
-);
 CREATE TABLE public.weekly_metrics_summary (
   id text NOT NULL,
   week_start timestamp without time zone NOT NULL,
@@ -512,7 +523,6 @@ CREATE TABLE public.promotionals (
   id text NOT NULL,
   title text NOT NULL,
   description text,
-  type USER-DEFINED NOT NULL,
   content text NOT NULL,
   link_type text,
   link_target text,
@@ -530,6 +540,7 @@ CREATE TABLE public.promotionals (
   created_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
+  type text NOT NULL,
   CONSTRAINT promotionals_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.promotional_interactions (
@@ -552,7 +563,6 @@ CREATE TABLE public.builder_news (
   image_url text,
   link_type text,
   link_target text,
-  status USER-DEFINED NOT NULL,
   submitted_by text,
   approved_by text,
   approval_notes text,
@@ -561,6 +571,7 @@ CREATE TABLE public.builder_news (
   archived_at timestamp without time zone,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   published_at timestamp without time zone,
+  status text NOT NULL,
   CONSTRAINT builder_news_pkey PRIMARY KEY (id),
   CONSTRAINT builder_news_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
 );
@@ -570,6 +581,7 @@ CREATE TABLE public.builder_application_forms (
   cin text NOT NULL,
   email text NOT NULL,
   phone text NOT NULL,
+  landline text,
   website text,
   headquarters text,
   logo_url text,
@@ -581,16 +593,16 @@ CREATE TABLE public.builder_application_forms (
   ip_address text NOT NULL,
   user_agent text NOT NULL,
   submitted_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  status USER-DEFINED NOT NULL,
   reviewed_by text,
   review_notes text,
   linked_builder text,
-  landline text,
+  status text NOT NULL,
   CONSTRAINT builder_application_forms_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.builder_accounts (
   id text NOT NULL,
   builder_id text NOT NULL,
+  user_id text,
   email text NOT NULL,
   password_hash text,
   auth_method text NOT NULL,
@@ -599,7 +611,6 @@ CREATE TABLE public.builder_accounts (
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
-  user_id text,
   CONSTRAINT builder_accounts_pkey PRIMARY KEY (id),
   CONSTRAINT builder_accounts_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
 );
@@ -614,13 +625,13 @@ CREATE TABLE public.builder_leads (
   message text,
   source_session text,
   source_intent jsonb,
-  status USER-DEFINED NOT NULL,
   assigned_to text,
   notes text,
   contacted_at timestamp without time zone,
   converted_at timestamp without time zone,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
+  status text NOT NULL,
   CONSTRAINT builder_leads_pkey PRIMARY KEY (id),
   CONSTRAINT builder_leads_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
 );
@@ -650,17 +661,18 @@ CREATE TABLE public.builder_themes (
   active_until timestamp without time zone,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT builder_themes_pkey PRIMARY KEY (id),
-  CONSTRAINT builder_themes_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
+  CONSTRAINT builder_themes_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.property_events (
+CREATE TABLE public.failed_webhooks (
   id text NOT NULL,
-  session_id text NOT NULL,
-  user_id text,
-  guest_token text,
-  project_id text NOT NULL,
-  action text NOT NULL,
+  lead_type text NOT NULL,
+  name text NOT NULL,
+  phone text NOT NULL,
+  project_name text,
+  payload jsonb NOT NULL,
+  error text,
+  retries integer NOT NULL DEFAULT 0,
+  resolved boolean NOT NULL DEFAULT false,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT property_events_pkey PRIMARY KEY (id),
-  CONSTRAINT property_events_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
+  CONSTRAINT failed_webhooks_pkey PRIMARY KEY (id)
 );

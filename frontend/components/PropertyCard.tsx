@@ -367,6 +367,22 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
           </div>
         )}
 
+        {/* DNA Scores */}
+        {(property as any).dna && (
+          <div className="flex items-center gap-3 mt-0.5">
+            {(property as any).dna.rera_compliance_label && (
+              <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                RERA: {(property as any).dna.rera_compliance_label}
+              </span>
+            )}
+            {(property as any).dna.builder_track_record_label && (
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                Builder: {(property as any).dna.builder_track_record_label}
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="flex-1" />
 
         {/* Footer */}

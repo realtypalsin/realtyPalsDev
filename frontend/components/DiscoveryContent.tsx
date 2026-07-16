@@ -444,6 +444,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
 
   const performReset = async () => {
+    if (submitLockRef.current) return;
     setChatHistory([]);
     setChatInput('');
     setShowRecommendations(false);
@@ -453,6 +454,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setHasShownLengthWarning(false);
     setShowContextWarning(false);
     setIsSubmitting(false);
+    submitLockRef.current = false;
     setCarouselIndexes({});
     setCurrentIntent(null);
     setLastShortlist([]);
@@ -715,14 +717,17 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, []);
 
   const dispatchAction = useCallback((action: import('@/components/chat/types').ConversationAction): void => {
+    if (submitLockRef.current) return;
+    submitLockRef.current = true;
+
     if (!userId && !guestToken) {
+      submitLockRef.current = false;
       // Not authenticated — show sign-in prompt
       setToast({ message: 'Sign in or continue as guest to start chatting' });
       router.push('/auth');
       return;
     }
-    if (isSubmitting || submitLockRef.current) return;
-    submitLockRef.current = true;
+    
     setIsSubmitting(true);
     setStatusPhase('extracting');
     userScrolledUp.current = false;
@@ -884,7 +889,30 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
           // Auto-generate smart title on first turn only
           if (chatTurnCount === 0 && userId && newSessionId) {
-            const smartTitle = userText.length > 30 ? userText.slice(0, 30) + '...' : userText;
+            const buildSmartTitle = (text: string, intent: Record<string, unknown> | null): string => {
+              if (!intent) return text.length > 35 ? text.slice(0, 35) + '...' : text;
+              
+              const parts: string[] = [];
+              
+              if (Array.isArray(intent.bhk) && intent.bhk.length > 0) {
+                parts.push(intent.bhk.join('/') + ' BHK');
+              }
+              if (typeof intent.sector === 'string' && intent.sector) {
+                parts.push(intent.sector);
+              }
+              if (typeof intent.budgetMax === 'number') {
+                const cr = intent.budgetMax;
+                parts.push(`₹${cr < 1 ? Math.round(cr * 100) + 'L' : cr.toFixed(1) + 'Cr'}`);
+              }
+              if (typeof intent.builderName === 'string' && intent.builderName) {
+                parts.push(intent.builderName);
+              }
+              
+              if (parts.length >= 2) return parts.join(' · ');
+              return text.length > 35 ? text.slice(0, 35) + '...' : text;
+            };
+            
+            const smartTitle = buildSmartTitle(userText, currentIntent);
             setSessionTitle(smartTitle);
             // Single sidebar refresh after PATCH — fires whether PATCH succeeds or fails.
             authHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
@@ -1157,7 +1185,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           </div>
         )}
 
-        <div className="relative flex items-center bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] rounded-full transition-all duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] mx-auto w-full group pr-1.5 py-1.5">
+        <div className="relative flex items-end bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] rounded-3xl transition-all duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] mx-auto w-full group pr-1.5 py-1.5 min-h-[48px]">
           <div id="chat-input-guide" className="relative flex-1 group">
             <PlaceholdersAndVanishInput
               placeholders={
@@ -1187,16 +1215,16 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             <button
               type="button"
               onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
-              className="w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-black dark:bg-white text-white dark:text-black shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95"
+              className="w-[36px] h-[36px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-black dark:bg-white text-white dark:text-black shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95 mb-0.5"
               title="Send"
             >
-              <ArrowUp size={20} className="text-current" />
+              <ArrowUp size={18} className="text-current" />
             </button>
           ) : (
             <button
               type="button"
               onClick={toggleVoiceInput}
-              className={`w-[44px] h-[44px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${isListening
+              className={`w-[36px] h-[36px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 mb-0.5 ${isListening
                 ? 'text-red-500 animate-pulse scale-105 bg-red-50 border border-red-200 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
@@ -1225,7 +1253,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       style={isMobile ? { height: viewportHeight } : undefined}
     >
       {/* Claude-style Seamless Header */}
-      <div className="absolute top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 bg-gradient-to-b from-slate-50/80 to-transparent dark:from-gray-900/80 pointer-events-none">
+      <div className="absolute top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 bg-transparent pointer-events-none">
         <div className="flex-1 flex items-center justify-start pl-14 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
           {hasUserReplied && (
             isRenamingHeader ? (
@@ -1494,7 +1522,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className={`absolute bottom-0 left-0 right-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-8 pointer-events-none ${keyboardOpen ? 'pb-safe' : ''}`}
+                  className={`absolute bottom-0 left-0 right-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-8 pointer-events-none bg-transparent ${keyboardOpen ? 'pb-safe' : ''}`}
                   style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
                 >
                   <div className="px-4 w-full max-w-[880px] flex flex-col justify-center pointer-events-auto">

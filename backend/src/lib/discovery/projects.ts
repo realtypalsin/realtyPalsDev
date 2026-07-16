@@ -49,7 +49,7 @@ const PROJECT_INCLUDE = {
     },
   },
   unit_types: true,
-  images: true,
+  images: { take: 3, orderBy: { sort_order: 'asc' as const } },
   amenities: { take: 10 },
   connectivity: { take: 5, orderBy: { distance_km: 'asc' as const } },
   recommendation_profile: {
@@ -560,7 +560,18 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
 
   if (rawProjects.length > 0) {
     if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)) {
-      const distinctSectors = [...new Set(rawProjects.map((p) => p.sector))]
+      let distinctSectors = [...new Set(rawProjects.map((p) => p.sector))]
+      
+      // Auto-resolve ambiguity if user's intent exactly matches one of the distinct sectors (ignoring punctuation/case)
+      const exactMatch = distinctSectors.find(s => 
+        s.replace(/[,.-]/g, '').toLowerCase().trim() === effectiveIntent.sector!.replace(/[,.-]/g, '').toLowerCase().trim()
+      )
+      
+      if (exactMatch) {
+        distinctSectors = [exactMatch]
+        rawProjects = rawProjects.filter(p => p.sector === exactMatch)
+      }
+
       if (distinctSectors.length > 1) {
         console.log(`[DISCOVERY:B2] SECTOR MULTI-MATCH: "${effectiveIntent.sector}" matched ${distinctSectors.length} distinct sectors:`, distinctSectors)
         const res: DiscoveryResult = {

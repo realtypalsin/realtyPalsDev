@@ -1,0 +1,307 @@
+{
+  "project": {
+    "name": "Ivy County",
+    "slug": "ivy-county-sector-75-noida",
+    "builder_id": "builder-uuid-county-group",
+    "status": "Ready to Move",
+    "sector": "Sector 75",
+    "city": "Noida",
+    "address": "Sector 75, Central Noida, Uttar Pradesh",
+    "tagline": "Where Luxury Meets Nature",
+    "lat": 28.5355,
+    "lng": 77.3910,
+    "rera_number": "UPRERAPRJ757529",
+    "rera_url": "https://www.up-rera.in/verify",
+    "total_towers": 5,
+    "total_units": 546,
+    "land_area_acres": 5.1,
+    "launch_date": "2019-09-01T00:00:00Z",
+    "possession_label": "Delivered (June 2024)",
+    "possession_date": "2024-06-01T00:00:00Z",
+    "design_theme": "Eco-Luxury Vertical Gardens",
+    "architect": "Architect firm name",
+    "interior_designer": "Interior designer name",
+    "floors": "G+26",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold",
+    "description": "Ultra-luxury 3 & 4 BHK by County Group in Sector 75. Cascading vertical gardens, five-star amenities, Tier-1 delivery record.",
+    "long_description": "Ivy County by County Group is the flagship luxury asset in Central Noida. Launched September 2019, delivered June 2024. 546 units across 5 towers (G+26–G+27). Signature cascading vertical gardens, zero-delay delivery record, clean CC/OC, active registries. County Group has delivered 6 projects with zero structural delays.",
+    "marketing_claims": [
+      "Cascading Vertical Gardens",
+      "Ultra-Luxury Living",
+      "Zero Structural Delays",
+      "Low-Density Layout",
+      "Five-Star Amenities",
+      "Flawless Legal Title",
+      "CC/OC Received",
+      "Active Registries"
+    ],
+    "ai_search_keywords": [
+      "ivy county",
+      "sector 75 noida",
+      "county group",
+      "luxury apartments",
+      "3 bhk",
+      "4 bhk",
+      "vertical gardens",
+      "ready to move",
+      "central noida",
+      "rtm luxury"
+    ],
+    "schools_nearby_count": 8,
+    "hospitals_nearby_count": 5,
+    "shopping_nearby_count": 4,
+    "it_parks_nearby_count": 10,
+    "banks_nearby_count": 12,
+    "restaurants_nearby_count": 20,
+    "location_intelligence_json": {}
+  },
+  "unit_types": [
+    {
+      "bhk": 3,
+      "name": "3 BHK",
+      "super_area_sqft": 1656,
+      "carpet_area_sqft": 1010,
+      "balcony_area_sqft": 120,
+      "bathrooms": 2,
+      "price_min_cr": 2.64,
+      "price_max_cr": 2.64,
+      "price_label": "₹2.64 Cr",
+      "views": []
+    },
+    {
+      "bhk": 3,
+      "name": "3 BHK + Utility",
+      "super_area_sqft": 2124,
+      "carpet_area_sqft": 1264,
+      "balcony_area_sqft": 120,
+      "bathrooms": 3,
+      "price_min_cr": 3.39,
+      "price_max_cr": 3.39,
+      "price_label": "₹3.39 Cr",
+      "views": []
+    },
+    {
+      "bhk": 4,
+      "name": "4 BHK + Utility",
+      "super_area_sqft": 2511,
+      "carpet_area_sqft": 1534,
+      "balcony_area_sqft": 120,
+      "bathrooms": 4,
+      "price_min_cr": 4.01,
+      "price_max_cr": 4.7,
+      "price_label": "₹4.01–4.70 Cr",
+      "views": []
+    }
+  ],
+  "amenities": [
+    { "name": "Cascading Vertical Gardens", "category": "Lifestyle" },
+    { "name": "Swimming Pool", "category": "Sports" },
+    { "name": "Kids Pool", "category": "Kids" },
+    { "name": "Clubhouse", "category": "Lifestyle" },
+    { "name": "Gymnasium", "category": "Sports" },
+    { "name": "Lawn Tennis Court", "category": "Sports" },
+    { "name": "Badminton Court", "category": "Sports" },
+    { "name": "Jogging Track", "category": "Sports" },
+    { "name": "Kids Play Area", "category": "Kids" },
+    { "name": "Amphitheatre", "category": "Lifestyle" },
+    { "name": "Party Lawn", "category": "Lifestyle" },
+    { "name": "Yoga Deck", "category": "Wellness" },
+    { "name": "Meditation Area", "category": "Wellness" },
+    { "name": "CCTV Surveillance", "category": "Security" },
+    { "name": "Video Intercom", "category": "Security" }
+  ],
+  "connectivity": [
+    { "type": "Metro", "name": "Sector 76 Metro Station (Aqua Line)", "distance_km": 1.5 },
+    { "type": "Road", "name": "FNG Expressway", "distance_km": 0.5 },
+    { "type": "Road", "name": "Noida-Greater Noida Expressway", "distance_km": 7.0 },
+    { "type": "Mall", "name": "Spectrum Metro Mall Sector 75", "distance_km": 1.0 },
+    { "type": "Hospital", "name": "Neo Hospital Sector 50", "distance_km": 5.0 },
+    { "type": "School", "name": "Manthan School Sector 78", "distance_km": 4.0 }
+  ],
+  "payment_plan": {
+    "plan_name": "Construction Linked / Ready-to-Move Plan",
+    "milestones": [
+      {
+        "name": "Booking",
+        "percentage": 10,
+        "amount": 500000,
+        "date": "2024-01-01T00:00:00Z"
+      },
+      {
+        "name": "Agreement (30 Days)",
+        "percentage": 15,
+        "amount": 500000,
+        "date": "2024-01-31T00:00:00Z"
+      },
+      {
+        "name": "Registry (60 Days)",
+        "percentage": 75,
+        "amount": 500000,
+        "date": "2024-03-01T00:00:00Z"
+      }
+    ]
+  },
+  "cost_sheet": {
+    "gst_rate_pct": 5,
+    "stamp_duty_pct": 6,
+    "registration_pct": 1,
+    "parking_cost": 500000,
+    "club_membership": 250000,
+    "ifms": 120,
+    "plc_charges": [
+      { "name": "PLC", "amount": 500 }
+    ],
+    "other_charges": [
+      { "description": "Utilities (5kVA connection)", "amount": 150000 }
+    ]
+  },
+  "investment_insights": {
+    "price_appreciation": "12-15%",
+    "rental_yield": "4-5%",
+    "market_trend": "Bullish",
+    "liquidity_score": "High",
+    "investment_report_json": {}
+  },
+  "project_dna": {
+    "builder_track_record_score": 95,
+    "price_position_score": 95,
+    "locality_score": 90,
+    "rera_compliance_score": 100,
+    "amenity_depth_score": 95,
+    "possession_certainty_score": 100,
+    "verified_by": "seed",
+    "last_verified_at": "2026-06-22T00:00:00Z"
+  },
+  "decision_profile": {
+    "status": "PUBLISHED",
+    "decision_thesis": "Ivy County is the premier luxury wealth-preservation asset in Central Noida because it delivers uncompromising construction quality, flawless legal compliance, and an exclusive, low-density community.",
+    "why_buy": [
+      "Impeccable Delivery Pedigree: Builder consistently delivers exactly what is rendered — zero compromise on material quality or finish.",
+      "Absolute Title Security: 100% physically complete and legally clear — immediate, stress-free registry execution.",
+      "Exclusive Low-Density: Limited towers ensure premium privacy and uncrowded amenities unlike neighboring mega-townships."
+    ],
+    "why_avoid": [
+      "Capped Profit Potential: Extremely high entry price leaves very little room for future capital growth or quick flipping.",
+      "Heavy Upkeep Costs: Sustaining signature vertical gardens results in massive monthly maintenance bills.",
+      "Car Dependent: Project is tucked inside the sector — not a quick walk to metro or main road retail."
+    ],
+    "best_for": "Wealthy end-users, HNI families, NRIs seeking zero legal stress and immediate luxury living.",
+    "not_ideal_for": "Cash-flow investors, short-term flippers, or buyers with budgets under ₹2.5 Cr.",
+    "confidence_sources": [
+      "RERA",
+      "Project Documents",
+      "Site Visit",
+      "Builder Claim",
+      "Estimated"
+    ],
+    "recommendation_notes": "Internal notes about this project's recommendation…",
+    "advisor_notes": "Absolute best property for a wealthy family wanting zero daily stress. Some sellers ask for cash above registry value — advise buyer to not cross safe limits."
+  },
+  "persona_profile": {
+    "primary_persona": "FAMILY",
+    "secondary_personas": [
+      "PROFESSIONAL",
+      "INVESTOR",
+      "NRI",
+      "UPGRADER",
+      "RETIREE"
+    ],
+    "income_range": "₹5 Lakh+ per month",
+    "risk_appetite": "Low",
+    "family_stage": "Established family or nuclear couple",
+    "work_location": "Sector 62/63 IT Hub or Sector 125–142 Corporate Hub",
+    "timeline_horizon": "5–10 years",
+    "motivation_note": "Status symbol and premium lifestyle; not a yield play.",
+    "persona_descriptions": [
+      {
+        "fit": "Perfect Fit",
+        "type": "HNI / Upgrader",
+        "stars": 5,
+        "reasons": [
+          "Status Symbol: The most prestigious address in Central Noida — county group never compromises on finish.",
+          "Wealth Preservation: Capital values stable, minimal risk of price erosion.",
+          "Zero Hassle Living: Move in immediately with full legal clarity and no construction risk."
+        ],
+        "fitColor": "bg-emerald-100 text-emerald-700",
+        "iconName": "Gem"
+      },
+      {
+        "fit": "Excellent Fit",
+        "type": "NRI Investor",
+        "stars": 5,
+        "reasons": [
+          "Zero Legal Risk: 100% legally cleared, registry executable without visiting India.",
+          "Brand Recognition: County Group projects are trusted benchmark in NRI circles.",
+          "Rental Income: Premium rentals from C-suite corporate tenants in nearby IT hubs."
+        ],
+        "fitColor": "bg-blue-100 text-blue-700",
+        "iconName": "Globe"
+      },
+      {
+        "fit": "Excellent Fit",
+        "type": "Family (Established)",
+        "stars": 4,
+        "reasons": [
+          "Low Density: Only 546 units means uncrowded amenities and real privacy for families.",
+          "Green Living: Cascading vertical gardens create a unique, resort-style outdoor experience.",
+          "School Proximity: Multiple quality schools within 5 km radius."
+        ],
+        "fitColor": "bg-blue-100 text-blue-700",
+        "iconName": "Users"
+      },
+      {
+        "fit": "Poor Fit",
+        "type": "First-Time Buyer",
+        "stars": 1,
+        "reasons": [
+          "Price Barrier: Minimum ticket size of ₹2.64 Cr is out of reach for most first-time buyers.",
+          "No Appreciation Play: Capital values have largely plateaued — limited upside for new entrants."
+        ],
+        "fitColor": "bg-red-100 text-red-700",
+        "iconName": "Home"
+      }
+    ]
+  },
+  "recommendation": {
+    "tier": "STRONG BUY",
+    "primary_thesis": "The absolute safest and most beautiful ready-to-move luxury home in Central Noida.",
+    "end_use_thesis": "Best-in-class RTM luxury for families demanding zero operational risk.",
+    "investment_thesis": "Wealth preservation. Steady 5–7% annual appreciation. Not a flipping play.",
+    "family_thesis": "Exceptional — huge parks, clean air, low density, secure society.",
+    "investor_thesis": "Low yield (2.8–3.1%) but rock-solid capital preservation. Hold 5–10 years.",
+    "luxury_thesis": "Defines the luxury benchmark for Sector 75. County Group never compromises on specification.",
+    "risk_thesis": "Lowest-risk luxury asset in Central Noida. Clean title, zero structural disputes.",
+    "walk_away_conditions": [
+      "Budget under ₹2.5 Cr — entry is uncompromising.",
+      "Require immediate walking-distance transit — vehicular dependence is inherent.",
+      "Executing high-yield or short-term flipping — capital values have plateaued."
+    ],
+    "negotiation_leverage": [
+      "Leverage point 1…",
+      "Leverage point 2…",
+      "Leverage point 3…"
+    ],
+    "timeline_advice": "Ready to move immediately. No construction risk whatsoever.",
+    "internal_confidence": "VERIFIED",
+    "admin_notes": "Internal notes about this recommendation…"
+  },
+  "competitors": [
+    {
+      "competitor_name": "Mahagun Mirabella",
+      "competitor_slug": "mahagun-mirabella-sector-79-noida",
+      "this_project_advantage": "Better landscaping and builder quality",
+      "competitor_advantage": "Lower price and Roman architecture",
+      "verdict": "Ivy County wins on build quality and prestige",
+      "price_delta_note": "₹8L cheaper per Cr vs Mahagun Moderne…"
+    },
+    {
+      "competitor_name": "NBCC Aspire Silicon City",
+      "competitor_slug": "nbcc-aspire-silicon-city-sector-76-noida",
+      "this_project_advantage": "Immediate possession and premium finish",
+      "competitor_advantage": "Larger carpet area and sovereign safety",
+      "verdict": "NBCC wins on unit size, Ivy wins on immediate possession",
+      "price_delta_note": "₹8L cheaper per Cr vs Mahagun Moderne…"
+    }
+  ]
+}

@@ -150,7 +150,7 @@ router.get('/:slug/documents', async (req: Request, res: Response) => {
   if (!project) { res.status(404).json({ error: 'Not found' }); return }
   const documents = await prisma.projectDocument.findMany({
     where: { project_id: project.id },
-    select: { id: true, doc_type: true, name: true, storage_url: true, created_at: true, file_size_bytes: true },
+    select: { id: true, doc_type: true, name: true, storage_url: true, created_at: true },
     orderBy: { created_at: 'desc' },
   })
   res.json({ documents })

@@ -84,7 +84,12 @@ export function PlaceholdersAndVanishInput({
         const fontSize = parseFloat(computedStyles.getPropertyValue("font-size"));
         ctx.font = `${fontSize * 2}px ${computedStyles.fontFamily}`;
         ctx.fillStyle = "#FFF";
-        ctx.fillText(value, 16, 40);
+        
+        const lines = value.split('\n');
+        const lineHeight = fontSize * 2.4; 
+        lines.forEach((line, index) => {
+            ctx.fillText(line, 16, 40 + (index * lineHeight));
+        });
 
         const imageData = ctx.getImageData(0, 0, 800, 800);
         const pixelData = imageData.data;
@@ -170,10 +175,11 @@ export function PlaceholdersAndVanishInput({
         animateFrame(start);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" && !animating && !disabled) {
-
-            vanishAndSubmit();
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey && !animating && !disabled) {
+            e.preventDefault();
+            const fakeEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
+            handleSubmit(fakeEvent);
         }
     };
 
@@ -201,7 +207,7 @@ export function PlaceholdersAndVanishInput({
     return (
         <form
             className={cn(
-                "w-full relative max-w-4xl mx-auto bg-transparent h-12 rounded-full overflow-hidden border-0 transition duration-200",
+                "w-full relative max-w-4xl mx-auto bg-transparent min-h-[48px] rounded-3xl overflow-hidden border-0 transition duration-200",
                 disabled && "opacity-70 pointer-events-none"
 
             )}
@@ -215,31 +221,36 @@ export function PlaceholdersAndVanishInput({
                 )}
                 ref={canvasRef}
             />
-            <input
+            <textarea
                 aria-label="Type your property question"
                 onChange={(e) => {
                     if (!animating) {
                         setValue(e.target.value);
-                        onChange && onChange(e);
+                        onChange && onChange(e as any);
                     }
                 }}
+                onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+                }}
                 onKeyDown={handleKeyDown}
-                ref={inputRef}
+                ref={inputRef as any}
                 value={value}
-                type="text"
                 disabled={disabled}
+                rows={1}
                 className={cn(
-                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-4 sm:pl-6 pr-4 touch-target-min disabled:cursor-not-allowed",
-
+                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black rounded-3xl focus:outline-none focus:ring-0 pl-4 sm:pl-6 pr-4 touch-target-min disabled:cursor-not-allowed resize-none py-3.5 overflow-hidden",
                     animating && "text-transparent dark:text-transparent"
                 )}
+                style={{ minHeight: "48px", maxHeight: "200px" }}
             />
 
-            <div className="absolute right-2 top-1/2 z-50 -translate-y-1/2 flex items-center gap-2">
+            <div className="absolute right-2 bottom-1.5 z-50 flex items-center gap-2">
                 {children}
             </div>
 
-            <div className={cn("absolute inset-0 flex items-center rounded-full pointer-events-none transition-opacity duration-200", value ? "opacity-0" : "opacity-100")}>
+            <div className={cn("absolute inset-0 flex items-start pt-3.5 rounded-3xl pointer-events-none transition-opacity duration-200", value ? "opacity-0" : "opacity-100")}>
 
                 <AnimatePresence mode="wait">
                     {!value && (

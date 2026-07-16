@@ -160,7 +160,7 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
   // Top sectors by project count (Max 2)
   for (const { sector, projectCount } of inventory.sectors.slice(0, 2)) {
     chips.push(chip(
-      `discovery_sector_${sector.replace(/\s+/g, '_').toLowerCase()}`,
+      `INTENT_PATCH:sector:${sector.replace(/\s+/g, '_').toLowerCase()}`,
       'INTENT_PATCH',
       `${sector} (${projectCount} projects)`,
       '📍',
@@ -176,7 +176,7 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
     const bucket = inventory.budgetBuckets[i]
     const budgetMax = bucket.max || 10
     chips.push(chip(
-      `discovery_budget_${bucket.label.replace(/\W+/g, '_').toLowerCase()}`,
+      `INTENT_PATCH:budget:${bucket.label.replace(/\W+/g, '_').toLowerCase()}`,
       'INTENT_PATCH',
       bucket.label,
       '💰',
@@ -190,7 +190,7 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
   const bhkGroup: ChipGroup = { id: 'bhk_options', label: 'BHK', order: 2, emphasis: 'tertiary' }
   for (const bhk of inventory.bhkOptions.slice(0, 1)) {
     chips.push(chip(
-      `discovery_bhk_${bhk}`,
+      `INTENT_PATCH:bhk:${bhk}`,
       'INTENT_PATCH',
       `${bhk} BHK`,
       '🏠',
@@ -231,7 +231,7 @@ function getClarifyingChips(
 
     for (const sector of sectors) {
       chips.push(chip(
-        `sector_${sector.replace(/\s/g, '_').toLowerCase()}`,
+        `INTENT_PATCH:sector_clarify:${sector.replace(/\s/g, '_').toLowerCase()}:${Date.now()}`,
         'INTENT_PATCH', sector, '',
         { patch: { sector }, label: sector },
         priority++,
@@ -244,7 +244,7 @@ function getClarifyingChips(
   if (missingFields.includes('bhk') && !intent.bhk?.length && inventory?.bhkOptions) {
     for (const bhk of inventory.bhkOptions) {
       chips.push(chip(
-        `bhk_${bhk}`,
+        `INTENT_PATCH:bhk_clarify:${bhk}:${Date.now()}`,
         'INTENT_PATCH', `${bhk} BHK`, '',
         { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
         priority++,
@@ -258,7 +258,7 @@ function getClarifyingChips(
     for (const bucket of inventory.budgetBuckets.slice(0, 3)) {
       const budgetMax = bucket.max || 10
       chips.push(chip(
-        `budget_${bucket.label.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
+        `INTENT_PATCH:budget_clarify:${bucket.label.replace(/[^a-z0-9]/gi, '_').toLowerCase()}:${Date.now()}`,
         'INTENT_PATCH', bucket.label, '',
         { patch: { budgetMax }, label: bucket.label },
         priority++,
@@ -287,7 +287,7 @@ function getSearchRefinementChips(
   if (intent.sector && !intent.bhk?.length && inventory?.bhkOptions) {
     for (const bhk of inventory.bhkOptions) {
       chips.push(chip(
-        `refine_bhk_${bhk}`,
+        `INTENT_PATCH:refine_bhk:${bhk}`,
         'INTENT_PATCH', `${bhk} BHK`, '🏠',
         { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
         priority++,
@@ -300,7 +300,7 @@ function getSearchRefinementChips(
   if (intent.sector && intent.bhk?.length && !intent.budgetMax && !intent.budgetMin && inventory?.budgetBuckets) {
     for (const bucket of inventory.budgetBuckets.slice(0, 3)) {
       chips.push(chip(
-        `refine_budget_${bucket.label.replace(/[₹\s,–-]/g, '_')}`,
+        `INTENT_PATCH:refine_budget:${bucket.label.replace(/[₹\s,–-]/g, '_')}`,
         'INTENT_PATCH', bucket.label, '💰',
         { patch: { budgetMin: bucket.min, budgetMax: bucket.max }, label: bucket.label },
         priority++,
@@ -314,7 +314,7 @@ function getSearchRefinementChips(
     const lifestyleOptions = ['Gym & Fitness', 'Swimming Pool', 'Co-working', 'Security Gate', 'Parking']
     for (const lifestyle of lifestyleOptions.slice(0, 3)) {
       chips.push(chip(
-        `refine_lifestyle_${lifestyle.replace(/\s/g, '_').toLowerCase()}`,
+        `INTENT_PATCH:refine_lifestyle:${lifestyle.replace(/\s/g, '_').toLowerCase()}`,
         'INTENT_PATCH', lifestyle, '⭐',
         { patch: { lifestyleKeywords: [...(intent.lifestyleKeywords ?? []), lifestyle] }, label: lifestyle },
         priority++,
@@ -358,29 +358,33 @@ function getResearchChips(intent: Intent, results: ScoredProject[], chatHistory:
   if (hasMultiple) {
     const directCompare = results.length <= 3
     const shortName = topProjectName.split(' ')[0] || topProjectName
-    chips.push(chip('compare', 'COMPARE_PROPERTIES', `Compare ${shortName} vs others`, '',
+    const pIds = results.slice(0, 3).map(r => r.id).join(':')
+    chips.push(chip(`COMPARE_PROPERTIES:research:${pIds}`, 'COMPARE_PROPERTIES', `Compare ${shortName} vs others`, '',
       directCompare ? { mode: 'direct', selected: results.slice(0, 3).map(r => r.slug) } : { mode: 'multi' }, 1))
   }
 
   const projectsList = results.map(r => ({ id: String(r.id), name: r.name }))
 
+  const pIds = projectsList.map(p => p.id).join(':')
   const pool = [
-    chip('price_trends', 'TEXT_MESSAGE', 'Price Trends', '',
+    chip(`TEXT_MESSAGE:price_trends:${pIds}`, 'TEXT_MESSAGE', 'Price Trends', '',
       { actionPrefix: 'How have property prices trended for', actionSuffix: 'recently?', projects: projectsList }, 2),
-    hasUnderConstruction ? chip('builder_risk', 'TEXT_MESSAGE', 'Builder delivery risk', '',
+    hasUnderConstruction ? chip(`TEXT_MESSAGE:builder_risk:${pIds}`, 'TEXT_MESSAGE', 'Builder delivery risk', '',
       { actionPrefix: 'What are the builder delivery risks for', actionSuffix: '?', projects: projectsList }, 3) 
-      : chip('builder_track', 'TEXT_MESSAGE', 'Builder track record', '',
+      : chip(`TEXT_MESSAGE:builder_track:${pIds}`, 'TEXT_MESSAGE', 'Builder track record', '',
       { actionPrefix: 'Tell me about the builder for', actionSuffix: '— delivery history and reputation', projects: projectsList }, 3),
-    intent.purpose === 'investment' || !intent.purpose ? chip('roi', 'TEXT_MESSAGE', 'Investment ROI', '',
+    intent.purpose === 'investment' || !intent.purpose ? chip(`TEXT_MESSAGE:roi:${pIds}`, 'TEXT_MESSAGE', 'Investment ROI', '',
       { actionPrefix: 'What is the rental yield and appreciation potential for', actionSuffix: '?', projects: projectsList }, 4) 
-      : chip('nearby', 'TEXT_MESSAGE', 'Nearby amenities', '',
+      : chip(`TEXT_MESSAGE:nearby:${pIds}`, 'TEXT_MESSAGE', 'Nearby amenities', '',
       { actionPrefix: 'What schools, hospitals, and metro stations are near', actionSuffix: '?', projects: projectsList }, 4),
-    chip('payment_plan', 'TEXT_MESSAGE', 'Payment plans', '',
+    chip(`TEXT_MESSAGE:payment_plan:${pIds}`, 'TEXT_MESSAGE', 'Payment plans', '',
       { actionPrefix: 'What are the payment plans and milestones for', actionSuffix: '?', projects: projectsList }, 5),
-    chip('cost_sheet', 'TEXT_MESSAGE', 'Cost breakdown', '',
+    chip(`TEXT_MESSAGE:cost_sheet:${pIds}`, 'TEXT_MESSAGE', 'Cost breakdown', '',
       { actionPrefix: 'Can you break down the complete costs including PLC and taxes for', actionSuffix: '?', projects: projectsList }, 6),
-    chip('legal_check', 'TEXT_MESSAGE', 'Legal check', '',
-      { actionPrefix: 'Are there any legal or RERA red flags for', actionSuffix: '?', projects: projectsList }, 7)
+    chip(`TEXT_MESSAGE:legal_check:${pIds}`, 'TEXT_MESSAGE', 'Legal check', '',
+      { actionPrefix: 'Are there any legal or RERA red flags for', actionSuffix: '?', projects: projectsList }, 7),
+    chip(`TEXT_MESSAGE:amenities:${pIds}`, 'TEXT_MESSAGE', 'Amenities', '',
+      { actionPrefix: 'What are the key amenities for', actionSuffix: '?', projects: projectsList }, 8)
   ]
 
   const filteredPool = filterByHistory(pool, chatHistory)
@@ -389,18 +393,19 @@ function getResearchChips(intent: Intent, results: ScoredProject[], chatHistory:
 
 function getComparingChips(results: ScoredProject[], chatHistory: any[]): ChipAction[] {
   const topNames = results.slice(0, 2).map(r => r.name).join(' and ') || 'these properties'
+  const pIds = results.slice(0, 2).map(r => r.id).join(':')
   const pool = [
-    chip('roi_compare', 'TEXT_MESSAGE', 'Analyze ROI differences', '',
+    chip(`TEXT_MESSAGE:roi_compare:${pIds}`, 'TEXT_MESSAGE', 'Analyze ROI differences', '',
       { text: `Between ${topNames}, which offers the best return on investment?` }, 1),
-    chip('hidden_costs', 'TEXT_MESSAGE', 'Cost & Tax breakdown', '',
+    chip(`TEXT_MESSAGE:hidden_costs:${pIds}`, 'TEXT_MESSAGE', 'Cost & Tax breakdown', '',
       { text: `Provide a complete breakdown of maintenance, GST, and stamp duty for ${topNames}.` }, 2),
-    chip('family_fit', 'TEXT_MESSAGE', 'Lifestyle & Family fit', '',
+    chip(`TEXT_MESSAGE:family_fit:${pIds}`, 'TEXT_MESSAGE', 'Lifestyle & Family fit', '',
       { text: `Which between ${topNames} offers the best ecosystem and lifestyle amenities for a family?` }, 3),
-    chip('payment_plan', 'TEXT_MESSAGE', 'Compare payment plans', '',
+    chip(`TEXT_MESSAGE:payment_plan:${pIds}`, 'TEXT_MESSAGE', 'Compare payment plans', '',
       { text: `Compare the payment plans and construction-linked structures for ${topNames}.` }, 4),
-    chip('legal_compare', 'TEXT_MESSAGE', 'Compare RERA & Legal', '',
+    chip(`TEXT_MESSAGE:legal_compare:${pIds}`, 'TEXT_MESSAGE', 'Compare RERA & Legal', '',
       { text: `How do ${topNames} compare in terms of RERA standing and legal safety?` }, 5),
-    chip('location_compare', 'TEXT_MESSAGE', 'Compare connectivity', '',
+    chip(`TEXT_MESSAGE:location_compare:${pIds}`, 'TEXT_MESSAGE', 'Compare connectivity', '',
       { text: `Which of ${topNames} has better access to metro and highways?` }, 6)
   ]
   const filteredPool = filterByHistory(pool, chatHistory)
@@ -412,22 +417,24 @@ function getDecidingChips(results: ScoredProject[], chatHistory: any[]): ChipAct
   const chips: ChipAction[] = []
   
   if (results.length >= 2) {
-    chips.push(chip('final_compare', 'COMPARE_PROPERTIES', 'Final comparison', '',
+    const pIds = results.slice(0, 3).map(r => r.id).join(':')
+    chips.push(chip(`COMPARE_PROPERTIES:final_compare:${pIds}`, 'COMPARE_PROPERTIES', 'Final comparison', '',
       { mode: 'multi' }, 0))
   }
   
   const projectsList = results.map(r => ({ id: String(r.id), name: r.name }))
   
+  const pIds = projectsList.map(p => p.id).join(':')
   const pool = [
-    chip('hidden_risks', 'TEXT_MESSAGE', 'Risk & Diligence check', '',
+    chip(`TEXT_MESSAGE:hidden_risks:${pIds}`, 'TEXT_MESSAGE', 'Risk & Diligence check', '',
       { actionPrefix: 'Are there any hidden risks, legal issues, or delivery concerns for', actionSuffix: '?', projects: projectsList }, 1),
-    chip('negotiation', 'TEXT_MESSAGE', 'Negotiation strategy', '',
+    chip(`TEXT_MESSAGE:negotiation:${pIds}`, 'TEXT_MESSAGE', 'Negotiation strategy', '',
       { actionPrefix: 'What is a realistic negotiation margin and acquisition strategy for', actionSuffix: '?', projects: projectsList }, 2),
-    chip('legal_check', 'TEXT_MESSAGE', 'Check RERA & Legal status', '',
+    chip(`TEXT_MESSAGE:legal_check:${pIds}`, 'TEXT_MESSAGE', 'Check RERA & Legal status', '',
       { actionPrefix: 'Check RERA compliance and legal clearances for', actionSuffix: '.', projects: projectsList }, 3),
-    chip('booking_process', 'TEXT_MESSAGE', 'Explain the booking steps', '',
+    chip(`TEXT_MESSAGE:booking_process:${pIds}`, 'TEXT_MESSAGE', 'Explain the booking steps', '',
       { actionPrefix: 'Explain typical initial booking amounts and next steps for', actionSuffix: '.', projects: projectsList }, 4),
-    chip('exit_strategy', 'TEXT_MESSAGE', 'Analyze 5-year exit strategy', '',
+    chip(`TEXT_MESSAGE:exit_strategy:${pIds}`, 'TEXT_MESSAGE', 'Analyze 5-year exit strategy', '',
       { actionPrefix: 'Analyze market liquidity if I want to sell', actionSuffix: 'in 5 years.', projects: projectsList }, 5),
   ]
   
@@ -464,7 +471,7 @@ export async function computeConversationState(
       const label = `${c.name} (${c.sector})`
       const shortLabel = label.length > 24 ? label.substring(0, 21) + '…' : label
       return chip(
-        `disambig_${idx}`,
+        `TEXT_MESSAGE:disambig:${c.name.replace(/\s+/g, '_')}`,
         'TEXT_MESSAGE',
         shortLabel,
         '',
@@ -474,7 +481,7 @@ export async function computeConversationState(
     })
   } else if (sectorDisambiguation) {
     chips = sectorDisambiguation.candidates.map((s, idx) => chip(
-      `disambig_sec_${idx}`,
+      `INTENT_PATCH:disambig_sec:${s.replace(/\s+/g, '_')}`,
       'INTENT_PATCH',
       s,
       '',
@@ -484,7 +491,7 @@ export async function computeConversationState(
   } else if (cityDisambiguation) {
     // Progressive clarification: city selection chips (max 3-4, NotebookLM style)
     chips = cityDisambiguation.candidates.slice(0, 4).map((c, idx) => chip(
-      `disambig_city_${idx}`,
+      `INTENT_PATCH:disambig_city:${c.city}`,
       'INTENT_PATCH',
       c.label,
       '',

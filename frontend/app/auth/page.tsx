@@ -11,6 +11,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 
 import { track, identifyUser } from '@/lib/analytics';
 import Toast from '@/components/Toast';
+import { API_BASE } from '@/lib/env';
 
 type Mode = 'login' | 'register';
 
@@ -66,6 +67,27 @@ export default function AuthPage() {
         if (data.user) {
           localStorage.setItem('user_id', data.user.id);
           identifyUser(data.user.id, { email: data.user.email })
+
+          const guestToken = localStorage.getItem('realtypals_guest_token');
+          if (guestToken) {
+            try {
+              const migrateRes = await fetch(`${API_BASE}/chat/sessions/migrate`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${data.session.access_token}`
+                },
+                body: JSON.stringify({ guestToken })
+              });
+
+              if (!migrateRes.ok) throw new Error(`Migration failed: ${migrateRes.status}`);
+              localStorage.removeItem('realtypals_guest_token');
+            } catch (err) {
+              console.error('[session-migrate] Failed:', err);
+              setToast('Your previous research couldn\'t be transferred. Your new searches will be saved.');
+            }
+          }
+
           router.push('/discover');
         }
       } else {
@@ -142,12 +164,11 @@ export default function AuthPage() {
               <button
                 key={m}
                 onClick={() => switchMode(m)}
-                className={`flex-1 py-2.5 rounded-[14px] text-[13px] font-medium transition-all duration-300 ${
-                  mode === m
+                className={`flex-1 py-2.5 rounded-[14px] text-[13px] font-medium transition-all duration-300 ${mode === m
                     ? 'bg-white/[0.12] text-white shadow-[0_2px_8px_rgba(0,0,0,0.2)] ring-1 ring-white/10'
                     : 'text-white/40 hover:text-white/80 hover:bg-white/[0.04]'
 
-                }`}
+                  }`}
               >
                 {m === 'login' ? 'Sign In' : 'Create Account'}
               </button>

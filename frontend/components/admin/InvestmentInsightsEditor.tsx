@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Save, TrendingUp } from 'lucide-react'
+import { Save, TrendingUp, BarChart2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { toast } from 'sonner'
+import JsonEditor from './JsonEditor'
 
 export default function InvestmentInsightsEditor({ projectId, initialData }: { projectId: string, initialData?: any }) {
   const [appreciationAnnual, setAppreciationAnnual] = useState(initialData?.appreciation_annual ?? '')
@@ -14,6 +15,10 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
   const [marketDesc, setMarketDesc] = useState(initialData?.market_desc ?? '')
   const [liquidityScore, setLiquidityScore] = useState(initialData?.liquidity_score ?? '')
   const [liquidityDesc, setLiquidityDesc] = useState(initialData?.liquidity_desc ?? '')
+  
+  const [investmentReport, setInvestmentReport] = useState<any>(
+    initialData?.decision_profile?.intelligence_data?.investmentReport || {}
+  )
 
   const handleSave = async () => {
     try {
@@ -32,7 +37,22 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
         }),
         credentials: 'include'
       })
-      if (!res.ok) throw new Error('Failed to save')
+      if (!res.ok) throw new Error('Failed to save basic insights')
+
+      // Also save investmentReport to decision_profile.intelligence_data
+      const decisionRes = await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          intelligence_data: {
+            ...initialData?.decision_profile?.intelligence_data,
+            investmentReport: investmentReport
+          }
+        }),
+        credentials: 'include'
+      })
+      if (!decisionRes.ok) throw new Error('Failed to save investment report')
+
       toast.success('Investment insights saved successfully')
     } catch (e) {
       toast.error('Error saving investment insights')
@@ -76,9 +96,27 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
         </div>
       </div>
 
-      <div className="flex justify-end pt-4 border-t border-gray-100">
+      <div className="mt-8 pt-8 border-t border-gray-100">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <BarChart2 size={18} />
+          </div>
+          <div>
+            <h3 className="text-[16px] font-black text-gray-900">Advanced Investment Report</h3>
+            <p className="text-[13px] text-gray-500">Edit the detailed investmentReport JSON used by the AI.</p>
+          </div>
+        </div>
+        <JsonEditor
+          value={investmentReport}
+          onChange={setInvestmentReport}
+          label="Investment Report JSON"
+          description="Use valid JSON. This updates the frontend arrays directly."
+        />
+      </div>
+
+      <div className="flex justify-end pt-6 mt-6 border-t border-gray-100">
         <button onClick={handleSave} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-          <Save size={16} /> Save Insights
+          <Save size={16} /> Save All Changes
         </button>
       </div>
     </div>

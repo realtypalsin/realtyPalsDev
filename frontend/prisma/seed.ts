@@ -19,11 +19,26 @@ async function main() {
   const builderMap = new Map<string, string>() // slug → id
 
   for (const b of ALL_BUILDERS) {
-    const builder = await (prisma as any).builder.upsert({
-      where: { slug: b.slug },
-      update: { ...b },
-      create: { ...b },
+    let builder = await (prisma as any).builder.findFirst({
+      where: {
+        OR: [
+          { name: b.name },
+          { slug: b.slug }
+        ]
+      }
     })
+
+    if (builder) {
+      builder = await (prisma as any).builder.update({
+        where: { id: builder.id },
+        data: b
+      })
+    } else {
+      builder = await (prisma as any).builder.create({
+        data: b
+      })
+    }
+
     builderMap.set(b.slug, builder.id)
     console.log(`  ✓ ${builder.name}`)
   }

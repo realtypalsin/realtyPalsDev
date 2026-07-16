@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../frontend/node_modules/.prisma/client"
 }
 
 datasource db {
@@ -47,6 +46,7 @@ enum ConnectivityType {
   landmark
   airport
   university
+  expressway
 }
 
 enum DataSource {
@@ -68,29 +68,73 @@ enum SiteVisitStatus {
   completed
 }
 
+enum IntelligenceStatus {
+  DRAFT
+  PUBLISHED
+}
+
 // ── Core Property Models ──────────────────────────────────────────────
 
 model Builder {
-  id                 String   @id @default(uuid())
-  name               String   @unique
-  slug               String   @unique
-  tagline            String?
-  parent_group       String?
-  founded_year       Int?
-  headquarters       String?
-  website            String?
-  email              String?
-  phone              String?
-  credai_member      Boolean  @default(false)
-  delivered_units    Int?
-  delivered_projects String[]
-  ongoing_projects   String[]
-  awards             String[]
-  awards_count       Int?
-  description        String?
-  created_at         DateTime @default(now())
+  id                         String   @id @default(uuid())
+  name                       String   @unique
+  slug                       String   @unique
+  tagline                    String?
+  parent_group               String?
+  founded_year               Int?
+  headquarters               String?
+  website                    String?
+  email                      String?
+  phone                      String?
+  credai_member              Boolean  @default(false)
+  delivered_units            Int?
+  delivered_projects         String[]
+  ongoing_projects           String[]
+  awards                     String[]
+  awards_count               Int?
+  description                String?
+  created_at                 DateTime @default(now())
 
-  projects Project[]
+  // Missing fields from dbStructure1.sql
+  affordable_specialization   Boolean  @default(false)
+  after_sales_score           Int?
+  audit_flags_log             String?
+  average_delay_months        Float?
+  average_project_size        Int?
+  buyer_satisfaction_score    Int?
+  certifications              String[]
+  cin                         String?
+  company_overview            String?
+  construction_quality_score  Int?
+  data_source                 String?
+  delayed_projects_count      Int?
+  delivery_score              Int?
+  executives                  Json?
+  experience_years            String?
+  financial_hygiene_score     Int?
+  founder                     String?
+  funding_banks               String[]
+  insolvency_history          Boolean  @default(false)
+  intelligence_completeness   Int?
+  iso_certified               Boolean  @default(false)
+  last_verified_at            DateTime?
+  legal_entities              Json?
+  legal_flag                  String?
+  litigation_count            Int?
+  logo_url                    String?
+  luxury_specialization       Boolean  @default(false)
+  outstanding_dues_cr         Float?
+  projects_delivered_count    Int      @default(18)
+  rera_compliance_score       Int?
+  rera_promoter_id            String?
+  total_projects_count        Int?
+  township_specialization     Boolean  @default(false)
+  verification_level          String?
+
+  projects        Project[]
+  builder_accounts BuilderAccount[]
+  builder_leads   BuilderLead[]
+  builder_news    BuilderNews[]
 
   @@map("builders")
 }
@@ -125,12 +169,45 @@ model Project {
   created_at         DateTime      @default(now())
   updated_at         DateTime      @updatedAt
 
-  builder      Builder         @relation(fields: [builder_id], references: [id])
-  unit_types   UnitType[]
-  images       ProjectImage[]
-  amenities    Amenity[]
-  connectivity Connectivity[]
-  saved_by     SavedProperty[]
+  // Missing fields from dbStructure1.sql
+  banks_nearby_count       Int?
+  builder_theme            Json?
+  embedding                Unsupported("vector")? // using pgvector for embeddings if defined
+  escrow_bank_name         String?
+  escrow_verified          Boolean?
+  floors                   String?
+  green_rating             String?
+  has_duplex               Boolean       @default(false)
+  has_penthouse            Boolean       @default(false)
+  hospitals_nearby_count   Int?
+  it_parks_nearby_count     Int?
+  launch_date              DateTime?
+  nclt_moratorium_active   Boolean?
+  open_space_pct           Int?
+  price_min_cr             Float?
+  price_range_label        String?
+  project_risk_flag        String?
+  project_type             String        @default("Residential")
+  registry_embargo_reasons String[]
+  registry_status          String?
+  restaurants_nearby_count Int?
+  schools_nearby_count     Int?
+  shopping_nearby_count    Int?
+
+  builder                 Builder                  @relation(fields: [builder_id], references: [id])
+  unit_types              UnitType[]
+  images                  ProjectImage[]
+  amenities               Amenity[]
+  connectivity            Connectivity[]
+  saved_by                SavedProperty[]
+  dna                     ProjectDna?
+  decision_profile        DecisionProfile?
+  persona_profile         PersonaProfile?
+  recommendation_profile  RecommendationProfile?
+  competitors             ProjectCompetitor[]      @relation("ProjectToCompetitor")
+  competitor_for          ProjectCompetitor[]      @relation("CompetitorToProject")
+  payment_plan            PaymentPlan?
+  cost_sheet              CostSheet?
 
   @@index([city, sector])
   @@index([status])
@@ -155,6 +232,16 @@ model UnitType {
   price_max_cr       Float?
   price_label        String?
   price_is_estimated Boolean  @default(false)
+
+  // Missing fields from dbStructure1.sql
+  category_badge     String?
+  description        String?
+  inventory_left     Int?
+  key_highlights     Json?
+  perfect_for        String[]
+  subtitle           String?
+  views              Json?
+  whats_included     Json?
 
   project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
@@ -210,20 +297,22 @@ model Connectivity {
 // ── Chat & Session ────────────────────────────────────────────────────
 
 model ChatSession {
-  id            String   @id @default(uuid())
-  user_id       String?
-  guest_token   String?
-  title         String?
-  message_count Int      @default(0)
-  chat_phase    String   @default("DISCOVERY")
-  last_projects Json?
-  created_at    DateTime @default(now())
-  last_active   DateTime @updatedAt
+  id             String          @id @default(uuid())
+  user_id        String?
+  guest_token    String?
+  title          String?
+  message_count  Int             @default(0)
+  chat_phase     String          @default("DISCOVERY")
+  last_projects  Json?
+  shown_chip_ids Json?           @default("[]")
+  created_at     DateTime        @default(now())
+  last_active    DateTime        @updatedAt
+  summary        String?
 
-  messages      ChatMessage[]
-  ChatAnalytics ChatAnalytics[]
-  QueryMetrics  QueryMetrics[]
-  PropertyEvent PropertyEvent[]
+  messages       ChatMessage[]
+  ChatAnalytics  ChatAnalytics[]
+  QueryMetrics   QueryMetrics[]
+  PropertyEvent  PropertyEvent[]
 
   @@index([user_id])
   @@index([guest_token])
@@ -237,6 +326,7 @@ model ChatMessage {
   content         String
   intent_snapshot Json?
   created_at      DateTime    @default(now())
+  artifacts       Json?
 
   session ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
@@ -248,7 +338,7 @@ model ChatMessage {
 
 model UserMemory {
   id                     String   @id @default(uuid())
-  user_id                String   @unique
+  user_id                String?  @unique
   bhk_preference         Int?
   budget_min_cr          Float?
   budget_max_cr          Float?
@@ -263,6 +353,7 @@ model UserMemory {
   home_loan_pre_approved Boolean?
   timeline_months        Int?
   contact_phone          String?
+  guest_token            String?
   updated_at             DateTime @updatedAt
 
   @@map("user_memory")
@@ -270,7 +361,7 @@ model UserMemory {
 
 model SavedProperty {
   id         String   @id @default(uuid())
-  user_id    String
+  user_id    String?
   project_id String
   saved_at   DateTime @default(now())
 
@@ -344,16 +435,38 @@ model FailedWebhook {
 }
 
 model ChatAnalytics {
-  id              String   @id @default(uuid())
-  session_id      String
-  lead_type       String?
-  conversion_time Int?
-  promotional_id  String?
-  promo_clicked   Boolean  @default(false)
-  created_at      DateTime @default(now())
-  ai_confidence   Int?
-  latency_ms      Int?
-  llm_tokens      Int?
+  id                          String      @id @default(uuid())
+  session_id                  String
+  promotional_id              String?
+  promo_clicked               Boolean     @default(false)
+  created_at                  DateTime    @default(now())
+  ai_confidence               Int?
+  latency_ms                  Int?
+  llm_tokens                  Int?
+
+  // Restored fields from dbStructure1.sql
+  chat_started_at             DateTime    @default(now())
+  conversion_at               DateTime?
+  conversion_type             String?
+  converted_builder_id        String?
+  converted_project_id        String?
+  drop_off_at                 DateTime?
+  drop_off_stage              String?
+  extracted_bhk               Int?
+  extracted_budget_max        Float?
+  extracted_budget_min        Float?
+  extracted_sector            String?
+  first_engagement_at         DateTime?
+  guest_token                 String?
+  idle_seconds_before_drop_off Int?
+  intent_identified_at        DateTime?
+  intent_type                 String?
+  projects_clicked            Int         @default(0)
+  projects_saved              Int         @default(0)
+  projects_viewed             Int         @default(0)
+  results_shown_at            DateTime?
+  time_spent_seconds          Int         @default(0)
+  user_id                     String?
 
   session ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
@@ -363,8 +476,6 @@ model ChatAnalytics {
 model QueryMetrics {
   id                  String   @id @default(uuid())
   session_id          String
-  query               String
-  extracted_intent    Json?
   clicked             Boolean  @default(false)
   converted           Boolean  @default(false)
   created_at          DateTime @default(now())
@@ -374,6 +485,16 @@ model QueryMetrics {
   possession          String?
   purpose             String?
   results_count       Int?
+
+  // Restored fields from dbStructure1.sql
+  bhk                 Int?
+  budget_max_cr       Float?
+  budget_min_cr       Float?
+  intent_type         String?
+  query_text          String   @default("")
+  sector              String?
+  user_id             String?
+  week_start          DateTime @default(now())
 
   session ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
@@ -392,4 +513,378 @@ model PropertyEvent {
   session ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
   @@map("property_events")
+}
+
+// ── Intelligence & Advisory Models ─────────────────────────────────────
+
+model ProjectDna {
+  id                         String    @id @default(uuid())
+  project_id                 String    @unique
+  builder_track_record_score Int?
+  builder_track_record_label String?
+  price_position_score       Int?
+  price_position_label       String?
+  locality_score             Int?
+  locality_label             String?
+  rera_compliance_score      Int?
+  rera_compliance_label      String?
+  amenity_depth_score        Int?
+  amenity_depth_label        String?
+  possession_certainty_score Int?
+  possession_certainty_label String?
+  last_verified_at           DateTime?
+  verified_by                String?
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("project_dna")
+}
+
+model DecisionProfile {
+  id                 String             @id @default(uuid())
+  project_id         String             @unique
+  status             IntelligenceStatus @default(DRAFT)
+  decision_thesis    String?
+  why_buy            String[]           @default([])
+  why_avoid          String[]           @default([])
+  best_for           String?
+  not_ideal_for      String?
+  confidence_sources String[]           @default([])
+  recommendation_notes String?
+  advisor_notes      String?
+  intelligence_data  Json?
+  last_verified_at   DateTime?
+  verified_by        String?
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("decision_profiles")
+}
+
+model PersonaProfile {
+  id                   String    @id @default(uuid())
+  project_id           String    @unique
+  primary_persona      String?
+  secondary_personas   String[]  @default([])
+  persona_descriptions Json?
+  income_range         String?
+  family_stage         String?
+  work_location        String?
+  risk_appetite        String?
+  timeline_horizon     String?
+  motivation_note      String?
+  last_verified_at     DateTime?
+  verified_by          String?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("persona_profiles")
+}
+
+model RecommendationProfile {
+  id                   String             @id @default(uuid())
+  project_id           String             @unique
+  status               IntelligenceStatus @default(DRAFT)
+  tier                 String?
+  primary_thesis       String?
+  end_use_thesis       String?
+  investment_thesis    String?
+  family_thesis        String?
+  investor_thesis      String?
+  luxury_thesis        String?
+  risk_thesis          String?
+  walk_away_conditions String[]           @default([])
+  timeline_advice      String?
+  negotiation_leverage String[]           @default([])
+  internal_confidence  String?
+  admin_notes          String?
+  last_verified_at     DateTime?
+  verified_by          String?
+  created_at           DateTime           @default(now())
+  updated_at           DateTime           @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("recommendation_profiles")
+}
+
+model ProjectCompetitor {
+  id                     String    @id @default(uuid())
+  project_id             String
+  competitor_project_id  String?
+  competitor_name        String
+  competitor_slug        String?
+  this_project_advantage String?
+  competitor_advantage   String?
+  verdict                String?
+  price_delta_note       String?
+  sort_order             Int       @default(0)
+  last_verified_at       DateTime?
+  verified_by            String?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  project            Project  @relation("ProjectToCompetitor", fields: [project_id], references: [id], onDelete: Cascade)
+  competitor_project Project? @relation("CompetitorToProject", fields: [competitor_project_id], references: [id], onDelete: SetNull)
+
+  @@map("project_competitors")
+}
+
+model IntelligenceAudit {
+  id          String   @id @default(uuid())
+  project_id  String
+  section     String
+  action      String
+  before_data Json?
+  after_data  Json?
+  created_by  String?
+  created_at  DateTime @default(now())
+
+  @@map("intelligence_audits")
+}
+
+model CallbackRequest {
+  id           String   @id @default(uuid())
+  name         String
+  phone        String
+  project_name String?
+  project_slug String?
+  user_id      String?
+  guest_token  String?
+  status       String   @default("new")
+  created_at   DateTime @default(now())
+
+  @@map("callback_requests")
+}
+
+model PaymentPlan {
+  id          String    @id @default(uuid())
+  project_id  String    @unique
+  plan_name   String?
+  milestones  Json      @default("[]")
+  source      String?
+  source_url  String?
+  verified_at DateTime?
+  verified_by String?
+  notes       String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("payment_plans")
+}
+
+model CostSheet {
+  id                   String    @id @default(uuid())
+  project_id           String    @unique
+  base_price_per_sqft  Float?
+  floor_rise_per_floor Float?
+  plc_charges          Json      @default("[]")
+  parking_cost         Float?
+  ifms                 Float?
+  club_membership      Float?
+  other_charges        Json      @default("[]")
+  gst_rate_pct         Float     @default(5.0)
+  stamp_duty_pct       Float     @default(6.0)
+  registration_pct     Float     @default(1.0)
+  assumptions          String[]
+  verified_at          DateTime?
+  verified_by          String?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("cost_sheets")
+}
+
+model WeeklyMetricsSummary {
+  id                  String   @id @default(uuid())
+  week_start          DateTime
+  week_end            DateTime
+  total_queries       Int
+  unique_sessions     Int
+  conversion_rate     Float
+  drop_off_rate       Float
+  avg_time_spent_s    Int
+  top_sectors         Json
+  intent_breakdown    Json
+  budget_distribution Json
+  bhk_preferences     Json
+  created_at          DateTime @default(now())
+
+  @@map("weekly_metrics_summary")
+}
+
+model Promotional {
+  id             String   @id @default(uuid())
+  title          String
+  description    String?
+  type           String // mapping to USER-DEFINED in DB
+  content        String
+  link_type      String?
+  link_target    String?
+  image_url      String?
+  icon_url       String?
+  builder_id     String?
+  starts_at      DateTime
+  ends_at        DateTime
+  is_active      Boolean  @default(true)
+  target_sectors String[] @default([])
+  target_bhk     Int[]    @default([])
+  impressions    Int      @default(0)
+  clicks         Int      @default(0)
+  conversions    Int      @default(0)
+  created_by     String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  interactions PromotionalInteraction[]
+
+  @@map("promotionals")
+}
+
+model PromotionalInteraction {
+  id                   String   @id @default(uuid())
+  promotional_id       String
+  session_id           String?
+  user_id              String?
+  guest_token          String?
+  interaction_type     String
+  converted_project_id String?
+  created_at           DateTime @default(now())
+
+  promotional Promotional @relation(fields: [promotional_id], references: [id], onDelete: Cascade)
+
+  @@map("promotional_interactions")
+}
+
+model BuilderNews {
+  id             String    @id @default(uuid())
+  builder_id     String
+  title          String
+  description    String
+  image_url      String?
+  link_type      String?
+  link_target    String?
+  status         String // mapping to USER-DEFINED in DB
+  submitted_by   String?
+  approved_by    String?
+  approval_notes String?
+  run_as_promo   Boolean   @default(false)
+  promo_id       String?
+  archived_at    DateTime?
+  created_at     DateTime  @default(now())
+  published_at   DateTime?
+
+  builder Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@map("builder_news")
+}
+
+model BuilderApplicationForm {
+  id             String   @id @default(uuid())
+  name           String
+  cin            String
+  email          String
+  phone          String
+  landline       String?
+  website        String?
+  headquarters   String?
+  logo_url       String?
+  description    String?
+  legal_entities Json?
+  executives     Json?
+  projects       String[]
+  delivery_track String?
+  ip_address     String
+  user_agent     String
+  submitted_at   DateTime @default(now())
+  status         String // mapping to USER-DEFINED in DB
+  reviewed_by    String?
+  review_notes   String?
+  linked_builder String?
+
+  @@map("builder_application_forms")
+}
+
+model BuilderAccount {
+  id            String    @id @default(uuid())
+  builder_id    String
+  user_id       String?
+  email         String
+  password_hash String?
+  auth_method   String
+  last_login    DateTime?
+  last_activity DateTime?
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  builder Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@map("builder_accounts")
+}
+
+model BuilderLead {
+  id             String    @id @default(uuid())
+  builder_id     String
+  project_id     String?
+  lead_type      String
+  name           String?
+  email          String?
+  phone          String?
+  message        String?
+  source_session String?
+  source_intent  Json?
+  status         String // mapping to USER-DEFINED in DB
+  assigned_to    String?
+  notes          String?
+  contacted_at   DateTime?
+  converted_at   DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  builder Builder @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@map("builder_leads")
+}
+
+model BuilderAnalytics {
+  id                     String   @id @default(uuid())
+  builder_id             String
+  date                   DateTime
+  leads_generated        Int      @default(0)
+  callbacks_requested    Int      @default(0)
+  site_visits_requested  Int      @default(0)
+  impressions            Int      @default(0)
+  clicks_on_promo        Int      @default(0)
+  conversions_from_promo Int      @default(0)
+  projects_viewed        Int      @default(0)
+  projects_saved         Int      @default(0)
+  created_at             DateTime @default(now())
+
+  @@map("builder_analytics")
+}
+
+model BuilderTheme {
+  id              String    @id @default(uuid())
+  builder_id      String
+  primary_color   String
+  secondary_color String?
+  logo_url        String?
+  favicon_url     String?
+  active_from     DateTime
+  active_until    DateTime?
+  is_active       Boolean   @default(true)
+  created_at      DateTime  @default(now())
+
+  @@map("builder_themes")
 }

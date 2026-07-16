@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { supabaseAdmin } from '../lib/supabase'
 import { checkRateLimit } from '../lib/cache'
+import { validateUploadedFile } from '../lib/uploadValidator'
 
 const router = Router()
 
@@ -63,6 +64,12 @@ async function uploadLogoToSupabase(
     const MAX_SIZE_BYTES = 2 * 1024 * 1024 // 2MB
     if (buffer.length > MAX_SIZE_BYTES) {
       console.error(`[builderRegistration] File size ${buffer.length} exceeds 2MB limit`)
+      return null
+    }
+
+    const { valid, error: validationError } = await validateUploadedFile(buffer)
+    if (!valid) {
+      console.error(`[builderRegistration] File type validation failed: ${validationError}`)
       return null
     }
 

@@ -25,6 +25,7 @@ const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
   loading: () => <Skeleton className="h-48 w-full rounded-xl" />
 })
 import RealtyBox from '@/components/RealtyBox'
+import ContactButton from '@/components/ContactButton'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 
@@ -32,13 +33,14 @@ const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 const sanitizeSchema = {
   ...defaultSchema,
   tagNameFilter: (tagName: string) => {
-    if (tagName === 'realty-chart' || tagName === 'realty-box') return true
+    if (tagName === 'realty-chart' || tagName === 'realty-box' || tagName === 'realty-action') return true
     return (defaultSchema as any).tagNameFilter?.(tagName) ?? false
   },
   attributes: {
     ...defaultSchema.attributes,
     'realty-chart': ['type', 'data', 'title'],
     'realty-box': ['type', 'title'],
+    'realty-action': ['type', 'label'],
   },
 }
 
@@ -236,6 +238,7 @@ function TextBlock({ block }: { block: ResponseBlock }) {
         components={{
           'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
           'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
+          'realty-action': ({ node, ...props }: any) => <ContactButton label={props.label || 'Request Callback'} className="my-2" />,
           table: ({ node, ...props }: any) => (
             <div className="my-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#151b27] shadow-sm">
               <table className="w-full border-collapse text-left text-sm text-gray-500 dark:text-gray-400" {...props} />

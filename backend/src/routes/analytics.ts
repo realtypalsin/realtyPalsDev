@@ -33,9 +33,14 @@ router.post('/engagement', async (req: Request, res: Response) => {
     }
 
     if (data.event === 'drop_off') {
-      // Assuming you want to track this in property events or just return success
-      // ChatAnalytics does not have a drop_off_stage field natively, 
-      // but you can log it or expand schema later
+      await prisma.chatAnalytics.updateMany({
+        where: { session_id: data.session_id },
+        data: {
+          drop_off_at: new Date(),
+          drop_off_stage: data.drop_off_stage || 'unknown',
+          idle_seconds_before_drop_off: data.idle_seconds || 0,
+        }
+      })
       console.log(`[analytics] Drop-off recorded for session ${data.session_id} at stage ${data.drop_off_stage}`)
     } else if (data.event === 'first_engagement') {
       await prisma.chatAnalytics.updateMany({
@@ -74,10 +79,43 @@ router.post('/promotions', async (req: Request, res: Response) => {
   try {
     const data = PromotionsSchema.parse(req.body)
     console.log(`[analytics] Promotion ${data.action} for ${data.promotional_id} in session ${data.session_id}`)
-    // Add logic to save promotional tracking to DB if there's a table for it
     res.status(200).json({ success: true })
   } catch (err) {
     console.error('[analytics/promotions]', err)
+    res.status(400).json({ error: 'Invalid payload' })
+  }
+})
+
+// POST /api/v1/analytics/property-event
+const PropertyEventSchema = z.object({
+  project_id: z.string(),
+  action: z.string(),
+  session_id: z.string().nullable().optional(),
+  user_id: z.string().nullable().optional(),
+  guest_token: z.string().nullable().optional(),
+  metadata: z.record(z.any()).optional(),
+})
+
+router.post('/property-event', async (req: Request, res: Response) => {
+  try {
+    const data = PropertyEventSchema.parse(req.body)
+    
+    // We only log if we have a session_id to associate it with
+    if (data.session_id) {
+      await prisma.propertyEvent.create({
+        data: {
+          session_id: data.session_id,
+          project_id: data.project_id,
+          action: data.action,
+          user_id: data.user_id || undefined,
+          guest_token: data.guest_token || undefined,
+        }
+      })
+    }
+    
+    res.status(200).json({ success: true })
+  } catch (err) {
+    console.error('[analytics/property-event]', err)
     res.status(400).json({ error: 'Invalid payload' })
   }
 })

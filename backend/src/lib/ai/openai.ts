@@ -205,6 +205,34 @@ export async function streamWithOpenAI(
         },
       },
     },
+    {
+      type: 'function',
+      function: {
+        name: 'project_competitors',
+        description: 'Get competitor comparisons for a specific project. Use when the user asks how a project compares to others, or asks for alternatives.',
+        parameters: {
+          type: 'object',
+          properties: {
+            project_id: { type: 'string', description: 'The internal project ID (must be from the properties data)' },
+          },
+          required: ['project_id'],
+        },
+      },
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'project_documents',
+        description: 'Get text extracted from project brochures and documents. Use to find highly specific details like floor plans, specifications, or marketing claims not present in the main data block.',
+        parameters: {
+          type: 'object',
+          properties: {
+            project_id: { type: 'string', description: 'The internal project ID (must be from the properties data)' },
+          },
+          required: ['project_id'],
+        },
+      },
+    },
   ];
 
   let fullText = '';

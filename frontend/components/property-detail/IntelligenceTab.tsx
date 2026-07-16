@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 'use client'
 import { useState, RefObject } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Sparkles, Users, Briefcase, Gem, Globe, Home,
   TrendingUp, BarChart3, AlertTriangle, CheckCircle2,
-  Building2, Scale, Lightbulb, User, Activity, Info
+  Building2, Scale, Lightbulb, User, Activity, Info,
+  Shield, Download
 } from 'lucide-react'
 import {  m, AnimatePresence  } from 'framer-motion'
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts'
@@ -19,6 +21,7 @@ const MarketComparison = dynamic(() => import('@/components/MarketComparison'), 
   loading: () => <Skeleton className="h-64 w-full" />
 })
 import SocialProofAndTransparency from './SocialProofAndTransparency'
+import { API_BASE } from '@/lib/env'
 
 // Helper component for consistent paragraph rendering
 const CollapsibleParagraph = ({ text }: { text: string }) => {
@@ -64,7 +67,11 @@ export default function IntelligenceTab({
 
   // Only use real verified data from DB; no fabricated defaults
   const decisionProfile = (d as any)?.decision_profile || {}
-  const dbIntel = decisionProfile?.intelligence_data || {}
+  const rawIntel = decisionProfile?.intelligence_data
+  const dbIntel = typeof rawIntel === 'string' ? JSON.parse(rawIntel) : (rawIntel || {})
+  console.log('DEBUG_INTEL: decisionProfile=', decisionProfile);
+  console.log('DEBUG_INTEL: rawIntel=', rawIntel);
+  console.log('DEBUG_INTEL: dbIntel=', dbIntel);
 
   const overallScore = dbIntel?.topLevelMetrics?.overallScore
   const tier = dbIntel?.topLevelMetrics?.tier
@@ -118,15 +125,16 @@ export default function IntelligenceTab({
     return 'D'
   }
 
-  const computedProjectAvgNumber = detail?.unit_types && detail.unit_types.length > 0
+  const unitTypesList = d?.unit_types || []
+  const computedProjectAvgNumber = unitTypesList.length > 0
     ? (() => {
       let totalRate = 0
       let count = 0
-      detail.unit_types.forEach((u: any) => {
-        const superArea = u.super_area_sqft
+      unitTypesList.forEach((u: any) => {
+        const area = u.super_area_sqft || u.carpet_area_sqft
         const priceMin = u.price_min_cr ? u.price_min_cr * 10000000 : 0
-        if (superArea && priceMin) {
-          totalRate += (priceMin / superArea)
+        if (area && priceMin) {
+          totalRate += (priceMin / area)
           count++
         }
       })
@@ -163,9 +171,9 @@ export default function IntelligenceTab({
               <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
                 <h3 className="text-[14px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-3 flex items-center gap-2">
                   <Activity size={16} className="text-blue-600" />
-                  Decision Thesis
+                  Decision Thesis (AI Verdict)
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                <p className="text-[15px] font-bold text-gray-900 dark:text-white leading-relaxed whitespace-pre-wrap">
                   {decisionProfile.decision_thesis}
                 </p>
               </div>
@@ -328,8 +336,8 @@ export default function IntelligenceTab({
           <div className="bg-blue-50/30 dark:bg-blue-950/20 rounded-xl p-4.5 flex gap-3 border border-blue-100/30 dark:border-blue-900/30">
             <Lightbulb className="text-blue-500 flex-shrink-0" size={18} />
             <div>
-              <p className="text-[12px] font-bold text-gray-900 dark:text-white mb-0.5">Key Takeaway</p>
-              <p className="text-[12px] text-gray-600 dark:text-gray-400 leading-relaxed">{dbIntel.keyTakeaway}</p>
+              <p className="text-[12px] font-bold text-gray-900 dark:text-white mb-0.5">AI Verdict (Key Takeaway)</p>
+              <p className="text-[15px] font-bold text-gray-900 dark:text-white leading-relaxed">{dbIntel.keyTakeaway}</p>
             </div>
           </div>
         </div>
@@ -341,15 +349,15 @@ export default function IntelligenceTab({
           <CollapsibleParagraph text="We've analyzed this project from different buyer perspectives. The analysis includes detailed insights for families, investors, luxury seekers, NRIs, and end users. Click to expand see why each persona matters and how the project's features align with their priorities." />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-          {dbIntel.buyerPersonas.map((persona: any, idx: number) => {
+        <div className="columns-1 md:columns-2 gap-5 space-y-5 md:space-y-0">
+          {(dbIntel.buyerPersonas || []).map((persona: any, idx: number) => {
             const Icon = ICON_MAP[persona.iconName] || Users
             const isExpanded = expandedPersona === persona.type
             return (
               <m.div
                 layout
                 key={idx}
-                className={`bg-white dark:bg-[#111] ring-1 ring-inset rounded-[24px] p-6 transition-all duration-300 flex flex-col cursor-pointer overflow-hidden ${isExpanded ? 'ring-gray-300 dark:ring-gray-600 bg-gray-50/50 dark:bg-white/5 shadow-md' : 'ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)] hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.06)]'}`}
+                className={`break-inside-avoid mb-5 w-full bg-white dark:bg-[#111] ring-1 ring-inset rounded-[24px] p-6 transition-all duration-300 flex flex-col cursor-pointer overflow-hidden ${isExpanded ? 'ring-gray-300 dark:ring-gray-600 bg-gray-50/50 dark:bg-white/5 shadow-md' : 'ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)] hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.06)]'}`}
                 onClick={() => setExpandedPersona(isExpanded ? null : persona.type)}
               >
                 <m.div layout="position" className="flex items-start justify-between mb-4">
@@ -422,6 +430,11 @@ export default function IntelligenceTab({
 
       {/* 4. Investment & Pricing Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="md:col-span-1 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center">
+          <h3 className="text-[14px] font-bold text-gray-900 dark:text-white mb-6 w-full text-center">Score Breakdown</h3>
+          <PropertyRadarChart axes={dimensionsForChart as any} />
+        </div>
+        
         {/* Investment Snapshot */}
         <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-[24px] p-6">
           <h3 className="text-[16px] font-bold text-gray-900 mb-6">How this investment may perform</h3>
@@ -474,7 +487,7 @@ export default function IntelligenceTab({
                 <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center">
                   <Home size={14} className="text-blue-500" />
                 </div>
-                <span className="text-[13px] text-gray-600">Noida West Average</span>
+                <span className="text-[13px] text-gray-600">{d?.city || 'Area'} Market Avg.</span>
               </div>
               <span className="text-[13px] font-bold text-gray-900">{dbIntel.pricingIntelligence?.marketAvg || '—'}</span>
             </div>
@@ -521,7 +534,7 @@ export default function IntelligenceTab({
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart 
                 cx="50%" cy="50%" outerRadius="70%" 
-                data={dbIntel.riskRadar.map((r: any) => ({
+                data={(dbIntel.riskRadar || []).map((r: any) => ({
                   subject: r.type,
                   A: r.level === 'Low' ? 20 : r.level === 'Medium' ? 50 : 80,
                   fullMark: 100
@@ -538,7 +551,7 @@ export default function IntelligenceTab({
             </ResponsiveContainer>
           </div>
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {dbIntel.riskRadar.map((risk: any, i: number) => {
+            {(dbIntel.riskRadar || []).map((risk: any, i: number) => {
               const Icon = ICON_MAP[risk.iconName] || Building2
               const riskColors: Record<string, { bg: string; text: string; badge: string }> = {
                 'Low': { bg: 'bg-emerald-50', text: 'text-emerald-500', badge: 'bg-emerald-100 text-emerald-700' },
@@ -626,91 +639,153 @@ export default function IntelligenceTab({
       </div>
 
       {/* Report Modal */}
-      <AnimatePresence>
-      {showReportModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <m.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowReportModal(false)} 
-          />
-          <m.div 
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", bounce: 0, duration: 0.5 }}
-            className="bg-white/95 dark:bg-[#131211]/95 backdrop-blur-md rounded-[32px] max-w-lg w-full p-8 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-white/20 dark:border-white/5 relative z-10 overflow-hidden"
-          >
-            {/* Soft decorative glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-            
-            <button
-              onClick={() => setShowReportModal(false)}
-              className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-gray-100/50 hover:bg-gray-200/50 dark:bg-gray-800/50 dark:hover:bg-gray-700/50 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full transition-colors"
+      {showReportModal && typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6">
+            <m.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowReportModal(false)} 
+            />
+            <m.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", bounce: 0, duration: 0.5 }}
+              className="bg-white dark:bg-[#111] rounded-[32px] max-w-2xl w-full p-8 md:p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.4)] border border-black/5 dark:border-white/10 relative z-10 overflow-hidden"
             >
-              ✕
-            </button>
-            <div className="flex items-center gap-4 mb-8 relative z-10">
-              <div className="w-12 h-12 rounded-[18px] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-100/50 dark:border-blue-800/50 flex items-center justify-center shadow-inner">
-                <TrendingUp className="text-blue-600 dark:text-blue-400" size={20} />
-              </div>
-              <div>
-                <h3 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">AI Investment Report</h3>
-                <p className="text-[13px] text-gray-500 font-medium">{d?.name || 'Project'} Detailed Projections</p>
-              </div>
-            </div>
-
-            <div className="space-y-5 relative z-10">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50/80 dark:bg-gray-900/80 border border-gray-100/50 dark:border-gray-800/50 p-4 rounded-[20px]">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Appreciation</span>
-                  <span className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">12-16% <span className="text-[12px] font-semibold text-gray-400 tracking-normal">/yr</span></span>
-                </div>
-                <div className="bg-gray-50/80 dark:bg-gray-900/80 border border-gray-100/50 dark:border-gray-800/50 p-4 rounded-[20px]">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Rental Yield</span>
-                  <span className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">6.5 - 7.5%</span>
-                </div>
-              </div>
+              {/* Soft decorative glow */}
+              <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px] pointer-events-none" />
+              <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none" />
               
-              <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 p-5 rounded-[20px] space-y-3.5">
-                <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <span className="font-bold text-gray-900 dark:text-white">📈 Capital Gain Catalyst:</span> Positioned in high-appreciating Sector 10 Extension corridor. Demand is heavily catalyzed by commercial expansion opposite Knowledge Park V.
-                </p>
-                <div className="h-px bg-blue-100/50 dark:bg-blue-900/30 w-full" />
-                <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <span className="font-bold text-gray-900 dark:text-white">🛡️ Funding Safeguards:</span> Fast-tracked construction with zero cash-flow threat, backed by institutional funding from Tata Capital.
-                </p>
-                <div className="h-px bg-blue-100/50 dark:bg-blue-900/30 w-full" />
-                <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <span className="font-bold text-gray-900 dark:text-white">📋 RERA Validation:</span> Registered under UP-RERA UPRERAPRJ916631/02/2024. Clear land title deeds verify no outstanding developer dues.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-8 relative z-10">
               <button
                 onClick={() => setShowReportModal(false)}
-                className="px-5 py-2.5 bg-gray-100/80 hover:bg-gray-200/80 dark:bg-gray-800/80 dark:hover:bg-gray-700/80 text-gray-700 dark:text-gray-300 text-[13px] font-bold rounded-xl transition-colors"
+                className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 rounded-full transition-colors z-20"
               >
-                Close
+                ✕
               </button>
-              <button
-                onClick={() => {
-                  setShowReportModal(false)
-                  alert('Investment report download started!')
-                }}
-                className="px-5 py-2.5 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 text-[13px] font-bold rounded-xl transition-all shadow-[0_4px_14px_0_rgb(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] flex items-center gap-2"
-              >
-                Download PDF
-                <span className="opacity-60">↓</span>
-              </button>
-            </div>
-          </m.div>
-        </div>
+              
+              <div className="flex flex-col md:flex-row md:items-center gap-5 mb-10 relative z-10">
+                <div className="w-16 h-16 rounded-[20px] bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
+                  <TrendingUp className="text-white" size={28} />
+                </div>
+                <div>
+                  <h3 className="text-[24px] font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">AI Investment Report</h3>
+                  <p className="text-[14px] text-gray-500 font-medium">Detailed financial projections & risk analysis for {d?.name || 'this project'}</p>
+                </div>
+              </div>
+
+              <div className="space-y-6 relative z-10">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="bg-gray-50 dark:bg-white/5 border border-black/5 dark:border-white/5 p-6 rounded-[24px]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp size={16} className="text-emerald-500" />
+                      <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">Appreciation</span>
+                    </div>
+                    <span className="text-[24px] font-black text-gray-900 dark:text-white tracking-tight">
+                      {dbIntel.investmentReport?.appreciationYearly || '—'} 
+                      <span className="text-[14px] font-semibold text-gray-400 tracking-normal ml-1">/yr</span>
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-white/5 border border-black/5 dark:border-white/5 p-6 rounded-[24px]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Home size={16} className="text-blue-500" />
+                      <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">Rental Yield</span>
+                    </div>
+                    <span className="text-[24px] font-black text-gray-900 dark:text-white tracking-tight">
+                      {dbIntel.investmentReport?.rentalYield || '—'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 p-6 rounded-[24px] space-y-5">
+                  {dbIntel.investmentReport?.reportCatalyst && (
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <TrendingUp size={16} className="text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <h4 className="text-[14px] font-bold text-gray-900 dark:text-white mb-1">Capital Gain Catalyst</h4>
+                        <p className="text-[13px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                          {dbIntel.investmentReport.reportCatalyst}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {dbIntel.investmentReport?.reportFunding && (
+                    <>
+                      <div className="h-px bg-blue-100/50 dark:bg-blue-900/30 w-full ml-12" />
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Shield className="text-emerald-600 dark:text-emerald-400" size={16} />
+                        </div>
+                        <div>
+                          <h4 className="text-[14px] font-bold text-gray-900 dark:text-white mb-1">Funding Safeguards</h4>
+                          <p className="text-[13px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                            {dbIntel.investmentReport.reportFunding}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {dbIntel.investmentReport?.reportRera && (
+                    <>
+                      <div className="h-px bg-blue-100/50 dark:bg-blue-900/30 w-full ml-12" />
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <CheckCircle2 className="text-purple-600 dark:text-purple-400" size={16} />
+                        </div>
+                        <div>
+                          <h4 className="text-[14px] font-bold text-gray-900 dark:text-white mb-1">RERA Validation</h4>
+                          <p className="text-[13px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                            {dbIntel.investmentReport.reportRera}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {!dbIntel.investmentReport && (
+                    <p className="text-[14px] text-gray-500 dark:text-gray-400 text-center py-4">Investment report data not yet available for this project.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-10 relative z-10">
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  className="px-6 py-3.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-900 dark:text-white text-[14px] font-bold rounded-xl transition-colors w-full sm:w-auto"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`${API_BASE}/projects/${(d as any)?.slug}/documents`);
+                      const data = await res.json();
+                      if (data.documents && data.documents.length > 0) {
+                        const doc = data.documents.find((doc: any) => doc.doc_type === 'brochure') || data.documents[0];
+                        window.open(doc.storage_url, '_blank');
+                      } else {
+                        alert('Brochure document not yet uploaded for this project.');
+                      }
+                    } catch (e) {
+                      alert('Failed to download document.');
+                    }
+                    setShowReportModal(false)
+                  }}
+                  className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-bold rounded-xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.2)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.3)] flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  <Download size={16} />
+                  Download PDF
+                </button>
+              </div>
+            </m.div>
+          </div>
+        </AnimatePresence>,
+        document.body
       )}
-      </AnimatePresence>
 
       {/* Additional helper components can be placed here if needed */}
 

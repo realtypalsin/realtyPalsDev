@@ -335,6 +335,7 @@ const DecisionProfilePatchSchema = z.object({
   confidence_sources:   z.array(ConfidenceSourceEnum).optional(),
   recommendation_notes: z.string().nullable().optional(),
   advisor_notes:        z.string().nullable().optional(),
+  intelligence_data:    z.any().optional(),
   last_verified_at:     dateField,
   verified_by:          z.string().nullable().optional(),
 })

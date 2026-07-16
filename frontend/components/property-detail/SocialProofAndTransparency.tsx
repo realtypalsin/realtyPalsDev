@@ -13,7 +13,11 @@ interface Props {
 }
 
 export default function SocialProofAndTransparency({ transparency, social }: Props) {
-  if (!transparency?.length && (!social || !social.most_viewed_config)) return null;
+  const hasSocialData = social && (
+    social.most_viewed_config || social.most_booked_config ||
+    social.site_visit_count != null || social.buyer_reviews_summary
+  );
+  if (!transparency?.length && !hasSocialData) return null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -29,38 +33,46 @@ export default function SocialProofAndTransparency({ transparency, social }: Pro
           </div>
           
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-2 text-gray-500">
-                <Eye size={14} />
-                <span className="text-[11px] font-bold uppercase tracking-wider">Most Viewed</span>
+            {social?.most_viewed_config && (
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2 text-gray-500">
+                  <Eye size={14} />
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Most Viewed</span>
+                </div>
+                <p className="text-[20px] font-black text-gray-900 dark:text-white">{social.most_viewed_config}</p>
               </div>
-              <p className="text-[20px] font-black text-gray-900 dark:text-white">{social?.most_viewed_config || '3 BHK'}</p>
-            </div>
+            )}
             
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-2 text-gray-500">
-                <Star size={14} />
-                <span className="text-[11px] font-bold uppercase tracking-wider">Most Booked</span>
+            {social?.most_booked_config && (
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2 text-gray-500">
+                  <Star size={14} />
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Most Booked</span>
+                </div>
+                <p className="text-[20px] font-black text-gray-900 dark:text-white">{social.most_booked_config}</p>
               </div>
-              <p className="text-[20px] font-black text-gray-900 dark:text-white">{social?.most_booked_config || '2 BHK'}</p>
-            </div>
+            )}
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-              <Calendar className="text-blue-500 flex-shrink-0 mt-0.5" size={16} />
-              <div>
-                <p className="text-[12px] font-bold text-gray-900 dark:text-white">Site Visits (Last 30 Days)</p>
-                <p className="text-[12px] text-gray-600 mt-0.5">{social?.site_visit_count || '1,200+'} verified families visited</p>
+            {social?.site_visit_count != null && (
+              <div className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <Calendar className="text-blue-500 flex-shrink-0 mt-0.5" size={16} />
+                <div>
+                  <p className="text-[12px] font-bold text-gray-900 dark:text-white">Site Visits (Last 30 Days)</p>
+                  <p className="text-[12px] text-gray-600 mt-0.5">{social.site_visit_count.toLocaleString()} verified families visited</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-              <Star className="text-amber-500 flex-shrink-0 mt-0.5 fill-amber-500" size={16} />
-              <div>
-                <p className="text-[12px] font-bold text-gray-900 dark:text-white">Buyer Sentiment</p>
-                <p className="text-[12px] text-gray-600 mt-0.5">{social?.buyer_reviews_summary || 'Positive overall'}</p>
+            )}
+            {social?.buyer_reviews_summary && (
+              <div className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <Star className="text-amber-500 flex-shrink-0 mt-0.5 fill-amber-500" size={16} />
+                <div>
+                  <p className="text-[12px] font-bold text-gray-900 dark:text-white">Buyer Sentiment</p>
+                  <p className="text-[12px] text-gray-600 mt-0.5">{social.buyer_reviews_summary}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

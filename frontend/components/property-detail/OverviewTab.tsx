@@ -575,76 +575,61 @@ function DownloadsCard({ documents, loading, projectSlug, onGoToDocuments }: { d
 function AlternativesCard({ competitors }: { competitors: NonNullable<ProjectDetail['competitors']> }) {
   if (competitors.length === 0) return null
   return (
-    <Card title="Compare Alternatives" className="h-full">
-      <div className="space-y-4">
+    <div className="space-y-4">
+      <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
+        Compare Alternatives
+      </h2>
+      <div className="flex flex-col gap-4">
         {competitors.map((c) => (
-          <div key={c.id} className="group relative rounded-2xl border border-gray-200/60 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300">
-            {/* Header with Small Thumbnail */}
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200/60 flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8)]">
-                <Building2 size={20} className="text-gray-400" />
+          <div key={c.id} className="group relative rounded-3xl border border-gray-100 dark:border-gray-800/40 bg-white dark:bg-[#171412] p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+            {/* Thumbnail */}
+            <div className="w-full md:w-32 h-32 md:h-24 rounded-2xl bg-gray-100 dark:bg-gray-800 overflow-hidden relative flex-shrink-0 flex items-center justify-center">
+              {c.competitor_slug ? (
+                <Image 
+                  src={`/images/properties/${c.competitor_slug}/hero.jpg`} 
+                  alt={c.competitor_name} 
+                  fill 
+                  className="object-cover" 
+                  onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.querySelector('svg')?.classList.remove('hidden') }} 
+                />
+              ) : null}
+              <Building2 size={24} className={`text-gray-400 ${c.competitor_slug ? 'hidden' : ''}`} />
+            </div>
+            
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h4 className="text-[15.5px] font-extrabold text-gray-900 dark:text-white truncate tracking-tight">{c.competitor_name}</h4>
+                  <div className="flex items-center gap-1.5 text-gray-500 mt-1">
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{c.verdict || 'Alternative'}</span>
+                  </div>
+                </div>
+                {c.competitor_slug && (
+                  <a href={`/property/${c.competitor_slug}`} className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors">
+                    <ChevronRight size={16} />
+                  </a>
+                )}
               </div>
               
-              <div className="flex-1 min-w-0 pt-0.5">
-                <h4 className="text-[15.5px] font-semibold text-gray-900 truncate tracking-tight">{c.competitor_name}</h4>
-                <div className="flex items-center gap-1.5 text-gray-500 mt-1">
-                  <MapPin size={12} className="text-gray-400" />
-                  <span className="text-[12px] font-medium">Alternative Property</span>
-                </div>
+              <div className="mt-3 space-y-1.5">
+                {c.this_project_advantage && (
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 size={13} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400 leading-snug">{c.this_project_advantage}</span>
+                  </div>
+                )}
+                {c.competitor_advantage && (
+                  <div className="flex items-start gap-2">
+                    <Warning size={13} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400 leading-snug">{c.competitor_advantage}</span>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Key Takeaway */}
-            {c.verdict && (
-              <div className="rounded-xl bg-gray-50/70 border border-gray-100 p-3.5 mb-5">
-                <p className="text-[9.5px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Key Takeaway</p>
-                <p className="text-[13px] text-gray-700 leading-relaxed">{c.verdict}</p>
-              </div>
-            )}
-
-            {/* Checklist */}
-            <div className="space-y-3 mb-5">
-              {c.this_project_advantage && (
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 size={11} className="text-emerald-600 stroke-[3]" />
-                  </div>
-                  <span className="text-[12.5px] text-gray-600 leading-snug">{c.this_project_advantage}</span>
-                </div>
-              )}
-              {c.competitor_advantage && (
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 w-4 h-4 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
-                    <Warning size={11} className="text-amber-600" />
-                  </div>
-                  <span className="text-[12.5px] text-gray-600 leading-snug">{c.competitor_advantage}</span>
-                </div>
-              )}
-              {c.price_delta_note && (
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 w-4 h-4 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
-                    <Warning size={11} className="text-orange-600" />
-                  </div>
-                  <span className="text-[12.5px] text-gray-600 leading-snug">{c.price_delta_note}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Footer Action */}
-            {c.competitor_slug && (
-              <div className="flex justify-end pt-4 border-t border-gray-100/60">
-                <a
-                  href={`/property/${c.competitor_slug}`}
-                  className="flex items-center gap-1.5 text-[12.5px] font-semibold text-gray-700 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 px-4 py-2 rounded-lg transition-all shadow-sm"
-                >
-                  View Details <ChevronRight size={14} className="text-gray-400" />
-                </a>
-              </div>
-            )}
           </div>
         ))}
       </div>
-    </Card>
+    </div>
   )
 }
 
@@ -662,6 +647,7 @@ export default function OverviewTab({
 
   const marketingClaims = detail?.marketing_claims ?? []
   const amenities = (detail?.all_amenities ?? []) as { name: string; category: string }[]
+  const competitors = detail?.competitors ?? []
   const groupedAmenities = amenities.reduce((acc, a) => { (acc[a.category] = acc[a.category] ?? []).push(a.name); return acc }, {} as Record<string, string[]>)
   const unitTypes = d?.unit_types ?? []
   const connections = detail?.all_connectivity ?? d?.top_connectivity ?? []
@@ -705,6 +691,48 @@ export default function OverviewTab({
             })}
           </div>
         )}
+
+        {/* 9. Built by Elite Group (Moved Up) */}
+        <div className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div className="lg:col-span-6 space-y-2">
+            <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
+              Built by {d?.builder?.name ?? (loading ? <span className="inline-block w-24 h-5 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" /> : '--')}
+            </h2>
+            {loading && !detail?.builder_detail ? (
+              <div className="space-y-1.5 mt-2">
+                <div className="h-3 w-full bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                <div className="h-3 w-[90%] bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                <div className="h-3 w-[70%] bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+              </div>
+            ) : detail?.builder_detail?.company_overview ? (
+              <p className="text-[12.5px] text-gray-500 dark:text-gray-400 leading-relaxed font-semibold">
+                {detail.builder_detail.company_overview}
+              </p>
+            ) : null}
+          </div>
+          <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Experience', val: detail?.builder_detail?.founded_year ? `${new Date().getFullYear() - detail.builder_detail.founded_year}+ Yrs` : '--' },
+              { label: 'Delivered', val: detail?.builder_detail?.delivered_units ? `${detail.builder_detail.delivered_units.toLocaleString('en-IN')}+ Units` : '--' },
+              { label: 'RERA Score', val: detail?.builder_detail?.rera_compliance_score != null ? `${detail.builder_detail.rera_compliance_score}%` : '--' },
+              { label: 'ISO Certified', val: detail?.builder_detail?.iso_certified === true ? 'Certified' : detail?.builder_detail?.iso_certified === false ? 'Not Certified' : '--' }
+            ].map((b, i) => (
+              <div key={i} className="bg-gray-50 dark:bg-[#201c18] border border-gray-100 dark:border-gray-800/40 rounded-xl p-3.5 text-center">
+                {loading && !detail?.builder_detail ? (
+                  <div className="flex flex-col items-center justify-center h-full space-y-2">
+                    <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-[15px] font-black text-gray-800 dark:text-white leading-none">{b.val}</p>
+                    <p className="text-[9px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-1">{b.label}</p>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* 4. Why [Name] is a Great Choice — only shown when whyBuy data is available */}
         {whyBuy.length > 0 && (
@@ -847,6 +875,11 @@ export default function OverviewTab({
 
         </div>
 
+        {/* Alternatives */}
+        {competitors.length > 0 && (
+          <AlternativesCard competitors={competitors} />
+        )}
+
         {/* 7. Project Details */}
         <div className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm space-y-6">
           <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
@@ -925,47 +958,7 @@ export default function OverviewTab({
           </div>
         </div>
 
-        {/* 9. Built by Elite Group */}
-        <div className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          <div className="lg:col-span-6 space-y-2">
-            <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Built by {d?.builder?.name ?? (loading ? <span className="inline-block w-24 h-5 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" /> : '--')}
-            </h2>
-            {loading && !detail?.builder_detail ? (
-              <div className="space-y-1.5 mt-2">
-                <div className="h-3 w-full bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-                <div className="h-3 w-[90%] bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-                <div className="h-3 w-[70%] bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-              </div>
-            ) : detail?.builder_detail?.company_overview ? (
-              <p className="text-[12.5px] text-gray-500 dark:text-gray-400 leading-relaxed font-semibold">
-                {detail.builder_detail.company_overview}
-              </p>
-            ) : null}
-          </div>
-          <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: 'Experience', val: detail?.builder_detail?.founded_year ? `${new Date().getFullYear() - detail.builder_detail.founded_year}+ Yrs` : '--' },
-              { label: 'Delivered', val: detail?.builder_detail?.delivered_units ? `${detail.builder_detail.delivered_units.toLocaleString('en-IN')}+ Units` : '--' },
-              { label: 'RERA Score', val: detail?.builder_detail?.rera_compliance_score != null ? `${detail.builder_detail.rera_compliance_score}%` : '--' },
-              { label: 'ISO Certified', val: detail?.builder_detail?.iso_certified === true ? 'Certified' : detail?.builder_detail?.iso_certified === false ? 'Not Certified' : '--' }
-            ].map((b, i) => (
-              <div key={i} className="bg-gray-50 dark:bg-[#201c18] border border-gray-100 dark:border-gray-800/40 rounded-xl p-3.5 text-center">
-                {loading && !detail?.builder_detail ? (
-                  <div className="flex flex-col items-center justify-center h-full space-y-2">
-                    <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                    <div className="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-[15px] font-black text-gray-800 dark:text-white leading-none">{b.val}</p>
-                    <p className="text-[9px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-1">{b.label}</p>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* (Built By Moved Up) */}
 
         {/* 10. Location & Connectivity & Nearby */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
@@ -1006,8 +999,6 @@ export default function OverviewTab({
                 What&apos;s Nearby
               </h2>
               {(() => {
-                // No hardcoded nearby data available from backend yet
-                // Will be populated when neighborhood intelligence is added
                 const hasConnectivity = (detail?.all_connectivity?.length ?? 0) > 0
                 if (!hasConnectivity) {
                   return (
@@ -1018,9 +1009,20 @@ export default function OverviewTab({
                     </div>
                   )
                 }
+                const topConnectivity = detail!.all_connectivity!.slice(0, 4)
                 return (
-                  <div className="text-center py-4">
-                    <p className="text-[13px] text-gray-500 font-medium">See Location tab for detailed connectivity</p>
+                  <div className="space-y-3 mt-4">
+                    {topConnectivity.map((c, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+                          {c.type === 'metro' ? <TrainFront size={18} /> : c.type === 'road' ? <Car size={18} /> : c.type === 'school' ? <GraduationCap size={18} /> : c.type === 'hospital' ? <HeartPulse size={18} /> : <MapPin size={18} />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13px] font-bold text-gray-900 dark:text-gray-100 truncate">{c.name}</p>
+                          <p className="text-[11.5px] text-gray-500 font-medium mt-0.5">{c.distance_km} km away</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )
               })()}

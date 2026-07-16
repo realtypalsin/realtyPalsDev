@@ -186,7 +186,11 @@ function buildMemorySection(memory: UserMemoryContext): string {
     parts.push(`Budget: ${range}`)
   }
   if (memory.sector_preference) {
-    parts.push(`Interested in: ${memory.sector_preference}`)
+    let sector = memory.sector_preference
+    if (!/^Sector \d{1,3}$/i.test(sector)) sector = ''
+    if (sector) {
+      parts.push(`Interested in: ${sector}`)
+    }
   }
   if (memory.purpose && memory.purpose !== 'unknown') {
     parts.push(`Purpose: ${memory.purpose}`)

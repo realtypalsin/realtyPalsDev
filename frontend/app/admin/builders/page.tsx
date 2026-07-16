@@ -27,10 +27,16 @@ type FormState = {
   headquarters: string
   website: string
   credai_member: boolean
+  company_overview: string
+  delivered_units: string
+  rera_compliance_score: string
+  iso_certified: boolean
+  logo_url: string
 }
 
 const EMPTY_FORM: FormState = {
   name: '', slug: '', founded_year: '', headquarters: '', website: '', credai_member: false,
+  company_overview: '', delivered_units: '', rera_compliance_score: '', iso_certified: false, logo_url: ''
 }
 
 function toSlug(name: string) {
@@ -54,6 +60,10 @@ function BuilderFormFields({
     { label: 'Founded Year', key: 'founded_year',  ph: '1998',              type: 'number' },
     { label: 'Headquarters', key: 'headquarters',  ph: 'Noida, UP' },
     { label: 'Website',      key: 'website',       ph: 'https://ats.co.in', type: 'url' },
+    { label: 'Company Overview', key: 'company_overview', ph: 'Leading real estate developer...' },
+    { label: 'Delivered Units', key: 'delivered_units', ph: '5000', type: 'number' },
+    { label: 'RERA Score', key: 'rera_compliance_score', ph: '95', type: 'number' },
+    { label: 'Logo URL', key: 'logo_url', ph: 'https://...', type: 'url' }
   ]
 
   return (
@@ -74,15 +84,27 @@ function BuilderFormFields({
           />
         </div>
       ))}
-      <div className="flex items-center gap-2 pt-1 mt-6">
-        <input
-          type="checkbox"
-          id={`credai-${form.slug}`}
-          checked={form.credai_member}
-          onChange={(e) => set('credai_member')(e.target.checked)}
-          className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 accent-zinc-800"
-        />
-        <label htmlFor={`credai-${form.slug}`} className="text-[13px] text-zinc-700 font-medium cursor-pointer">CREDAI Member</label>
+      <div className="flex items-center gap-6 pt-1 mt-6">
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id={`credai-${form.slug}`}
+            checked={form.credai_member}
+            onChange={(e) => set('credai_member')(e.target.checked)}
+            className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 accent-zinc-800"
+          />
+          <label htmlFor={`credai-${form.slug}`} className="text-[13px] text-zinc-700 font-medium cursor-pointer">CREDAI Member</label>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id={`iso-${form.slug}`}
+            checked={form.iso_certified}
+            onChange={(e) => set('iso_certified')(e.target.checked)}
+            className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 accent-zinc-800"
+          />
+          <label htmlFor={`iso-${form.slug}`} className="text-[13px] text-zinc-700 font-medium cursor-pointer">ISO Certified</label>
+        </div>
       </div>
     </div>
   )
@@ -198,6 +220,11 @@ export default function AdminBuilders() {
           headquarters: addForm.headquarters || null,
           website: addForm.website || null,
           credai_member: addForm.credai_member,
+          company_overview: addForm.company_overview || null,
+          delivered_units: addForm.delivered_units ? parseInt(addForm.delivered_units) : null,
+          rera_compliance_score: addForm.rera_compliance_score ? parseInt(addForm.rera_compliance_score) : null,
+          iso_certified: addForm.iso_certified,
+          logo_url: addForm.logo_url || null,
         }),
       })
       if (!res.ok) throw new Error('Failed to create')
@@ -222,6 +249,11 @@ export default function AdminBuilders() {
       headquarters: b.headquarters || '',
       website: b.website || '',
       credai_member: b.credai_member,
+      company_overview: (b as any).company_overview || '',
+      delivered_units: (b as any).delivered_units ? String((b as any).delivered_units) : '',
+      rera_compliance_score: (b as any).rera_compliance_score ? String((b as any).rera_compliance_score) : '',
+      iso_certified: (b as any).iso_certified || false,
+      logo_url: (b as any).logo_url || '',
     })
   }
 
@@ -238,6 +270,11 @@ export default function AdminBuilders() {
           headquarters: editForm.headquarters || null,
           website: editForm.website || null,
           credai_member: editForm.credai_member,
+          company_overview: editForm.company_overview || null,
+          delivered_units: editForm.delivered_units ? parseInt(editForm.delivered_units) : null,
+          rera_compliance_score: editForm.rera_compliance_score ? parseInt(editForm.rera_compliance_score) : null,
+          iso_certified: editForm.iso_certified,
+          logo_url: editForm.logo_url || null,
         }),
       })
       if (!res.ok) throw new Error('Failed to update')

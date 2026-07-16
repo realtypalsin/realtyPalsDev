@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Save, MapPin } from 'lucide-react'
+import { Save, MapPin, Map } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { toast } from 'sonner'
+import JsonEditor from './JsonEditor'
 
 export default function LocationIntelligenceEditor({ projectId, initialData }: { projectId: string, initialData?: any }) {
   const [schools, setSchools] = useState(initialData?.schools_nearby_count ?? '')
@@ -12,6 +13,10 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
   const [itParks, setItParks] = useState(initialData?.it_parks_nearby_count ?? '')
   const [banks, setBanks] = useState(initialData?.banks_nearby_count ?? '')
   const [restaurants, setRestaurants] = useState(initialData?.restaurants_nearby_count ?? '')
+  
+  const [locationData, setLocationData] = useState<any>(
+    initialData?.decision_profile?.intelligence_data?.location_data || {}
+  )
 
   const handleSave = async () => {
     try {
@@ -29,7 +34,22 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
         credentials: 'include'
       })
       if (!res.ok) throw new Error('Failed to save')
-      toast.success('Nearby counts saved successfully')
+
+      // Also save locationData to decision_profile.intelligence_data
+      const decisionRes = await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          intelligence_data: {
+            ...initialData?.decision_profile?.intelligence_data,
+            location_data: locationData
+          }
+        }),
+        credentials: 'include'
+      })
+      if (!decisionRes.ok) throw new Error('Failed to save location data')
+
+      toast.success('Location intelligence saved successfully')
     } catch (e) {
       toast.error('Error saving nearby counts')
     }
@@ -73,10 +93,27 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
           <input value={restaurants} onChange={(e) => setRestaurants(e.target.value)} type="number" className="w-full bg-slate-50/80 rounded-xl px-4 py-2 text-[14px]" placeholder="20" />
         </div>
       </div>
+      <div className="mt-8 pt-8 border-t border-gray-100">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <Map size={18} />
+          </div>
+          <div>
+            <h3 className="text-[16px] font-black text-gray-900">Advanced Location Data</h3>
+            <p className="text-[13px] text-gray-500">Edit location_highlights, nearby_essentials, and neighborhood_advantages JSON.</p>
+          </div>
+        </div>
+        <JsonEditor
+          value={locationData}
+          onChange={setLocationData}
+          label="Location Intelligence JSON"
+          description="Use valid JSON. This updates the frontend arrays directly."
+        />
+      </div>
 
-      <div className="flex justify-end pt-4 border-t border-gray-100">
+      <div className="flex justify-end pt-6 mt-6 border-t border-gray-100">
         <button onClick={handleSave} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-          <Save size={16} /> Save Nearby Counts
+          <Save size={16} /> Save All Changes
         </button>
       </div>
     </div>

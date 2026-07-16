@@ -374,6 +374,7 @@ model ChatSession {
   last_active   DateTime      @default(now())
   chat_phase    String        @default("DISCOVERY")
   last_projects Json?
+  shown_chip_ids Json?        @default("[]")
   summary       String?
   messages      ChatMessage[]
 
@@ -613,7 +614,7 @@ model ChatAnalytics {
   guest_token           String?
 
   // Funnel stages
-  chat_started_at       DateTime
+  chat_started_at       DateTime @default(now())
   intent_identified_at  DateTime?
   results_shown_at      DateTime?
   first_engagement_at   DateTime?
@@ -664,7 +665,7 @@ model ChatAnalytics {
 
 model QueryMetrics {
   id                String   @id @default(uuid())
-  query_text        String   // Raw user query
+  query_text        String   @default("") // Raw user query
   intent_type       String?
   sector            String?
   bhk               Int?
@@ -673,7 +674,7 @@ model QueryMetrics {
   session_id        String
   user_id           String?
 
-  week_start        DateTime // ISO week start (Monday)
+  week_start        DateTime @default(now()) // ISO week start (Monday)
 
   clicked           Boolean @default(false)
   converted         Boolean @default(false)

@@ -16,11 +16,16 @@ import { usePreferredImages } from '@/lib/hooks'
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
 import OverviewTab from '@/components/property-detail/OverviewTab'
-import IntelligenceTab from '@/components/property-detail/IntelligenceTab'
+import dynamic from 'next/dynamic'
+const IntelligenceTab = dynamic(() => import('@/components/property-detail/IntelligenceTab'), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[600px] rounded-xl" />
+})
 import ResidencesTab from '@/components/property-detail/ResidencesTab'
 import ProjectPricingTab from '@/components/property-detail/ProjectPricingTab'
 import LocationTab from '@/components/property-detail/LocationTab'
 import DocumentsTab from '@/components/property-detail/DocumentsTab'
+import CompetitorsTab from '@/components/property-detail/CompetitorsTab'
 import { API_BASE } from '@/lib/env'
 import { getPaymentPlan, getCostSheet } from '@/lib/backend-api'
 import { resolveImgUrl } from '@/lib/utils'
@@ -170,9 +175,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     trackPropertyEvent(project.id, 'tab_opened', undefined, userId, undefined, { tab: activeTab }).catch(() => {})
   }, [activeTab, project?.id, userId])
 
-  // Lazy-load payment plan when 'Pricing' tab is opened.
+  // Lazy-load payment plan when 'Pricing' or 'Residences' tab is opened.
   useEffect(() => {
-    if (activeTab !== 'Pricing' || !project?.slug || paymentPlan.loaded) return
+    if ((activeTab !== 'Pricing' && activeTab !== 'Residences') || !project?.slug || paymentPlan.loaded) return
     getPaymentPlan(project.slug).then((res) => {
       setPaymentPlan({ loaded: true, available: res.available, data: res.plan ?? null, message: res.message })
     }).catch(() => {
@@ -329,26 +334,30 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       )}
 
       {activeTab === 'Residences' && (
-        <ResidencesTab
-          unitTypes={d?.unit_types ?? []}
-          floorPlanImages={floorPlanImages}
-          loading={loading}
-          detail={detail}
-          projectStatus={d?.status}
-          paymentPlan={paymentPlan}
-          costSheet={costSheet}
-          onViewFloorPlans={(plans) => setShowFloorPlan({ plans })}
-          onGoToCosts={() => setActiveTab('Pricing')}
-          onGoToOverview={() => setActiveTab('Overview')}
-        />
+        <div className="space-y-8 pb-12">
+          <ResidencesTab
+            unitTypes={d?.unit_types ?? []}
+            floorPlanImages={floorPlanImages}
+            loading={loading}
+            detail={detail}
+            projectStatus={d?.status}
+            paymentPlan={paymentPlan}
+            costSheet={costSheet}
+            onViewFloorPlans={(plans) => setShowFloorPlan({ plans })}
+            onGoToCosts={() => setActiveTab('Pricing')}
+            onGoToOverview={() => setActiveTab('Overview')}
+          />
+        </div>
       )}
 
       {activeTab === 'Pricing' && (
-        <ProjectPricingTab
-          unitTypes={d?.unit_types ?? []}
-          detail={{ ...(detail as any), payment_plan: paymentPlan.data, cost_sheet: costSheet.data }}
-          onGoToCosts={() => handleOpenSiteVisit()}
-        />
+        <div className="space-y-8 pb-12 pt-8">
+          <ProjectPricingTab
+            unitTypes={d?.unit_types ?? []}
+            detail={{ ...(detail as any), payment_plan: paymentPlan.data, cost_sheet: costSheet.data }}
+            onGoToCosts={() => handleOpenSiteVisit()}
+          />
+        </div>
       )}
 
       {activeTab === 'Location' && (
@@ -455,8 +464,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   )
 
   const stickyHeader = (
-    <div className="sticky top-4 z-40 w-[max-content] max-w-[calc(100%-1rem)] mx-auto bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-full shadow-lg shadow-black/5 transition-all duration-300 mt-4">
-      <div className={`flex items-center px-2 md:px-4 transition-all duration-300 overflow-x-auto hide-scrollbar h-[60px]`}>
+    <div className="sticky top-0 z-40 w-full bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 shadow-sm transition-all duration-300">
+      <div className={`flex items-center px-4 transition-all duration-300 overflow-x-auto hide-scrollbar h-[60px] max-w-7xl mx-auto`}>
         
         {/* Left: Identity (Always injected for new layout) */}
         <div className={`flex items-center gap-3 transition-all duration-400 flex-shrink-0 overflow-hidden opacity-100 translate-x-0 mr-2 md:mr-4`}>
@@ -559,7 +568,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               <div className="grid grid-cols-4 gap-2 md:gap-3 pt-6 border-t border-gray-100 dark:border-gray-800/40">
                 {[
                   { value: d?.total_towers ? `${d.total_towers}` : '—', label: 'Towers' },
-                  { value: (d as any)?.floors ? `${(d as any).floors}` : 'G+26', label: 'Floors' },
+                  { value: (d as any)?.floors ? `${(d as any).floors}` : '—', label: 'Floors' },
                   { value: (d as any)?.total_units ? `${(d as any).total_units}` : '—', label: 'Units' },
                   { value: d?.land_area_acres ? `${d.land_area_acres} Ac` : '—', label: 'Land Area' }
                 ].map((stat, i) => (
@@ -646,21 +655,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                 <span className="relative z-10 text-[14px] font-black tracking-tighter text-gray-900 dark:text-white leading-none">{displayScore}</span>
               </div>
             </div>
-
-            {/* Stars */}
-            <div className="md:col-span-2 pt-4 md:pt-0 md:pl-6 flex items-center justify-center md:justify-start">
-              <div className="space-y-1">
-                <div className="flex items-center justify-center md:justify-start gap-0.5 text-gray-900 dark:text-white">
-                  {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
-                </div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] text-center md:text-left">
-                  Satisfaction
-                </p>
-              </div>
-            </div>
-
           </div>
-
         </div>
       )
   }

@@ -1,97 +1,106 @@
-here is what all we have in the db: Core Info
+Core Info
 Project Name*
-Elite X
+Ivy County
 Slug*
-elite-x-sector-10-greater-noida-west
+ivy-county-sector-75-noida
 URL-safe ID — auto-filled from name
 
 Builder*
 
-Elite Group
+County Group
 Status*
 
-Under Construction
+Ready to Move
 Sector*
-10
+Sector 75
 e.g. Sector 150
 
 City
-Greater Noida West
+Noida
 Location & RERA
 Full Address
-Sector 10, Greater Noida West (Noida Extension), Uttar Pradesh
+Sector 75, Central Noida, Uttar Pradesh
 Tagline
-Crafted for Elite Living in Noida Extension
+Where Luxury Meets Nature
 Latitude
-28.341839
+28.5355
 Right-click on Google Maps → copy coordinates
 
 Longitude
-77.285467
+77.3910
 RERA Number
-UPRERAPRJ916631/02/2024
+UPRERAPRJ757529
 From up-rera.in
 
 RERA URL
 https://www.up-rera.in/verify
 Project Details
 Total Towers
-6
+5
 Total Units
-630
+546
 Land Area (Acres)
-5.44
+5.1
 Launch Date
 
-01-02-2024
+dd-mm-yyyy
 When the project was/will be launched
 
 Possession Label
-December 2028
+Delivered (June 2024)
 Possession Date
 
-12-12-2028
+dd-mm-yyyy
 Actual or expected handover date
 
 Design Theme
-Contemporary / Art Deco
+Eco-Luxury Vertical Gardens
 Architect
-Confluence Consultancy Services
+Architect firm name
 Interior Designer
-Confluence Consultancy Services
+Interior designer name
 Floors
-G+28
+G+26
 e.g. G+26
 
 Open Space (%)
-80
+75
 Green Rating
-IGBC Green Rated
+IGBC Gold
 Descriptions
 Short Description
-Luxury 3 & 4 BHK by Elite Group in Sector 10, Greater Noida West. Adjacent to permanent green belt. Mivan construction technology. Fast growth corridor with upcoming Aqua Line metro.
+Ultra-luxury 3 & 4 BHK by County Group in Sector 75. Cascading vertical gardens, five-star amenities, Tier-1 delivery record.
 1–2 sentences used by the AI in recommendations
 
 Long Description
-Elite X by Elite Group is a 5.44-acre luxury residential project in Sector 10, Greater Noida West. Launched February 2024, RERA-registered. 730 units across 7 towers (S+26 to S+28). Uses fast Mivan shuttering technology. Adjacent to a permanent authority-designated green belt ensuring permanently unobstructed views. Perfectly positioned to capture Aqua Line metro Phase 2 appreciation. Elite Group has delivered 4 projects with zero structural delays.
+Ivy County by County Group is the flagship luxury asset in Central Noida. Launched September 2019, delivered June 2024. 546 units across 5 towers (G+26–G+27). Signature cascading vertical gardens, zero-delay delivery record, clean CC/OC, active registries. County Group has delivered 6 projects with zero structural delays.
 Full description shown in the property detail panel
 
 AI & Marketing
 Marketing Claims
-Premium residencies with 80% ground open area
-Surrounded by pristine manicured landscapes
-Low density luxury living with only 6 towers over 5.44 acres
-Mivan shuttering construction for high durability
-Strategic placement directly on 100m wide arterial road
+Cascading Vertical Gardens
+Ultra-Luxury Living
+Zero Structural Delays
+Low-Density Layout
+Five-Star Amenities
+Flawless Legal Title
+CC/OC Received
+Active Registries
 e.g. 70% green area
 
 Key selling points — press Enter after each
 
 AI Search Keywords
-elite x
-sector 10 noida extension
-mivan Noida Extension
-luxury 3bhk greater noida west
+ivy county
+sector 75 noida
+county group
+luxury apartments
+3 bhk
+4 bhk
+vertical gardens
+ready to move
+central noida
+rtm luxury
 e.g. peaceful expressway metro
 
 Terms the AI uses to match this project to queries
@@ -103,139 +112,152 @@ Add Unit Type
 BHK
 3
 Name
-3 BHK Type A
+3 BHK
 Super Area (sqft)
-1800
+1656
 Carpet Area (sqft)
-968
+1010
 Balcony Area (sqft)
-160
+e.g. 120
 Bathrooms
-e.g. 3
+2
 Price Min (Cr)
-1.85
+2.64
 Price Max (Cr)
-2.1
+2.64
 Price Label (optional)
-₹1.85 Cr
+₹2.64 Cr
 
 Unit Views (Images)
 
-View
 Add View
 Delete
 Save
 BHK
 3
 Name
-3 BHK Type B
+3 BHK + Utility
 Super Area (sqft)
-2110
+2124
 Carpet Area (sqft)
-1138
+1264
 Balcony Area (sqft)
-210
+e.g. 120
 Bathrooms
-e.g. 3
+3
 Price Min (Cr)
-2.19
+3.39
 Price Max (Cr)
-2.42
+3.39
 Price Label (optional)
-₹2.19 Cr
+₹3.39 Cr
 
 Unit Views (Images)
 
-View
 Add View
 Delete
 Save
 BHK
 4
 Name
-4 BHK Premium Mansion
+4 BHK + Utility
 Super Area (sqft)
-2632
+2511
 Carpet Area (sqft)
-1426
+1534
 Balcony Area (sqft)
-280
+e.g. 120
 Bathrooms
-e.g. 3
+4
 Price Min (Cr)
-2.99
+4.01
 Price Max (Cr)
-3.14
+4.7
 Price Label (optional)
-₹2.99 Cr
+₹4.01–4.70 Cr
 
 Unit Views (Images)
 
-View
 Add View
 Delete
 Save
 Amenities
-6 entries
+15 entries
 
 Add
-World-class Gym
+Cascading Vertical Gardens
+Lifestyle
+
+Swimming Pool
 Sports
 
-Tranquil Swimming Pool
+Kids Pool
+Kids
+
+Clubhouse
+Lifestyle
+
+Gymnasium
 Sports
 
-Serene Spa
+Lawn Tennis Court
+Sports
+
+Badminton Court
+Sports
+
+Jogging Track
+Sports
+
+Kids Play Area
+Kids
+
+Amphitheatre
+Lifestyle
+
+Party Lawn
+Lifestyle
+
+Yoga Deck
 Wellness
 
-Hobby Studio
-Lifestyle
+Meditation Area
+Wellness
 
-Integrated Business Centre
-Lifestyle
+CCTV Surveillance
+Security
 
-24/7 Multi-tier CCTV Security
+Video Intercom
 Security
 
 Connectivity
-9 entries
+6 entries
 
 Add
-Mall
-Golden I Mall
-4.5 km
-
-Mall
-Gaur City Mall
-6.2 km
-
 Metro
-Sector 52 Metro Station
-15 km
-
-School
-Sarvottam International School
-0.4 km
-
-School
-GD Goenka International School
-0.9 km
-
-School
-The Infinity School
+Sector 76 Metro Station (Aqua Line)
 1.5 km
 
-Hospital
-Numed Super Speciality Hospital
-1.5 km
+Road
+FNG Expressway
+0.5 km
+
+Road
+Noida-Greater Noida Expressway
+7 km
+
+Mall
+Spectrum Metro Mall Sector 75
+1 km
 
 Hospital
-Yatharth Super Speciality Hospital
-3.8 km
+Neo Hospital Sector 50
+5 km
 
-Landmark
-Canara Bank Sector 10 Branch
-0.1 km
+School
+Manthan School Sector 78
+4 km
+
 
 
 
@@ -243,36 +265,24 @@ Payment Plan
 Configure the payment schedule milestones.
 
 Plan Name
-CLP — Under Construction
+Construction Linked / Ready-to-Move Plan
 
-At the Time of Booking
+Booking
 10
-1850000
-Within 15 days of booking
+₹5 Lakhs
+Jan 2024
 
 
-Within 45 Days of Booking
-40
-7400000
-45 Days from booking
+Agreement (30 Days)
+15
+₹5 Lakhs
+Jan 2024
 
 
-On Completion of Superstructure
-20
-3700000
-As per physical construction schedule
-
-
-On External Painting of Tower
-20
-3700000
-As per completion of facade
-
-
-At the Time of Offer of Possession
-10
-1850000
-Upon registry & final keys handoff
+Registry (60 Days)
+75
+₹5 Lakhs
+Jan 2024
 
 Add Milestone
 Save Plan
@@ -286,100 +296,79 @@ Stamp Duty %
 Registration %
 1
 Parking Cost (₹)
-400000
+500000
 Club Membership (₹)
-200000
+250000
 IFMS (₹)
-50
+120
 PLC Charges (Per Sq.ft)
 Add PLC
-Park Facing PLC
-150
-
-Corner Unit PLC
-100
-
-Floor-wise PLC (1st-5th floors)
-120
+PLC
+500
 
 Other One-Time Charges
 Add Charge
+Utilities (5kVA connection)
+Description (Optional)
+150000
+
+Utilities per sqft
+Description (Optional)
+Amount
+
 Save Cost Sheet
 Investment Insights
 Configure appreciation, rental yield, and liquidity metrics.
 
 Price Appreciation
-12-16%
-Expected annual appreciation driven by high-growth corridor opposite KP-V.
+12-15%
+Annual growth estimate
 Rental Yield
 4-5%
-Robust rental demand due to C-suite executive hub expansion.
+Expected annual rental yield
 Market Trend
 Bullish
-Sector 10 Noida Extension is one of Noida's highest growth enclaves.
+Strong demand in Sector 150
 Liquidity Score
 High
-Extremely high exits due to low unit density (only 630 premium residences).
+Easy exit options available
 Save Insights
 Nearby Establishments
 Configure the count of nearby facilities.
 
 Schools
-3
+8
 Hospitals
-2
+5
 Shopping Malls
-3
+4
 IT Parks
 10
 Banks / ATMs
-1
+12
 Restaurants
-0
+20
+Save Nearby Counts
+
 
 
 
 Image Gallery
-10 total · drag to reorder
+1 total · drag to reorder
 
 
 Exterior
 Upload Image
 
 
-
-
-
-
-
-
-
-
-
 Project Documents
-5 files attached
+0 files attached
 
 
 brochure
 Upload Document
-elite-xPrice.pdf
-price list · 8 Jul 2026 · 930 KB
+No documents uploaded yet.
 
-
-elite-xSpecs.pdf
-specification · 8 Jul 2026 · 9.1 MB
-
-
-elite-xLegal.pdf
-legal · 8 Jul 2026 · 19.4 MB
-
-
-elite-xFloorPlan.pdf
-floor plan doc · 8 Jul 2026 · 9.1 MB
-
-
-elite-xBrochure.pdf
-brochure · 8 Jul 2026 · 9.1 MB
 
 
 
@@ -389,22 +378,22 @@ Dimension
 Score
 Rating
 Builder Track Record
-75
-Established
+95
+Proven
 Price Position
-80
-Competitive
+95
+Value Buy
 Locality
-85
+90
 Prime
 RERA Compliance
-90
+100
 Fully Compliant
 Amenity Depth
-85
+95
 Luxury
 Possession Certainty
-85
+100
 Certain
 Verified By
 seed
@@ -418,25 +407,25 @@ Decision Profile
 PUBLISHED
 PUBLISHED
 Decision Thesis
-Elite X stands as one of Sector 10's premier premium residential offerings, featuring ultra-low-density planning with just 6 towers across 5.44 acres. While it carries a premium price point, its extensive 80% ground open green area, high-end Mivan shuttering construction, and large-format 3 BHK and 4 BHK layouts make it a highly attractive destination for luxury end-users and long-term investors.
+Ivy County is the premier luxury wealth-preservation asset in Central Noida because it delivers uncompromising construction quality, flawless legal compliance, and an exclusive, low-density community.
 Why Buy
 1
-Extremely low-density planning with only 630 apartments across 5.44 acres (approx. 116 units/acre).
+Impeccable Delivery Pedigree: Builder consistently delivers exactly what is rendered — zero compromise on material quality or finish.
 2
-Generous starting sizes of 1,800 sq.ft. for 3 BHK configurations, avoiding compact layouts.
+Absolute Title Security: 100% physically complete and legally clear — immediate, stress-free registry execution.
 3
-Robust Mivan shuttering construction technology with a structural plan designed by Confluence.
+Exclusive Low-Density: Limited towers ensure premium privacy and uncrowded amenities unlike neighboring mega-townships.
 Why Avoid
 1
-Premium pricing (~₹11,500/sq.ft.) compared to Sector 10's average under-construction baseline (~₹10,500/sq.ft.).
+Capped Profit Potential: Extremely high entry price leaves very little room for future capital growth or quick flipping.
 2
-The standard wait for an under-construction project, with possession slated for December 2028.
+Heavy Upkeep Costs: Sustaining signature vertical gardens results in massive monthly maintenance bills.
 3
-Dependence on public infrastructure completion (e.g., the proposed Aqua Line Metro extension in Sector 10).
+Car Dependent: Project is tucked inside the sector — not a quick walk to metro or main road retail.
 Best For
-Future growth investors, families planning 2028 move-in, NRIs wanting reliable UC buy.
+Wealthy end-users, HNI families, NRIs seeking zero legal stress and immediate luxury living.
 Not Ideal For
-Immediate movers, rental income seekers, or investors needing near-term liquidity.
+Cash-flow investors, short-term flippers, or buyers with budgets under ₹2.5 Cr.
 Confidence Sources
 RERA
 Project Documents
@@ -447,12 +436,12 @@ Admin Only
 Recommendation Notes
 Internal notes about this project's recommendation…
 Advisor Notes (injected into chat context)
-Best balanced UC buy in Greater Noida West. Set expectation clearly: no rent until December 2028. Aqua Line metro is the key value catalyst.
+Absolute best property for a wealthy family wanting zero daily stress. Some sellers ask for cash above registry value — advise buyer to not cross safe limits.
 Verified By
 seed
 Last Verified
 
-07-07-2026
+22-06-2026
 
 Persona Profile
 100%
@@ -471,95 +460,95 @@ NRI
 UPGRADER
 RETIREE
 Persona Descriptions
-INVESTOR
+UPGRADER
 
-Why investor buyers fit this project…
+Why upgrader buyers fit this project…
 FAMILY
 
 Why family buyers fit this project…
 NRI
 
-85
+95
 Income Range
-₹2.5–3.5 Lakh per month
+₹5 Lakh+ per month
 Risk Appetite
 
 Select…
 Family Stage
-Young family planning 3–4 years ahead
+Established family or nuclear couple
 Work Location
-Sector 62/63 Noida or Greater Noida tech corridor
+Sector 62/63 IT Hub or Sector 125–142 Corporate Hub
 Timeline Horizon
-4–6 years
+5–10 years
 Motivation Note
-Capture growth ahead of metro. Elite's reliability reduces execution risk.
+Status symbol and premium lifestyle; not a yield play.
 
 Recommendation
 100%
 
 STRONG BUY
 
-PUBLISHED
+DRAFT
 STRONG BUY
 Primary Thesis
-Fast growth asset near new metro. Best UC buy in Sector 10 for both investors and end-users.
+The absolute safest and most beautiful ready-to-move luxury home in Central Noida.
 End-Use Thesis
-Ideal for families planning 2028–2029 occupancy. Quality and delivery reliability are strong.
+Best-in-class RTM luxury for families demanding zero operational risk.
 Investment Thesis
-Best growth-to-risk ratio in Greater Noida West. 10–12% appreciation expected over next 4–5 years.
+Wealth preservation. Steady 5–7% annual appreciation. Not a flipping play.
 Family Lens
-Excellent — permanent park views, new build, secure society. School proximity is strong.
+Exceptional — huge parks, clean air, low density, secure society.
 Investor Lens
-Hottest micro-market for investors. Strong secondary demand from IT professionals.
+Low yield (2.8–3.1%) but rock-solid capital preservation. Hold 5–10 years.
 Luxury Lens
-Modern and premium, not ultra-luxury. Clean design, park views, quality Mivan construction.
+Defines the luxury benchmark for Sector 75. County Group never compromises on specification.
 Risk Lens
-Low-Moderate. Tier-2 builder with clean record. Main risk is macro shock on smaller balance sheet.
+Lowest-risk luxury asset in Central Noida. Clean title, zero structural disputes.
 Walk Away Conditions
-Require immediate or near-term possession — ground-up development, capital locked until late 2028.
-Demand absolute certainty of Tier-1 legacy balance sheet — Elite lacks Godrej/Tata financial buffering.
-Risk tolerance cannot absorb micro-market volatility — surrounding infrastructure still speculative.
+Budget under ₹2.5 Cr — entry is uncompromising.
+Require immediate walking-distance transit — vehicular dependence is inherent.
+Executing high-yield or short-term flipping — capital values have plateaued.
 Negotiation Leverage
 Leverage point 1…
 Leverage point 2…
 Leverage point 3…
 Timeline Advice
-RERA deadline December 2028. Elite typically delivers on schedule. No rental income during construction.
+Ready to move immediately. No construction risk whatsoever.
 Admin Only
 Internal Confidence
 
-PARTIAL
+VERIFIED
 Admin Notes
 Internal notes about this recommendation…
 
 Competitor Intelligence
 100%
-Irish Platinum
+Mahagun Mirabella
 
 Name *
-Irish Platinum
+Mahagun Mirabella
 Slug (if in DB)
-irish-platinum-sector-10-greater-noida-west
+mahagun-mirabella-sector-79-noida
 Our Advantage
-Better builder track record, faster construction speed, green belt views
+Better landscaping and builder quality
 Their Advantage
-Lower price, resort-style amenities, 11ft ceilings
+Lower price and Roman architecture
 Verdict
-Elite X wins on execution reliability; Irish wins on amenity features
+Ivy County wins on build quality and prestige
 Price Delta Note
 ₹8L cheaper per Cr vs Mahagun Moderne…
-Ace Hanei
+NBCC Aspire Silicon City
 
 Name *
-Ace Hanei
+NBCC Aspire Silicon City
 Slug (if in DB)
-ace-hanei-sector-12-greater-noida-west
+nbcc-aspire-silicon-city-sector-76-noida
 Our Advantage
-Lower price, better value proposition
+Immediate possession and premium finish
 Their Advantage
-Tier-1 builder, ultra-luxury specification, wraparound balconies
+Larger carpet area and sovereign safety
 Verdict
-Elite wins on value; Ace wins on prestige and quality
+NBCC wins on unit size, Ivy wins on immediate possession
 Price Delta Note
 ₹8L cheaper per Cr vs Mahagun Moderne…
 Add competitor comparison

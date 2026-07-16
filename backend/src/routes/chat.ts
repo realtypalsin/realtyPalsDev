@@ -32,6 +32,7 @@ import {
   trackPromotionalClick
 } from '../lib/analytics/tracking'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
+import { filterNewChips, markChipShown, hydrateFromDb, persistToDb } from '../lib/discovery/chipDedup'
 
 const router = Router()
 
@@ -383,7 +384,8 @@ router.post('/', async (req: Request, res: Response) => {
     const cachedProjectsFromSession: ScoredProject[] | null = sessionData?.last_projects
       ? (sessionData.last_projects as unknown as ScoredProject[])
       : null
-    let currentSessionId = sessionId
+    const isNewSession = !sessionId || !sessionData
+    let currentSessionId = sessionId || randomUUID()
 
     intentDegraded = rawIntentResult.degraded
     const rawIntent = rawIntentResult.intent
@@ -434,6 +436,11 @@ router.post('/', async (req: Request, res: Response) => {
     // Emit ui_state FIRST TIME (pre-search, sets stage and thinking loader)
     const { computeConversationState } = await import('../lib/discovery/conversationEngine')
     const chipInventory = await getChipInventory(DEFAULT_CITY)
+    
+    if (!isNewSession) {
+      await hydrateFromDb(currentSessionId)
+    }
+
     const preSearchUiState = await computeConversationState(
       intent,
       intentState,
@@ -446,6 +453,12 @@ router.post('/', async (req: Request, res: Response) => {
       chipInventory,
       true
     )
+    
+    // Deduplicate chips based on session
+    const preChips = filterNewChips(currentSessionId, preSearchUiState.chips)
+    preChips.forEach(c => markChipShown(currentSessionId, c.id))
+    preSearchUiState.chips = preChips
+
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
     if (skipForCachedQuery) {
@@ -542,7 +555,12 @@ router.post('/', async (req: Request, res: Response) => {
       // the AI summarizes. Pre-disambiguation here blocked discoverProjects() from
       // running, so no property cards were emitted for builder searches.
       console.log('[CHAT] START discoverProjects', Date.now(), { intent })
-      const discoveryResult = await discoverProjects(intent)
+      const cacheKey = `search:${JSON.stringify(intent)}`
+      let discoveryResult = await getCached(cacheKey) as Awaited<ReturnType<typeof discoverProjects>> | null
+      if (!discoveryResult) {
+        discoveryResult = await discoverProjects(intent)
+        await setCached(cacheKey, discoveryResult, 600)
+      }
       console.log('[CHAT] END discoverProjects', Date.now(), { exact: discoveryResult.exactResults.length, nearby: discoveryResult.nearbyResults.length, expansion: discoveryResult.expansion ?? null, notFound: discoveryResult.notFoundNames ?? [] })
       console.log('[INTELLIGENCE:RETRIEVED]', discoveryResult.exactResults.map(p => ({
         name:            p.name,
@@ -604,6 +622,12 @@ router.post('/', async (req: Request, res: Response) => {
       chipInventory, // Reuse inventory loaded earlier for consistency
       true // isUserMessage
     )
+
+    // Deduplicate chips based on session
+    const postChips = filterNewChips(currentSessionId, postSearchUiState.chips)
+    postChips.forEach(c => markChipShown(currentSessionId, c.id))
+    postSearchUiState.chips = postChips
+
     send('ui_state', postSearchUiState as unknown as Record<string, unknown>)
 
     // Skip sector context when: cache reused (project data carries it), or discovery found nothing
@@ -738,7 +762,7 @@ router.post('/', async (req: Request, res: Response) => {
           return {
             cost_sheet: costSheet || null,
             payment_plan: paymentPlan || null,
-            message: !costSheet && !paymentPlan ? 'Cost details not yet verified in database.' : undefined,
+            message: !costSheet && !paymentPlan ? 'Cost details not yet verified in database. Output exactly this: <realty-action type="contact" />' : undefined,
           };
         }
 
@@ -752,7 +776,7 @@ router.post('/', async (req: Request, res: Response) => {
             take: 30,
           });
           if (!connectivity.length) {
-            return { nearby: [], message: 'Connectivity data not available.' };
+            return { nearby: [], message: 'Connectivity data not available. Output exactly this: <realty-action type="contact" />' };
           }
           // Manual groupBy (Object.groupBy requires ES2024)
           const grouped: Record<string, typeof connectivity> = {};
@@ -774,7 +798,7 @@ router.post('/', async (req: Request, res: Response) => {
             take: 50,
           });
           if (!amenities.length) {
-            return { amenities: [], message: 'Amenity information not available.' };
+            return { amenities: [], message: 'Amenity information not available. Output exactly this: <realty-action type="contact" />' };
           }
           // Manual groupBy (Object.groupBy requires ES2024)
           const grouped: Record<string, typeof amenities> = {};
@@ -785,19 +809,56 @@ router.post('/', async (req: Request, res: Response) => {
           return { amenities, grouped };
         }
 
+        if (name === 'project_competitors') {
+          const projectId = args.project_id ?? '';
+          if (!projectId) {
+            return { error: 'project_id is required' };
+          }
+          const competitors = await (prisma as any).projectCompetitor.findMany({
+            where: { project_id: projectId },
+            orderBy: { sort_order: 'asc' },
+            take: 5,
+          });
+          if (!competitors || !competitors.length) {
+             return { competitors: [], message: 'No competitor data available for this project. Output exactly this: <realty-action type="contact" />' }
+          }
+          return { competitors };
+        }
+
         if (name === 'project_documents') {
           const projectId = args.project_id ?? '';
           if (!projectId) {
             return { error: 'project_id is required' };
           }
-          const docs = await (prisma as any).projectDocument.findMany({
+          const documents = await (prisma as any).projectDocument.findMany({
             where: { project_id: projectId },
-            take: 20,
+            take: 3,
           });
-          if (!docs.length) {
-            return { documents: [], message: 'No downloadable documents available.' };
+          if (!documents || !documents.length) {
+             return { documents: [], message: 'No documents available for this project. Output exactly this: <realty-action type="contact" />' }
           }
-          return { documents: docs };
+          const trimmedDocs = documents.map((d: any) => ({
+             ...d,
+             content_text: d.content_text ? d.content_text.substring(0, 500) + (d.content_text.length > 500 ? '...' : '') : null
+          }))
+          return { documents: trimmedDocs };
+        }
+
+        if (name === 'select_property') {
+          const propertyId = args.property_id;
+          if (!propertyId) return { error: 'property_id is required' };
+          const property = await (prisma as any).project.findUnique({
+            where: { id: propertyId },
+            include: {
+              builder: { select: { name: true, slug: true } },
+              unit_types: { select: { bhk: true, price_min_cr: true, price_max_cr: true, super_area_sqft: true } },
+              images: { where: { type: 'hero' }, take: 1, select: { url: true } },
+              decision_profile: { select: { why_buy: true, why_avoid: true, decision_thesis: true } },
+              recommendation_profile: { select: { primary_thesis: true } }
+            }
+          });
+          if (!property) return { error: 'Property not found.' };
+          return { property };
         }
 
           return { error: 'Tool not recognized' };
@@ -853,8 +914,8 @@ router.post('/', async (req: Request, res: Response) => {
     } // end: !needsClarification && disambiguationText === null
 
     if (fullText) {
-      // Guardrail check: runs asynchronously. On violations, log for compliance audit.
-      outputGuardrail(fullText, systemPrompt).then((gr) => {
+      try {
+        const gr = await outputGuardrail(fullText, systemPrompt);
         if (gr.violations.length > 0) {
           const severity = gr.blocked ? 'CRITICAL' : 'WARNING'
           console.error(`[GUARDRAIL_${severity}] Output guardrail triggered`, {
@@ -864,10 +925,18 @@ router.post('/', async (req: Request, res: Response) => {
             violations: gr.violations,
             session_id: sessionId,
           })
+
+          if (gr.blocked) {
+            const isReraViolation = gr.violations.some(v => v.type === 'upreraprj_hallucination');
+            const safeResponse = isReraViolation
+              ? "I can't confirm that RERA number — it wasn't in our verified database. Please verify directly at up-rera.in by searching the project name."
+              : "I'm not able to provide that information. Please ask about properties, builders, or real estate in Noida.";
+            fullText = safeResponse;
+          }
         }
-      }).catch(err => {
+      } catch (err) {
         console.error('[GUARDRAIL_ERROR] Failed to run outputGuardrail', err)
-      })
+      }
     }
 
     // ── Build artifact payload for the assistant message ──────────────────
@@ -909,8 +978,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Pre-generate ID for new sessions so send('done') never blocks on DB write.
-    const isNewSession = !currentSessionId || !sessionData
-    if (isNewSession) currentSessionId = randomUUID()
+    // (Already generated at the start of the try block)
 
     const persistPromises: Promise<unknown>[] = []
 
@@ -999,6 +1067,9 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     console.log('[CHAT] BEFORE send(done)', Date.now())
+    if (currentSessionId) {
+      await persistToDb(currentSessionId).catch(() => {})
+    }
     send('done', { sessionId: currentSessionId, intentState, intent, responseMode })
     console.log('[CHAT] AFTER send(done)', Date.now())
 
@@ -1074,14 +1145,29 @@ async function buildRestoreUiState(
   lastIntent: Prisma.JsonValue | null,
   lastProjects: Prisma.JsonValue | null,
   messages: Array<{ role: string; content: string }>,
+  currentSessionId?: string,
+  rlKey?: string
 ) {
   const { computeConversationState } = await import('../lib/discovery/conversationEngine')
+  const { hydrateFromDb } = await import('../lib/discovery/chipDedup')
   const intent = (lastIntent ?? {}) as Intent
   const projects = (lastProjects as unknown as ScoredProject[]) ?? []
   const chatHistory = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
   const intentState = getIntentState(intent, projects.length > 0)
   const chipInventory = await getChipInventory(DEFAULT_CITY)
-  return await computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory, true)
+
+  if (currentSessionId) {
+    await hydrateFromDb(currentSessionId)
+  }
+
+  const uiState = await computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory, true)
+  
+  if (currentSessionId) {
+    const { filterNewChips } = await import('../lib/discovery/chipDedup')
+    uiState.chips = filterNewChips(currentSessionId, uiState.chips)
+  }
+  
+  return uiState
 }
 
 // GET /chat/session/list — must come before GET /chat/session (order matters in Express)
@@ -1106,7 +1192,7 @@ router.get('/session/list', async (req: Request, res: Response) => {
   if (!userId && guestToken) {
     try {
       const sessions = await prisma.chatSession.findMany({
-        where: { guest_token: guestToken },
+        where: { guest_token: guestToken, message_count: { gt: 0 } },
         orderBy: { last_active: 'desc' },
         take: SESSION_LIST_LIMIT,
         select: { id: true, title: true, last_active: true },
@@ -1129,7 +1215,7 @@ router.get('/session/list', async (req: Request, res: Response) => {
     }
 
     const sessions = await prisma.chatSession.findMany({
-      where: { user_id: userId },
+      where: { user_id: userId, message_count: { gt: 0 } },
       orderBy: { last_active: 'desc' },
       take: SESSION_LIST_LIMIT,
       select: { id: true, title: true, last_active: true },

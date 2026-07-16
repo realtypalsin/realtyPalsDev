@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Loader2, LayoutPanelLeft, Cpu, Images, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 interface CompletenessResult {
   foundationalScore: number
@@ -122,7 +122,7 @@ function CompletenessBar({ result, onClose }: { result: CompletenessResult; onCl
       {/* Expandable missing items */}
       <AnimatePresence>
         {expanded && allMissing.length > 0 && (
-          <motion.div 
+          <m.div 
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -146,7 +146,7 @@ function CompletenessBar({ result, onClose }: { result: CompletenessResult; onCl
                 ))}
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

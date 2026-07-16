@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { Check, Loader2, AlertCircle, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import JsonEditor from './JsonEditor'
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -380,6 +381,10 @@ export default function IntelligenceWorkspace({
   const [per, setPer]     = useState<PersonaState>(() => initPersona(initialPersona))
   const [rec, setRec]     = useState<RecState>(() => initRec(initialRecommendation))
   const [comps, setComps] = useState<Competitor[]>(() => initCompetitors(initialCompetitors))
+  
+  const [buyerPersonas, setBuyerPersonas] = useState<any>(
+    initialDecision?.intelligence_data?.buyerPersonas || []
+  )
 
   const [dnaSv,  setDnaSv]  = useState<SaveState>('idle')
   const [decSv,  setDecSv]  = useState<SaveState>('idle')
@@ -479,6 +484,22 @@ export default function IntelligenceWorkspace({
       admin_notes:          d.admin_notes          || null,
     }, setRecSv)
   }, [rec, projectId, saveFn])
+  
+  const handleSaveBuyerPersonas = async () => {
+    try {
+      await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          intelligence_data: {
+            ...initialDecision?.intelligence_data,
+            buyerPersonas
+          }
+        }),
+        credentials: 'include'
+      })
+    } catch { /* silent */ }
+  }
 
   // ── Competitor helpers ───────────────────────────────────────────────────────
 
@@ -961,6 +982,24 @@ export default function IntelligenceWorkspace({
                 className={`${inputCls} resize-none`}
               />
             </FL>
+
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <JsonEditor
+                value={buyerPersonas}
+                onChange={setBuyerPersonas}
+                label="Detailed Buyer Personas (JSON)"
+                description="Raw JSON array for detailed buyerPersonas objects."
+              />
+              <div className="flex justify-end mt-4">
+                <button
+                  type="button"
+                  onClick={handleSaveBuyerPersonas}
+                  className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[12px] font-bold"
+                >
+                  Save Personas JSON
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

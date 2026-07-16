@@ -116,10 +116,21 @@ NEVER present these results as ${expansion.requestedSector} properties.
 Ensure the tone is welcoming and matches how a premium real estate marketing person would communicate.`
 }
 
+/** Strip known LLM control sequences from DB-sourced strings before prompt injection */
+function sanitizeForPrompt(text: string): string {
+  if (!text) return ''
+  return text
+    .replace(/<\|[^|]+\|>/g, '')     // OpenAI/Llama control tokens
+    .replace(/\[INST\]|\[\/INST\]/gi, '')
+    .replace(/### (system|instruction|human|assistant)/gi, '')
+    .replace(/<!--.*?-->/gs, '')       // HTML comments sometimes used for injection
+    .slice(0, 2000)                    // hard cap per field
+}
+
 // Strip characters that could affect system prompt structure.
 // Legitimate project names never contain these characters.
 function sanitizeProjectName(name: string): string {
-  return name.replace(/["\\`\n\r]/g, '').replace(/#{1,6}\s/g, '').slice(0, 100)
+  return sanitizeForPrompt(name).replace(/["\\`\n\r]/g, '').replace(/#{1,6}\s/g, '').slice(0, 100)
 }
 
 function serializeProjects(projects: ScoredProject[]): string {
@@ -152,10 +163,10 @@ function serializeProjects(projects: ScoredProject[]): string {
     })
     return JSON.stringify({
       id: i + 1,
-      name: p.name,
-      sector: p.sector,
-      builder: p.builder.name,
-      bhk_options: bhkOptions || 'N/A',
+      name: sanitizeProjectName(p.name),
+      sector: sanitizeProjectName(p.sector),
+      builder: sanitizeForPrompt(p.builder.name),
+      bhk_options: sanitizeForPrompt(bhkOptions) || 'N/A',
       carpet_sqft: carpetRange,
       price: p.price_range_label,
       budget_status: p.budgetStatus ?? 'within',
@@ -170,10 +181,10 @@ function serializeProjects(projects: ScoredProject[]): string {
       // NOT_IN_DATABASE is a machine-readable sentinel: Hard Rule 16 maps it to
       // a required exact response ("I cannot verify the RERA registration number…").
       // This prevents the model from fabricating a UPRERAPRJ string.
-      rera: p.rera_number ?? 'NOT_IN_DATABASE',
-      amenities: amenityNames,
-      connectivity: connNames,
-      match_reason: p.matchReason,
+      rera: sanitizeForPrompt(p.rera_number ?? 'NOT_IN_DATABASE'),
+      amenities: sanitizeForPrompt(amenityNames),
+      connectivity: sanitizeForPrompt(connNames),
+      match_reason: sanitizeForPrompt(p.matchReason || ''),
       match_score: p.matchScore,
       ...(p.recommendation_profile ? {
         recommendation_tier:    p.recommendation_profile.tier,
@@ -181,10 +192,15 @@ function serializeProjects(projects: ScoredProject[]): string {
         family_thesis:          p.recommendation_profile.family_thesis,
         investment_thesis:      p.recommendation_profile.investment_thesis,
         luxury_thesis:          p.recommendation_profile.luxury_thesis,
+        risk_thesis:            p.recommendation_profile.risk_thesis,
+        walk_away_conditions:   p.recommendation_profile.walk_away_conditions,
       } : {}),
       ...(p.decision_profile ? {
         decision_thesis:    p.decision_profile.decision_thesis,
         best_for:           p.decision_profile.best_for,
+        why_buy:            p.decision_profile.why_buy,
+        why_avoid:          p.decision_profile.why_avoid,
+        not_ideal_for:      p.decision_profile.not_ideal_for,
       } : {}),
       ...(p.persona_profile ? {
         primary_persona:    p.persona_profile.primary_persona,
@@ -207,6 +223,14 @@ function serializeProjects(projects: ScoredProject[]): string {
       ...((p as any).intelligence_data?.investment_insights ? {
         rental_yield: (p as any).intelligence_data.investment_insights.rental_yield,
         appreciation_annual: (p as any).intelligence_data.investment_insights.appreciation_annual,
+      } : {}),
+      ...(p.competitors && p.competitors.length > 0 ? {
+        competitors: p.competitors.map(c => ({
+          name: sanitizeForPrompt(c.competitor_name),
+          advantage: sanitizeForPrompt(c.this_project_advantage || ''),
+          competitor_advantage: sanitizeForPrompt(c.competitor_advantage || ''),
+          verdict: sanitizeForPrompt(c.verdict || '')
+        }))
       } : {}),
     })
   }).join(',\n')

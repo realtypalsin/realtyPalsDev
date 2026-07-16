@@ -3,7 +3,7 @@ import { useState } from 'react'
 import {
   MapPin, Share2, Car, TrainFront, HeartPulse, ShoppingBag,
   GraduationCap, Plane, Briefcase, TrendingUp, CalendarDays, PhoneCall,
-  Map as MapIcon, ChevronRight
+  Map as MapIcon, ChevronRight, ArrowUpRight
 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import CommuteCalculator from '@/components/CommuteCalculator'
@@ -38,8 +38,8 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [commuteTarget, setCommuteTarget] = useState('')
 
-  // Fetch data from DB via ProjectDetail
-  const locationData = detail?.decision_profile?.intelligence_data || {
+  // Maps to decision_profile.intelligence_data where seed-location-data.ts injects location info
+  const locationData = (detail as any)?.decision_profile?.intelligence_data || {
     location_hero_image: "",
     quick_commutes: [],
     location_highlights: [],
@@ -167,19 +167,22 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
       <div className="bg-white rounded-3xl p-4 md:p-6 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
         <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
           {(locationData.quick_commutes || []).map((commute: any, i: number) => {
-            const Icon = ICONS[commute.icon] || Car
+            const timeText = typeof commute.time === 'string' ? commute.time : (commute.time_minutes ? `${commute.time_minutes} mins` : '—')
+            const destText = typeof commute.destination === 'string' ? commute.destination : '—'
+            const iconName = commute.icon || (commute.mode === 'walk' ? 'walk' : 'car')
+            const Icon = ICONS[iconName] || Car
             return (
               <div
                 key={i}
-                onClick={() => triggerCommuteCalculator(commute.destination)}
+                onClick={() => triggerCommuteCalculator(destText)}
                 className="flex items-center gap-4 w-full md:w-auto p-3 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                   <Icon size={20} />
                 </div>
                 <div>
-                  <p className="text-[18px] font-black text-gray-900">{typeof commute.time === 'string' ? commute.time : '—'}</p>
-                  <p className="text-[12px] text-gray-500 font-medium leading-tight">to {typeof commute.destination === 'string' ? commute.destination : '—'}</p>
+                  <p className="text-[18px] font-black text-gray-900">{timeText}</p>
+                  <p className="text-[12px] text-gray-500 font-medium leading-tight">to {destText}</p>
                 </div>
               </div>
             )
@@ -233,21 +236,27 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
         <h3 className="text-[22px] font-black text-gray-900 mb-8">Why people choose this location</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {(Array.isArray(locationData.location_highlights) ? locationData.location_highlights : []).map((highlight: any, i: number) => {
-            const Icon = ICONS[highlight.icon] || MapPin
+            const isString = typeof highlight === 'string'
+            const title = isString ? `Highlight ${i + 1}` : (highlight.title || '—')
+            const desc = isString ? highlight : (highlight.description || '—')
+            const time = isString ? null : highlight.time
+            const iconName = isString ? 'map-pin' : highlight.icon
+            const Icon = ICONS[iconName] || MapPin
             return (
               <div
                 key={i}
-                onClick={() => triggerCommuteCalculator(highlight.title)}
-                className="border border-gray-100 rounded-3xl p-6 hover:shadow-lg transition-shadow group relative overflow-hidden bg-white cursor-pointer"
+                onClick={() => triggerCommuteCalculator(title)}
+                className="group relative bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-300 cursor-pointer overflow-hidden"
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative z-10 w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm">
                   <Icon size={22} />
                 </div>
-                <h4 className="text-[16px] font-bold text-gray-900 mb-1">{typeof highlight.title === 'string' ? highlight.title : '—'}</h4>
-                <p className="text-[16px] font-black text-gray-900 mb-3">{typeof highlight.time === 'string' ? highlight.time : '—'}</p>
-                <p className="text-[13px] text-gray-500 leading-relaxed">{typeof highlight.description === 'string' ? highlight.description : '—'}</p>
-                <div className="mt-4 pt-4 border-t border-gray-50 flex justify-end">
-                  <ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-600 transition-colors" />
+                <h4 className="relative z-10 text-[17px] font-bold text-gray-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{title}</h4>
+                {time && <p className="relative z-10 text-[16px] font-black text-indigo-600 dark:text-indigo-400 mb-3">{time}</p>}
+                <p className="relative z-10 text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
+                <div className="relative z-10 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                  <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
                 </div>
               </div>
             )
@@ -265,24 +274,35 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Object.entries(locationData.nearby_essentials || {}).map(([category, data]: [string, any], i: number) => {
-            const isExpanded = expandedCategories[category] || false
-            const placesArray = Array.isArray(data) ? data : (data?.places || [])
-            const visiblePlaces = isExpanded ? placesArray : placesArray.slice(0, 3)
-            const fallbackImage = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80'
-            const imageUrl = (!Array.isArray(data) && data?.image) ? data.image : fallbackImage
+          {(() => {
+            let groupedEssentials: Record<string, any> = {}
+            if (Array.isArray(locationData.nearby_essentials)) {
+              locationData.nearby_essentials.forEach((item: any) => {
+                const type = typeof item === 'string' ? 'Place' : (item.type || 'Other')
+                const capType = type.charAt(0).toUpperCase() + type.slice(1)
+                if (!groupedEssentials[capType]) groupedEssentials[capType] = { places: [] }
+                groupedEssentials[capType].places.push({ 
+                  name: typeof item === 'string' ? item : (item.name || 'Unknown'), 
+                  distance: item.distance_km ? `${item.distance_km} km` : 'Nearby' 
+                })
+              })
+            } else {
+              groupedEssentials = locationData.nearby_essentials || {}
+            }
 
+            return Object.entries(groupedEssentials).map(([category, data]: [string, any], i: number) => {
+              const isExpanded = expandedCategories[category] || false
+              const placesArray = Array.isArray(data) ? data : (data?.places || [])
+              const visiblePlaces = isExpanded ? placesArray : placesArray.slice(0, 3)
+              const CategoryIcon = ICONS[category.toLowerCase()] || MapPin
             return (
-              <div key={i} className="group">
-                <div className="w-full h-36 rounded-2xl overflow-hidden bg-gray-100 mb-4 relative">
-                  <img
-                    src={imageUrl}
-                    alt={category}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage }}
-                  />
+              <div key={i} className="group bg-gray-50/50 dark:bg-white/5 rounded-3xl p-5 hover:bg-white dark:hover:bg-[#111] hover:shadow-lg transition-all duration-300 ring-1 ring-transparent hover:ring-black/5 dark:hover:ring-white/10">
+                <div className="flex items-center gap-3 mb-5 border-b border-gray-100 dark:border-gray-800 pb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                    <CategoryIcon size={24} />
+                  </div>
+                  <h4 className="text-[18px] font-black text-gray-900 dark:text-white">{category}</h4>
                 </div>
-                <h4 className="text-[16px] font-black text-gray-900 mb-4">{category}</h4>
                 <div className="space-y-3">
                   {Array.isArray(visiblePlaces) && visiblePlaces.map((place: any, j: number) => (
                     <div
@@ -305,7 +325,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
                 )}
               </div>
             )
-          })}
+          })})()}
         </div>
       </div>
 
@@ -315,15 +335,21 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {(Array.isArray(locationData.neighborhood_advantages) ? locationData.neighborhood_advantages : []).map((adv: any, i: number) => {
-            const Icon = ICONS[adv.icon] || MapPin
+            const isString = typeof adv === 'string'
+            const title = isString ? `Advantage ${i + 1}` : (adv.title || '—')
+            const desc = isString ? adv : (adv.description || '—')
+            const iconName = isString ? 'map-pin' : adv.icon
+            const Icon = ICONS[iconName] || MapPin
             return (
-              <div key={i} className="group">
-                <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Icon size={20} />
+              <div key={i} className="group relative bg-white dark:bg-[#111] border border-gray-100 dark:border-gray-800 rounded-3xl p-6 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 dark:hover:border-purple-900/50 transition-all duration-300">
+                <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1">
+                  <ArrowUpRight size={20} className="text-purple-500" />
                 </div>
-                <h4 className="text-[15px] font-bold text-gray-900 mb-2">{adv.title}</h4>
-                <p className="text-[13px] text-gray-500 leading-relaxed mb-4">{adv.description}</p>
-                <ChevronRight size={14} className="text-gray-300 group-hover:text-purple-600 transition-colors" />
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-5 shadow-sm group-hover:scale-110 transition-transform">
+                  <Icon size={24} />
+                </div>
+                <h4 className="text-[17px] font-bold text-gray-900 dark:text-white mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors pr-6">{title}</h4>
+                <p className="text-[14px] text-gray-600 dark:text-gray-400 leading-relaxed">{desc}</p>
               </div>
             )
           })}
@@ -331,29 +357,25 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
       </div>
 
       {/* 7. Footer CTA */}
-      <div className="bg-gradient-to-r from-pink-50 via-white to-orange-50 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-pink-100/50">
-        <div>
-          <h3 className="text-[20px] font-black text-gray-900 tracking-tight">Love the location?</h3>
-          <p className="text-[14px] text-gray-600 mt-1 max-w-md">Schedule a site visit to experience the surroundings yourself.</p>
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-900 dark:from-black dark:via-indigo-950/30 dark:to-black rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl border border-blue-800/50">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+        
+        <div className="relative z-10 text-center md:text-left">
+          <h3 className="text-[24px] md:text-[28px] font-black text-white tracking-tight leading-tight">Love the location?</h3>
+          <p className="text-[14px] md:text-[15px] text-blue-200/80 mt-2 max-w-md font-medium leading-relaxed">Schedule a site visit to experience the surroundings and neighborhood yourself.</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+        <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
           <a
             href={waUrl || undefined}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto px-8 py-3.5 bg-[#0F172A] hover:bg-black text-white font-bold rounded-xl text-[14px] transition-colors shadow-sm flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-8 py-4 bg-white text-gray-900 hover:bg-gray-50 hover:scale-105 active:scale-95 font-bold rounded-2xl text-[15px] transition-all flex items-center justify-center gap-2.5 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
           >
-            <CalendarDays size={16} />
+            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+              <CalendarDays size={14} />
+            </div>
             Book Site Visit
-          </a>
-          <a
-            href={waUrl || undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto px-8 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-[14px] transition-colors shadow-sm flex items-center justify-center gap-2"
-          >
-            <PhoneCall size={16} />
-            Talk to Advisor
           </a>
         </div>
       </div>

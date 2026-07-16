@@ -214,6 +214,10 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
       delivered_projects: b.delivered_projects ?? [],
       ongoing_projects: b.ongoing_projects ?? [],
       awards: b.awards ?? [],
+      company_overview: b.company_overview ?? null,
+      rera_compliance_score: b.rera_compliance_score ?? null,
+      iso_certified: b.iso_certified ?? false,
+      logo_url: b.logo_url ?? null,
     } as any,
   } as any
 }

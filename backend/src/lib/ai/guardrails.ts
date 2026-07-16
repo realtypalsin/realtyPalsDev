@@ -1,3 +1,5 @@
+import { INJECTION_PATTERNS, COMPETITOR_PATTERNS } from './patterns'
+
 export interface GuardrailViolation {
   type: 'prompt_injection' | 'competitor_mention' | 'upreraprj_hallucination' | 'investment_claim'
   detail: string
@@ -15,23 +17,7 @@ export interface GuardrailResult {
 const OUTPUT_OBSERVE_MODE = false
 
 export async function inputGuardrail(message: string): Promise<GuardrailResult> {
-  const injectionPatterns = [
-    /ignore (the )?(previous|above|all|prior) (instructions|prompts?|rules)/i,
-    /disregard (the )?(previous|above|all|prior)/i,
-    /you are now (a|an|the)?/i,
-    /(reveal|print|show|repeat|output|quote) (your|the|entire) (system )?(prompt|instructions|document|context)/i,
-    /quote (the )?entire document/i,
-    /print.{0,100}(first|last|entire).{0,50}(lines|section|document)/i,
-    /print.{0,100}(context|document|system prompt|instructions)/i,
-    /forget (everything|all|your instructions)/i,
-    /pretend (you are|to be)/i,
-    /what (is|was|did you use) (the|your) (context|document|system prompt|instructions)/i,
-    /bypass (all )?filters/i,
-    /enter (developer|jailbreak) mode/i,
-    /system override/i,
-  ]
-
-  if (injectionPatterns.some(p => p.test(message))) {
+  if (INJECTION_PATTERNS.some(p => p.test(message))) {
     return {
       blocked: true,
       reason: 'prompt_injection',
@@ -56,12 +42,14 @@ function extractReraNumbers(text: string): Set<string> {
 // Patterns indicating fabricated investment return claims.
 // Designed to avoid false positives on legitimate advice (stamp duty %, GST %, EMI rates).
 const INVESTMENT_CLAIM_PATTERNS = [
-  /\d+(\.\d+)?%\s*(appreciation|returns?|yield|CAGR|growth rate)/i,
-  /CAGR\s+(of\s+)?\d+(\.\d+)?%?/i,
-  /double[sd]?\s+(in\s+)?\d+\s*years?/i,
-  /appreciat(es?|ed|ion)\s+(by\s+)?\d+(\.\d+)?%/i,
-  /\d+(\.\d+)?%\s*ROI/i,
-  /returns?\s+of\s+\d+(\.\d+)?%/i,
+  /\b\d{1,3}%?\s*(?:returns?|cagr|roi|appreciation)\b/i,
+  /\b(?:double|triple)\s+your\s+money\b/i,
+  /\b(?:guaranteed|assured)\s+returns?\b/i,
+]
+
+const EXTERNAL_URL_PATTERNS = [
+  /https?:\/\/(?![\w\-]+\.uirealtypals\.com|uirealtypals\.com|[\w\-]+\.up-rera\.in|up-rera\.in)[^\s"]+/i,
+  /www\.(?!uirealtypals\.com|up-rera\.in)[^\s"]+/i
 ]
 
 /**
@@ -99,15 +87,19 @@ export async function outputGuardrail(
   }
 
   // Competitor mention check
-  const competitorPatterns: Array<{ pattern: RegExp; name: string }> = [
-    { pattern: /magicbricks/i, name: 'MagicBricks' },
-    { pattern: /99acres/i, name: '99acres' },
-    { pattern: /housing\.com/i, name: 'Housing.com' },
-    { pattern: /nobroker/i, name: 'NoBroker' },
-  ]
-  for (const { pattern, name } of competitorPatterns) {
+  for (const { pattern, name } of COMPETITOR_PATTERNS) {
     if (pattern.test(response)) {
       violations.push({ type: 'competitor_mention', detail: `competitor "${name}" appeared in response` })
+    }
+  }
+
+  // Block responses containing external real estate portal URLs
+  const EXTERNAL_URL_PATTERNS = [
+    /https?:\/\/(?!realtypals\.in)[a-z0-9\-]+\.(in|com)\/[\w\-\/]+/i,
+  ]
+  for (const p of EXTERNAL_URL_PATTERNS) {
+    if (p.test(response)) {
+      violations.push({ type: 'competitor_mention', detail: 'external URL in response' })
     }
   }
 
@@ -139,6 +131,19 @@ export async function outputGuardrail(
   }
 
   if (violations.length === 0) {
+    // Check for external URLs separately
+    for (const pattern of EXTERNAL_URL_PATTERNS) {
+      if (pattern.test(response)) {
+        violations.push({
+          type: 'prompt_injection', // Or a new type 'external_link' if preferred, using prompt_injection to block it
+          detail: `blocked external URL`,
+        })
+        break
+      }
+    }
+  }
+
+  if (violations.length === 0) {
     return { blocked: false, confidence: 0, violations: [] }
   }
 
@@ -146,7 +151,11 @@ export async function outputGuardrail(
   // Block violations: prompt_injection (always), competitor_mention (when not observe mode)
   const blocked = OUTPUT_OBSERVE_MODE
     ? false
-    : violations.some(v => v.type === 'prompt_injection' || v.type === 'competitor_mention')
+    : violations.some(v => 
+        v.type === 'prompt_injection' || 
+        v.type === 'competitor_mention' ||
+        v.type === 'upreraprj_hallucination'
+      )
 
   return {
     blocked,
