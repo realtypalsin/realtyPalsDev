@@ -96,11 +96,13 @@ export async function webSearch(query: string, maxResults = 3): Promise<string> 
   }
   if (!data) return ''
   const lines: string[] = []
+  lines.push('\n<untrusted_source url="web-search">')
   if (data.answer) lines.push(`Summary: ${data.answer}`)
   data.results.slice(0, 3).forEach((r, i) => {
     lines.push(`\n[Source ${i + 1}] ${r.title} — ${r.url}`)
     lines.push(r.content.slice(0, 400))
   })
+  lines.push('\n</untrusted_source>\n')
   return lines.join('\n').trim()
 }
 
@@ -172,7 +174,9 @@ export async function readPage(url: string, maxChars = 2500): Promise<string | n
       signal: AbortSignal.timeout(12000),
     })
     if (!res.ok) return null
-    return (await res.text()).slice(0, maxChars)
+    const content = (await res.text()).slice(0, maxChars)
+    // Wrap fetched content in untrusted_source boundary to prevent injection
+    return `\n<untrusted_source url="${url}">\n${content}\n</untrusted_source>\n`
   } catch {
     return null
   }

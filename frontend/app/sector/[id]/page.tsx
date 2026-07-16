@@ -18,17 +18,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getSectorProjects(sector: string) {
-  try {
-    const res = await fetch(`${API_BASE}/api/projects?sector=${encodeURIComponent(sector)}`, {
-      next: { revalidate: 3600 },
-    })
-    if (!res.ok) return []
-    const data = await res.json()
-    return data.projects || []
-  } catch (error) {
-    console.error('Error fetching sector projects:', error)
-    return []
-  }
+  // TODO: Implement sector-filtered endpoint in backend.
+  // Currently no backend endpoint exists for filtering projects by sector.
+  // Use discovery API instead or add sector filtering to /api/v1/projects.
+  return []
 }
 
 export default async function SectorPage({ params }: PageProps) {

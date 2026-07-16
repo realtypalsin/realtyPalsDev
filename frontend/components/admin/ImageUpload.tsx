@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Upload, Trash2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 interface UploadedImage {
   url: string
@@ -34,7 +35,7 @@ export default function ImageUpload({ projectId, onImagesChange, existing = [] }
 
         const res = await fetch(`${API_BASE}/admin/upload-image`, {
           method: 'POST',
-          credentials: 'include',
+          headers: adminAuthHeaders(),
           body: fd,
         })
 

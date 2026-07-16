@@ -102,11 +102,12 @@ const SECTOR_150_INTELLIGENCE: SectorIntelligence = {
 };
 
 function ValueEstimatorContent() {
-  const [activeView, setActiveView] = useState<'discovery' | 'saved' | 'compare' | 'value-estimator' | 'market-intelligence' | 'lead-snapshot'>('value-estimator');
-  const [userId, setUserId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string } | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
+
+  // This feature is not yet implemented. Redirect to discovery.
+  useEffect(() => {
+    router.replace('/discover');
+  }, [router]);
 
   // Form state
   const [propertyType, setPropertyType] = useState<'flat' | 'plot'>('flat');

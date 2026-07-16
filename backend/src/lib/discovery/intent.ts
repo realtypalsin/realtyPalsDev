@@ -1,6 +1,25 @@
 // backend/src/lib/discovery/intent.ts
+import { z } from 'zod'
 import { Intent, IntentState } from './types'
 import { CITY_LEVEL_TERMS } from './constants'
+
+export const IntentSchema = z.object({
+  bhk: z.number().array().optional(),
+  budgetMin: z.number().optional(),
+  budgetMax: z.number().optional(),
+  possession: z.enum(['immediate', '1year', '2year', '3year+']).optional(),
+  sector: z.string().optional(),
+  areaMin: z.number().optional(),
+  areaMax: z.number().optional(),
+  purpose: z.enum(['endUse', 'investment']).optional(),
+  builderName: z.string().optional(),
+  lifestyleKeywords: z.string().array().optional(),
+  projectNames: z.string().array().optional(),
+  riskProfile: z.enum(['nri', 'retiree', 'risk_averse', 'first_time_buyer']).optional(),
+  is_comparison_query: z.boolean().optional(),
+  gathering_loop_count: z.number().optional(),
+  legal_check: z.boolean().optional(),
+}).partial().strict()
 
 export function isCityLevel(sector: string): boolean {
   return CITY_LEVEL_TERMS.includes(sector.toLowerCase().trim())

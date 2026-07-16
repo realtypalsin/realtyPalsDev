@@ -106,7 +106,7 @@ export async function getAllSectorsOverview(lifestyleKeywords?: string[], city: 
     const metroStations = [
       ...new Set(
         sectorProjects.flatMap((p) =>
-          p.connectivity.filter((c) => String(c.type) === 'METRO').map((c) => c.name)
+          p.connectivity.filter((c) => String(c.type) === 'metro').map((c) => c.name)
         )
       ),
     ].slice(0, 2)

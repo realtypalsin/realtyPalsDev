@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { checkRateLimit, invalidateSessionList, getCached, setCached } from '../lib/cache'
 import { extractIntent } from '../lib/ai/intent'
-import { getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel, matchesProjectName } from '../lib/discovery'
+import { IntentSchema, getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel, matchesProjectName } from '../lib/discovery'
 import type { Intent, ScoredProject } from '../lib/discovery'
 import { computeConfidence, buildClarificationOptions } from '../lib/discovery/confidence'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
@@ -237,7 +237,7 @@ const BodySchema = z.object({
   ]),
   sessionId: z.string().uuid().optional(),
   guestToken: z.string().optional(),
-  intent: z.record(z.unknown()).optional(),
+  intent: IntentSchema.optional(),
 })
 
 import { inputGuardrail, outputGuardrail } from '../lib/ai/guardrails'

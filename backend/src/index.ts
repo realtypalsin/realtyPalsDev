@@ -147,26 +147,6 @@ async function startup() {
     process.exit(1)
   }
 
-  // Auto-resolve failed migrations (handles Render free tier deployments without shell access)
-  try {
-    const failedMigration = await prisma.$queryRaw<Array<{ migration_name: string }>>`
-      SELECT migration_name FROM "_prisma_migrations"
-      WHERE migration_name = '20260711_add_analytics_columns' AND finished_at IS NULL
-    `
-    if (failedMigration && failedMigration.length > 0) {
-      console.log('[startup] Resolving failed migration: 20260711_add_analytics_columns')
-      await prisma.$executeRaw`
-        UPDATE "_prisma_migrations"
-        SET finished_at = NOW(), rolled_back_at = NOW()
-        WHERE migration_name = '20260711_add_analytics_columns'
-      `
-      console.log('[startup] Migration resolved. Safe migration will apply on next startup.')
-    }
-  } catch (err) {
-    // Silently skip if _prisma_migrations doesn't exist or query fails
-    console.log('[startup] Migration resolution skipped (no failed migrations detected)')
-  }
-
   // Probe Redis if configured. Redis is a soft dependency for most features
   // (rate limiting falls back to in-memory) but a hard dependency for admin sessions.
   const redisOk = await pingRedis()

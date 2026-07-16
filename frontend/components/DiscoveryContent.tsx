@@ -26,7 +26,6 @@ import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } fr
 const SiteVisitScheduler = dynamic(() => import('@/components/SiteVisitScheduler'), { ssr: false })
 const CalculatorPanel = dynamic(() => import('@/components/CalculatorPanel'), { ssr: false })
 const ProjectDetailPanel = dynamic(() => import('@/components/ProjectDetailPanel'), { ssr: false })
-const VisualGuide = dynamic(() => import('./VisualGuide'), { ssr: false })
 const LeadSuccessModal = dynamic(() => import('@/components/LeadSuccessModal'), { ssr: false })
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false })
 const ReEngagementBanner = dynamic(() => import('@/components/chat/ReEngagementBanner'), { ssr: false })

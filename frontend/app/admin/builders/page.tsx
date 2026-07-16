@@ -229,7 +229,7 @@ export default function AdminBuilders() {
       })
       if (!res.ok) throw new Error('Failed to create')
       const created = await res.json()
-      setBuilders((prev) => [created, ...prev])
+      setBuilders((prev) => [created.builder, ...prev])
       setShowAdd(false)
       setAddForm(EMPTY_FORM)
       toast.success('Builder created successfully')

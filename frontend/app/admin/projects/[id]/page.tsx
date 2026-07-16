@@ -337,7 +337,7 @@ export default function EditProject() {
         <div className="max-w-3xl space-y-6">
           <PaymentPlanEditor projectId={id} initialData={data.payment_plan} />
           <CostSheetEditor projectId={id} initialData={data.cost_sheet} />
-          <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile?.intelligence_data?.investment_insights} />
+          <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile} />
           <LocationIntelligenceEditor projectId={id} initialData={data} />
         </div>
       )}

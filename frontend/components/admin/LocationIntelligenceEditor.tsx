@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Save, MapPin, Map } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 import { toast } from 'sonner'
 import JsonEditor from './JsonEditor'
 
@@ -22,7 +23,7 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
     try {
       const res = await fetch(`${API_BASE}/admin/projects/${projectId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify({
           schools_nearby_count: schools ? parseInt(schools) : null,
           hospitals_nearby_count: hospitals ? parseInt(hospitals) : null,
@@ -30,22 +31,20 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
           it_parks_nearby_count: itParks ? parseInt(itParks) : null,
           banks_nearby_count: banks ? parseInt(banks) : null,
           restaurants_nearby_count: restaurants ? parseInt(restaurants) : null,
-        }),
-        credentials: 'include'
+        })
       })
       if (!res.ok) throw new Error('Failed to save')
 
       // Also save locationData to decision_profile.intelligence_data
       const decisionRes = await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify({
           intelligence_data: {
             ...initialData?.decision_profile?.intelligence_data,
             location_data: locationData
           }
-        }),
-        credentials: 'include'
+        })
       })
       if (!decisionRes.ok) throw new Error('Failed to save location data')
 

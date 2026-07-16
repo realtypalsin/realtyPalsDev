@@ -73,15 +73,15 @@ router.post('/auth', async (req: Request, res: Response): Promise<void> => {
 })
 
 // ---------------------------------------------------------------------------
-// DELETE /auth — logout (no admin token required)
+// DELETE /auth — logout
 // ---------------------------------------------------------------------------
 router.delete('/auth', async (req: Request, res: Response): Promise<void> => {
-  const token = req.cookies?.admin_token as string | undefined
+  const authHeader = req.headers.authorization as string | undefined
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
   if (token) {
     await destroyAdminSession(token)
     console.log(`[admin] logout ip=${clientIp(req)}`)
   }
-  res.clearCookie('admin_token', { path: '/' })
   res.json({ ok: true })
 })
 
@@ -727,10 +727,15 @@ router.patch('/projects/:id/decision-profile', async (req: Request, res: Respons
   }
   try {
     const before = await prisma.decisionProfile.findUnique({ where: { project_id: req.params.id } })
+    // Deep-merge intelligence_data instead of overwriting
+    const updateData = { ...data }
+    if (data.intelligence_data && before?.intelligence_data && typeof before.intelligence_data === 'object' && typeof data.intelligence_data === 'object') {
+      updateData.intelligence_data = { ...before.intelligence_data as object, ...data.intelligence_data as object }
+    }
     const profile = await prisma.decisionProfile.upsert({
       where:  { project_id: req.params.id },
       create: { project_id: req.params.id, ...data },
-      update: data,
+      update: updateData,
     })
     await prisma.intelligenceAudit.create({
       data: {
