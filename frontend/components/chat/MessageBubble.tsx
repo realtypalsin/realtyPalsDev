@@ -121,7 +121,16 @@ export function SuggestionChipGroups({
 }) {
   if (chips.length === 0) return null
 
-  const sorted = [...chips].sort((a, b) => a.priority - b.priority)
+  // Belt-and-suspenders dedup: normalize label text, cap at 4
+  const seen = new Set<string>()
+  const deduped = chips.filter(c => {
+    const normalized = c.label.toLowerCase().trim()
+    if (seen.has(normalized)) return false
+    seen.add(normalized)
+    return true
+  }).slice(0, 4)
+
+  const sorted = deduped.sort((a, b) => a.priority - b.priority)
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -752,9 +761,14 @@ function MessageBubbleInner({
                   <div className="flex flex-col gap-1.5">
                     {lastShortlist.map((p) => {
                       const isSelected = chipPicker.selected.includes(p.slug)
+                      const checkedState = isSelected ? 'checked' : 'unchecked'
+                      const ariaLabel = `${p.name}, ${p.price_range_label || ''} in ${p.sector || ''} (${checkedState})`
                       return (
                         <button
                           key={p.slug}
+                          role={chipPicker.mode === 'multi' ? 'checkbox' : undefined}
+                          aria-checked={chipPicker.mode === 'multi' ? isSelected : undefined}
+                          aria-label={chipPicker.mode === 'multi' ? ariaLabel : undefined}
                           onClick={() => {
                             if (chipPicker.mode === 'single') {
                               onSetChipPicker(null)

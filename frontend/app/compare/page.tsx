@@ -24,11 +24,16 @@ function getOrCreateGuestToken(): string {
 }
 
 export default function ComparePage() {
+  const router = useRouter();
+
+  // This feature is not yet implemented. Redirect to discovery.
+  useEffect(() => {
+    router.replace('/discover');
+  }, [router]);
+
   const [userId, setUserId] = useState<string | null>(null);
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-
-  const router = useRouter();
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('user_id');

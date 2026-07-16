@@ -60,11 +60,9 @@ export async function hydrateFromDb(sessionId: string): Promise<void> {
 export async function persistToDb(sessionId: string): Promise<void> {
   try {
     const shown = Array.from(getShownChips(sessionId))
-    // Only keep last 50 chip IDs to avoid unbounded growth
-    const trimmed = shown.slice(-50)
     await prisma.chatSession.update({
       where: { id: sessionId },
-      data: { shown_chip_ids: trimmed }
+      data: { shown_chip_ids: shown }
     })
   } catch (e) {
     // Non-fatal

@@ -2,12 +2,13 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/db'
+import { requireAdmin } from '../lib/adminAuth'
 import { FormStatus } from '@prisma/client'
 
 const router = Router()
 
 // GET /applications — list all applications
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', requireAdmin, async (req: Request, res: Response) => {
   try {
     const status = req.query.status as string | undefined
     const page = parseInt(req.query.page as string) || 1
@@ -42,7 +43,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 // GET /applications/:id
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const application = await prisma.builderApplicationForm.findUnique({
       where: { id: req.params.id }
@@ -66,7 +67,7 @@ const ApprovalSchema = z.object({
   review_notes: z.string().optional(),
 })
 
-router.patch('/:id', async (req: Request, res: Response) => {
+router.patch('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const parsed = ApprovalSchema.safeParse(req.body)
     if (!parsed.success) {

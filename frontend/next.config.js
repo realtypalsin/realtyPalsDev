@@ -9,7 +9,6 @@ const nextConfig = {
   },
   transpilePackages: ['leaflet', 'react-leaflet'],
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -70,7 +69,13 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://localhost:* https: ws: wss:; frame-ancestors 'none';",
+            value: (() => {
+              const isDev = process.env.NODE_ENV !== 'production'
+              const connectSrc = isDev
+                ? "'self' http://localhost:* https: ws: wss:"
+                : "'self' https: ws: wss:"
+              return `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
+            })(),
           },
         ],
       },

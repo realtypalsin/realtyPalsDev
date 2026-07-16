@@ -727,9 +727,10 @@ function ValueEstimatorContent() {
 }
 
 export default function ValueEstimatorPage() {
-  return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
-      <ValueEstimatorContent />
-    </Suspense>
-  );
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/discover?feature=value-estimator');
+  }, [router]);
+
+  return <div className="flex h-screen items-center justify-center">Redirecting...</div>;
 }

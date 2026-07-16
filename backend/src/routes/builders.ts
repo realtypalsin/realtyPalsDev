@@ -29,6 +29,7 @@ router.get('/', routeCache(300), async (_req: Request, res: Response) => {
       _count: { select: { projects: true } },
     },
     orderBy: { name: 'asc' },
+    take: 20,
   })
   res.json({ builders })
 })
@@ -38,6 +39,7 @@ router.get('/:slug', routeCache(3600), async (req: Request, res: Response) => {
     where: { slug: req.params.slug },
     include: {
       projects: {
+        take: 50,
         select: {
           id: true,
           name: true,

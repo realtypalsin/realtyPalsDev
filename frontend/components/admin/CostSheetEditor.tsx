@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Plus, X, Save, IndianRupee, CheckCircle2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { toast } from 'sonner'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 export default function CostSheetEditor({ projectId, initialData }: { projectId: string, initialData?: any }) {
   const [gstPct, setGstPct] = useState(initialData?.gst_rate_pct ?? '')
@@ -21,7 +22,7 @@ export default function CostSheetEditor({ projectId, initialData }: { projectId:
     try {
       const res = await fetch(`${API_BASE}/admin/projects/${projectId}/cost-sheet`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           gst_rate_pct: gstPct ? parseFloat(gstPct) : null,
           stamp_duty_pct: stampDutyPct ? parseFloat(stampDutyPct) : null,
@@ -32,7 +33,6 @@ export default function CostSheetEditor({ projectId, initialData }: { projectId:
           plc_charges: plcCharges,
           other_charges: otherCharges
         }),
-        credentials: 'include'
       })
       if (!res.ok) throw new Error('Failed to save')
       toast.success('Cost sheet saved successfully')

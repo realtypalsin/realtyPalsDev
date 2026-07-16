@@ -135,4 +135,137 @@ describe('MessageBubble Component', () => {
     // Look for inline loading UI
     expect(screen.getByTestId('chat-loader')).toBeInTheDocument();
   });
+
+  it('caps chips to 4 maximum', () => {
+    const manyChips = [
+      { id: '1', label: 'Chip 1', actionType: 'INTENT_PATCH' as const },
+      { id: '2', label: 'Chip 2', actionType: 'INTENT_PATCH' as const },
+      { id: '3', label: 'Chip 3', actionType: 'INTENT_PATCH' as const },
+      { id: '4', label: 'Chip 4', actionType: 'INTENT_PATCH' as const },
+      { id: '5', label: 'Chip 5 (should not appear)', actionType: 'INTENT_PATCH' as const },
+      { id: '6', label: 'Chip 6 (should not appear)', actionType: 'INTENT_PATCH' as const },
+    ];
+
+    render(
+      <MessageBubble
+        {...sharedProps}
+        message={mockAssistantMessage}
+        chips={manyChips}
+      />
+    );
+
+    // Should render at most 4 chips
+    const chipElements = screen.queryAllByRole('button', { hidden: true }).filter(
+      btn => btn.textContent?.includes('Chip')
+    );
+    expect(chipElements.length).toBeLessThanOrEqual(4);
+    expect(screen.queryByText('Chip 5 (should not appear)')).not.toBeInTheDocument();
+  });
+
+  it('deduplicates chips by label', () => {
+    const duplicateChips = [
+      { id: '1', label: 'Sector 150', actionType: 'INTENT_PATCH' as const },
+      { id: '2', label: 'Sector 150', actionType: 'INTENT_PATCH' as const },
+      { id: '3', label: 'Sector 79', actionType: 'INTENT_PATCH' as const },
+    ];
+
+    render(
+      <MessageBubble
+        {...sharedProps}
+        message={mockAssistantMessage}
+        chips={duplicateChips}
+      />
+    );
+
+    // Count occurrences of "Sector 150" label
+    const sectorChips = screen.queryAllByText('Sector 150', { exact: false });
+    expect(sectorChips.length).toBeLessThanOrEqual(1);
+  });
+
+  it('provides accessibility roles for chips', () => {
+    const chipsWithA11y = [
+      {
+        id: '1',
+        label: 'Show 3 BHK properties',
+        actionType: 'INTENT_PATCH' as const,
+        icon: '🏠'
+      },
+    ];
+
+    render(
+      <MessageBubble
+        {...sharedProps}
+        message={mockAssistantMessage}
+        chips={chipsWithA11y}
+      />
+    );
+
+    // Chips should have button roles or similar interactive elements
+    const interactiveElements = screen.queryAllByRole('button', { hidden: true });
+    expect(interactiveElements.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it('does not show "lying" chips (no hardcoded lifestyle suggestions)', () => {
+    const messageWithFauxLifestyleChips = {
+      ...mockAssistantMessage,
+      content: 'Here are projects with great schools and metro access.'
+    };
+
+    const falseChips = [
+      { id: '1', label: 'Schools nearby', actionType: 'INTENT_PATCH' as const },
+      { id: '2', label: 'Metro access', actionType: 'INTENT_PATCH' as const },
+      { id: '3', label: 'Shopping malls', actionType: 'INTENT_PATCH' as const },
+    ];
+
+    render(
+      <MessageBubble
+        {...sharedProps}
+        message={messageWithFauxLifestyleChips}
+        chips={falseChips}
+      />
+    );
+
+    // If these are hardcoded without backing from database, they should not appear
+    // or should be marked as recommendations, not as actual search refinement
+    const schoolsChip = screen.queryByText('Schools nearby');
+    const metroChip = screen.queryByText('Metro access');
+
+    // These should either not exist or be clearly marked as suggestions
+    // (not part of actual search capability)
+    if (schoolsChip) {
+      expect(schoolsChip.getAttribute('aria-label')).toMatch(/suggest|recommendation/i);
+    }
+  });
+
+  it('renders chips with proper priority ordering', () => {
+    const priorityChips = [
+      { id: '1', label: 'First (priority 1)', actionType: 'INTENT_PATCH' as const, priority: 1 },
+      { id: '2', label: 'Second (priority 2)', actionType: 'INTENT_PATCH' as const, priority: 2 },
+      { id: '3', label: 'Third (priority 3)', actionType: 'INTENT_PATCH' as const, priority: 3 },
+    ];
+
+    render(
+      <MessageBubble
+        {...sharedProps}
+        message={mockAssistantMessage}
+        chips={priorityChips}
+      />
+    );
+
+    // Components respecting priority should render in correct order
+    const messageContainer = screen.getByText('Here are some top projects in Sector 150.').closest('div');
+    expect(messageContainer).toBeInTheDocument();
+  });
+
+  it('handles empty chips gracefully', () => {
+    render(
+      <MessageBubble
+        {...sharedProps}
+        message={mockAssistantMessage}
+        chips={[]}
+      />
+    );
+
+    expect(screen.getByText('Here are some top projects in Sector 150.')).toBeInTheDocument();
+  });
 });

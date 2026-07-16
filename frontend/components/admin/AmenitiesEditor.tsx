@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus, Trash2, Save, Loader2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 type AmenityCategory = 'sports' | 'lifestyle' | 'wellness' | 'kids' | 'security' | 'parking'
 
@@ -44,12 +45,12 @@ export default function AmenitiesEditor({ amenities: initial, projectId, onSaved
   const handleDelete = async (id: string) => {
     setRows(r => r.filter(x => x.id !== id))
     try {
-      const res = await fetch(`${API_BASE}/admin/amenities/${id}`, { method: 'DELETE', credentials: 'include' })
+      const res = await fetch(`${API_BASE}/admin/amenities/${id}`, { method: 'DELETE', headers: adminAuthHeaders() })
       if (!res.ok) throw new Error('Delete failed')
       await onSaved()
     } catch {
       setError('Delete failed')
-      const res = await fetch(`${API_BASE}/admin/projects/${projectId}`, { credentials: 'include' })
+      const res = await fetch(`${API_BASE}/admin/projects/${projectId}`, { headers: adminAuthHeaders() })
       const json = await res.json()
       setRows(json.project?.amenities ?? initial)
     }
@@ -62,8 +63,7 @@ export default function AmenitiesEditor({ amenities: initial, projectId, onSaved
     try {
       const res = await fetch(`${API_BASE}/admin/projects/${projectId}/amenities`, {
         method:      'POST',
-        credentials: 'include',
-        headers:     { 'Content-Type': 'application/json' },
+        headers:     { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body:        JSON.stringify({ name: newRow.name.trim(), category: newRow.category }),
       })
       if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? 'Add failed') }

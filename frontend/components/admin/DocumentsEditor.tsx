@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Trash2, Upload, Loader2, FileText, CheckCircle2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 interface ProjectDocument {
   id:          string
@@ -56,7 +57,7 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
       form.append('doc_type', docType)
       const res = await fetch(`${API_BASE}/documents`, {
         method:      'POST',
-        credentials: 'include',
+        headers:     adminAuthHeaders(),
         body:        form,
       })
       if (!res.ok) { 
@@ -78,7 +79,7 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
     // Optimistic delete
     setRows(r => r.filter(x => x.id !== id))
     try {
-      const res = await fetch(`${API_BASE}/admin/documents/${id}`, { method: 'DELETE', credentials: 'include' })
+      const res = await fetch(`${API_BASE}/admin/documents/${id}`, { method: 'DELETE', headers: adminAuthHeaders() })
       if (!res.ok) {
         const j = await res.json().catch(() => ({})); 
         throw new Error(j.error ?? 'Delete operation failed.')

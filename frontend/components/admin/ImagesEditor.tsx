@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Plus, Trash2, Pencil, Save, Loader2, CheckCircle2, GripVertical } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 type ImageType = 'hero' | 'exterior' | 'interior' | 'floor_plan' | 'amenity' | 'master_plan' | 'clubhouse' | 'pool' | 'location_map' | 'view'
 
@@ -78,7 +79,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
       form.append('slug', slug)
       const upRes = await fetch(`${API_BASE}/admin/upload-image`, {
         method:      'POST',
-        credentials: 'include',
+        headers:     adminAuthHeaders(),
         body:        form,
       })
       if (!upRes.ok) { const j = await upRes.json(); throw new Error(j.error ?? 'Upload failed') }
@@ -86,8 +87,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
 
       const attachRes = await fetch(`${API_BASE}/admin/projects/${projectId}/images`, {
         method:      'POST',
-        credentials: 'include',
-        headers:     { 'Content-Type': 'application/json' },
+        headers:     { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body:        JSON.stringify({
           url, type: uploadType, sort_order: rows.length,
           ...(uploadType === 'floor_plan' && uploadBhk ? { bhk: parseInt(uploadBhk) } : {}),
@@ -112,7 +112,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
   const handleDelete = async (id: string) => {
     setRows(r => r.filter(x => x.id !== id))
     try {
-      const res = await fetch(`${API_BASE}/admin/images/${id}`, { method: 'DELETE', credentials: 'include' })
+      const res = await fetch(`${API_BASE}/admin/images/${id}`, { method: 'DELETE', headers: adminAuthHeaders() })
       if (!res.ok) throw new Error('Delete failed')
       flash('Deleted')
       await onSaved()
@@ -135,8 +135,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
     try {
       const res = await fetch(`${API_BASE}/admin/images/${editState.id}`, {
         method:      'PATCH',
-        credentials: 'include',
-        headers:     { 'Content-Type': 'application/json' },
+        headers:     { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body:        JSON.stringify({
           type: editState.type,
           caption: editState.caption || null,
@@ -193,8 +192,7 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
         reordered.map((r, i) =>
           fetch(`${API_BASE}/admin/images/${r.id}`, {
             method:      'PATCH',
-            credentials: 'include',
-            headers:     { 'Content-Type': 'application/json' },
+            headers:     { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
             body:        JSON.stringify({ sort_order: i }),
           })
         )

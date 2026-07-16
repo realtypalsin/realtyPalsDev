@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Plus, Trash2, Save, Loader2, Check } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 interface UnitRow {
   id: string
@@ -99,8 +101,8 @@ export default function UnitsEditor({
       views:              row._views,
     }
     const res = await fetch(`${API_BASE}/admin/units/${row.id}`, {
-      method: 'PATCH', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH',
+      headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
     if (!res.ok) {
@@ -117,7 +119,8 @@ export default function UnitsEditor({
     if (!confirm('Delete this unit type?')) return
     setDeleting(s => new Set(s).add(id))
     const res = await fetch(`${API_BASE}/admin/units/${id}`, {
-      method: 'DELETE', credentials: 'include',
+      method: 'DELETE',
+      headers: adminAuthHeaders(),
     })
     if (res.ok) {
       setRows(rs => rs.filter(r => r.id !== id))
@@ -139,7 +142,9 @@ export default function UnitsEditor({
       form.append('file', file)
       form.append('slug', 'unit-view') // generic slug folder
       const upRes = await fetch(`${API_BASE}/admin/upload-image`, {
-        method: 'POST', credentials: 'include', body: form,
+        method: 'POST',
+        headers: adminAuthHeaders(),
+        body: form,
       })
       if (!upRes.ok) throw new Error('Upload failed')
       const { url } = await upRes.json()
@@ -178,8 +183,8 @@ export default function UnitsEditor({
       price_is_estimated: addForm.price_is_estimated,
     }
     const res = await fetch(`${API_BASE}/admin/projects/${projectId}/units`, {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
     if (res.ok) {
@@ -332,7 +337,7 @@ export default function UnitsEditor({
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {row._views.map((vw: any, idx: number) => (
                   <div key={idx} className="relative w-24 h-24 rounded-xl bg-zinc-100 flex-shrink-0 group overflow-hidden border border-zinc-200">
-                    {vw.image_url && <img src={vw.image_url} alt="View" className="absolute inset-0 w-full h-full object-cover" />}
+                    {vw.image_url && <Image src={vw.image_url} alt="View" fill sizes="96px" className="absolute inset-0 w-full h-full object-cover" />}
                     <button 
                       onClick={() => removeView(row.id, idx)}
                       className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Plus, X, Save, FileText, CheckCircle2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { toast } from 'sonner'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 export default function PaymentPlanEditor({ projectId, initialData }: { projectId: string, initialData?: any }) {
   const [planName, setPlanName] = useState(initialData?.plan_name || 'Construction Linked Plan')
@@ -27,12 +28,11 @@ export default function PaymentPlanEditor({ projectId, initialData }: { projectI
     try {
       const res = await fetch(`${API_BASE}/admin/projects/${projectId}/payment-plan`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           plan_name: planName,
           milestones
         }),
-        credentials: 'include'
       })
       if (!res.ok) throw new Error('Failed to save')
       toast.success('Payment plan saved successfully')

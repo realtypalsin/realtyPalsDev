@@ -108,8 +108,7 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
         </div>
 
         {/* Step indicators */}
-        {step !== 'success' && (
-          <div className="flex px-5 pt-4 gap-1.5">
+        <div className="flex px-5 pt-4 gap-1.5">
             {(['date', 'time', 'details'] as const).map((s, i) => (
               <div key={s} className={`flex-1 h-1 rounded-full transition-all ${
                 step === s ? 'bg-blue-500' : i < ['date','time','details'].indexOf(step) ? 'bg-blue-200' : 'bg-gray-100 dark:bg-gray-700'
@@ -251,24 +250,6 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
                     {submitting ? 'Booking...' : 'Confirm Visit'}
                   </button>
                 </div>
-              </m.div>
-            )}
-
-            {/* Success */}
-            {step === 'success' && (
-              <m.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-6">
-                <div className="w-16 h-16 bg-green-100 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 size={32} className="text-green-500" />
-                </div>
-                <h4 className="text-base font-bold text-gray-900 dark:text-white mb-1">Visit Scheduled!</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  {selectedDate && formatDate(selectedDate)} at {selectedSlot}
-                </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">{projectName}</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">Our team will call to confirm shortly.</p>
-                <button onClick={onClose} className="px-6 py-2.5 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 text-white text-sm font-semibold rounded-xl">
-                  Done
-                </button>
               </m.div>
             )}
           </AnimatePresence>

@@ -231,7 +231,7 @@ function getClarifyingChips(
 
     for (const sector of sectors) {
       chips.push(chip(
-        `INTENT_PATCH:sector_clarify:${sector.replace(/\s/g, '_').toLowerCase()}:${Date.now()}`,
+        `INTENT_PATCH:sector_clarify:${sector.replace(/\s/g, '_').toLowerCase()}`,
         'INTENT_PATCH', sector, '',
         { patch: { sector }, label: sector },
         priority++,
@@ -244,7 +244,7 @@ function getClarifyingChips(
   if (missingFields.includes('bhk') && !intent.bhk?.length && inventory?.bhkOptions) {
     for (const bhk of inventory.bhkOptions) {
       chips.push(chip(
-        `INTENT_PATCH:bhk_clarify:${bhk}:${Date.now()}`,
+        `INTENT_PATCH:bhk_clarify:${bhk}`,
         'INTENT_PATCH', `${bhk} BHK`, '',
         { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
         priority++,
@@ -258,7 +258,7 @@ function getClarifyingChips(
     for (const bucket of inventory.budgetBuckets.slice(0, 3)) {
       const budgetMax = bucket.max || 10
       chips.push(chip(
-        `INTENT_PATCH:budget_clarify:${bucket.label.replace(/[^a-z0-9]/gi, '_').toLowerCase()}:${Date.now()}`,
+        `INTENT_PATCH:budget_clarify:${bucket.label.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
         'INTENT_PATCH', bucket.label, '',
         { patch: { budgetMax }, label: bucket.label },
         priority++,
@@ -309,10 +309,21 @@ function getSearchRefinementChips(
     if (chips.length >= 3) return chips.slice(0, 3)
   }
 
-  // Default: offer lifestyle filters if available
-  if (intent.sector && chips.length === 0) {
-    const lifestyleOptions = ['Gym & Fitness', 'Swimming Pool', 'Co-working', 'Security Gate', 'Parking']
-    for (const lifestyle of lifestyleOptions.slice(0, 3)) {
+  // Default: offer lifestyle filters from actual results (never empty offerings)
+  if (intent.sector && chips.length === 0 && results.length > 0) {
+    const amenities = new Map<string, number>()
+    for (const result of results) {
+      for (const amenity of result.top_amenities ?? []) {
+        amenities.set(amenity.name, (amenities.get(amenity.name) ?? 0) + 1)
+      }
+    }
+    // Sort by frequency (most common amenities first)
+    const sortedAmenities = Array.from(amenities.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name)
+      .slice(0, 3)
+
+    for (const lifestyle of sortedAmenities) {
       chips.push(chip(
         `INTENT_PATCH:refine_lifestyle:${lifestyle.replace(/\s/g, '_').toLowerCase()}`,
         'INTENT_PATCH', lifestyle, '⭐',
@@ -415,15 +426,15 @@ function getComparingChips(results: ScoredProject[], chatHistory: any[]): ChipAc
 function getDecidingChips(results: ScoredProject[], chatHistory: any[]): ChipAction[] {
   const topProjectName = results[0]?.name || 'my shortlist'
   const chips: ChipAction[] = []
-  
+
   if (results.length >= 2) {
     const pIds = results.slice(0, 3).map(r => r.id).join(':')
     chips.push(chip(`COMPARE_PROPERTIES:final_compare:${pIds}`, 'COMPARE_PROPERTIES', 'Final comparison', '',
       { mode: 'multi' }, 0))
   }
-  
+
   const projectsList = results.map(r => ({ id: String(r.id), name: r.name }))
-  
+
   const pIds = projectsList.map(p => p.id).join(':')
   const pool = [
     chip(`TEXT_MESSAGE:hidden_risks:${pIds}`, 'TEXT_MESSAGE', 'Risk & Diligence check', '',
@@ -437,9 +448,20 @@ function getDecidingChips(results: ScoredProject[], chatHistory: any[]): ChipAct
     chip(`TEXT_MESSAGE:exit_strategy:${pIds}`, 'TEXT_MESSAGE', 'Analyze 5-year exit strategy', '',
       { actionPrefix: 'Analyze market liquidity if I want to sell', actionSuffix: 'in 5 years.', projects: projectsList }, 5),
   ]
-  
+
   const filteredPool = filterByHistory(pool, chatHistory)
   return getFallbackChips(filteredPool, chips, 4, chatHistory)
+}
+
+/** Unified chip pipeline: candidates → dedupe → rank → cap-4 */
+function capChips(candidates: ChipAction[]): ChipAction[] {
+  const hasGroups = candidates.some(c => c.group)
+  if (!hasGroups && candidates.length > 4) {
+    const critical = candidates.filter(c => c.priority <= 2).slice(0, 2)
+    const secondary = candidates.filter(c => c.priority > 2 && c.priority <= 3).slice(0, 2)
+    return [...critical, ...secondary].slice(0, 4)
+  }
+  return candidates.slice(0, 4)
 }
 
 import { generateDynamicChips } from '../db/chipProvider'
@@ -541,12 +563,6 @@ export async function computeConversationState(
   // Priority ranking: critical clarifications (1) → high-value actions (2-3) → exploratory (4+)
   // Grouped chips rendered as separate sections; ungrouped chips follow predictive ranking
   const hasGroups = chips.some(c => c.group)
-  if (!hasGroups && chips.length > 4) {
-    // Sort by priority, take top 3-4 most relevant chips
-    // Lower priority number = more critical (appears first)
-    const critical = chips.filter(c => c.priority <= 2).slice(0, 2)
-    const secondary = chips.filter(c => c.priority > 2 && c.priority <= 3).slice(0, 2)
-    chips = [...critical, ...secondary].slice(0, 4)
-  }
-  return { stage, thinking, chips: hasGroups ? chips : chips.slice(0, 4), missingFields, confidence }
+  chips = capChips(chips)
+  return { stage, thinking, chips, missingFields, confidence }
 }

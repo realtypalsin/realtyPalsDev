@@ -1,7 +1,7 @@
 import { INJECTION_PATTERNS, COMPETITOR_PATTERNS } from './patterns'
 
 export interface GuardrailViolation {
-  type: 'prompt_injection' | 'competitor_mention' | 'upreraprj_hallucination' | 'investment_claim'
+  type: 'prompt_injection' | 'competitor_mention' | 'upreraprj_hallucination' | 'investment_claim' | 'price_fabrication' | 'name_fabrication'
   detail: string
 }
 
@@ -130,6 +130,60 @@ export async function outputGuardrail(
     }
   }
 
+  // Price/name fact-check gate: extract project-name-like phrases and ₹/price figures.
+  // Only validate against systemPrompt context (verified DB data). Allowlist approach:
+  // any project name or price not present in the prompt is flagged as fabrication.
+  if (systemPrompt) {
+    // Extract project names (capitalized phrases, often in quotes or after "project")
+    const projectNamePattern = /(?:(?:project|properties?|developments?)\s+(?:called\s+)?)?["']?([A-Z][A-Za-z0-9\s&-]*(?:(?:Heights|Towers|City|Plaza|Square|Park|Garden|Grove|Residence|Residences|Court|Manor|Enclave|Hub|Complex|Villas|Apartments|Suites)))["']?/g
+    const namesInResponse = new Set<string>()
+    let match
+    while ((match = projectNamePattern.exec(response)) !== null) {
+      namesInResponse.add(match[1].trim())
+    }
+
+    // Extract prices: ₹XXL, ₹XX Cr, ₹XX Lakh, XXL, XX Cr patterns
+    const pricePattern = /₹?\s*(\d+(?:\.\d+)?)\s*(?:crore|cr|lakh|l|lacks)(?:\s*(?:rupees?|inr))?/gi
+    const pricesInResponse = new Set<string>()
+    while ((match = pricePattern.exec(response)) !== null) {
+      pricesInResponse.add(match[0].trim())
+    }
+
+    // Extract BHK patterns: "4BHK", "3 BHK", etc.
+    const bhkPattern = /(\d)\s*(?:BHK|bhk|bed\s*room|bedroom)/gi
+    const bhksInResponse = new Set<string>()
+    while ((match = bhkPattern.exec(response)) !== null) {
+      bhksInResponse.add(match[0].trim())
+    }
+
+    // Check if extracted values are in the systemPrompt (allowlist)
+    for (const name of namesInResponse) {
+      if (systemPrompt.length > 0 && !systemPrompt.toUpperCase().includes(name.toUpperCase())) {
+        violations.push({
+          type: 'name_fabrication',
+          detail: `project name "${name}" appears in response but not in verified context`,
+        })
+      }
+    }
+
+    // Check prices similarly (more lenient: accept if format is seen, even if exact price varies slightly)
+    for (const price of pricesInResponse) {
+      // Only flag if the response mentions a very specific price point that wasn't in the prompt
+      const priceNum = price.match(/\d+(?:\.\d+)?/)?.join('')
+      if (priceNum && systemPrompt.length > 0 && !systemPrompt.includes(priceNum)) {
+        // Be conservative: only flag obvious fabrications (e.g., "₹50L in Sector 150" where 50L doesn't exist)
+        // Allow generic price advice without exact numbers
+        const isGenericAdvice = /around|approximately|typically|generally|usually|roughly|estimate|ballpark/i.test(response)
+        if (!isGenericAdvice && priceNum.length <= 2) { // likely a specific crore/lakh claim
+          violations.push({
+            type: 'price_fabrication',
+            detail: `price point "${price}" appears in response but not in verified context`,
+          })
+        }
+      }
+    }
+  }
+
   if (violations.length === 0) {
     // Check for external URLs separately
     for (const pattern of EXTERNAL_URL_PATTERNS) {
@@ -148,13 +202,16 @@ export async function outputGuardrail(
   }
 
   // In observe mode: log everything, block nothing.
-  // Block violations: prompt_injection (always), competitor_mention (when not observe mode)
+  // Block violations: prompt_injection (always), competitor_mention (when not observe mode),
+  // upreraprj_hallucination (always), price_fabrication (always), name_fabrication (always)
   const blocked = OUTPUT_OBSERVE_MODE
     ? false
-    : violations.some(v => 
-        v.type === 'prompt_injection' || 
+    : violations.some(v =>
+        v.type === 'prompt_injection' ||
         v.type === 'competitor_mention' ||
-        v.type === 'upreraprj_hallucination'
+        v.type === 'upreraprj_hallucination' ||
+        v.type === 'price_fabrication' ||
+        v.type === 'name_fabrication'
       )
 
   return {

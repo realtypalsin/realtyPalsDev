@@ -520,8 +520,7 @@ export default function IntelligenceWorkspace({
       try {
         const res = await fetch(`${API_BASE}/admin/projects/${projectId}/competitors`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+          headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
           body: JSON.stringify(compPayload(comp)),
         })
         if (res.ok) {
@@ -535,8 +534,7 @@ export default function IntelligenceWorkspace({
     try {
       await fetch(`${API_BASE}/admin/competitors/${comp.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify(compPayload(comp)),
       })
     } catch { /* silent */ }
@@ -548,7 +546,7 @@ export default function IntelligenceWorkspace({
     if (!comp.id) return
     if (!window.confirm(`Remove "${comp.competitor_name}"?`)) return
     try {
-      await fetch(`${API_BASE}/admin/competitors/${comp.id}`, { method: 'DELETE', credentials: 'include' })
+      await fetch(`${API_BASE}/admin/competitors/${comp.id}`, { method: 'DELETE', headers: adminAuthHeaders() })
       setComps(p => p.filter((_, i) => i !== index))
     } catch { /* silent */ }
   }, [comps])

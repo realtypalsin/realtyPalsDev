@@ -24,6 +24,8 @@ import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } fr
 
 // ── Dynamic imports — heavy components excluded from initial bundle ─────────
 const SiteVisitScheduler = dynamic(() => import('@/components/SiteVisitScheduler'), { ssr: false })
+const CallbackModal = dynamic(() => import('@/components/CallbackModal'), { ssr: false })
+const ShareShortlistModal = dynamic(() => import('@/components/ShareShortlistModal'), { ssr: false })
 const CalculatorPanel = dynamic(() => import('@/components/CalculatorPanel'), { ssr: false })
 const ProjectDetailPanel = dynamic(() => import('@/components/ProjectDetailPanel'), { ssr: false })
 const LeadSuccessModal = dynamic(() => import('@/components/LeadSuccessModal'), { ssr: false })
@@ -153,13 +155,16 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     guestToken: guestToken || undefined
   });
 
-  // Draft persistence — save input to localStorage, clear on submit
+  // Draft persistence — save input to localStorage, clear on submit (debounced to reduce writes)
   useEffect(() => {
-    if (chatInput) {
-      localStorage.setItem('realtypals_draft', chatInput);
-    } else {
-      localStorage.removeItem('realtypals_draft');
-    }
+    const timeout = setTimeout(() => {
+      if (chatInput) {
+        localStorage.setItem('realtypals_draft', chatInput);
+      } else {
+        localStorage.removeItem('realtypals_draft');
+      }
+    }, 500);
+    return () => clearTimeout(timeout);
   }, [chatInput]);
   const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
   const openDetailProject = useCallback((project: ProjectCardType | null) => {
@@ -1578,100 +1583,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       </AnimatePresence>
 
       {/* ── Callback request modal ── */}
-      <AnimatePresence mode="wait">
-
-        {callbackProject && !callbackDone && (
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
-            onClick={(e) => { if (e.target === e.currentTarget) { setCallbackProject(null); setCallbackDone(false) } }}
-          >
-            <m.div
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 60, opacity: 0 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-6 pb-safe"
-            >
-              {/* Drag handle */}
-              <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-5 sm:hidden" />
-
-              <div className="flex items-start justify-between mb-5">
-                <div>
-                  <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">Request Callback</h3>
-                  <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">{callbackProject.name} · {callbackProject.price_range_label}</p>
-                </div>
-                <button onClick={() => setCallbackProject(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none transition-colors">×</button>
-              </div>
-
-              <div className="space-y-3 mb-5">
-                <div>
-                  <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-1.5">Your Name</label>
-                  <input
-                    type="text"
-                    placeholder="Rahul Sharma"
-                    value={callbackForm.name}
-                    onChange={(e) => setCallbackForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-1.5">Phone Number</label>
-                  <input
-                    type="tel"
-                    placeholder="+91 98765 43210"
-                    value={callbackForm.phone}
-                    onChange={(e) => setCallbackForm(f => ({ ...f, phone: e.target.value }))}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all"
-                  />
-                </div>
-              </div>
-
-              <button
-                disabled={!callbackForm.name.trim() || callbackForm.phone.trim().length < 10 || callbackSubmitting}
-                onClick={async () => {
-                  setCallbackSubmitting(true)
-                  setCallbackError(null)
-                  try {
-                    const res = await fetch(`${API_BASE}/leads/callback`, {
-                      method: 'POST',
-                      headers: await authHeaders({ 'Content-Type': 'application/json' }),
-
-                      body: JSON.stringify({
-                        name: callbackForm.name.trim(),
-                        phone: callbackForm.phone.trim(),
-                        project_id: callbackProject.id,
-                        project_slug: callbackProject.slug,
-                        project_name: callbackProject.name,
-                      }),
-                    })
-                    if (!res.ok) throw new Error('callback request failed')
-                    track('callback_requested', { project_slug: callbackProject.slug, project_name: callbackProject.name })
-                    track('lead_created', { type: 'callback', project_slug: callbackProject.slug })
-                    setCallbackDone(true)
-                  } catch {
-                    // Never show a fake success — surface the failure so the lead isn't silently lost.
-                    setCallbackError('Could not send your request. Please check your number and try again.')
-                  } finally {
-
-                    setCallbackSubmitting(false)
-                  }
-                }}
-                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-gray-700 dark:disabled:text-gray-500 text-white font-bold rounded-xl transition-all text-sm"
-              >
-                {callbackSubmitting ? 'Sending...' : '📞 Request Callback'}
-              </button>
-              {callbackError && (
-                <p className="text-[12px] text-red-500 text-center mt-2" role="alert">{callbackError}</p>
-              )}
-              <p className="text-[11px] text-gray-400 text-center mt-2">We&apos;ll call the same business day</p>
-
-            </m.div>
-          </m.div>
-        )}
-      </AnimatePresence>
+      <CallbackModal
+        project={callbackProject}
+        isDone={callbackDone}
+        onClose={() => { setCallbackProject(null); setCallbackDone(false) }}
+      />
 
       {callbackDone && callbackProject && (
         <LeadSuccessModal
@@ -1683,71 +1599,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       )}
 
       {/* ── Share shortlist sheet ── */}
-      <AnimatePresence mode="wait">
-
-        {shareSheetOpen && lastShortlist.length > 0 && (
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
-            onClick={(e) => { if (e.target === e.currentTarget) { setShareSheetOpen(false); setShareCopied(false) } }}
-          >
-            <m.div
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 60, opacity: 0 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-6 pb-safe"
-            >
-              <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-5 sm:hidden" />
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">Share Shortlist</h3>
-                <button onClick={() => { setShareSheetOpen(false); setShareCopied(false) }} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none transition-colors">×</button>
-              </div>
-
-              {/* Preview */}
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-4 border border-gray-100 dark:border-gray-700 text-[12px] text-gray-600 dark:text-gray-300 font-mono leading-relaxed">
-                <div className="font-bold text-gray-800 dark:text-gray-100 mb-1">🏠 My RealtyPals Shortlist</div>
-                {lastShortlist.map((p, i) => (
-                  <div key={p.id}>{i + 1}. {p.name} — {p.price_range_label} ({p.sector})</div>
-                ))}
-                <div className="mt-2 text-gray-400 text-[11px]">Researched with RealtyPal AI</div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                {process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && (
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(
-                      `🏠 My RealtyPals Shortlist\n\n` +
-                      lastShortlist.map((p, i) => `${i + 1}. ${p.name} — ${p.price_range_label} (${p.sector})`).join('\n') +
-                      `\n\nResearched with RealtyPal AI`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 py-3.5 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl text-sm transition-colors"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
-
-                    Share on WhatsApp
-                  </a>
-                )}
-                <button
-                  onClick={() => {
-                    const text = `🏠 My RealtyPals Shortlist\n\n` +
-                      lastShortlist.map((p, i) => `${i + 1}. ${p.name} — ${p.price_range_label} (${p.sector})`).join('\n') +
-                      `\n\nResearched with RealtyPal AI`
-                    navigator.clipboard.writeText(text).then(() => { setShareCopied(true); setTimeout(() => setShareCopied(false), 2000) })
-                  }}
-                  className="flex items-center justify-center gap-2 py-3.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl text-sm transition-colors border border-gray-200 dark:border-gray-700"
-                >
-                  {shareCopied ? '✅ Copied!' : '📋 Copy to Clipboard'}
-                </button>
-              </div>
-            </m.div>
-          </m.div>
-        )}
-      </AnimatePresence>
+      <ShareShortlistModal
+        isOpen={shareSheetOpen}
+        shortlist={lastShortlist}
+        onClose={() => { setShareSheetOpen(false); setShareCopied(false) }}
+      />
 
     </div>
   );

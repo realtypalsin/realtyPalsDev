@@ -126,11 +126,15 @@ export async function generateDynamicChips(
     try {
       const { generateContextualLLMChips } = await import('../ai/prompts/chips')
       const llmChips = await generateContextualLLMChips(chatHistory, 0)
-      
-      // Filter LLM chips to guarantee no repetition
+
+      // Filter LLM chips to guarantee no repetition AND ground against available data
       const filteredLlmChips = llmChips.filter(c => {
         const labelLower = c.label.toLowerCase()
-        return !historyText.includes(labelLower)
+        const isDiscussed = historyText.includes(labelLower)
+        // Ground: drop comparison suggestions if <2 results
+        const isCompareSuggestion = ['compare', 'versus', 'vs ', 'difference'].some(word => labelLower.includes(word))
+        const cannotCompare = isCompareSuggestion && results.length < 2
+        return !isDiscussed && !cannotCompare
       })
       finalChips.push(...filteredLlmChips)
     } catch (err) {

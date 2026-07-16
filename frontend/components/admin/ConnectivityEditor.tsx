@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus, Trash2, Save, Loader2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 
 type ConnType = 'metro' | 'road' | 'expressway' | 'school' | 'hospital' | 'mall' | 'landmark' | 'airport' | 'university'
 type DataSource = 'brochure' | 'google' | 'estimated' | 'manual'
@@ -55,7 +56,7 @@ export default function ConnectivityEditor({ connectivity: initial, projectId, o
   const handleDelete = async (id: string) => {
     setRows(r => r.filter(x => x.id !== id))
     try {
-      const res = await fetch(`${API_BASE}/admin/connectivity/${id}`, { method: 'DELETE', credentials: 'include' })
+      const res = await fetch(`${API_BASE}/admin/connectivity/${id}`, { method: 'DELETE', headers: adminAuthHeaders() })
       if (!res.ok) throw new Error('Delete failed')
       await onSaved()
     } catch {
@@ -78,8 +79,7 @@ export default function ConnectivityEditor({ connectivity: initial, projectId, o
       if (newRow.notes.trim()) body.notes = newRow.notes.trim()
       const res = await fetch(`${API_BASE}/admin/projects/${projectId}/connectivity`, {
         method:      'POST',
-        credentials: 'include',
-        headers:     { 'Content-Type': 'application/json' },
+        headers:     { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
         body:        JSON.stringify(body),
       })
       if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? 'Add failed') }

@@ -5,6 +5,9 @@
 import { Request, Response, NextFunction } from 'express'
 import { getCached, setCached } from './cache'
 
+// ponytail: per-key single-flight lock so only first requester revalidates stale.
+const revalidationInFlight = new Map<string, Promise<unknown>>()
+
 /**
  * @param ttlSecs How long to cache the response (seconds)
  */
@@ -15,7 +18,7 @@ export function routeCache(ttlSecs: number) {
 
     const cacheKey = `route:${req.path}:${JSON.stringify(req.query)}`
     const cachedObj = await getCached<{ data: unknown; staleAt: number }>(cacheKey)
-    
+
     // Intercept res.json to capture and cache the response
     const originalJson = res.json.bind(res)
     let headersSentByCache = false
@@ -24,6 +27,7 @@ export function routeCache(ttlSecs: number) {
       // Update cache
       if (res.statusCode >= 200 && res.statusCode < 300) {
         setCached(cacheKey, { data: body, staleAt: Date.now() + (ttlSecs * 1000) }, ttlSecs * 2).catch(() => {})
+        revalidationInFlight.delete(cacheKey)
       }
       // If we already sent the stale cache to the client, suppress this json call
       if (headersSentByCache) return res
@@ -34,7 +38,7 @@ export function routeCache(ttlSecs: number) {
 
     if (cachedObj !== null) {
       const isStale = Date.now() > cachedObj.staleAt
-      
+
       if (!isStale) {
         res.setHeader('X-Cache', 'HIT')
         // We use originalJson here so it doesn't trigger the cache-update logic again
@@ -47,8 +51,10 @@ export function routeCache(ttlSecs: number) {
       headersSentByCache = true
       originalJson(cachedObj.data)
 
-      // Let the request continue in the background to update the cache
-      next()
+      // Single-flight: only first requester revalidates. Others skip.
+      if (!revalidationInFlight.has(cacheKey)) {
+        revalidationInFlight.set(cacheKey, Promise.resolve(next()))
+      }
       return
     }
 

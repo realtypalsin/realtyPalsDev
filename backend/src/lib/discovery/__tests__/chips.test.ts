@@ -222,4 +222,54 @@ describe('Chips: Adaptive & Predictive', () => {
       )
     })
   })
+
+  describe('Chips: Ground LLM Predictions (C5)', () => {
+    it('Single-result turn never shows compare-chip suggestion', async () => {
+      const intent: Intent = { sector: 'Sector 150', bhk: [3] }
+      const state = await computeConversationState(intent, 'RESEARCH', mockProjects.slice(0, 1), false, [{ role: 'user', content: 'tell me about this project' }], undefined, undefined, undefined, mockInventory, true)
+      assert.ok(
+        !state.chips.some(c => c.label.toLowerCase().includes('compare')),
+        'Single-result RESEARCH stage should not suggest comparison chips'
+      )
+    })
+  })
+
+  describe('Chips: Stable Semantic IDs (C1+C2)', () => {
+    it('Sector clarify chips have stable IDs', async () => {
+      const intent1: Intent = { bhk: [3] }
+      const state1 = await computeConversationState(intent1, 'GATHERING', [], false, [{ role: 'user', content: '3 BHK' }], undefined, undefined, undefined, mockInventory, true)
+      const sectorChip1 = state1.chips.find((c) => c.label.includes('Sector 150'))
+
+      const intent2: Intent = { bhk: [3] }
+      const state2 = await computeConversationState(intent2, 'GATHERING', [], false, [{ role: 'user', content: '3 BHK' }], undefined, undefined, undefined, mockInventory, true)
+      const sectorChip2 = state2.chips.find((c) => c.label.includes('Sector 150'))
+
+      assert.strictEqual(sectorChip1?.id, sectorChip2?.id, 'Same sector clarify chip should have identical ID across calls')
+      assert.ok(!sectorChip1?.id.includes('Date.now()'), 'Chip ID should not contain timestamp')
+    })
+
+    it('BHK clarify chips have stable IDs', async () => {
+      const intent1: Intent = { sector: 'Sector 150' }
+      const state1 = await computeConversationState(intent1, 'GATHERING', [], false, [{ role: 'user', content: 'Sector 150' }], undefined, undefined, undefined, mockInventory, true)
+      const bhkChip1 = state1.chips.find((c) => c.label === '3 BHK')
+
+      const intent2: Intent = { sector: 'Sector 150' }
+      const state2 = await computeConversationState(intent2, 'GATHERING', [], false, [{ role: 'user', content: 'Sector 150' }], undefined, undefined, undefined, mockInventory, true)
+      const bhkChip2 = state2.chips.find((c) => c.label === '3 BHK')
+
+      assert.strictEqual(bhkChip1?.id, bhkChip2?.id, 'Same BHK clarify chip should have identical ID across calls')
+    })
+
+    it('Budget clarify chips have stable IDs', async () => {
+      const intent1: Intent = { sector: 'Sector 150', bhk: [3] }
+      const state1 = await computeConversationState(intent1, 'GATHERING', [], false, [{ role: 'user', content: 'Sector 150, 3 BHK' }], undefined, undefined, undefined, mockInventory, true)
+      const budgetChip1 = state1.chips.find((c) => c.label === 'Under ₹1.1 Cr')
+
+      const intent2: Intent = { sector: 'Sector 150', bhk: [3] }
+      const state2 = await computeConversationState(intent2, 'GATHERING', [], false, [{ role: 'user', content: 'Sector 150, 3 BHK' }], undefined, undefined, undefined, mockInventory, true)
+      const budgetChip2 = state2.chips.find((c) => c.label === 'Under ₹1.1 Cr')
+
+      assert.strictEqual(budgetChip1?.id, budgetChip2?.id, 'Same budget clarify chip should have identical ID across calls')
+    })
+  })
 })

@@ -1,5 +1,6 @@
 'use client'
 import { useMemo, useState } from 'react'
+import Image from 'next/image'
 import {  m, AnimatePresence  } from 'framer-motion'
 import {
   FileText, Download, Search, File, ChevronRight, CheckCircle2, FolderOpen,
@@ -88,7 +89,7 @@ function DocumentRow({ doc, onDownload, isPriority = false }: { doc: EnhancedDoc
     >
       <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100/50 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
         {doc.thumbnail_url ? (
-          <img src={doc.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+          <Image src={doc.thumbnail_url} alt="" fill sizes="48px" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
         ) : (
           <Icon size={20} className="text-gray-400 group-hover:text-gray-900 transition-colors" />
         )}

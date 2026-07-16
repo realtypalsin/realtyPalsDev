@@ -20,7 +20,7 @@ Open your terminal:
 
 ```bash
 # Navigate to the project
-cd C:\Users\Furqan\Desktop\RealtyPalsxElite
+cd /path/to/realtypals
 
 # Make sure everything is committed
 git add .
@@ -55,7 +55,7 @@ git push -u origin main
 
 **Run migrations:**
 ```bash
-cd C:\Users\Furqan\Desktop\RealtyPalsxElite\frontend
+cd /path/to/realtypals/frontend
 # Create .env.local from .env.example and fill in your DATABASE_URL and DIRECT_URL
 npx prisma migrate deploy
 npx prisma db seed

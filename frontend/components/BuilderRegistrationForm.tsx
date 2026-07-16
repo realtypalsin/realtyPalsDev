@@ -378,7 +378,7 @@ export default function BuilderRegistrationForm() {
                           <div className="border border-dashed border-black/15 bg-zinc-50/50 p-8 rounded-[16px] text-center group hover:bg-zinc-50 transition-all flex flex-col items-center">
                             {formData.logo ? (
                               <div className="w-16 h-16 rounded-lg overflow-hidden border border-black/10 shadow-sm mb-3">
-                                <img src={formData.logo} alt="Logo preview" className="w-full h-full object-contain bg-white" />
+                                <Image src={formData.logo} alt="Logo preview" width={64} height={64} className="w-full h-full object-contain bg-white" />
                               </div>
                             ) : (
                               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 text-zinc-400 shadow-sm border border-black/5 group-hover:text-zinc-900 transition-colors">

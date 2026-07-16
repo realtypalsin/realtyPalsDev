@@ -211,7 +211,7 @@ export default function BuilderIntelligence({ builderDetail, reraNumber }: Props
                     <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(deliveredCount / totalProjects) * 100}%` }} />
                     </div>
-                    <p className="text-[10px] font-semibold text-gray-400 text-right">{Math.round((deliveredCount / totalProjects) * 150) / 1.5}% of portfolio</p>
+                    <p className="text-[10px] font-semibold text-gray-400 text-right">{Math.round((deliveredCount / totalProjects) * 100)}% of portfolio</p>
                   </div>
                 )}
 

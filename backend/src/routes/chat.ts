@@ -646,11 +646,16 @@ router.post('/', async (req: Request, res: Response) => {
     const { messages: compressedHistory, newSummary } = await maybeCompress(chatHistory, existingSummary)
     console.log('[CHAT] END maybeCompress', Date.now(), { compressedLen: compressedHistory.length, newSummary: !!newSummary })
     const { systemSuffix, messages: rawMessages } = buildContextMessages(message, compressedHistory, newSummary ?? existingSummary, memory)
-    const blockedBuildersRaw = await prisma.builder.findMany({
-      where: { legal_flag: { not: null } },
-      select: { name: true, legal_flag: true },
-    })
-    const blockedBuilders: Array<{ name: string; legal_flag?: string }> = blockedBuildersRaw.map(b => ({ name: b.name, legal_flag: b.legal_flag as string | undefined }))
+    // ponytail: cache blockedBuilders for 1h, invalidate when legal flag updated.
+    let blockedBuilders: Array<{ name: string; legal_flag?: string }> | null = await getCached('blockedBuilders')
+    if (!blockedBuilders) {
+      const blockedBuildersRaw = await prisma.builder.findMany({
+        where: { legal_flag: { not: null } },
+        select: { name: true, legal_flag: true },
+      })
+      blockedBuilders = blockedBuildersRaw.map(b => ({ name: b.name, legal_flag: b.legal_flag as string | undefined }))
+      await setCached('blockedBuilders', blockedBuilders, 3600)
+    }
     const systemPrompt = buildAdvisorSystemPrompt(intent, projects.slice(0, 3), memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects.slice(0, 3) : undefined, notFoundNames, blockedBuilders, intentState, DEFAULT_CITY) + systemSuffix
 
     // Issue 4: trim message history if total token estimate exceeds safe ceiling

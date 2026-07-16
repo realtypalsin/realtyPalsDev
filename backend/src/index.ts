@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import 'express-async-errors'
+import * as Sentry from '@sentry/node'
 import express, { Request, Response, NextFunction } from 'express'
+import logger from './lib/logger'
 import cors from 'cors'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
@@ -26,10 +28,20 @@ import builderRegistrationRouter from './routes/builderRegistration'
 import builderApplicationsRouter from './routes/builderApplications'
 import analyticsRouter from './routes/analytics'
 
+// Initialize Sentry for error tracking and monitoring
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV,
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    ignoreErrors: [/ECONNRESET/, /ETIMEDOUT/, /Too many requests/],
+  })
+}
+
 // Synchronous env assertions — must run before any async work or app setup.
 for (const key of ['ADMIN_PASSWORD', 'DATABASE_URL'] as const) {
   if (!process.env[key]) {
-    console.error(`[startup] FATAL: ${key} env var is not set. Refusing to start.`)
+    logger.fatal({ key }, `${key} env var is not set. Refusing to start.`)
     process.exit(1)
   }
 }
@@ -37,7 +49,7 @@ for (const key of ['ADMIN_PASSWORD', 'DATABASE_URL'] as const) {
 // Require at least one AI provider for the core chat functionality.
 // This allows fallback to Groq if OpenAI is missing, or vice versa.
 if (!process.env.OPENAI_API_KEY && !process.env.GROQ_API_KEY) {
-  console.error('[startup] FATAL: Neither OPENAI_API_KEY nor GROQ_API_KEY is configured. At least one AI provider is required. Refusing to start.')
+  logger.fatal('Neither OPENAI_API_KEY nor GROQ_API_KEY is configured. At least one AI provider is required. Refusing to start.')
   process.exit(1)
 }
 
@@ -63,6 +75,11 @@ app.use(cookieParser())
 
 // Structural Logging
 app.use(morgan('combined'))
+
+// Sentry Request Handler — captures request/response data for error context
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.requestHandler())
+}
 
 // Global Rate Limiting Middleware
 app.use(async (req: Request, res: Response, next: NextFunction) => {
@@ -128,10 +145,31 @@ app.use('/api/v1/builder-registration', builderRegistrationRouter)
 app.use('/api/v1/builder-applications', builderApplicationsRouter)
 app.use('/api/v1/analytics', analyticsRouter)
 
+// Sentry Error Handler — must come before custom error handler
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler())
+}
+
 // Global error handler — catches any error passed to next(err) or thrown in an
 // async route (via express-async-errors). Must be registered after all routes.
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('[internal]', err.message, err.stack)
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  const path = req.path
+  const tags: Record<string, string> = {}
+
+  // Route-specific error context
+  if (path.includes('/chat')) tags.route = 'chat'
+  if (path.includes('/leads')) tags.route = 'leads'
+  if (path.includes('/admin')) tags.route = 'admin'
+  if (err.message.includes('GUARDRAIL')) tags.guardrail = 'triggered'
+  if (err.message.includes('AI') || err.message.includes('rate limit')) tags.ai = 'error'
+
+  logger.error({ err: err.message, stack: err.stack, tags, path }, 'Internal error')
+
+  // Capture error context to Sentry
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(err, { tags })
+  }
+
   if (res.headersSent) return // SSE / streaming — cannot send a second response
   res.status((err as { status?: number }).status ?? 500).json({ error: 'Internal server error' })
 })
@@ -141,9 +179,9 @@ async function startup() {
   // should fail at deploy time, not at the first user request.
   try {
     await prisma.$queryRaw`SELECT 1`
-    console.log('[startup] database: ok')
+    logger.info('database: ok')
   } catch (err) {
-    console.error('[startup] FATAL: database unreachable:', (err as Error).message)
+    logger.fatal({ err: (err as Error).message }, 'database unreachable')
     process.exit(1)
   }
 
@@ -151,16 +189,16 @@ async function startup() {
   // (rate limiting falls back to in-memory) but a hard dependency for admin sessions.
   const redisOk = await pingRedis()
   if (process.env.UPSTASH_REDIS_REST_URL && !redisOk) {
-    console.error('[startup] WARNING: Redis configured but unreachable — admin sessions will fail at login')
+    logger.warn('Redis configured but unreachable — admin sessions will fail at login')
   } else if (redisOk) {
-    console.log('[startup] redis: ok')
+    logger.info('redis: ok')
   } else {
-    console.log('[startup] redis: not configured (rate limiting uses in-memory fallback)')
+    logger.info('redis: not configured (rate limiting uses in-memory fallback)')
   }
 
   const server = app.listen(PORT, () => {
     const elapsed = Date.now() - startTime
-    console.log(`[startup] listening on :${PORT} — ready in ${elapsed}ms`)
+    logger.info({ port: PORT, elapsed }, `listening — ready`)
 
     const keys = {
       GROQ_API_KEY:             !!process.env.GROQ_API_KEY,
@@ -169,20 +207,20 @@ async function startup() {
       TAVILY_API_KEY:           !!process.env.TAVILY_API_KEY,
       SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
     }
-    console.log('[startup] optional env:', keys)
+    logger.info({ keys }, 'optional env configured')
   })
 
   async function shutdown(signal: string) {
-    console.log(`[shutdown] ${signal} received — draining connections`)
+    logger.info({ signal }, 'draining connections')
     server.close(async () => {
       await prisma.$disconnect()
-      console.log('[shutdown] clean exit')
+      logger.info('clean exit')
       process.exit(0)
     })
     // Most platforms (Render, K8s) default to a 30s SIGTERM grace period.
     // We force-exit at 28s to ensure we cleanly log our own timeout before the platform sends SIGKILL.
     setTimeout(() => {
-      console.error('[shutdown] forced exit after 28s timeout (aligned with standard 30s platform grace period)')
+      logger.error('forced exit after 28s timeout (aligned with standard 30s platform grace period)')
       process.exit(1)
     }, 28_000).unref()
   }

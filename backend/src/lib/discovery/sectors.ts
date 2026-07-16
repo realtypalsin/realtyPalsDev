@@ -74,6 +74,7 @@ export async function getAllSectorsOverview(lifestyleKeywords?: string[], city: 
       amenities: { select: { name: true, category: true } },
       connectivity: { select: { type: true, name: true } },
     },
+    take: 200,
   })
 
   const bySector = new Map<string, typeof projects>()

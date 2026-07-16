@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 import {
   MapPin, Share2, Car, TrainFront, HeartPulse, ShoppingBag,
   GraduationCap, Plane, Briefcase, TrendingUp, CalendarDays, PhoneCall,
@@ -154,9 +155,11 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
             <MapIcon size={64} className="text-blue-100" />
           </div>
 
-          <img
+          <Image
             src={locationData.location_hero_image}
             alt="Location Hero"
+            fill
+            sizes="100vw"
             className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-90 z-0"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />

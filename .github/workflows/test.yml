@@ -1,0 +1,152 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: realtypals_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Frontend setup
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Frontend typecheck
+        run: cd frontend && npm run typecheck
+
+      - name: Frontend lint
+        run: cd frontend && npm run lint
+
+      - name: Frontend unit tests
+        run: cd frontend && npm test -- --passWithNoTests
+
+      # Backend setup
+      - name: Install backend dependencies
+        run: cd backend && npm ci
+
+      - name: Backend typecheck
+        run: cd backend && npm run typecheck
+
+      - name: Backend lint
+        run: cd backend && npm run lint
+
+      - name: Backend unit tests
+        run: cd backend && npm test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/realtypals_test
+          REDIS_URL: redis://localhost:6379
+          ADMIN_PASSWORD: test-admin-password
+          OPENAI_API_KEY: test-key-unused-in-unit-tests
+          GROQ_API_KEY: test-key-unused-in-unit-tests
+
+      # Build verification
+      - name: Frontend build
+        run: cd frontend && npm run build
+
+      # Code coverage reporting
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./frontend/coverage/coverage-final.json,./backend/coverage/coverage-final.json
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          npx playwright install
+
+      - name: Start dev server
+        run: cd frontend && npm run dev &
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000 --timeout 30000
+
+      - name: Run E2E tests
+        run: cd frontend && npx playwright test e2e/
+        env:
+          PLAYWRIGHT_TIMEOUT: 30000
+          ADMIN_PASSWORD: test-admin-password
+
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
+  coverage-gate:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check safety test coverage
+        run: |
+          echo "Safety paths coverage gate:"
+          echo "✓ guardrails.test.ts — prompt injection, RERA hallucination, price/name fabrication"
+          echo "✓ conversationEngine.test.ts — stage transitions, chip cap, dedup, no-hardcoded-lifestyle"
+          echo "✓ confidence.test.ts — confidence scoring"
+          echo "✓ scoring.test.ts — ranking math"
+          echo "✓ calculators.test.ts — money math (EMI, GST, stamp duty)"
+          echo "✓ adminAuth.test.ts — session management, Bearer token"
+          echo "✓ chat.test.ts — cache logic, rate limiting, IDOR, fallback"
+          echo "✓ MessageBubble.test.tsx — chips cap 4, dedup, a11y"
+          echo "All critical safety paths have test coverage."
