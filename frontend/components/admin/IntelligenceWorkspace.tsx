@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { Check, Loader2, AlertCircle, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 import JsonEditor from './JsonEditor'
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -405,8 +406,7 @@ export default function IntelligenceWorkspace({
     try {
       const res = await fetch(`${API_BASE}/admin/${path}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify(data),
       })
       if (!res.ok) throw new Error()
@@ -489,14 +489,13 @@ export default function IntelligenceWorkspace({
     try {
       await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify({
           intelligence_data: {
             ...initialDecision?.intelligence_data,
             buyerPersonas
           }
-        }),
-        credentials: 'include'
+        })
       })
     } catch { /* silent */ }
   }

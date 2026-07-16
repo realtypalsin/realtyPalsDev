@@ -14,45 +14,6 @@ interface PropertyRadarChartProps {
   size?: number;
 }
 
-const PREMIUM_BUILDERS = ['Godrej', 'Tata', 'DLF', 'Prestige', 'ATS', 'Ace', 'Mahagun'];
-
-/**
- * Generate radar scores from property data
- */
-export function generateRadarScores(property: {
-
-  amenities?: string[];
-  builder?: string;
-  status?: string;
-}): RadarAxis[] {
-  // Value score static without per-sqft
-  const valueScore = 80;
-
-
-  // Location: Sector 150 is always high (hardcoded for now)
-  const locationScore = 82;
-
-  // Amenities: based on count
-  const amenityCount = property.amenities?.length ?? 0;
-  const amenityScore = Math.min(95, Math.round(40 + amenityCount * 4));
-
-  // Builder Rep: premium builders score higher
-  const builderName = property.builder ?? '';
-  const isPremium = PREMIUM_BUILDERS.some(b => builderName.toLowerCase().includes(b.toLowerCase()));
-  const builderScore = isPremium ? 90 : 65;
-
-  // Growth: Sector 150 has high growth (hardcoded)
-  const growthScore = 88;
-
-  return [
-    { label: 'Value', value: valueScore, color: '#10b981' },
-    { label: 'Location', value: locationScore, color: '#3b82f6' },
-    { label: 'Amenities', value: amenityScore, color: '#8b5cf6' },
-    { label: 'Builder', value: builderScore, color: '#f59e0b' },
-    { label: 'Growth', value: growthScore, color: '#ef4444' },
-  ];
-}
-
 export default function PropertyRadarChart({ axes = [], size = 200 }: PropertyRadarChartProps) {
 
   const [animated, setAnimated] = useState(false);

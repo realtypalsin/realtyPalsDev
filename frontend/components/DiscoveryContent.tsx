@@ -12,8 +12,6 @@ import { API_BASE } from '@/lib/env'
 import { track, trackPropertyEvent } from '@/lib/analytics';
 import { streamChat as streamChatBackend } from '@/lib/backend-api'
 import { authHeaders } from '@/lib/authedFetch'
-import StatusSteps from '@/components/chat/StatusSteps'
-import Header from '@/components/Header';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import MessageBubble from '@/components/chat/MessageBubble';
 import ContextRibbon from '@/components/chat/ContextRibbon';

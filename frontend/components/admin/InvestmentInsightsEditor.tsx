@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Save, TrendingUp, BarChart2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
+import { adminAuthHeaders } from '@/lib/authedFetch'
 import { toast } from 'sonner'
 import JsonEditor from './JsonEditor'
 
@@ -24,7 +25,7 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
     try {
       const res = await fetch(`${API_BASE}/admin/projects/${projectId}/investment-insights`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify({
           appreciation_annual: appreciationAnnual || null,
           appreciation_desc: appreciationDesc || null,
@@ -34,22 +35,20 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
           market_desc: marketDesc || null,
           liquidity_score: liquidityScore || null,
           liquidity_desc: liquidityDesc || null,
-        }),
-        credentials: 'include'
+        })
       })
       if (!res.ok) throw new Error('Failed to save basic insights')
 
       // Also save investmentReport to decision_profile.intelligence_data
       const decisionRes = await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify({
           intelligence_data: {
             ...initialData?.decision_profile?.intelligence_data,
             investmentReport: investmentReport
           }
-        }),
-        credentials: 'include'
+        })
       })
       if (!decisionRes.ok) throw new Error('Failed to save investment report')
 
