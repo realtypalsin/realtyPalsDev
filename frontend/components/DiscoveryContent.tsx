@@ -659,7 +659,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     })();
 
     return () => { cancelled = true; };
-  }, [userId, guestToken, isInitialized, initialSessionId]);
+  }, [userId, guestToken, isInitialized, initialSessionId, scrollToBottom]);
 
   // [TIMING] detect when setChatHistory from restore has been committed to DOM
   useEffect(() => {
@@ -961,7 +961,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         }
       },
     });
-  }, [userId, guestToken, isSubmitting, sessionId, chatTurnCount, hasShownLengthWarning, currentIntent]);
+  }, [userId, guestToken, sessionId, chatTurnCount, hasShownLengthWarning, currentIntent, initialSessionId, router]);
 
   // Pick up prefill query from compare page (sessionStorage)
   useEffect(() => {
@@ -1087,10 +1087,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         console.error('[CHIP:EXHAUSTIVE] unhandled action type:', _);
         return;
     }
-  }, [dispatchAction, lastShortlist.map(p => p.id).join(',')]);
-
-
-
+  }, [dispatchAction, lastShortlist]);
 
   const stripMarkdown = (text: string): string => {
     return text

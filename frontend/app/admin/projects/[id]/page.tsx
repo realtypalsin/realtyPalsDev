@@ -181,7 +181,7 @@ export default function EditProject() {
     setLoading(false)
   }
 
-  useEffect(() => { loadProject() }, [id])
+  useEffect(() => { loadProject() }, [id, loadProject])
 
   const handleFormChange = useCallback((formValues: any) => {
     setPreview((prev: any) => ({

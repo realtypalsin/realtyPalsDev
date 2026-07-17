@@ -202,7 +202,7 @@ export default function AdminBuilders() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [filtered, selectedIndex, editingId, showAdd])
+  }, [filtered, selectedIndex, editingId, showAdd, saveEdit])
 
   useEffect(() => setSelectedIndex(-1), [query])
 

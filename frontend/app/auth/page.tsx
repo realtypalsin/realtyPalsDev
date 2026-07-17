@@ -37,7 +37,7 @@ export default function AuthPage() {
     });
     return () => { cancelled = true; };
 
-  }, []);
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

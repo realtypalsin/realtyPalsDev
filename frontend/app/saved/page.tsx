@@ -46,7 +46,7 @@ export default function SavedPropertiesPage() {
         setError(true);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   return (
     <div className="flex h-[100dvh] bg-slate-50/50 dark:bg-gray-900 overflow-hidden">

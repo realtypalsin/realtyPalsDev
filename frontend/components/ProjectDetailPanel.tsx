@@ -1,7 +1,7 @@
 'use client'
 import {
   Building2, CheckCircle2, LineChart, BedDouble,
-  MapPin, Sparkles, CalendarDays, FileText, IndianRupee
+  MapPin, Sparkles, CalendarDays, FileText, IndianRupee, X
 } from 'lucide-react'
 
 import { useState, useEffect, useRef } from 'react'
@@ -150,30 +150,30 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       .catch(() => { setDetail(null); setDocuments([]) })
 
       .finally(() => setLoading(false))
-  }, [project?.slug])
+  }, [initialDetail, project])
 
   useEffect(() => {
     if (!initialDetail || !project) return
     if (initialDetail.slug !== project.slug) return
     setDetail(initialDetail)
     setLoading(false)
-  }, [initialDetail?.slug, project?.slug])
+  }, [initialDetail, project])
 
   useEffect(() => {
 
     if (!project) return
     getAqi(project.lat, project.lng, 'noida').then(setAqi).catch(() => {})
-  }, [project?.slug])
+  }, [project])
 
   useEffect(() => {
     if (!project) return
     trackPropertyEvent(project.id, 'view', undefined, userId).catch(() => {})
-  }, [project?.id, userId])
+  }, [project, userId])
 
   useEffect(() => {
     if (!project) return
     trackPropertyEvent(project.id, 'tab_opened', undefined, userId, undefined, { tab: activeTab }).catch(() => {})
-  }, [activeTab, project?.id, userId])
+  }, [activeTab, project, userId])
 
   // Lazy-load payment plan when 'Pricing' or 'Residences' tab is opened.
   useEffect(() => {
@@ -183,7 +183,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     }).catch(() => {
       setPaymentPlan({ loaded: true, available: false, data: null, message: 'Unable to load payment plan.' })
     })
-  }, [activeTab, project?.slug])
+  }, [activeTab, project?.slug, paymentPlan.loaded])
 
   // Lazy-load cost sheet when 'Pricing' tab is opened.
   useEffect(() => {
@@ -193,7 +193,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     }).catch(() => {
       setCostSheet({ loaded: true, available: false, data: null, illustration: null, message: 'Unable to load cost sheet.' })
     })
-  }, [activeTab, project?.slug])
+  }, [activeTab, project?.slug, costSheet.loaded])
+
+  const isProjectOpen = !!project
 
   useEffect(() => {
     if (inline || !project) return
@@ -204,7 +206,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       window.removeEventListener('keydown', handleKey)
       document.body.style.overflow = ''
     }
-  }, [!!project, inline])
+  }, [inline, onClose, project])
 
   const isOpen = !!project
 

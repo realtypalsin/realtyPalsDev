@@ -40,7 +40,7 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
       setDestination(initialDestination)
       calculate(initialDestination)
     }
-  }, [initialDestination])
+  }, [initialDestination, calculate])
 
 
   async function calculate(dest?: string) {

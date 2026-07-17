@@ -63,7 +63,7 @@ export default function ReEngagementBanner({ userId, guestToken, onResume, onDis
     return () => {
       isMounted = false;
     };
-  }, [userId, guestToken]);
+  }, [userId, guestToken, onResume, onDismiss]);
 
   return null;
 }

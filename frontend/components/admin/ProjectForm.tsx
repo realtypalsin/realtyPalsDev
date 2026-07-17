@@ -236,7 +236,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
       setDirty(false)
     }, 1500)
     return () => clearTimeout(timer)
-  }, [dirty, form, projectId])
+  }, [dirty, form, projectId, handleSubmit])
 
   function set(key: keyof ProjectData) {
     return (value: string) => setForm((f) => ({ ...f, [key]: value }))
