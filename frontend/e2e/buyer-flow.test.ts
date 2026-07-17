@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Buyer Flow E2E', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the app
-    await page.goto('/')
+    // Navigate to the app discover page
+    await page.goto('/discover')
   })
 
   test('landing page loads with discovery UI', async ({ page }) => {
