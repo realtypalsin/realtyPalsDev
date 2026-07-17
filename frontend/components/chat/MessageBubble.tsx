@@ -12,6 +12,7 @@ import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRender
 import ProjectCard from '@/components/ProjectCard'
 import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import { SuggestionChip } from '@/components/chat/SuggestionChip'
+import { CardSelectorChip } from '@/components/chat/CardSelectorChip'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
@@ -129,11 +130,46 @@ export function SuggestionChipGroups({
 
   const sorted = deduped.sort((a, b) => a.priority - b.priority)
 
+  const handleCardSelect = (chip: import('./types').ChipAction, projectId: string) => {
+    // Modify chip action to apply to selected project only
+    const projects = chip.payload?.projects as Array<{ id: string; name: string }> | undefined
+    const selectedProject = projects?.find(p => p.id === projectId)
+    if (selectedProject) {
+      const modifiedChip = {
+        ...chip,
+        payload: {
+          ...chip.payload,
+          projects: [selectedProject],
+          selectedProjectId: projectId
+        }
+      }
+      onAction(modifiedChip)
+    }
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
-      {sorted.map((chip) => (
-        <SuggestionChip key={chip.id} chip={chip} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} disabled={isDisabled} />
-      ))}
+      {sorted.map((chip) => {
+        // Check if chip has multiple projects — use CardSelectorChip
+        const projects = chip.payload?.projects as Array<{ id: string; name: string }> | undefined
+        const hasMultipleProjects = projects && projects.length > 1
+
+        if (hasMultipleProjects) {
+          return (
+            <CardSelectorChip
+              key={chip.id}
+              chip={chip}
+              projects={projects}
+              onSelect={handleCardSelect}
+              disabled={isDisabled}
+            />
+          )
+        }
+
+        return (
+          <SuggestionChip key={chip.id} chip={chip} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} disabled={isDisabled} />
+        )
+      })}
     </div>
   )
 }
