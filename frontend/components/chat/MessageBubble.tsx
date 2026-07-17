@@ -132,43 +132,61 @@ export function SuggestionChipGroups({
 
   const handleCardSelect = (chip: import('./types').ChipAction, projectId: string) => {
     // Convert card selection to TEXT_MESSAGE for the backend
-    const projects = chip.payload?.projects as Array<{ id: string; name: string }> | undefined
+    const payload = (chip.payload as any) || {}
+    const projects = payload.projects as Array<{ id: string; name: string }> | undefined
 
-    // Try exact match first, then try converting string projectId to match
-    let selectedProject = projects?.find(p => String(p.id) === String(projectId))
+    // Validate chip has projects array
+    if (!projects || projects.length === 0) {
+      console.error('[CHIP] No projects in chip payload:', { chipId: chip.id, chipLabel: chip.label, payload })
+      return
+    }
 
-    // Ensure we have a valid project before proceeding
-    if (!selectedProject && projects && projects.length > 0) {
-      // Fallback to first project if ID doesn't match (safety)
+    // Try exact match first
+    let selectedProject = projects.find(p => String(p.id) === String(projectId))
+
+    // Fallback: try parsing projectId as array index
+    if (!selectedProject && projectId) {
+      const idx = parseInt(projectId, 10)
+      if (!isNaN(idx) && projects[idx]) {
+        selectedProject = projects[idx]
+      }
+    }
+
+    // Final fallback: use first project
+    if (!selectedProject) {
       selectedProject = projects[0]
+      console.warn('[CHIP] Using fallback project:', { requested: projectId, using: selectedProject.name })
     }
 
-    // Build natural language message with selected project
-    if (selectedProject && chip.actionType === 'TEXT_MESSAGE') {
-      const prefix = (chip.payload as any)?.actionPrefix || chip.label || ''
-      const actionPrefix = String(prefix).trim()
-      const actionSuffix = ((chip.payload as any)?.actionSuffix as string) || '?'
-
-      // Ensure non-empty message
-      if (!actionPrefix) {
-        console.warn('[CHIP] No actionPrefix found for chip:', chip)
-        return
-      }
-
-      const fullMessage = `${actionPrefix} ${selectedProject.name}${actionSuffix}`.trim()
-
-      // Send as TEXT_MESSAGE with the constructed message
-      const textChip = {
-        ...chip,
-        actionType: 'TEXT_MESSAGE' as const,
-        payload: {
-          text: fullMessage
-        }
-      }
-      onAction(textChip)
-    } else {
-      console.warn('[CHIP] Invalid card select state:', { selectedProject, actionType: chip.actionType })
+    // Validate action type
+    if (chip.actionType !== 'TEXT_MESSAGE') {
+      console.error('[CHIP] Chip is not TEXT_MESSAGE:', { chipId: chip.id, actionType: chip.actionType })
+      return
     }
+
+    // Build natural language message
+    const prefix = String(payload.actionPrefix || chip.label || 'Consider').trim()
+    const suffix = String(payload.actionSuffix || '?').trim()
+
+    if (!prefix || !selectedProject?.name) {
+      console.error('[CHIP] Missing message parts:', { prefix, projectName: selectedProject?.name })
+      return
+    }
+
+    const fullMessage = `${prefix} ${selectedProject.name}${suffix}`.trim()
+
+    if (!fullMessage) {
+      console.error('[CHIP] Empty message after construction')
+      return
+    }
+
+    // Send TEXT_MESSAGE
+    const textChip = {
+      ...chip,
+      actionType: 'TEXT_MESSAGE' as const,
+      payload: { text: fullMessage }
+    }
+    onAction(textChip)
   }
 
   return (
