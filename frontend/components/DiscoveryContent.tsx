@@ -1445,7 +1445,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                       onRegenerate={handleRegenerate}
                       onAction={handleChipAction}
                       onToggleExpanded={handleToggleExpanded}
-                      onToggleMap={handleToggleMap}
                       onSetChipPicker={setChipPicker}
                       onSetCarouselIndex={handleSetCarouselIndex}
                       onSetSiteVisit={setSiteVisitProject}
@@ -1577,7 +1576,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         <LeadSuccessModal
           type="callback"
           projectName={callbackProject.name}
-          name={callbackForm.name}
+          name=""
           onClose={() => { setCallbackProject(null); setCallbackDone(false) }}
         />
       )}

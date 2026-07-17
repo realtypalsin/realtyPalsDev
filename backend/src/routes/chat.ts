@@ -1071,16 +1071,19 @@ router.post('/', async (req: Request, res: Response) => {
       persistPromises.push(upsertMemory(userId, guestToken, intent, slugsToMemorize))
     }
 
-    console.log('[CHAT] BEFORE send(done)', Date.now())
-    if (currentSessionId) {
-      await persistToDb(currentSessionId).catch(() => {})
-    }
-    send('done', { sessionId: currentSessionId, intentState, intent, responseMode })
-    console.log('[CHAT] AFTER send(done)', Date.now())
-
     console.log('[CHAT] BEFORE persist', Date.now())
+    if (currentSessionId) {
+      await persistToDb(currentSessionId).catch((e) => {
+        console.error('[chat] chipDedup persist failed:', e)
+        send('warning', { message: 'Failed to save interaction history; please refresh' })
+      })
+    }
     await Promise.all(persistPromises).catch((e) => console.error('[chat] persist error:', e))
     console.log('[CHAT] AFTER persist', Date.now())
+
+    console.log('[CHAT] BEFORE send(done)', Date.now())
+    send('done', { sessionId: currentSessionId, intentState, intent, responseMode })
+    console.log('[CHAT] AFTER send(done)', Date.now())
   } catch (err) {
     console.error('[chat] error:', err)
     // Issue 5: rate-limit fallback — preserve loaded context instead of dropping it
@@ -1205,7 +1208,7 @@ router.get('/session/list', async (req: Request, res: Response) => {
       res.json({ sessions: formatSessionList(sessions) })
     } catch (err) {
       console.error('[session/list] guest query failed:', err)
-      res.json({ sessions: [] })
+      res.status(500).json({ error: 'Failed to load sessions' })
     }
     return
   }
@@ -1236,7 +1239,7 @@ router.get('/session/list', async (req: Request, res: Response) => {
     res.json({ sessions: result })
   } catch (err) {
     console.error('[session/list] auth query failed:', err)
-    res.json({ sessions: [] })
+    res.status(500).json({ error: 'Failed to load sessions' })
   }
 })
 

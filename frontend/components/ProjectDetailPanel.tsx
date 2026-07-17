@@ -270,12 +270,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           d={d}
           loading={loading}
           documents={documents}
-          aqi={aqi}
-          floorPlanImages={floorPlanImages}
-          decisionThesis={decisionThesis}
           whyBuy={whyBuy}
-          whyAvoid={whyAvoid}
-          onViewFloorPlans={(plans) => setShowFloorPlan({ plans })}
           onGoToLocation={() => setActiveTab('Location')}
           onGoToDocuments={() => setActiveTab('Documents')}
           onGoToPricing={() => setActiveTab('Residences')}

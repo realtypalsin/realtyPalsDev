@@ -634,9 +634,11 @@ export default function IntelligenceTab({
         </div>
       </div>
       {/* 7. Market Comparison (Existing Component) */}
-      <div className="pt-6" ref={marketRef}>
-        <MarketComparison sector={d?.sector || '10'} city={d?.city || 'Greater Noida West'} currentPriceSqft={computedProjectAvgNumber || undefined} />
-      </div>
+      {d?.sector && d?.city && (
+        <div className="pt-6" ref={marketRef}>
+          <MarketComparison sector={d.sector} city={d.city} currentPriceSqft={computedProjectAvgNumber || undefined} />
+        </div>
+      )}
 
       {/* Report Modal */}
       {showReportModal && typeof document !== 'undefined' && createPortal(

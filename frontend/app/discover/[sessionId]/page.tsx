@@ -13,10 +13,22 @@ function generateGuestToken(): string {
 }
 
 function getOrCreateGuestToken(): string {
-  let token = localStorage.getItem('guest_token');
+  const GUEST_TOKEN_KEY = 'realtypals_guest_token';
+  const OLD_KEY = 'guest_token';
+
+  // Migrate old key if present
+  let token = localStorage.getItem(GUEST_TOKEN_KEY);
+  if (!token) {
+    token = localStorage.getItem(OLD_KEY);
+    if (token) {
+      localStorage.setItem(GUEST_TOKEN_KEY, token);
+      localStorage.removeItem(OLD_KEY);
+    }
+  }
+
   if (!token) {
     token = generateGuestToken();
-    localStorage.setItem('guest_token', token);
+    localStorage.setItem(GUEST_TOKEN_KEY, token);
   }
   return token;
 }
@@ -108,14 +120,12 @@ export default function SessionDiscoverPage() {
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
         <ChatErrorBoundary>
           <Suspense fallback={<div className="flex-1 flex items-center justify-center text-gray-500">Loading...</div>}>
-            <DiscoveryContent 
-              key={activeSessionId ?? 'new'} 
-              initialSessionId={activeSessionId} 
-              userId={userId} 
-              guestToken={guestToken} 
-              onSessionChange={setActiveSessionId} 
-              isSidebarCollapsed={isSidebarCollapsed}
-              onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            <DiscoveryContent
+              key={activeSessionId ?? 'new'}
+              initialSessionId={activeSessionId}
+              userId={userId}
+              guestToken={guestToken}
+              onSessionChange={setActiveSessionId}
             />
           </Suspense>
         </ChatErrorBoundary>

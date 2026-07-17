@@ -15,10 +15,22 @@ const COMPARE_SUGGESTIONS = [
 ];
 
 function getOrCreateGuestToken(): string {
-  let token = localStorage.getItem('guest_token');
+  const GUEST_TOKEN_KEY = 'realtypals_guest_token';
+  const OLD_KEY = 'guest_token';
+
+  // Migrate old key if present
+  let token = localStorage.getItem(GUEST_TOKEN_KEY);
+  if (!token) {
+    token = localStorage.getItem(OLD_KEY);
+    if (token) {
+      localStorage.setItem(GUEST_TOKEN_KEY, token);
+      localStorage.removeItem(OLD_KEY);
+    }
+  }
+
   if (!token) {
     token = 'guest-' + crypto.randomUUID();
-    localStorage.setItem('guest_token', token);
+    localStorage.setItem(GUEST_TOKEN_KEY, token);
   }
   return token;
 }

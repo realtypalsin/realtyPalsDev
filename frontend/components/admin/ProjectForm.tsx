@@ -284,7 +284,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
     const url    = projectId ? `${API_BASE}/admin/projects/${projectId}` : `${API_BASE}/admin/projects`
     const method = projectId ? 'PATCH' : 'POST'
 
-    const res  = await fetch(url, { method, credentials: 'include', headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    const res  = await fetch(url, { method, headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 
     const data = await res.json().catch(() => ({}))
 

@@ -162,7 +162,7 @@ function MessageBubbleInner({
   chipPicker, chips,
   onCopy, onDetailOpen, onCallback, onRegenerate, onAction,
 
-  onToggleExpanded, onToggleMap, onSetChipPicker, onSetCarouselIndex,
+  onToggleExpanded, onSetChipPicker, onSetCarouselIndex,
   onSetSiteVisit, onOpenCalculator, onOpenShareSheet, onToast,
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
