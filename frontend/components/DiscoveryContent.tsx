@@ -824,6 +824,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           ));
         } else if (event.type === 'ui_state') {
           // New conversation engine backend state
+          console.log('[UI_STATE]', { stage: event.stage, chipsCount: event.chips?.length ?? 0, chips: event.chips });
           setConversationState({
             stage: event.stage,
             thinking: event.thinking,

@@ -456,6 +456,8 @@ router.post('/', async (req: Request, res: Response) => {
     
     // Deduplicate chips based on session
     const preChips = filterNewChips(currentSessionId, preSearchUiState.chips)
+    console.log('[CHAT] preSearchUiState chips before dedup:', preSearchUiState.chips.length, preSearchUiState.chips.map(c => c.label))
+    console.log('[CHAT] preSearchUiState chips after dedup:', preChips.length, preChips.map(c => c.label))
     preChips.forEach(c => markChipShown(currentSessionId, c.id))
     preSearchUiState.chips = preChips
 

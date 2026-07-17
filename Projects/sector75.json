@@ -1,0 +1,1107 @@
+[
+    {
+        "project": {
+            "name": "Dasnac Burj Noida",
+            "slug": "dasnac-burj-noida-sector-75",
+            "builder_id": "dasnac-group",
+            "status": "Under Construction",
+            "sector": "Sector 75",
+            "city": "Noida",
+            "address": "GH-14, Sector 75, Noida, Uttar Pradesh 201307",
+            "tagline": "Ultra-Luxury High-Rise Living",
+            "lat": 28.575515,
+            "lng": 77.381927,
+            "rera_number": "UPRERAPRJ498423",
+            "rera_url": "https://www.up-rera.in/verify",
+            "total_towers": 1,
+            "total_units": 207,
+            "land_area_acres": 1.27,
+            "launch_date": "2018-11-05T00:00:00Z",
+            "possession_label": "Expected (May 2029)",
+            "possession_date": "2029-05-17T00:00:00Z",
+            "design_theme": "Modern Luxury High-Rise",
+            "architect": "J. K. Jain",
+            "interior_designer": "Dasnac Design Team",
+            "floors": "G+34",
+            "open_space_pct": 70,
+            "green_rating": "IGBC Gold",
+            "description": "Ultra-luxury 3, 4 & 5 BHK duplexes by Dasnac in Sector 75. Features double-height ceilings, smart home automation, and private Jacuzzi balconies.",
+            "long_description": "Dasnac Burj Noida is a low-density, premium residential tower crafted for exclusivity. Spread across 1.27 acres, it houses just 207 residences (162 units/acre). It features IGBC Gold-rated green elements, pre-installed VRV/VRF air-conditioning, biometric locks, and high ceilings. Structural work is complete, and possession is expected by May 2029.",
+            "marketing_claims": [
+                "IGBC Gold-rated",
+                "Single High-Rise Tower",
+                "Pre-installed VRV/VRF AC",
+                "Private Jacuzzi Balconies",
+                "Smart Home Automation",
+                "Double-height living rooms"
+            ],
+            "ai_search_keywords": [
+                "dasnac burj noida",
+                "sector 75 noida",
+                "ultra luxury apartments noida",
+                "dasnac burj 3 bhk",
+                "smart homes noida"
+            ],
+            "schools_nearby_count": 4,
+            "hospitals_nearby_count": 3,
+            "shopping_nearby_count": 2,
+            "it_parks_nearby_count": 5,
+            "banks_nearby_count": 8,
+            "restaurants_nearby_count": 15,
+            "location_intelligence_json": {}
+        },
+        "unit_types": [
+            {
+                "bhk": 3,
+                "name": "3 BHK Luxury",
+                "super_area_sqft": 2510,
+                "carpet_area_sqft": 1550,
+                "balcony_area_sqft": 150,
+                "bathrooms": 3,
+                "price_min_cr": 4.02,
+                "price_max_cr": 4.52,
+                "price_label": "₹4.02–4.52 Cr",
+                "views": []
+            },
+            {
+                "bhk": 4,
+                "name": "4 BHK Premium",
+                "super_area_sqft": 3030,
+                "carpet_area_sqft": 1850,
+                "balcony_area_sqft": 200,
+                "bathrooms": 4,
+                "price_min_cr": 4.85,
+                "price_max_cr": 5.94,
+                "price_label": "₹4.85–5.94 Cr",
+                "views": []
+            },
+            {
+                "bhk": 5,
+                "name": "5 BHK Duplex",
+                "super_area_sqft": 5300,
+                "carpet_area_sqft": 3200,
+                "balcony_area_sqft": 350,
+                "bathrooms": 5,
+                "price_min_cr": 8.48,
+                "price_max_cr": 11.34,
+                "price_label": "₹8.48–11.34 Cr",
+                "views": []
+            }
+        ],
+        "amenities": [
+            {
+                "name": "Infinity Pool",
+                "category": "Lifestyle"
+            },
+            {
+                "name": "Valet Parking",
+                "category": "Convenience"
+            },
+            {
+                "name": "Concierge Assistance",
+                "category": "Convenience"
+            },
+            {
+                "name": "Gymnasium",
+                "category": "Sports"
+            },
+            {
+                "name": "Smart Energy Meters",
+                "category": "Sustainability"
+            },
+            {
+                "name": "Biometric Locks",
+                "category": "Security"
+            },
+            {
+                "name": "Scented Garden",
+                "category": "Wellness"
+            }
+        ],
+        "connectivity": [
+            {
+                "type": "Metro",
+                "name": "Noida Sector 50 Metro Station",
+                "distance_km": 0.5
+            },
+            {
+                "type": "Road",
+                "name": "FNG Expressway",
+                "distance_km": 1.2
+            },
+            {
+                "type": "Mall",
+                "name": "Spectrum Metro Mall",
+                "distance_km": 0.8
+            },
+            {
+                "type": "Hospital",
+                "name": "Prayag Hospital & Research Centre",
+                "distance_km": 2.5
+            }
+        ],
+        "payment_plan": {
+            "plan_name": "Construction Linked Plan",
+            "milestones": [
+                {
+                    "name": "Booking",
+                    "percentage": 10,
+                    "amount": 1000000,
+                    "date": "2024-01-01T00:00:00Z"
+                }
+            ]
+        },
+        "cost_sheet": {
+            "gst_rate_pct": 5,
+            "stamp_duty_pct": 5,
+            "registration_pct": 1,
+            "parking_cost": 600000,
+            "club_membership": 300000,
+            "ifms": 150,
+            "plc_charges": [],
+            "other_charges": []
+        },
+        "investment_insights": {
+            "price_appreciation": "5-8%",
+            "rental_yield": "2.5-3%",
+            "market_trend": "Stable",
+            "liquidity_score": "Medium",
+            "investment_report_json": {}
+        },
+        "project_dna": {
+            "builder_track_record_score": 85,
+            "price_position_score": 90,
+            "locality_score": 95,
+            "rera_compliance_score": 95,
+            "amenity_depth_score": 98,
+            "possession_certainty_score": 85,
+            "verified_by": "market-analyst",
+            "last_verified_at": "2026-07-17T00:00:00Z"
+        },
+        "decision_profile": {
+            "status": "PUBLISHED",
+            "decision_thesis": "Dasnac Burj Noida is a niche, limited-edition ultra-luxury tower aimed at high-net-worth individuals who prioritize high-end tech, privacy, and architectural intent over sprawling mega-township amenities.",
+            "why_buy": [
+                "Low Density: Only 207 units in a single tower.",
+                "Future-Ready Tech: Fully integrated smart home systems and VRV ACs.",
+                "Exclusivity: Premium concierge and valet services."
+            ],
+            "why_avoid": [
+                "Extremely high monthly maintenance costs (₹15,000/month).",
+                "Smaller land parcel (1.27 acres) limits sprawling ground-level park space.",
+                "Still under construction (Target 2029)."
+            ],
+            "best_for": "HNI End-users and business owners seeking an exclusive, tech-forward address in Central Noida.",
+            "not_ideal_for": "Budget buyers, flip investors, or families wanting 10+ acre mega-township amenities.",
+            "confidence_sources": [
+                "RERA",
+                "Site Visit",
+                "Project Documents"
+            ],
+            "recommendation_notes": "Structural work complete, finishing ongoing. Reliable for long-term hold.",
+            "advisor_notes": "Advise buyers to verify the true usable carpet area vs the base selling price (BSP) of ₹18,000/sq.ft."
+        },
+        "persona_profile": {
+            "primary_persona": "LUXURY UPGRADER",
+            "secondary_personas": [
+                "HNI INVESTOR",
+                "NRI"
+            ],
+            "income_range": "₹8 Lakh+ per month",
+            "risk_appetite": "Low",
+            "family_stage": "Established Family",
+            "work_location": "Noida / Delhi Business Hubs",
+            "timeline_horizon": "Long Term Hold (10+ years)",
+            "motivation_note": "Seeking a marquee address with top-tier technology.",
+            "persona_descriptions": [
+                {
+                    "fit": "Perfect Fit",
+                    "type": "HNI / Upgrader",
+                    "stars": 5,
+                    "reasons": [
+                        "Values low density and high privacy.",
+                        "Wants modern smart-home capabilities out-of-the-box."
+                    ],
+                    "fitColor": "bg-emerald-100 text-emerald-700",
+                    "iconName": "Gem"
+                }
+            ]
+        },
+        "recommendation": {
+            "tier": "STRONG BUY",
+            "primary_thesis": "The definitive tech-enabled ultra-luxury tower in Sector 75.",
+            "end_use_thesis": "Ideal for those wanting a hotel-like concierge lifestyle.",
+            "investment_thesis": "Not a short-term flip. Buy for status and long-term capital preservation.",
+            "family_thesis": "Secure, but lacks the massive open parks of a 20-acre township.",
+            "investor_thesis": "High entry cost limits yield (estimated rent ₹75k against ₹4.5Cr+ capital).",
+            "luxury_thesis": "Top-tier specs: double height rooms, Jacuzzi balconies, IGBC Gold.",
+            "risk_thesis": "Moderate risk due to 2029 completion, though structure is already erected.",
+            "walk_away_conditions": [
+                "Budget under ₹4 Cr.",
+                "Buyer wants massive ground-level sports facilities."
+            ],
+            "negotiation_leverage": [
+                "Payment plan flexibility since possession is far out."
+            ],
+            "timeline_advice": "Wait for final finishing quality checks before full disbursement.",
+            "internal_confidence": "VERIFIED",
+            "admin_notes": ""
+        },
+        "competitors": [
+            {
+                "competitor_name": "Ivy County",
+                "competitor_slug": "ivy-county-sector-75-noida",
+                "this_project_advantage": "Better smart home tech and lower density.",
+                "competitor_advantage": "Ready to Move, larger land parcel.",
+                "verdict": "Ivy County wins for immediate possession; Dasnac Burj wins on tech/exclusivity.",
+                "price_delta_note": "Dasnac Burj runs at a premium BSP of ₹18,000/sq.ft."
+            }
+        ]
+    },
+    {
+        "project": {
+            "name": "JM Aroma",
+            "slug": "jm-aroma-sector-75-noida",
+            "builder_id": "jm-housing",
+            "status": "Ready to Move",
+            "sector": "Sector 75",
+            "city": "Noida",
+            "address": "GH-04, Eco City, Sector 75, Noida, Uttar Pradesh 201301",
+            "tagline": "A Majestic Residential Complex",
+            "lat": 28.574485,
+            "lng": 77.382684,
+            "rera_number": "RERA Not Applicable",
+            "rera_url": "",
+            "total_towers": 7,
+            "total_units": 612,
+            "land_area_acres": 5.0,
+            "launch_date": "2012-09-01T00:00:00Z",
+            "possession_label": "Delivered (Sept 2015)",
+            "possession_date": "2015-09-01T00:00:00Z",
+            "design_theme": "Modern Contemporary",
+            "architect": "Unknown",
+            "interior_designer": "Unknown",
+            "floors": "G+18",
+            "open_space_pct": 65,
+            "green_rating": "N/A",
+            "description": "Ready-to-move 3 & 4 BHK apartments by JM Housing. Known for excellent 5-year capital appreciation and prime Central Noida location.",
+            "long_description": "JM Aroma is a completed residential project delivered in September 2015, making it a pre-RERA development. Spread over 5 acres with 7 towers, it offers 612 units comprising 3, 3.5, and 4.5 BHK layouts. The project boasts a massive 147.15% five-year capital appreciation, though resident reviews point to poor gym/pool maintenance.",
+            "marketing_claims": [
+                "Ready to Move",
+                "Pre-RERA established society",
+                "12 Vastu-compliant layouts",
+                "Superior construction quality"
+            ],
+            "ai_search_keywords": [
+                "jm aroma noida",
+                "sector 75 ready to move flats",
+                "jm housing sector 75",
+                "jm aroma 3 bhk price"
+            ],
+            "schools_nearby_count": 5,
+            "hospitals_nearby_count": 4,
+            "shopping_nearby_count": 3,
+            "it_parks_nearby_count": 6,
+            "banks_nearby_count": 10,
+            "restaurants_nearby_count": 12,
+            "location_intelligence_json": {}
+        },
+        "unit_types": [
+            {
+                "bhk": 3,
+                "name": "3 BHK",
+                "super_area_sqft": 1325,
+                "carpet_area_sqft": 748,
+                "balcony_area_sqft": 100,
+                "bathrooms": 2,
+                "price_min_cr": 1.62,
+                "price_max_cr": 1.90,
+                "price_label": "₹1.62–1.90 Cr",
+                "views": []
+            },
+            {
+                "bhk": 3,
+                "name": "3.5 BHK",
+                "super_area_sqft": 1850,
+                "carpet_area_sqft": 1034,
+                "balcony_area_sqft": 120,
+                "bathrooms": 4,
+                "price_min_cr": 2.26,
+                "price_max_cr": 2.26,
+                "price_label": "₹2.26 Cr",
+                "views": []
+            },
+            {
+                "bhk": 4,
+                "name": "4.5 BHK",
+                "super_area_sqft": 2550,
+                "carpet_area_sqft": 1342,
+                "balcony_area_sqft": 150,
+                "bathrooms": 5,
+                "price_min_cr": 3.12,
+                "price_max_cr": 3.80,
+                "price_label": "₹3.12–3.80 Cr",
+                "views": []
+            }
+        ],
+        "amenities": [
+            {
+                "name": "Swimming Pool",
+                "category": "Sports"
+            },
+            {
+                "name": "Gymnasium",
+                "category": "Sports"
+            },
+            {
+                "name": "Club House",
+                "category": "Lifestyle"
+            },
+            {
+                "name": "Community Hall",
+                "category": "Lifestyle"
+            },
+            {
+                "name": "Video Door Security",
+                "category": "Security"
+            }
+        ],
+        "connectivity": [
+            {
+                "type": "Metro",
+                "name": "Noida Sector 50 Metro Station",
+                "distance_km": 0.5
+            },
+            {
+                "type": "Mall",
+                "name": "Spectrum Metro Mall",
+                "distance_km": 0.8
+            },
+            {
+                "type": "Hospital",
+                "name": "Cloudnine Hospital",
+                "distance_km": 3.0
+            }
+        ],
+        "payment_plan": {
+            "plan_name": "Resale / 100% Down Payment",
+            "milestones": []
+        },
+        "cost_sheet": {
+            "gst_rate_pct": 0,
+            "stamp_duty_pct": 5,
+            "registration_pct": 1,
+            "parking_cost": 400000,
+            "club_membership": 200000,
+            "ifms": 100,
+            "plc_charges": [],
+            "other_charges": []
+        },
+        "investment_insights": {
+            "price_appreciation": "147.15% (5 Years)",
+            "rental_yield": "3.5-4%",
+            "market_trend": "Bullish",
+            "liquidity_score": "High",
+            "investment_report_json": {}
+        },
+        "project_dna": {
+            "builder_track_record_score": 80,
+            "price_position_score": 85,
+            "locality_score": 90,
+            "rera_compliance_score": 50,
+            "amenity_depth_score": 75,
+            "possession_certainty_score": 100,
+            "verified_by": "market-analyst",
+            "last_verified_at": "2026-07-17T00:00:00Z"
+        },
+        "decision_profile": {
+            "status": "PUBLISHED",
+            "decision_thesis": "A highly liquid, ready-to-move secondary market asset with stellar historical capital appreciation, despite complaints about amenity upkeep.",
+            "why_buy": [
+                "100% ready to move with established registries.",
+                "Excellent 5-year capital appreciation track record.",
+                "Strong Vastu compliance in unit layouts."
+            ],
+            "why_avoid": [
+                "Older construction (Handover 2015).",
+                "Resident complaints regarding poor maintenance of pool and gym.",
+                "Pre-RERA project, offering fewer modern regulatory protections."
+            ],
+            "best_for": "End-users looking for immediate possession in a fully inhabited society.",
+            "not_ideal_for": "Buyers looking for ultra-modern smart home amenities or pristine clubhouses.",
+            "confidence_sources": [
+                "Market Data",
+                "Resident Reviews"
+            ],
+            "recommendation_notes": "Great for families; strongly advise inspecting common areas before purchase.",
+            "advisor_notes": "Resale only. Monthly maintenance is ₹3,500."
+        },
+        "persona_profile": {
+            "primary_persona": "FAMILY",
+            "secondary_personas": [
+                "UPGRADER"
+            ],
+            "income_range": "₹3 Lakh+ per month",
+            "risk_appetite": "Low",
+            "family_stage": "Established family",
+            "work_location": "Noida",
+            "timeline_horizon": "Immediate Move-in",
+            "motivation_note": "Stable community living over luxury bells and whistles.",
+            "persona_descriptions": [
+                {
+                    "fit": "Excellent Fit",
+                    "type": "Family",
+                    "stars": 4,
+                    "reasons": [
+                        "Fully occupied society.",
+                        "Walking distance to Metro."
+                    ],
+                    "fitColor": "bg-blue-100 text-blue-700",
+                    "iconName": "Users"
+                }
+            ]
+        },
+        "recommendation": {
+            "tier": "HOLD/BUY",
+            "primary_thesis": "Solid mid-market choice with proven appreciation.",
+            "end_use_thesis": "Very practical, but expect older infrastructure.",
+            "investment_thesis": "Capital growth has been excellent, but may plateau due to building age.",
+            "family_thesis": "Safe, well-connected community.",
+            "investor_thesis": "Good rental demand (Avg ₹35k for 3BHK).",
+            "luxury_thesis": "Does not compete with newer ultra-luxury projects.",
+            "risk_thesis": "Low risk. Project is delivered and registries are happening.",
+            "walk_away_conditions": [
+                "Requires pristine modern amenities."
+            ],
+            "negotiation_leverage": [
+                "Point out poor maintenance of gym/pool to negotiate resale price."
+            ],
+            "timeline_advice": "Immediate.",
+            "internal_confidence": "VERIFIED",
+            "admin_notes": ""
+        },
+        "competitors": [
+            {
+                "competitor_name": "Apex Athena",
+                "competitor_slug": "apex-athena-sector-75-noida",
+                "this_project_advantage": "Stronger historical appreciation.",
+                "competitor_advantage": "Newer delivery (2019) and better theme.",
+                "verdict": "Apex Athena is slightly better maintained, JM Aroma is slightly cheaper.",
+                "price_delta_note": "Similar price bracket."
+            }
+        ]
+    },
+    {
+        "project": {
+            "name": "Apex Athena",
+            "slug": "apex-athena-sector-75-noida",
+            "builder_id": "apex-group",
+            "status": "Ready to Move",
+            "sector": "Sector 75",
+            "city": "Noida",
+            "address": "Plot No-12A, Sector-75, Noida, Uttar Pradesh 201304",
+            "tagline": "Greek-Themed Luxury Living",
+            "lat": 28.574485,
+            "lng": 77.382684,
+            "rera_number": "UPRERAPRJ10394",
+            "rera_url": "https://www.up-rera.in/verify",
+            "total_towers": 6,
+            "total_units": 619,
+            "land_area_acres": 7.0,
+            "launch_date": "2014-01-03T00:00:00Z",
+            "possession_label": "Delivered (May 2019)",
+            "possession_date": "2019-05-01T00:00:00Z",
+            "design_theme": "Greek Architecture",
+            "architect": "Unknown",
+            "interior_designer": "Unknown",
+            "floors": "G+25",
+            "open_space_pct": 70,
+            "green_rating": "N/A",
+            "description": "Ready-to-move 2, 3 & 4 BHK Greek-themed luxury apartments. Features high-speed elevators, extensive sports facilities, and Vastu-compliant layouts.",
+            "long_description": "Apex Athena by Apex Group is a premium RERA-registered delivered project. Spanning 7 acres, the society offers 619 units across 6 high-rise towers (G+25). It boasts unique Greek-themed architecture, a low unit-to-lift ratio (1:25), and extensive amenities including an amphitheater, sauna, and sports courts. Rents range from ₹30,000 to ₹65,000 per month.",
+            "marketing_claims": [
+                "Greek-themed Architecture",
+                "Vastu Compliant",
+                "3-Side Open Plot",
+                "Low Unit-to-Lift Ratio"
+            ],
+            "ai_search_keywords": [
+                "apex athena noida",
+                "sector 75 noida ready to move",
+                "apex group sector 75",
+                "apex athena 3 bhk"
+            ],
+            "schools_nearby_count": 4,
+            "hospitals_nearby_count": 3,
+            "shopping_nearby_count": 3,
+            "it_parks_nearby_count": 5,
+            "banks_nearby_count": 8,
+            "restaurants_nearby_count": 10,
+            "location_intelligence_json": {}
+        },
+        "unit_types": [
+            {
+                "bhk": 2,
+                "name": "2.5 BHK",
+                "super_area_sqft": 1295,
+                "carpet_area_sqft": 940,
+                "balcony_area_sqft": 100,
+                "bathrooms": 2,
+                "price_min_cr": 1.60,
+                "price_max_cr": 1.77,
+                "price_label": "₹1.60–1.77 Cr",
+                "views": []
+            },
+            {
+                "bhk": 3,
+                "name": "3 BHK",
+                "super_area_sqft": 1670,
+                "carpet_area_sqft": 1410,
+                "balcony_area_sqft": 120,
+                "bathrooms": 3,
+                "price_min_cr": 2.25,
+                "price_max_cr": 2.56,
+                "price_label": "₹2.25–2.56 Cr",
+                "views": []
+            },
+            {
+                "bhk": 4,
+                "name": "4 BHK",
+                "super_area_sqft": 2725,
+                "carpet_area_sqft": 1850,
+                "balcony_area_sqft": 150,
+                "bathrooms": 4,
+                "price_min_cr": 3.68,
+                "price_max_cr": 3.70,
+                "price_label": "₹3.68–3.70 Cr",
+                "views": []
+            }
+        ],
+        "amenities": [
+            {
+                "name": "Clubhouse",
+                "category": "Lifestyle"
+            },
+            {
+                "name": "Event Space & Amphitheatre",
+                "category": "Lifestyle"
+            },
+            {
+                "name": "Tennis Court",
+                "category": "Sports"
+            },
+            {
+                "name": "Sauna & Jacuzzi",
+                "category": "Wellness"
+            },
+            {
+                "name": "Arts and Craft Studio",
+                "category": "Kids"
+            }
+        ],
+        "connectivity": [
+            {
+                "type": "Metro",
+                "name": "Noida City Centre Metro",
+                "distance_km": 4.0
+            },
+            {
+                "type": "Hospital",
+                "name": "Neo Hospital",
+                "distance_km": 3.0
+            }
+        ],
+        "payment_plan": {
+            "plan_name": "Resale",
+            "milestones": []
+        },
+        "cost_sheet": {
+            "gst_rate_pct": 0,
+            "stamp_duty_pct": 5,
+            "registration_pct": 1,
+            "parking_cost": 400000,
+            "club_membership": 200000,
+            "ifms": 100,
+            "plc_charges": [],
+            "other_charges": []
+        },
+        "investment_insights": {
+            "price_appreciation": "8-10% YoY",
+            "rental_yield": "3-3.5%",
+            "market_trend": "Bullish",
+            "liquidity_score": "High",
+            "investment_report_json": {}
+        },
+        "project_dna": {
+            "builder_track_record_score": 85,
+            "price_position_score": 85,
+            "locality_score": 90,
+            "rera_compliance_score": 100,
+            "amenity_depth_score": 85,
+            "possession_certainty_score": 100,
+            "verified_by": "market-analyst",
+            "last_verified_at": "2026-07-17T00:00:00Z"
+        },
+        "decision_profile": {
+            "status": "PUBLISHED",
+            "decision_thesis": "A stable, beautifully themed, ready-to-move mid-premium project offering good rental returns and secure legal status.",
+            "why_buy": [
+                "RERA approved and delivered.",
+                "Strong rental demand (₹30k-₹65k).",
+                "Unique architectural theme."
+            ],
+            "why_avoid": [
+                "Pricing is reaching a plateau for resale.",
+                "Not ultra-luxury."
+            ],
+            "best_for": "Families and investors looking for steady rental income.",
+            "not_ideal_for": "Short-term flippers.",
+            "confidence_sources": [
+                "RERA",
+                "Resident Reviews"
+            ],
+            "recommendation_notes": "A safe bet in Sector 75 with good maintenance records.",
+            "advisor_notes": "Maintenance costs hover around ₹4500-₹5200/month."
+        },
+        "persona_profile": {
+            "primary_persona": "FAMILY",
+            "secondary_personas": [
+                "INVESTOR"
+            ],
+            "income_range": "₹3 Lakh+ per month",
+            "risk_appetite": "Low",
+            "family_stage": "Established family",
+            "work_location": "Noida",
+            "timeline_horizon": "Immediate",
+            "motivation_note": "Aesthetics and steady lifestyle.",
+            "persona_descriptions": [
+                {
+                    "fit": "Excellent Fit",
+                    "type": "Family",
+                    "stars": 4,
+                    "reasons": [
+                        "Ample amenities.",
+                        "Ready to move."
+                    ],
+                    "fitColor": "bg-blue-100 text-blue-700",
+                    "iconName": "Users"
+                }
+            ]
+        },
+        "recommendation": {
+            "tier": "BUY",
+            "primary_thesis": "Safe, delivered asset with good yields.",
+            "end_use_thesis": "Very comfortable family living.",
+            "investment_thesis": "Strong rental market makes it a good hold.",
+            "family_thesis": "Excellent sports and kid amenities.",
+            "investor_thesis": "Reliable 3%+ yield.",
+            "luxury_thesis": "Premium, but not ultra-luxury.",
+            "risk_thesis": "Very low risk.",
+            "walk_away_conditions": [
+                "Seeking massive rapid capital gains."
+            ],
+            "negotiation_leverage": [
+                "Compare with JM Aroma resale values."
+            ],
+            "timeline_advice": "Immediate.",
+            "internal_confidence": "VERIFIED",
+            "admin_notes": ""
+        },
+        "competitors": [
+            {
+                "competitor_name": "Panchsheel Pratishtha",
+                "competitor_slug": "panchsheel-pratishtha-sector-75",
+                "this_project_advantage": "Better architectural theme.",
+                "competitor_advantage": "Slightly more affordable 3 BHK options.",
+                "verdict": "Apex Athena provides slightly higher aesthetic value.",
+                "price_delta_note": "Comparable."
+            }
+        ]
+    },
+    {
+        "project": {
+            "name": "Gardenia Gateway",
+            "slug": "gardenia-gateway-sector-75-noida",
+            "builder_id": "gardenia-group",
+            "status": "Stalled / Insolvency",
+            "sector": "Sector 75",
+            "city": "Noida",
+            "address": "Sector 75, Noida, Uttar Pradesh 201304",
+            "tagline": "Legacy Township",
+            "lat": 28.575657,
+            "lng": 77.382698,
+            "rera_number": "UPRERAPRJ11023",
+            "rera_url": "https://www.up-rera.in/verify",
+            "total_towers": 8,
+            "total_units": 1323,
+            "land_area_acres": 10.0,
+            "launch_date": "2011-10-01T00:00:00Z",
+            "possession_label": "Delayed/Disputed",
+            "possession_date": "2020-07-01T00:00:00Z",
+            "design_theme": "Standard",
+            "architect": "Unknown",
+            "interior_designer": "Unknown",
+            "floors": "G+19",
+            "open_space_pct": 60,
+            "green_rating": "N/A",
+            "description": "Legacy 10-acre project currently facing severe regulatory and insolvency issues (NCLT Section 9). High risk for buyers.",
+            "long_description": "Gardenia Gateway is a distressed asset developed by Gardenia India Limited. The builder owes Noida Authority over ₹103.38 Cr, resulting in a registry freeze. The NCLT admitted an insolvency application against the developer in June 2025. While families live there (fit-out possession given in 2017 without proper OCs), it lacks proper legal clearances and capital appreciation has stagnated over the last 8 years.",
+            "marketing_claims": [
+                "10 Acre Township",
+                "1 to 4 BHK Options"
+            ],
+            "ai_search_keywords": [
+                "gardenia gateway noida",
+                "gardenia gateway dispute",
+                "sector 75 noida flats"
+            ],
+            "schools_nearby_count": 4,
+            "hospitals_nearby_count": 3,
+            "shopping_nearby_count": 2,
+            "it_parks_nearby_count": 4,
+            "banks_nearby_count": 5,
+            "restaurants_nearby_count": 10,
+            "location_intelligence_json": {}
+        },
+        "unit_types": [
+            {
+                "bhk": 2,
+                "name": "2 BHK",
+                "super_area_sqft": 1045,
+                "carpet_area_sqft": 639,
+                "balcony_area_sqft": 80,
+                "bathrooms": 2,
+                "price_min_cr": 0.45,
+                "price_max_cr": 0.77,
+                "price_label": "₹45–77 Lac",
+                "views": []
+            },
+            {
+                "bhk": 3,
+                "name": "3 BHK",
+                "super_area_sqft": 1700,
+                "carpet_area_sqft": 1002,
+                "balcony_area_sqft": 100,
+                "bathrooms": 3,
+                "price_min_cr": 0.89,
+                "price_max_cr": 1.20,
+                "price_label": "₹89 Lac–1.20 Cr",
+                "views": []
+            }
+        ],
+        "amenities": [
+            {
+                "name": "Swimming Pool",
+                "category": "Sports"
+            },
+            {
+                "name": "Park",
+                "category": "Lifestyle"
+            }
+        ],
+        "connectivity": [
+            {
+                "type": "Metro",
+                "name": "Noida Sector 50 Metro Station",
+                "distance_km": 0.6
+            }
+        ],
+        "payment_plan": {
+            "plan_name": "Resale Only (Disputed)",
+            "milestones": []
+        },
+        "cost_sheet": {
+            "gst_rate_pct": 0,
+            "stamp_duty_pct": 5,
+            "registration_pct": 1,
+            "parking_cost": 300000,
+            "club_membership": 100000,
+            "ifms": 50,
+            "plc_charges": [],
+            "other_charges": []
+        },
+        "investment_insights": {
+            "price_appreciation": "Stagnant (0-2% 8 years)",
+            "rental_yield": "3-4%",
+            "market_trend": "Bearish / Stressed",
+            "liquidity_score": "Extremely Low",
+            "investment_report_json": {}
+        },
+        "project_dna": {
+            "builder_track_record_score": 10,
+            "price_position_score": 40,
+            "locality_score": 85,
+            "rera_compliance_score": 10,
+            "amenity_depth_score": 50,
+            "possession_certainty_score": 20,
+            "verified_by": "market-analyst",
+            "last_verified_at": "2026-07-17T00:00:00Z"
+        },
+        "decision_profile": {
+            "status": "PUBLISHED",
+            "decision_thesis": "Avoid completely. The project is mired in insolvency proceedings, lacks Occupancy Certificates, and registries are frozen by the Noida Authority.",
+            "why_buy": [
+                "Extremely low entry price for the sector."
+            ],
+            "why_avoid": [
+                "NCLT Insolvency proceedings active.",
+                "Registries frozen due to ₹103 Cr dues to Noida Authority.",
+                "Stagnant capital values for 8 years.",
+                "No Occupancy Certificate (OC)."
+            ],
+            "best_for": "No one. High-risk distressed asset speculators only.",
+            "not_ideal_for": "End-users, traditional investors, families.",
+            "confidence_sources": [
+                "NCLT Orders",
+                "Noida Authority Defaulter List",
+                "News Reports"
+            ],
+            "recommendation_notes": "Strictly warn clients away from this property.",
+            "advisor_notes": "Cannot be registered currently. Banks will likely reject home loans."
+        },
+        "persona_profile": {
+            "primary_persona": "AVOID",
+            "secondary_personas": [],
+            "income_range": "N/A",
+            "risk_appetite": "Extreme",
+            "family_stage": "N/A",
+            "work_location": "N/A",
+            "timeline_horizon": "N/A",
+            "motivation_note": "Distressed asset.",
+            "persona_descriptions": [
+                {
+                    "fit": "Poor Fit",
+                    "type": "General Buyer",
+                    "stars": 1,
+                    "reasons": [
+                        "Severe legal and financial risks."
+                    ],
+                    "fitColor": "bg-red-100 text-red-700",
+                    "iconName": "AlertTriangle"
+                }
+            ]
+        },
+        "recommendation": {
+            "tier": "STRONG AVOID",
+            "primary_thesis": "Tainted legal title and insolvency proceedings make this a toxic asset.",
+            "end_use_thesis": "Living conditions compromised by builder default.",
+            "investment_thesis": "Dead money. No capital appreciation.",
+            "family_thesis": "Unsafe investment.",
+            "investor_thesis": "Zero liquidity.",
+            "luxury_thesis": "Not applicable.",
+            "risk_thesis": "Maximum risk.",
+            "walk_away_conditions": [
+                "Always walk away."
+            ],
+            "negotiation_leverage": [],
+            "timeline_advice": "Do not engage.",
+            "internal_confidence": "VERIFIED",
+            "admin_notes": ""
+        },
+        "competitors": []
+    },
+    {
+        "project": {
+            "name": "Panchsheel Pratishtha",
+            "slug": "panchsheel-pratishtha-sector-75-noida",
+            "builder_id": "panchsheel-group",
+            "status": "Ready to Move",
+            "sector": "Sector 75",
+            "city": "Noida",
+            "address": "Sector 75, Noida, Uttar Pradesh",
+            "tagline": "A Distinguished Address",
+            "lat": 28.5750,
+            "lng": 77.3820,
+            "rera_number": "UPRERAPRJ8603",
+            "rera_url": "https://www.up-rera.in/verify",
+            "total_towers": 8,
+            "total_units": 568,
+            "land_area_acres": 5.0,
+            "launch_date": "2014-01-01T00:00:00Z",
+            "possession_label": "Delivered (Feb 2018)",
+            "possession_date": "2018-02-13T00:00:00Z",
+            "design_theme": "Contemporary",
+            "architect": "Unknown",
+            "interior_designer": "Unknown",
+            "floors": "G+24",
+            "open_space_pct": 65,
+            "green_rating": "N/A",
+            "description": "Premium 2 & 3 BHK residences in Central Noida offering a refined lifestyle amidst lush green surroundings.",
+            "long_description": "Panchsheel Pratishtha is a successfully delivered premium residential project spanning 5 acres. With 568 units across 8 towers, it offers a balanced mix of 2 and 3 BHK apartments. Known for quality construction by the Panchsheel Group (16+ years experience), it boasts solid RERA compliance and excellent connectivity.",
+            "marketing_claims": [
+                "Earthquake resistant RCC",
+                "European Standard Sanitary Ware",
+                "Premium Landscaped Gardens"
+            ],
+            "ai_search_keywords": [
+                "panchsheel pratishtha noida",
+                "sector 75 flats",
+                "ready to move 3 bhk noida"
+            ],
+            "schools_nearby_count": 5,
+            "hospitals_nearby_count": 3,
+            "shopping_nearby_count": 3,
+            "it_parks_nearby_count": 5,
+            "banks_nearby_count": 7,
+            "restaurants_nearby_count": 10,
+            "location_intelligence_json": {}
+        },
+        "unit_types": [
+            {
+                "bhk": 2,
+                "name": "2 BHK",
+                "super_area_sqft": 1310,
+                "carpet_area_sqft": 793,
+                "balcony_area_sqft": 90,
+                "bathrooms": 2,
+                "price_min_cr": 1.09,
+                "price_max_cr": 2.05,
+                "price_label": "₹1.09–2.05 Cr",
+                "views": []
+            },
+            {
+                "bhk": 3,
+                "name": "3 BHK",
+                "super_area_sqft": 2050,
+                "carpet_area_sqft": 1495,
+                "balcony_area_sqft": 120,
+                "bathrooms": 3,
+                "price_min_cr": 2.14,
+                "price_max_cr": 3.22,
+                "price_label": "₹2.14–3.22 Cr",
+                "views": []
+            }
+        ],
+        "amenities": [
+            {
+                "name": "Swimming Pool",
+                "category": "Sports"
+            },
+            {
+                "name": "Gymnasium",
+                "category": "Sports"
+            },
+            {
+                "name": "Multipurpose Hall",
+                "category": "Lifestyle"
+            },
+            {
+                "name": "Cafeteria",
+                "category": "Lifestyle"
+            }
+        ],
+        "connectivity": [
+            {
+                "type": "Metro",
+                "name": "Noida Sector 50 Metro Station",
+                "distance_km": 1.0
+            }
+        ],
+        "payment_plan": {
+            "plan_name": "Resale",
+            "milestones": []
+        },
+        "cost_sheet": {
+            "gst_rate_pct": 0,
+            "stamp_duty_pct": 5,
+            "registration_pct": 1,
+            "parking_cost": 450000,
+            "club_membership": 200000,
+            "ifms": 100,
+            "plc_charges": [],
+            "other_charges": []
+        },
+        "investment_insights": {
+            "price_appreciation": "Steady (6-8% YoY)",
+            "rental_yield": "3%",
+            "market_trend": "Stable",
+            "liquidity_score": "High",
+            "investment_report_json": {}
+        },
+        "project_dna": {
+            "builder_track_record_score": 85,
+            "price_position_score": 80,
+            "locality_score": 90,
+            "rera_compliance_score": 100,
+            "amenity_depth_score": 80,
+            "possession_certainty_score": 100,
+            "verified_by": "market-analyst",
+            "last_verified_at": "2026-07-17T00:00:00Z"
+        },
+        "decision_profile": {
+            "status": "PUBLISHED",
+            "decision_thesis": "A highly reliable mid-premium project offering spacious layouts and peaceful living, with a clean track record from the builder.",
+            "why_buy": [
+                "Clean legal title and RERA registered.",
+                "Reputed developer with 16+ years experience.",
+                "Excellent construction quality."
+            ],
+            "why_avoid": [
+                "Premium pricing for older resale units.",
+                "No ultra-luxury automation features."
+            ],
+            "best_for": "Families looking for spacious 3 BHKs in a secure, delivered society.",
+            "not_ideal_for": "Bargain hunters.",
+            "confidence_sources": [
+                "RERA",
+                "Resident Ratings"
+            ],
+            "recommendation_notes": "Solid family asset.",
+            "advisor_notes": "Check for unit direction as Vastu compliant units command a premium."
+        },
+        "persona_profile": {
+            "primary_persona": "FAMILY",
+            "secondary_personas": [
+                "UPGRADER"
+            ],
+            "income_range": "₹3 Lakh+ per month",
+            "risk_appetite": "Low",
+            "family_stage": "Established family",
+            "work_location": "Noida",
+            "timeline_horizon": "Immediate",
+            "motivation_note": "A secure, spacious home.",
+            "persona_descriptions": [
+                {
+                    "fit": "Excellent Fit",
+                    "type": "Family",
+                    "stars": 4,
+                    "reasons": [
+                        "Spacious units.",
+                        "Good security and amenities."
+                    ],
+                    "fitColor": "bg-blue-100 text-blue-700",
+                    "iconName": "Users"
+                }
+            ]
+        },
+        "recommendation": {
+            "tier": "BUY",
+            "primary_thesis": "One of the safest delivered assets in Sector 75.",
+            "end_use_thesis": "Excellent for end-use due to robust build quality.",
+            "investment_thesis": "Steady capital appreciation, good rental yields (Avg ₹40k+ for 3BHK).",
+            "family_thesis": "Great environment with parks and clubs.",
+            "investor_thesis": "Highly liquid secondary market.",
+            "luxury_thesis": "Premium, well-built.",
+            "risk_thesis": "Virtually zero completion/legal risk.",
+            "walk_away_conditions": [
+                "Looking for high-risk, high-reward under construction pricing."
+            ],
+            "negotiation_leverage": [
+                "Compare with Apex Athena."
+            ],
+            "timeline_advice": "Immediate.",
+            "internal_confidence": "VERIFIED",
+            "admin_notes": ""
+        },
+        "competitors": [
+            {
+                "competitor_name": "Apex Athena",
+                "competitor_slug": "apex-athena-sector-75-noida",
+                "this_project_advantage": "Slightly better track record from Panchsheel.",
+                "competitor_advantage": "Greek thematic appeal.",
+                "verdict": "Panchsheel wins on layout practicality.",
+                "price_delta_note": "Pricing is neck-and-neck."
+            }
+        ]
+    }
+]

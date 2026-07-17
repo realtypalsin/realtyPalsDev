@@ -563,6 +563,8 @@ export async function computeConversationState(
   // Priority ranking: critical clarifications (1) → high-value actions (2-3) → exploratory (4+)
   // Grouped chips rendered as separate sections; ungrouped chips follow predictive ranking
   const hasGroups = chips.some(c => c.group)
+  const preCapChips = chips.length
   chips = capChips(chips)
+  if (stage === 'CLARIFYING') console.log('[CONV_ENGINE] CLARIFYING stage:', { missingFields, preCapChips, postCapChips: chips.length, labels: chips.map(c => c.label) })
   return { stage, thinking, chips, missingFields, confidence }
 }

@@ -723,7 +723,11 @@ function MessageBubbleInner({
       )}
 
       {/* Progressive chips from Conversation Engine */}
-      {message.type === 'ai' && displayContent && isLast && !isSubmitting && combinedChips.length > 0 && (
+      {(() => {
+        const shouldShow = message.type === 'ai' && displayContent && isLast && !isSubmitting && combinedChips.length > 0;
+        if (message.type === 'ai' && isLast) console.log('[CHIPS_RENDER]', { messageType: message.type, displayContent: !!displayContent, isLast, isSubmitting, chipsLen: combinedChips.length, shouldShow });
+        return shouldShow;
+      })() && (
 
         <m.div
           initial={{ opacity: 0, y: 6 }}
