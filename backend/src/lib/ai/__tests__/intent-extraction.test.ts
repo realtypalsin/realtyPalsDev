@@ -189,7 +189,7 @@ const hasGroq = !!process.env.GROQ_API_KEY
 describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasGroq }, () => {
   // Dynamic import to avoid module-level side effects when skipped
   it('English RERA number query → projectNames populated', async () => {
-    const { extractIntent } = await import('../intent')
+    const { extractIntent } = require('../intent')
     const { intent: result } = await extractIntent('What is the RERA number of Godrej Meridien?', {})
     assert.ok(
       (result.projectNames?.length ?? 0) > 0,
@@ -202,7 +202,7 @@ describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasG
   })
 
   it('Hindi RERA registration query → projectNames populated', async () => {
-    const { extractIntent } = await import('../intent')
+    const { extractIntent } = require('../intent')
     const { intent: result } = await extractIntent('Godrej Palm Retreat ka RERA registration number kya hai', {})
     assert.ok(
       (result.projectNames?.length ?? 0) > 0,
@@ -211,7 +211,7 @@ describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasG
   })
 
   it('UP RERA registration id query → projectNames populated', async () => {
-    const { extractIntent } = await import('../intent')
+    const { extractIntent } = require('../intent')
     const { intent: result } = await extractIntent('ATS Pious Hideaways ka UP RERA registration id chahiye', {})
     assert.ok(
       (result.projectNames?.length ?? 0) > 0,
@@ -220,7 +220,7 @@ describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasG
   })
 
   it('is X RERA registered → projectNames populated', async () => {
-    const { extractIntent } = await import('../intent')
+    const { extractIntent } = require('../intent')
     const { intent: result } = await extractIntent('Is ACE Starlit RERA registered?', {})
     assert.ok(
       (result.projectNames?.length ?? 0) > 0,
@@ -229,7 +229,7 @@ describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasG
   })
 
   it('tell me about X → projectNames populated', async () => {
-    const { extractIntent } = await import('../intent')
+    const { extractIntent } = require('../intent')
     const { intent: result } = await extractIntent('Tell me about Mahagun Moderne', {})
     assert.ok(
       (result.projectNames?.length ?? 0) > 0,
@@ -238,7 +238,7 @@ describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasG
   })
 
   it('RERA query does NOT populate bhk or budget', async () => {
-    const { extractIntent } = await import('../intent')
+    const { extractIntent } = require('../intent')
     const { intent: result } = await extractIntent('What is the RERA number of Godrej Meridien?', {})
     assert.equal(result.budgetMax, undefined)
     assert.equal((result.bhk?.length ?? 0), 0)

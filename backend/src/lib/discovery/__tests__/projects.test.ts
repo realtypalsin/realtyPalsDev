@@ -1,4 +1,13 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it } from 'node:test'
+import { strict as assert } from 'node:assert'
+
+const expect = (actual: any) => ({
+  toBe: (expected: any) => assert.equal(actual, expected),
+  toBeGreaterThan: (expected: any) => assert.ok(actual > expected),
+  toBeGreaterThanOrEqual: (expected: any) => assert.ok(actual >= expected),
+  toBeLessThan: (expected: any) => assert.ok(actual < expected),
+  toBeLessThanOrEqual: (expected: any) => assert.ok(actual <= expected),
+})
 import { scoreProject } from '../scoring';
 import type { Intent } from '../types';
 

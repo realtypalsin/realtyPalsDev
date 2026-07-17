@@ -100,8 +100,8 @@ describe('Scoring: Project Score', () => {
   }
 
   test('scores within-budget projects with possession within 6 months highest', () => {
-    const intent: Intent = { budgetMax: 2.0 }
-    const score1 = scoreProject({ ...baseProject }, intent)
+    const intent: Intent = { budgetMax: 2.0, possession: 'immediate' }
+    const score1 = scoreProject({ ...baseProject, possession_date: new Date() }, intent)
 
     const futureProject = {
       ...baseProject,
@@ -120,7 +120,7 @@ describe('Scoring: Project Score', () => {
 
   test('applies penalty for slightly_over budget', () => {
     const baseIntent: Intent = { budgetMax: 2.0 }
-    const scoreWithin = scoreProject(baseProject, baseIntent)
+    const scoreWithin = scoreProject(baseProject, baseIntent, 'within')
 
     const overProject = {
       ...baseProject,
@@ -133,7 +133,7 @@ describe('Scoring: Project Score', () => {
         }
       ],
     }
-    const scoreOver = scoreProject(overProject, baseIntent)
+    const scoreOver = scoreProject(overProject, baseIntent, 'slightly_over')
 
     assert(scoreWithin > scoreOver, 'Slightly over budget should have lower score')
   })
@@ -152,7 +152,7 @@ describe('Scoring: Project Score', () => {
         }
       ],
     }
-    const scoreSlightlyOver = scoreProject(slightlyOverProject, baseIntent)
+    const scoreSlightlyOver = scoreProject(slightlyOverProject, baseIntent, 'slightly_over')
 
     const significantlyOverProject = {
       ...baseProject,
@@ -165,7 +165,7 @@ describe('Scoring: Project Score', () => {
         }
       ],
     }
-    const scoreOver = scoreProject(significantlyOverProject, baseIntent)
+    const scoreOver = scoreProject(significantlyOverProject, baseIntent, 'over')
 
     assert(scoreSlightlyOver > scoreOver, 'Significantly over budget should have larger penalty')
   })

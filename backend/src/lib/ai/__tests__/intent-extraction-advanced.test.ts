@@ -1,4 +1,16 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it } from 'node:test'
+import { strict as assert } from 'node:assert'
+
+const expect = (actual: any) => ({
+  toBe: (expected: any) => assert.equal(actual, expected),
+  toEqual: (expected: any) => assert.deepEqual(actual, expected),
+  toBeNull: () => assert.equal(actual, null),
+  toBeTruthy: () => assert.ok(actual),
+  toBeFalsy: () => assert.ok(!actual),
+  toBeUndefined: () => assert.equal(actual, undefined),
+  toBeGreaterThanOrEqual: (expected: any) => assert.ok(actual >= expected),
+  toBeDefined: () => assert.ok(actual !== undefined),
+})
 import { mergeIntent } from '../intent';
 import type { Intent } from '../../discovery/types';
 

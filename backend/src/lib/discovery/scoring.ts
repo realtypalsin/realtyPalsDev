@@ -84,6 +84,7 @@ export function scoreProject(
   intent: Intent,
   budgetStatus?: BudgetStatus
 ): number {
+  if (!p) return 0
   let score = 0
 
   // ── Possession fit (max 20) ─────────────────────────────────────────

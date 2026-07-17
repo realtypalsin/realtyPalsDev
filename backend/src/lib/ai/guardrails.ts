@@ -42,9 +42,9 @@ function extractReraNumbers(text: string): Set<string> {
 // Patterns indicating fabricated investment return claims.
 // Designed to avoid false positives on legitimate advice (stamp duty %, GST %, EMI rates).
 const INVESTMENT_CLAIM_PATTERNS = [
-  /\b\d{1,3}%?\s*(?:returns?|cagr|roi|appreciation)\b/i,
-  /\b(?:double|triple)\s+your\s+money\b/i,
-  /\b(?:guaranteed|assured)\s+returns?\b/i,
+  /\b\d{1,3}%?\s*(?:annual\s+|yearly\s+)?(?:returns?|cagr|roi|appreciation)\b/i,
+  /\b(?:double|triple)\s+(?:your\s+money|in\s+\d+\s+years?)\b/i,
+  /\b(?:guaranteed|assured)\s+returns?|returns?\s+guaranteed\b/i,
 ]
 
 const EXTERNAL_URL_PATTERNS = [
@@ -174,7 +174,7 @@ export async function outputGuardrail(
         // Be conservative: only flag obvious fabrications (e.g., "₹50L in Sector 150" where 50L doesn't exist)
         // Allow generic price advice without exact numbers
         const isGenericAdvice = /around|approximately|typically|generally|usually|roughly|estimate|ballpark/i.test(response)
-        if (!isGenericAdvice && priceNum.length <= 2) { // likely a specific crore/lakh claim
+        if (!isGenericAdvice && priceNum.length <= 5) { // likely a specific crore/lakh claim (up to 99.99)
           violations.push({
             type: 'price_fabrication',
             detail: `price point "${price}" appears in response but not in verified context`,

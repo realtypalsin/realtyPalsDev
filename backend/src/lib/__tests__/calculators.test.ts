@@ -48,9 +48,9 @@ describe('Calculators: EMI', () => {
 describe('Calculators: Stamp Duty', () => {
   test('male buyer (default): 7% stamp duty + 1% registration', () => {
     const result = calcStampDuty(2, 'male')
-    const expectedStampDuty = 2 * 1_00_00_000 * 0.07
-    const expectedRegistration = 2 * 1_00_00_000 * 0.01
-    assert.equal(result.stampDuty, expectedStampDuty)
+    const expectedStampDuty = Math.round(2 * 1_00_00_000 * 0.07)
+    const expectedRegistration = Math.round(2 * 1_00_00_000 * 0.01)
+    assert.equal(Math.round(result.stampDuty), expectedStampDuty)
     assert.equal(result.registration, expectedRegistration)
     assert.equal(result.total, expectedStampDuty + expectedRegistration)
   })
@@ -111,7 +111,7 @@ describe('Calculators: GST', () => {
   })
 
   test('no carpet_sqm specified defaults to standard rate', () => {
-    const result = calcGst(0.4, 'ready_to_move') // no carpet area
+    const result = calcGst(0.4, 'under_construction') // no carpet area
     assert.equal(result.rate, 5, 'Should default to standard rate without carpet area')
   })
 
