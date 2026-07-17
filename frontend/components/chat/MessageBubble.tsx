@@ -82,7 +82,7 @@ function buildPickerMessage(action: string, selected: ProjectCardType[]): string
   const names = selected.map(p => p.name)
   switch (action) {
     case 'emi':
-      return `What would be the monthly EMI for ${names[0]}? Show a breakdown at 8.5% for 20 years.`
+      return `What would be the monthly EMI for ${names[0]}? Calculate EMI assuming standard lending parameters.`
     case 'stamp_duty':
       return `Calculate stamp duty and registration charges for ${names[0]}.`
     case 'gst':

@@ -42,8 +42,11 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
         }
       `}
       title={chip.label}
+      aria-label={chip.label}
+      role="button"
+      aria-pressed={isActive}
     >
-      {chip.icon && <span className="text-[14px] leading-none flex-shrink-0">{chip.icon}</span>}
+      {chip.icon && <span className="text-[14px] leading-none flex-shrink-0" aria-hidden="true">{chip.icon}</span>}
       <span className="truncate min-w-0">{chip.label}</span>
       {hasDropdown && (
         <span className={`text-[10px] ml-0.5 flex-shrink-0 ${isActive ? 'text-blue-200' : 'text-gray-400'}`}>
