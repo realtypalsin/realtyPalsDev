@@ -24,21 +24,24 @@ export default function NumberTicker({
     const isInView = useInView(ref, { once: true, margin: "0px" });
 
     useEffect(() => {
-        isInView &&
-            setTimeout(() => {
-                motionValue.set(direction === "down" ? 0 : value);
-            }, delay * 1000);
+        if (!isInView) return;
+        const timer = setTimeout(() => {
+            motionValue.set(direction === "down" ? 0 : value);
+        }, delay * 1000);
+        return () => clearTimeout(timer);
     }, [motionValue, isInView, delay, value, direction]);
 
     useEffect(
-        () =>
-            springValue.on("change", (latest) => {
+        () => {
+            const unsubscribe = springValue.on("change", (latest) => {
                 if (ref.current) {
                     ref.current.textContent = Intl.NumberFormat("en-US").format(
                         Number(latest.toFixed(0)),
                     );
                 }
-            }),
+            });
+            return unsubscribe;
+        },
         [springValue],
     );
 

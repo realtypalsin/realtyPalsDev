@@ -56,14 +56,17 @@ export default function PlacesAutocomplete({ value, onChange, placeholder, class
         fields: ['formatted_address', 'name'],
         types: ['geocode', 'establishment'],
       })
-      ac.addListener('place_changed', () => {
+      const listener = ac.addListener('place_changed', () => {
         const place = ac.getPlace()
         const addr = place.formatted_address ?? place.name ?? ''
         if (addr) onChange(addr)
       })
       autocompleteRef.current = ac
+      return () => {
+        if (listener) window.google.maps.event.removeListener(listener)
+      }
     })
-  }, [apiKey])
+  }, [apiKey, onChange])
 
   return (
     <div className="relative flex-1">

@@ -51,7 +51,8 @@ export default function VisualGuide() {
     if (!seen) {
       setHasSeenGuide(false);
       // Auto-open after a short delay for new users
-      setTimeout(() => setIsOpen(true), 2000);
+      const timer = setTimeout(() => setIsOpen(true), 2000);
+      return () => clearTimeout(timer);
     }
   }, []);
 

@@ -62,9 +62,9 @@ export function PlaceholdersAndVanishInput({
         if (controlledValue !== undefined) {
             setValue(controlledValue);
             if (controlledValue && document.activeElement !== inputRef.current) {
-                setTimeout(() => inputRef.current?.focus(), 50);
+                const timer = setTimeout(() => inputRef.current?.focus(), 50);
+                return () => clearTimeout(timer);
             }
-
         }
     }, [controlledValue]);
 

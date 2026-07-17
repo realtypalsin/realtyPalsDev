@@ -72,9 +72,11 @@ export default function ChatLoader({ isSearching, searchingTool }: Props) {
   useEffect(() => {
     if (!isSearching) return
     timersRef.current.forEach(clearTimeout)
+    timersRef.current = []
     setActiveStep(1)
     const t = setTimeout(() => setActiveStep(2), 650)
     timersRef.current.push(t)
+    return () => clearTimeout(t)
   }, [isSearching])
 
   return (

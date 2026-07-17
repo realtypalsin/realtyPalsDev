@@ -4,15 +4,14 @@
 // The kit script is loaded in layout.tsx
 
 import {
-  Waves, Umbrella, Baby, ThermometerSun, Flame, Droplets,
-  Flower2, HeartPulse, Dumbbell, Activity, ShieldPlus,
-  Footprints, Bike, Map, MapPin, Search, PlayCircle, Trophy,
-  Star, Coffee, UserPlus, Users, Store, Tent, ShoppingBag,
-  ShieldCheck, Shield, KeyRound, Zap, Camera, Car, TreePine,
-  Wind, Cloud, LayoutGrid, Snowflake, HandPlatter, Hammer, Stethoscope,
-  Trees, CloudSun, Briefcase, Cross, Leaf, Gamepad2, Sprout, Video, Popcorn, 
-  Glasses, UtensilsCrossed, MonitorPlay, BookOpen, 
-  CarFront, Map as MapIcon, BedDouble, CheckSquare
+  Waves, Umbrella, Baby, Flame, Droplets,
+  Flower2, HeartPulse, Dumbbell, Activity,
+  Footprints, Bike, Trophy,
+  Star, Coffee, Store, Tent, ShoppingBag,
+  ShieldCheck, KeyRound, Zap, Car, TreePine,
+  Snowflake, HandPlatter,
+  CloudSun, Briefcase, Gamepad2, Video,
+  MonitorPlay, BookOpen, Map as MapIcon
 } from 'lucide-react';
 
 export interface AmenityMeta {

@@ -1,7 +1,7 @@
 'use client'
 import {
-  Building2, CheckCircle2, Clock, LineChart, BedDouble, Star,
-  ExternalLink, X, MapPin, Sparkles, CalendarDays, Bookmark, FileText, IndianRupee, Wallet, Map as MapIcon, File as FileIcon
+  Building2, CheckCircle2, LineChart, BedDouble,
+  MapPin, Sparkles, CalendarDays, FileText, IndianRupee
 } from 'lucide-react'
 
 import { useState, useEffect, useRef } from 'react'

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {  AnimatePresence, m  } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { ChatMessage, NearbyExpansion } from '@/types/property';
@@ -9,7 +9,7 @@ import type { ProjectCard as ProjectCardType } from '@/types/project';
 import Image from 'next/image';
 import Toast from '@/components/Toast';
 import { API_BASE } from '@/lib/env'
-import { track, trackPropertyEvent } from '@/lib/analytics';
+import { track } from '@/lib/analytics';
 import { streamChat as streamChatBackend } from '@/lib/backend-api'
 import { authHeaders } from '@/lib/authedFetch'
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
@@ -17,7 +17,7 @@ import MessageBubble from '@/components/chat/MessageBubble';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
 import ChipPicker from '@/components/chat/ChipPicker';
-import { Building2, Home, Key, MapPin, Search, Send, Upload, User, Loader2, Sparkles, Map, Info, AlertTriangle, ArrowRight, X, Clock, Navigation, CheckCircle2, Bot, StopCircle, ArrowDown, Mic, PanelLeft, ChevronDown, Star, Pencil, Trash2, Sun, Moon, ArrowUp, MessageSquare, PanelLeftClose, PanelLeftOpen, SquarePen, TrendingUp, ShieldCheck, Wallet, Scale, Palmtree } from 'lucide-react';
+import { AlertTriangle, ArrowUp, ChevronDown, Key, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { useSessions } from '@/hooks/useSessions';
 import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } from '@/hooks/useAnalyticsTracking';
@@ -969,7 +969,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const prefill = sessionStorage.getItem('rp_prefill_chat');
     if (prefill) {
       sessionStorage.removeItem('rp_prefill_chat');
-      setTimeout(() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: prefill } }), 200);
+      const timer = setTimeout(() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: prefill } }), 200);
+      return () => clearTimeout(timer);
     }
   }, [isInitialized, dispatchAction]);
 

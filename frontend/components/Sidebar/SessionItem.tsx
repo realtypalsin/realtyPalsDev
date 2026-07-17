@@ -166,7 +166,10 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
 
         setIsNavigating(true);
         if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
-        navigationTimeoutRef.current = setTimeout(() => setIsNavigating(false), 1000);
+        navigationTimeoutRef.current = setTimeout(() => {
+          setIsNavigating(false);
+          navigationTimeoutRef.current = null;
+        }, 1000);
 
         // [TIMING] mark sidebar click as t0
         const t0 = performance.now()
