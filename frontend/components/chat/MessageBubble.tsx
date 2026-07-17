@@ -131,19 +131,25 @@ export function SuggestionChipGroups({
   const sorted = deduped.sort((a, b) => a.priority - b.priority)
 
   const handleCardSelect = (chip: import('./types').ChipAction, projectId: string) => {
-    // Modify chip action to apply to selected project only
+    // Convert card selection to TEXT_MESSAGE for the backend
     const projects = chip.payload?.projects as Array<{ id: string; name: string }> | undefined
     const selectedProject = projects?.find(p => p.id === projectId)
-    if (selectedProject) {
-      const modifiedChip = {
+
+    if (selectedProject && chip.actionType === 'TEXT_MESSAGE') {
+      // Build natural language message with selected project
+      const actionPrefix = chip.payload?.actionPrefix || chip.label
+      const actionSuffix = chip.payload?.actionSuffix || '?'
+      const fullMessage = `${actionPrefix} ${selectedProject.name}${actionSuffix}`.trim()
+
+      // Send as TEXT_MESSAGE with the constructed message
+      const textChip = {
         ...chip,
+        actionType: 'TEXT_MESSAGE' as const,
         payload: {
-          ...chip.payload,
-          projects: [selectedProject],
-          selectedProjectId: projectId
+          text: fullMessage
         }
       }
-      onAction(modifiedChip)
+      onAction(textChip)
     }
   }
 

@@ -1057,7 +1057,33 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
     // Exhaustive: INTENT_PATCH, TEXT_MESSAGE, REMOVE_FILTER, COMPARE_PROPERTIES
     switch (action.actionType) {
-      case 'INTENT_PATCH':
+      case 'INTENT_PATCH': {
+        // Convert INTENT_PATCH to natural language message
+        const patch = (action.payload?.patch || {}) as Record<string, any>;
+        const texts: string[] = [];
+
+        if (patch.sector) texts.push(`properties in ${patch.sector}`);
+        if (Array.isArray(patch.bhk) && patch.bhk.length) {
+          const bhks = patch.bhk.map((b: number) => `${b} BHK`).join(', ');
+          texts.push(`${bhks}`);
+        }
+        if (patch.budgetMin || patch.budgetMax) {
+          const min = patch.budgetMin ? `₹${patch.budgetMin}Cr` : '';
+          const max = patch.budgetMax ? `₹${patch.budgetMax}Cr` : '';
+          const range = [min, max].filter(Boolean).join(' - ');
+          texts.push(`within budget ${range}`);
+        }
+        if (Array.isArray(patch.lifestyleKeywords) && patch.lifestyleKeywords.length) {
+          texts.push(`with ${patch.lifestyleKeywords.join(', ')}`);
+        }
+
+        const naturalText = texts.join(' ') || 'refine search';
+        dispatchAction({
+          type: 'TEXT_MESSAGE',
+          payload: { text: naturalText }
+        });
+        return;
+      }
       case 'TEXT_MESSAGE':
       case 'REMOVE_FILTER':
         dispatchAction({
