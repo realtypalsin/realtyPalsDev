@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import {
   MapPin, Share2, Car, TrainFront, HeartPulse, ShoppingBag,
-  GraduationCap, Plane, Briefcase, TrendingUp, CalendarDays, PhoneCall,
+  GraduationCap, Plane, Briefcase, TrendingUp, CalendarDays,
   Map as MapIcon, ChevronRight, ArrowUpRight
 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'

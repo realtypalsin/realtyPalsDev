@@ -1,5 +1,5 @@
 import { m } from 'framer-motion'
-import { AlertTriangle, ArrowRight, Building2, CheckCircle2, Info, MapPin } from 'lucide-react'
+import { AlertTriangle, Building2, CheckCircle2 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 
 export default function CompetitorsTab({ project, d }: { project: ProjectCardType | null, d: (ProjectCardType | ProjectDetail) | null }) {

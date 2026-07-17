@@ -3,8 +3,8 @@ import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import {  m, AnimatePresence  } from 'framer-motion'
 import {
-  FileText, Download, Search, File, ChevronRight, CheckCircle2, FolderOpen,
-  Eye, FileArchive, LayoutTemplate, Scale, Receipt, ClipboardList, Clock
+  FileText, Download, Search, File, CheckCircle2, FolderOpen,
+  FileArchive, LayoutTemplate, Scale, Receipt, ClipboardList, Clock
 } from 'lucide-react'
 import { track, trackPropertyEvent } from '@/lib/analytics'
 import type { ProjectDocumentPublic } from '@/components/ProjectDetailPanel'

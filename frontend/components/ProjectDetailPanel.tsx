@@ -10,7 +10,6 @@ import Image from 'next/image'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { track, trackPropertyEvent } from '@/lib/analytics'
-import { authHeaders } from '@/lib/authedFetch'
 import { getAqi, type AqiResult } from '@/lib/waqi'
 import { usePreferredImages } from '@/lib/hooks'
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
@@ -25,7 +24,6 @@ import ResidencesTab from '@/components/property-detail/ResidencesTab'
 import ProjectPricingTab from '@/components/property-detail/ProjectPricingTab'
 import LocationTab from '@/components/property-detail/LocationTab'
 import DocumentsTab from '@/components/property-detail/DocumentsTab'
-import CompetitorsTab from '@/components/property-detail/CompetitorsTab'
 import { API_BASE } from '@/lib/env'
 import { getPaymentPlan, getCostSheet } from '@/lib/backend-api'
 import { resolveImgUrl } from '@/lib/utils'
@@ -66,11 +64,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const [documents, setDocuments]     = useState<ProjectDocumentPublic[]>([])
   const [loading, setLoading]         = useState(false)
   const [activeTab, setActiveTab]     = useState<Tab>('Overview')
-  const [isOverviewExpanded, setIsOverviewExpanded] = useState(false)
-  // Optimistic-only, same as ProjectCard's save button — no GET check on mount,
-  // so it doesn't reflect a pre-existing saved state, just the current session's action.
-  const [saved, setSaved]             = useState(false)
-  const [saving, setSaving]           = useState(false)
   const [paymentPlan, setPaymentPlan] = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; message?: string }>({ loaded: false, available: false, data: null })
   const [costSheet, setCostSheet]     = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; illustration: Record<string, number | null> | null; note?: string; message?: string }>({ loaded: false, available: false, data: null, illustration: null })
   const [showVisitScheduler, setShowVisitScheduler] = useState(false)
@@ -195,8 +188,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     })
   }, [activeTab, project?.slug, costSheet.loaded])
 
-  const isProjectOpen = !!project
-
   useEffect(() => {
     if (inline || !project) return
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -211,31 +202,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const isOpen = !!project
 
   // Same /saved endpoint ProjectCard already calls — reused, not reinvented.
-  const handleSave = async () => {
-    if (!userId || saving || !project) return
-    setSaving(true)
-    const wasSaved = saved
-    setSaved(!wasSaved)
-    try {
-      if (wasSaved) {
-        const res = await fetch(`${API_BASE}/saved/${project.id}`, { method: 'DELETE', headers: await authHeaders() })
-        if (!res.ok) throw new Error('Delete failed')
-      } else {
-        const res = await fetch(`${API_BASE}/saved`, {
-          method: 'POST',
-          headers: await authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ project_id: project.id }),
-        })
-        if (!res.ok) throw new Error('Save failed')
-        track('property_saved', { project_slug: project.slug, project_name: project.name })
-      }
-    } catch {
-      setSaved(wasSaved)
-    } finally {
-      setSaving(false)
-    }
-  }
-
   const handleOpenSiteVisit = () => {
     if (project) trackPropertyEvent(project.id, 'site_visit', undefined, userId).catch(() => {})
     setShowVisitScheduler(true)
@@ -262,11 +228,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const bhkLabel = [...new Set((d?.unit_types ?? []).map((u) => `${u.bhk}BHK`))].join(' · ')
 
   const tier          = detail?.recommendation_profile?.tier ?? null
-  // Prefer the deterministic DB score (Overview's own source) so the number and
-  // tier shown together always come from the same computation; fall back to the
-  // chat-computed decision score only when the DB one isn't verified yet.
-  const heroScore     = detail?.recommendation_score?.total ?? project?.decisionIntelligence?.overallScore ?? null
-  const heroTier      = detail?.recommendation_score?.tier ?? project?.decisionIntelligence?.tier ?? tier
   const persona       = detail?.persona_profile?.primary_persona ?? null
   const decisionThesis = detail?.decision_profile?.decision_thesis ?? null
   const whyBuy        = detail?.decision_profile?.why_buy ?? []
@@ -514,7 +475,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     const displayPrice = d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr Onwards` : 'Price on Request')
       const displayPossession = d?.possession_label || 'TBD'
       const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 0
-      const displayTier = detail?.recommendation_score?.tier || (d as any)?.recommendation_score?.tier || 'UNRATED'
       const unitTypes = d?.unit_types ?? []
 
       return (

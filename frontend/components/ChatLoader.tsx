@@ -40,7 +40,6 @@ const TOOL_STEPS: Record<string, string[]> = {
 }
 
 interface Props {
-  userQuery: string
   isSearching: boolean
   searchingTool?: 'search_properties' | 'search_web' | 'commute' | 'rera'
 }

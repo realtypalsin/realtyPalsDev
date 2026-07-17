@@ -1,9 +1,8 @@
 'use client'
 import { useState } from 'react'
-import {  m  } from 'framer-motion'
 import {
   FileText, CalendarDays, Percent, ShieldCheck, Download, CheckCircle2,
-  TrendingUp, Home, ArrowUpRight, Lock, PhoneCall, HelpCircle, IndianRupee,
+  TrendingUp, Home, ArrowUpRight, PhoneCall, IndianRupee,
   MessageSquare
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'

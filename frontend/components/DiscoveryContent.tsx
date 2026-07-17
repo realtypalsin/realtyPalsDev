@@ -6,7 +6,6 @@ import {  AnimatePresence, m  } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { ChatMessage, NearbyExpansion } from '@/types/property';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
-import Image from 'next/image';
 import Toast from '@/components/Toast';
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics';
@@ -16,7 +15,6 @@ import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-van
 import MessageBubble from '@/components/chat/MessageBubble';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
-import ChipPicker from '@/components/chat/ChipPicker';
 import { AlertTriangle, ArrowUp, ChevronDown, Key, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { useSessions } from '@/hooks/useSessions';
@@ -59,11 +57,9 @@ interface DiscoveryContentProps {
   guestToken?: string | null;
   onSessionChange?: (sessionId: string | null) => void;
   initialSessionId?: string | null;
-  isSidebarCollapsed?: boolean;
-  onToggleCollapse?: () => void;
 }
 
-export default function DiscoveryContent({ userId, guestToken, onSessionChange, initialSessionId, isSidebarCollapsed, onToggleCollapse }: DiscoveryContentProps) {
+export default function DiscoveryContent({ userId, guestToken, onSessionChange, initialSessionId }: DiscoveryContentProps) {
   const router = useRouter();
   const [chatInput, setChatInput] = useState(() => {
     if (typeof window === 'undefined') return '';
@@ -72,7 +68,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [visibleCount, setVisibleCount] = useState(15);
   const [toast, setToast] = useState<{ message: string } | null>(null);
-  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [, setShowRecommendations] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -110,7 +106,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     try {
       await renameSession(sessionId, newTitle);
       window.dispatchEvent(new Event('realtypals:session-updated'));
-    } catch (err) {
+    } catch {
       setSessionTitle(oldTitle);
       setToast({ message: 'Failed to rename session' });
     }
@@ -122,7 +118,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       await deleteSession(sessionId);
       window.dispatchEvent(new Event('realtypals:session-updated'));
       router.push('/discover');
-    } catch (err) {
+    } catch {
       setToast({ message: 'Failed to delete session' });
     }
     setShowHeaderDropdown(false);
@@ -147,9 +143,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, [chatHistory, sessionId, sessionTitle, chatPhase, currentIntent, lastShortlist]);
 
   // ── Analytics hooks ──
-  const { recordDropoff } = useDropoffDetection({ sessionId: sessionId || 'pending' });
+  useDropoffDetection({ sessionId: sessionId || 'pending' });
   const { recordEngagement } = useEngagementTracking({ sessionId: sessionId || 'pending' });
-  const { trackImpression, trackClick } = usePromotionalTracking({
+  usePromotionalTracking({
     sessionId: sessionId || 'pending',
     userId: userId || undefined,
     guestToken: guestToken || undefined
@@ -176,7 +172,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, [recordEngagement]);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState(false);
-  const [showBottomNav, setShowBottomNav] = useState(false);
   const [showHeaderDropdown, setShowHeaderDropdown] = useState(false);
   const headerDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -194,18 +189,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [chipPicker, setChipPicker] = useState<ChipPickerState | null>(null);
   const [siteVisitProject, setSiteVisitProject] = useState<ProjectCardType | null>(null);
   const [callbackProject, setCallbackProject] = useState<ProjectCardType | null>(null);
-  const [callbackForm, setCallbackForm] = useState({ name: '', phone: '' });
-  const [callbackSubmitting, setCallbackSubmitting] = useState(false);
   const [callbackDone, setCallbackDone] = useState(false);
-  const [callbackError, setCallbackError] = useState<string | null>(null);
 
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
-  const [shareCopied, setShareCopied] = useState(false);
+  const [, setShareCopied] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
-  const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
-  const [statusPhase, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
-  const [resultCount, setResultCount] = useState<number | null>(null)
+  const [regeneratingIdx, ] = useState<number | null>(null);
+  const [, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
+  const [, setResultCount] = useState<number | null>(null)
   const [showReEngagement, setShowReEngagement] = useState(true)
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -1106,7 +1098,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, []);
 
   const hasUserReplied = chatHistory.some((m) => m.type === 'user');
-  const headerTitle = sessionTitle ?? (hasUserReplied ? 'RealtyPals' : 'New conversation');
 
   // Index of the last chat message that has property cards — only that one shows full grid
   // If the properties are exactly the same as the previous turn, it returns -1 (auto-collapses them).
@@ -1140,11 +1131,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     
     return lastIdx;
   }, [chatHistory]);
-
-  // ── Submit a message programmatically (used by suggestion chips and advisor chips) ──
-  const submitMessage = useCallback((text: string) => {
-    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text } });
-  }, [dispatchAction]);
 
   // ── Stable MessageBubble callbacks ──────────────────────────────────────────
   const handleToggleExpanded = useCallback((id: string) => {

@@ -4,14 +4,12 @@ import { memo, useState, useEffect, useRef } from 'react'
 import {  m, AnimatePresence  } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { User, RotateCcw, Copy, ChevronDown, MapPin, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { RotateCcw, Copy, ChevronDown, MapPin, ThumbsUp, ThumbsDown } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import { track, trackPropertyEvent } from '@/lib/analytics'
 import { parseResponseBlocks } from '@/lib/responseParser'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
-import ChatLoader from '@/components/ChatLoader'
 import ProjectCard from '@/components/ProjectCard'
-import PropertyCardWithRecommendation from '@/components/chat/PropertyCardWithRecommendation'
 import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import { SuggestionChip } from '@/components/chat/SuggestionChip'
 import type { ChatMessage } from '@/types/property'
@@ -71,7 +69,6 @@ export interface MessageBubbleProps {
   onAction: (action: import('./types').ChipAction) => void
 
   onToggleExpanded: (messageId: string) => void
-  onToggleMap: () => void
   onSetChipPicker: (picker: ChipPickerState | null) => void
   onSetCarouselIndex: (msgIndex: number, imgIndex: number) => void
   onSetSiteVisit: (project: ProjectCardType) => void

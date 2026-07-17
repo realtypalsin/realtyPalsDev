@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import {  m, AnimatePresence  } from 'framer-motion'
-import { Calendar, Clock, User, X, CheckCircle2 } from 'lucide-react'
+import { Calendar, Clock, User, X } from 'lucide-react'
 
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics'

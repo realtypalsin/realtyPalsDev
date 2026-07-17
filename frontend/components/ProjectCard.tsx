@@ -4,13 +4,13 @@ import { useState, useCallback } from 'react'
 
 import Image from 'next/image'
 import {
-  ClockCountdown, CheckCircle, ShieldCheck, SealCheck,
+  ShieldCheck, SealCheck,
   Subway, AirplaneTakeoff, Path,
   Leaf, Baby, Heart,
-  MapPin, ArrowRight, BookmarkSimple,
+  BookmarkSimple,
   CaretLeft, CaretRight,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Barbell, Star, Buildings, Bed, Phone, ShareNetwork, Sparkle,
+  Barbell, Star, Buildings, Phone, ShareNetwork, Sparkle,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 import { API_BASE } from '@/lib/env'

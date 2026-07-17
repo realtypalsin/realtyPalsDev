@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getReEngagement } from '@/lib/backend-api';
 import { toast } from 'sonner';
-import { ArrowRight, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface Props {
   userId?: string | null;
