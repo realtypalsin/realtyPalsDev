@@ -111,7 +111,7 @@ describe('Calculators: GST', () => {
   })
 
   test('no carpet_sqm specified defaults to standard rate', () => {
-    const result = calcGst(0.4) // no carpet area
+    const result = calcGst(0.4, 'ready_to_move') // no carpet area
     assert.equal(result.rate, 5, 'Should default to standard rate without carpet area')
   })
 

@@ -226,7 +226,7 @@ describe('Chips: Adaptive & Predictive', () => {
   describe('Chips: Ground LLM Predictions (C5)', () => {
     it('Single-result turn never shows compare-chip suggestion', async () => {
       const intent: Intent = { sector: 'Sector 150', bhk: [3] }
-      const state = await computeConversationState(intent, 'COMPARING', mockProjects.slice(0, 1), false, [{ role: 'user', content: 'tell me about this project' }], undefined, undefined, undefined, mockInventory, true)
+      const state = await computeConversationState(intent, 'SHORTLISTED', mockProjects.slice(0, 1), false, [{ role: 'user', content: 'tell me about this project' }], undefined, undefined, undefined, mockInventory, true)
       assert.ok(
         !state.chips.some(c => c.label.toLowerCase().includes('compare')),
         'Single-result RESEARCH stage should not suggest comparison chips'

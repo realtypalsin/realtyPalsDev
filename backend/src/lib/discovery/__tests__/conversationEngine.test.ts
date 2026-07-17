@@ -199,7 +199,7 @@ describe('ConversationEngine: Missing Fields', () => {
       sector: 'Sector 150',
       bhk: [3],
       budgetMax: 2,
-      endUse: 'investment'
+      purpose: 'investment'
     }
     const state = await computeConversationState(intent, 'READY_TO_SEARCH', [], false, [], undefined, undefined, undefined, mockInventory, false)
     assert.equal(state.missingFields.length, 0, 'Should have no missing fields')

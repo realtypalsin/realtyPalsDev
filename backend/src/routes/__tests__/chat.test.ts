@@ -73,6 +73,7 @@ describe('Chat Route: Critical Paths', () => {
     const sessionOwnerId = 'user-abc'
     const attacker = 'user-xyz'
 
+    // @ts-ignore Intentional different users for IDOR test
     const canAccess = sessionOwnerId === attacker
     assert(!canAccess, 'Attacker should not access other user sessions')
 
