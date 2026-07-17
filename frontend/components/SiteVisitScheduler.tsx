@@ -115,7 +115,6 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
               }`} />
             ))}
           </div>
-        )}
 
         <div className="p-5">
           <AnimatePresence mode="wait">

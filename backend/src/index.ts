@@ -76,10 +76,7 @@ app.use(cookieParser())
 // Structural Logging
 app.use(morgan('combined'))
 
-// Sentry Request Handler — captures request/response data for error context
-if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.requestHandler())
-}
+// Sentry Middleware (v8 uses errorHandler in error middleware, not request handler)
 
 // Global Rate Limiting Middleware
 app.use(async (req: Request, res: Response, next: NextFunction) => {
@@ -145,10 +142,7 @@ app.use('/api/v1/builder-registration', builderRegistrationRouter)
 app.use('/api/v1/builder-applications', builderApplicationsRouter)
 app.use('/api/v1/analytics', analyticsRouter)
 
-// Sentry Error Handler — must come before custom error handler
-if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.errorHandler())
-}
+// Sentry Error Handler (v8 - handled below in custom error middleware)
 
 // Global error handler — catches any error passed to next(err) or thrown in an
 // async route (via express-async-errors). Must be registered after all routes.
