@@ -79,10 +79,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const { imgIdx, markImageFailed, activeUrl, setImgIdx } = usePreferredImages(project, detail?.images)
 
   useEffect(() => {
-    if (scrollContainerRef.current) {
+    if (scrollContainerRef.current && typeof scrollContainerRef.current.scrollTo === 'function') {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'auto' })
     }
-    if (scrollContainerMobileRef.current) {
+    if (scrollContainerMobileRef.current && typeof scrollContainerMobileRef.current.scrollTo === 'function') {
       scrollContainerMobileRef.current.scrollTo({ top: 0, behavior: 'auto' })
     }
   }, [activeTab])

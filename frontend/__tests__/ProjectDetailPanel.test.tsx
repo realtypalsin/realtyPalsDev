@@ -28,6 +28,12 @@ jest.mock('framer-motion', () => ({
       return <div ref={ref} {...validProps}>{children}</div>;
     }),
   },
+  m: {
+    div: require('react').forwardRef(({ children, ...props }: any, ref: any) => {
+      const { initial, animate, exit, transition, whileHover, whileTap, layoutId, ...validProps } = props;
+      return <div ref={ref} {...validProps}>{children}</div>;
+    }),
+  },
 }));
 
 jest.mock('next/image', () => ({
@@ -152,13 +158,16 @@ describe('ProjectDetailPanel Component', () => {
     expect(screen.getAllByTestId('overview-tab').length).toBeGreaterThan(0);
   });
 
-  it('switches to Analysis tab when clicked', () => {
+  it('switches to Analysis tab when clicked', async () => {
     render(<ProjectDetailPanel project={mockProject} initialDetail={mockDetail} onClose={jest.fn()} />);
     
     const analysisTabBtn = screen.getAllByText('Analysis')[0];
     fireEvent.click(analysisTabBtn);
     
-    expect(screen.getAllByTestId('analysis-tab').length).toBeGreaterThan(0);
+    const { waitFor } = require('@testing-library/react');
+    await waitFor(() => {
+      expect(screen.getAllByTestId('analysis-tab').length).toBeGreaterThan(0);
+    });
   });
 
   it('switches to Pricing tab when clicked', () => {

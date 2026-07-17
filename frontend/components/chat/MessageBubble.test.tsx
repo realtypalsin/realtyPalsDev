@@ -1,4 +1,3 @@
-import { describe, it, expect, vi } from 'vitest'
 import type { ChipAction } from './types'
 
 /**
@@ -8,7 +7,7 @@ import type { ChipAction } from './types'
 
 describe('CardSelectorChip - handleCardSelect', () => {
   // Mock onAction function to capture what's sent
-  const mockOnAction = vi.fn()
+  const mockOnAction = jest.fn()
 
   // Helper to simulate handleCardSelect logic (extracted from component)
   const handleCardSelect = (chip: ChipAction, projectId: string) => {
@@ -22,7 +21,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
     }
 
     // Try exact match first
-    let selectedProject = projects.find(p => String(p.id) === String(projectId))
+    let selectedProject = projects.find(p => p && String(p.id) === String(projectId))
 
     // Fallback: try parsing projectId as array index
     if (!selectedProject && projectId) {

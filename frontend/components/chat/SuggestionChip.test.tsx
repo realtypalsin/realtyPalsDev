@@ -1,8 +1,7 @@
-import { describe, it, expect } from 'node:test'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SuggestionChip } from './SuggestionChip'
-import type { ChipAction } from '@/components/chat/MessageBubble'
+import type { ChipAction } from './types'
 
 const mockChip: ChipAction = {
   id: 'test-chip-1',
@@ -19,8 +18,9 @@ describe('SuggestionChip', () => {
     render(
       <SuggestionChip
         chip={mockChip}
-        onChipClick={() => {}}
-        isActive={false}
+        onAction={() => {}}
+        chipPicker={null}
+        onSetChipPicker={() => {}}
       />
     )
     expect(screen.getByText('Show me results')).toBeTruthy()
@@ -30,8 +30,9 @@ describe('SuggestionChip', () => {
     render(
       <SuggestionChip
         chip={mockChip}
-        onChipClick={() => {}}
-        isActive={false}
+        onAction={() => {}}
+        chipPicker={null}
+        onSetChipPicker={() => {}}
       />
     )
     const button = screen.getByRole('button')
@@ -42,8 +43,9 @@ describe('SuggestionChip', () => {
     const { rerender } = render(
       <SuggestionChip
         chip={mockChip}
-        onChipClick={() => {}}
-        isActive={false}
+        onAction={() => {}}
+        chipPicker={null}
+        onSetChipPicker={() => {}}
       />
     )
     let button = screen.getByRole('button')
@@ -52,8 +54,9 @@ describe('SuggestionChip', () => {
     rerender(
       <SuggestionChip
         chip={mockChip}
-        onChipClick={() => {}}
-        isActive={true}
+        onAction={() => {}}
+        chipPicker={{ mode: 'single', label: mockChip.label, action: 'test', selected: [], isModal: false }}
+        onSetChipPicker={() => {}}
       />
     )
     button = screen.getByRole('button')
@@ -61,13 +64,14 @@ describe('SuggestionChip', () => {
   })
 
   it('should call onClick when clicked', async () => {
-    const onClick = expect.fn()
+    const onClick = jest.fn()
     const user = userEvent.setup()
     render(
       <SuggestionChip
         chip={mockChip}
-        onChipClick={onClick}
-        isActive={false}
+        onAction={onClick}
+        chipPicker={null}
+        onSetChipPicker={() => {}}
       />
     )
     await user.click(screen.getByRole('button'))

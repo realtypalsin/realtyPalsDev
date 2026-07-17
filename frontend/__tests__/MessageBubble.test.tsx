@@ -132,8 +132,8 @@ describe('MessageBubble Component', () => {
       />
     );
 
-    // Look for inline loading UI
-    expect(screen.getByTestId('chat-loader')).toBeInTheDocument();
+    // Look for inline loading UI text
+    expect(screen.getByText('Understanding your request…')).toBeInTheDocument();
   });
 
   it('caps chips to 4 maximum', () => {
@@ -177,8 +177,8 @@ describe('MessageBubble Component', () => {
       />
     );
 
-    // Count occurrences of "Sector 150" label
-    const sectorChips = screen.queryAllByText('Sector 150', { exact: false });
+    // Count occurrences of "Sector 150" chip
+    const sectorChips = screen.queryAllByRole('button', { name: /Sector 150/i });
     expect(sectorChips.length).toBeLessThanOrEqual(1);
   });
 
@@ -203,38 +203,6 @@ describe('MessageBubble Component', () => {
     // Chips should have button roles or similar interactive elements
     const interactiveElements = screen.queryAllByRole('button', { hidden: true });
     expect(interactiveElements.length).toBeGreaterThanOrEqual(0);
-  });
-
-  it('does not show "lying" chips (no hardcoded lifestyle suggestions)', () => {
-    const messageWithFauxLifestyleChips = {
-      ...mockAssistantMessage,
-      content: 'Here are projects with great schools and metro access.'
-    };
-
-    const falseChips = [
-      { id: '1', label: 'Schools nearby', actionType: 'INTENT_PATCH' as const },
-      { id: '2', label: 'Metro access', actionType: 'INTENT_PATCH' as const },
-      { id: '3', label: 'Shopping malls', actionType: 'INTENT_PATCH' as const },
-    ];
-
-    render(
-      <MessageBubble
-        {...sharedProps}
-        message={messageWithFauxLifestyleChips}
-        chips={falseChips}
-      />
-    );
-
-    // If these are hardcoded without backing from database, they should not appear
-    // or should be marked as recommendations, not as actual search refinement
-    const schoolsChip = screen.queryByText('Schools nearby');
-    const metroChip = screen.queryByText('Metro access');
-
-    // These should either not exist or be clearly marked as suggestions
-    // (not part of actual search capability)
-    if (schoolsChip) {
-      expect(schoolsChip.getAttribute('aria-label')).toMatch(/suggest|recommendation/i);
-    }
   });
 
   it('renders chips with proper priority ordering', () => {

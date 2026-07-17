@@ -398,6 +398,7 @@ export default function Sidebar({
           {userId ? (
             <div className="group relative">
               <button
+                onClick={() => { router.push('/account'); closeMobile(); }}
                 className={`w-full flex items-center gap-2.5 rounded-xl transition-all duration-200 overflow-hidden ${isCollapsed ? 'justify-center p-0 w-10 h-10 mx-auto' : 'justify-start px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5'}`}
               >
                 <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold text-sm">

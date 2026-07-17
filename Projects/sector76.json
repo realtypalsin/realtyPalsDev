@@ -9,8 +9,8 @@
             "city": "Noida",
             "address": "GH 2B, Sector 76, Noida, Uttar Pradesh 201304",
             "tagline": "Premium Apartments with Serene Lifestyle",
-            "lat": 28.564339,
-            "lng": 77.383601,
+            "lat": 28.5643,
+            "lng": 77.3836,
             "rera_number": "RERA Not Applicable",
             "rera_url": "",
             "total_towers": 9,
@@ -47,6 +47,16 @@
             "restaurants_nearby_count": 12,
             "location_intelligence_json": {}
         },
+        "builder": {
+            "id": "sethi-group",
+            "name": "Sethi Group",
+            "founded_year": 1992,
+            "website": "www.sethigroup.in",
+            "delivered_projects": 10,
+            "delivered_units": 0,
+            "logo_url": "",
+            "construction_quality_score": 80
+        },
         "unit_types": [
             {
                 "bhk": 2,
@@ -55,9 +65,9 @@
                 "carpet_area_sqft": 650,
                 "balcony_area_sqft": 80,
                 "bathrooms": 2,
-                "price_min_cr": 0.89,
+                "price_min_cr": 0.87,
                 "price_max_cr": 1.11,
-                "price_label": "₹89 L–1.11 Cr",
+                "price_label": "₹87 L–1.11 Cr",
                 "views": []
             },
             {
@@ -67,9 +77,9 @@
                 "carpet_area_sqft": 850,
                 "balcony_area_sqft": 100,
                 "bathrooms": 2,
-                "price_min_cr": 1.11,
-                "price_max_cr": 1.40,
-                "price_label": "₹1.11–1.40 Cr",
+                "price_min_cr": 1.10,
+                "price_max_cr": 1.37,
+                "price_label": "₹1.10–1.37 Cr",
                 "views": []
             },
             {
@@ -79,9 +89,9 @@
                 "carpet_area_sqft": 980,
                 "balcony_area_sqft": 120,
                 "bathrooms": 2,
-                "price_min_cr": 1.25,
+                "price_min_cr": 1.22,
                 "price_max_cr": 1.74,
-                "price_label": "₹1.25–1.74 Cr",
+                "price_label": "₹1.22–1.74 Cr",
                 "views": []
             },
             {
@@ -91,9 +101,9 @@
                 "carpet_area_sqft": 1280,
                 "balcony_area_sqft": 150,
                 "bathrooms": 3,
-                "price_min_cr": 1.65,
+                "price_min_cr": 1.61,
                 "price_max_cr": 2.29,
-                "price_label": "₹1.65–2.29 Cr",
+                "price_label": "₹1.61–2.29 Cr",
                 "views": []
             }
         ],
@@ -209,19 +219,7 @@
             "work_location": "Noida",
             "timeline_horizon": "Immediate Move-in",
             "motivation_note": "A secure, mature neighborhood with ready infrastructure.",
-            "persona_descriptions": [
-                {
-                    "fit": "Excellent Fit",
-                    "type": "Family",
-                    "stars": 4,
-                    "reasons": [
-                        "Active community and kids zones.",
-                        "Walking distance to metro."
-                    ],
-                    "fitColor": "bg-blue-100 text-blue-700",
-                    "iconName": "Users"
-                }
-            ]
+            "persona_descriptions": []
         },
         "recommendation": {
             "tier": "BUY",
@@ -239,25 +237,16 @@
                 "Age of the building can be used to negotiate base price."
             ],
             "timeline_advice": "Immediate execution.",
-            "internal_confidence": "VERIFIED",
+            "internal_confidence": "HIGH",
             "admin_notes": ""
         },
-        "competitors": [
-            {
-                "competitor_name": "Skytech Matrott",
-                "competitor_slug": "skytech-matrott-sector-76-noida",
-                "this_project_advantage": "Clean municipal status and active RWA.",
-                "competitor_advantage": "Larger unit configurations.",
-                "verdict": "Sethi Max Royal wins due to Skytech's active sealing/dues issues.",
-                "price_delta_note": "Sethi is priced slightly lower but offers higher security of investment."
-            }
-        ]
+        "competitors": []
     },
     {
         "project": {
             "name": "Amrapali Princely Estate",
             "slug": "amrapali-princely-estate-sector-76-noida",
-            "builder_id": "nbcc-aspire",
+            "builder_id": "amrapali-group",
             "status": "Ready to Move",
             "sector": "Sector 76",
             "city": "Noida",
@@ -300,6 +289,16 @@
             "banks_nearby_count": 6,
             "restaurants_nearby_count": 10,
             "location_intelligence_json": {}
+        },
+        "builder": {
+            "id": "amrapali-group",
+            "name": "Amrapali Group",
+            "founded_year": 1985,
+            "website": "www.amrapaligroups.co.in",
+            "delivered_projects": 63,
+            "delivered_units": 0,
+            "logo_url": "",
+            "construction_quality_score": 80
         },
         "unit_types": [
             {
@@ -346,20 +345,8 @@
                 "balcony_area_sqft": 100,
                 "bathrooms": 2,
                 "price_min_cr": 1.20,
-                "price_max_cr": 1.30,
-                "price_label": "₹1.20–1.30 Cr",
-                "views": []
-            },
-            {
-                "bhk": 3,
-                "name": "3.5 BHK",
-                "super_area_sqft": 1455,
-                "carpet_area_sqft": 1100,
-                "balcony_area_sqft": 120,
-                "bathrooms": 3,
-                "price_min_cr": 1.32,
-                "price_max_cr": 1.75,
-                "price_label": "₹1.32–1.75 Cr",
+                "price_max_cr": 1.40,
+                "price_label": "₹1.20–1.40 Cr",
                 "views": []
             }
         ],
@@ -417,7 +404,7 @@
             "other_charges": []
         },
         "investment_insights": {
-            "price_appreciation": "Strong post-restructuring growth",
+            "price_appreciation": "Strong post-restructuring growth (2.9% YoY)",
             "rental_yield": "3.5-4%",
             "market_trend": "Bullish",
             "liquidity_score": "High",
@@ -466,19 +453,7 @@
             "work_location": "Noida",
             "timeline_horizon": "Immediate Move-in",
             "motivation_note": "Affordability coupled with state-backed legal safety.",
-            "persona_descriptions": [
-                {
-                    "fit": "Excellent Fit",
-                    "type": "Budget Buyer",
-                    "stars": 5,
-                    "reasons": [
-                        "Affordable 1 & 2 BHK options.",
-                        "Zero legal risk post-NBCC takeover."
-                    ],
-                    "fitColor": "bg-blue-100 text-blue-700",
-                    "iconName": "Shield"
-                }
-            ]
+            "persona_descriptions": []
         },
         "recommendation": {
             "tier": "STRONG BUY",
@@ -487,7 +462,7 @@
             "investment_thesis": "High liquidity and steady rental demand make it a safe harbor.",
             "family_thesis": "Secure campus, though clubhouse amenities are standard.",
             "investor_thesis": "Low entry cost yields better ROI percentages.",
-            "luxury_thesis": "Not applicable.",
+            "luxury_thesis": "Standard, not premium luxury.",
             "risk_thesis": "Zero completion/legal risk today.",
             "walk_away_conditions": [
                 "Buyer wants modern Mivan construction."
@@ -496,25 +471,16 @@
                 "Massive supply of units in the complex means buyers can shop around."
             ],
             "timeline_advice": "Immediate.",
-            "internal_confidence": "VERIFIED",
+            "internal_confidence": "HIGH",
             "admin_notes": ""
         },
-        "competitors": [
-            {
-                "competitor_name": "Sethi Max Royal",
-                "competitor_slug": "sethi-max-royal-sector-76-noida",
-                "this_project_advantage": "Cheaper entry point and guaranteed state-backed registry.",
-                "competitor_advantage": "Slightly better original construction quality.",
-                "verdict": "Princely Estate offers better ROI for budget buyers.",
-                "price_delta_note": "Amrapali is cheaper by approx ₹1,000/sq.ft."
-            }
-        ]
+        "competitors": []
     },
     {
         "project": {
             "name": "Amrapali Crystal Homes",
             "slug": "amrapali-crystal-homes-sector-76-noida",
-            "builder_id": "nbcc-aspire",
+            "builder_id": "amrapali-group",
             "status": "Under Construction",
             "sector": "Sector 76",
             "city": "Noida",
@@ -557,6 +523,16 @@
             "banks_nearby_count": 6,
             "restaurants_nearby_count": 10,
             "location_intelligence_json": {}
+        },
+        "builder": {
+            "id": "amrapali-group",
+            "name": "Amrapali Group",
+            "founded_year": 1985,
+            "website": "www.amrapaligroups.co.in",
+            "delivered_projects": 63,
+            "delivered_units": 0,
+            "logo_url": "",
+            "construction_quality_score": 90
         },
         "unit_types": [
             {
@@ -678,7 +654,7 @@
                 "Clear Supreme Court-backed registry process."
             ],
             "why_avoid": [
-                "High entry price point (₹11,000 - ₹16,000/sq.ft) compared to older neighbor projects.",
+                "High entry price point compared to older neighbor projects.",
                 "Transactions are largely on ATS (Agreement to Sell) basis as court receivership processes complete."
             ],
             "best_for": "Upgraders wanting modern construction in a highly mature sector.",
@@ -702,19 +678,7 @@
             "work_location": "Noida / Delhi",
             "timeline_horizon": "Short Term (Wait till Dec 2025)",
             "motivation_note": "Desires modern construction tech and low density in a built-out sector.",
-            "persona_descriptions": [
-                {
-                    "fit": "Excellent Fit",
-                    "type": "Upgrader",
-                    "stars": 5,
-                    "reasons": [
-                        "Superior build quality (Mivan).",
-                        "Spacious 3 & 4 BHK layouts."
-                    ],
-                    "fitColor": "bg-emerald-100 text-emerald-700",
-                    "iconName": "Home"
-                }
-            ]
+            "persona_descriptions": []
         },
         "recommendation": {
             "tier": "BUY",
@@ -732,25 +696,16 @@
                 "Phased delivery allows slight leverage on towers delivering later."
             ],
             "timeline_advice": "Buy now before final towers are handed over.",
-            "internal_confidence": "VERIFIED",
+            "internal_confidence": "HIGH",
             "admin_notes": ""
         },
-        "competitors": [
-            {
-                "competitor_name": "Dasnac Burj Noida",
-                "competitor_slug": "dasnac-burj-noida-sector-75",
-                "this_project_advantage": "Faster possession timeline.",
-                "competitor_advantage": "True ultra-luxury automation features.",
-                "verdict": "Crystal Homes is better for immediate family use; Burj is for pure luxury status.",
-                "price_delta_note": "Burj is significantly more expensive."
-            }
-        ]
+        "competitors": []
     },
     {
         "project": {
             "name": "Amrapali Silicon City",
             "slug": "amrapali-silicon-city-sector-76-noida",
-            "builder_id": "nbcc-aspire",
+            "builder_id": "amrapali-group",
             "status": "Ready to Move",
             "sector": "Sector 76",
             "city": "Noida",
@@ -763,7 +718,7 @@
             "total_towers": 28,
             "total_units": 3030,
             "land_area_acres": 43.0,
-            "launch_date": "2010-08-01T00:00:00Z",
+            "launch_date": "2014-01-01T00:00:00Z",
             "possession_label": "Delivered (Dec 2020)",
             "possession_date": "2020-12-01T00:00:00Z",
             "design_theme": "Mega Township",
@@ -773,7 +728,7 @@
             "open_space_pct": 75,
             "green_rating": "N/A",
             "description": "Massive 43-acre delivered township offering 1 to 4 BHKs. Restructured by NBCC, featuring excellent liquidity and capital appreciation.",
-            "long_description": "Amrapali Silicon City is one of the largest residential projects in Sector 76, covering up to 43 acres of land. Initially launched in 2010, the project faced severe corporate distress before being successfully completed and handed over by NBCC in December 2020. With 28 towers, a 1:20 lift ratio, and huge open spaces, it is now a highly liquid, stable asset that has seen over 210% capital appreciation since launch.",
+            "long_description": "Amrapali Silicon City is one of the largest residential projects in Sector 76, covering up to 43 acres of land. Initially launched in 2014, the project faced severe corporate distress before being successfully completed and handed over by NBCC in December 2020. With 28 towers, a 1:20 lift ratio, and huge open spaces, it is now a highly liquid, stable asset that has seen excellent capital appreciation since launch.",
             "marketing_claims": [
                 "43-Acre Mega Township",
                 "Restructured and Delivered by NBCC",
@@ -793,6 +748,16 @@
             "banks_nearby_count": 10,
             "restaurants_nearby_count": 15,
             "location_intelligence_json": {}
+        },
+        "builder": {
+            "id": "amrapali-group",
+            "name": "Amrapali Group",
+            "founded_year": 1985,
+            "website": "www.amrapaligroups.co.in",
+            "delivered_projects": 63,
+            "delivered_units": 0,
+            "logo_url": "",
+            "construction_quality_score": 85
         },
         "unit_types": [
             {
@@ -814,9 +779,9 @@
                 "carpet_area_sqft": 680,
                 "balcony_area_sqft": 80,
                 "bathrooms": 2,
-                "price_min_cr": 0.98,
+                "price_min_cr": 0.96,
                 "price_max_cr": 1.06,
-                "price_label": "₹98L–1.06Cr",
+                "price_label": "₹96L–1.06Cr",
                 "views": []
             },
             {
@@ -851,8 +816,8 @@
                 "balcony_area_sqft": 150,
                 "bathrooms": 5,
                 "price_min_cr": 2.29,
-                "price_max_cr": 2.41,
-                "price_label": "₹2.29–2.41 Cr",
+                "price_max_cr": 2.39,
+                "price_label": "₹2.29–2.39 Cr",
                 "views": []
             }
         ],
@@ -906,7 +871,7 @@
             "other_charges": []
         },
         "investment_insights": {
-            "price_appreciation": "210% over 16 years",
+            "price_appreciation": "Strong",
             "rental_yield": "3.5%",
             "market_trend": "Stable/Bullish",
             "liquidity_score": "Very High",
@@ -955,19 +920,7 @@
             "work_location": "Noida",
             "timeline_horizon": "Immediate Move-in",
             "motivation_note": "Seeking large community living with easy commute access.",
-            "persona_descriptions": [
-                {
-                    "fit": "Perfect Fit",
-                    "type": "Family",
-                    "stars": 5,
-                    "reasons": [
-                        "Safe campus with lots of kids.",
-                        "Zero completion risk."
-                    ],
-                    "fitColor": "bg-blue-100 text-blue-700",
-                    "iconName": "Users"
-                }
-            ]
+            "persona_descriptions": []
         },
         "recommendation": {
             "tier": "BUY",
@@ -985,18 +938,9 @@
                 "High availability of resale units gives buyer the edge."
             ],
             "timeline_advice": "Immediate.",
-            "internal_confidence": "VERIFIED",
+            "internal_confidence": "HIGH",
             "admin_notes": ""
         },
-        "competitors": [
-            {
-                "competitor_name": "Amrapali Princely Estate",
-                "competitor_slug": "amrapali-princely-estate-sector-76-noida",
-                "this_project_advantage": "Larger township feel and slightly better configurations.",
-                "competitor_advantage": "Lower entry price point.",
-                "verdict": "Silicon City is better for larger families; Princely for pure budget constraints.",
-                "price_delta_note": "Silicon City is generally more expensive per sq.ft."
-            }
-        ]
+        "competitors": []
     }
 ]

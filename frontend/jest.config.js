@@ -12,5 +12,10 @@ module.exports = createJestConfig({
   transformIgnorePatterns: [
     'node_modules/(?!(rehype-raw|hast-util-parse-selector|property-information|unist-util-position|unist-util-visit|unist-util-is)/)',
   ],
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/.next/',
+    '<rootDir>/e2e/',
+  ],
 
 })

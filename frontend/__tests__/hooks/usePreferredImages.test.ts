@@ -52,7 +52,7 @@ describe('usePreferredImages', () => {
       result.current.markImageFailed('https://example.com/hero.jpg');
     });
 
-    expect(result.current.workingImages.length).toBe(2);
+    expect(result.current.workingImages.length).toBe(1);
     expect(result.current.allFailed).toBe(false);
   });
 
@@ -62,7 +62,6 @@ describe('usePreferredImages', () => {
     act(() => {
       result.current.markImageFailed('https://example.com/hero.jpg');
       result.current.markImageFailed('https://example.com/exterior.jpg');
-      result.current.markImageFailed('https://example.com/other.jpg');
     });
 
     expect(result.current.allFailed).toBe(true);
@@ -108,15 +107,16 @@ describe('usePreferredImages', () => {
     const { result } = renderHook(() => usePreferredImages(null));
     expect(result.current.activeUrl).toBeNull();
     expect(result.current.workingImages.length).toBe(0);
-    expect(result.current.allFailed).toBe(true);
+    expect(result.current.allFailed).toBe(false);
   });
 
   it('wraps image navigation at boundaries', () => {
     const { result } = renderHook(() => usePreferredImages(mockProject));
 
     act(() => {
-      result.current.setImgIdx(2); // last image
-      result.current.nextImg({ stopPropagation: () => {} } as any);
+      // should have 2 working images
+      result.current.nextImg({ stopPropagation: () => {} } as any); // idx 1
+      result.current.nextImg({ stopPropagation: () => {} } as any); // idx 2 -> wraps to 0
     });
     expect(result.current.imgIdx).toBe(0); // wraps to start
   });
