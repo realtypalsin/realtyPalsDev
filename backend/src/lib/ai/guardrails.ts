@@ -48,7 +48,7 @@ const INVESTMENT_CLAIM_PATTERNS = [
 ]
 
 const EXTERNAL_URL_PATTERNS = [
-  /https?:\/\/(?![\w\-]+\.uirealtypals\.com|uirealtypals\.com|[\w\-]+\.up-rera\.in|up-rera\.in)[^\s"]+/i,
+  /https?:\/\/(?![\w-]+\.uirealtypals\.com|uirealtypals\.com|[\w-]+\.up-rera\.in|up-rera\.in)[^\s"]+/i,
   /www\.(?!uirealtypals\.com|up-rera\.in)[^\s"]+/i
 ]
 
@@ -95,7 +95,7 @@ export async function outputGuardrail(
 
   // Block responses containing external real estate portal URLs
   const EXTERNAL_URL_PATTERNS = [
-    /https?:\/\/(?!realtypals\.in)[a-z0-9\-]+\.(in|com)\/[\w\-\/]+/i,
+    /https?:\/\/(?!realtypals\.in)[a-z0-9-]+\.(in|com)\/[\w-/]+/i,
   ]
   for (const p of EXTERNAL_URL_PATTERNS) {
     if (p.test(response)) {

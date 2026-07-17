@@ -385,7 +385,7 @@ router.post('/', async (req: Request, res: Response) => {
       ? (sessionData.last_projects as unknown as ScoredProject[])
       : null
     const isNewSession = !sessionId || !sessionData
-    let currentSessionId = sessionId || randomUUID()
+    const currentSessionId = sessionId || randomUUID()
 
     intentDegraded = rawIntentResult.degraded
     const rawIntent = rawIntentResult.intent
