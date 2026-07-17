@@ -70,6 +70,7 @@ describe('AdminAuth: Session Management', () => {
   test('session contains createdAt timestamp', async () => {
     const token = await createAdminSession('127.0.0.1', 'Agent')
     const session = await validateAdminSession(token)
+    assert(session, 'Session should exist')
 
     assert(session.createdAt, 'Session should have createdAt')
     const createdTime = new Date(session.createdAt)
@@ -79,6 +80,7 @@ describe('AdminAuth: Session Management', () => {
   test('session contains lastSeen timestamp', async () => {
     const token = await createAdminSession('127.0.0.1', 'Agent')
     const session = await validateAdminSession(token)
+    assert(session, 'Session should exist')
 
     assert(session.lastSeen, 'Session should have lastSeen')
     const lastSeenTime = new Date(session.lastSeen)
@@ -91,6 +93,7 @@ describe('AdminAuth: Session Management', () => {
     for (const ip of testIps) {
       const token = await createAdminSession(ip, 'Agent')
       const session = await validateAdminSession(token)
+      assert(session, 'Session should exist')
       assert.equal(session.ip, ip, `Session IP should match: ${ip}`)
     }
   })

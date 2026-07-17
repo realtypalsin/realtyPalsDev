@@ -71,10 +71,10 @@ describe('Chat Route: Critical Paths', () => {
   test('IDOR protection: user can only access own session', () => {
     // Routes validate user ownership of session
     const sessionOwnerId = 'user-abc'
-    const requestingUserId = 'user-xyz'
+    const attacker = 'user-xyz'
 
-    const canAccess = sessionOwnerId === requestingUserId
-    assert(!canAccess, 'User should not access other user sessions')
+    const canAccess = sessionOwnerId === attacker
+    assert(!canAccess, 'Attacker should not access other user sessions')
 
     const ownSessionAccess = sessionOwnerId === sessionOwnerId
     assert(ownSessionAccess, 'User should access own session')
