@@ -133,12 +133,28 @@ export function SuggestionChipGroups({
   const handleCardSelect = (chip: import('./types').ChipAction, projectId: string) => {
     // Convert card selection to TEXT_MESSAGE for the backend
     const projects = chip.payload?.projects as Array<{ id: string; name: string }> | undefined
-    const selectedProject = projects?.find(p => p.id === projectId)
 
+    // Try exact match first, then try converting string projectId to match
+    let selectedProject = projects?.find(p => String(p.id) === String(projectId))
+
+    // Ensure we have a valid project before proceeding
+    if (!selectedProject && projects && projects.length > 0) {
+      // Fallback to first project if ID doesn't match (safety)
+      selectedProject = projects[0]
+    }
+
+    // Build natural language message with selected project
     if (selectedProject && chip.actionType === 'TEXT_MESSAGE') {
-      // Build natural language message with selected project
-      const actionPrefix = chip.payload?.actionPrefix || chip.label
-      const actionSuffix = chip.payload?.actionSuffix || '?'
+      const prefix = (chip.payload as any)?.actionPrefix || chip.label || ''
+      const actionPrefix = String(prefix).trim()
+      const actionSuffix = ((chip.payload as any)?.actionSuffix as string) || '?'
+
+      // Ensure non-empty message
+      if (!actionPrefix) {
+        console.warn('[CHIP] No actionPrefix found for chip:', chip)
+        return
+      }
+
       const fullMessage = `${actionPrefix} ${selectedProject.name}${actionSuffix}`.trim()
 
       // Send as TEXT_MESSAGE with the constructed message
@@ -150,6 +166,8 @@ export function SuggestionChipGroups({
         }
       }
       onAction(textChip)
+    } else {
+      console.warn('[CHIP] Invalid card select state:', { selectedProject, actionType: chip.actionType })
     }
   }
 
