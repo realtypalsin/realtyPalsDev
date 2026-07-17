@@ -454,11 +454,14 @@ router.post('/', async (req: Request, res: Response) => {
       true
     )
     
-    // Deduplicate chips based on session
-    const preChips = filterNewChips(currentSessionId, preSearchUiState.chips)
-    console.log('[CHAT] preSearchUiState chips before dedup:', preSearchUiState.chips.length, preSearchUiState.chips.map(c => c.label))
-    console.log('[CHAT] preSearchUiState chips after dedup:', preChips.length, preChips.map(c => c.label))
-    preChips.forEach(c => markChipShown(currentSessionId, c.id))
+    // For CLARIFYING stage, never deduplicate — these are essential guidance chips
+    // For other stages, deduplicate to avoid showing the same chip twice
+    let preChips = preSearchUiState.chips
+    if (preSearchUiState.stage !== 'CLARIFYING') {
+      preChips = filterNewChips(currentSessionId, preSearchUiState.chips)
+      preChips.forEach(c => markChipShown(currentSessionId, c.id))
+    }
+    console.log('[CHAT] preSearchUiState chips:', preSearchUiState.chips.length, 'after', preSearchUiState.stage === 'CLARIFYING' ? 'CLARIFYING (no dedup)' : 'dedup', preChips.map(c => c.label))
     preSearchUiState.chips = preChips
 
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
