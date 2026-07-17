@@ -6,10 +6,5 @@
     }
   ],
   "buildCommand": "npm run db:generate && npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
-  "functions": {
-    "app/api/v1/chat/route.ts": {
-      "maxDuration": 60
-    }
-  }
+  "installCommand": "npm install --legacy-peer-deps"
 }
