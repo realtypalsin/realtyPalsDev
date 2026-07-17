@@ -72,8 +72,8 @@ const nextConfig = {
             value: (() => {
               const isDev = process.env.NODE_ENV !== 'production'
               const connectSrc = isDev
-                ? "'self' http://localhost:* https: ws: wss:"
-                : "'self' https: ws: wss:"
+                ? "'self' http://localhost:* wss://localhost:* https: ws: wss:"
+                : "'self' https://realtypalsdev.onrender.com wss: https: ws:"
               return `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
             })(),
           },

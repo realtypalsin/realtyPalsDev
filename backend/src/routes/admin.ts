@@ -422,6 +422,10 @@ const UnitPatchSchema = z.object({
 // ---------------------------------------------------------------------------
 router.get('/projects', async (req: Request, res: Response): Promise<void> => {
   const search = (req.query.q as string | undefined) ?? ''
+  const page = Math.max(1, parseInt(req.query.page as string) || 1)
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20))
+  const skip = (page - 1) * limit
+
   const projects = await prisma.project.findMany({
     where: search
       ? {
@@ -437,8 +441,20 @@ router.get('/projects', async (req: Request, res: Response): Promise<void> => {
       images:     { select: { id: true, url: true, type: true }, orderBy: { sort_order: 'asc' }, take: 3 },
     },
     orderBy: { name: 'asc' },
+    skip,
+    take: limit,
   })
-  res.json({ projects })
+  const total = await prisma.project.count({
+    where: search
+      ? {
+          OR: [
+            { name:   { contains: search, mode: 'insensitive' } },
+            { sector: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : undefined,
+  })
+  res.json({ projects, total, page, limit, pages: Math.ceil(total / limit) })
 })
 
 // ---------------------------------------------------------------------------
@@ -1193,12 +1209,19 @@ router.delete('/documents/:docId', async (req: Request, res: Response): Promise<
 // ---------------------------------------------------------------------------
 // GET /builders
 // ---------------------------------------------------------------------------
-router.get('/builders', async (_req: Request, res: Response): Promise<void> => {
+router.get('/builders', async (req: Request, res: Response): Promise<void> => {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1)
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20))
+  const skip = (page - 1) * limit
+
   const builders = await prisma.builder.findMany({
     include: { _count: { select: { projects: true } } },
     orderBy: { name: 'asc' },
+    skip,
+    take: limit,
   })
-  res.json({ builders })
+  const total = await prisma.builder.count()
+  res.json({ builders, total, page, limit, pages: Math.ceil(total / limit) })
 })
 
 // ---------------------------------------------------------------------------
