@@ -25,7 +25,7 @@ export function CardSelectorChip({ chip, projects, onSelect, disabled }: CardSel
   }
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block group">
       <m.button
         whileTap={{ scale: 0.96 }}
         onClick={() => setIsOpen(!isOpen)}
@@ -52,14 +52,14 @@ export function CardSelectorChip({ chip, projects, onSelect, disabled }: CardSel
         <span className={`text-[10px] ml-0.5 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
       </m.button>
 
-      {/* Dropdown menu */}
+      {/* Dropdown menu — positioned upward to avoid input bar overlap */}
       {isOpen && (
         <m.div
-          initial={{ opacity: 0, y: -4 }}
+          initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
+          exit={{ opacity: 0, y: 4 }}
           transition={{ duration: 0.15 }}
-          className="absolute top-full mt-2 left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 min-w-max max-w-xs"
+          className="absolute bottom-full mb-2 left-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl z-[9999] min-w-max max-w-xs"
           role="listbox"
         >
           <div className="p-1">

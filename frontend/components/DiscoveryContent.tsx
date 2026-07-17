@@ -1295,7 +1295,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       </div>
 
       {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10 pt-14 pb-4">
 
         {/* Animated Orbs Overlay Background */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
