@@ -11,7 +11,7 @@ test.describe('Admin Flow E2E', () => {
   test('admin login page loads', async ({ page }) => {
     // Should see login form
     const passwordInput = page.locator('input[type="password"]')
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
 
     await expect(passwordInput).toBeVisible()
     await expect(loginButton).toBeVisible()
@@ -23,7 +23,7 @@ test.describe('Admin Flow E2E', () => {
     await passwordInput.fill(adminPassword)
 
     // Submit
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
     await loginButton.click()
 
     // Should navigate to admin dashboard
@@ -43,7 +43,7 @@ test.describe('Admin Flow E2E', () => {
     // Login first
     const passwordInput = page.locator('input[type="password"]')
     await passwordInput.fill(adminPassword)
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
     await loginButton.click()
 
     // Wait for dashboard to load
@@ -64,13 +64,13 @@ test.describe('Admin Flow E2E', () => {
     // Login
     const passwordInput = page.locator('input[type="password"]')
     await passwordInput.fill(adminPassword)
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
     await loginButton.click()
 
     await page.waitForTimeout(2000)
 
     // Look for intelligence editor navigation
-    const intelligenceLink = page.locator('a:has-text(/Intelligence|Editor|Content/), button:has-text(/Intelligence/)')
+    const intelligenceLink = page.locator('a:has-text("Intelligence"), a:has-text("Editor"), a:has-text("Content"), button:has-text("Intelligence")')
     if (await intelligenceLink.isVisible({ timeout: 2000 })) {
       await intelligenceLink.click()
 
@@ -86,13 +86,13 @@ test.describe('Admin Flow E2E', () => {
     // Login
     const passwordInput = page.locator('input[type="password"]')
     await passwordInput.fill(adminPassword)
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
     await loginButton.click()
 
     await page.waitForTimeout(2000)
 
     // Navigate to editor if available
-    const editButton = page.locator('button:has-text(/Edit|Modify|Update/)')
+    const editButton = page.locator('button:has-text("Edit"), button:has-text("Modify"), button:has-text("Update")')
     const editorInput = page.locator('textarea, input[type="text"][placeholder*="content" i]')
 
     if (await editButton.isVisible({ timeout: 2000 })) {
@@ -103,7 +103,7 @@ test.describe('Admin Flow E2E', () => {
         await editorInput.fill('Updated test content')
 
         // Should have save button
-        const saveButton = page.locator('button:has-text(/Save|Submit/)')
+        const saveButton = page.locator('button:has-text("Save"), button:has-text("Submit")')
         if (await saveButton.isVisible()) {
           await saveButton.click()
 
@@ -120,7 +120,7 @@ test.describe('Admin Flow E2E', () => {
     // Login
     const passwordInput = page.locator('input[type="password"]')
     await passwordInput.fill(adminPassword)
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
     await loginButton.click()
 
     await page.waitForTimeout(2000)
@@ -161,13 +161,13 @@ test.describe('Admin Flow E2E', () => {
     // Login
     const passwordInput = page.locator('input[type="password"]')
     await passwordInput.fill(adminPassword)
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
     await loginButton.click()
 
     await page.waitForTimeout(2000)
 
     // Find logout button
-    const logoutButton = page.locator('button:has-text(/Logout|Sign out|Exit/)')
+    const logoutButton = page.locator('button:has-text("Logout"), button:has-text("Sign out"), button:has-text("Exit")')
     if (await logoutButton.isVisible()) {
       await logoutButton.click()
 
@@ -190,7 +190,7 @@ test.describe('Admin Flow E2E', () => {
     const passwordInput = page.locator('input[type="password"]')
     await passwordInput.fill('wrong-password-xyz')
 
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
     await loginButton.click()
 
     // Should show error
@@ -208,13 +208,13 @@ test.describe('Admin Flow E2E', () => {
     // Login
     const passwordInput = page.locator('input[type="password"]')
     await passwordInput.fill(adminPassword)
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
     await loginButton.click()
 
     await page.waitForTimeout(2000)
 
     // Navigate to analytics if available
-    const analyticsLink = page.locator('a:has-text(/Analytics|Reports|Metrics/)')
+    const analyticsLink = page.locator('a:has-text("Analytics"), a:has-text("Reports"), a:has-text("Metrics")')
     if (await analyticsLink.isVisible({ timeout: 2000 })) {
       await analyticsLink.click()
 
@@ -230,7 +230,7 @@ test.describe('Admin Flow E2E', () => {
   test('rate limiting on failed login attempts', async ({ page }) => {
     // Try logging in with wrong password multiple times
     const passwordInput = page.locator('input[type="password"]')
-    const loginButton = page.locator('button:has-text(/Login|Sign in/)')
+    const loginButton = page.locator('button:has-text("Login"), button:has-text("Sign in")')
 
     for (let i = 0; i < 3; i++) {
       await passwordInput.fill('wrong-password')

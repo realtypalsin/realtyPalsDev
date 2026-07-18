@@ -71,6 +71,7 @@ jobs:
         run: cd frontend && npx prisma db push
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/realtypals_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/realtypals_test
 
       - name: Backend unit tests
         run: cd backend && npm test
