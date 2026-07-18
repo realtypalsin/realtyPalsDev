@@ -183,8 +183,8 @@ describe('INTENT_EXTRACTION_PROMPT — generic adjective counter-examples', () =
 // ─── Integration: full extractIntent round-trips ──────────────────────────────
 // Skipped when no API keys are configured.
 
-const hasOpenAI = !!process.env.OPENAI_API_KEY
-const hasGroq = !!process.env.GROQ_API_KEY
+const hasOpenAI = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'test-key-unused-in-unit-tests'
+const hasGroq = !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'test-key-unused-in-unit-tests'
 
 describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasGroq }, () => {
   // Dynamic import to avoid module-level side effects when skipped
@@ -197,7 +197,7 @@ describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasG
       `Expected projectNames to be populated, got: ${JSON.stringify(result)}`
     )
     const found = result.projectNames?.some(
-      (n) => n.toLowerCase().includes('godrej') || n.toLowerCase().includes('meridien')
+      (n: string) => n.toLowerCase().includes('godrej') || n.toLowerCase().includes('meridien')
     )
     assert.ok(found, `Expected 'Godrej Meridien' in projectNames, got: ${JSON.stringify(result.projectNames)}`)
   })
