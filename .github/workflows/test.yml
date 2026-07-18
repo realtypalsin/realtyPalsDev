@@ -67,8 +67,11 @@ jobs:
       - name: Backend lint
         run: cd backend && npm run lint
 
+      - name: Enable pgvector extension
+        run: psql postgresql://postgres:postgres@localhost:5432/realtypals_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
       - name: Backend DB Push
-        run: cd frontend && npx prisma db push
+        run: cd frontend && npx prisma db push --skip-generate
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/realtypals_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/realtypals_test
