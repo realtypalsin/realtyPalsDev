@@ -90,6 +90,7 @@ Go to your service → **Environment** → add:
 | `NODE_ENV` | `production` |
 | `PORT` | `10000` |
 | `WEBHOOK_SECRET` | Generate a random 32-char string (see below) |
+| `WEBHOOK_URL` | Your webhook target (e.g., CRM endpoint; optional) |
 | `FRONTEND_URL` | Your Vercel URL (add this after Step 5) |
 | `WHATSAPP_PROVIDER` | `none` (change to `meta` or `twilio` when ready) |
 
@@ -121,9 +122,9 @@ Go to your project → **Settings** → **Environment Variables** → add all fr
 | `DATABASE_URL` | From Step 2 (Transaction pooler) |
 | `DIRECT_URL` | From Step 2 (Session pooler) |
 | `GROQ_API_KEY` | From Step 3 |
-| `LEAD_WEBHOOK_URL` | `https://your-backend.onrender.com/api/leads/webhook` |
-| `LEAD_WEBHOOK_SECRET` | Same as Render's `WEBHOOK_SECRET` |
-| `ADMIN_SECRET` | Any strong password for the admin panel |
+| `WEBHOOK_URL` | `https://your-backend.onrender.com/api/v1/leads/webhook` (or external CRM endpoint) |
+| `WEBHOOK_SECRET` | Same as Render's `WEBHOOK_SECRET` |
+| `ADMIN_PASSWORD` | Any strong password for the admin panel |
 | `ADMIN_PASSWORD` | Same or different — for admin auth |
 
 Optional (add when ready):
@@ -146,7 +147,7 @@ Optional (add when ready):
 After both deployments:
 
 1. **Update Render:** Go to Render → Environment → set `FRONTEND_URL` to your Vercel URL
-2. **Update Vercel:** If needed, update `NEXT_PUBLIC_APP_URL` and `LEAD_WEBHOOK_URL` with actual URLs
+2. **Update Vercel:** If needed, update `NEXT_PUBLIC_APP_URL` and `WEBHOOK_URL` with actual URLs
 3. **Redeploy both** if you changed env vars
 
 ---

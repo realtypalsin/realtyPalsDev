@@ -138,7 +138,10 @@ router.post('/site-visit', async (req: Request, res: Response) => {
 
 async function fireWebhook(event: string, data: Record<string, unknown>) {
   const url = process.env.WEBHOOK_URL
-  if (!url) return
+  if (!url) {
+    console.error('[leads] ⚠️ WEBHOOK_URL not configured — lead webhook was not sent. Configure WEBHOOK_URL in environment.')
+    return
+  }
   const body = JSON.stringify({ event, data, ts: Date.now() })
 
   // Sign the payload so the receiver can verify it actually came from us.
