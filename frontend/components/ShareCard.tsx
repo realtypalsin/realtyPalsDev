@@ -15,13 +15,15 @@ interface ShareCardProps {
 export default function ShareCard({ property, onClose, onToast }: ShareCardProps) {
   const [copied, setCopied] = useState(false);
 
-  const sectorName = property.sector?.name ?? 'Sector 150';
+  const sectorName = property.sector?.name;
   const sectorCity = property.sector?.city ?? 'Noida';
   const displayName = property.project_name || `${property.bhk} BHK ${property.property_type === 'flat' ? 'Apartment' : 'Plot'}`;
 
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/property/${property.id}` : '';
 
-  const shareText = `Check out ${displayName} in ${sectorName}, ${sectorCity} — ${property.bhk} BHK, ${property.size_sqft.toLocaleString('en-IN')} sq.ft at ${formatPriceCr(property.price)}. Found via RealtyPal AI.`;
+  // Build location string: use sector if available, otherwise just city
+  const locationStr = sectorName ? `${sectorName}, ${sectorCity}` : sectorCity;
+  const shareText = `Check out ${displayName} in ${locationStr} — ${property.bhk} BHK, ${property.size_sqft.toLocaleString('en-IN')} sq.ft at ${formatPriceCr(property.price)}. Found via RealtyPal AI.`;
 
   const handleCopyLink = async () => {
     try {
