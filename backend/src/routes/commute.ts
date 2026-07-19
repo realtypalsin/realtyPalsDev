@@ -4,7 +4,7 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { getFullCommuteProfile, getNearbyPlaces } from '../lib/googleMaps'
-import { getCached, setCached } from '../lib/cache'
+import { getCached, setCached, checkRateLimit } from '../lib/cache'
 
 const router = Router()
 
@@ -29,6 +29,14 @@ router.get('/', async (req: Request, res: Response) => {
   }
 
   const { origin, destination, lat, lng } = parsed.data
+
+  // Rate limit: Google Maps is a paid API (15 req/min per IP)
+  const ip = req.ip || '127.0.0.1'
+  const rateLimit = await checkRateLimit(`commute:${ip}`, 15, 60)
+  if (rateLimit.remaining <= 0) {
+    res.status(429).json({ error: 'Too many requests' })
+    return
+  }
 
   // Cache commute results for 6 hours — road distances don't change often
   const cacheKey = `commute:${origin.toLowerCase()}:${destination.toLowerCase()}`
