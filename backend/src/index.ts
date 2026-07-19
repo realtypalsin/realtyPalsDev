@@ -7,6 +7,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
+import compression from 'compression'
 import { prisma } from './lib/db'
 import { pingRedis, checkRateLimit } from './lib/cache'
 import chatRouter from './routes/chat'
@@ -75,6 +76,14 @@ app.use(cookieParser())
 
 // Structural Logging
 app.use(morgan('combined'))
+
+// Response Compression (gzip/brotli) — skip SSE streams
+app.use(compression({
+  filter: (req, res) => {
+    if (res.getHeader('Content-Type')?.toString().includes('text/event-stream')) return false
+    return compression.filter(req, res)  // default filter (always compress JSON)
+  },
+}))
 
 // Sentry Middleware (v8 uses errorHandler in error middleware, not request handler)
 
