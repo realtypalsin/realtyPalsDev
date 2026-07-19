@@ -1461,12 +1461,14 @@ router.get('/analytics/users', async (req: Request, res: Response): Promise<void
 router.get('/analytics/properties', async (req: Request, res: Response): Promise<void> => {
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-    const events = await prisma.propertyEvent.findMany({
+    // Count events per (project_id, action) in the DB to avoid loading 50k rows into memory
+    const eventCounts = await prisma.propertyEvent.groupBy({
+      by: ['project_id', 'action'],
       where: { created_at: { gte: thirtyDaysAgo } },
-      orderBy: { created_at: 'desc' },
-      take: 50000,
+      _count: true,
     })
-    const projectIds = [...new Set(events.map((e: any) => e.project_id))]
+
+    const projectIds = [...new Set(eventCounts.map((e: any) => e.project_id))]
     const projects = await prisma.project.findMany({
       where: { id: { in: projectIds as string[] } },
       select: { id: true, name: true }
@@ -1474,14 +1476,14 @@ router.get('/analytics/properties', async (req: Request, res: Response): Promise
     const projectMap = new Map(projects.map((p: any) => [p.id, p.name]))
 
     const propertiesMap = new Map<string, any>()
-    for (const ev of events as any[]) {
-      if (!ev.project_id) continue
-      const projectName = projectMap.get(ev.project_id)
+    for (const count of eventCounts as any[]) {
+      if (!count.project_id) continue
+      const projectName = projectMap.get(count.project_id)
       if (!projectName) continue
 
-      if (!propertiesMap.has(ev.project_id)) {
-        propertiesMap.set(ev.project_id, {
-          projectId: ev.project_id,
+      if (!propertiesMap.has(count.project_id)) {
+        propertiesMap.set(count.project_id, {
+          projectId: count.project_id,
           projectName: projectName,
           views: 0,
           shares: 0,
@@ -1491,14 +1493,14 @@ router.get('/analytics/properties', async (req: Request, res: Response): Promise
           leads: 0,
         })
       }
-      
-      const p = propertiesMap.get(ev.project_id)
-      if (ev.action === 'view' || ev.action === 'gallery') p.views++
-      if (ev.action === 'share') p.shares++
-      if (ev.action === 'save') p.saves++
-      if (ev.action === 'compare') p.comparisons++
-      if (ev.action === 'whatsapp') p.whatsappInquiries++
-      if (['call', 'whatsapp', 'site_visit'].includes(ev.action)) p.leads++
+
+      const p = propertiesMap.get(count.project_id)
+      if (count.action === 'view' || count.action === 'gallery') p.views += count._count
+      if (count.action === 'share') p.shares += count._count
+      if (count.action === 'save') p.saves += count._count
+      if (count.action === 'compare') p.comparisons += count._count
+      if (count.action === 'whatsapp') p.whatsappInquiries += count._count
+      if (['call', 'whatsapp', 'site_visit'].includes(count.action)) p.leads += count._count
     }
 
     const properties = Array.from(propertiesMap.values()).sort((a, b) => (b.views + b.saves) - (a.views + a.saves))

@@ -52,7 +52,7 @@ function hasMemoryContent(m: MemoryContext): boolean {
 
 function formatMemory(m: MemoryContext): string {
   const parts: string[] = []
-  if (m.bhk_preference) parts.push(`Prefers ${sanitizeForPrompt(m.bhk_preference)}BHK`)
+  if (m.bhk_preference) parts.push(`Prefers ${sanitizeForPrompt(String(m.bhk_preference))}BHK`)
   if (m.budget_max_cr) parts.push(`Budget up to ₹${m.budget_max_cr}Cr`)
   if (m.sector_preference) parts.push(`Interested in ${sanitizeForPrompt(m.sector_preference)}`)
   if (m.purpose) parts.push(`Purpose: ${sanitizeForPrompt(m.purpose)}`)
