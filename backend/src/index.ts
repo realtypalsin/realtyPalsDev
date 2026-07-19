@@ -80,8 +80,8 @@ app.use(morgan('combined'))
 
 // Global Rate Limiting Middleware
 app.use(async (req: Request, res: Response, next: NextFunction) => {
-  // Exclude healthchecks and webhooks (webhooks have their own signature validation)
-  if (req.path.startsWith('/api/v1/health') || req.path.startsWith('/api/v1/leads/webhook')) {
+  // Exclude healthchecks (webhooks are now rate-limited for security)
+  if (req.path.startsWith('/api/v1/health')) {
     return next()
   }
   

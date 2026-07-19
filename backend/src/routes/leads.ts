@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
+import { timingSafeEqual } from 'crypto'
 import { prisma } from '../lib/db'
 import { verifyUser } from '../lib/auth'
 import { trackConversion } from '../lib/analytics/tracking'
@@ -173,9 +174,12 @@ const WebhookLeadSchema = z.object({
 })
 
 function verifySecret(req: Request): boolean {
-  if (!env.WEBHOOK_SECRET) return true  // no secret configured — open endpoint
-  const header = req.headers['x-webhook-secret']
-  return header === env.WEBHOOK_SECRET
+  const secret = env.WEBHOOK_SECRET
+  if (!secret) return process.env.NODE_ENV !== 'production'  // closed in prod
+  const header = String(req.headers['x-webhook-secret'] ?? '')
+  const a = Buffer.from(header)
+  const b = Buffer.from(secret)
+  return a.length === b.length && timingSafeEqual(a, b)
 }
 
 router.post('/webhook', async (req: Request, res: Response) => {
