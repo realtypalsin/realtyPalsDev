@@ -69,19 +69,32 @@ router.post('/auth', async (req: Request, res: Response): Promise<void> => {
   console.log(`[admin] login success ip=${ip}`)
 
   const isProduction = process.env.NODE_ENV === 'production'
-  res.json({ ok: true, token })
+  res.cookie('admin_session', token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 3600 * 1000,
+    path: '/',
+  })
+  res.json({ ok: true })
 })
 
 // ---------------------------------------------------------------------------
 // DELETE /auth — logout
 // ---------------------------------------------------------------------------
 router.delete('/auth', async (req: Request, res: Response): Promise<void> => {
-  const authHeader = req.headers.authorization as string | undefined
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
+  // Try cookie first (preferred), fall back to Bearer (for migration)
+  let token: string | undefined = (req.cookies as Record<string, string>)?.admin_session
+  if (!token) {
+    const authHeader = req.headers.authorization as string | undefined
+    token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
+  }
   if (token) {
     await destroyAdminSession(token)
     console.log(`[admin] logout ip=${clientIp(req)}`)
   }
+  // Clear the session cookie
+  res.clearCookie('admin_session', { path: '/' })
   res.json({ ok: true })
 })
 

@@ -64,11 +64,13 @@ export async function destroyAdminSession(token: string): Promise<void> {
 }
 
 export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const authHeader = req.headers.authorization as string | undefined
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
-  console.log('[requireAdmin] token from header:', token ? 'present' : 'missing')
+  // Try cookie first (preferred), fall back to Bearer token (for migration)
+  let token: string | undefined = (req.cookies as Record<string, string>)?.admin_session
+  if (!token) {
+    const authHeader = req.headers.authorization as string | undefined
+    token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
+  }
   const session = await validateAdminSession(token)
-  console.log('[requireAdmin] session lookup result:', session ? 'found' : 'not found')
   if (!session) {
     res.status(401).json({ error: 'Unauthorized' })
     return
