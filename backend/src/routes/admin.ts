@@ -651,12 +651,40 @@ router.delete('/projects/:id', async (req: Request, res: Response): Promise<void
   }
 })
 
+const PaymentPlanSchema = z.object({
+  total_units: z.number().optional(),
+  unitwise_pricing: z.record(z.any()).optional(),
+  phase_wise_breakdown: z.record(z.any()).optional(),
+  booking_amount: z.number().optional(),
+  payment_schedule: z.array(z.record(z.any())).optional(),
+})
+
+const CostSheetSchema = z.object({
+  construction_cost: z.number().optional(),
+  land_cost: z.number().optional(),
+  taxes_fees: z.number().optional(),
+  profit_margin: z.number().optional(),
+  estimated_cost_per_sqft: z.number().optional(),
+})
+
+const InvestmentInsightsSchema = z.object({
+  expected_appreciation: z.number().optional(),
+  rental_yield: z.number().optional(),
+  comparables: z.array(z.record(z.any())).optional(),
+  risk_factors: z.array(z.string()).optional(),
+})
+
 // ---------------------------------------------------------------------------
 // PUT /projects/:id/payment-plan
 // ---------------------------------------------------------------------------
 router.put('/projects/:id/payment-plan', async (req: Request, res: Response): Promise<void> => {
   try {
-    const data = req.body
+    const parsed = PaymentPlanSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid payment plan data', details: parsed.error.issues })
+      return
+    }
+    const data = parsed.data
     await prisma.paymentPlan.upsert({
       where: { project_id: req.params.id },
       create: { project_id: req.params.id, ...data },
@@ -674,7 +702,12 @@ router.put('/projects/:id/payment-plan', async (req: Request, res: Response): Pr
 // ---------------------------------------------------------------------------
 router.put('/projects/:id/cost-sheet', async (req: Request, res: Response): Promise<void> => {
   try {
-    const data = req.body
+    const parsed = CostSheetSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid cost sheet data', details: parsed.error.issues })
+      return
+    }
+    const data = parsed.data
     await prisma.costSheet.upsert({
       where: { project_id: req.params.id },
       create: { project_id: req.params.id, ...data },
@@ -692,10 +725,15 @@ router.put('/projects/:id/cost-sheet', async (req: Request, res: Response): Prom
 // ---------------------------------------------------------------------------
 router.patch('/projects/:id/investment-insights', async (req: Request, res: Response): Promise<void> => {
   try {
+    const parsed = InvestmentInsightsSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid investment insights data', details: parsed.error.issues })
+      return
+    }
     const profile = await prisma.decisionProfile.findUnique({ where: { project_id: req.params.id } })
     const existingData: any = profile?.intelligence_data || {}
-    const newData = { ...existingData, investment_insights: req.body }
-    
+    const newData = { ...existingData, investment_insights: parsed.data }
+
     await prisma.decisionProfile.upsert({
       where: { project_id: req.params.id },
       create: { project_id: req.params.id, intelligence_data: newData },
