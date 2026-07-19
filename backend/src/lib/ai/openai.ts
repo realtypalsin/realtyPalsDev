@@ -272,6 +272,10 @@ export async function streamWithOpenAI(
     // Use MAIN model when tools needed (larger context window for gpt-4o vs gpt-4o-mini 8KB limit)
     const model = allowTools ? MODELS.MAIN : MODELS.FALLBACK;
 
+    // Absolute wall-clock deadline for the entire turn (120s max)
+    const turnDeadline = Date.now() + 120_000;
+    let deadlineExceeded = false;
+
     let stream: Awaited<ReturnType<typeof client.chat.completions.create>>;
     try {
       stream = await client.chat.completions.create(
@@ -310,6 +314,15 @@ export async function streamWithOpenAI(
       for await (const chunk of stream) {
         // Each chunk resets the inactivity timer — only a genuine silence triggers abort.
         resetInactivity();
+
+        // Absolute deadline check — abort if turn exceeds 120s wall-clock
+        if (Date.now() > turnDeadline) {
+          console.warn('[OPENAI] Turn deadline exceeded (>120s). Aborting.');
+          deadlineExceeded = true;
+          inactivityController.abort();
+          break;
+        }
+
         chunkCount++;
 
         if (chunkCount === 1) {
@@ -366,6 +379,10 @@ export async function streamWithOpenAI(
 
     if (usage) {
       console.log('[OPENAI] tokens', { model, prompt_tokens: usage.prompt_tokens, completion_tokens: usage.completion_tokens });
+    }
+
+    if (deadlineExceeded) {
+      send('token', { token: '\n\n[Response truncated: 120-second turn limit reached]' });
     }
 
     if (toolCallName && allowTools) {
