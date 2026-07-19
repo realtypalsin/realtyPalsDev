@@ -684,7 +684,7 @@ router.put('/projects/:id/payment-plan', async (req: Request, res: Response): Pr
       res.status(400).json({ error: 'Invalid payment plan data', details: parsed.error.issues })
       return
     }
-    const data = parsed.data
+    const data = parsed.data as any
     await prisma.paymentPlan.upsert({
       where: { project_id: req.params.id },
       create: { project_id: req.params.id, ...data },
@@ -707,7 +707,7 @@ router.put('/projects/:id/cost-sheet', async (req: Request, res: Response): Prom
       res.status(400).json({ error: 'Invalid cost sheet data', details: parsed.error.issues })
       return
     }
-    const data = parsed.data
+    const data = parsed.data as any
     await prisma.costSheet.upsert({
       where: { project_id: req.params.id },
       create: { project_id: req.params.id, ...data },
@@ -732,7 +732,7 @@ router.patch('/projects/:id/investment-insights', async (req: Request, res: Resp
     }
     const profile = await prisma.decisionProfile.findUnique({ where: { project_id: req.params.id } })
     const existingData: any = profile?.intelligence_data || {}
-    const newData = { ...existingData, investment_insights: parsed.data }
+    const newData = { ...existingData, investment_insights: parsed.data as any }
 
     await prisma.decisionProfile.upsert({
       where: { project_id: req.params.id },

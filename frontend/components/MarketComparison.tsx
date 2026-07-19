@@ -137,7 +137,7 @@ export default function MarketComparison({ sector, city = 'Noida', currentPriceS
               </div>
               <div>
                 <h4 className="text-[16px] font-bold text-gray-900 dark:text-white tracking-tight">Sector {sector} Price Distribution</h4>
-                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-[0.1em] mt-0.5">Real-time localized market positioning</p>
+                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-[0.1em] mt-0.5">Based on available market data</p>
               </div>
             </div>
             {currentPriceSqft && avg > 0 && (
