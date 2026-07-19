@@ -200,7 +200,12 @@ async function fireWebhook(event: string, data: Record<string, unknown>) {
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const res = await fetch(url, { method: 'POST', body, headers })
+      const res = await fetch(url, {
+        method: 'POST',
+        body,
+        headers,
+        signal: AbortSignal.timeout(5000),
+      })
       if (res.ok) return
     } catch (e) {
       if (attempt === 1) throw e
