@@ -58,7 +58,7 @@ export async function verifyUser(req: Request): Promise<string | null> {
     tokenCache.set(token, { userId: user.id, exp: Date.now() + CACHE_TTL_MS })
     return user.id
   } catch (err) {
-    console.warn('[auth] token verification failed:', (err as Error).message)
+    // Silently fail. Invalid/expired tokens are expected; logging per-request auth failures is noise.
     return null
   }
 }
