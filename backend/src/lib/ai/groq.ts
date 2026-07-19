@@ -88,6 +88,7 @@ export async function streamWithGroq(
 
   let stream: Awaited<ReturnType<typeof groq.chat.completions.create>>
   try {
+    // Note: Groq SDK doesn't support stream_options yet, so we can't get token counts
     stream = await groq.chat.completions.create(
       {
         model: MODELS.GROQ_SMART,
@@ -115,6 +116,7 @@ export async function streamWithGroq(
 
   let fullText = ''
   let chunkCount = 0
+  let usage: { prompt_tokens?: number; completion_tokens?: number } | undefined
   try {
     for await (const chunk of stream) {
       // Each chunk resets the timer — only a genuine silence triggers abort.
@@ -143,6 +145,10 @@ export async function streamWithGroq(
 
         send('token', { token })
       }
+
+      if ((chunk as any).usage) {
+        usage = { prompt_tokens: (chunk as any).usage.prompt_tokens, completion_tokens: (chunk as any).usage.completion_tokens };
+      }
     }
   } catch (err) {
     clearInactivity()
@@ -154,5 +160,10 @@ export async function streamWithGroq(
 
   clearInactivity()
   console.log('[GROQ] stream complete', Date.now(), { chunkCount, fullTextLen: fullText.length })
+
+  if (usage) {
+    console.log('[GROQ] tokens', { model: MODELS.GROQ_SMART, prompt_tokens: usage.prompt_tokens, completion_tokens: usage.completion_tokens });
+  }
+
   return fullText
 }

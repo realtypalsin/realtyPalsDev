@@ -269,16 +269,18 @@ export async function streamWithOpenAI(
 
     console.log('[OPENAI] START create() cycle=' + cycle, Date.now(), { allowTools, msgCount: currentMsgs.length });
 
+    // Use MAIN model when tools needed (larger context window for gpt-4o vs gpt-4o-mini 8KB limit)
+    const model = allowTools ? MODELS.MAIN : MODELS.FALLBACK;
+
     let stream: Awaited<ReturnType<typeof client.chat.completions.create>>;
     try {
-      // Use MAIN model when tools needed (larger context window for gpt-4o vs gpt-4o-mini 8KB limit)
-      const model = allowTools ? MODELS.MAIN : MODELS.FALLBACK;
       stream = await client.chat.completions.create(
         {
           model,
           messages: currentMsgs as any,
           ...(allowTools ? { tools } : {}),
           stream: true,
+          stream_options: { include_usage: true },
           max_tokens: config.maxTokens,
         },
         // Signal threads through fetchWithTimeout AND the response body/stream.
@@ -302,6 +304,7 @@ export async function streamWithOpenAI(
     let toolCallArgs = '';
     let toolCallId = '';
     let chunkCount = 0;
+    let usage: { prompt_tokens?: number; completion_tokens?: number } | undefined;
 
     try {
       for await (const chunk of stream) {
@@ -342,6 +345,10 @@ export async function streamWithOpenAI(
           if (tc.function?.name) toolCallName = tc.function.name;
           if (tc.function?.arguments) toolCallArgs += tc.function.arguments;
         }
+
+        if (chunk.usage) {
+          usage = { prompt_tokens: chunk.usage.prompt_tokens, completion_tokens: chunk.usage.completion_tokens };
+        }
       }
     } catch (err) {
       clearInactivity();
@@ -356,6 +363,10 @@ export async function streamWithOpenAI(
 
     clearInactivity();
     console.log('[OPENAI] stream complete cycle=' + cycle, Date.now(), { chunkCount, fullTextLen: fullText.length, toolCallName: toolCallName || null });
+
+    if (usage) {
+      console.log('[OPENAI] tokens', { model, prompt_tokens: usage.prompt_tokens, completion_tokens: usage.completion_tokens });
+    }
 
     if (toolCallName && allowTools) {
       send('searching', { tool: toolCallName });
