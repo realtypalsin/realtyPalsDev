@@ -130,8 +130,8 @@ Go to your project → **Settings** → **Environment Variables** → add all fr
 Optional (add when ready):
 | Key | Value |
 |-----|-------|
-| `UPSTASH_REDIS_URL` | From [console.upstash.com](https://console.upstash.com) |
-| `UPSTASH_REDIS_TOKEN` | From Upstash |
+| `UPSTASH_REDIS_REST_URL` | From [console.upstash.com](https://console.upstash.com) REST endpoint |
+| `UPSTASH_REDIS_REST_TOKEN` | From Upstash REST token |
 | `NEXT_PUBLIC_POSTHOG_KEY` | From [posthog.com](https://posthog.com) |
 | `NEXT_PUBLIC_POSTHOG_HOST` | `https://app.posthog.com` |
 | `TAVILY_API_KEY` | From [app.tavily.com](https://app.tavily.com) |
