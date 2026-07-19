@@ -1,5 +1,6 @@
 // backend/src/lib/ai/context.ts
 import type { MemoryContext } from './memory'
+import { sanitizeForPrompt } from './prompts/blocks'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
@@ -51,10 +52,10 @@ function hasMemoryContent(m: MemoryContext): boolean {
 
 function formatMemory(m: MemoryContext): string {
   const parts: string[] = []
-  if (m.bhk_preference) parts.push(`Prefers ${m.bhk_preference}BHK`)
+  if (m.bhk_preference) parts.push(`Prefers ${sanitizeForPrompt(m.bhk_preference)}BHK`)
   if (m.budget_max_cr) parts.push(`Budget up to ₹${m.budget_max_cr}Cr`)
-  if (m.sector_preference) parts.push(`Interested in ${m.sector_preference}`)
-  if (m.purpose) parts.push(`Purpose: ${m.purpose}`)
+  if (m.sector_preference) parts.push(`Interested in ${sanitizeForPrompt(m.sector_preference)}`)
+  if (m.purpose) parts.push(`Purpose: ${sanitizeForPrompt(m.purpose)}`)
   if (m.viewed_slugs?.length) parts.push(`Seen: ${m.viewed_slugs.slice(0, 4).join(', ')}`)
   return parts.join(' · ') + '\nUse as defaults when not re-stated in this session.'
 }

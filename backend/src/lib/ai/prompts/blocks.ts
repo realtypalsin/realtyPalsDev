@@ -117,7 +117,7 @@ Ensure the tone is welcoming and matches how a premium real estate marketing per
 }
 
 /** Strip known LLM control sequences from DB-sourced strings before prompt injection */
-function sanitizeForPrompt(text: string): string {
+export function sanitizeForPrompt(text: string): string {
   if (!text) return ''
   return text
     .replace(/<\|[^|]+\|>/g, '')     // OpenAI/Llama control tokens
