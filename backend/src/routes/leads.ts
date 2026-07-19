@@ -6,6 +6,7 @@ import { verifyUser } from '../lib/auth'
 import { trackConversion } from '../lib/analytics/tracking'
 import { env } from '../lib/env'
 import { notifyLead } from '../lib/notify'
+import { checkRateLimit } from '../lib/cache'
 
 const router = Router()
 
@@ -85,6 +86,14 @@ router.post('/callback', async (req: Request, res: Response) => {
 })
 
 router.post('/site-visit', async (req: Request, res: Response) => {
+  // Verify user is authenticated (signup required per CLAUDE.md)
+  const userId = await verifyUser(req)
+  if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return }
+
+  // Rate limit: 5 site-visit requests per hour per user
+  const rateLimit = await checkRateLimit(`site-visit:${userId}`, 5, 3600)
+  if (rateLimit.remaining <= 0) { res.status(429).json({ error: 'Too many requests' }); return }
+
   const parsed = SiteVisitSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
 
