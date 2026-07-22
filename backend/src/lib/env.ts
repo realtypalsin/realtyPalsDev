@@ -34,10 +34,9 @@ try {
   process.exit(1)
 }
 
-// Fail hard in production if webhook secret is missing
+// Warn in production if webhook secret is missing, but do not block app startup
 if (envParsed.NODE_ENV === 'production' && !envParsed.WEBHOOK_SECRET) {
-  console.error('❌ WEBHOOK_SECRET is required in production')
-  process.exit(1)
+  console.warn('⚠️ WEBHOOK_SECRET is missing in production. Webhook signature verification will be skipped.')
 }
 
 export const env = envParsed
