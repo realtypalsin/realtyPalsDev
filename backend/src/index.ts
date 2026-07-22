@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import 'express-async-errors'
 import * as Sentry from '@sentry/node'
+import crypto from 'crypto'
 import express, { Request, Response, NextFunction } from 'express'
 import logger from './lib/logger'
 import cors from 'cors'
@@ -73,6 +74,14 @@ app.use(cors({
 }))
 app.use(express.json({ limit: '100kb' }))
 app.use(cookieParser())
+
+// Request-ID middleware for correlation across logs, Sentry, and token records
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const id = (req.headers['x-request-id'] as string) || crypto.randomUUID()
+  res.setHeader('x-request-id', id)
+  ;(req as any).requestId = id
+  next()
+})
 
 // Structural Logging
 app.use(morgan('combined'))
