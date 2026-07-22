@@ -132,10 +132,12 @@ body.glass-app {
   -webkit-backdrop-filter: none;
   transition: box-shadow 0.2s ease-out, transform 0.2s ease-out;
 }
-/* Apply Outfit to main headings globally for a modern SaaS look */
 h1, h2, h3, h4 {
-  font-family: var(--font-outfit), sans-serif;
-  letter-spacing: -0.02em; /* Tighter tracking for headings */
+  font-family: var(--font-inter), var(--font-outfit), sans-serif;
+  letter-spacing: -0.02em;
+}
+.font-sans {
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 .font-serif {
   font-family: var(--font-playfair), serif;

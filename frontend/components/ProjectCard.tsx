@@ -10,7 +10,7 @@ import {
   BookmarkSimple,
   CaretLeft, CaretRight,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Barbell, Star, Buildings, Phone, ShareNetwork, Robot,
+  Barbell, Star, Buildings, Phone, PhoneCall, ShareNetwork, Robot,
   Coins, MapPinLine, ChartLineUp, Scales, WarningCircle, PencilSimple,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
@@ -394,10 +394,10 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                 trackPropertyEvent(project.id, 'call', undefined, userId).catch(() => {})
                 onCall?.(project)
               }}
-              className="w-10 h-10 rounded-full bg-transparent text-gray-700 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors active:scale-95"
-              title="Request a call"
+              className="w-9 h-9 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 active:scale-95 group shadow-2xs"
+              title="Request a callback"
             >
-              <Phone size={16} className="text-gray-500 dark:text-gray-400" />
+              <PhoneCall size={15} weight="bold" className="text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:scale-110 transition-transform duration-200" />
             </button>
             <button
               onClick={handleShareProject}

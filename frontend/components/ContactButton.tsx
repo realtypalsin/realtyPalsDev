@@ -1,7 +1,7 @@
 'use client'
 
 import { m } from 'framer-motion'
-import { Phone, ArrowRight } from '@phosphor-icons/react'
+import { PhoneCall, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface ContactButtonProps {
@@ -23,24 +23,15 @@ export default function ContactButton({ label = 'Request Callback', onClick, cla
 
   return (
     <m.button
-      whileHover={{ y: -1, scale: 1.01 }}
-      whileTap={{ scale: 0.96 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      whileHover={{ scale: 1.015 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={handleClick}
-      className={`relative group inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl overflow-hidden ${className}`}
+      className={`relative group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-sm hover:shadow transition-all duration-200 text-xs font-medium ${className}`}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 to-indigo-500/10 dark:from-violet-500/20 dark:to-indigo-500/20 backdrop-blur-md" />
-      <div className="absolute inset-0 border border-violet-200/50 dark:border-violet-700/50 rounded-2xl group-hover:border-violet-300 dark:group-hover:border-violet-600 transition-colors" />
-      
-      <span className="relative z-10 flex items-center justify-center w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-300">
-        <Phone weight="fill" size={12} />
-      </span>
-      
-      <span className="relative z-10 text-[13px] font-semibold text-violet-700 dark:text-violet-300">
-        {label}
-      </span>
-      
-      <ArrowRight weight="bold" size={12} className="relative z-10 ml-1 text-violet-400 dark:text-violet-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+      <PhoneCall className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600 shrink-0" />
+      <span>{label}</span>
+      <ArrowRight className="w-3 h-3 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform duration-200" />
     </m.button>
   )
 }

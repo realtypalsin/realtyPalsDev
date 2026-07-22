@@ -7,6 +7,7 @@ import { trackConversion } from '../lib/analytics/tracking'
 import { env } from '../lib/env'
 import { notifyLead } from '../lib/notify'
 import { checkRateLimit } from '../lib/cache'
+import { loadLeadProfile, scoreLead } from '../lib/leadProfile'
 
 const router = Router()
 
@@ -31,6 +32,8 @@ const CallbackSchema = z.object({
   projectSlug: z.string().optional(),
   session_id: z.string().optional(),
   guestToken: z.string().optional(),
+  intent_tier: z.enum(['immediate', '1-3-months', 'exploring']).optional(),
+  loan_status: z.enum(['pre_approved', 'need_help', 'cash']).optional(),
 })
 
 const SiteVisitSchema = z.object({
@@ -48,7 +51,7 @@ router.post('/callback', async (req: Request, res: Response) => {
   const parsed = CallbackSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
 
-  const { name, phone, projectName, projectSlug, guestToken, session_id } = parsed.data
+  const { name, phone, projectName, projectSlug, guestToken, session_id, intent_tier, loan_status } = parsed.data
 
   // Get project and builder info for analytics
   const project = projectSlug ? await prisma.project.findUnique({
@@ -65,22 +68,44 @@ router.post('/callback', async (req: Request, res: Response) => {
     await Promise.all([
       trackConversion(session_id, 'callback_requested', project.id, project.builder_id),
       // Also create BuilderLead record
-      prisma.builderLead.create({
-        data: {
-          builder_id: project.builder_id,
-          project_id: project.id,
-          lead_type: 'callback_requested',
-          name,
-          phone,
-          email: undefined,
-          source_session: session_id,
-          status: 'new',
-        }
-      })
+      (async () => {
+        const leadProfile = await loadLeadProfile(userId, guestToken)
+        return prisma.builderLead.create({
+          data: {
+            builder_id: project.builder_id,
+            project_id: project.id,
+            lead_type: 'callback_requested',
+            name,
+            phone,
+            email: undefined,
+            source_session: session_id,
+            source_intent: leadProfile as any,
+            status: 'new',
+          }
+        })
+      })()
     ]).catch(err => console.error('[leads] Analytics tracking failed:', err))
   }
 
-  fireWebhook('callback_requested', { name, phone, projectName }).catch((e) => console.error('[leads] webhook failed:', e))
+  // Enrich lead with the buyer profile we already have, so builders get a qualified lead.
+  const profile = await loadLeadProfile(userId, guestToken)
+  const loanPreApproved = loan_status === 'pre_approved' || profile.loan_pre_approved === true
+  const { score, tier } = scoreLead({
+    loanPreApproved,
+    intentTier: intent_tier ?? null,
+    projectFitsBudget: undefined,
+    savedCount: profile.engagement?.projects_saved,
+    viewedCount: profile.engagement?.projects_viewed,
+    sectorMatches: undefined,
+  })
+  fireWebhook('callback_requested', {
+    name, phone, project_name: projectName,
+    ...profile,
+    timeline: intent_tier ?? profile.timeline ?? null,
+    loan_pre_approved: loanPreApproved,
+    lead_score: score,
+    lead_tier: tier,
+  }).catch((e) => console.error('[leads] webhook failed:', e))
 
   res.status(201).json({ callback: cb })
 })

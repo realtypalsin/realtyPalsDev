@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import { Outfit, Playfair_Display, Afacad } from "next/font/google";
+import { Outfit, Playfair_Display, Afacad, Inter } from "next/font/google";
 
 import { PostHogProvider } from "@/components/PostHogProvider";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -60,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
       <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#E4E4E5]">
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:p-4 focus:bg-white focus:text-blue-600 focus:font-bold">
           Skip to main content

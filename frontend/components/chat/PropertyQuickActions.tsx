@@ -1,6 +1,6 @@
 'use client'
 
-import { Phone, Share2, Bot } from 'lucide-react'
+import { PhoneCall, Share2, Bot } from 'lucide-react'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ConversationStage } from '@/components/chat/types'
 
@@ -24,32 +24,37 @@ export default function PropertyQuickActions({ project, onCallback, onOpenShareS
   }
 
   return (
-    <div className="flex items-center justify-between gap-2 mt-4 relative w-full">
+    <div className="flex items-center justify-between gap-2 mt-4 relative w-full font-sans">
       {/* Left: Request Callback (30%) */}
       <button
         onClick={(e) => { e.stopPropagation(); onCallback?.(project); }}
-        className="flex-[3] h-11 flex flex-shrink-0 items-center justify-center rounded-full bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/60 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 transition-all shadow-sm"
+        className="flex-[3] h-11 flex flex-shrink-0 items-center justify-center gap-1.5 rounded-full bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-300 dark:hover:border-emerald-800 transition-all duration-200 shadow-xs group"
         aria-label="Request Callback"
+        title="Request Callback from Advisor"
       >
-        <Phone size={17} strokeWidth={1.5} />
+        <span className="relative flex items-center justify-center">
+          <PhoneCall size={16} className="text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-200" />
+        </span>
+        <span className="text-xs font-semibold hidden sm:inline">Callback</span>
       </button>
 
       {/* Center: Ask AI (40%) */}
       <button
         onClick={(e) => { e.stopPropagation(); handleAskAI(); }}
-        className="flex-[4] h-11 flex flex-shrink-0 items-center justify-center gap-1.5 bg-[#3061F2] hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-full text-[14px] font-semibold shadow-[0_4px_14px_rgba(48,97,242,0.3)] hover:shadow-[0_6px_20px_rgba(48,97,242,0.4)] hover:-translate-y-0.5 transition-all duration-300"
+        className="flex-[4] h-11 flex flex-shrink-0 items-center justify-center gap-1.5 bg-[#3061F2] hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-full text-[14px] font-semibold shadow-[0_4px_14px_rgba(48,97,242,0.3)] hover:shadow-[0_6px_20px_rgba(48,97,242,0.4)] active:scale-[0.98] transition-all duration-200"
       >
-        <Bot size={17} strokeWidth={1.5} />
+        <Bot size={17} strokeWidth={1.75} />
         Ask AI
       </button>
 
       {/* Right: Share (30%) */}
       <button
         onClick={(e) => { e.stopPropagation(); onOpenShareSheet(); }}
-        className="flex-[3] h-11 flex flex-shrink-0 items-center justify-center rounded-full bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/60 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 transition-all shadow-sm"
+        className="flex-[3] h-11 flex flex-shrink-0 items-center justify-center rounded-full bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all duration-200 shadow-xs group"
         aria-label="Share"
+        title="Share Project"
       >
-        <Share2 size={17} strokeWidth={1.5} />
+        <Share2 size={16} className="group-hover:scale-110 transition-transform duration-200 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200" />
       </button>
     </div>
   )
