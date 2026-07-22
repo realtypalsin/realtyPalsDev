@@ -36,7 +36,7 @@ async function seed() {
     // ─────────────────────────────────────────────────
     const builderData = {
       name:                       data.builder.name,
-      slug:                       data.builder.slug,
+      slug:                       data.builder.slug ?? data.builder.id,
       tagline:                    data.builder.tagline                    ?? null,
       founder:                    data.builder.founder                    ?? null,
       company_overview:           data.builder.company_overview           ?? null,
@@ -47,18 +47,18 @@ async function seed() {
       email:                      data.builder.email                      ?? null,
       phone:                      data.builder.phone                      ?? null,
       parent_group:               data.builder.parent_group               ?? null,
-      experience_years:           data.builder.experience_years           ?? null,
-      projects_delivered_count:   data.builder.projects_delivered_count   ?? null,
-      total_projects_count:       data.builder.total_projects_count       ?? null,
-      delivered_units:            data.builder.delivered_units            ?? null,
-      delayed_projects_count:     data.builder.delayed_projects_count     ?? null,
-      average_delay_months:       data.builder.average_delay_months       ?? null,
-      delivery_score:             data.builder.delivery_score             ?? null,
-      construction_quality_score: data.builder.construction_quality_score ?? null,
-      after_sales_score:          data.builder.after_sales_score          ?? null,
-      buyer_satisfaction_score:   data.builder.buyer_satisfaction_score   ?? null,
-      rera_compliance_score:      data.builder.rera_compliance_score      ?? null,
-      litigation_count:           data.builder.litigation_count           ?? null,
+      experience_years:           data.builder.experience_years           !== undefined ? data.builder.experience_years : undefined,
+      projects_delivered_count:   (data.builder.projects_delivered_count ?? data.builder.delivered_projects) !== undefined ? (data.builder.projects_delivered_count ?? data.builder.delivered_projects) : undefined,
+      total_projects_count:       data.builder.total_projects_count       !== undefined ? data.builder.total_projects_count : undefined,
+      delivered_units:            data.builder.delivered_units            !== undefined ? data.builder.delivered_units : undefined,
+      delayed_projects_count:     data.builder.delayed_projects_count     !== undefined ? data.builder.delayed_projects_count : undefined,
+      average_delay_months:       data.builder.average_delay_months       !== undefined ? data.builder.average_delay_months : undefined,
+      delivery_score:             data.builder.delivery_score             !== undefined ? data.builder.delivery_score : undefined,
+      construction_quality_score: data.builder.construction_quality_score !== undefined ? data.builder.construction_quality_score : undefined,
+      after_sales_score:          data.builder.after_sales_score          !== undefined ? data.builder.after_sales_score : undefined,
+      buyer_satisfaction_score:   data.builder.buyer_satisfaction_score   !== undefined ? data.builder.buyer_satisfaction_score : undefined,
+      rera_compliance_score:      data.builder.rera_compliance_score      !== undefined ? data.builder.rera_compliance_score : undefined,
+      litigation_count:           data.builder.litigation_count           !== undefined ? data.builder.litigation_count : undefined,
       awards:                     data.builder.awards                     ?? [],
       certifications:             data.builder.certifications             ?? [],
       luxury_specialization:      data.builder.luxury_specialization      ?? false,
@@ -92,7 +92,7 @@ async function seed() {
       description:                data.project.description                ?? null,
       long_description:           data.project.long_description           ?? null,
       hero_image_url:             data.project.hero_image_url             ?? null,
-      status:                     data.project.status                     as any,
+      status:                     (data.project.status?.toLowerCase().includes('ready') ? 'ready_to_move' : (data.project.status?.toLowerCase().includes('under') ? 'under_construction' : (data.project.status?.toLowerCase().includes('new') ? 'new_launch' : 'under_construction'))) as any,
       rera_number:                data.project.rera_number                ?? null,
       rera_url:                   data.project.rera_url                   ?? null,
       lat:                        data.project.lat                        ?? null,
@@ -328,11 +328,11 @@ async function seed() {
       for (const conn of data.connectivity) {
         await prisma.connectivity.create({
           data: {
-            project_id:  project.id,
-            name:        conn.name,
-            type:        conn.type        as any,
+            project_id: project.id,
+            name: conn.name,
+            type: conn.type?.toLowerCase() as any,
             distance_km: conn.distance_km ?? null,
-            notes:       conn.notes       ?? null,
+            notes: conn.notes ?? null,
             data_source: conn.data_source as any ?? 'manual',
           },
         })
@@ -386,7 +386,7 @@ async function seed() {
           data: {
             project_id: project.id,
             name:       am.name,
-            category:   am.category as any,
+            category:   (['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking'].includes(am.category?.toLowerCase()) ? am.category?.toLowerCase() : 'lifestyle') as any,
           },
         })
       }

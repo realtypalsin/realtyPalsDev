@@ -1,138 +1,137 @@
 [
     {
         "project": {
-            "name": "Mahagun Moderne",
-            "slug": "mahagun-moderne-sector-78-noida",
-            "builder_id": "mahagun-group",
+            "name": "Prateek Wisteria",
+            "slug": "prateek-wisteria-sector-77-noida",
+            "builder_id": "prateek-group",
             "status": "Ready to Move",
-            "sector": "Sector 78",
+            "sector": "Sector 77",
             "city": "Noida",
-            "address": "Sector 78, Noida, Uttar Pradesh 201305",
-            "tagline": "A Masterpiece of Modern Architecture",
-            "lat": 28.5723,
-            "lng": 77.3888,
-            "rera_number": "UPRERAPRJ4288",
-            "rera_url": "https://www.up-rera.in/verify",
+            "address": "Sector 77, Noida, Uttar Pradesh 201301",
+            "tagline": "A World of Luxury and Convenience",
+            "lat": 28.5714,
+            "lng": 77.3912,
+            "rera_number": "RERA Not Applicable",
+            "rera_url": "",
             "total_towers": 20,
-            "total_units": 2700,
-            "land_area_acres": 25.0,
-            "launch_date": "2010-10-01T00:00:00Z",
+            "total_units": 1800,
+            "land_area_acres": 15.0,
+            "launch_date": "2010-06-01T00:00:00Z",
             "possession_label": "Delivered",
-            "possession_date": "2016-12-01T00:00:00Z",
+            "possession_date": "2014-12-01T00:00:00Z",
             "design_theme": "Modern Contemporary",
             "architect": "Hafeez Contractor",
-            "interior_designer": "Mahagun Design Studio",
-            "floors": "G+24",
+            "interior_designer": "Prateek Design Team",
+            "floors": "G+19",
             "open_space_pct": 75,
-            "green_rating": "IGBC Gold Certified",
-            "description": "Massive 25-acre premium township offering excellent capital appreciation, low-rise & high-rise options, and a sprawling central park.",
-            "long_description": "Mahagun Moderne is one of the most prominent landmark projects in Sector 78. Spanning a massive 25 acres, it was designed by Hafeez Contractor and features a mix of high-rise apartments, low-rise duplexes, and independent floors. With 75% open space, it has recorded excellent historical capital appreciation and remains highly liquid in the secondary market. Prices hover around ₹14,000/sq.ft. with steady rental yields.",
+            "green_rating": "N/A",
+            "description": "Premium 15-acre residential township in Sector 77 offering excellent capital appreciation and high liquidity.",
+            "long_description": "Prateek Wisteria is a marquee 15-acre delivered project by Prateek Group in Sector 77. The society is known for its excellent upkeep, strong Resident Welfare Association, and consistent historical capital appreciation. With extensive sports amenities, lush open spaces, and well-designed 2, 3, and 4 BHK layouts, it is one of the most highly sought-after secondary market assets in Central Noida.",
             "marketing_claims": [
-                "25 Acres of Mega Township Living",
+                "15 Acres of Prime Land",
                 "Excellent Track Record of Appreciation",
-                "IGBC Gold Certified Green Building",
-                "In-house Commercial Mart"
+                "Active Community Living",
+                "High Secondary Market Liquidity"
             ],
             "ai_search_keywords": [
-                "mahagun moderne noida",
-                "sector 78 ready to move",
-                "mahagun group sector 78",
-                "3 bhk in mahagun moderne",
-                "premium flats in noida"
+                "prateek wisteria noida",
+                "sector 77 ready to move",
+                "prateek group sector 77",
+                "3 bhk in prateek wisteria"
             ],
-            "schools_nearby_count": 5,
-            "hospitals_nearby_count": 3,
-            "shopping_nearby_count": 4,
-            "it_parks_nearby_count": 6,
+            "schools_nearby_count": 6,
+            "hospitals_nearby_count": 4,
+            "shopping_nearby_count": 5,
+            "it_parks_nearby_count": 5,
             "banks_nearby_count": 8,
             "restaurants_nearby_count": 12,
             "location_intelligence_json": {}
         },
         "builder": {
-            "id": "mahagun-group",
-            "name": "Mahagun Group",
-            "founded_year": 1995,
-            "website": "www.mahagunindia.com",
-            "delivered_projects": 40,
-            "delivered_units": 15000,
+            "id": "prateek-group",
+            "name": "Prateek Group",
+            "founded_year": 2005,
+            "website": "www.prateekgroup.com",
+            "delivered_projects": 13,
+            "delivered_units": 8000,
             "logo_url": "",
-            "construction_quality_score": 88
+            "construction_quality_score": 85
         },
         "unit_types": [
             {
                 "bhk": 2,
                 "name": "2 BHK",
-                "super_area_sqft": 1010,
-                "carpet_area_sqft": 680,
-                "balcony_area_sqft": 90,
+                "super_area_sqft": 1135,
+                "carpet_area_sqft": 780,
+                "balcony_area_sqft": 100,
                 "bathrooms": 2,
-                "price_min_cr": 1.30,
-                "price_max_cr": 1.45,
-                "price_label": "₹1.30–1.45 Cr",
+                "price_min_cr": 1.10,
+                "price_max_cr": 1.30,
+                "price_label": "₹1.10–1.30 Cr",
                 "views": []
             },
             {
                 "bhk": 3,
                 "name": "3 BHK Compact",
-                "super_area_sqft": 1435,
-                "carpet_area_sqft": 980,
+                "super_area_sqft": 1385,
+                "carpet_area_sqft": 950,
                 "balcony_area_sqft": 120,
                 "bathrooms": 2,
-                "price_min_cr": 1.95,
-                "price_max_cr": 2.12,
-                "price_label": "₹1.95–2.12 Cr",
+                "price_min_cr": 1.45,
+                "price_max_cr": 1.65,
+                "price_label": "₹1.45–1.65 Cr",
                 "views": []
             },
             {
                 "bhk": 4,
                 "name": "4 BHK Premium",
-                "super_area_sqft": 2400,
-                "carpet_area_sqft": 1650,
+                "super_area_sqft": 2115,
+                "carpet_area_sqft": 1550,
                 "balcony_area_sqft": 180,
                 "bathrooms": 4,
-                "price_min_cr": 3.20,
-                "price_max_cr": 3.75,
-                "price_label": "₹3.20–3.75 Cr",
+                "price_min_cr": 2.25,
+                "price_max_cr": 2.65,
+                "price_label": "₹2.25–2.65 Cr",
                 "views": []
             }
         ],
         "amenities": [
             {
-                "name": "Mega Clubhouse (60,000 sqft)",
+                "name": "Large Clubhouse",
                 "category": "Lifestyle"
             },
             {
-                "name": "Olympic-sized Swimming Pool",
+                "name": "Swimming Pool",
                 "category": "Sports"
             },
             {
-                "name": "Tennis & Badminton Courts",
+                "name": "Outdoor Tennis Courts",
                 "category": "Sports"
             },
             {
-                "name": "Mahagun Mart",
+                "name": "Jogging Track",
+                "category": "Wellness"
+            },
+            {
+                "name": "Supermarket",
                 "category": "Convenience"
-            },
-            {
-                "name": "Central Central Park",
-                "category": "Lifestyle"
             }
         ],
         "connectivity": [
             {
                 "type": "Metro",
                 "name": "Sector 76 Metro Station",
-                "distance_km": 1.5
+                "distance_km": 1.2
             },
             {
                 "type": "Road",
                 "name": "FNG Expressway",
-                "distance_km": 2.5
+                "distance_km": 1.5
             },
             {
                 "type": "Hospital",
                 "name": "Cloudnine Hospital",
-                "distance_km": 3.5
+                "distance_km": 2.5
             }
         ],
         "payment_plan": {
@@ -143,71 +142,69 @@
             "gst_rate_pct": 0,
             "stamp_duty_pct": 5,
             "registration_pct": 1,
-            "parking_cost": 450000,
+            "parking_cost": 400000,
             "club_membership": 200000,
             "ifms": 100,
             "plc_charges": [],
             "other_charges": []
         },
         "investment_insights": {
-            "price_appreciation": "Consistent (8-11% YoY)",
-            "rental_yield": "3.2% (Avg ₹45,000 for 3BHK)",
+            "price_appreciation": "Consistently Good (8-10% YoY)",
+            "rental_yield": "3-3.5% (₹42k for 3BHK)",
             "market_trend": "Bullish",
             "liquidity_score": "Very High",
             "investment_report_json": {}
         },
         "project_dna": {
-            "builder_track_record_score": 90,
+            "builder_track_record_score": 88,
             "price_position_score": 85,
-            "locality_score": 95,
-            "rera_compliance_score": 100,
-            "amenity_depth_score": 95,
+            "locality_score": 90,
+            "rera_compliance_score": 90,
+            "amenity_depth_score": 90,
             "possession_certainty_score": 100,
             "verified_by": "market-analyst",
             "last_verified_at": "2026-07-17T00:00:00Z"
         },
         "decision_profile": {
             "status": "PUBLISHED",
-            "decision_thesis": "A flagship 25-acre township that acts as the anchor development of Sector 78. Its immense scale, proven appreciation, and exceptional maintenance make it the safest bet for families.",
+            "decision_thesis": "A standout legacy development in Sector 77 offering a bulletproof secondary market investment. Superior maintenance drives consistent demand and robust capital appreciation.",
             "why_buy": [
-                "Massive 25-acre land parcel providing unparalleled open space.",
-                "Delivered with an exceptional track record of appreciation.",
-                "High-density community means excellent security and in-house retail (Mahagun Mart)."
+                "100% physically delivered with active RWA.",
+                "Excellent 15-acre land parcel offering massive open green spaces.",
+                "Strong track record of capital growth."
             ],
             "why_avoid": [
-                "Highly populated, which leads to busy common areas.",
-                "Premium resale pricing prices out budget buyers."
+                "Older architectural design compared to new luxury launches.",
+                "Resale premium limits high percentage-based ROI for new investors."
             ],
-            "best_for": "Upgraders and established families seeking a sprawling, active, and safe mega-township.",
-            "not_ideal_for": "Buyers seeking boutique, low-density exclusivity.",
+            "best_for": "Families and end-users looking for a proven, well-maintained community.",
+            "not_ideal_for": "Short-term flip investors.",
             "confidence_sources": [
                 "Market Data",
-                "Resident Reviews",
-                "Transaction Registries"
+                "Resident Reviews"
             ],
-            "recommendation_notes": "A benchmark asset. Highly liquid and safe for capital parking.",
-            "advisor_notes": "Park-facing and low-rise units command a steep premium. Negotiate strictly based on tower position."
+            "recommendation_notes": "A very safe harbour for capital. High liquidity means easy exit.",
+            "advisor_notes": "Check unit orientations; park-facing units command a significant premium."
         },
         "persona_profile": {
             "primary_persona": "FAMILY",
             "secondary_personas": [
-                "UPGRADER",
                 "INVESTOR"
             ],
-            "income_range": "₹3.5 Lakh+ per month",
+            "income_range": "₹3 Lakh+ per month",
             "risk_appetite": "Low",
             "family_stage": "Established Family",
             "work_location": "Noida",
             "timeline_horizon": "Immediate Move-in",
-            "motivation_note": "A secure, active, and highly liquid mega-township.",
+            "motivation_note": "A secure, active, and liquid asset.",
             "persona_descriptions": [
                 {
                     "fit": "Excellent Fit",
                     "type": "Family",
                     "stars": 5,
                     "reasons": [
-                        "Massive central park.",
-                        "In-house schools and retail."
+                        "Massive internal parks.",
+                        "Zero completion risk."
                     ],
                     "fitColor": "bg-blue-100 text-blue-700",
                     "iconName": "Users"
@@ -216,18 +213,251 @@
         },
         "recommendation": {
             "tier": "STRONG BUY",
-            "primary_thesis": "The definitive mega-township of Sector 78 with bulletproof liquidity.",
-            "end_use_thesis": "Incredible lifestyle due to scale and amenity depth.",
-            "investment_thesis": "Reliable appreciation and top-tier rental demand.",
-            "family_thesis": "The ultimate family hub with thousands of residents.",
-            "investor_thesis": "Easy to rent (3BHK fetches ₹45k-₹50k/mo).",
-            "luxury_thesis": "Premium scale, though actual finish is standard modern.",
-            "risk_thesis": "Virtually zero completion risk.",
+            "primary_thesis": "The safest and most established community in Sector 77.",
+            "end_use_thesis": "Exceptional due to community vibrancy.",
+            "investment_thesis": "Highly liquid, stable rental returns.",
+            "family_thesis": "Safe, massive grounds for kids.",
+            "investor_thesis": "Steady 3% yields.",
+            "luxury_thesis": "Mid-Premium.",
+            "risk_thesis": "Virtually zero.",
             "walk_away_conditions": [
-                "Seeking low-density, quiet living."
+                "Seeking ultra-modern smart home amenities."
             ],
             "negotiation_leverage": [
-                "Large inventory of resale units provides buyer leverage on standard units."
+                "High availability of resale units provides browsing leverage."
+            ],
+            "timeline_advice": "Immediate.",
+            "internal_confidence": "VERIFIED",
+            "admin_notes": ""
+        },
+        "competitors": [
+            {
+                "competitor_name": "Express Zenith",
+                "competitor_slug": "express-zenith-sector-77-noida",
+                "this_project_advantage": "Larger 15-acre community and stronger appreciation.",
+                "competitor_advantage": "Slightly newer completion phase.",
+                "verdict": "Prateek Wisteria offers a more comprehensive township feel.",
+                "price_delta_note": "Prateek commands a localized premium."
+            }
+        ]
+    },
+    {
+        "project": {
+            "name": "Express Zenith",
+            "slug": "express-zenith-sector-77-noida",
+            "builder_id": "express-builders",
+            "status": "Ready to Move",
+            "sector": "Sector 77",
+            "city": "Noida",
+            "address": "Sector 77, Noida, Uttar Pradesh 201301",
+            "tagline": "Premium Living in Central Noida",
+            "lat": 28.5721,
+            "lng": 77.3934,
+            "rera_number": "UPRERAPRJ10645",
+            "rera_url": "https://www.up-rera.in/verify",
+            "total_towers": 6,
+            "total_units": 800,
+            "land_area_acres": 5.5,
+            "launch_date": "2012-06-01T00:00:00Z",
+            "possession_label": "Delivered",
+            "possession_date": "2018-06-01T00:00:00Z",
+            "design_theme": "Modern Residential",
+            "architect": "Unknown",
+            "interior_designer": "Unknown",
+            "floors": "G+19",
+            "open_space_pct": 75,
+            "green_rating": "N/A",
+            "description": "Ready-to-move 2 and 3 BHK premium apartments built on a 5.5-acre land parcel with 75% open spaces.",
+            "long_description": "Express Zenith by Express Builders is an established, ready-to-move project in Sector 77. It covers 5.5 acres and features a robust structural design (earthquake-resistant). The project focuses on Vastu-compliant layouts with strong cross-ventilation. Pricing ranges from ₹1.77 Cr to ₹2.38 Cr with rental rates around ₹34,000 for a 3 BHK.",
+            "marketing_claims": [
+                "75% Open Spaces",
+                "Vastu Compliant Layouts",
+                "Corner Plot Advantages",
+                "Earthquake Resistant RCC"
+            ],
+            "ai_search_keywords": [
+                "express zenith noida",
+                "sector 77 flats",
+                "express builders sector 77",
+                "ready to move 3 bhk"
+            ],
+            "schools_nearby_count": 4,
+            "hospitals_nearby_count": 3,
+            "shopping_nearby_count": 3,
+            "it_parks_nearby_count": 4,
+            "banks_nearby_count": 5,
+            "restaurants_nearby_count": 8,
+            "location_intelligence_json": {}
+        },
+        "builder": {
+            "id": "express-builders",
+            "name": "Express Builders & Promoters Pvt Ltd",
+            "founded_year": 1980,
+            "website": "www.expressbuildersltd.com",
+            "delivered_projects": 15,
+            "delivered_units": 0,
+            "logo_url": "",
+            "construction_quality_score": 80
+        },
+        "unit_types": [
+            {
+                "bhk": 2,
+                "name": "2 BHK",
+                "super_area_sqft": 1310,
+                "carpet_area_sqft": 850,
+                "balcony_area_sqft": 100,
+                "bathrooms": 2,
+                "price_min_cr": 1.45,
+                "price_max_cr": 1.65,
+                "price_label": "₹1.45–1.65 Cr",
+                "views": []
+            },
+            {
+                "bhk": 3,
+                "name": "3 BHK Compact",
+                "super_area_sqft": 1470,
+                "carpet_area_sqft": 980,
+                "balcony_area_sqft": 120,
+                "bathrooms": 2,
+                "price_min_cr": 1.77,
+                "price_max_cr": 1.95,
+                "price_label": "₹1.77–1.95 Cr",
+                "views": []
+            },
+            {
+                "bhk": 3,
+                "name": "3 BHK Premium",
+                "super_area_sqft": 1765,
+                "carpet_area_sqft": 1200,
+                "balcony_area_sqft": 150,
+                "bathrooms": 3,
+                "price_min_cr": 2.10,
+                "price_max_cr": 2.38,
+                "price_label": "₹2.10–2.38 Cr",
+                "views": []
+            }
+        ],
+        "amenities": [
+            {
+                "name": "Club House",
+                "category": "Lifestyle"
+            },
+            {
+                "name": "Swimming Pool",
+                "category": "Sports"
+            },
+            {
+                "name": "Gymnasium",
+                "category": "Sports"
+            },
+            {
+                "name": "Children's Play Area",
+                "category": "Kids"
+            }
+        ],
+        "connectivity": [
+            {
+                "type": "Metro",
+                "name": "Noida Sector 76 Metro Station",
+                "distance_km": 1.6
+            },
+            {
+                "type": "Road",
+                "name": "FNG Expressway",
+                "distance_km": 1.5
+            }
+        ],
+        "payment_plan": {
+            "plan_name": "Resale",
+            "milestones": []
+        },
+        "cost_sheet": {
+            "gst_rate_pct": 0,
+            "stamp_duty_pct": 5,
+            "registration_pct": 1,
+            "parking_cost": 400000,
+            "club_membership": 150000,
+            "ifms": 100,
+            "plc_charges": [],
+            "other_charges": []
+        },
+        "investment_insights": {
+            "price_appreciation": "Steady",
+            "rental_yield": "3% (Avg ₹34,000 for 3BHK)",
+            "market_trend": "Stable",
+            "liquidity_score": "High",
+            "investment_report_json": {}
+        },
+        "project_dna": {
+            "builder_track_record_score": 80,
+            "price_position_score": 80,
+            "locality_score": 85,
+            "rera_compliance_score": 100,
+            "amenity_depth_score": 75,
+            "possession_certainty_score": 100,
+            "verified_by": "market-analyst",
+            "last_verified_at": "2026-07-17T00:00:00Z"
+        },
+        "decision_profile": {
+            "status": "PUBLISHED",
+            "decision_thesis": "A quiet, well-constructed 5.5-acre property perfect for buyers seeking mid-premium ready-to-move assets without the massive scale (and crowds) of mega-townships.",
+            "why_buy": [
+                "Delivered property with a solid track record of construction.",
+                "Excellent Vastu-compliant layouts.",
+                "Corner plot offers great visibility and airflow."
+            ],
+            "why_avoid": [
+                "Smaller land parcel compared to nearby Prateek Wisteria.",
+                "Amenities are standard, lacking ultra-modern tech."
+            ],
+            "best_for": "Nuclear families seeking functional spaces with immediate availability.",
+            "not_ideal_for": "Buyers looking for sprawling 15+ acre township features.",
+            "confidence_sources": [
+                "Market Data",
+                "RERA"
+            ],
+            "recommendation_notes": "A reliable mid-market choice.",
+            "advisor_notes": "Very consistent rental demand due to standard, practical layouts."
+        },
+        "persona_profile": {
+            "primary_persona": "FAMILY",
+            "secondary_personas": [
+                "INVESTOR"
+            ],
+            "income_range": "₹2 Lakh+ per month",
+            "risk_appetite": "Low",
+            "family_stage": "Established Family",
+            "work_location": "Noida",
+            "timeline_horizon": "Immediate",
+            "motivation_note": "A sensible, quiet place to live.",
+            "persona_descriptions": [
+                {
+                    "fit": "Good Fit",
+                    "type": "Family",
+                    "stars": 4,
+                    "reasons": [
+                        "Ready infrastructure.",
+                        "Safe environment."
+                    ],
+                    "fitColor": "bg-blue-100 text-blue-700",
+                    "iconName": "Users"
+                }
+            ]
+        },
+        "recommendation": {
+            "tier": "BUY",
+            "primary_thesis": "Practical and safe ready-to-move investment.",
+            "end_use_thesis": "Very good for daily living.",
+            "investment_thesis": "Stable, slow growth.",
+            "family_thesis": "Decent, though fewer amenities than a mega-township.",
+            "investor_thesis": "Reliable 3% yield.",
+            "luxury_thesis": "Standard premium.",
+            "risk_thesis": "Zero completion risk.",
+            "walk_away_conditions": [
+                "Desire for massive outdoor sports complexes."
+            ],
+            "negotiation_leverage": [
+                "Compare configurations with AVS Orchard."
             ],
             "timeline_advice": "Immediate.",
             "internal_confidence": "VERIFIED",
@@ -237,105 +467,104 @@
             {
                 "competitor_name": "Prateek Wisteria",
                 "competitor_slug": "prateek-wisteria-sector-77-noida",
-                "this_project_advantage": "Larger 25-acre township.",
-                "competitor_advantage": "Slightly less dense.",
-                "verdict": "Mahagun Moderne wins on sheer scale and in-house retail.",
-                "price_delta_note": "Both trade at similar premium price points."
+                "this_project_advantage": "More boutique, less crowded.",
+                "competitor_advantage": "Massive scale and superior appreciation.",
+                "verdict": "Prateek wins for overall lifestyle; Zenith wins for quiet living.",
+                "price_delta_note": "Zenith is marginally more affordable."
             }
         ]
     },
     {
         "project": {
-            "name": "Nimbus Hyde Park",
-            "slug": "nimbus-hyde-park-sector-78-noida",
-            "builder_id": "nimbus-realty",
+            "name": "Antriksh Forest",
+            "slug": "antriksh-forest-sector-77-noida",
+            "builder_id": "antriksh-group",
             "status": "Ready to Move",
-            "sector": "Sector 78",
+            "sector": "Sector 77",
             "city": "Noida",
-            "address": "Sector 78, Noida, Uttar Pradesh 201305",
-            "tagline": "Spacious Living in Central Noida",
-            "lat": 28.5689,
-            "lng": 77.3915,
+            "address": "Sector 77, Noida, Uttar Pradesh 201301",
+            "tagline": "Nature-Inspired Living",
+            "lat": 28.5732,
+            "lng": 77.3941,
             "rera_number": "RERA Not Applicable",
             "rera_url": "",
-            "total_towers": 23,
-            "total_units": 2044,
-            "land_area_acres": 15.0,
-            "launch_date": "2010-12-01T00:00:00Z",
+            "total_towers": 9,
+            "total_units": 650,
+            "land_area_acres": 7.0,
+            "launch_date": "2010-09-01T00:00:00Z",
             "possession_label": "Delivered",
-            "possession_date": "2018-01-01T00:00:00Z",
-            "design_theme": "Modern Residential",
+            "possession_date": "2015-06-01T00:00:00Z",
+            "design_theme": "Green Living",
             "architect": "Unknown",
             "interior_designer": "Unknown",
             "floors": "G+18",
-            "open_space_pct": 72,
+            "open_space_pct": 70,
             "green_rating": "N/A",
-            "description": "A 15-acre ready-to-move mid-segment development offering great affordability relative to its premium Sector 78 location.",
-            "long_description": "IITL Nimbus The Hyde Park is a popular 15-acre residential project located centrally in Sector 78. Featuring 23 towers and over 2,000 units, it caters heavily to the mid-market segment. While it lacks the ultra-premium finish of neighboring Mahagun, it commands strong rental demand and serves as an excellent, affordable entry point into Sector 78.",
+            "description": "A 7-acre ready-to-move society known for stagnant capital appreciation over the last 8 years.",
+            "long_description": "Antriksh Forest is an established 7-acre residential society developed by the Antriksh Group in Sector 77. While it offers spacious 2, 3, and 4 BHK layouts and standard society amenities, market data indicates that it has experienced virtually no special capital appreciation for the last 8 years. It serves primarily as an affordable entry point for end-users seeking larger older apartments.",
             "marketing_claims": [
-                "15 Acres of Greenery",
-                "Vastu Compliant Architecture",
-                "Highly Accessible Location"
+                "7 Acres of Land",
+                "Ready to Move",
+                "Spacious Layouts"
             ],
             "ai_search_keywords": [
-                "nimbus hyde park noida",
-                "sector 78 flats",
-                "iitl nimbus sector 78",
-                "ready to move 3 bhk"
+                "antriksh forest noida",
+                "sector 77 flats",
+                "antriksh group sector 77"
             ],
-            "schools_nearby_count": 5,
-            "hospitals_nearby_count": 4,
-            "shopping_nearby_count": 4,
-            "it_parks_nearby_count": 5,
-            "banks_nearby_count": 6,
-            "restaurants_nearby_count": 10,
+            "schools_nearby_count": 4,
+            "hospitals_nearby_count": 3,
+            "shopping_nearby_count": 2,
+            "it_parks_nearby_count": 3,
+            "banks_nearby_count": 5,
+            "restaurants_nearby_count": 8,
             "location_intelligence_json": {}
         },
         "builder": {
-            "id": "nimbus-realty",
-            "name": "IITL Nimbus Realty",
-            "founded_year": 1993,
-            "website": "www.nimbusprojectsltd.com",
-            "delivered_projects": 15,
-            "delivered_units": 6000,
+            "id": "antriksh-group",
+            "name": "The Antriksh Group",
+            "founded_year": 1986,
+            "website": "",
+            "delivered_projects": 55,
+            "delivered_units": 0,
             "logo_url": "",
-            "construction_quality_score": 75
+            "construction_quality_score": 65
         },
         "unit_types": [
             {
                 "bhk": 2,
                 "name": "2 BHK",
-                "super_area_sqft": 1080,
-                "carpet_area_sqft": 710,
-                "balcony_area_sqft": 90,
-                "bathrooms": 2,
-                "price_min_cr": 1.05,
-                "price_max_cr": 1.25,
-                "price_label": "₹1.05–1.25 Cr",
-                "views": []
-            },
-            {
-                "bhk": 3,
-                "name": "3 BHK Compact",
-                "super_area_sqft": 1320,
-                "carpet_area_sqft": 910,
+                "super_area_sqft": 1235,
+                "carpet_area_sqft": 800,
                 "balcony_area_sqft": 100,
                 "bathrooms": 2,
-                "price_min_cr": 1.48,
-                "price_max_cr": 1.55,
-                "price_label": "₹1.48–1.55 Cr",
+                "price_min_cr": 0.95,
+                "price_max_cr": 1.15,
+                "price_label": "₹95 L–1.15 Cr",
                 "views": []
             },
             {
                 "bhk": 3,
-                "name": "3 BHK Large",
-                "super_area_sqft": 1550,
-                "carpet_area_sqft": 1080,
+                "name": "3 BHK",
+                "super_area_sqft": 1640,
+                "carpet_area_sqft": 1150,
                 "balcony_area_sqft": 120,
                 "bathrooms": 3,
-                "price_min_cr": 1.70,
-                "price_max_cr": 1.85,
-                "price_label": "₹1.70–1.85 Cr",
+                "price_min_cr": 1.25,
+                "price_max_cr": 1.45,
+                "price_label": "₹1.25–1.45 Cr",
+                "views": []
+            },
+            {
+                "bhk": 4,
+                "name": "4 BHK",
+                "super_area_sqft": 2400,
+                "carpet_area_sqft": 1650,
+                "balcony_area_sqft": 150,
+                "bathrooms": 4,
+                "price_min_cr": 1.85,
+                "price_max_cr": 2.10,
+                "price_label": "₹1.85–2.10 Cr",
                 "views": []
             }
         ],
@@ -351,238 +580,18 @@
             {
                 "name": "Gymnasium",
                 "category": "Sports"
-            },
-            {
-                "name": "Kids Play Area",
-                "category": "Kids"
             }
         ],
         "connectivity": [
             {
                 "type": "Metro",
-                "name": "Sector 76 Metro Station",
-                "distance_km": 1.0
-            },
-            {
-                "type": "Road",
-                "name": "FNG Expressway",
-                "distance_km": 2.0
-            }
-        ],
-        "payment_plan": {
-            "plan_name": "Resale Only",
-            "milestones": []
-        },
-        "cost_sheet": {
-            "gst_rate_pct": 0,
-            "stamp_duty_pct": 5,
-            "registration_pct": 1,
-            "parking_cost": 350000,
-            "club_membership": 150000,
-            "ifms": 50,
-            "plc_charges": [],
-            "other_charges": []
-        },
-        "investment_insights": {
-            "price_appreciation": "Moderate",
-            "rental_yield": "3-3.5% (Avg ₹34k - ₹43k for 3BHK)",
-            "market_trend": "Stable",
-            "liquidity_score": "High",
-            "investment_report_json": {}
-        },
-        "project_dna": {
-            "builder_track_record_score": 75,
-            "price_position_score": 85,
-            "locality_score": 90,
-            "rera_compliance_score": 100,
-            "amenity_depth_score": 75,
-            "possession_certainty_score": 100,
-            "verified_by": "market-analyst",
-            "last_verified_at": "2026-07-17T00:00:00Z"
-        },
-        "decision_profile": {
-            "status": "PUBLISHED",
-            "decision_thesis": "A practical, affordable mid-market alternative to the premium Mahagun properties located in the exact same prime sector.",
-            "why_buy": [
-                "More affordable entry price (approx ₹11,500/sq.ft) for Sector 78.",
-                "Fully delivered and highly populated.",
-                "Steady rental yields."
-            ],
-            "why_avoid": [
-                "Construction quality and aesthetic finish are standard.",
-                "High density with 23 towers."
-            ],
-            "best_for": "Budget end-users who specifically want a Sector 78 address.",
-            "not_ideal_for": "Luxury upgraders.",
-            "confidence_sources": [
-                "Market Data",
-                "Resale Listings"
-            ],
-            "recommendation_notes": "A strong budget play. Ensures you live in a premium sector without paying the premium developer markup.",
-            "advisor_notes": "Check for seepage in older towers before finalizing any resale deal."
-        },
-        "persona_profile": {
-            "primary_persona": "FAMILY",
-            "secondary_personas": [
-                "BUDGET BUYER"
-            ],
-            "income_range": "₹2 Lakh+ per month",
-            "risk_appetite": "Low",
-            "family_stage": "Established Family",
-            "work_location": "Noida",
-            "timeline_horizon": "Immediate",
-            "motivation_note": "Sector 78 location on a tighter budget.",
-            "persona_descriptions": [
-                {
-                    "fit": "Good Fit",
-                    "type": "Budget Family",
-                    "stars": 4,
-                    "reasons": [
-                        "Affordable pricing.",
-                        "Good connectivity."
-                    ],
-                    "fitColor": "bg-blue-100 text-blue-700",
-                    "iconName": "Users"
-                }
-            ]
-        },
-        "recommendation": {
-            "tier": "BUY",
-            "primary_thesis": "The sensible budget option in Sector 78.",
-            "end_use_thesis": "Functional and highly accessible.",
-            "investment_thesis": "Will trail the premium neighbors in growth, but offers strong rental demand.",
-            "family_thesis": "Safe, but lacks sprawling open parks.",
-            "investor_thesis": "Excellent rentability.",
-            "luxury_thesis": "Standard market finish.",
-            "risk_thesis": "Zero completion risk.",
-            "walk_away_conditions": [
-                "Buyer wants grand, resort-style luxury."
-            ],
-            "negotiation_leverage": [
-                "Compare closely with Antriksh Golf View."
-            ],
-            "timeline_advice": "Immediate.",
-            "internal_confidence": "VERIFIED",
-            "admin_notes": ""
-        },
-        "competitors": [
-            {
-                "competitor_name": "Antriksh Golf View",
-                "competitor_slug": "antriksh-golf-view-sector-78-noida",
-                "this_project_advantage": "Slightly better market reputation and upkeep.",
-                "competitor_advantage": "Often cheaper on a per-square-foot basis.",
-                "verdict": "Hyde Park is slightly superior in community maintenance.",
-                "price_delta_note": "Pricing is highly comparable."
-            }
-        ]
-    },
-    {
-        "project": {
-            "name": "Antriksh Golf View",
-            "slug": "antriksh-golf-view-sector-78-noida",
-            "builder_id": "antriksh-group",
-            "status": "Ready to Move",
-            "sector": "Sector 78",
-            "city": "Noida",
-            "address": "Sector 78, Noida, Uttar Pradesh 201305",
-            "tagline": "Comfortable Community Living",
-            "lat": 28.5701,
-            "lng": 77.3895,
-            "rera_number": "RERA Not Applicable",
-            "rera_url": "",
-            "total_towers": 12,
-            "total_units": 1150,
-            "land_area_acres": 8.0,
-            "launch_date": "2010-06-01T00:00:00Z",
-            "possession_label": "Delivered",
-            "possession_date": "2015-08-01T00:00:00Z",
-            "design_theme": "Standard Residential",
-            "architect": "Unknown",
-            "interior_designer": "Unknown",
-            "floors": "G+18",
-            "open_space_pct": 65,
-            "green_rating": "N/A",
-            "description": "A delivered 8-acre mid-market project offering large configurations but struggling with stagnant capital appreciation.",
-            "long_description": "Antriksh Golf View (Phases I & II) was developed by the Antriksh Group. While offering spacious 2, 3, and 4 BHK layouts, the project has suffered from the developer's legacy brand issues and aging infrastructure. Capital values hover around ₹10,000/sq.ft., making it significantly cheaper than Mahagun Moderne, but with very flat historical appreciation.",
-            "marketing_claims": [
-                "Spacious Layouts",
-                "Ready to Move In",
-                "Central Location"
-            ],
-            "ai_search_keywords": [
-                "antriksh golf view",
-                "sector 78 noida",
-                "antriksh group sector 78",
-                "budget flats sector 78"
-            ],
-            "schools_nearby_count": 5,
-            "hospitals_nearby_count": 3,
-            "shopping_nearby_count": 3,
-            "it_parks_nearby_count": 4,
-            "banks_nearby_count": 6,
-            "restaurants_nearby_count": 8,
-            "location_intelligence_json": {}
-        },
-        "builder": {
-            "id": "antriksh-group",
-            "name": "The Antriksh Group",
-            "founded_year": 1986,
-            "website": "www.antrikshgroup.com",
-            "delivered_projects": 55,
-            "delivered_units": 20000,
-            "logo_url": "",
-            "construction_quality_score": 65
-        },
-        "unit_types": [
-            {
-                "bhk": 3,
-                "name": "3 BHK Small",
-                "super_area_sqft": 1345,
-                "carpet_area_sqft": 920,
-                "balcony_area_sqft": 100,
-                "bathrooms": 2,
-                "price_min_cr": 1.30,
-                "price_max_cr": 1.40,
-                "price_label": "₹1.30–1.40 Cr",
-                "views": []
-            },
-            {
-                "bhk": 3,
-                "name": "3 BHK Premium",
-                "super_area_sqft": 1584,
-                "carpet_area_sqft": 1100,
-                "balcony_area_sqft": 120,
-                "bathrooms": 3,
-                "price_min_cr": 1.55,
-                "price_max_cr": 1.65,
-                "price_label": "₹1.55–1.65 Cr",
-                "views": []
-            }
-        ],
-        "amenities": [
-            {
-                "name": "Swimming Pool",
-                "category": "Sports"
-            },
-            {
-                "name": "Gymnasium",
-                "category": "Sports"
-            },
-            {
-                "name": "Park",
-                "category": "Lifestyle"
-            }
-        ],
-        "connectivity": [
-            {
-                "type": "Metro",
-                "name": "Sector 76 Metro Station",
+                "name": "Noida Sector 76 Metro",
                 "distance_km": 1.5
             },
             {
                 "type": "Road",
                 "name": "FNG Expressway",
-                "distance_km": 2.5
+                "distance_km": 2.0
             }
         ],
         "payment_plan": {
@@ -600,16 +609,16 @@
             "other_charges": []
         },
         "investment_insights": {
-            "price_appreciation": "Stagnant",
-            "rental_yield": "3.5% (₹35k - ₹54k)",
+            "price_appreciation": "Stagnant (No special appreciation in 8 years)",
+            "rental_yield": "3%",
             "market_trend": "Bearish / Flat",
-            "liquidity_score": "Medium",
+            "liquidity_score": "Low",
             "investment_report_json": {}
         },
         "project_dna": {
             "builder_track_record_score": 60,
-            "price_position_score": 85,
-            "locality_score": 90,
+            "price_position_score": 75,
+            "locality_score": 85,
             "rera_compliance_score": 50,
             "amenity_depth_score": 65,
             "possession_certainty_score": 100,
@@ -618,23 +627,23 @@
         },
         "decision_profile": {
             "status": "PUBLISHED",
-            "decision_thesis": "A legacy mid-market project offering large square footage for cheap, but burdened by stagnant capital growth and aging maintenance.",
+            "decision_thesis": "An underperforming legacy asset in Sector 77. While it offers spacious flats at a lower entry price, capital values have stagnated completely.",
             "why_buy": [
-                "Highly affordable entry into Sector 78.",
-                "Good rental yields relative to capital cost."
+                "Cheap entry price for large square footage.",
+                "Fully delivered."
             ],
             "why_avoid": [
-                "Flat capital appreciation history.",
-                "Older architectural design and builder reputation issues."
+                "Zero meaningful capital appreciation over an 8-year horizon.",
+                "Aging infrastructure and poorer maintenance compared to neighbors."
             ],
-            "best_for": "Pure budget end-users.",
-            "not_ideal_for": "Investors looking for capital gains.",
+            "best_for": "Strictly budget-bound end-users who need large space and do not care about asset appreciation.",
+            "not_ideal_for": "Investors looking for capital growth.",
             "confidence_sources": [
                 "Market Data",
-                "Rental Listings"
+                "Historical Price Trends"
             ],
-            "recommendation_notes": "Capital trap for investors; acceptable for end-users seeking space over luxury.",
-            "advisor_notes": "Sellers are often highly negotiable."
+            "recommendation_notes": "Avoid for investment; acceptable for budget end-use.",
+            "advisor_notes": "Prices are highly negotiable due to seller fatigue in stagnant projects."
         },
         "persona_profile": {
             "primary_persona": "BUDGET BUYER",
@@ -643,16 +652,16 @@
             "risk_appetite": "Low",
             "family_stage": "Established Family",
             "work_location": "Noida",
-            "timeline_horizon": "Immediate Move-in",
-            "motivation_note": "Maximizing square footage per rupee.",
+            "timeline_horizon": "Immediate",
+            "motivation_note": "Needs square footage on a strict budget.",
             "persona_descriptions": [
                 {
                     "fit": "Moderate Fit",
                     "type": "Budget Buyer",
                     "stars": 3,
                     "reasons": [
-                        "Affordable pricing.",
-                        "Flat appreciation."
+                        "Low entry cost for sector.",
+                        "Delivered status."
                     ],
                     "fitColor": "bg-yellow-100 text-yellow-700",
                     "iconName": "Home"
@@ -661,150 +670,152 @@
         },
         "recommendation": {
             "tier": "HOLD/AVOID",
-            "primary_thesis": "Affordable but lacks growth drivers.",
-            "end_use_thesis": "Functional if you need space cheaply.",
-            "investment_thesis": "Dead money. No capital growth.",
-            "family_thesis": "Adequate, but neighbors have better amenities.",
-            "investor_thesis": "Rents easily but asset depreciates.",
-            "luxury_thesis": "N/A",
-            "risk_thesis": "Delivered, so no builder default risk, but high depreciation risk.",
+            "primary_thesis": "Capital trap with no growth.",
+            "end_use_thesis": "Functional but aging.",
+            "investment_thesis": "Dead money. Look elsewhere for growth.",
+            "family_thesis": "Standard space, weak amenities.",
+            "investor_thesis": "Poor capital returns offset okay rental yields.",
+            "luxury_thesis": "Not applicable.",
+            "risk_thesis": "No construction risk, but high depreciation risk.",
             "walk_away_conditions": [
-                "Looking for premium lifestyle or capital ROI."
+                "Looking for any ROI."
             ],
             "negotiation_leverage": [
-                "Leverage the flat pricing history to drop the asking price."
+                "Quote the stagnant 8-year price history."
             ],
-            "timeline_advice": "Look for alternatives like Hyde Park first.",
+            "timeline_advice": "Look for alternatives.",
             "internal_confidence": "VERIFIED",
             "admin_notes": ""
         },
         "competitors": [
             {
-                "competitor_name": "Nimbus Hyde Park",
-                "competitor_slug": "nimbus-hyde-park-sector-78-noida",
-                "this_project_advantage": "Sometimes cheaper entry price.",
-                "competitor_advantage": "Better community upkeep.",
-                "verdict": "Hyde Park is slightly safer.",
-                "price_delta_note": "Pricing is highly comparable."
+                "competitor_name": "Prateek Wisteria",
+                "competitor_slug": "prateek-wisteria-sector-77-noida",
+                "this_project_advantage": "Lower entry price.",
+                "competitor_advantage": "Vastly superior maintenance and appreciation.",
+                "verdict": "Prateek Wisteria is the vastly superior choice if budget allows.",
+                "price_delta_note": "Antriksh trades at a severe discount to Prateek."
             }
         ]
     },
     {
         "project": {
-            "name": "Mahagun Mezzaria",
-            "slug": "mahagun-mezzaria-sector-78-noida",
-            "builder_id": "mahagun-group",
+            "name": "AVS Orchard",
+            "slug": "avs-orchard-sector-77-noida",
+            "builder_id": "perfect-propbuild",
             "status": "Ready to Move",
-            "sector": "Sector 78",
+            "sector": "Sector 77",
             "city": "Noida",
-            "address": "Sector 78, Noida, Uttar Pradesh 201305",
-            "tagline": "The Pinnacle of Ultra-Luxury Living",
-            "lat": 28.5710,
-            "lng": 77.3890,
-            "rera_number": "UPRERAPRJ3325",
+            "address": "Sector 77, Noida, Uttar Pradesh 201301",
+            "tagline": "Comfortable & Connected Living",
+            "lat": 28.5741,
+            "lng": 77.3955,
+            "rera_number": "UPRERAPRJ4284",
             "rera_url": "https://www.up-rera.in/verify",
-            "total_towers": 6,
-            "total_units": 730,
-            "land_area_acres": 10.0,
+            "total_towers": 5,
+            "total_units": 450,
+            "land_area_acres": 4.0,
             "launch_date": "2013-05-01T00:00:00Z",
-            "possession_label": "Delivered (Dec 2018)",
-            "possession_date": "2018-12-01T00:00:00Z",
-            "design_theme": "Art Deco / Ultra Luxury",
-            "architect": "Hafeez Contractor",
-            "interior_designer": "Mahagun Design Studio",
-            "floors": "G+34",
-            "open_space_pct": 80,
-            "green_rating": "IGBC Gold Certified",
-            "description": "An exclusive, ultra-luxury 10-acre development featuring massive 3 and 4 BHK layouts, double-height living spaces, and resort-grade amenities.",
-            "long_description": "Mahagun Mezzaria stands as Sector 78's premier ultra-luxury destination. Spanning 10 acres, it features monumental Art Deco architecture and massive apartment layouts starting at 2,500 sq.ft. The project boasts temperature-controlled pools, exclusive concierge services, and double-height living rooms. It commands severe premium pricing, catering exclusively to HNIs seeking elite status and low-density living.",
+            "possession_label": "Delivered",
+            "possession_date": "2019-10-01T00:00:00Z",
+            "design_theme": "Modern Residential",
+            "architect": "Unknown",
+            "interior_designer": "Unknown",
+            "floors": "G+18",
+            "open_space_pct": 65,
+            "green_rating": "N/A",
+            "description": "Ready-to-move 2, 3, and 4 BHK apartments available at a competitive average rate of ₹11,000 per sq.ft.",
+            "long_description": "AVS Orchard by Perfect Propbuild Pvt Ltd is a modestly sized 4-acre residential development in Sector 77. Offering 2, 3, and 4 BHK configurations, the property pricing ranges from ₹1.13 Cr to ₹2.53 Cr. It trades at an approximate average of ₹11,000 per sq.ft., positioning it as an accessible mid-tier project in a highly desirable sector.",
             "marketing_claims": [
-                "Double-height Living Rooms",
-                "Temperature Controlled Pool",
-                "Low Density (73 Units/Acre)",
-                "Ultra-Luxury Specifications"
+                "Prime Sector 77 Location",
+                "Ready to Move In",
+                "Green Living"
             ],
             "ai_search_keywords": [
-                "mahagun mezzaria noida",
-                "ultra luxury sector 78",
-                "mahagun 4 bhk luxury",
-                "noida premium apartments"
+                "avs orchard noida",
+                "perfect avs orchard sector 77",
+                "avs orchard 3 bhk"
             ],
-            "schools_nearby_count": 5,
+            "schools_nearby_count": 4,
             "hospitals_nearby_count": 3,
-            "shopping_nearby_count": 4,
-            "it_parks_nearby_count": 5,
-            "banks_nearby_count": 8,
-            "restaurants_nearby_count": 15,
+            "shopping_nearby_count": 3,
+            "it_parks_nearby_count": 4,
+            "banks_nearby_count": 6,
+            "restaurants_nearby_count": 8,
             "location_intelligence_json": {}
         },
         "builder": {
-            "id": "mahagun-group",
-            "name": "Mahagun Group",
-            "founded_year": 1995,
-            "website": "www.mahagunindia.com",
-            "delivered_projects": 40,
-            "delivered_units": 15000,
+            "id": "perfect-propbuild",
+            "name": "Perfect Propbuild Pvt Ltd",
+            "founded_year": null,
+            "website": "",
+            "delivered_projects": 2,
+            "delivered_units": 0,
             "logo_url": "",
-            "construction_quality_score": 95
+            "construction_quality_score": 70
         },
         "unit_types": [
             {
+                "bhk": 2,
+                "name": "2 BHK",
+                "super_area_sqft": 1050,
+                "carpet_area_sqft": 650,
+                "balcony_area_sqft": 80,
+                "bathrooms": 2,
+                "price_min_cr": 1.13,
+                "price_max_cr": 1.20,
+                "price_label": "₹1.13–1.20 Cr",
+                "views": []
+            },
+            {
                 "bhk": 3,
-                "name": "3 BHK Ultra-Luxury",
-                "super_area_sqft": 2500,
-                "carpet_area_sqft": 1650,
-                "balcony_area_sqft": 200,
-                "bathrooms": 4,
-                "price_min_cr": 4.00,
-                "price_max_cr": 4.50,
-                "price_label": "₹4.00–4.50 Cr",
+                "name": "3 BHK",
+                "super_area_sqft": 1550,
+                "carpet_area_sqft": 1000,
+                "balcony_area_sqft": 120,
+                "bathrooms": 3,
+                "price_min_cr": 1.65,
+                "price_max_cr": 1.80,
+                "price_label": "₹1.65–1.80 Cr",
                 "views": []
             },
             {
                 "bhk": 4,
-                "name": "4 BHK Ultra-Luxury",
-                "super_area_sqft": 3020,
-                "carpet_area_sqft": 1950,
-                "balcony_area_sqft": 250,
-                "bathrooms": 5,
-                "price_min_cr": 4.80,
-                "price_max_cr": 5.50,
-                "price_label": "₹4.80–5.50 Cr",
+                "name": "4 BHK",
+                "super_area_sqft": 2250,
+                "carpet_area_sqft": 1450,
+                "balcony_area_sqft": 150,
+                "bathrooms": 4,
+                "price_min_cr": 2.45,
+                "price_max_cr": 2.53,
+                "price_label": "₹2.45–2.53 Cr",
                 "views": []
             }
         ],
         "amenities": [
             {
-                "name": "Temperature Controlled Pool",
-                "category": "Luxury"
-            },
-            {
-                "name": "Concierge Services",
-                "category": "Convenience"
-            },
-            {
-                "name": "Billiards & Squash Court",
+                "name": "Swimming Pool",
                 "category": "Sports"
             },
             {
-                "name": "Exclusive Spa & Salon",
-                "category": "Wellness"
+                "name": "Gymnasium",
+                "category": "Sports"
             },
             {
-                "name": "Smart Home Ready",
-                "category": "Technology"
+                "name": "Clubhouse",
+                "category": "Lifestyle"
             }
         ],
         "connectivity": [
             {
                 "type": "Metro",
-                "name": "Sector 76 Metro Station",
-                "distance_km": 1.2
+                "name": "Noida Sector 76 Metro Station",
+                "distance_km": 1.8
             },
             {
                 "type": "Road",
                 "name": "FNG Expressway",
-                "distance_km": 2.5
+                "distance_km": 1.5
             }
         ],
         "payment_plan": {
@@ -815,91 +826,88 @@
             "gst_rate_pct": 0,
             "stamp_duty_pct": 5,
             "registration_pct": 1,
-            "parking_cost": 600000,
-            "club_membership": 400000,
-            "ifms": 200,
+            "parking_cost": 300000,
+            "club_membership": 100000,
+            "ifms": 100,
             "plc_charges": [],
             "other_charges": []
         },
         "investment_insights": {
-            "price_appreciation": "Strong",
-            "rental_yield": "2.5-3%",
-            "market_trend": "Bullish",
+            "price_appreciation": "Moderate",
+            "rental_yield": "3%",
+            "market_trend": "Stable",
             "liquidity_score": "Medium",
             "investment_report_json": {}
         },
         "project_dna": {
-            "builder_track_record_score": 95,
-            "price_position_score": 95,
-            "locality_score": 95,
+            "builder_track_record_score": 65,
+            "price_position_score": 85,
+            "locality_score": 85,
             "rera_compliance_score": 100,
-            "amenity_depth_score": 98,
+            "amenity_depth_score": 70,
             "possession_certainty_score": 100,
             "verified_by": "market-analyst",
             "last_verified_at": "2026-07-17T00:00:00Z"
         },
         "decision_profile": {
             "status": "PUBLISHED",
-            "decision_thesis": "An elite, low-density marquee development that stands as a status symbol in Noida. Massive layouts and premium build quality target the HNI demographic.",
+            "decision_thesis": "A mid-market, affordable property trading at roughly ₹11,000/sq.ft. in a sector where premium competitors are hitting ₹14,000+/sq.ft.",
             "why_buy": [
-                "Uncompromised ultra-luxury finish and double-height spaces.",
-                "Low density living (only ~730 units across 10 acres).",
-                "Fully delivered with a mature, high-net-worth community."
+                "More affordable entry point for Sector 77.",
+                "RERA approved and fully delivered."
             ],
             "why_avoid": [
-                "Extremely high entry cost and monthly maintenance overhead.",
-                "Secondary market liquidity is slower due to ticket size."
+                "Small 4-acre land parcel limits lifestyle amenities.",
+                "Builder lacks the strong legacy track record of peers like Prateek."
             ],
-            "best_for": "HNIs and C-suite executives seeking expansive layouts and exclusivity.",
-            "not_ideal_for": "Budget buyers or traditional ROI-focused investors.",
+            "best_for": "Budget-conscious families wanting to live in Sector 77.",
+            "not_ideal_for": "Luxury upgraders.",
             "confidence_sources": [
                 "Market Data",
-                "Site Visit",
                 "RERA"
             ],
-            "recommendation_notes": "A crown jewel asset for personal use and status.",
-            "advisor_notes": "Review the specific views and floor heights, as premiums vary wildly for top-floor units."
+            "recommendation_notes": "A functional asset if priced correctly during resale negotiation.",
+            "advisor_notes": "Check for maintenance quality as smaller builders sometimes struggle post-handover."
         },
         "persona_profile": {
-            "primary_persona": "LUXURY UPGRADER",
+            "primary_persona": "FAMILY",
             "secondary_personas": [
-                "HNI INVESTOR",
-                "NRI"
+                "BUDGET BUYER"
             ],
-            "income_range": "₹8 Lakh+ per month",
+            "income_range": "₹2 Lakh+ per month",
             "risk_appetite": "Low",
             "family_stage": "Established Family",
-            "work_location": "Noida / Delhi Business Hubs",
-            "timeline_horizon": "Long Term Hold (10+ years)",
-            "motivation_note": "Seeking a marquee, high-status address.",
+            "work_location": "Noida",
+            "timeline_horizon": "Immediate",
+            "motivation_note": "Wants Sector 77 PIN code at a lower price point.",
             "persona_descriptions": [
                 {
-                    "fit": "Perfect Fit",
-                    "type": "HNI / Upgrader",
-                    "stars": 5,
+                    "fit": "Good Fit",
+                    "type": "Family",
+                    "stars": 4,
                     "reasons": [
-                        "Massive living spaces.",
-                        "Elite community profile."
+                        "Affordable 3 BHKs.",
+                        "Delivered status."
                     ],
-                    "fitColor": "bg-emerald-100 text-emerald-700",
-                    "iconName": "Gem"
+                    "fitColor": "bg-blue-100 text-blue-700",
+                    "iconName": "Users"
                 }
             ]
         },
         "recommendation": {
-            "tier": "STRONG BUY",
-            "primary_thesis": "The pinnacle of luxury in Sector 78.",
-            "end_use_thesis": "Unmatched space, luxury, and privacy.",
-            "investment_thesis": "Good capital preserver, though rental yield percentage is low.",
-            "family_thesis": "Extremely safe and highly equipped for affluent lifestyle.",
-            "investor_thesis": "Ticket size is too large for fast flipping.",
-            "luxury_thesis": "True ultra-luxury. High ceilings, VRV ACs, premium clubhouse.",
-            "risk_thesis": "Zero completion risk.",
+            "tier": "HOLD",
+            "primary_thesis": "Decent budget play, but lacks flagship premium status.",
+            "end_use_thesis": "Good for simple, straightforward living.",
+            "investment_thesis": "Appreciation will strictly shadow the sector average.",
+            "family_thesis": "Adequate, but less open park space.",
+            "investor_thesis": "Steady rent, standard capital gains.",
+            "luxury_thesis": "Basic mid-market specifications.",
+            "risk_thesis": "Safe, delivered asset.",
             "walk_away_conditions": [
-                "Budget under ₹4 Cr."
+                "Seeking luxury finishes."
             ],
             "negotiation_leverage": [
-                "Limited buyer pool for ₹4Cr+ tickets allows buyers to negotiate strongly."
+                "Use the builder's smaller brand presence to negotiate down resale asking prices."
             ],
             "timeline_advice": "Immediate.",
             "internal_confidence": "VERIFIED",
@@ -907,12 +915,12 @@
         },
         "competitors": [
             {
-                "competitor_name": "Dasnac Burj Noida",
-                "competitor_slug": "dasnac-burj-noida-sector-75",
-                "this_project_advantage": "Ready to move and larger land parcel.",
-                "competitor_advantage": "More tech-forward smart features.",
-                "verdict": "Mezzaria is better for immediate sprawling living; Burj for high-rise boutique tech.",
-                "price_delta_note": "Both occupy the highest price brackets in Central Noida."
+                "competitor_name": "Express Zenith",
+                "competitor_slug": "express-zenith-sector-77-noida",
+                "this_project_advantage": "Slightly cheaper.",
+                "competitor_advantage": "Better builder track record.",
+                "verdict": "Express Zenith is generally a safer hold.",
+                "price_delta_note": "AVS Orchard is slightly cheaper."
             }
         ]
     }

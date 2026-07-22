@@ -681,14 +681,9 @@ function MessageBubbleInner({
                             index={pi}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
-                            onAskAI={(p) => {
-                              window.dispatchEvent(
-                                new CustomEvent('realtypals:ask-ai', {
-                                  detail: { text: `Tell me more about ${p.name}` },
-                                }),
-                              )
-                            }}
+                            onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
                             onSetSiteVisit={onSetSiteVisit}
+                            onCall={onCallback}
                           />
                         </m.div>
                       ))}
@@ -715,20 +710,15 @@ function MessageBubbleInner({
                           transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
                           className="w-full h-full flex flex-col"
                         >
-                          <ProjectCard 
-                            project={property} 
-                            userId={userId} 
-                            index={pi} 
-                            onDetailOpen={onDetailOpen} 
+                          <ProjectCard
+                            project={property}
+                            userId={userId}
+                            index={pi}
+                            onDetailOpen={onDetailOpen}
                             onToast={onToast}
-                            onAskAI={(p) => {
-                              window.dispatchEvent(
-                                new CustomEvent('realtypals:ask-ai', {
-                                  detail: { text: `Tell me more about ${p.name}` },
-                                }),
-                              )
-                            }}
+                            onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
                             onSetSiteVisit={onSetSiteVisit}
+                            onCall={onCallback}
                           />
                         </m.div>
                       ))}

@@ -73,7 +73,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
 
   // HAPPY PATH TESTS
   it('should send valid TEXT_MESSAGE with actionPrefix + projectName + actionSuffix', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-amenities',
       label: 'Explore amenities',
       actionType: 'TEXT_MESSAGE',
@@ -88,7 +88,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).toHaveBeenCalledWith({
       ...chip,
@@ -98,7 +98,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
   })
 
   it('should send message with default suffix when actionSuffix missing', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-budget',
       label: 'Review payment plans',
       actionType: 'TEXT_MESSAGE',
@@ -108,7 +108,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -118,7 +118,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
   })
 
   it('should send message with chip label as actionPrefix when actionPrefix missing', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-fallback',
       label: 'Check connectivity',
       actionType: 'TEXT_MESSAGE',
@@ -127,7 +127,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -138,7 +138,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
 
   // FALLBACK PATH TESTS
   it('should fallback to first project when projectId does not match', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-fallback-id',
       label: 'Test chip',
       actionType: 'TEXT_MESSAGE',
@@ -151,7 +151,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, 'nonexistent-id')
+    handleCardSelect(chip as ChipAction, 'nonexistent-id')
 
     expect(mockOnAction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -161,7 +161,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
   })
 
   it('should handle numeric projectId by array index', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-index',
       label: 'Test chip',
       actionType: 'TEXT_MESSAGE',
@@ -176,7 +176,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
     }
 
     // projectId "1" should select index 1 (Project B)
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -187,7 +187,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
 
   // ERROR CASES (should NOT call onAction)
   it('should not send when projects array is missing', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-no-projects',
       label: 'Bad chip',
       actionType: 'TEXT_MESSAGE',
@@ -196,13 +196,13 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).not.toHaveBeenCalled()
   })
 
   it('should not send when projects array is empty', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-empty-projects',
       label: 'Bad chip',
       actionType: 'TEXT_MESSAGE',
@@ -212,13 +212,13 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).not.toHaveBeenCalled()
   })
 
   it('should not send when chip actionType is not TEXT_MESSAGE', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-wrong-type',
       label: 'Bad chip',
       actionType: 'INTENT_PATCH',
@@ -228,13 +228,13 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).not.toHaveBeenCalled()
   })
 
   it('should not send when prefix is empty after trim', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-empty-prefix',
       label: '',
       actionType: 'TEXT_MESSAGE',
@@ -244,13 +244,13 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).not.toHaveBeenCalled()
   })
 
   it('should not send when projectName is missing', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-no-name',
       label: 'Test',
       actionType: 'TEXT_MESSAGE',
@@ -260,7 +260,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).not.toHaveBeenCalled()
   })
@@ -268,7 +268,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
   // STRESS TESTS
   it('should handle very long project names', () => {
     const longName = 'A'.repeat(500)
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-long-name',
       label: 'Test',
       actionType: 'TEXT_MESSAGE',
@@ -278,7 +278,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -288,7 +288,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
   })
 
   it('should handle special characters in projectName', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-special-chars',
       label: 'Test',
       actionType: 'TEXT_MESSAGE',
@@ -298,7 +298,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -313,7 +313,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       name: `Project ${i}`
     }))
 
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-many-projects',
       label: 'Test',
       actionType: 'TEXT_MESSAGE',
@@ -323,7 +323,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '50')
+    handleCardSelect(chip as ChipAction, '50')
 
     expect(mockOnAction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -333,19 +333,19 @@ describe('CardSelectorChip - handleCardSelect', () => {
   })
 
   it('should handle undefined payload gracefully', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-undefined-payload',
       label: 'Consider',
       actionType: 'TEXT_MESSAGE'
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).not.toHaveBeenCalled()
   })
 
   it('should trim whitespace from prefix and suffix', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-whitespace',
       label: 'Test',
       actionType: 'TEXT_MESSAGE',
@@ -356,7 +356,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
       }
     }
 
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     expect(mockOnAction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -366,7 +366,7 @@ describe('CardSelectorChip - handleCardSelect', () => {
   })
 
   it('should handle null/undefined in project array items', () => {
-    const chip: ChipAction = {
+    const chip = {
       id: 'test-null-project',
       label: 'Test',
       actionType: 'TEXT_MESSAGE',
@@ -377,10 +377,10 @@ describe('CardSelectorChip - handleCardSelect', () => {
     }
 
     // Should not crash, though behavior depends on implementation
-    handleCardSelect(chip, '1')
+    handleCardSelect(chip as ChipAction, '1')
 
     // Either falls back to first item or handles gracefully
     // Just verify no unhandled error
-    expect(() => handleCardSelect(chip, '1')).not.toThrow()
+    expect(() => handleCardSelect(chip as ChipAction, '1')).not.toThrow()
   })
 })

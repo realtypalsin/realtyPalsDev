@@ -418,16 +418,269 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const dispatchAction = useCallback((action: import('@/components/chat/types').ConversationAction): void => {
+    if (submitLockRef.current) return;
+    submitLockRef.current = true;
+
+    if (!userId && !guestToken) {
+      submitLockRef.current = false;
+      // Not authenticated — show sign-in prompt
+      setToast({ message: 'Sign in or continue as guest to start chatting' });
+      router.push('/auth');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setStatusPhase('extracting');
+    userScrolledUp.current = false;
+    setChipPicker(null);
+
+    const isText = action.type === 'TEXT_MESSAGE';
+    const userText = isText ? (action.payload.text as string) : String(action.payload.label ?? action.type);
+
+
+    const userMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      type: 'user',
+      content: userText,
+      timestamp: new Date().toISOString(),
+    };
+    // Only add a user message bubble if it's an explicit text message or a selected chip that isn't a silent patch
+    if (isText || action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
+      setChatHistory(prev => [...prev, userMsg]);
+    }
+
+
+    setChatTurnCount(c => c + 1);
+    if (chatTurnCount === 0) track('chat_started', { session_id: sessionId })
+    setChatInput('');
+
+
+    const streamId = crypto.randomUUID();
+    streamingMsgIdRef.current = streamId;
+    setChatHistory(prev => [...prev, {
+      id: streamId,
+      type: 'ai',
+      content: '',
+      isSearching: false,
+      userQuery: userText,
+      timestamp: new Date().toISOString(),
+      streamingPhase: 'extracting',
+      streamingIntent: null,
+      streamingResultCount: null,
+    }]);
+
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    let localProjects: ProjectCardType[] = [];
+
+    streamChatBackend(action, {
+      sessionId: sessionId ?? undefined,
+      userId: userId ?? undefined,
+      guestToken: guestToken ?? undefined,
+      intent: currentIntent ?? undefined,
+      signal: controller.signal,
+      onEvent: (event) => {
+        if (event.type === 'intent') {
+          setCurrentIntent(event.intent);
+          // Only enter 'searching' when the backend confirmed a property search will
+          // happen. All other intent states (COLD, GATHERING, ADVISORY, unknown) keep
+          // the UI in 'extracting' until tokens arrive.
+          const isSearchState =
+            event.intentState === 'READY_TO_SEARCH' || event.intentState === 'SHORTLISTED'
+          if (isSearchState) setStatusPhase('searching')
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId ? {
+              ...m,
+              streamingPhase: isSearchState ? 'searching' : 'extracting',
+              streamingIntent: event.intent,
+              streamingIntentState: event.intentState,
+            } : m
+          ));
+        } else if (event.type === 'properties') {
+          const exact = (event.exactResults ?? []) as unknown as ProjectCardType[];
+          const nearby = (event.nearbyResults ?? []) as unknown as ProjectCardType[];
+          const expansion = event.expansion;
+          const shortlist = exact.length > 0 ? exact : nearby;
+          localProjects = shortlist;
+          setStatusPhase('generating');
+          setResultCount(shortlist.length);
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? {
+                ...m,
+                isSearching: false,
+                exactResults: exact,
+                nearbyResults: nearby,
+                expansion,
+                properties: shortlist,
+                streamingPhase: 'generating',
+                streamingResultCount: shortlist.length,
+              }
+              : m
+          ));
+          setLastShortlist(shortlist);
+          setShowRecommendations(shortlist.length > 0);
+          track('recommendation_generated', { count: shortlist.length, session_id: sessionId });
+        } else if (event.type === 'token') {
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? { ...m, content: m.content + event.token, isSearching: false }
+              : m
+          ));
+        } else if (event.type === 'ui_state') {
+          // New conversation engine backend state
+          console.log('[UI_STATE]', { stage: event.stage, chipsCount: event.chips?.length ?? 0, chips: event.chips });
+          setConversationState({
+            stage: event.stage,
+            thinking: event.thinking,
+            chips: event.chips,
+            missingFields: event.missingFields,
+            confidence: event.confidence
+          });
+        } else if (event.type === 'error') {
+          setStatusPhase(null);
+          setResultCount(null);
+          if (event.message?.includes('sending messages a bit fast') || event.message?.includes('Too many messages')) {
+            // Rate limit: show countdown banner, remove the AI placeholder
+            setRateLimitUntil(Date.now() + 10_000);
+            setChatHistory(prev => prev.filter(m => m.id !== streamId));
+          } else {
+            setChatHistory(prev => prev.map(m =>
+              m.id === streamId
+                ? { ...m, content: event.message || 'Something went wrong. Please try again.', isSearching: false }
+                : m
+            ));
+          }
+        } else if (event.type === 'done') {
+          const newSessionId = event.sessionId ?? sessionId
+          if (event.sessionId) {
+            setSessionId(event.sessionId);
+            // Canonicalize URL on first session creation (new chat → /discover/sessionId)
+            // Uses replaceState to avoid triggering a React navigation/remount
+            if (!initialSessionId && !sessionId) {
+              window.history.replaceState({}, '', `/discover/${event.sessionId}`);
+            }
+          }
+          // Backend owns responseMode — no inference on the frontend.
+          // Falls back to derived value only for old sessions that predate this change.
+          const responseMode: 'search' | 'comparison' | 'chat' =
+            event.responseMode ??
+            (localProjects.length > 0 ? 'search' : 'chat')
+          const isComparison = responseMode === 'comparison'
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? {
+                ...m,
+                isSearching: false,
+                responseMode,
+                showComparisonTable: isComparison,
+                ...(isComparison ? {
+                  comparisonProjects: localProjects.slice(0, 4),
+                } : {}),
+              }
+              : m
+          ));
+          setExpandedShortlists(new Set());
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? { ...m, streamingPhase: null, streamingIntent: null, streamingResultCount: null }
+              : m
+          ));
+
+          // Auto-generate smart title on first turn only
+          if (chatTurnCount === 0 && userId && newSessionId) {
+            const buildSmartTitle = (text: string, intent: Record<string, unknown> | null): string => {
+              if (!intent) return text.length > 35 ? text.slice(0, 35) + '...' : text;
+              
+              const parts: string[] = [];
+              
+              if (Array.isArray(intent.bhk) && intent.bhk.length > 0) {
+                parts.push(intent.bhk.join('/') + ' BHK');
+              }
+              if (typeof intent.sector === 'string' && intent.sector) {
+                parts.push(intent.sector);
+              }
+              if (typeof intent.budgetMax === 'number') {
+                const cr = intent.budgetMax;
+                parts.push(`₹${cr < 1 ? Math.round(cr * 100) + 'L' : cr.toFixed(1) + 'Cr'}`);
+              }
+              if (typeof intent.builderName === 'string' && intent.builderName) {
+                parts.push(intent.builderName);
+              }
+              
+              if (parts.length >= 2) return parts.join(' · ');
+              return text.length > 35 ? text.slice(0, 35) + '...' : text;
+            };
+            
+            const smartTitle = buildSmartTitle(userText, currentIntent);
+            setSessionTitle(smartTitle);
+            // Single sidebar refresh after PATCH — fires whether PATCH succeeds or fails.
+            authHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
+              fetch(`${API_BASE}/chat/session/${newSessionId}`, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ title: smartTitle }),
+              })
+            ).finally(() => {
+              window.dispatchEvent(new CustomEvent('realtypals:session-updated'))
+            }).catch(() => { })
+          } else {
+            // All other turns: refresh immediately (no PATCH follows).
+            window.dispatchEvent(new CustomEvent('realtypals:session-updated'));
+          }
+        }
+      },
+      onDone: () => {
+        setStatusPhase(null);
+        setResultCount(null);
+        streamingMsgIdRef.current = null;
+        setIsSubmitting(false);
+        submitLockRef.current = false;
+        if (controller.signal.aborted) {
+          console.log('[CHAT:ABORT] stream aborted by user')
+          setChatHistory(prev => {
+            const next = prev.filter(m => m.id !== streamId)
+            console.log('[CHAT:ABORT_CLEANUP] removed AI placeholder', streamId, 'history length', prev.length, '→', next.length)
+            return next
+          })
+          return
+        }
+        // If stream closed cleanly but message is still empty, replace with error
+        setChatHistory(prev => {
+          const msg = prev.find(m => m.id === streamId)
+          if (msg && !msg.content && !controller.signal.aborted) {
+            return prev.map(m => m.id === streamId ? { ...m, content: "I couldn't complete that. Please resend your message — your conversation is saved." } : m)
+          }
+          return prev
+        })
+        if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
+          setHasShownLengthWarning(true);
+          setShowContextWarning(true);
+        }
+      },
+    });
+  }, [userId, guestToken, sessionId, chatTurnCount, hasShownLengthWarning, currentIntent, initialSessionId, router]);
+
   // ── "Ask AI" button on PropertyCard injects text via CustomEvent ──
+  // detail: { text: string; autoSend?: boolean }
+  // autoSend true  → send immediately (preset smart prompts)
+  // autoSend false → prefill + focus so the user can edit ("Ask something else…")
   useEffect(() => {
     const handler = (e: Event) => {
-      const { text } = (e as CustomEvent<{ text: string }>).detail;
-      setChatInput(text);
-      setTimeout(() => chatInputRef.current?.focus(), 50);
+      const { text, autoSend } = (e as CustomEvent<{ text: string; autoSend?: boolean }>).detail;
+      if (autoSend && !isSubmitting) {
+        dispatchAction({ type: 'TEXT_MESSAGE', payload: { text } });
+      } else {
+        setChatInput(text);
+        setTimeout(() => chatInputRef.current?.focus(), 50);
+      }
     };
     window.addEventListener('realtypals:ask-ai', handler);
     return () => window.removeEventListener('realtypals:ask-ai', handler);
-  }, []);
+  }, [dispatchAction, isSubmitting]);
 
   // ── Sidebar "New Chat" button triggers reset via CustomEvent ──
   useEffect(() => {
@@ -710,251 +963,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     };
   }, []);
 
-  const dispatchAction = useCallback((action: import('@/components/chat/types').ConversationAction): void => {
-    if (submitLockRef.current) return;
-    submitLockRef.current = true;
-
-    if (!userId && !guestToken) {
-      submitLockRef.current = false;
-      // Not authenticated — show sign-in prompt
-      setToast({ message: 'Sign in or continue as guest to start chatting' });
-      router.push('/auth');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setStatusPhase('extracting');
-    userScrolledUp.current = false;
-    setChipPicker(null);
-
-    const isText = action.type === 'TEXT_MESSAGE';
-    const userText = isText ? (action.payload.text as string) : String(action.payload.label ?? action.type);
-
-
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      type: 'user',
-      content: userText,
-      timestamp: new Date().toISOString(),
-    };
-    // Only add a user message bubble if it's an explicit text message or a selected chip that isn't a silent patch
-    if (isText || action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
-      setChatHistory(prev => [...prev, userMsg]);
-    }
-
-
-    setChatTurnCount(c => c + 1);
-    if (chatTurnCount === 0) track('chat_started', { session_id: sessionId })
-    setChatInput('');
-
-
-    const streamId = crypto.randomUUID();
-    streamingMsgIdRef.current = streamId;
-    setChatHistory(prev => [...prev, {
-      id: streamId,
-      type: 'ai',
-      content: '',
-      isSearching: false,
-      userQuery: userText,
-      timestamp: new Date().toISOString(),
-      streamingPhase: 'extracting',
-      streamingIntent: null,
-      streamingResultCount: null,
-    }]);
-
-    abortControllerRef.current?.abort();
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    let localProjects: ProjectCardType[] = [];
-
-    streamChatBackend(action, {
-      sessionId: sessionId ?? undefined,
-      userId: userId ?? undefined,
-      guestToken: guestToken ?? undefined,
-      intent: currentIntent ?? undefined,
-      signal: controller.signal,
-      onEvent: (event) => {
-        if (event.type === 'intent') {
-          setCurrentIntent(event.intent);
-          // Only enter 'searching' when the backend confirmed a property search will
-          // happen. All other intent states (COLD, GATHERING, ADVISORY, unknown) keep
-          // the UI in 'extracting' until tokens arrive.
-          const isSearchState =
-            event.intentState === 'READY_TO_SEARCH' || event.intentState === 'SHORTLISTED'
-          if (isSearchState) setStatusPhase('searching')
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId ? {
-              ...m,
-              streamingPhase: isSearchState ? 'searching' : 'extracting',
-              streamingIntent: event.intent,
-              streamingIntentState: event.intentState,
-            } : m
-          ));
-        } else if (event.type === 'properties') {
-          const exact = (event.exactResults ?? []) as unknown as ProjectCardType[];
-          const nearby = (event.nearbyResults ?? []) as unknown as ProjectCardType[];
-          const expansion = event.expansion;
-          const shortlist = exact.length > 0 ? exact : nearby;
-          localProjects = shortlist;
-          setStatusPhase('generating');
-          setResultCount(shortlist.length);
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? {
-                ...m,
-                isSearching: false,
-                exactResults: exact,
-                nearbyResults: nearby,
-                expansion,
-                properties: shortlist,
-                streamingPhase: 'generating',
-                streamingResultCount: shortlist.length,
-              }
-              : m
-          ));
-          setLastShortlist(shortlist);
-          setShowRecommendations(shortlist.length > 0);
-          track('recommendation_generated', { count: shortlist.length, session_id: sessionId });
-        } else if (event.type === 'token') {
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? { ...m, content: m.content + event.token, isSearching: false }
-              : m
-          ));
-        } else if (event.type === 'ui_state') {
-          // New conversation engine backend state
-          console.log('[UI_STATE]', { stage: event.stage, chipsCount: event.chips?.length ?? 0, chips: event.chips });
-          setConversationState({
-            stage: event.stage,
-            thinking: event.thinking,
-            chips: event.chips,
-            missingFields: event.missingFields,
-            confidence: event.confidence
-          });
-        } else if (event.type === 'error') {
-          setStatusPhase(null);
-          setResultCount(null);
-          if (event.message?.includes('sending messages a bit fast') || event.message?.includes('Too many messages')) {
-            // Rate limit: show countdown banner, remove the AI placeholder
-            setRateLimitUntil(Date.now() + 10_000);
-            setChatHistory(prev => prev.filter(m => m.id !== streamId));
-          } else {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, content: event.message || 'Something went wrong. Please try again.', isSearching: false }
-                : m
-            ));
-          }
-        } else if (event.type === 'done') {
-          const newSessionId = event.sessionId ?? sessionId
-          if (event.sessionId) {
-            setSessionId(event.sessionId);
-            // Canonicalize URL on first session creation (new chat → /discover/sessionId)
-            // Uses replaceState to avoid triggering a React navigation/remount
-            if (!initialSessionId && !sessionId) {
-              window.history.replaceState({}, '', `/discover/${event.sessionId}`);
-            }
-          }
-          // Backend owns responseMode — no inference on the frontend.
-          // Falls back to derived value only for old sessions that predate this change.
-          const responseMode: 'search' | 'comparison' | 'chat' =
-            event.responseMode ??
-            (localProjects.length > 0 ? 'search' : 'chat')
-          const isComparison = responseMode === 'comparison'
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? {
-                ...m,
-                isSearching: false,
-                responseMode,
-                showComparisonTable: isComparison,
-                ...(isComparison ? {
-                  comparisonProjects: localProjects.slice(0, 4),
-                } : {}),
-              }
-              : m
-          ));
-          setExpandedShortlists(new Set());
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? { ...m, streamingPhase: null, streamingIntent: null, streamingResultCount: null }
-              : m
-          ));
-
-          // Auto-generate smart title on first turn only
-          if (chatTurnCount === 0 && userId && newSessionId) {
-            const buildSmartTitle = (text: string, intent: Record<string, unknown> | null): string => {
-              if (!intent) return text.length > 35 ? text.slice(0, 35) + '...' : text;
-              
-              const parts: string[] = [];
-              
-              if (Array.isArray(intent.bhk) && intent.bhk.length > 0) {
-                parts.push(intent.bhk.join('/') + ' BHK');
-              }
-              if (typeof intent.sector === 'string' && intent.sector) {
-                parts.push(intent.sector);
-              }
-              if (typeof intent.budgetMax === 'number') {
-                const cr = intent.budgetMax;
-                parts.push(`₹${cr < 1 ? Math.round(cr * 100) + 'L' : cr.toFixed(1) + 'Cr'}`);
-              }
-              if (typeof intent.builderName === 'string' && intent.builderName) {
-                parts.push(intent.builderName);
-              }
-              
-              if (parts.length >= 2) return parts.join(' · ');
-              return text.length > 35 ? text.slice(0, 35) + '...' : text;
-            };
-            
-            const smartTitle = buildSmartTitle(userText, currentIntent);
-            setSessionTitle(smartTitle);
-            // Single sidebar refresh after PATCH — fires whether PATCH succeeds or fails.
-            authHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
-              fetch(`${API_BASE}/chat/session/${newSessionId}`, {
-                method: 'PATCH',
-                headers,
-                body: JSON.stringify({ title: smartTitle }),
-              })
-            ).finally(() => {
-              window.dispatchEvent(new CustomEvent('realtypals:session-updated'))
-            }).catch(() => { })
-          } else {
-            // All other turns: refresh immediately (no PATCH follows).
-            window.dispatchEvent(new CustomEvent('realtypals:session-updated'));
-          }
-        }
-      },
-      onDone: () => {
-        setStatusPhase(null);
-        setResultCount(null);
-        streamingMsgIdRef.current = null;
-        setIsSubmitting(false);
-        submitLockRef.current = false;
-        if (controller.signal.aborted) {
-          console.log('[CHAT:ABORT] stream aborted by user')
-          setChatHistory(prev => {
-            const next = prev.filter(m => m.id !== streamId)
-            console.log('[CHAT:ABORT_CLEANUP] removed AI placeholder', streamId, 'history length', prev.length, '→', next.length)
-            return next
-          })
-          return
-        }
-        // If stream closed cleanly but message is still empty, replace with error
-        setChatHistory(prev => {
-          const msg = prev.find(m => m.id === streamId)
-          if (msg && !msg.content && !controller.signal.aborted) {
-            return prev.map(m => m.id === streamId ? { ...m, content: "I couldn't complete that. Please resend your message — your conversation is saved." } : m)
-          }
-          return prev
-        })
-        if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
-          setHasShownLengthWarning(true);
-          setShowContextWarning(true);
-        }
-      },
-    });
-  }, [userId, guestToken, sessionId, chatTurnCount, hasShownLengthWarning, currentIntent, initialSessionId, router]);
 
   // Pick up prefill query from compare page (sessionStorage)
   useEffect(() => {
@@ -1185,18 +1193,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         {rateLimitUntil && (
           <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
         )}
-        {isSubmitting && (
-          <div className="flex items-center justify-end mb-4 px-2">
-            <button
-              type="button"
-              onClick={() => abortControllerRef.current?.abort()}
-              className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 border border-gray-300 dark:border-gray-600 rounded-full transition-all shadow-sm"
-            >
-              <div className="w-2 h-2 bg-current rounded-sm" />
-              Stop
-            </button>
-          </div>
-        )}
 
         <div className="relative flex items-end bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] rounded-3xl transition-all duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] mx-auto w-full group pr-1.5 py-1.5 min-h-[48px]">
           <div id="chat-input-guide" className="relative flex-1 group">
@@ -1223,33 +1219,45 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             />
           </div>
 
-          {/* Send button when text present, Voice button when empty */}
-          {chatInput.trim() ? (
+          {/* Morphing action button: Stop while streaming → Send with text → Mic when empty */}
+          {isSubmitting ? (
+            <button
+              type="button"
+              onClick={() => abortControllerRef.current?.abort()}
+              className="mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-gradient-to-br from-red-500 to-red-600 text-white shadow-[0_4px_12px_rgba(239,68,68,0.35)] hover:from-red-600 hover:to-red-700 hover:shadow-[0_6px_16px_rgba(239,68,68,0.45)] active:scale-95"
+              title="Stop generating"
+              aria-label="Stop generating"
+            >
+              <span className="w-2.5 h-2.5 rounded-[2px] bg-current" />
+            </button>
+          ) : chatInput.trim() ? (
             <button
               type="button"
               onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
-              className="w-[36px] h-[36px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-black dark:bg-white text-white dark:text-black shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95 mb-0.5"
+              className="mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-gradient-to-br from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 hover:shadow-[0_6px_16px_rgba(37,99,235,0.45)] active:scale-95"
               title="Send"
+              aria-label="Send message"
             >
-              <ArrowUp size={18} className="text-current" />
+              <ArrowUp size={20} className="text-current" strokeWidth={3} />
             </button>
           ) : (
             <button
               type="button"
               onClick={toggleVoiceInput}
-              className={`w-[36px] h-[36px] shrink-0 rounded-full flex items-center justify-center transition-all duration-300 mb-0.5 ${isListening
-                ? 'text-red-500 animate-pulse scale-105 bg-red-50 border border-red-200 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${isListening
+                ? 'text-white bg-gradient-to-br from-red-500 to-red-600 shadow-[0_4px_16px_rgba(239,68,68,0.4)] scale-105'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               title="Voice Input"
+              aria-label="Voice input"
             >
               {isListening ? (
                 <div className="relative flex items-center justify-center">
-                  <div className="absolute inset-0 -m-1 rounded-full bg-red-100 animate-ping opacity-50" />
-                  <Mic size={20} className="relative text-red-500 fill-current" />
+                  <div className="absolute inset-0 rounded-xl bg-red-400 animate-pulse opacity-40" />
+                  <Mic size={20} className="relative text-current fill-current" />
                 </div>
               ) : (
-                <Mic size={20} />
+                <Mic size={20} strokeWidth={1.5} />
               )}
             </button>
           )}

@@ -10,7 +10,8 @@ import {
   BookmarkSimple,
   CaretLeft, CaretRight,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Barbell, Star, Buildings, Phone, ShareNetwork, Sparkle,
+  Barbell, Star, Buildings, Phone, ShareNetwork, Robot,
+  Coins, MapPinLine, ChartLineUp, Scales, WarningCircle, PencilSimple,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 import { API_BASE } from '@/lib/env'
@@ -60,12 +61,23 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)
+  const [askMenuOpen, setAskMenuOpen] = useState(false)
   const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg } = usePreferredImages(project)
 
   const isTopPick = index === 0
   const isRTM = project.status === 'ready_to_move'
   const isNew = project.status === 'new_launch'
   const statusLabel = isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'
+
+  const askPrompts: Array<{ icon: React.ElementType; label: string; text: string; type: string }> = [
+    { icon: Coins, label: 'Payment plans & offers', text: `What are the payment plans and current offers for ${project.name}?`, type: 'payment' },
+    { icon: MapPinLine, label: "What's around it?", text: `What's around ${project.name} in ${project.sector}? Metro, schools, malls, hospitals.`, type: 'vicinity' },
+    { icon: ChartLineUp, label: 'Price trend, last 12 months', text: `How has the price of ${project.name} changed over the last 12 months?`, type: 'price_trend' },
+    { icon: Scales, label: 'Compare with nearby projects', text: `Compare ${project.name} with similar nearby projects in ${project.sector}.`, type: 'compare' },
+  ]
+  if (project.concerns && project.concerns.length > 0) {
+    askPrompts.push({ icon: WarningCircle, label: 'Any concerns?', text: `What are the concerns or red flags with ${project.name}?`, type: 'concerns' })
+  }
 
   const unitsByBhk = project.unit_types.reduce((acc, u) => {
     if (!acc[u.bhk]) acc[u.bhk] = []
@@ -119,6 +131,24 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleShareProject = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    track('share_tapped', { project_slug: project.slug, project_name: project.name })
+    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/property/${project.slug}?ref=share`
+    const text = `${project.name} · ${project.sector} — ${project.price_range_label}. Reviewed with RealtyPal AI:`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: project.name, text, url })
+      } else {
+        await navigator.clipboard.writeText(`${text}\n${url}`)
+        onToast?.('Link copied ✓')
+      }
+    } catch {
+      // user cancelled the native sheet
+    }
+    onShare?.(project)
   }
 
   const handleCardClick = () => {
@@ -285,17 +315,73 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         {/* Quick Actions */}
         <div className="mt-auto flex items-center justify-between gap-3 pt-2">
           {onAskAI ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                trackPropertyEvent(project.id, 'ask_ai', undefined, userId).catch(() => {})
-                onAskAI(project)
-              }}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 py-2.5 px-4 rounded-[12px] text-[13px] font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95"
-            >
-              <Sparkle size={14} weight="fill" />
-              Ask AI
-            </button>
+            <div className="relative flex-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setAskMenuOpen((v) => !v)
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 h-11 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white text-[13px] font-semibold shadow-[0_4px_12px_rgba(37,99,235,0.3)] hover:from-blue-700 hover:to-blue-600 hover:shadow-[0_6px_16px_rgba(37,99,235,0.4)] active:scale-95 transition-all duration-200"
+                title="Ask AI about this project"
+                aria-haspopup="menu"
+                aria-expanded={askMenuOpen}
+              >
+                <Robot size={16} weight="fill" />
+                Ask AI
+              </button>
+
+              {askMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40 cursor-default"
+                    onClick={(e) => { e.preventDefault(); setAskMenuOpen(false) }}
+                    onMouseDown={(e) => { e.preventDefault() }}
+                  />
+                  <div
+                    role="menu"
+                    className="absolute bottom-full left-0 mb-3 z-50 w-64 rounded-2xl bg-white dark:bg-[#1a1a1a] ring-1 ring-black/10 dark:ring-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.2)] p-2 origin-bottom-left"
+                  >
+                    {askPrompts.map((p) => (
+                      <button
+                        key={p.type}
+                        role="menuitem"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setAskMenuOpen(false)
+                          track('ask_ai_tapped', { project_slug: project.slug, prompt_type: p.type })
+                          trackPropertyEvent(project.id, 'ask_ai', undefined, userId).catch(() => {})
+                          window.dispatchEvent(
+                            new CustomEvent('realtypals:ask-ai', { detail: { text: p.text, autoSend: true } }),
+                          )
+                          onAskAI(project)
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-[13px] text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                      >
+                        <p.icon size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                        <span className="truncate">{p.label}</span>
+                      </button>
+                    ))}
+
+                    <button
+                      role="menuitem"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setAskMenuOpen(false)
+                        track('ask_ai_tapped', { project_slug: project.slug, prompt_type: 'freeform' })
+                        window.dispatchEvent(
+                          new CustomEvent('realtypals:ask-ai', { detail: { text: `Tell me more about ${project.name}`, autoSend: false } }),
+                        )
+                        onAskAI(project)
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 mt-1 rounded-xl text-left text-[13px] font-medium text-gray-500 dark:text-gray-400 border-t border-black/5 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                    >
+                      <PencilSimple size={16} className="shrink-0" />
+                      <span>Ask something else…</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           ) : (
             <div className="flex-1" />
           )}
@@ -304,19 +390,17 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
             <button
               onClick={(e) => {
                 e.stopPropagation()
+                track('call_tapped', { project_slug: project.slug, project_name: project.name })
                 trackPropertyEvent(project.id, 'call', undefined, userId).catch(() => {})
                 onCall?.(project)
               }}
               className="w-10 h-10 rounded-full bg-transparent text-gray-700 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors active:scale-95"
-              title="Call builder"
+              title="Request a call"
             >
               <Phone size={16} className="text-gray-500 dark:text-gray-400" />
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onShare?.(project)
-              }}
+              onClick={handleShareProject}
               className="w-10 h-10 rounded-full bg-transparent text-gray-700 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors active:scale-95"
               title="Share project"
             >

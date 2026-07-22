@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { SuggestionChip } from './SuggestionChip'
 import type { ChipAction } from './types'
 
-const mockChip: ChipAction = {
+const mockChip = {
   id: 'test-chip-1',
   actionType: 'TEXT_MESSAGE',
   label: 'Show me results',
@@ -11,7 +11,7 @@ const mockChip: ChipAction = {
   priority: 1,
   group: undefined,
   payload: { text: 'Show me results' },
-}
+} as unknown as ChipAction
 
 describe('SuggestionChip', () => {
   it('should render chip label', () => {
