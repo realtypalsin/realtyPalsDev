@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { MODELS, FINANCIAL } from '../config'
+import { recordUsage } from './cost'
 
 type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null; name?: string; tool_calls?: any[], tool_call_id?: string };
 type SendFn = (event: string, data: Record<string, unknown>) => void;
@@ -75,6 +76,8 @@ export async function streamWithOpenAI(
   send: SendFn,
   onToolCall: (name: string, args: any) => Promise<any>,
   config: InferenceConfig = INFERENCE_DEFAULTS,
+  userId?: string | null,
+  sessionId?: string | null,
 ): Promise<string> {
   const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -379,6 +382,15 @@ export async function streamWithOpenAI(
 
     if (usage) {
       console.log('[OPENAI] tokens', { model, prompt_tokens: usage.prompt_tokens, completion_tokens: usage.completion_tokens });
+      await recordUsage({
+        provider: 'openai',
+        model,
+        promptTokens: usage.prompt_tokens ?? 0,
+        completionTokens: usage.completion_tokens ?? 0,
+        endpoint: 'chat.stream',
+        userId,
+        sessionId,
+      })
     }
 
     if (deadlineExceeded) {

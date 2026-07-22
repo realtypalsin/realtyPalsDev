@@ -33,6 +33,7 @@ import {
 } from '../lib/analytics/tracking'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
 import { filterNewChips, markChipShown, hydrateFromDb, persistToDb } from '../lib/discovery/chipDedup'
+import { isOverDailyBudget } from '../lib/ai/cost'
 
 const router = Router()
 
@@ -293,6 +294,12 @@ router.post('/', async (req: Request, res: Response) => {
   const remaining = Math.min(byKey.remaining, byIp.remaining)
   if (!byKey.allowed || !byIp.allowed) {
     res.status(429).json({ error: 'Too many messages. Please wait a moment.' })
+    return
+  }
+
+  // Check per-user daily AI cost budget
+  if (await isOverDailyBudget(userId)) {
+    res.status(429).json({ error: "You've reached today's usage limit. Please try again tomorrow." })
     return
   }
 
@@ -876,7 +883,7 @@ router.post('/', async (req: Request, res: Response) => {
           console.error(`[CHAT:TOOL_ERROR] ${name}:`, toolErr);
           return { error: `Tool ${name} failed to execute. Tell the user this information is temporarily unavailable.` };
         }
-      });
+      }, undefined, userId, session_id);
       console.log('[CHAT] END streamWithOpenAI', Date.now(), { fullTextLen: fullText.length })
     } catch (err) {
       console.warn('[chat] OpenAI stream failed:', (err as Error).message);
@@ -907,7 +914,7 @@ router.post('/', async (req: Request, res: Response) => {
           originalErrorMessage: (err as Error).message
         })
         try {
-          fullText = await streamWithGroq(fallbackSystemPrompt, messages, send);
+          fullText = await streamWithGroq(fallbackSystemPrompt, messages, send, userId, session_id);
           console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
         } catch (groqErr) {
           console.error('[chat] Groq fallback error:', (groqErr as Error).message);

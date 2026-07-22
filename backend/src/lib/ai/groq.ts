@@ -1,6 +1,7 @@
 // backend/src/lib/ai/groq.ts
 import Groq from 'groq-sdk'
 import { MODELS } from '../config'
+import { recordUsage } from './cost'
 
 // ── Singleton (shared across routes) ──────────────────────────────────────────
 
@@ -46,7 +47,9 @@ const INACTIVITY_MS = 60_000
 export async function streamWithGroq(
   system: string,
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
-  send: SendFn
+  send: SendFn,
+  userId?: string | null,
+  sessionId?: string | null
 ): Promise<string> {
   const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY!,
@@ -163,6 +166,15 @@ export async function streamWithGroq(
 
   if (usage) {
     console.log('[GROQ] tokens', { model: MODELS.GROQ_SMART, prompt_tokens: usage.prompt_tokens, completion_tokens: usage.completion_tokens });
+    await recordUsage({
+      provider: 'groq',
+      model: MODELS.GROQ_SMART,
+      promptTokens: usage.prompt_tokens ?? 0,
+      completionTokens: usage.completion_tokens ?? 0,
+      endpoint: 'chat.stream',
+      userId,
+      sessionId,
+    })
   }
 
   return fullText

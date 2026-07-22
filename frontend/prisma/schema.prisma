@@ -995,6 +995,27 @@ model BuilderAnalytics {
 }
 
 // ──────────────────────────────────────────────────────────────
+// AI USAGE TRACKING (Cost observability & guardrails)
+// ──────────────────────────────────────────────────────────────
+
+model AiUsageEvent {
+  id               String   @id @default(uuid())
+  user_id          String?
+  session_id       String?
+  provider         String   // "groq" | "openai" | "anthropic"
+  model            String
+  prompt_tokens    Int
+  completion_tokens Int
+  cost_usd         Decimal  @db.Decimal(10, 6)
+  endpoint         String   // e.g. "chat.stream"
+  created_at       DateTime @default(now())
+
+  @@index([user_id, created_at])
+  @@index([created_at])
+  @@map("ai_usage_events")
+}
+
+// ──────────────────────────────────────────────────────────────
 // BRAND THEME SYSTEM (Phase 4+)
 // ──────────────────────────────────────────────────────────────
 
