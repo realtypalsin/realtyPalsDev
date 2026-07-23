@@ -29,10 +29,13 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
 
   const handleSubmit = async () => {
     if (!form.name.trim() || form.phone.trim().length < 10 || submitting) return;
-    
+
     setSubmitting(true);
     setError(null);
     try {
+      // Get guestToken from localStorage for anonymous users
+      const guestToken = typeof window !== 'undefined' ? localStorage.getItem('realtypals_guest_token') || localStorage.getItem('guest_token') : null
+
       const res = await fetch(`${API_BASE}/leads/callback`, {
         method: 'POST',
         headers: await authHeaders({ 'Content-Type': 'application/json' }),
@@ -45,6 +48,7 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
           project_id: project.id,
           project_slug: project.slug,
           project_name: project.name,
+          guestToken,
         }),
       });
       if (!res.ok) throw new Error('callback request failed');
