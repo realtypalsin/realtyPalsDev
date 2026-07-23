@@ -50,9 +50,13 @@ const SiteVisitSchema = z.object({
 })
 
 router.post('/callback', async (req: Request, res: Response) => {
+  // Callbacks work for anonymous users (guestToken) OR authenticated users
   const userId = (await verifyUser(req)) ?? undefined
-  if (!userId) { res.status(401).json({ error: 'Please sign in to request a callback.' }); return }
-  const rl = await checkRateLimit(`callback:${userId}`, 5, 3600)
+  const guestToken = (req.body as any).guestToken
+
+  // Rate limit by userId if authenticated, otherwise by guestToken or IP
+  const rateLimitKey = userId ? `callback:${userId}` : guestToken ? `callback:guest:${guestToken}` : `callback:ip:${req.ip}`
+  const rl = await checkRateLimit(rateLimitKey, 5, 3600)
   if (rl.remaining <= 0) { res.status(429).json({ error: 'Too many requests' }); return }
   const parsed = CallbackSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
