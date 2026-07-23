@@ -6,6 +6,7 @@ import { Calendar, Clock, User, X } from 'lucide-react'
 
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics'
+import { authHeaders } from '@/lib/authedFetch'
 import LeadSuccessModal from '@/components/LeadSuccessModal'
 
 interface Props {
@@ -57,9 +58,8 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
     setError(null)
     try {
       const res = await fetch(`${API_BASE}/leads/site-visit`, {
-
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           project_id:   projectId,
           project_slug: projectSlug,
