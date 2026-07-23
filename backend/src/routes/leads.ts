@@ -59,7 +59,10 @@ router.post('/callback', async (req: Request, res: Response) => {
   const rl = await checkRateLimit(rateLimitKey, 5, 3600)
   if (rl.remaining <= 0) { res.status(429).json({ error: 'Too many requests' }); return }
   const parsed = CallbackSchema.safeParse(req.body)
-  if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Invalid request', details: parsed.error.errors })
+    return
+  }
 
   const { name, phone, projectName, project_name, projectSlug, project_slug, session_id, intent_tier, loan_status } = parsed.data
 

@@ -6,7 +6,7 @@ const router = express.Router()
 
 // POST /api/v1/analytics/engagement
 const EngagementSchema = z.object({
-  session_id: z.string(),
+  session_id: z.string().optional(),
   event: z.string(),
   project_id: z.string().optional(),
   drop_off_stage: z.string().optional(),
@@ -15,7 +15,12 @@ const EngagementSchema = z.object({
 
 router.post('/engagement', async (req: Request, res: Response) => {
   try {
-    const data = EngagementSchema.parse(req.body)
+    const parsed = EngagementSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid request', details: parsed.error.errors })
+      return
+    }
+    const data = parsed.data
     
     // Check if the chat analytics record exists
     const chatAnalytics = await prisma.chatAnalytics.findFirst({
