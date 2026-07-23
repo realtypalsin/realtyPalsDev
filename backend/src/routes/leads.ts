@@ -29,7 +29,9 @@ const CallbackSchema = z.object({
   name: z.string().min(1),
   phone: z.string().min(10),
   projectName: z.string().optional(),
+  project_name: z.string().optional(), // frontend sends snake_case
   projectSlug: z.string().optional(),
+  project_slug: z.string().optional(), // frontend sends snake_case
   session_id: z.string().optional(),
   guestToken: z.string().optional(),
   intent_tier: z.enum(['immediate', '1-3-months', 'exploring']).optional(),
@@ -55,16 +57,20 @@ router.post('/callback', async (req: Request, res: Response) => {
   const parsed = CallbackSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
 
-  const { name, phone, projectName, projectSlug, guestToken, session_id, intent_tier, loan_status } = parsed.data
+  const { name, phone, projectName, project_name, projectSlug, project_slug, guestToken, session_id, intent_tier, loan_status } = parsed.data
+
+  // Support both camelCase and snake_case from frontend
+  const finalProjectName = projectName || project_name
+  const finalProjectSlug = projectSlug || project_slug
 
   // Get project and builder info for analytics
-  const project = projectSlug ? await prisma.project.findUnique({
-    where: { slug: projectSlug },
+  const project = finalProjectSlug ? await prisma.project.findUnique({
+    where: { slug: finalProjectSlug },
     select: { id: true, builder_id: true }
   }) : null
 
   const cb = await prisma.callbackRequest.create({
-    data: { name, phone, project_name: projectName, project_slug: projectSlug, user_id: userId, guest_token: guestToken },
+    data: { name, phone, project_name: finalProjectName, project_slug: finalProjectSlug, user_id: userId, guest_token: guestToken },
   })
 
   // Load buyer profile once, reuse for both BuilderLead and webhook enrichment
@@ -116,7 +122,7 @@ router.post('/callback', async (req: Request, res: Response) => {
     sectorMatches,
   })
   fireWebhook('callback_requested', {
-    name, phone, project_name: projectName,
+    name, phone, project_name: finalProjectName,
     ...profile,
     timeline: intent_tier ?? profile.timeline ?? null,
     loan_pre_approved: loanPreApproved,
