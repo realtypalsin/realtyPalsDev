@@ -20,6 +20,7 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
   const [form, setForm] = useState({ name: '', phone: '' });
   const [intentTier, setIntentTier] = useState<IntentTier>('immediate');
   const [loanStatus, setLoanStatus] = useState<'pre_approved' | 'need_help' | 'cash' | undefined>(undefined);
+  const [consentGiven, setConsentGiven] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +41,7 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
           phone: form.phone.trim(),
           intent_tier: intentTier,
           loan_status: loanStatus,
+          consent_given: consentGiven,
           project_id: project.id,
           project_slug: project.slug,
           project_name: project.name,
@@ -230,14 +232,23 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
                   </div>
                 )}
 
-                {/* Consent */}
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center mb-3">
-                  By requesting a callback, you agree to share your requirements with the verified builder.
-                </p>
+                {/* Consent Checkbox */}
+                <div className="mb-4 flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    id="consent"
+                    checked={consentGiven}
+                    onChange={(e) => setConsentGiven(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 text-blue-600 cursor-pointer"
+                  />
+                  <label htmlFor="consent" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer flex-1">
+                    Share my requirements with the verified advisor for <span className="font-semibold">{project?.name}</span>
+                  </label>
+                </div>
 
                 {/* Primary Action Button */}
                 <button
-                  disabled={!form.name.trim() || form.phone.trim().length < 10 || submitting}
+                  disabled={!form.name.trim() || form.phone.trim().length < 10 || !consentGiven || submitting}
                   onClick={handleSubmit}
                   className="w-full py-3.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-400 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-600 font-semibold rounded-xl transition-all duration-200 text-sm shadow-md hover:shadow-lg active:scale-[0.99] flex items-center justify-center gap-2"
                 >

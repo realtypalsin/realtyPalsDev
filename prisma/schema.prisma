@@ -888,3 +888,12 @@ model BuilderTheme {
 
   @@map("builder_themes")
 }
+
+model SharedShortlist {
+  id             String   @id @default(nanoid(8))
+  project_slugs  String[] @default([])
+  created_at     DateTime @default(now())
+  expires_at     DateTime @default(dbgenerated("now() + interval '30 days'"))
+
+  @@map("shared_shortlists")
+}

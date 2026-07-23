@@ -484,6 +484,224 @@ grep -rniE "logger\.(info|error|warn|debug)\(.*process\.env" backend/src
 
 ---
 
+<a name="task-8"></a>
+### TASK 8 — Qualified-lead enrichment (send builders more than a phone number)  `P1`  `❌ REAL GAP`  `~3 h`  (⛔ HUMAN GATE: migration)
+
+**Why this matters (senior-marketing / broker / builder view):** a bare `{name, phone}` is what every noisy portal sends, and it's exactly what brokers complain about. A *qualified* lead lets the builder open the call already knowing the buyer — budget, financing readiness, timeline, location, what they care about. That converts ~5× better and is what turns skeptical builders into paying partners. **You already collect almost all of this and throw it away.**
+
+**The two leaks (verified):**
+1. `CallbackModal` sends `intent_tier`, but `CallbackSchema` (leads.ts:27-34) doesn't list it → Zod drops it.
+2. `fireWebhook('callback_requested', { name, phone, projectName })` (leads.ts:83) forwards 3 fields and never joins `UserMemory`, which already stores budget, BHK, loan status, timeline, sector, purpose, viewed/saved slugs, and an AI summary.
+
+**What a builder/broker actually needs (pain → field):**
+
+| Builder complaint | Field to send | Source (already exists) |
+|---|---|---|
+| "Budget mismatch wastes my time" | `budget_cr` + `project_fits_budget` | `UserMemory.budget_min_cr/max_cr` |
+| "Loan not sorted, deal dies" | `loan_pre_approved` 🔥 | `UserMemory.home_loan_pre_approved` |
+| "Just browsing, not serious" | `timeline` + `intent_tier` | `UserMemory.timeline_months` + modal `intent_tier` |
+| "Wrong location" | `preferred_sector`, `work_location` | `UserMemory.sector_preference`, `work_location` |
+| "Don't know what to pitch" | `purpose`, `saved`/`viewed` counts, `ai_summary` | `UserMemory.purpose`, `saved_slugs`, `summary_text` |
+| "Called too late" | `ts` (already sent) + tier for routing | — |
+| "Junk number" | `phone_verified` | needs OTP (separate, see Step 6 note) |
+
+**The target enriched webhook body** (what Make will receive after this task):
+```json
+{
+  "event": "callback_requested",
+  "ts": 1721600000000,
+  "data": {
+    "name": "Rahul Sharma",
+    "phone": "9876543210",
+    "project_name": "Godrej Woods",
+    "project_fits_budget": true,
+    "budget_cr": { "min": 1.2, "max": 1.5 },
+    "bhk": 3,
+    "purpose": "end_use",
+    "possession_pref": "under_construction",
+    "timeline": "1-3-months",
+    "loan_pre_approved": true,
+    "preferred_sector": "Sector 150",
+    "work_location": "Sector 62",
+    "engagement": { "projects_viewed": 8, "projects_saved": 3 },
+    "ai_summary": "Family upgrader, 3BHK end-use, loan pre-approved, wary of possession delays.",
+    "lead_score": 82,
+    "lead_tier": "HOT"
+  }
+}
+```
+
+**Lead score formula (0–100):**
+```
+30  if loan_pre_approved
+25  if intent_tier == immediate   (15 if 1-3-months, 0 if exploring)
+20  if project_fits_budget
+15  if saved_count >= 2 AND viewed_count >= 3   (else scale: 5*saved capped at 15)
+10  if preferred_sector matches project sector
+→ HOT >= 70 | WARM 40-69 | COLD < 40
+```
+
+---
+
+**VERIFY FIRST — confirm both leaks are real (run all, must match):**
+```bash
+grep -n "intent_tier" backend/src/routes/leads.ts
+# EXPECT: no matches (schema drops it). If it already appears, STOP — partly done.
+grep -n "fireWebhook('callback_requested'" backend/src/routes/leads.ts
+# EXPECT: leads.ts:83 forwarding only { name, phone, projectName }.
+grep -n "home_loan_pre_approved\|budget_min_cr\|saved_slugs" frontend/prisma/schema.prisma
+# EXPECT: matches in the UserMemory model (~lines 408-421). This is the data you'll join.
+grep -rn "userMemory\|user_memory\|UserMemory" backend/src/routes/leads.ts
+# EXPECT: no matches (leads.ts never reads UserMemory today).
+```
+If any expectation fails, STOP and log under "Discovered drift."
+
+**Step 1 — accept `intent_tier` + `loan_status` in the schema.** In `backend/src/routes/leads.ts`, replace the `CallbackSchema` (lines 27-34):
+```ts
+const CallbackSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().min(10),
+  projectName: z.string().optional(),
+  projectSlug: z.string().optional(),
+  session_id: z.string().optional(),
+  guestToken: z.string().optional(),
+})
+```
+with:
+```ts
+const CallbackSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().min(10),
+  projectName: z.string().optional(),
+  projectSlug: z.string().optional(),
+  session_id: z.string().optional(),
+  guestToken: z.string().optional(),
+  intent_tier: z.enum(['immediate', '1-3-months', 'exploring']).optional(),
+  loan_status: z.enum(['pre_approved', 'need_help', 'cash']).optional(),
+})
+```
+
+**Step 2 — add a scorer + profile loader.** Create `backend/src/lib/leadProfile.ts`:
+```ts
+import { prisma } from './db'
+
+export interface LeadProfile {
+  budget_cr?: { min: number | null; max: number | null }
+  bhk?: number | null
+  purpose?: string | null
+  possession_pref?: string | null
+  timeline?: string | null
+  loan_pre_approved?: boolean | null
+  preferred_sector?: string | null
+  work_location?: string | null
+  engagement?: { projects_viewed: number; projects_saved: number }
+  ai_summary?: string | null
+}
+
+// Pull the buyer's stored profile. userId OR guestToken identifies UserMemory.
+export async function loadLeadProfile(
+  userId?: string | null,
+  guestToken?: string | null,
+): Promise<LeadProfile> {
+  if (!userId && !guestToken) return {}
+  const mem = await prisma.userMemory.findFirst({
+    where: userId ? { user_id: userId } : { guest_token: guestToken! },
+  }).catch(() => null)
+  if (!mem) return {}
+  return {
+    budget_cr: { min: mem.budget_min_cr ?? null, max: mem.budget_max_cr ?? null },
+    bhk: mem.bhk_preference ?? null,
+    purpose: mem.purpose ?? null,
+    possession_pref: mem.possession_pref ?? null,
+    timeline: mem.timeline_months ? `${mem.timeline_months}m` : null,
+    loan_pre_approved: mem.home_loan_pre_approved ?? null,
+    preferred_sector: mem.sector_preference ?? null,
+    work_location: mem.work_location ?? null,
+    engagement: {
+      projects_viewed: mem.viewed_slugs?.length ?? 0,
+      projects_saved: mem.saved_slugs?.length ?? 0,
+    },
+    ai_summary: mem.summary_text ?? null,
+  }
+}
+
+export function scoreLead(args: {
+  loanPreApproved?: boolean | null
+  intentTier?: string | null
+  projectFitsBudget?: boolean
+  savedCount?: number
+  viewedCount?: number
+  sectorMatches?: boolean
+}): { score: number; tier: 'HOT' | 'WARM' | 'COLD' } {
+  let s = 0
+  if (args.loanPreApproved) s += 30
+  if (args.intentTier === 'immediate') s += 25
+  else if (args.intentTier === '1-3-months') s += 15
+  if (args.projectFitsBudget) s += 20
+  if ((args.savedCount ?? 0) >= 2 && (args.viewedCount ?? 0) >= 3) s += 15
+  else s += Math.min(15, (args.savedCount ?? 0) * 5)
+  if (args.sectorMatches) s += 10
+  const tier = s >= 70 ? 'HOT' : s >= 40 ? 'WARM' : 'COLD'
+  return { score: s, tier }
+}
+```
+
+**Step 3 — enrich the webhook in the `/callback` handler.** In `leads.ts`, first update the destructure (line 51) to include the new fields:
+```ts
+  const { name, phone, projectName, projectSlug, guestToken, session_id, intent_tier, loan_status } = parsed.data
+```
+Then replace the single webhook line (line 83):
+```ts
+  fireWebhook('callback_requested', { name, phone, projectName }).catch((e) => console.error('[leads] webhook failed:', e))
+```
+with:
+```ts
+  // Enrich lead with the buyer profile we already have, so builders get a qualified lead.
+  const profile = await loadLeadProfile(userId, guestToken)
+  const loanPreApproved = loan_status === 'pre_approved' || profile.loan_pre_approved === true
+  const { score, tier } = scoreLead({
+    loanPreApproved,
+    intentTier: intent_tier ?? null,
+    projectFitsBudget: undefined,   // ponytail: compute once project price band is joined; omit for now
+    savedCount: profile.engagement?.projects_saved,
+    viewedCount: profile.engagement?.projects_viewed,
+    sectorMatches: undefined,
+  })
+  fireWebhook('callback_requested', {
+    name, phone, project_name: projectName,
+    ...profile,
+    timeline: intent_tier ?? profile.timeline ?? null,
+    loan_pre_approved: loanPreApproved,
+    lead_score: score,
+    lead_tier: tier,
+  }).catch((e) => console.error('[leads] webhook failed:', e))
+```
+Add the import at the top of `leads.ts` (with the other imports):
+```ts
+import { loadLeadProfile, scoreLead } from '../lib/leadProfile'
+```
+
+**Step 4 — send `loan_status` from the modal (optional, one-tap chip).** In `frontend/components/CallbackModal.tsx`, add a state next to `intentTier` and a 3-chip control (`Pre-approved / Need help / Cash`) mirroring the existing "Buying Timeline" segmented control (lines 171-198), then add `loan_status: loanStatus` to the `body` object (lines 37-44). Do **not** add any other field — friction kills lead volume. Budget/BHK/sector are already inferred; asking again signals you weren't listening.
+
+**Step 5 — persist the intent onto the BuilderLead row (optional but cheap).** The `BuilderLead.source_intent` JSON column already exists (schema.prisma:943). In the `prisma.builderLead.create` block (leads.ts:68-79), add `source_intent: profile as any` so your own DB keeps the qualified snapshot, not just Make.
+
+**⛔ HUMAN GATE:** if you also add `phone_verified` (OTP), that's a separate flow (SMS provider + a verify endpoint). Do **not** build it in this task. Note it for a human. Everything above needs **no** new migration — it only *reads* `UserMemory`. (A migration is only needed if you later add new columns; this task adds none.)
+
+**DONE test:**
+```bash
+cd backend && npx tsc --noEmit
+# EXPECT: clean.
+grep -n "loadLeadProfile\|scoreLead\|intent_tier\|loan_status" backend/src/routes/leads.ts
+# EXPECT: schema fields + import + usage present.
+```
+Functional: log in, set a budget/BHK in chat so `UserMemory` fills, then request a callback → the Make execution (or your webhook log) shows the enriched `data` with `lead_score` and `lead_tier`.
+
+**Rollback:** delete `leadProfile.ts`; restore `CallbackSchema`, the line-51 destructure, and the line-83 webhook call; revert the modal chip.
+
+**Privacy note (DPDP Act 2023):** forwarding a buyer's profile to a third-party builder needs consent. Add one consent line in the modal — *"Share my requirements with the verified advisor for [Project]."* Send builders the AI summary + counts, **not** the raw `viewed_slugs`/`rejected_slugs` list (that's your buyer's competitor shortlist — don't hand it over).
+
+---
+
 <a name="makecom"></a>
 ## 5. Make.com Lead Handoff — Corrected Setup
 
@@ -505,6 +723,7 @@ When a buyer requests a callback or site visit, the backend calls `fireWebhook()
    - `event` is `"callback_requested"` **or** `"site_visit_requested"`.
    - For site visits, `data` also includes `"visitDate"` and `"timeSlot"`.
    - (Builder registrations also POST to the same `WEBHOOK_URL` from `builderRegistration.ts:190` — so route by `event` in Make.)
+   - **After [TASK 8](#task-8):** `data` carries the full qualified-lead profile (budget, BHK, loan status, timeline, sector, engagement counts, AI summary, `lead_score`, `lead_tier`). Same envelope, richer `data`. Set up Make against the enriched shape (§5.2 Step 5) once TASK 8 ships.
 3. If `WEBHOOK_SECRET` is set, it adds an HMAC signature header:
    ```
    X-Signature: sha256=<hex HMAC-SHA256 of the raw body, keyed with WEBHOOK_SECRET>
@@ -553,8 +772,14 @@ When a buyer requests a callback or site visit, the backend calls `fireWebhook()
 *Option A — Google Sheets (recommended for V1, zero cost):*
 1. Click **+** after the webhook → search **Google Sheets** → **Add a Row**.
 2. Connect your Google account.
-3. Create/pick a sheet `RealtyPals Leads` with columns: `Time | Event | Name | Phone | Project | VisitDate | TimeSlot`.
-4. Map: `Time` ← `ts` (or Make's `now`), `Event` ← `event`, `Name` ← `data: name`, `Phone` ← `data: phone`, `Project` ← `data: projectName`, `VisitDate` ← `data: visitDate`, `TimeSlot` ← `data: timeSlot`.
+3. Create/pick a sheet `RealtyPals Leads`.
+   - **Today (basic payload — what you have now):** columns `Time | Event | Name | Phone`.
+     Map: `Time` ← `ts` (or Make's `now`), `Event` ← `event`, `Name` ← `data: name`, `Phone` ← `data: phone`.
+     (`project`, `visitDate`, `timeSlot` are only present on site-visit events, so leave them unmapped for callbacks — Make just leaves the cell blank.)
+   - **After [TASK 8](#task-8) ships (enriched, qualified lead):** add columns
+     `Time | Event | Name | Phone | Project | Fits Budget | Budget | BHK | Loan | Timeline | Sector | Score | Tier | AI Summary`.
+     Map the new ones: `Fits Budget` ← `data: project_fits_budget`, `Budget` ← `data: budget_cr.min` / `data: budget_cr.max`, `BHK` ← `data: bhk`, `Loan` ← `data: loan_pre_approved`, `Timeline` ← `data: timeline`, `Sector` ← `data: preferred_sector`, `Score` ← `data: lead_score`, `Tier` ← `data: lead_tier`, `AI Summary` ← `data: ai_summary`.
+4. **Tip — route by tier:** add a Make **Router** after the Sheet. Branch 1: if `data: lead_tier = HOT` → also fire a WhatsApp/email to the advisor instantly. Branch 2: WARM/COLD → Sheet only. This is how you sell "HOT leads first" to builders later.
 
 *Option B — WhatsApp/Email:* only if you have Twilio/Resend. Note your backend *already* can send WhatsApp/email directly via `notify.ts` (Meta/Twilio/Resend) for its **inbound** `/webhook` endpoint — for the free-tier Make path, Sheets is simpler and avoids paid tiers.
 
@@ -631,10 +856,13 @@ Scored 1–10. Blunt.
 
 **First week (P1):**
 ```
+[ ] TASK 8  — qualified-lead enrichment (join UserMemory, score, enrich webhook)
+[ ] TASK 8  — add loan_status one-tap chip to CallbackModal + consent line
+[ ] TASK 8  — update Make Sheet columns to enriched set (§5.2 Step 5)
 [ ] Lead funnel dashboard (callback → accepted → site visit)
 [ ] AI cost dashboard (query AiUsageEvent by day/user/provider)
 [ ] RERA verification on data ingest
-[ ] Reach out to 3 builders; validate lead format + intent tier
+[ ] Reach out to 3 builders; validate the enriched lead format + lead score
 ```
 
 **After launch (P2):**

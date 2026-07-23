@@ -28,12 +28,12 @@ export default function PropertyDetailPage() {
 
   useEffect(() => {
     if (!slug) return
-    fetch(`${API_BASE}/projects/${slug}`)
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
-      .then(d => {
+
+    const loadProject = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/projects/${slug}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const d = await res.json()
         setDetail(d.project ?? null)
 
         // Apply builder theme if available
@@ -48,8 +48,12 @@ export default function PropertyDetailPage() {
 
         setTheme(selectedTheme)
         applyTheme(selectedTheme)
-      })
-      .catch(() => setNotFound(true))
+      } catch (err) {
+        setNotFound(true)
+      }
+    }
+
+    loadProject()
   }, [slug])
 
   if (!slug) return null

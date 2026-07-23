@@ -17,7 +17,17 @@ import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
 import rehypeRaw from 'rehype-raw'
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 
+const REALTY_SCHEMA = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames || []), 'realty-chart', 'realty-box'],
+  attributes: {
+    ...defaultSchema.attributes,
+    'realty-chart': ['type', 'data', 'title'],
+    'realty-box': ['type', 'title'],
+  },
+}
 
 const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
   ssr: false,
@@ -405,7 +415,7 @@ function MessageBubbleInner({
                           <>
                             <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
-                              rehypePlugins={[rehypeRaw]}
+                              rehypePlugins={[rehypeRaw, [rehypeSanitize, REALTY_SCHEMA]]}
                               components={{
                                 'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
                                 'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
@@ -793,7 +803,6 @@ function MessageBubbleInner({
       {/* Progressive chips from Conversation Engine */}
       {(() => {
         const shouldShow = message.type === 'ai' && displayContent && isLast && !isSubmitting && combinedChips.length > 0;
-        if (message.type === 'ai' && isLast) console.log('[CHIPS_RENDER]', { messageType: message.type, displayContent: !!displayContent, isLast, isSubmitting, chipsLen: combinedChips.length, shouldShow });
         return shouldShow;
       })() && (
 

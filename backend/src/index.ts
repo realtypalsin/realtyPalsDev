@@ -16,6 +16,7 @@ import sessionsRouter from './routes/sessions'
 import projectsRouter from './routes/projects'
 import savedRouter from './routes/saved'
 import leadsRouter from './routes/leads'
+import shareRouter from './routes/share'
 import adminRouter from './routes/admin'
 import buildersRouter from './routes/builders'
 import marketComparisonRouter from './routes/marketComparison'
@@ -146,6 +147,7 @@ app.use('/api/v1/sessions', sessionsRouter)
 app.use('/api/v1/projects', projectsRouter)
 app.use('/api/v1/saved', savedRouter)
 app.use('/api/v1/leads', leadsRouter)
+app.use('/api/v1/share', shareRouter)
 app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/builders', buildersRouter)
 app.use('/api/v1/market-comparison', marketComparisonRouter)

@@ -128,9 +128,21 @@ export function streamChat(
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
+    const STALL_MS = 20000
 
     while (true) {
-      const { done, value } = await reader.read()
+      let readResult: ReadableStreamReadResult<Uint8Array>
+      try {
+        readResult = await Promise.race([
+          reader.read(),
+          new Promise<never>((_, rej) => setTimeout(() => rej(new Error('STALL')), STALL_MS)),
+        ])
+      } catch {
+        reader.cancel().catch(() => {})
+        options.onEvent({ type: 'error', message: 'The advisor stopped responding. Please try again.' })
+        break
+      }
+      const { done, value } = readResult
       if (done) break
 
       buffer += decoder.decode(value, { stream: true })

@@ -34,6 +34,7 @@ const CallbackSchema = z.object({
   guestToken: z.string().optional(),
   intent_tier: z.enum(['immediate', '1-3-months', 'exploring']).optional(),
   loan_status: z.enum(['pre_approved', 'need_help', 'cash']).optional(),
+  consent_given: z.boolean().default(false),
 })
 
 const SiteVisitSchema = z.object({
@@ -48,6 +49,9 @@ const SiteVisitSchema = z.object({
 
 router.post('/callback', async (req: Request, res: Response) => {
   const userId = (await verifyUser(req)) ?? undefined
+  if (!userId) { res.status(401).json({ error: 'Please sign in to request a callback.' }); return }
+  const rl = await checkRateLimit(`callback:${userId}`, 5, 3600)
+  if (rl.remaining <= 0) { res.status(429).json({ error: 'Too many requests' }); return }
   const parsed = CallbackSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
 
@@ -90,13 +94,27 @@ router.post('/callback', async (req: Request, res: Response) => {
   // Enrich lead with the buyer profile we already have, so builders get a qualified lead.
   const profile = await loadLeadProfile(userId, guestToken)
   const loanPreApproved = loan_status === 'pre_approved' || profile.loan_pre_approved === true
+
+  // Check if project price fits buyer budget
+  let projectFitsBudget = false
+  if (project && profile.budget_cr) {
+    const { price_range_min, price_range_max } = project
+    if (price_range_min && price_range_max && profile.budget_cr.min && profile.budget_cr.max) {
+      // Overlap: buyer budget intersects project price range
+      projectFitsBudget = profile.budget_cr.max >= price_range_min && profile.budget_cr.min <= price_range_max
+    }
+  }
+
+  // Check if project sector matches buyer preference
+  const sectorMatches = project && profile.preferred_sector ? project.sector?.name === profile.preferred_sector : false
+
   const { score, tier } = scoreLead({
     loanPreApproved,
     intentTier: intent_tier ?? null,
-    projectFitsBudget: undefined,
+    projectFitsBudget,
     savedCount: profile.engagement?.projects_saved,
     viewedCount: profile.engagement?.projects_viewed,
-    sectorMatches: undefined,
+    sectorMatches,
   })
   fireWebhook('callback_requested', {
     name, phone, project_name: projectName,

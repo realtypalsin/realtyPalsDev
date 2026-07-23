@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { AnimatePresence, m } from 'framer-motion';
 import type { ProjectCard } from '@/types/project';
+import { API_BASE } from '@/lib/env';
 
 interface ShareShortlistModalProps {
   isOpen: boolean;
@@ -12,12 +13,45 @@ interface ShareShortlistModalProps {
 
 export default function ShareShortlistModal({ isOpen, shortlist, onClose }: ShareShortlistModalProps) {
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
 
   if (!isOpen || shortlist.length === 0) return null;
 
   const shortlistText = `🏠 My RealtyPals Shortlist\n\n` +
-    shortlist.map((p, i) => `${i + 1}. ${p.name} — ${p.price_range_label} (${p.sector})`).join('\n') +
+    shortlist.map((p, i) => `${i + 1}. ${p.name} — ${p.price_range_label ?? 'Price on request'} (${p.sector ?? 'Noida'})`).join('\n') +
     `\n\nResearched with RealtyPal AI`;
+
+  const handleShare = async () => {
+    if (sharing || shareUrl) return;
+    setSharing(true);
+    try {
+      const res = await fetch(`${API_BASE}/share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectSlugs: shortlist.map(p => p.slug),
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to create share');
+      const { url } = await res.json();
+      const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}${url}` : url;
+      setShareUrl(fullUrl);
+      return fullUrl;
+    } catch (err) {
+      console.error('Share failed:', err);
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const url = shareUrl || (await handleShare());
+    if (!url) return;
+    navigator.clipboard.writeText(`Check out this property shortlist from RealtyPal AI:\n${url}`)
+      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+      .catch(() => { /* clipboard blocked */ });
+  };
 
   return (
     <AnimatePresence mode="wait">
@@ -43,14 +77,21 @@ export default function ShareShortlistModal({ isOpen, shortlist, onClose }: Shar
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-4 border border-gray-100 dark:border-gray-700 text-[12px] text-gray-600 dark:text-gray-300 font-mono leading-relaxed">
             <div className="font-bold text-gray-800 dark:text-gray-100 mb-1">🏠 My RealtyPals Shortlist</div>
             {shortlist.map((p, i) => (
-              <div key={p.id}>{i + 1}. {p.name} — {p.price_range_label} ({p.sector})</div>
+              <div key={p.id}>{i + 1}. {p.name} — {p.price_range_label ?? 'Price on request'} ({p.sector ?? 'Noida'})</div>
             ))}
             <div className="mt-2 text-gray-400 text-[11px]">Researched with RealtyPal AI</div>
           </div>
           <div className="flex flex-col gap-2">
-            {process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && (
+            <button
+              onClick={handleCopyLink}
+              disabled={sharing}
+              className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-400 text-white font-bold rounded-xl transition-colors text-sm"
+            >
+              {copied ? '✅ Link Copied!' : sharing ? '⏳ Creating link...' : '🔗 Copy Share Link'}
+            </button>
+            {process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && shareUrl && (
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(shortlistText)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`Check out this property shortlist from RealtyPal AI:\n${shareUrl}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 py-3.5 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl text-sm transition-colors"
@@ -61,14 +102,6 @@ export default function ShareShortlistModal({ isOpen, shortlist, onClose }: Shar
                 Share on WhatsApp
               </a>
             )}
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(shortlistText).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
-              }}
-              className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors text-sm"
-            >
-              {copied ? '✅ Copied!' : '📋 Copy to Clipboard'}
-            </button>
           </div>
         </m.div>
       </m.div>
