@@ -61,7 +61,7 @@ router.post('/callback', async (req: Request, res: Response) => {
   const parsed = CallbackSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
 
-  const { name, phone, projectName, project_name, projectSlug, project_slug, guestToken, session_id, intent_tier, loan_status } = parsed.data
+  const { name, phone, projectName, project_name, projectSlug, project_slug, session_id, intent_tier, loan_status } = parsed.data
 
   // Support both camelCase and snake_case from frontend
   const finalProjectName = projectName || project_name
