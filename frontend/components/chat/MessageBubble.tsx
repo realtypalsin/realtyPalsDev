@@ -930,6 +930,36 @@ function MessageBubbleInner({
         </m.div>
       )}
 
+      {/* Persona chips: suggested follow-ups for first recommendation */}
+      {message.type === 'ai' && index <= 1 && isLast && message.properties?.length > 0 && !isSubmitting && (
+        <m.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="mt-4 space-y-2"
+        >
+          <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            Want to know more?
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: 'Explain the cost', prompt: 'Break down the total cost of this property including EMI, stamp duty, GST, and registration fees.' },
+              { label: 'Builder background', prompt: 'What do you know about this builder? Why should I trust them?' },
+              { label: 'What could go wrong?', prompt: 'What are the potential risks or downsides of this property?' },
+              { label: 'How does it compare?', prompt: 'How does this property compare to other similar options in the area?' },
+            ].map((chip) => (
+              <button
+                key={chip.label}
+                onClick={() => onAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
+                className="text-left px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[13px] font-medium rounded-lg transition-colors border border-blue-200 dark:border-blue-700"
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </m.div>
+      )}
+
       {/* Comparison table */}
       {message.type === 'ai' && message.showComparisonTable && (message.comparisonProjects?.length ?? 0) >= 2 && (
         <div className="mt-3 w-full">

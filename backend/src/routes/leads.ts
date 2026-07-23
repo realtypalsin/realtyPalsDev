@@ -67,32 +67,31 @@ router.post('/callback', async (req: Request, res: Response) => {
     data: { name, phone, project_name: projectName, project_slug: projectSlug, user_id: userId, guest_token: guestToken },
   })
 
+  // Load buyer profile once, reuse for both BuilderLead and webhook enrichment
+  const profile = await loadLeadProfile(userId, guestToken)
+
   // ─── ANALYTICS: Track conversion
   if (session_id && project) {
     await Promise.all([
       trackConversion(session_id, 'callback_requested', project.id, project.builder_id),
       // Also create BuilderLead record
-      (async () => {
-        const leadProfile = await loadLeadProfile(userId, guestToken)
-        return prisma.builderLead.create({
-          data: {
-            builder_id: project.builder_id,
-            project_id: project.id,
-            lead_type: 'callback_requested',
-            name,
-            phone,
-            email: undefined,
-            source_session: session_id,
-            source_intent: leadProfile as any,
-            status: 'new',
-          }
-        })
-      })()
+      prisma.builderLead.create({
+        data: {
+          builder_id: project.builder_id,
+          project_id: project.id,
+          lead_type: 'callback_requested',
+          name,
+          phone,
+          email: undefined,
+          source_session: session_id,
+          source_intent: profile as any,
+          status: 'new',
+        }
+      })
     ]).catch(err => console.error('[leads] Analytics tracking failed:', err))
   }
 
   // Enrich lead with the buyer profile we already have, so builders get a qualified lead.
-  const profile = await loadLeadProfile(userId, guestToken)
   const loanPreApproved = loan_status === 'pre_approved' || profile.loan_pre_approved === true
 
   // Check if project price fits buyer budget
@@ -256,6 +255,35 @@ router.post('/webhook', async (req: Request, res: Response) => {
     console.log(`[leads] ✅ ${parsed.data.type} | ${parsed.data.name} | wa:${result.whatsapp} email:${result.email}`)
   } catch (err) {
     console.error('[leads] ❌ notification failed:', err instanceof Error ? err.message : err)
+  }
+})
+
+// GET /metrics — lead funnel analytics for dashboard
+router.get('/metrics', async (req: Request, res: Response) => {
+  try {
+    const callbackCount = await prisma.builderLead.count({
+      where: { lead_type: 'callback_requested' },
+    })
+    const visitCount = await prisma.siteVisitRequest.count()
+    const scoreAgg = await prisma.builderLead.aggregate({
+      _avg: { lead_score: true },
+      where: { lead_type: 'callback_requested' },
+    })
+    const hotCount = await prisma.builderLead.count({
+      where: { lead_type: 'callback_requested', lead_tier: 'HOT' },
+    })
+    const conversionRate = callbackCount > 0 ? (visitCount / callbackCount) * 100 : 0
+
+    res.json({
+      callbacksRequested: callbackCount,
+      siteVisitsScheduled: visitCount,
+      visitConversionRate: conversionRate,
+      avgLeadScore: scoreAgg._avg.lead_score ?? 0,
+      hotLeadsCount: hotCount,
+    })
+  } catch (err) {
+    console.error('[leads:metrics] error:', err)
+    res.status(500).json({ error: 'Failed to fetch metrics' })
   }
 })
 
