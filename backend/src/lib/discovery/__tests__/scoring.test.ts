@@ -1,5 +1,5 @@
-import { test, describe } from 'node:test'
-import { strict as assert } from 'node:assert'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { scoreProject, computeBudgetStatus, buildPriceRangeLabel } from '../scoring'
 import type { Intent } from '../types'
 

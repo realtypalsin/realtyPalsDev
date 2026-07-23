@@ -20,7 +20,7 @@ export function useDropoffDetection({ sessionId }: UseAnalyticsTrackingProps) {
   const hasDroppedOff = useRef(false)
 
   const recordDropoff = useCallback(async (stage: string) => {
-    if (hasDroppedOff.current) return
+    if (hasDroppedOff.current || !sessionId || sessionId === 'pending') return
 
     hasDroppedOff.current = true
 

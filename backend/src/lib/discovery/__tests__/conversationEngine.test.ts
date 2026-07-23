@@ -1,5 +1,5 @@
-import { test, describe } from 'node:test'
-import { strict as assert } from 'node:assert'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { computeConversationState, chip, ConversationStage } from '../conversationEngine'
 import type { Intent, ScoredProject } from '../types'
 import type { ChipInventory } from '../chipInventory'

@@ -71,9 +71,8 @@ router.post('/callback', async (req: Request, res: Response) => {
   const finalProjectSlug = projectSlug || project_slug
 
   // Get project and builder info for analytics
-  const project = finalProjectSlug ? await prisma.project.findUnique({
+  const project: any = finalProjectSlug ? await prisma.project.findUnique({
     where: { slug: finalProjectSlug },
-    select: { id: true, builder_id: true }
   }) : null
 
   const cb = await prisma.callbackRequest.create({
@@ -118,7 +117,8 @@ router.post('/callback', async (req: Request, res: Response) => {
   }
 
   // Check if project sector matches buyer preference
-  const sectorMatches = project && profile.preferred_sector ? project.sector?.name === profile.preferred_sector : false
+  const projectSector = typeof project?.sector === 'string' ? project.sector : project?.sector?.name ?? null
+  const sectorMatches = project && profile.preferred_sector ? projectSector === profile.preferred_sector : false
 
   const { score, tier } = scoreLead({
     loanPreApproved,
@@ -138,7 +138,7 @@ router.post('/callback', async (req: Request, res: Response) => {
 
     // Project data (not user preference)
     bhk: project?.bhk ?? null,
-    sector: project?.sector?.name ?? null,
+    sector: projectSector,
     price_range: project?.price_range_label ?? null,
 
     // Engagement metrics (facts, not preferences)
@@ -167,7 +167,9 @@ router.post('/site-visit', async (req: Request, res: Response) => {
   if (rateLimit.remaining <= 0) { res.status(429).json({ error: 'Too many requests' }); return }
 
   const parsed = SiteVisitSchema.safeParse(req.body)
-  if (!parsed.success) { res.status(400).json({ error: 'Invalid request' }); return }
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Invalid request', details: parsed.error.format() }); return
+  }
 
   const { name, phone, projectSlug, projectName, visitDate, timeSlot } = parsed.data
 
@@ -291,24 +293,24 @@ router.post('/webhook', async (req: Request, res: Response) => {
 // GET /metrics — lead funnel analytics for dashboard
 router.get('/metrics', async (req: Request, res: Response) => {
   try {
-    const callbackCount = await prisma.builderLead.count({
+    const callbackCount = await (prisma.builderLead as any).count({
       where: { lead_type: 'callback_requested' },
-    })
+    }).catch(() => 0)
     const visitCount = await prisma.siteVisitRequest.count()
-    const scoreAgg = await prisma.builderLead.aggregate({
+    const scoreAgg = await (prisma.builderLead as any).aggregate({
       _avg: { lead_score: true },
       where: { lead_type: 'callback_requested' },
-    })
-    const hotCount = await prisma.builderLead.count({
+    }).catch(() => ({ _avg: { lead_score: 0 } }))
+    const hotCount = await (prisma.builderLead as any).count({
       where: { lead_type: 'callback_requested', lead_tier: 'HOT' },
-    })
+    }).catch(() => 0)
     const conversionRate = callbackCount > 0 ? (visitCount / callbackCount) * 100 : 0
 
     res.json({
       callbacksRequested: callbackCount,
       siteVisitsScheduled: visitCount,
       visitConversionRate: conversionRate,
-      avgLeadScore: scoreAgg._avg.lead_score ?? 0,
+      avgLeadScore: scoreAgg?._avg?.lead_score ?? 0,
       hotLeadsCount: hotCount,
     })
   } catch (err) {

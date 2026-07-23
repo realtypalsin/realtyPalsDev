@@ -143,7 +143,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, [chatHistory, sessionId, sessionTitle, chatPhase, currentIntent, lastShortlist]);
 
   // ── Analytics hooks ──
-  useDropoffDetection({ sessionId: sessionId || 'pending' });
+  useDropoffDetection({ sessionId: sessionId || '' });
   const { recordEngagement } = useEngagementTracking({ sessionId: sessionId || 'pending' });
   usePromotionalTracking({
     sessionId: sessionId || 'pending',

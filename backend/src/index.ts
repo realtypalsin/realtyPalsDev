@@ -60,7 +60,7 @@ const PORT = parseInt(process.env.PORT ?? '3001', 10)
 const VERSION = process.env.npm_package_version ?? '1.0.0'
 const startTime = Date.now()
 
-const app = express()
+export const app = express()
 
 // All deployments sit behind a proxy (Render, Railway, Fly, etc.).
 // This makes req.ip trustworthy and fixes x-forwarded-for-based rate limiting.
@@ -243,7 +243,10 @@ async function startup() {
   process.on('SIGINT',  () => { void shutdown('SIGINT') })
 }
 
-startup().catch((err) => {
-  console.error('[startup] unhandled error:', err)
-  process.exit(1)
-})
+// Only start the HTTP server when run directly (not when imported by tests)
+if (process.env.NODE_ENV !== 'test' && require.main === module) {
+  void startup().catch((err) => {
+    console.error('[startup] unhandled error:', err)
+    process.exit(1)
+  })
+}

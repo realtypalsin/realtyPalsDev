@@ -1,5 +1,5 @@
-import { test, describe } from 'node:test'
-import { strict as assert } from 'node:assert'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { computeConfidence } from '../confidence'
 import type { Intent } from '../types'
 

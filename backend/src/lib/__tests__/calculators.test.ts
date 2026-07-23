@@ -43,6 +43,23 @@ describe('Calculators: EMI', () => {
     const result_2cr = calcEmi(2, 8.5, 20).emi
     assert.equal(result_2cr, result_1cr * 2, 'EMI should scale linearly with principal')
   })
+
+  test('1-month tenure edge case', () => {
+    const result = calcEmi(1, 8.5, 1/12)
+    assert(Number.isFinite(result.emi), 'EMI should be finite for 1-month tenure')
+    assert(result.emi > 0, 'EMI should be positive')
+  })
+
+  test('very large principal (₹100 Cr) produces finite result', () => {
+    const result = calcEmi(100, 8.5, 20)
+    assert(Number.isFinite(result.emi), 'EMI should be finite for large principal')
+    assert(Number.isFinite(result.totalPayment), 'Total payment should be finite')
+  })
+
+  test('zero principal returns zero EMI', () => {
+    const result = calcEmi(0, 8.5, 20)
+    assert.equal(result.emi, 0, 'Zero principal should give zero EMI')
+  })
 })
 
 describe('Calculators: Stamp Duty', () => {
@@ -62,11 +79,11 @@ describe('Calculators: Stamp Duty', () => {
     assert.equal(result.rate, 6)
   })
 
-  test('joint buyer: 6.5% stamp duty + 1% registration', () => {
-    const result = calcStampDuty(2, 'joint')
-    // Note: backend doesn't support 'joint', but API should handle it
-    // Testing current implementation
-    assert(result.rate >= 6 && result.rate <= 7, 'Joint rate should be between 6-7%')
+  test('unsupported gender type defaults to male', () => {
+    // TypeScript allows 'joint' in type def but source doesn't handle it
+    // It will default to male (7%) since it's not 'female'
+    const result = calcStampDuty(2, 'joint' as 'male' | 'female' | 'joint')
+    assert.equal(result.rate, 7, 'Unhandled gender defaults to male (7%)')
   })
 
   test('defaults to male when gender omitted', () => {
@@ -120,6 +137,31 @@ describe('Calculators: GST', () => {
     const price = 1 * 1_00_00_000
     const expectedGst = (price * result.rate) / 100
     assert.equal(result.gst, expectedGst)
+  })
+
+  test('GST on zero price', () => {
+    const result = calcGst(0, 'under_construction', 50)
+    assert.equal(result.gst, 0, 'GST on ₹0 should be ₹0')
+  })
+
+  test('affordable housing boundary: exactly ₹45 Lakh', () => {
+    const result = calcGst(0.45, 'under_construction', 50)
+    assert.equal(result.rate, 5, 'Exactly ₹45L should use standard rate (not affordable)')
+  })
+
+  test('affordable housing boundary: just under ₹45 Lakh', () => {
+    const result = calcGst(0.449, 'under_construction', 50)
+    assert.equal(result.rate, 1, 'Just under ₹45L should use affordable rate')
+  })
+
+  test('affordable housing: carpet exactly at 60sqm boundary', () => {
+    const result = calcGst(0.4, 'under_construction', 60)
+    assert.equal(result.rate, 1, 'Carpet exactly 60sqm should qualify for affordable')
+  })
+
+  test('affordable housing: carpet just over 60sqm boundary', () => {
+    const result = calcGst(0.4, 'under_construction', 61)
+    assert.equal(result.rate, 5, 'Carpet over 60sqm should use standard rate')
   })
 })
 

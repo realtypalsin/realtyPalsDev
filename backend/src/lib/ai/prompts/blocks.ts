@@ -117,9 +117,10 @@ Ensure the tone is welcoming and matches how a premium real estate marketing per
 }
 
 /** Strip known LLM control sequences from DB-sourced strings before prompt injection */
-export function sanitizeForPrompt(text: string): string {
+export function sanitizeForPrompt(text: any): string {
   if (!text) return ''
-  return text
+  const str = typeof text === 'string' ? text : typeof text === 'object' && text.name ? text.name : String(text)
+  return str
     .replace(/<\|[^|]+\|>/g, '')     // OpenAI/Llama control tokens
     .replace(/\[INST\]|\[\/INST\]/gi, '')
     .replace(/### (system|instruction|human|assistant)/gi, '')
@@ -135,13 +136,14 @@ function sanitizeProjectName(name: string): string {
 
 function serializeProjects(projects: ScoredProject[]): string {
   return projects.map((p, i) => {
-    const bhkOptions = [...new Set(p.unit_types.map((u) => `${u.bhk}BHK`))].join(', ')
-    const carpets = p.unit_types.filter((u) => u.carpet_area_sqft).map((u) => u.carpet_area_sqft!)
+    const unitTypes = p.unit_types || []
+    const bhkOptions = [...new Set(unitTypes.map((u) => `${u.bhk}BHK`))].join(', ')
+    const carpets = unitTypes.filter((u) => u.carpet_area_sqft).map((u) => u.carpet_area_sqft!)
     const minC = carpets.length ? Math.min(...carpets) : null
     const maxC = carpets.length ? Math.max(...carpets) : null
     const carpetRange = minC != null ? (maxC != null && maxC > minC ? `${minC}–${maxC}` : `${minC}`) : 'N/A'
-    const amenityNames = p.top_amenities.map((a) => a.name).join(', ') || 'N/A'
-    const connNames = p.top_connectivity.map((c) =>
+    const amenityNames = (p.top_amenities || []).map((a) => a.name).join(', ') || 'N/A'
+    const connNames = (p.top_connectivity || []).map((c) =>
       c.distance_km ? `${c.name} (${c.distance_km}km)` : c.name
     ).join(', ') || 'N/A'
 

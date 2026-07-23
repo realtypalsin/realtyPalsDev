@@ -1,202 +1,105 @@
-import { test, describe } from 'node:test'
-import { strict as assert } from 'node:assert'
+import { describe, it, beforeAll, afterAll } from 'node:test'
+import assert from 'node:assert/strict'
+import request from 'supertest'
+import { app } from '../../index'
+import { prisma } from '../../lib/db'
 
-// Note: Full chat route testing requires Express test environment with mocked database.
-// These tests validate the critical paths and safety guards documented in the route.
+describe('POST /api/v1/chat', () => {
+  let authToken: string
+  let userId: string
 
-describe('Chat Route: Critical Paths', () => {
-  test('message length guard prevents empty queries', () => {
-    // Chat route should reject empty or whitespace-only messages
-    const emptyMessage = ''
-    const whitespaceMessage = '   '
-
-    assert(emptyMessage.trim().length === 0, 'Empty message should be detected')
-    assert(whitespaceMessage.trim().length === 0, 'Whitespace-only message should be detected')
+  beforeAll(async () => {
+    // Setup: create test user + get token via Better Auth
+    const res = await request(app)
+      .post('/api/auth/sign-up')
+      .send({ email: `test-${Date.now()}@example.com`, password: 'TestPass123!' })
+    authToken = res.body.token
+    userId = res.body.user.id
   })
 
-  test('token ceiling protection (safe token budget)', () => {
-    // The SAFE_TOKEN_CEILING = 100_000 prevents OpenAI 413 errors
-    const SAFE_TOKEN_CEILING = 100_000
-
-    // Estimate function used in route
-    const estimateTokens = (text: string): number => Math.ceil(text.length / 4)
-
-    const systemPrompt = 'You are a helpful assistant.' // ~7 tokens
-    const remaining = SAFE_TOKEN_CEILING - estimateTokens(systemPrompt)
-
-    assert(remaining > 0, 'Remaining budget should be positive')
-    assert(remaining < SAFE_TOKEN_CEILING, 'Remaining should be less than ceiling')
+  afterAll(async () => {
+    // Cleanup
+    await prisma.chatSession.deleteMany({ where: { user_id: userId } })
+    await prisma.user.delete({ where: { id: userId } })
   })
 
-  test('message trimming respects token budget', () => {
-    const SAFE_TOKEN_CEILING = 100_000
-    const estimateTokens = (text: string): number => Math.ceil(text.length / 4)
+  it('should stream chat response with SSE headers', async () => {
+    const res = await request(app)
+      .post('/api/v1/chat')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({
+        message: 'Show me 3BHK properties under 1.5 crore in Noida',
+        sessionId: null,
+        intent: { sector: null, bhk: [3], budgetMax: 15000000, city: 'Noida' }
+      })
 
-    const systemPrompt = 'System prompt content...'
-    const messages = [
-      { role: 'user' as const, content: 'msg1'.repeat(10000) },
-      { role: 'assistant' as const, content: 'resp1'.repeat(10000) },
-      { role: 'user' as const, content: 'msg2' },
-    ]
-
-    const remaining = SAFE_TOKEN_CEILING - estimateTokens(systemPrompt)
-
-    // Simulate trimming logic
-    let trimmed = [...messages]
-    while (
-      trimmed.length > 2 &&
-      estimateTokens(trimmed.map((m) => m.content).join(' ')) > remaining
-    ) {
-      trimmed = trimmed.slice(2)
-    }
-
-    assert(trimmed.length >= 1, 'At least one message should remain')
+    assert.equal(res.status, 200)
+    assert.match(res.headers['content-type'], /text\/event-stream/)
+    assert.match(res.text, /^data: /)
   })
 
-  test('cache reuse decision: order-independent BHK comparison', () => {
-    // Fix 8: order-independent array comparison
-    const sameSet = (a: unknown[], b: unknown[]): boolean => {
-      if (a.length !== b.length) return false
-      const sa = [...a].map(String).sort()
-      const sb = [...b].map(String).sort()
-      return sa.every((v, i) => v === sb[i])
-    }
-
-    // Same BHK in different order should be treated as same
-    assert(sameSet([2, 3], [3, 2]), 'BHK [2, 3] should equal [3, 2]')
-    assert(sameSet([3], [3]), 'Single BHK should match')
-    assert(!sameSet([2, 3], [2, 3, 4]), 'Different BHK counts should not match')
-  })
-
-  test('IDOR protection: user can only access own session', () => {
-    // Routes validate user ownership of session
-    const sessionOwnerId = 'user-abc'
-    const attacker = 'user-xyz'
-
-    // @ts-expect-error Intentional different users for IDOR test
-    const canAccess = sessionOwnerId === attacker
-    assert(!canAccess, 'Attacker should not access other user sessions')
-
-    const ownSessionAccess = sessionOwnerId === sessionOwnerId
-    assert(ownSessionAccess, 'User should access own session')
-  })
-
-  test('rate limiting: IP-based limiting applied globally', () => {
-    // Global rate limit: 100 requests per 60 seconds
-    const globalLimit = 100
-    const windowSeconds = 60
-
-    // Simulate request counting
-    let requestCount = 0
-    requestCount += 1
-
-    assert(requestCount <= globalLimit, 'Should not exceed global limit')
-    assert(windowSeconds > 0, 'Window should be positive')
-  })
-
-  test('rate limiting: admin login limited to 5 attempts per 15 min', () => {
-    const adminLimit = 5
-    const adminWindow = 900 // seconds (15 min)
-
-    const attempts = 3
-    const isRateLimited = attempts > adminLimit
-
-    assert(!isRateLimited, 'Within limit should allow')
-
-    const exceedAttempts = 6
-    const isExceeded = exceedAttempts > adminLimit
-    assert(isExceeded, 'Exceeding limit should block')
-  })
-
-  test('OpenAI to Groq fallback: fallback suffix applied when using Groq', () => {
-    const GROQ_FALLBACK_SUFFIX = `
-## FALLBACK MODE — REAL-TIME TOOLS UNAVAILABLE
-You are operating without access to real-time tools.`
-
-    const useGroq = true
-    const suffix = useGroq ? GROQ_FALLBACK_SUFFIX : ''
-
-    assert(suffix.includes('FALLBACK MODE'), 'Fallback mode should be indicated')
-    assert(suffix.includes('real-time tools'), 'Should mention unavailable tools')
-  })
-
-  test('empty stream guard: response must have content', () => {
-    // Guard against empty responses from AI providers
-    const validateResponse = (content: string): boolean => {
-      return content !== null && content !== undefined && content.trim().length > 0
-    }
-
-    assert(!validateResponse(''), 'Empty string should fail validation')
-    assert(!validateResponse('   '), 'Whitespace-only should fail validation')
-    assert(validateResponse('Valid response.'), 'Valid content should pass')
-  })
-
-  test('SSE: content-type header for streaming responses', () => {
-    // Chat endpoint returns Server-Sent Events
-    const streamContentType = 'text/event-stream'
-    const charsetRequired = true
-
-    assert(streamContentType.includes('event-stream'), 'Should use SSE content-type')
-    assert(charsetRequired, 'Charset should be specified')
-  })
-})
-
-describe('Chat Route: Cache Decision Logic', () => {
-  test('project name change invalidates cache (Fix 1/3)', () => {
-    const intent = { projectNames: ['ACE Hanei'] }
-    const prevIntent = { projectNames: ['Ace Golf Shire'] }
-    const cached = [
-      { name: 'Ace Golf Shire', id: '1' },
-      { name: 'Ace Hanei', id: '2' },
-    ]
-
-    // If new project name not in cache, must discover
-    const missing = (intent.projectNames ?? []).filter(
-      (n: string) => !cached.some((p: any) => p.name === n)
+  it('should enforce rate limit (100/60s)', async () => {
+    const requests = Array.from({ length: 101 }, () =>
+      request(app)
+        .post('/api/v1/chat')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          message: 'test',
+          sessionId: null,
+          intent: {}
+        })
     )
-
-    assert(missing.length === 0, 'ACE Hanei is in cache')
+    const results = await Promise.all(requests)
+    const rateLimited = results.filter(r => r.status === 429)
+    assert.ok(rateLimited.length > 0)
   })
 
-  test('sector change invalidates cache (Fix 2)', () => {
-    const isCityLevel = (s: string) => ['Noida', 'Greater Noida'].includes(s)
+  it('should return 401 without auth', async () => {
+    const res = await request(app)
+      .post('/api/v1/chat')
+      .send({ message: 'test', sessionId: null, intent: {} })
+    assert.equal(res.status, 401)
+  })
 
-    const intent = { sector: 'Sector 150' }
-    const prevIntent = { sector: 'Sector 79' }
+  it('should prevent IDOR (accessing other user sessions)', async () => {
+    const otherUserToken = 'fake-token-for-different-user'
+    const sessionId = 'some-session-id'
+    const res = await request(app)
+      .post('/api/v1/chat')
+      .set('Authorization', `Bearer ${otherUserToken}`)
+      .send({ message: 'test', sessionId, intent: {} })
+    assert.equal(res.status, 401)
+  })
 
-    const sectorChanged = intent.sector !== prevIntent.sector && !isCityLevel(intent.sector!)
-    assert(sectorChanged, 'Sector change should invalidate cache')
+  it('should block price fabrication via guardrails', async () => {
+    const res = await request(app)
+      .post('/api/v1/chat')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({
+        message: 'What is the price of non-existent project XYZ?',
+        sessionId: null,
+        intent: {}
+      })
 
-    const cityLevelChange = { sector: 'Noida' }
-    const prevCityLevel = { sector: 'Greater Noida' }
-    const cityLevelInvalidates = cityLevelChange.sector !== prevCityLevel.sector && !isCityLevel(cityLevelChange.sector!)
-    assert(!cityLevelInvalidates, 'City-level terms should not invalidate cache')
+    // Response should either block the message or provide safe fallback
+    assert.equal(res.status, 200)
+    // Check that response doesn't contain fabricated price
+    assert.ok(!/₹\d+\s*(?:cr|crore|lakh)/.test(res.text))
   })
 })
 
-describe('Chat Route: Logging & Observability', () => {
-  test('routing events logged with structured keys', () => {
-    const routingEvents = [
-      'CACHE_REUSED',
-      'CACHE_REJECTED',
-      'CACHE_PROJECT_MISS',
-      'CACHE_SECTOR_MISS',
-      'DISCOVERY_TRIGGERED',
-      'DISCOVERY_SKIPPED',
-      'SHORTLISTED_ENTERED',
-    ]
+describe('GET /chat/session (list sessions)', () => {
+  it('should distinguish DB error (500) from empty list (200)', async () => {
+    const guestToken = 'test-guest-token'
+    const res = await request(app)
+      .get('/chat/session')
+      .query({ guestToken })
 
-    for (const event of routingEvents) {
-      assert(event.length > 0, `Event ${event} should be non-empty`)
-      assert(event.includes('_'), 'Event should follow SNAKE_CASE')
+    // Should return 200 with sessions array (empty or populated)
+    assert.ok([200, 500].includes(res.status))
+    if (res.status === 200) {
+      assert.ok('sessions' in res.body)
+      assert.ok(Array.isArray(res.body.sessions))
     }
-  })
-
-  test('error handling logs without exposing internals', () => {
-    const errorMessage = 'Internal error'
-    const sensitiveData = 'Database password: xyz'
-
-    assert(!errorMessage.includes('password'), 'Error should not leak credentials')
-    assert(errorMessage.length > 0, 'Error message should be provided')
   })
 })

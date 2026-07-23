@@ -27,14 +27,19 @@ router.post('/engagement', async (req: Request, res: Response) => {
       where: { session_id: data.session_id }
     })
 
-    if (!chatAnalytics) {
-      // If no analytics record exists yet, we should create it
-      await prisma.chatAnalytics.create({
-        data: {
-          session_id: data.session_id,
-          chat_started_at: new Date(),
-        }
-      })
+    if (!chatAnalytics && data.session_id) {
+      // If no analytics record exists yet, we should create it if the session exists
+      try {
+        await prisma.chatAnalytics.create({
+          data: {
+            session_id: data.session_id,
+            chat_started_at: new Date(),
+          }
+        })
+      } catch (err) {
+        // Session ID might not be created in ChatSession DB table yet; ignore FK constraint error gracefully
+        console.warn(`[analytics/engagement] Could not create ChatAnalytics for session ${data.session_id}`)
+      }
     }
 
     if (data.event === 'drop_off') {
@@ -52,7 +57,7 @@ router.post('/engagement', async (req: Request, res: Response) => {
         where: { session_id: data.session_id },
         data: { first_engagement_at: new Date() }
       })
-      if (data.project_id) {
+      if (data.project_id && data.session_id) {
         // Also record a property event if project_id is provided
         await prisma.propertyEvent.create({
           data: {

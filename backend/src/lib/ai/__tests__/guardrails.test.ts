@@ -1,5 +1,5 @@
 import { test, describe } from 'node:test'
-import { strict as assert } from 'node:assert'
+import assert from 'node:assert/strict'
 import { inputGuardrail, outputGuardrail } from '../guardrails'
 
 describe('Guardrails: Input', () => {
@@ -108,5 +108,83 @@ describe('Guardrails: Output', () => {
     const systemPrompt = 'Valid: UPRERAPRJ123456. ACE Hanei: ₹3.11–5.70 Cr'
     const result = await outputGuardrail(response, systemPrompt)
     assert(result.violations.length >= 3, 'Should detect multiple violations')
+  })
+})
+
+describe('Guardrails: Robustness (input)', () => {
+  test('handles empty string (not blocked, no throw)', async () => {
+    const result = await inputGuardrail('')
+    assert.equal(result.blocked, false)
+  })
+
+  test('handles whitespace only (not blocked)', async () => {
+    const result = await inputGuardrail('   \n  \t  ')
+    assert.equal(result.blocked, false)
+  })
+
+  test('handles emoji-only input (not blocked)', async () => {
+    const result = await inputGuardrail('😀🏠🔥💰')
+    assert.equal(result.blocked, false)
+  })
+
+  test('handles Hinglish/Hindi clean query (not blocked)', async () => {
+    const result = await inputGuardrail('2BHK chahiye sector 150 mein')
+    assert.equal(result.blocked, false)
+  })
+
+  test('handles 10k-char input (completes <100ms)', async () => {
+    const bigInput = 'a'.repeat(10000) + 'What are the properties?'
+    const start = Date.now()
+    const result = await inputGuardrail(bigInput)
+    const elapsed = Date.now() - start
+    assert(elapsed < 100, `Should complete in <100ms, took ${elapsed}ms`)
+    assert.equal(result.blocked, false)
+  })
+})
+
+describe('Guardrails: Robustness (output)', () => {
+  test('handles empty response (no throw)', async () => {
+    const result = await outputGuardrail('')
+    assert.equal(result.blocked, false)
+  })
+
+  test('handles large response (10k chars)', async () => {
+    const response = 'a'.repeat(5000) + 'ACE Hanei is ₹3 Cr' + 'b'.repeat(5000)
+    const systemPrompt = 'ACE Hanei prices: ₹3 Cr'
+    const start = Date.now()
+    const result = await outputGuardrail(response, systemPrompt)
+    const elapsed = Date.now() - start
+    assert(elapsed < 200, `Should handle large response in <200ms, took ${elapsed}ms`)
+  })
+
+  test('filters out SQL injection patterns (treated as text, not blocked)', async () => {
+    const response = "ACE Hanei; DROP TABLE projects;-- is ₹3 Cr"
+    const systemPrompt = 'ACE Hanei: ₹3 Cr'
+    const result = await outputGuardrail(response, systemPrompt)
+    // SQL should not trigger guardrails; only injections trigger
+    assert(!result.violations.some(v => v.type === 'prompt_injection'), 'SQL syntax should not trigger injection guard')
+  })
+
+  test('filters XSS patterns (treated as text, not thrown)', async () => {
+    const response = "ACE Hanei <script>alert('xss')</script> is ₹3 Cr"
+    const systemPrompt = 'ACE Hanei: ₹3 Cr'
+    const result = await outputGuardrail(response, systemPrompt)
+    assert(!result.blocked, 'XSS as text should not be blocked, sanitizer handles it')
+  })
+
+  test('detects generic price advice without exact numbers (allowed)', async () => {
+    const response = 'Properties in Sector 150 are typically around ₹2-3 Cr. This is a rough estimate.'
+    const systemPrompt = 'Sector 150 properties: ₹1.5–4.5 Cr'
+    const result = await outputGuardrail(response, systemPrompt)
+    const hasFabrication = result.violations.some(v => v.type === 'price_fabrication')
+    assert(!hasFabrication, 'Generic advice should not be flagged as fabrication')
+  })
+
+  test('mixes real + fabricated facts (both detected)', async () => {
+    const response = 'ACE Hanei (verified) is ₹3 Cr. Elite Unknown Towers (fabricated) is ₹5 Cr.'
+    const systemPrompt = 'Verified: ACE Hanei ₹3 Cr'
+    const result = await outputGuardrail(response, systemPrompt)
+    const violations = result.violations
+    assert(violations.some(v => v.type === 'name_fabrication'), 'Should detect fabricated project name')
   })
 })
