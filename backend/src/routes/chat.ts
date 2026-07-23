@@ -15,6 +15,8 @@ import { maybeCompress } from '../lib/ai/compression'
 import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
 import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
+import { classifyIntent, routeToModel } from '../lib/ai/intentClassifier'
+import { trimPropertiesForPrompt } from '../lib/ai/propertyTrim'
 import { getChipInventory } from '../lib/discovery/chipInventory'
 import { FINANCIAL } from '../lib/config'
 import { DEFAULT_CITY, PILOT_SCOPE_LABEL } from '../lib/config/cities'
@@ -668,7 +670,11 @@ router.post('/', async (req: Request, res: Response) => {
       blockedBuilders = blockedBuildersRaw.map(b => ({ name: b.name, legal_flag: b.legal_flag as string | undefined }))
       await setCached('blockedBuilders', blockedBuilders, 3600)
     }
-    const systemPrompt = buildAdvisorSystemPrompt(intent, projects.slice(0, 3), memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, nearbyProjects.length > 0 ? nearbyProjects.slice(0, 3) : undefined, notFoundNames, blockedBuilders, intentState, DEFAULT_CITY) + systemSuffix
+    // G6: trim properties to only essential fields (30-40% token savings)
+    const trimmedProjects = trimPropertiesForPrompt(projects.slice(0, 3))
+    const trimmedNearby = nearbyProjects.length > 0 ? trimPropertiesForPrompt(nearbyProjects.slice(0, 3)) : undefined
+
+    const systemPrompt = buildAdvisorSystemPrompt(intent, trimmedProjects as any, memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, trimmedNearby as any, notFoundNames, blockedBuilders, intentState, DEFAULT_CITY) + systemSuffix
 
     // Issue 4: trim message history if total token estimate exceeds safe ceiling
     const messages = trimMessagesToBudget(systemPrompt, rawMessages)
