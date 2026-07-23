@@ -121,13 +121,30 @@ router.post('/callback', async (req: Request, res: Response) => {
     viewedCount: profile.engagement?.projects_viewed,
     sectorMatches,
   })
+  // Send ONLY what user explicitly filled + qualified metadata
+  // Do NOT spread user preferences (preferred_sector, etc) — send project's actual sector
   fireWebhook('callback_requested', {
+    // User-provided form data
     name, phone, project_name: finalProjectName,
-    ...profile,
-    timeline: intent_tier ?? profile.timeline ?? null,
+    intent_tier: intent_tier ?? null,
+    loan_status,
+
+    // Project data (not user preference)
+    bhk: project?.bhk ?? null,
+    sector: project?.sector?.name ?? null,
+    price_range: project?.price_range_label ?? null,
+
+    // Engagement metrics (facts, not preferences)
+    projects_saved: profile.engagement?.projects_saved ?? 0,
+    projects_viewed: profile.engagement?.projects_viewed ?? 0,
+
+    // Qualified lead metadata
+    budget_min_cr: profile.budget_cr?.min ?? null,
+    budget_max_cr: profile.budget_cr?.max ?? null,
     loan_pre_approved: loanPreApproved,
     lead_score: score,
     lead_tier: tier,
+    ai_summary: profile.ai_summary ?? null,
   }).catch((e) => console.error('[leads] webhook failed:', e))
 
   res.status(201).json({ callback: cb })
