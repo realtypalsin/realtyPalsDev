@@ -1114,7 +1114,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         return;
       default:
         console.error('[CHIP:EXHAUSTIVE] unhandled action type:', action.actionType);
-        setToast({ message: 'That option isn't available right now.' });
+        setToast({ message: "That option isn't available right now." });
         return;
     }
   }, [dispatchAction, lastShortlist]);
