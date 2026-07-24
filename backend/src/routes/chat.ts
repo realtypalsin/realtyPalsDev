@@ -889,7 +889,7 @@ router.post('/', async (req: Request, res: Response) => {
           console.error(`[CHAT:TOOL_ERROR] ${name}:`, toolErr);
           return { error: `Tool ${name} failed to execute. Tell the user this information is temporarily unavailable.` };
         }
-      }, undefined, userId, session_id);
+      }, undefined, userId, currentSessionId);
       console.log('[CHAT] END streamWithOpenAI', Date.now(), { fullTextLen: fullText.length })
     } catch (err) {
       console.warn('[chat] OpenAI stream failed:', (err as Error).message);
@@ -920,7 +920,7 @@ router.post('/', async (req: Request, res: Response) => {
           originalErrorMessage: (err as Error).message
         })
         try {
-          fullText = await streamWithGroq(fallbackSystemPrompt, messages, send, userId, session_id);
+          fullText = await streamWithGroq(fallbackSystemPrompt, messages, send, userId, currentSessionId);
           console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
         } catch (groqErr) {
           console.error('[chat] Groq fallback error:', (groqErr as Error).message);

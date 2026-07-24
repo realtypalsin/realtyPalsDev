@@ -19,8 +19,21 @@ interface ChipPickerProps {
 export default function ChipPicker({ chips, onAction, className = '', variant = 'inline' }: ChipPickerProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Sort chips by priority (lower number = higher priority)
-  const sorted = [...chips].sort((a, b) => a.priority - b.priority)
+  // Dedupe by id (first wins), then sort by priority with NaN safety
+  const deduped = useMemo(() => {
+    const seen = new Set<string>()
+    const out: ChipAction[] = []
+    for (const c of chips) {
+      if (!c || !c.id || seen.has(c.id)) continue
+      seen.add(c.id)
+      out.push(c)
+    }
+    return out
+  }, [chips])
+  const sorted = useMemo(
+    () => [...deduped].sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999)),
+    [deduped]
+  )
 
   const grouped = useMemo(() => {
     const map = new Map<string, ChipAction[]>()
@@ -76,6 +89,7 @@ export default function ChipPicker({ chips, onAction, className = '', variant = 
 }
 
 function ChipButton({ chip, onAction }: { chip: ChipAction; onAction: (chip: ChipAction) => void }) {
+  if (!chip.label || !chip.label.trim()) return null
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const lastClickRef = useRef<number>(0)
@@ -140,7 +154,7 @@ function ChipButton({ chip, onAction }: { chip: ChipAction; onAction: (chip: Chi
   }
 
   // Clean ChatGPT/NotebookLM style pills
-  const baseClass = 'flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-[13px] transition-colors duration-200 cursor-pointer whitespace-nowrap select-none'
+  const baseClass = 'flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-[13px] transition-colors duration-200 cursor-pointer select-none max-w-[240px]'
 
   const styleClass = `
     bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md
@@ -164,7 +178,7 @@ function ChipButton({ chip, onAction }: { chip: ChipAction; onAction: (chip: Chi
         className={`${baseClass} ${styleClass} ${isOpen ? 'ring-2 ring-violet-300 dark:ring-violet-700 bg-white dark:bg-zinc-800' : ''}`}
         title={chip.label}
       >
-        <span>{chip.label}</span>
+        <span className="truncate">{chip.label}</span>
         {hasDropdown && <CaretDown weight="bold" className={`w-3 h-3 text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />}
       </m.button>
 

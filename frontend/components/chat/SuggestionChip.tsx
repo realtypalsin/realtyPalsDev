@@ -17,6 +17,7 @@ interface SuggestionChipProps {
  * All chips use same premium, subtle aesthetic regardless of type.
  */
 export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, disabled }: SuggestionChipProps) {
+  if (!chip.label || !chip.label.trim()) return null
   const isActive = chipPicker?.label === chip.label
   const hasDropdown = chip.actionType === 'COMPARE_PROPERTIES' || chip.actionType === 'CALCULATE_EMI' || chip.actionType === 'BOOK_VISIT'
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { m } from 'framer-motion'
 import type { ChipAction } from './types'
 
@@ -14,6 +14,20 @@ interface CardSelectorChipProps {
 /** Multi-project chip that shows dropdown to select which card to apply action to */
 export function CardSelectorChip({ chip, projects, onSelect, disabled }: CardSelectorChipProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!isOpen) return
+    const onDocClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setIsOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsOpen(false) }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [isOpen])
 
   if (projects.length <= 1) {
     return null // Use regular chip if only 1 project
@@ -25,7 +39,7 @@ export function CardSelectorChip({ chip, projects, onSelect, disabled }: CardSel
   }
 
   return (
-    <div className="relative inline-block group">
+    <div className="relative inline-block group" ref={containerRef}>
       <m.button
         whileTap={{ scale: 0.96 }}
         onClick={() => setIsOpen(!isOpen)}

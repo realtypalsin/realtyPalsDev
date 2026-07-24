@@ -419,7 +419,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, []);
 
   const dispatchAction = useCallback((action: import('@/components/chat/types').ConversationAction): void => {
-    if (submitLockRef.current) return;
+    if (submitLockRef.current) {
+      setToast({ message: 'One moment — still working on your last request.' });
+      return;
+    }
     submitLockRef.current = true;
 
     if (!userId && !guestToken) {
@@ -1110,8 +1113,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         });
         return;
       default:
-        const _: never = action.actionType;
-        console.error('[CHIP:EXHAUSTIVE] unhandled action type:', _);
+        console.error('[CHIP:EXHAUSTIVE] unhandled action type:', action.actionType);
+        setToast({ message: 'That option isn't available right now.' });
         return;
     }
   }, [dispatchAction, lastShortlist]);
