@@ -65,6 +65,11 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
 
 /** Exported for unit testing only. Parses raw LLM JSON output into a merged Intent. */
 export function parseIntentJson(raw: string, previous: Intent): Intent {
+  // Empty or whitespace-only input returns previous unchanged
+  if (!raw || !raw.trim()) {
+    return previous
+  }
+
   const match = raw.match(/\{[\s\S]*\}/)
   const str = match ? match[0] : '{}'
   try {

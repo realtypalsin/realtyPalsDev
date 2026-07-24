@@ -4,45 +4,45 @@ import { scoreProject, computeBudgetStatus, buildPriceRangeLabel } from '../scor
 import type { Intent } from '../types'
 
 describe('Scoring: Price Range Label', () => {
-  test('formats range with min and max', () => {
+  it('formats range with min and max', () => {
     const label = buildPriceRangeLabel(1.5, 2.5)
     assert.equal(label, '₹1.50–2.50Cr')
   })
 
-  test('formats with min only (+ notation)', () => {
+  it('formats with min only (+ notation)', () => {
     const label = buildPriceRangeLabel(2.0, null)
     assert.equal(label, '₹2.00Cr+')
   })
 
-  test('returns "Price on request" when no data', () => {
+  it('returns "Price on request" when no data', () => {
     const label = buildPriceRangeLabel(null, null)
     assert.equal(label, 'Price on request')
   })
 })
 
 describe('Scoring: Budget Status', () => {
-  test('returns "within" when project min ≤ intent max', () => {
+  it('returns "within" when project min ≤ intent max', () => {
     const unitTypes = [{ price_min_cr: 1.5 }]
     const intent: Intent = { budgetMax: 2.0 }
     const status = computeBudgetStatus(unitTypes, intent)
     assert.equal(status, 'within')
   })
 
-  test('returns "slightly_over" when project within tolerance', () => {
+  it('returns "slightly_over" when project within tolerance', () => {
     const unitTypes = [{ price_min_cr: 2.1 }]
     const intent: Intent = { budgetMax: 2.0 }
     const status = computeBudgetStatus(unitTypes, intent)
     assert.equal(status, 'slightly_over')
   })
 
-  test('returns "over" when project significantly exceeds budget', () => {
+  it('returns "over" when project significantly exceeds budget', () => {
     const unitTypes = [{ price_min_cr: 3.0 }]
     const intent: Intent = { budgetMax: 2.0 }
     const status = computeBudgetStatus(unitTypes, intent)
     assert.equal(status, 'over')
   })
 
-  test('uses lowest price when multiple unit types', () => {
+  it('uses lowest price when multiple unit types', () => {
     const unitTypes = [
       { price_min_cr: 5.0 },
       { price_min_cr: 2.0 },
@@ -53,14 +53,14 @@ describe('Scoring: Budget Status', () => {
     assert.equal(status, 'within')
   })
 
-  test('returns undefined when no budget intent', () => {
+  it('returns undefined when no budget intent', () => {
     const unitTypes = [{ price_min_cr: 2.0 }]
     const intent: Intent = {}
     const status = computeBudgetStatus(unitTypes, intent)
     assert.equal(status, undefined)
   })
 
-  test('returns undefined when no price data', () => {
+  it('returns undefined when no price data', () => {
     const unitTypes = [{ price_min_cr: null }]
     const intent: Intent = { budgetMax: 2.0 }
     const status = computeBudgetStatus(unitTypes, intent)
@@ -99,7 +99,7 @@ describe('Scoring: Project Score', () => {
     persona_profile: { primary_persona: 'first_time_buyer' },
   }
 
-  test('scores within-budget projects with possession within 6 months highest', () => {
+  it('scores within-budget projects with possession within 6 months highest', () => {
     const intent: Intent = { budgetMax: 2.0, possession: 'immediate' }
     const score1 = scoreProject({ ...baseProject, possession_date: new Date() }, intent)
 
@@ -112,13 +112,13 @@ describe('Scoring: Project Score', () => {
     assert(score1 > score2, 'Recent possession should score higher')
   })
 
-  test('maximum score never exceeds 60', () => {
+  it('maximum score never exceeds 60', () => {
     const intent: Intent = { budgetMax: 3.0 }
     const score = scoreProject(baseProject, intent)
     assert(score <= 60, `Score ${score} exceeds maximum of 60`)
   })
 
-  test('applies penalty for slightly_over budget', () => {
+  it('applies penalty for slightly_over budget', () => {
     const baseIntent: Intent = { budgetMax: 2.0 }
     const scoreWithin = scoreProject(baseProject, baseIntent, 'within')
 
@@ -138,7 +138,7 @@ describe('Scoring: Project Score', () => {
     assert(scoreWithin > scoreOver, 'Slightly over budget should have lower score')
   })
 
-  test('applies larger penalty for significantly over budget', () => {
+  it('applies larger penalty for significantly over budget', () => {
     const baseIntent: Intent = { budgetMax: 2.0 }
 
     const slightlyOverProject = {
@@ -170,7 +170,7 @@ describe('Scoring: Project Score', () => {
     assert(scoreSlightlyOver > scoreOver, 'Significantly over budget should have larger penalty')
   })
 
-  test('score is never negative', () => {
+  it('score is never negative', () => {
     const intent: Intent = { budgetMax: 1.0 }
     const expensiveProject = {
       ...baseProject,
@@ -187,7 +187,7 @@ describe('Scoring: Project Score', () => {
     assert(score >= 0, `Score ${score} should never be negative`)
   })
 
-  test('projects without required data still score (graceful degradation)', () => {
+  it('projects without required data still score (graceful degradation)', () => {
     const minimalProject = {
       unit_types: [{ bhk: 3, price_min_cr: null, price_max_cr: null, carpet_area_sqft: null }],
       possession_date: null,

@@ -1,4 +1,4 @@
-import { describe, it, beforeAll, afterAll } from 'node:test'
+import { describe, it, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import request from 'supertest'
 import { app } from '../../index'
@@ -8,7 +8,7 @@ describe('POST /api/v1/chat', () => {
   let authToken: string
   let userId: string
 
-  beforeAll(async () => {
+  before(async () => {
     // Setup: create test user + get token via Better Auth
     const res = await request(app)
       .post('/api/auth/sign-up')
@@ -17,7 +17,7 @@ describe('POST /api/v1/chat', () => {
     userId = res.body.user.id
   })
 
-  afterAll(async () => {
+  after(async () => {
     // Cleanup
     await prisma.chatSession.deleteMany({ where: { user_id: userId } })
     await prisma.user.delete({ where: { id: userId } })
