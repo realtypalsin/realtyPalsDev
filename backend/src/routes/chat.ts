@@ -258,7 +258,8 @@ router.post('/', async (req: Request, res: Response) => {
     return
   }
 
-  const { action, sessionId, guestToken } = parsed.data
+  const { action, sessionId } = parsed.data
+  let { guestToken } = parsed.data
   const prevIntent = (parsed.data.intent ?? {}) as Record<string, unknown>
   let message = action.type === 'TEXT_MESSAGE' ? (action.payload.text as string) : ''
   if (action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
@@ -278,9 +279,9 @@ router.post('/', async (req: Request, res: Response) => {
   // Identity is derived from a VERIFIED Supabase token only — never a client-set header.
   const userId = (await verifyUser(req)) ?? undefined
 
+  // Ensure anonymous users get a server-generated guestToken
   if (!userId && !guestToken) {
-    res.status(400).json({ error: 'x-user-id header or guestToken body field required' })
-    return
+    guestToken = `guest_${Math.random().toString(36).substring(2, 15)}_${Date.now()}`
   }
 
   // ─── ANALYTICS: Initialize chat tracking
@@ -1062,7 +1063,7 @@ router.post('/', async (req: Request, res: Response) => {
         })
       )
 
-      // ── Prose-entity chips ──────────────────────────────────────────────
+      // ── Prose-entity chips & entities ──────────────────────────────────────────────
       // The model can name real projects in prose without the search tool returning
       // cards. Without this, that turn renders zero chips (verified user report).
       // Only DB-matched names become chips, so nothing is invented.
@@ -1070,16 +1071,35 @@ router.post('/', async (req: Request, res: Response) => {
         if (fullText && projects.length === 0) {
           const mentioned = await findProjectsMentioned(fullText, DEFAULT_CITY)
           const proseChips = buildProseChips(mentioned)
-          if (proseChips.length > 0) {
-            const emitted = filterNewChipsWithFloor(currentSessionId, proseChips, 2)
+          if (proseChips.length > 0 || mentioned.length > 0) {
+            const emitted = proseChips.length > 0 ? filterNewChipsWithFloor(currentSessionId, proseChips, 2) : []
             emitted.forEach(c => markChipShown(currentSessionId, c.id))
+            // Convert project names to clickable markdown links: [Name](#entity:id)
+            let linkedText = fullText
+            for (const e of mentioned) {
+              linkedText = linkedText.replace(new RegExp(`\\b${e.name}\\b`, 'g'), `[${e.name}](#entity:${e.id})`)
+            }
             send('ui_state', {
               stage: 'RESEARCH',
               thinking: '',
               chips: emitted,
               missingFields: [],
               confidence: 'MEDIUM',
+              entities: mentioned,
             } as unknown as Record<string, unknown>)
+            // Re-emit with linked content if entities found
+            if (mentioned.length > 0 && linkedText !== fullText) {
+              const linkedMessage = await prisma.chatMessage.findFirst({
+                where: { session_id: currentSessionId, role: 'assistant' },
+                orderBy: { created_at: 'desc' }
+              })
+              if (linkedMessage) {
+                await prisma.chatMessage.update({
+                  where: { id: linkedMessage.id },
+                  data: { content: linkedText }
+                })
+              }
+            }
           }
         }
       } catch (e) {

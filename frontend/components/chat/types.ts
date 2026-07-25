@@ -68,6 +68,7 @@ export interface ConversationState {
   chips: ChipAction[]           // progressive suggestions — max 5, unless grouped
   missingFields: string[]       // ['sector', 'budget'] — drives Context Ribbon
   confidence: 'HIGH' | 'MEDIUM' | 'LOW'
+  entities?: Array<{ id: string; name: string }>  // prose-mentioned projects for clickable names
 }
 
 // ─── Legacy types (kept during migration) ────────────────────────────────────

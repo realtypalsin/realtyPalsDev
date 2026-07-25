@@ -452,7 +452,22 @@ function MessageBubbleInner({
                                 ),
                                 tr: ({ node, ...props }: any) => (
                                   <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors" {...props} />
-                                )
+                                ),
+                                a: ({ node, ...props }: any) => {
+                                  const href = props.href || ''
+                                  if (href.startsWith('#entity:')) {
+                                    const id = href.slice(8)
+                                    return (
+                                      <button
+                                        onClick={() => onAction?.({ type: 'TEXT_MESSAGE', payload: { text: `Tell me more about ${props.children}` } })}
+                                        className="text-[#c47860] hover:underline cursor-pointer font-medium"
+                                      >
+                                        {props.children}
+                                      </button>
+                                    )
+                                  }
+                                  return <a {...props} className="text-[#c47860] hover:underline" />
+                                }
                               } as any}
                             >
                               {displayContent}
