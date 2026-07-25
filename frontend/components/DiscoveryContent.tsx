@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import {  AnimatePresence, m  } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { ChatMessage, NearbyExpansion } from '@/types/property';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
@@ -15,9 +15,12 @@ import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-van
 import MessageBubble from '@/components/chat/MessageBubble';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
-import { AlertTriangle, ArrowUp, ChevronDown, Key, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet } from 'lucide-react';
+import { AlertTriangle, ArrowUp, ChevronDown, Home, Key, MapPin, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet, Train, Trees, Crown, Building2, GraduationCap } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { useSessions } from '@/hooks/useSessions';
+
+const DEBUG = process.env.NODE_ENV !== 'production'
+const WELCOME_MESSAGE = "Hi, I'm RealtyPal — your advisor for Noida & Greater Noida. Ask me anything: budgets in ₹ Lakh/Cr, RERA status, builder track records, or which sector fits your family. I'll give you straight answers, tradeoffs included."
 import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } from '@/hooks/useAnalyticsTracking';
 
 // ── Dynamic imports — heavy components excluded from initial bundle ─────────
@@ -195,7 +198,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [, setShareCopied] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
-  const [regeneratingIdx, ] = useState<number | null>(null);
+  const [regeneratingIdx,] = useState<number | null>(null);
   const [, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
   const [, setResultCount] = useState<number | null>(null)
   const [showReEngagement, setShowReEngagement] = useState(true)
@@ -230,7 +233,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const nt = (window as any).__navTimings
     if (nt && !nt.contentMounted) {
       nt.contentMounted = performance.now()
-      console.log(`[NAV] 3b. content-mount  +${(nt.contentMounted - nt.t0).toFixed(1)}ms`)
+      if (DEBUG) console.log(`[NAV] 3b. content-mount  +${(nt.contentMounted - nt.t0).toFixed(1)}ms`)
     }
 
     // [TIMING] LCP observer — measures when the largest element paints
@@ -247,7 +250,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         lcpObs.disconnect()
         if (lcpEntry && nt) {
           const lcpMs = (lcpEntry as any).startTime
-          console.log(`[NAV] 10. LCP            +${(lcpMs - nt.t0).toFixed(1)}ms (absolute ${lcpMs.toFixed(0)}ms)`)
+          if (DEBUG) console.log(`[NAV] 10. LCP            +${(lcpMs - nt.t0).toFixed(1)}ms (absolute ${lcpMs.toFixed(0)}ms)`)
         }
       }
     }
@@ -432,7 +435,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       router.push('/auth');
       return;
     }
-    
+
     setIsSubmitting(true);
     setStatusPhase('extracting');
     userScrolledUp.current = false;
@@ -535,7 +538,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           ));
         } else if (event.type === 'ui_state') {
           // New conversation engine backend state
-          console.log('[UI_STATE]', { stage: event.stage, chipsCount: event.chips?.length ?? 0, chips: event.chips });
+          if (DEBUG) console.log('[UI_STATE]', { stage: event.stage, chipsCount: event.chips?.length ?? 0, chips: event.chips });
           setConversationState({
             stage: event.stage,
             thinking: event.thinking,
@@ -597,9 +600,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           if (chatTurnCount === 0 && userId && newSessionId) {
             const buildSmartTitle = (text: string, intent: Record<string, unknown> | null): string => {
               if (!intent) return text.length > 35 ? text.slice(0, 35) + '...' : text;
-              
+
               const parts: string[] = [];
-              
+
               if (Array.isArray(intent.bhk) && intent.bhk.length > 0) {
                 parts.push(intent.bhk.join('/') + ' BHK');
               }
@@ -613,11 +616,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               if (typeof intent.builderName === 'string' && intent.builderName) {
                 parts.push(intent.builderName);
               }
-              
+
               if (parts.length >= 2) return parts.join(' · ');
               return text.length > 35 ? text.slice(0, 35) + '...' : text;
             };
-            
+
             const smartTitle = buildSmartTitle(userText, currentIntent);
             setSessionTitle(smartTitle);
             // Single sidebar refresh after PATCH — fires whether PATCH succeeds or fails.
@@ -643,7 +646,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         setIsSubmitting(false);
         submitLockRef.current = false;
         if (controller.signal.aborted) {
-          console.log('[CHAT:ABORT] stream aborted by user')
+          if (DEBUG) console.log('[CHAT:ABORT] stream aborted by user')
           setChatHistory(prev => {
             const next = prev.filter(m => m.id !== streamId)
             console.log('[CHAT:ABORT_CLEANUP] removed AI placeholder', streamId, 'history length', prev.length, '→', next.length)
@@ -694,7 +697,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
 
   const performReset = async () => {
-    if (submitLockRef.current) return;
+    // Abort any in-flight stream so a late SSE event can't repopulate intent.
+    abortControllerRef.current?.abort()
+    submitLockRef.current = false            // never early-return; always reset
+
     setChatHistory([]);
     setChatInput('');
     setShowRecommendations(false);
@@ -704,7 +710,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setHasShownLengthWarning(false);
     setShowContextWarning(false);
     setIsSubmitting(false);
-    submitLockRef.current = false;
     setCarouselIndexes({});
     setCurrentIntent(null);
     setLastShortlist([]);
@@ -714,6 +719,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setDetailProject(null);
     setExpandedShortlists(new Set());
     setRateLimitUntil(null);
+    setConversationState(null);
+    setSessionId(null);                      // reset for guests too — new session on next send
 
     if (userId) {
       try {
@@ -731,7 +738,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const welcomeMessage: ChatMessage = {
       id: crypto.randomUUID(),
       type: 'ai',
-      content: "Hi, I'm RealtyPal — your advisor for Noida & Greater Noida. Ask me anything: budgets in ₹ Lakh/Cr, RERA status, builder track records, or which sector fits your family. I'll give you straight answers, tradeoffs included.",
+      content: WELCOME_MESSAGE,
 
       timestamp: new Date().toISOString(),
     };
@@ -780,12 +787,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           if (cached.title) setSessionTitle(cached.title);
           if (cached.chat_phase) setChatPhase(cached.chat_phase);
           if (cached.last_intent) setCurrentIntent(cached.last_intent);
-          if (cached.ui_state) setConversationState(cached.ui_state);
+          if (cached.ui_state) setConversationState(cached.ui_state as any);
           if (cached.last_projects && cached.last_projects.length > 0) {
-            setLastShortlist(cached.last_projects);
+            setLastShortlist(cached.last_projects as any);
             setShowRecommendations(true);
           }
-          setChatHistory(cached.restored);
+          setChatHistory((cached.restored ?? []) as any);
           setIsInitialized(true);
           setTimeout(() => scrollToBottom('instant'), 50);
           return;
@@ -916,7 +923,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const renderMs = performance.now() - t.setHistoryAt
     const nt = (window as any).__navTimings
     if (nt) {
-      console.log(`[NAV] 9. render-complete   +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${renderMs.toFixed(1)}ms)`)
+      if (DEBUG) console.log(`[NAV] 9. render-complete   +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${renderMs.toFixed(1)}ms)`)
       const totalMs = performance.now() - nt.t0
       const rscMs = nt.rscEnd != null ? nt.rscEnd - nt.t0 : null
       const mountMs = nt.pageMounted != null ? nt.pageMounted - nt.t0 : null
@@ -953,7 +960,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     if (hasCards) {
       nt.propertyCardsLogged = true
       nt.propertyCards = performance.now()
-      console.log(`[NAV] 9b. property-cards +${(nt.propertyCards - nt.t0).toFixed(1)}ms`)
+      if (DEBUG) console.log(`[NAV] 9b. property-cards +${(nt.propertyCards - nt.t0).toFixed(1)}ms`)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatHistory])
@@ -1132,7 +1139,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(stripMarkdown(text))
       .then(() => setToast({ message: 'Copied!' }))
-      .catch(() => {})
+      .catch(() => { })
   }, []);
 
   const hasUserReplied = chatHistory.some((m) => m.type === 'user');
@@ -1149,24 +1156,24 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
     if (propIndices.length === 0) return -1;
     const lastIdx = propIndices[propIndices.length - 1];
-    
+
     if (propIndices.length > 1) {
       const prevIdx = propIndices[propIndices.length - 2];
       const lastMsg = chatHistory[lastIdx];
       const prevMsg = chatHistory[prevIdx];
-      
+
       const getProjectSlugs = (m: import('@/types/property').ChatMessage) => {
         const exact = m.exactResults?.map(p => p.slug) ?? [];
         const nearby = m.nearbyResults?.map(p => p.slug) ?? [];
         const legacy = m.properties?.map(p => p.slug) ?? [];
         return [...exact, ...nearby, ...legacy].sort().join(',');
       };
-      
+
       if (getProjectSlugs(lastMsg) === getProjectSlugs(prevMsg)) {
         return -1; // Properties are identical to previous turn, keep them collapsed!
       }
     }
-    
+
     return lastIdx;
   }, [chatHistory]);
 
@@ -1379,7 +1386,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 RealtyPals
               </h1>
               <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-1 font-[family-name:var(--font-afacad)]">
-                Buy Better.
+                Search Better
               </h2>
               <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">AI property advisor · Noida & Greater Noida</p>
             </div>
@@ -1396,29 +1403,67 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               />
             )}
 
-            {/* Starter chips — scalable, no hardcoded locations */}
-            <div className="flex flex-wrap items-center justify-center gap-2.5 w-full max-w-2xl mb-12">
-              {[
-                { label: 'Zero-Wait Delivered Homes', icon: <Key size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Show me delivered, ready to move properties' },
-                { label: 'High-Yield Growth Corridors', icon: <TrendingUp size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Which projects have the best investment potential?' },
-                { label: 'Resort-Style Premium Living', icon: <Palmtree size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Show ultra luxury and resort-style apartments' },
-                { label: '100% RERA Cleared & Safe', icon: <ShieldCheck size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Show me projects with clean RERA and no registry issues' },
-                { label: 'Best Value Under ₹1.5Cr', icon: <Wallet size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Properties under 1.5 crore' },
-                { label: 'Data-Driven Comparisons', icon: <Scale size={14} className="text-zinc-500 dark:text-zinc-400" />, prompt: 'Compare the top projects available' },
-              ].map((chip, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 ring-1 ring-inset ring-zinc-200/80 dark:ring-zinc-800 hover:ring-zinc-300 dark:hover:ring-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-[13px] text-zinc-700 dark:text-zinc-300 font-medium rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 active:scale-95"
-                >
-                  <span className="flex items-center justify-center">{chip.icon}</span>
-                  <span>{chip.label}</span>
-                </button>
-              ))}
+              {/* Input first — ChatGPT style */}
+            <div className="w-full max-w-[880px] mb-8">
+              {chatInputForm}
             </div>
 
-            <div className="w-full max-w-[880px]">
-              {chatInputForm}
+            {/* Sleek v0-style starter prompt chips — guaranteed max 2 rows */}
+            <div className="w-full max-w-[880px] flex flex-wrap items-center justify-center gap-2">
+              {[
+                {
+                  label: 'Metro Apartments',
+                  icon: <Train size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors shrink-0" />,
+                  prompt: 'Find me homes that are within walking distance to a functional metro station.'
+                },
+                {
+                  label: 'Ready to Move',
+                  icon: <Key size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors shrink-0" />,
+                  prompt: 'Show me fully completed homes in central Noida that I can move into today.'
+                },
+                {
+                  label: 'Under ₹1.5 Cr',
+                  icon: <Wallet size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-500 transition-colors shrink-0" />,
+                  prompt: 'What are the best three bedroom apartments I can buy for less than 1.5 crore rupees?'
+                },
+                {
+                  label: 'Green Sectors',
+                  icon: <Trees size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-green-500 transition-colors shrink-0" />,
+                  prompt: 'Show me housing projects in Noida that have the most open parks and the fewest crowded buildings.'
+                },
+                {
+                  label: 'Luxury Penthouses',
+                  icon: <Crown size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-violet-500 transition-colors shrink-0" />,
+                  prompt: 'Find me the most exclusive penthouses available in the top sectors of Noida.'
+                },
+                {
+                  label: 'Independent Villas',
+                  icon: <Building2 size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-indigo-500 transition-colors shrink-0" />,
+                  prompt: 'Show me gated communities in Noida that offer independent villas for sale.'
+                },
+                {
+                  label: 'Family Neighborhoods',
+                  icon: <ShieldCheck size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-teal-500 transition-colors shrink-0" />,
+                  prompt: 'Find me the safest residential areas in Noida that are perfect for raising children.'
+                },
+                {
+                  label: 'Top School Zones',
+                  icon: <GraduationCap size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-sky-500 transition-colors shrink-0" />,
+                  prompt: 'Show me family homes located within ten minutes of the best schools in Noida.'
+                },
+              ].map((chip, idx) => (
+                <m.button
+                  key={idx}
+                  whileHover={{ y: -1, scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 25 }}
+                  onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
+                  className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-medium bg-white/90 dark:bg-[#18181b]/90 backdrop-blur-md border border-zinc-200/90 dark:border-zinc-800/90 text-zinc-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#222226] hover:border-blue-400/60 dark:hover:border-blue-500/50 hover:text-zinc-950 dark:hover:text-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_18px_rgba(59,130,246,0.12)] dark:hover:shadow-[0_4px_20px_rgba(59,130,246,0.22)] transition-all duration-200 cursor-pointer select-none"
+                >
+                  <span className="flex-shrink-0 flex items-center justify-center">{chip.icon}</span>
+                  <span className="whitespace-nowrap font-medium tracking-tight">{chip.label}</span>
+                </m.button>
+              ))}
             </div>
           </div>
         ) : (
@@ -1476,7 +1521,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                       sessionId={sessionId ?? ''}
                       regeneratingIdx={regeneratingIdx}
                       chipPicker={chipPicker}
-                      chips={conversationState?.chips ?? []}
+                      chips={(message.chips as any) ?? (actualIndex === chatHistory.length - 1 ? conversationState?.chips ?? [] : [])}
                       onCopy={handleCopy}
                       onDetailOpen={openDetailProject}
                       onCallback={setCallbackProject}

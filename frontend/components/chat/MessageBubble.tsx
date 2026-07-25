@@ -819,7 +819,7 @@ function MessageBubbleInner({
 
       {/* Progressive chips from Conversation Engine */}
       {(() => {
-        const shouldShow = message.type === 'ai' && displayContent && isLast && !isSubmitting && combinedChips.length > 0;
+        const shouldShow = message.type === 'ai' && displayContent && combinedChips.length > 0;
         return shouldShow;
       })() && (
 

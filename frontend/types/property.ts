@@ -113,4 +113,5 @@ export interface ChatMessage {
     purpose?: string;
     is_general_query?: boolean;
   };
+  chips?: unknown[]; // ChipAction[] from backend
 }
