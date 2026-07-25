@@ -2,7 +2,6 @@ import { getGroq } from '../groq'
 import { MODELS } from '../../config'
 import type { ChipAction } from '../../discovery/conversationEngine'
 import { chip } from '../../discovery/conversationEngine'
-import { prisma } from '../db'
 
 const CHIP_SYSTEM_PROMPT = `You are a conversation intent predictor for a real estate assistant.
 Based on the conversation history, predict exactly 3 short, natural follow-up questions the user might want to ask next.
@@ -73,72 +72,6 @@ export async function generateContextualLLMChips(
 
   } catch (error) {
     console.error('[CHIPS:LLM] Error generating contextual chips', error)
-    return []
-  }
-}
-
-export async function generateProseEntityChips(prose: string): Promise<ChipAction[]> {
-  try {
-    if (!prose || prose.length < 10) return []
-
-    const chips: ChipAction[] = []
-    const proseL = prose.toLowerCase()
-
-    // Extract sector mentions (e.g., "Sector 75", "sector 62")
-    const sectorMatches = prose.match(/sector\s+(\d+)/gi) || []
-    const sectors = [...new Set(sectorMatches.map(m => m.replace(/sector\s+/i, '').trim()))]
-
-    for (const sector of sectors.slice(0, 2)) {
-      const projects = await prisma.project.findMany({
-        where: { sector: sector },
-        take: 2,
-        select: { id: true, name: true }
-      })
-
-      if (projects.length > 0) {
-        const pIds = projects.map(p => p.id).join(':')
-        chips.push(
-          chip(
-            `prose_sector_${sector}`,
-            'TEXT_MESSAGE',
-            `Explore properties in Sector ${sector}`,
-            '📍',
-            { actionPrefix: 'Show me projects in', projects: projects.map(p => ({ id: p.id, name: p.name })) },
-            chips.length + 1
-          )
-        )
-      }
-    }
-
-    // Extract project names (simple heuristic: capitalized multi-word phrases)
-    const projectMatches = prose.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b/g) || []
-    const potentialNames = [...new Set(projectMatches)].slice(0, 3)
-
-    for (const name of potentialNames) {
-      const projects = await prisma.project.findMany({
-        where: { name: { contains: name, mode: 'insensitive' } },
-        take: 1,
-        select: { id: true, name: true }
-      })
-
-      if (projects.length > 0) {
-        const project = projects[0]
-        chips.push(
-          chip(
-            `prose_project_${project.id}`,
-            'TEXT_MESSAGE',
-            `Learn more about ${project.name}`,
-            '🏢',
-            { actionPrefix: 'Tell me about', projects: [{ id: project.id, name: project.name }] },
-            chips.length + 1
-          )
-        )
-      }
-    }
-
-    return chips.slice(0, 2)
-  } catch (error) {
-    console.error('[CHIPS:PROSE] Error generating prose entity chips', error)
     return []
   }
 }

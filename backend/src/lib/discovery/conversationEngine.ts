@@ -366,23 +366,51 @@ function getFallbackChips(pool: ChipAction[], chips: ChipAction[], maxCount: num
 
 /** Unified chip pipeline: candidates → dedupe → rank → cap-4 */
 function capChips(candidates: ChipAction[]): ChipAction[] {
+  if (candidates.length <= 4) return candidates
   const hasGroups = candidates.some(c => c.group)
-  if (!hasGroups && candidates.length > 4) {
-    const critical = candidates.filter(c => c.priority <= 2).slice(0, 2)
-    const secondary = candidates.filter(c => c.priority > 2 && c.priority <= 3).slice(0, 2)
-    const selected = [...critical, ...secondary].slice(0, 4)
-    // Guarantee floor: if priority filtering yields < 4 items, use full pool
-    return selected.length < 4 ? candidates : selected
+  if (hasGroups) return candidates.slice(0, 4)
+
+  const picked: ChipAction[] = []
+  const take = (pool: ChipAction[], n: number) => {
+    for (const c of pool) {
+      if (picked.length >= n) break
+      if (!picked.includes(c)) picked.push(c)
+    }
   }
-  return candidates.length > 4 ? candidates.slice(0, 4) : candidates
+  take(candidates.filter(c => c.priority <= 2), 2)              // critical first
+  take(candidates.filter(c => c.priority === 3), 4)             // then high-value
+  take(candidates, 4)                                          // then anything left — never waste a slot
+  return picked.slice(0, 4)
 }
 
-function getFloorChips(chips: ChipAction[]): ChipAction[] {
-  const floor = 2
-  if (chips.length === 0) return chips
-  if (chips.length >= floor) return chips
-  // Desperate: no fresh chips available, repeat from pool
-  return chips
+function getFloorChips(intent: Intent, results: ScoredProject[]): ChipAction[] {
+  // If we do have results, offer actions grounded in them.
+  if (results.length > 0) {
+    const projects = results.slice(0, 4).map(r => ({ id: r.id, name: r.name }))
+    const pIds = projects.map(p => p.id).join(':')
+    const out: ChipAction[] = [
+      chip(`TEXT_MESSAGE:floor_tradeoffs:${pIds}`, 'TEXT_MESSAGE', 'What are the trade-offs?', '',
+        { actionPrefix: 'What are the main trade-offs and risks of', projects, actionSuffix: '?' }, 1),
+      chip(`TEXT_MESSAGE:floor_tell_more:${pIds}`, 'TEXT_MESSAGE', 'Tell me more', '',
+        { actionPrefix: 'Tell me more about', projects }, 2),
+    ]
+    if (results.length >= 2) {
+      out.push(chip(`COMPARE_PROPERTIES:floor_compare:${pIds}`, 'COMPARE_PROPERTIES',
+        `Compare these ${Math.min(results.length, 3)}`, '', { mode: 'multi', projects }, 3))
+    }
+    return out
+  }
+
+  // No results: safe, always-answerable questions. No invented inventory.
+  const sectorBit = intent.sector ? ` in ${intent.sector}` : ' in Noida'
+  return [
+    chip('TEXT_MESSAGE:floor_ready_to_move', 'TEXT_MESSAGE', 'Ready-to-move homes', '',
+      { text: `Show me ready-to-move projects${sectorBit}.` }, 1),
+    chip('TEXT_MESSAGE:floor_buying_guide', 'TEXT_MESSAGE', 'What should I check first?', '',
+      { text: 'What should I check before buying a property in Noida?' }, 2),
+    chip('TEXT_MESSAGE:floor_budget_help', 'TEXT_MESSAGE', 'Help me set a budget', '',
+      { text: 'Help me work out a realistic budget and EMI.' }, 3),
+  ]
 }
 
 import { generateDynamicChips } from '../db/chipProvider'
@@ -467,16 +495,6 @@ export async function computeConversationState(
         chips = []
         break
     }
-
-    // Fallback: if results are empty but prose exists, extract entities from prose
-    if (results.length === 0 && chips.length === 0 && chatHistory.length > 0) {
-      const lastAssistantMsg = [...chatHistory].reverse().find(m => m.role === 'assistant')
-      if (lastAssistantMsg?.content) {
-        const { generateProseEntityChips } = await import('../ai/prompts/chips')
-        const proseChips = await generateProseEntityChips(lastAssistantMsg.content)
-        chips = proseChips
-      }
-    }
   }
 
   // Deduplicate by id (safety guard)
@@ -493,9 +511,16 @@ export async function computeConversationState(
   // Smart, predictive chip selection: max 3-4 for clean NotebookLM style
   // Priority ranking: critical clarifications (1) → high-value actions (2-3) → exploratory (4+)
   // Grouped chips rendered as separate sections; ungrouped chips follow predictive ranking
-  const hasGroups = chips.some(c => c.group)
   const preCapChips = chips.length
   chips = capChips(chips)
+
+  // FLOOR: the pipeline must never hand the UI an empty chip row.
+  // Every filter above is subtractive; this is the only additive step.
+  if (chips.length === 0) {
+    chips = capChips(getFloorChips(intent, results))
+    console.warn('[CONV_ENGINE] chip floor engaged', { stage, preCapChips, emitted: chips.length })
+  }
+
   if (stage === 'CLARIFYING') console.log('[CONV_ENGINE] CLARIFYING stage:', { missingFields, preCapChips, postCapChips: chips.length, labels: chips.map(c => c.label) })
   return { stage, thinking, chips, missingFields, confidence }
 }

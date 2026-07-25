@@ -9,6 +9,7 @@ import { extractIntent } from '../lib/ai/intent'
 import { IntentSchema, getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel, matchesProjectName } from '../lib/discovery'
 import type { Intent, ScoredProject } from '../lib/discovery'
 import { computeConfidence, buildClarificationOptions } from '../lib/discovery/confidence'
+import { findProjectsMentioned, buildProseChips } from '../lib/discovery/proseEntities'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
@@ -1060,6 +1061,31 @@ router.post('/', async (req: Request, res: Response) => {
           },
         })
       )
+
+      // ── Prose-entity chips ──────────────────────────────────────────────
+      // The model can name real projects in prose without the search tool returning
+      // cards. Without this, that turn renders zero chips (verified user report).
+      // Only DB-matched names become chips, so nothing is invented.
+      try {
+        if (fullText && projects.length === 0) {
+          const mentioned = await findProjectsMentioned(fullText, DEFAULT_CITY)
+          const proseChips = buildProseChips(mentioned)
+          if (proseChips.length > 0) {
+            const emitted = filterNewChipsWithFloor(currentSessionId, proseChips, 2)
+            emitted.forEach(c => markChipShown(currentSessionId, c.id))
+            send('ui_state', {
+              stage: 'RESEARCH',
+              thinking: '',
+              chips: emitted,
+              missingFields: [],
+              confidence: 'MEDIUM',
+            } as unknown as Record<string, unknown>)
+          }
+        }
+      } catch (e) {
+        console.warn('[CHAT] prose chip emit failed (non-fatal)', e)
+      }
+
       persistPromises.push(
         prisma.chatMessage.createMany({
           data: [
