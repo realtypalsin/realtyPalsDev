@@ -396,6 +396,7 @@ model ChatMessage {
   intent_snapshot Json?
   created_at      DateTime    @default(now())
   artifacts       Json?
+  chips           Json?       @default("[]")
   session         ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
   @@index([session_id, created_at])
@@ -464,9 +465,24 @@ model CallbackRequest {
   user_id      String?
   guest_token  String?
   status       String   @default("new")
+
+  // Lead qualification — written by backend/src/routes/leads.ts on callback create.
+  lead_score        Float?
+  lead_tier         String? // "HOT" | "WARM" | "COLD"
+  intent_tier       String? // "immediate" | "1-3-months" | "exploring"
+  loan_pre_approved Boolean?
+  ai_summary        String?
+  consent_given     Boolean?
+  projects_saved    Int?     @default(0)
+  projects_viewed   Int?     @default(0)
+  budget_min_cr     Float?
+  budget_max_cr     Float?
+
   created_at   DateTime @default(now())
 
   @@index([project_slug])
+  @@index([lead_tier])
+  @@index([created_at])
   @@map("callback_requests")
 }
 
@@ -1043,4 +1059,20 @@ model BuilderTheme {
   @@index([builder_id])
   @@index([active_from, active_until])
   @@map("builder_themes")
+}
+
+// ──────────────────────────────────────────────────────────────
+// SHAREABLE SHORTLISTS
+// ──────────────────────────────────────────────────────────────
+
+model SharedShortlist {
+  id            String   @id @default(uuid())
+  project_slugs String[] @default([])
+  created_at    DateTime @default(now())
+  // 30-day TTL is applied by the database default, so share.ts need not supply it.
+  expires_at    DateTime @default(dbgenerated("(now() + interval '30 days')"))
+
+  @@index([created_at])
+  @@index([expires_at])
+  @@map("shared_shortlists")
 }
