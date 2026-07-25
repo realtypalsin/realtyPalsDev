@@ -448,7 +448,10 @@ export default function OverviewTab({
                   connections.map((c, i) => (
                     <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800/20 last:border-0 text-[13px] font-semibold text-gray-700 dark:text-gray-300">
                       <span>{c.name}</span>
-                      <span className="text-[#c47860] tabular-nums">{c.distance_km != null ? `${c.distance_km} km` : 'At Doorstep'}</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[#c47860] tabular-nums">{c.distance_km != null ? `${c.distance_km} km` : 'At Doorstep'}</span>
+                        {c.data_source === 'estimated' && <span className="text-[11px] text-gray-500 dark:text-gray-400 font-normal">(est.)</span>}
+                      </div>
                     </div>
                   ))
                 ) : (

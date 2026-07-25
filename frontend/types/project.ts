@@ -141,6 +141,7 @@ export interface ConnSummary {
 
   name: string
   distance_km?: number | null
+  data_source?: 'brochure' | 'google' | 'estimated' | 'manual' | null
 }
 
 export interface BuilderDetail {
@@ -208,7 +209,7 @@ export interface ProjectDetail extends ProjectCard {
   total_units: number | null
   marketing_claims: string[]
   all_amenities: { name: string; category: string }[]
-  all_connectivity: { type: string; name: string; distance_km: number | null }[]
+  all_connectivity: { type: string; name: string; distance_km: number | null; data_source?: string | null }[]
   builder_detail: BuilderDetail
   dna:                    ProjectDnaPublic | null
   decision_profile:       DecisionProfilePublic | null

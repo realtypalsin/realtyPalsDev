@@ -22,6 +22,7 @@ export interface ConnSummary {
   type: 'metro' | 'road' | 'school' | 'hospital' | 'mall' | 'landmark' | 'airport' | 'university'
   name: string
   distance_km?: number | null
+  data_source?: 'brochure' | 'google' | 'estimated' | 'manual' | null
 }
 
 export interface ProjectCard {
@@ -95,7 +96,7 @@ export function toProjectCard(p: any): ProjectCard {
   const top_connectivity: ConnSummary[] = []
   for (const type of CONN_PRIORITY) {
     const found = p.connectivity.find((c: any) => c.type === type)
-    if (found) top_connectivity.push({ type: found.type, name: found.name, distance_km: found.distance_km })
+    if (found) top_connectivity.push({ type: found.type, name: found.name, distance_km: found.distance_km, data_source: found.data_source })
   }
 
   return {

@@ -256,7 +256,7 @@ export function toProjectCard(p: {
     price_is_estimated?: boolean | null
   }>
   amenities: Array<{ name: string; category: string }>
-  connectivity: Array<{ type: string; name: string; distance_km: number | null }>
+  connectivity: Array<{ type: string; name: string; distance_km: number | null; data_source?: string | null }>
   images: Array<{
     id: string
     url: string
@@ -293,8 +293,8 @@ export function toProjectCard(p: {
 
   const top_connectivity: ConnSummary[] = []
   for (const type of CONN_PRIORITY) {
-    const found = p.connectivity.find((c: { type: string; name: string; distance_km: number | null }) => c.type === type)
-    if (found) top_connectivity.push({ type: found.type as any, name: found.name, distance_km: found.distance_km })
+    const found = p.connectivity.find((c: { type: string; name: string; distance_km: number | null; data_source?: string | null }) => c.type === type)
+    if (found) top_connectivity.push({ type: found.type as any, name: found.name, distance_km: found.distance_km, data_source: (found.data_source as any) })
   }
 
   return {
