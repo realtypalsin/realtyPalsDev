@@ -467,6 +467,16 @@ export async function computeConversationState(
         chips = []
         break
     }
+
+    // Fallback: if results are empty but prose exists, extract entities from prose
+    if (results.length === 0 && chips.length === 0 && chatHistory.length > 0) {
+      const lastAssistantMsg = [...chatHistory].reverse().find(m => m.role === 'assistant')
+      if (lastAssistantMsg?.content) {
+        const { generateProseEntityChips } = await import('../ai/prompts/chips')
+        const proseChips = await generateProseEntityChips(lastAssistantMsg.content)
+        chips = proseChips
+      }
+    }
   }
 
   // Deduplicate by id (safety guard)
