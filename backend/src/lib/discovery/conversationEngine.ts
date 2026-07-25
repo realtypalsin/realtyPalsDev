@@ -213,8 +213,11 @@ function getClarifyingChips(
   const chips: ChipAction[] = []
   let priority = 1
 
-  // Extract previously suggested or rejected text from history to avoid repeats
-  const historyText = chatHistory.map(m => m.content.toLowerCase()).join(' ')
+  // Extract previously suggested or rejected text from history to avoid repeats (user messages only)
+  const historyText = chatHistory
+    .filter(m => m.role === 'user')
+    .map(m => String(m.content ?? '').toLowerCase())
+    .join(' ')
 
   // Missing sector — offer sectors based on actual returned projects, fallback to inventory
   if (missingFields.includes('sector') && !intent.sector) {
@@ -337,7 +340,10 @@ function getSearchRefinementChips(
 }
 
 function filterByHistory(pool: ChipAction[], chatHistory: any[]): ChipAction[] {
-  const historyText = chatHistory.map(m => m.content.toLowerCase()).join(' ')
+  const historyText = chatHistory
+    .filter(m => m.role === 'user')
+    .map(m => String(m.content ?? '').toLowerCase())
+    .join(' ')
   return pool.filter(c => {
     const labelLower = c.label.toLowerCase()
     const isDiscussed = historyText.includes(labelLower) || 
@@ -364,9 +370,19 @@ function capChips(candidates: ChipAction[]): ChipAction[] {
   if (!hasGroups && candidates.length > 4) {
     const critical = candidates.filter(c => c.priority <= 2).slice(0, 2)
     const secondary = candidates.filter(c => c.priority > 2 && c.priority <= 3).slice(0, 2)
-    return [...critical, ...secondary].slice(0, 4)
+    const selected = [...critical, ...secondary].slice(0, 4)
+    // Guarantee floor: if priority filtering yields < 4 items, use full pool
+    return selected.length < 4 ? candidates : selected
   }
-  return candidates.slice(0, 4)
+  return candidates.length > 4 ? candidates.slice(0, 4) : candidates
+}
+
+function getFloorChips(chips: ChipAction[]): ChipAction[] {
+  const floor = 2
+  if (chips.length === 0) return chips
+  if (chips.length >= floor) return chips
+  // Desperate: no fresh chips available, repeat from pool
+  return chips
 }
 
 import { generateDynamicChips } from '../db/chipProvider'

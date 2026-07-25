@@ -111,8 +111,11 @@ export async function generateDynamicChips(
     coreChips.push(chip(`TEXT_MESSAGE:tell_more:${pIds}`, 'TEXT_MESSAGE', 'Tell me more', '', { actionPrefix: 'Tell me more about', projects: projectsList }, 1))
   }
 
-  // Filter out any chips that were already discussed
-  const historyText = chatHistory.map((m: any) => m.content.toLowerCase()).join(' ')
+  // Filter out any chips that were already discussed (user messages only)
+  const historyText = chatHistory
+    .filter((m: any) => m?.role === 'user')
+    .map((m: any) => String(m.content ?? '').toLowerCase())
+    .join(' ')
   const filteredCoreChips = coreChips.filter(c => {
     const labelLower = c.label.toLowerCase()
     const prefixLower = (c.payload as any)?.actionPrefix?.toLowerCase()
