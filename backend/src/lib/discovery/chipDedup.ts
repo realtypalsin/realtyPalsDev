@@ -69,3 +69,19 @@ export async function persistToDb(sessionId: string): Promise<void> {
     console.warn('[chipDedup] DB persist failed', e)
   }
 }
+
+/**
+ * Soft dedup: prefer unseen chips, but never starve the UI.
+ * If filtering leaves fewer than `floor` chips, return the original set —
+ * a repeated chip is strictly better than a dead chip row.
+ */
+export function filterNewChipsWithFloor<T extends { id: string }>(
+  sessionId: string,
+  chips: T[],
+  floor = 2,
+): T[] {
+  if (chips.length === 0) return chips
+  const fresh = filterNewChips(sessionId, chips)
+  if (fresh.length >= Math.min(floor, chips.length)) return fresh
+  return chips
+}

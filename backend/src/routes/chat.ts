@@ -34,7 +34,7 @@ import {
   trackPromotionalClick
 } from '../lib/analytics/tracking'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
-import { filterNewChips, markChipShown, hydrateFromDb, persistToDb } from '../lib/discovery/chipDedup'
+import { filterNewChips, filterNewChipsWithFloor, markChipShown, hydrateFromDb, persistToDb } from '../lib/discovery/chipDedup'
 import { isOverDailyBudget } from '../lib/ai/cost'
 
 const router = Router()
@@ -300,7 +300,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   // Check per-user daily AI cost budget
-  if (await isOverDailyBudget(userId)) {
+  if (await isOverDailyBudget(userId ?? null)) {
     res.status(429).json({ error: "You've reached today's usage limit. Please try again tomorrow." })
     return
   }
@@ -467,7 +467,7 @@ router.post('/', async (req: Request, res: Response) => {
     // For other stages, deduplicate to avoid showing the same chip twice
     let preChips = preSearchUiState.chips
     if (preSearchUiState.stage !== 'CLARIFYING') {
-      preChips = filterNewChips(currentSessionId, preSearchUiState.chips)
+      preChips = filterNewChipsWithFloor(currentSessionId, preSearchUiState.chips, 2)
       preChips.forEach(c => markChipShown(currentSessionId, c.id))
     }
     console.log('[CHAT] preSearchUiState chips:', preSearchUiState.chips.length, 'after', preSearchUiState.stage === 'CLARIFYING' ? 'CLARIFYING (no dedup)' : 'dedup', preChips.map(c => c.label))
@@ -638,7 +638,7 @@ router.post('/', async (req: Request, res: Response) => {
     )
 
     // Deduplicate chips based on session
-    const postChips = filterNewChips(currentSessionId, postSearchUiState.chips)
+    const postChips = filterNewChipsWithFloor(currentSessionId, postSearchUiState.chips, 2)
     postChips.forEach(c => markChipShown(currentSessionId, c.id))
     postSearchUiState.chips = postChips
 
