@@ -7,7 +7,9 @@ import {
   ImageOff, ShieldOff, Terminal, Plus
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import UniversalLoader from '@/components/ui/universal-loader'
 import { API_BASE } from '@/lib/env'
+import { adminFetch } from '@/lib/adminFetch'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell
@@ -27,13 +29,13 @@ interface Stats {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   async function load() {
     setLoading(true)
-    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null
-    const res  = await fetch(`${API_BASE}/admin/projects`, {
-      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-    })
+    const res = await adminFetch('/admin/projects')
     const data = await res.json()
     const projects = data.projects ?? []
     const builderCounts: Record<string, number> = {}
@@ -89,11 +91,7 @@ export default function AdminDashboard() {
 
       {/* KPI Row */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="bg-white rounded-xl p-5 h-[120px] shadow-[0_1px_2px_rgba(0,0,0,0.02)] border border-zinc-200/50" />
-          ))}
-        </div>
+        <UniversalLoader variant="skeleton-list" rows={8} />
       ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Total Projects */}
@@ -156,7 +154,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="h-[280px] w-full">
-            {stats ? (
+            {stats && mounted ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.topBuilders} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f4f4f5" />
@@ -193,7 +191,7 @@ export default function AdminDashboard() {
           <p className="text-sm text-zinc-500 mt-1 mb-8">Properties by construction status.</p>
           
           <div className="flex-1 min-h-[220px] relative flex flex-col items-center justify-center">
-            {stats ? (
+            {stats && mounted ? (
               <>
                 <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none drop-shadow-sm">
                   <span className="text-4xl font-black text-zinc-950 tracking-tighter leading-none">{stats.total}</span>

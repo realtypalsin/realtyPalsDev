@@ -8,6 +8,7 @@ import AnalyticsNav from '@/components/admin/AnalyticsNav'
 import { Skeleton } from '@/components/ui/skeleton'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import { adminFetch } from '@/lib/adminFetch'
 
 interface PropertyEngagement {
   projectId: string
@@ -26,7 +27,7 @@ export default function PropertiesAnalytics() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/admin/analytics/properties`, { headers: adminAuthHeaders() })
+      const res = await adminFetch('/admin/analytics/properties')
       const data = await res.json()
       setProperties(data.properties || [])
     } catch (err) {

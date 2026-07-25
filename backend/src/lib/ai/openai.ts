@@ -79,9 +79,13 @@ export async function streamWithOpenAI(
   userId?: string | null,
   sessionId?: string | null,
 ): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  const isGitHubPat = apiKey?.startsWith('github_pat_');
+  const baseURL = process.env.OPENAI_BASE_URL || (isGitHubPat ? 'https://models.inference.ai.azure.com' : undefined);
+
   const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    baseURL: process.env.OPENAI_BASE_URL || undefined,
+    apiKey,
+    baseURL,
     // No SDK-level timeout — inactivity timer owns all phases including body reads.
     // No retries — a retry on a stalled stream extends the hang; inactivity timer handles it.
     maxRetries: 0,

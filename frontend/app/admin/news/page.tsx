@@ -4,20 +4,25 @@ import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Clock, CheckCircle2, XCircle, Eye } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { API_BASE } from '@/lib/env'
-import { adminAuthHeaders } from '@/lib/authedFetch'
+import { adminFetch } from '@/lib/adminFetch'
 import { Skeleton } from '@/components/ui/skeleton'
 
+// Mirrors `model BuilderNews` / `enum NewsStatus` in frontend/prisma/schema.prisma.
+// There are no `category`, `views`, `approved_at` or `rejection_reason` columns —
+// use link_type, published_at and approval_notes instead.
 interface BuilderNews {
   id: string
   title: string
   description: string
-  category: 'project_update' | 'achievement' | 'event' | 'promo'
-  image_url?: string
-  status: 'draft' | 'pending_approval' | 'approved' | 'rejected'
-  views: number
+  image_url?: string | null
+  link_type?: string | null
+  link_target?: string | null
+  status: 'draft' | 'pending_approval' | 'published' | 'archived' | 'rejected'
+  approval_notes?: string | null
+  run_as_promo: boolean
   created_at: string
-  approved_at?: string
-  rejection_reason?: string
+  published_at?: string | null
+  builder?: { id: string; name: string; slug: string } | null
 }
 
 export default function BuilderNewsPage() {
@@ -32,7 +37,7 @@ export default function BuilderNewsPage() {
 
   const fetchNews = async () => {
     try {
-      const res = await fetch(`${API_BASE}/admin/news`, { headers: adminAuthHeaders() })
+      const res = await adminFetch('/admin/news')
       if (res.ok) {
         const data = await res.json()
         setNews(data.news || [])
@@ -45,13 +50,11 @@ export default function BuilderNewsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this news?')) return
+    // Backend archives (sets archived_at) rather than hard-deleting.
+    if (!confirm('Archive this news post?')) return
 
     try {
-      const res = await fetch(`${API_BASE}/admin/news/${id}`, { 
-        method: 'DELETE',
-        headers: adminAuthHeaders()
-      })
+      const res = await adminFetch(`/admin/news/${id}`, { method: 'DELETE' })
       if (res.ok) {
         setNews(news.filter(n => n.id !== id))
       }
@@ -62,7 +65,7 @@ export default function BuilderNewsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved':
+      case 'published':
         return 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400'
       case 'pending_approval':
         return 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
@@ -75,7 +78,7 @@ export default function BuilderNewsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved':
+      case 'published':
         return <CheckCircle2 className="w-4 h-4" />
       case 'pending_approval':
         return <Clock className="w-4 h-4" />
@@ -170,20 +173,24 @@ export default function BuilderNewsPage() {
                   <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{item.description}</p>
 
                   <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    <span className="inline-block px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded text-xs font-medium">
-                      {item.category.replace('_', ' ')}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      {item.views} views
-                    </div>
+                    {item.builder?.name && (
+                      <span className="inline-block px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded text-xs font-medium">
+                        {item.builder.name}
+                      </span>
+                    )}
+                    {item.published_at && (
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        published {formatDistanceToNow(new Date(item.published_at), { addSuffix: true })}
+                      </div>
+                    )}
                     <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
                   </div>
 
-                  {item.status === 'rejected' && item.rejection_reason && (
+                  {item.status === 'rejected' && item.approval_notes && (
                     <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded">
                       <p className="text-sm text-red-700 dark:text-red-400">
-                        <strong>Rejection reason:</strong> {item.rejection_reason}
+                        <strong>Review notes:</strong> {item.approval_notes}
                       </p>
                     </div>
                   )}
@@ -230,7 +237,9 @@ function NewsForm({
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: 'project_update' as const,
+    // link_type is the real BuilderNews column; there is no `category` column.
+    link_type: 'project' as string,
+    link_target: '',
     image_url: ''
   })
 
@@ -279,15 +288,21 @@ function NewsForm({
       />
 
       <select
-        value={formData.category}
-        onChange={e => setFormData({ ...formData, category: e.target.value as any })}
+        value={formData.link_type}
+        onChange={e => setFormData({ ...formData, link_type: e.target.value })}
         className="w-full px-3 py-2 border dark:border-slate-700 rounded dark:bg-slate-800"
       >
-        <option value="project_update">Project Update</option>
-        <option value="achievement">Achievement</option>
-        <option value="event">Event</option>
-        <option value="promo">Promotion</option>
+        <option value="project">Links to a project</option>
+        <option value="external_url">Links to an external URL</option>
       </select>
+
+      <input
+        type="text"
+        placeholder={formData.link_type === 'project' ? 'Project slug' : 'External URL'}
+        value={formData.link_target}
+        onChange={e => setFormData({ ...formData, link_target: e.target.value })}
+        className="w-full px-3 py-2 border dark:border-slate-700 rounded dark:bg-slate-800"
+      />
 
       <input
         type="url"

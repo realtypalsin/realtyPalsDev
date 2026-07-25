@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import UniversalLoader from '@/components/ui/universal-loader'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Search, Plus, CheckCircle2, Clock, Zap, Trash2, Building2, ChevronRight, CornerDownLeft } from 'lucide-react'
 
 import { toast } from 'sonner'
+import { adminFetch } from '@/lib/adminFetch'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 
@@ -45,17 +47,18 @@ function ProjectThumbnail({ src, alt }: { src?: string | null, alt: string }) {
 }
 
 function quickHealth(p: Project): { score: number; missing: string[] } {
-  const hasImage = (p.images && p.images.length > 0) || !!p.hero_image_url
+  const images = p.images || []
+  const unitTypes = p.unit_types || []
+  const hasImage = images.length > 0 || !!p.hero_image_url
   const checks = [
-    { ok: hasImage,                                        label: 'Hero image' },
-    { ok: !!p.rera_number,                                 label: 'RERA number' },
-    { ok: !!p.builder?.name,                               label: 'Builder' },
-    { ok: p.unit_types.length > 0,                         label: 'Unit types' },
-    { ok: p.unit_types.some(u => u.price_min_cr != null),  label: 'Pricing' },
+    { ok: hasImage, label: 'Hero image' },
+    { ok: !!p.rera_number, label: 'RERA number' },
+    { ok: !!p.builder?.name, label: 'Builder' },
+    { ok: unitTypes.length > 0, label: 'Unit types' },
+    { ok: unitTypes.some(u => u.price_min_cr != null), label: 'Pricing' },
   ]
   const missing = checks.filter(c => !c.ok).map(c => c.label)
   return { score: checks.filter(c => c.ok).length, missing }
-
 }
 
 
@@ -66,28 +69,14 @@ const STATUS_MAP: Record<string, { label: string; chip: string; icon: typeof Che
 
 }
 
-function priceRange(units: UnitType[]): string {
-  const mins = units.map((u) => u.price_min_cr).filter((v): v is number => v !== null)
-  const maxs = units.map((u) => u.price_max_cr).filter((v): v is number => v !== null)
+function priceRange(units: UnitType[] = []): string {
+  const safeUnits = units || []
+  const mins = safeUnits.map((u) => u.price_min_cr).filter((v): v is number => v !== null)
+  const maxs = safeUnits.map((u) => u.price_max_cr).filter((v): v is number => v !== null)
   if (!mins.length) return '—'
   const lo = Math.min(...mins)
   const hi = maxs.length ? Math.max(...maxs) : null
   return hi ? `₹${lo}–${hi} Cr` : `₹${lo}+ Cr`
-}
-
-function SkeletonRow() {
-  return (
-    <div className="flex items-center px-4 py-3 border-b border-zinc-100 gap-4">
-      <Skeleton className="w-8 h-8 rounded-md shrink-0" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-4 rounded w-1/3" />
-        <Skeleton className="h-3 rounded w-1/4" />
-      </div>
-      <Skeleton className="w-24 h-4 rounded shrink-0" />
-      <Skeleton className="w-16 h-4 rounded shrink-0" />
-      <Skeleton className="w-8 h-8 rounded-md shrink-0" />
-    </div>
-  )
 }
 
 export default function AdminProjects() {
@@ -104,7 +93,7 @@ export default function AdminProjects() {
   async function load(q = '') {
     setLoading(true)
     try {
-      const res  = await fetch(`${API_BASE}/admin/projects?q=${encodeURIComponent(q)}`, { headers: adminAuthHeaders() })
+      const res = await adminFetch(`/admin/projects?q=${encodeURIComponent(q)}`)
       const data = await res.json()
       setProjects(data.projects ?? [])
     } catch {
@@ -170,7 +159,7 @@ export default function AdminProjects() {
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
     setDeleting(id)
-    const promise = fetch(`${API_BASE}/admin/projects/${id}`, { method: 'DELETE', headers: adminAuthHeaders() })
+    const promise = adminFetch(`/admin/projects/${id}`, { method: 'DELETE' })
     
     toast.promise(promise, {
       loading: 'Deleting project...',
@@ -234,7 +223,7 @@ export default function AdminProjects() {
         {/* Table Body */}
         <div className="divide-y divide-zinc-100">
           {loading ? (
-            Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+            <div className="p-4"><UniversalLoader variant="skeleton-list" rows={10} /></div>
           ) : filtered.length === 0 ? (
             <div className="py-16 flex flex-col items-center justify-center text-center">
               <Building2 size={32} className="text-zinc-200 mb-3" />

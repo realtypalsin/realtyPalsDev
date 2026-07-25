@@ -157,10 +157,16 @@ export default function Sidebar({
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, []);
-
-  const closeMobile = () => setMobileOpen(false);
+  }, []);  const closeMobile = () => setMobileOpen(false);
   const grouped = groupSessionsByDate(sessions);
+
+  const handleFreshDiscovery = (e: React.MouseEvent) => {
+    e.preventDefault();
+    closeMobile();
+    onViewChange?.('discovery');
+    window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
+    router.push('/discover');
+  };
 
   return (
     <>
@@ -203,10 +209,15 @@ export default function Sidebar({
         <div className="group h-14 flex items-center justify-center border-b border-gray-100/50 dark:border-gray-800/50 w-full px-3 shrink-0 relative">
           {!isCollapsed ? (
             <>
-              <div className="flex flex-1 items-center justify-center transition-opacity duration-300">
+              <Link
+                href="/discover"
+                onClick={handleFreshDiscovery}
+                className="flex flex-1 items-center justify-center transition-opacity hover:opacity-80 cursor-pointer"
+                title="Start fresh discovery"
+              >
                 <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals Logo" width={140} height={32} className="object-contain block dark:hidden drop-shadow-sm" />
                 <Image src="/images/icons/ExpandedRealtyPalsWhite.png" alt="RealtyPals Logo" width={140} height={32} className="object-contain hidden dark:block drop-shadow-sm" />
-              </div>
+              </Link>
               <div className="absolute right-3 flex items-center justify-center">
                 <button
                   onClick={() => {
@@ -224,10 +235,15 @@ export default function Sidebar({
             </>
           ) : (
             <div className="relative w-full h-full flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
+              <Link
+                href="/discover"
+                onClick={handleFreshDiscovery}
+                className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 cursor-pointer"
+                title="Start fresh discovery"
+              >
                 <Image src="/images/icons/CollapsedRealtyPalsBlackSqLogo.png" alt="RealtyPals Logo" width={32} height={32} className="object-contain block dark:hidden drop-shadow-sm" />
                 <Image src="/images/icons/CollapsedRealtyPalsWhiteSqLogo.png" alt="RealtyPals Logo" width={32} height={32} className="object-contain hidden dark:block drop-shadow-sm" />
-              </div>
+              </Link>
               <button
                 onClick={onToggleCollapse}
                 className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-200"
@@ -237,7 +253,6 @@ export default function Sidebar({
               >
                 <PanelLeftOpen size={20} strokeWidth={1.5} />
               </button>
-
             </div>
           )}
         </div>

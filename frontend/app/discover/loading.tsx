@@ -1,3 +1,5 @@
+import UniversalLoader from '@/components/ui/universal-loader'
+
 export default function DiscoverLoading() {
   return (
     <div className="flex h-[100dvh] bg-[#E6E6E6] overflow-hidden">
@@ -17,13 +19,8 @@ export default function DiscoverLoading() {
         </div>
       </div>
       {/* Main content skeleton */}
-      <main className="flex-1 flex flex-col items-center justify-center gap-6 p-8">
-        <div className="w-16 h-16 rounded-2xl bg-gray-200/60 animate-pulse" />
-        <div className="space-y-3 w-full max-w-md">
-          <div className="h-5 w-3/4 mx-auto rounded-full bg-gray-200/60 animate-pulse" />
-          <div className="h-4 w-1/2 mx-auto rounded-full bg-gray-200/40 animate-pulse" />
-        </div>
-        <div className="mt-8 w-full max-w-2xl h-14 rounded-2xl bg-gray-200/50 animate-pulse" />
+      <main className="flex-1">
+        <UniversalLoader variant="skeleton-page" label="Opening your advisor…" />
       </main>
     </div>
   );

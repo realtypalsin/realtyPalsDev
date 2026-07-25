@@ -39,11 +39,6 @@ jest.mock('@/components/response/ResponseBlockRenderer', () => ({
   ),
 }));
 
-jest.mock('@/components/ChatLoader', () => ({
-  __esModule: true,
-  default: () => <div data-testid="chat-loader">Loading...</div>,
-}));
-
 jest.mock('@/lib/analytics', () => ({
   track: jest.fn(),
 }));

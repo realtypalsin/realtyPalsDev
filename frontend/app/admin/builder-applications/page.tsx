@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { CheckCircle2, Clock, XCircle, Search, Building2, Phone, Mail, Eye, MapPin, Calendar, ExternalLink, Users } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import { adminFetch } from '@/lib/adminFetch'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -14,7 +15,8 @@ interface BuilderApplication {
   email: string
   phone: string
   headquarters: string | null
-  status: 'pending' | 'approved' | 'rejected' | 'clarification_requested' | 'new'
+  // Matches `enum FormStatus` in frontend/prisma/schema.prisma.
+  status: 'new' | 'reviewing' | 'approved' | 'rejected' | 'clarification_requested'
   submitted_at: string
   cin?: string
   website?: string
@@ -29,13 +31,13 @@ export default function BuilderApplicationsPage() {
   const [applications, setApplications] = useState<BuilderApplication[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  const [filter, setFilter] = useState<'all' | 'new' | 'reviewing' | 'approved' | 'rejected'>('all')
   const [selectedApp, setSelectedApp] = useState<BuilderApplication | null>(null)
 
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/builder-applications?status=all`, { headers: adminAuthHeaders() })
+      const res = await adminFetch('/builder-applications')
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
       setApplications(data.applications || [])
@@ -50,9 +52,9 @@ export default function BuilderApplicationsPage() {
 
   async function handleUpdateStatus(id: string, newStatus: string) {
     try {
-      const res = await fetch(`${API_BASE}/builder-applications/${id}`, {
+      const res = await adminFetch(`/builder-applications/${id}`, {
         method: 'PATCH',
-        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       })
       if (!res.ok) throw new Error('Update failed')
@@ -87,7 +89,7 @@ export default function BuilderApplicationsPage() {
       {/* Filters and Search */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex bg-slate-100/50 p-1 rounded-xl">
-          {(['all', 'pending', 'approved', 'rejected'] as const).map(status => (
+          {(['all', 'new', 'reviewing', 'approved', 'rejected'] as const).map(status => (
             <button
               key={status}
               onClick={() => setFilter(status)}
@@ -204,7 +206,7 @@ export default function BuilderApplicationsPage() {
                   }`}>
                     {app.status === 'approved' && <CheckCircle2 size={12} />}
                     {app.status === 'rejected' && <XCircle size={12} />}
-                    {app.status === 'pending' && <Clock size={12} />}
+                    {(app.status === 'new' || app.status === 'reviewing') && <Clock size={12} />}
                     {app.status.toUpperCase()}
                   </span>
                 </div>
@@ -401,7 +403,7 @@ export default function BuilderApplicationsPage() {
 
             {/* Sticky Action Footer */}
             <div className="p-6 bg-white border-t border-slate-100 shrink-0">
-              {selectedApp.status === 'pending' || selectedApp.status === 'new' ? (
+              {selectedApp.status === 'new' || selectedApp.status === 'reviewing' ? (
                 <div className="flex items-center justify-between gap-6">
                   <div className="flex-1">
                     <h4 className="text-sm font-semibold text-slate-900">Decision Required</h4>

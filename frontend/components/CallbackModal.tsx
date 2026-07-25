@@ -33,8 +33,8 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
     setSubmitting(true);
     setError(null);
     try {
-      // Get guestToken from localStorage for anonymous users
-      const guestToken = typeof window !== 'undefined' ? localStorage.getItem('realtypals_guest_token') || localStorage.getItem('guest_token') : null
+      // Get guestToken from localStorage for anonymous users (convert null to undefined for Zod validation)
+      const guestToken = typeof window !== 'undefined' ? (localStorage.getItem('realtypals_guest_token') || localStorage.getItem('guest_token') || undefined) : undefined
 
       const res = await fetch(`${API_BASE}/leads/callback`, {
         method: 'POST',
@@ -48,7 +48,7 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
           project_id: project.id,
           project_slug: project.slug,
           project_name: project.name,
-          guestToken,
+          ...(guestToken ? { guestToken } : {}),
         }),
       });
       if (!res.ok) throw new Error('callback request failed');

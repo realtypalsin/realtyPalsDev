@@ -64,22 +64,21 @@ router.post('/callback', async (req: Request, res: Response) => {
     return
   }
 
-  const { name, phone, projectName, project_name, projectSlug, project_slug, session_id, intent_tier, loan_status } = parsed.data
+  const { name, phone, projectName, project_name, projectSlug, project_slug, session_id, intent_tier, loan_status, consent_given } = parsed.data
 
   // Support both camelCase and snake_case from frontend
   const finalProjectName = projectName || project_name
   const finalProjectSlug = projectSlug || project_slug
 
-  // Get project and builder info for analytics
+  // Get project and builder info for analytics.
+  // unit_types is needed to derive the project's price range — Project itself only
+  // stores price_min_cr, so the max has to come from its units.
   const project: any = finalProjectSlug ? await prisma.project.findUnique({
     where: { slug: finalProjectSlug },
+    include: { unit_types: { select: { price_min_cr: true, price_max_cr: true } } },
   }) : null
 
-  const cb = await prisma.callbackRequest.create({
-    data: { name, phone, project_name: finalProjectName, project_slug: finalProjectSlug, user_id: userId, guest_token: guestToken },
-  })
-
-  // Load buyer profile once, reuse for both BuilderLead and webhook enrichment
+  // Load buyer profile once, reuse for the persisted lead and the webhook payload
   const profile = await loadLeadProfile(userId, guestToken)
 
   // ─── ANALYTICS: Track conversion
@@ -106,13 +105,19 @@ router.post('/callback', async (req: Request, res: Response) => {
   // Enrich lead with the buyer profile we already have, so builders get a qualified lead.
   const loanPreApproved = loan_status === 'pre_approved' || profile.loan_pre_approved === true
 
-  // Check if project price fits buyer budget
+  // Check if project price fits buyer budget.
+  // Project has no price_range_min/price_range_max columns — the range is derived
+  // from its unit_types, falling back to Project.price_min_cr for the lower bound.
   let projectFitsBudget = false
   if (project && profile.budget_cr) {
-    const { price_range_min, price_range_max } = project
-    if (price_range_min && price_range_max && profile.budget_cr.min && profile.budget_cr.max) {
+    const unitMins = (project.unit_types ?? []).map((u: any) => u.price_min_cr).filter((v: unknown): v is number => typeof v === 'number')
+    const unitMaxes = (project.unit_types ?? []).map((u: any) => u.price_max_cr).filter((v: unknown): v is number => typeof v === 'number')
+    const priceRangeMin = unitMins.length ? Math.min(...unitMins) : project.price_min_cr ?? null
+    const priceRangeMax = unitMaxes.length ? Math.max(...unitMaxes) : null
+
+    if (priceRangeMin !== null && priceRangeMax !== null && profile.budget_cr.min && profile.budget_cr.max) {
       // Overlap: buyer budget intersects project price range
-      projectFitsBudget = profile.budget_cr.max >= price_range_min && profile.budget_cr.min <= price_range_max
+      projectFitsBudget = profile.budget_cr.max >= priceRangeMin && profile.budget_cr.min <= priceRangeMax
     }
   }
 
@@ -128,6 +133,30 @@ router.post('/callback', async (req: Request, res: Response) => {
     viewedCount: profile.engagement?.projects_viewed,
     sectorMatches,
   })
+
+  // Persist the qualified lead. Previously the score was computed and forwarded to
+  // the webhook only, so the admin lead views and /admin/stats had nothing to read.
+  const cb = await prisma.callbackRequest.create({
+    data: {
+      name,
+      phone,
+      project_name: finalProjectName,
+      project_slug: finalProjectSlug,
+      user_id: userId,
+      guest_token: guestToken,
+      intent_tier: intent_tier ?? null,
+      loan_pre_approved: loanPreApproved,
+      consent_given: consent_given ?? false,
+      projects_saved: profile.engagement?.projects_saved ?? 0,
+      projects_viewed: profile.engagement?.projects_viewed ?? 0,
+      budget_min_cr: profile.budget_cr?.min ?? null,
+      budget_max_cr: profile.budget_cr?.max ?? null,
+      lead_score: score,
+      lead_tier: tier,
+      ai_summary: profile.ai_summary ?? null,
+    },
+  })
+
   // Send ONLY what user explicitly filled + qualified metadata
   // Do NOT spread user preferences (preferred_sector, etc) — send project's actual sector
   fireWebhook('callback_requested', {
@@ -293,17 +322,14 @@ router.post('/webhook', async (req: Request, res: Response) => {
 // GET /metrics — lead funnel analytics for dashboard
 router.get('/metrics', async (req: Request, res: Response) => {
   try {
-    const callbackCount = await (prisma.builderLead as any).count({
-      where: { lead_type: 'callback_requested' },
-    }).catch(() => 0)
-    const visitCount = await prisma.siteVisitRequest.count()
-    const scoreAgg = await (prisma.builderLead as any).aggregate({
-      _avg: { lead_score: true },
-      where: { lead_type: 'callback_requested' },
-    }).catch(() => ({ _avg: { lead_score: 0 } }))
-    const hotCount = await (prisma.builderLead as any).count({
-      where: { lead_type: 'callback_requested', lead_tier: 'HOT' },
-    }).catch(() => 0)
+    // Scores live on CallbackRequest, not BuilderLead (which has no score columns —
+    // querying it returned 0 for every metric via the swallowed .catch()).
+    const [callbackCount, visitCount, scoreAgg, hotCount] = await Promise.all([
+      prisma.callbackRequest.count(),
+      prisma.siteVisitRequest.count(),
+      prisma.callbackRequest.aggregate({ _avg: { lead_score: true } }),
+      prisma.callbackRequest.count({ where: { lead_tier: 'HOT' } }),
+    ])
     const conversionRate = callbackCount > 0 ? (visitCount / callbackCount) * 100 : 0
 
     res.json({

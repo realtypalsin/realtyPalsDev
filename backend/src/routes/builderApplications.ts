@@ -3,7 +3,11 @@ import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { requireAdmin } from '../lib/adminAuth'
-import { FormStatus } from '@prisma/client'
+
+// Mirrors `enum FormStatus` in frontend/prisma/schema.prisma. Do not invent values —
+// the column is typed by the enum, so an unknown value is rejected by Prisma.
+const FormStatusValues = ['new', 'reviewing', 'approved', 'rejected', 'clarification_requested'] as const
+type FormStatus = (typeof FormStatusValues)[number]
 
 const router = Router()
 
@@ -14,7 +18,7 @@ router.get('/', requireAdmin, async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1
     const limit = 20
 
-    const statusFilter = status && status !== 'all' && Object.values(FormStatus).includes(status as FormStatus)
+    const statusFilter = status && status !== 'all' && FormStatusValues.includes(status as FormStatus)
       ? { status: status as FormStatus }
       : undefined
 

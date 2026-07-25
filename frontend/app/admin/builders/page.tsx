@@ -3,10 +3,11 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { Plus, Building2, Globe, CheckCircle2, Pencil, X, Save, Loader2, Search, CornerDownLeft } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import UniversalLoader from '@/components/ui/universal-loader'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { API_BASE } from '@/lib/env'
-import { adminAuthHeaders } from '@/lib/authedFetch'
+import { adminFetch } from '@/lib/adminFetch'
 
 interface Builder {
   id: string
@@ -110,22 +111,6 @@ function BuilderFormFields({
   )
 }
 
-function SkeletonRow() {
-  return (
-    <div className="flex items-center px-4 py-3 border-b border-zinc-100 gap-4">
-      <Skeleton className="w-8 h-8 rounded-md shrink-0" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-4 rounded w-1/3" />
-        <Skeleton className="h-3 rounded w-1/4" />
-      </div>
-      <Skeleton className="w-24 h-4 rounded shrink-0" />
-      <Skeleton className="w-32 h-4 rounded shrink-0" />
-      <Skeleton className="w-16 h-4 rounded shrink-0" />
-      <Skeleton className="w-16 h-4 rounded-md shrink-0" />
-    </div>
-  )
-}
-
 export default function AdminBuilders() {
   const [builders, setBuilders]     = useState<Builder[]>([])
   const [loading, setLoading]       = useState(true)
@@ -144,7 +129,7 @@ export default function AdminBuilders() {
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/builders`, { headers: adminAuthHeaders() })
+    adminFetch('/admin/builders')
       .then((r) => r.json())
       .then((d) => { setBuilders(d.builders ?? []) })
       .catch(() => toast.error('Failed to load builders'))
@@ -210,9 +195,9 @@ export default function AdminBuilders() {
     e.preventDefault()
     setSaving(true)
     try {
-      const res = await fetch(`${API_BASE}/admin/builders`, {
+      const res = await adminFetch('/admin/builders', {
         method: 'POST',
-        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: addForm.name,
           slug: addForm.slug,
@@ -260,9 +245,9 @@ export default function AdminBuilders() {
   async function saveEdit(id: string) {
     setEditSaving(true)
     try {
-      const res = await fetch(`${API_BASE}/admin/builders/${id}`, {
+      const res = await adminFetch(`/admin/builders/${id}`, {
         method: 'PATCH',
-        headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: editForm.name,
           slug: editForm.slug,
@@ -361,7 +346,7 @@ export default function AdminBuilders() {
         {/* Table Body */}
         <div className="divide-y divide-zinc-100">
           {loading ? (
-            Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+            <div className="p-4"><UniversalLoader variant="skeleton-list" rows={10} /></div>
           ) : filtered.length === 0 ? (
             <div className="py-16 flex flex-col items-center justify-center text-center">
               <Building2 size={32} className="text-zinc-200 mb-3" />

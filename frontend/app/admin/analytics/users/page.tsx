@@ -7,6 +7,7 @@ import InfoTooltip from '@/components/InfoTooltip'
 import AnalyticsNav from '@/components/admin/AnalyticsNav'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import { adminFetch } from '@/lib/adminFetch'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -38,7 +39,7 @@ export default function UsersAnalytics() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/admin/analytics/users`, { headers: adminAuthHeaders() })
+      const res = await adminFetch('/admin/analytics/users')
       const users = await res.json()
       setData(users)
     } catch (err) {

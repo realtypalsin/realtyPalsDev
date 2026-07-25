@@ -21,7 +21,9 @@ export async function recordUsage(args: {
   const p = PRICE[args.model] ?? { in: 0, out: 0 }
   const cost = (args.promptTokens * p.in + args.completionTokens * p.out) / 1_000_000
   try {
-    await prisma.aiUsageEvent.create({
+    const aiUsageEventModel = (prisma as any).aiUsageEvent
+    if (!aiUsageEventModel) return
+    await aiUsageEventModel.create({
       data: {
         user_id: args.userId ?? null,
         session_id: args.sessionId ?? null,
@@ -45,10 +47,17 @@ export async function isOverDailyBudget(userId: string | null): Promise<boolean>
   if (!userId) return false // anonymous users are already IP-rate-limited globally
   const since = new Date()
   since.setHours(0, 0, 0, 0)
-  const agg = await prisma.aiUsageEvent.aggregate({
-    _sum: { cost_usd: true },
-    where: { user_id: userId, created_at: { gte: since } },
-  })
-  const spent = Number(agg._sum.cost_usd ?? 0)
-  return spent >= DAILY_USER_LIMIT_USD
+  try {
+    const aiUsageEventModel = (prisma as any).aiUsageEvent
+    if (!aiUsageEventModel) return false
+    const agg = await aiUsageEventModel.aggregate({
+      _sum: { cost_usd: true },
+      where: { user_id: userId, created_at: { gte: since } },
+    })
+    const spent = Number(agg?._sum?.cost_usd ?? 0)
+    return spent >= DAILY_USER_LIMIT_USD
+  } catch (err) {
+    console.error('[cost] isOverDailyBudget failed:', err instanceof Error ? err.message : err)
+    return false
+  }
 }

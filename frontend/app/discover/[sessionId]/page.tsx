@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import DiscoveryContent from '@/components/DiscoveryContent';
 import ChatErrorBoundary from '@/components/ChatErrorBoundary';
+import UniversalLoader from '@/components/ui/universal-loader';
 import { getSupabaseClient } from '@/lib/supabase';
 import { migrateSessions } from '@/lib/backend-api';
 
@@ -119,7 +120,7 @@ export default function SessionDiscoverPage() {
       />
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
         <ChatErrorBoundary>
-          <Suspense fallback={<div className="flex-1 flex items-center justify-center text-gray-500">Loading...</div>}>
+          <Suspense fallback={<div className="flex-1"><UniversalLoader variant="skeleton-page" label="Loading chat…" /></div>}>
             <DiscoveryContent
               key={activeSessionId ?? 'new'}
               initialSessionId={activeSessionId}

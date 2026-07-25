@@ -1,24 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Phone, Mail } from 'lucide-react'
+import { Phone } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { API_BASE } from '@/lib/env'
-import { adminAuthHeaders } from '@/lib/authedFetch'
+import { adminFetch } from '@/lib/adminFetch'
 import { Skeleton } from '@/components/ui/skeleton'
 
+// Mirrors `model CallbackRequest` in frontend/prisma/schema.prisma. There are no
+// email, lead_type, project_id, follow_up_date or notes columns on this table.
 interface Lead {
   id: string
   name: string
   phone: string
-  email?: string
-  lead_type: 'callback_requested' | 'site_visit_requested'
-  project_id: string
-  project_name: string
+  project_name: string | null
+  project_slug: string | null
   status: 'new' | 'contacted' | 'qualified' | 'lost'
+  lead_tier: 'HOT' | 'WARM' | 'COLD' | null
+  lead_score: number | null
+  intent_tier: string | null
   created_at: string
-  follow_up_date?: string
-  notes?: string
 }
 
 export default function BuilderLeadsPage() {
@@ -34,7 +35,7 @@ export default function BuilderLeadsPage() {
 
   const fetchLeads = async () => {
     try {
-      const res = await fetch(`${API_BASE}/admin/leads?status=${filter}`, { headers: adminAuthHeaders() })
+      const res = await adminFetch(`/admin/leads?status=${filter}`)
       if (res.ok) {
         const data = await res.json()
         setLeads(data.leads || [])
@@ -48,11 +49,10 @@ export default function BuilderLeadsPage() {
 
   const updateLeadStatus = async (leadId: string, newStatus: string) => {
     try {
-      const res = await fetch(`${API_BASE}/admin/leads/${leadId}`, {
+      const res = await adminFetch(`/admin/leads/${leadId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          ...adminAuthHeaders()
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ status: newStatus })
       })
@@ -86,8 +86,17 @@ export default function BuilderLeadsPage() {
     }
   }
 
-  const getLeadTypeLabel = (type: string) => {
-    return type === 'callback_requested' ? 'Callback Request' : 'Site Visit Request'
+  const getTierColor = (tier: string | null) => {
+    switch (tier) {
+      case 'HOT':
+        return 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+      case 'WARM':
+        return 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+      case 'COLD':
+        return 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+      default:
+        return 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400'
+    }
   }
 
   return (
@@ -124,7 +133,7 @@ export default function BuilderLeadsPage() {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Contact</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Project</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Type</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Tier</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Date</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Action</th>
@@ -157,7 +166,7 @@ export default function BuilderLeadsPage() {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Contact</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Project</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Type</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Tier</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Date</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Action</th>
@@ -173,17 +182,16 @@ export default function BuilderLeadsPage() {
                           <Phone className="w-4 h-4" />
                           {lead.phone}
                         </a>
-                        {lead.email && (
-                          <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-blue-600 hover:underline">
-                            <Mail className="w-4 h-4" />
-                            {lead.email}
-                          </a>
-                        )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{lead.project_name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                      {getLeadTypeLabel(lead.lead_type)}
+                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{lead.project_name ?? '—'}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${getTierColor(lead.lead_tier)}`}>
+                        {lead.lead_tier ?? 'UNSCORED'}
+                      </span>
+                      {lead.lead_score !== null && (
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{lead.lead_score}</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <select

@@ -182,6 +182,36 @@ export async function outputGuardrail(
         }
       }
     }
+
+    // Sector mismatch check: if response mentions a sector, it must appear in systemPrompt
+    const sectorPattern = /(?:sector|area|locality|zone)\s+(\d+[a-z]*)/gi
+    const sectorsInResponse = new Set<string>()
+    while ((match = sectorPattern.exec(response)) !== null) {
+      sectorsInResponse.add(match[1].trim().toLowerCase())
+    }
+    for (const sector of sectorsInResponse) {
+      if (systemPrompt.length > 0 && !systemPrompt.toLowerCase().includes(`sector ${sector}`) && !systemPrompt.toLowerCase().includes(`sector-${sector}`)) {
+        violations.push({
+          type: 'name_fabrication',
+          detail: `sector "${sector}" appears in response but not in verified context`,
+        })
+      }
+    }
+
+    // Possession date mismatch check: if response states possession, extract and validate
+    const possessionPattern = /(?:possession|ready|movein|move-in)\s+(?:(?:in\s+)?(?:2024|2025|2026|2027|2028|2029|2030)|(?:q[1-4]\s+)?(?:2024|2025|2026|2027|2028|2029|2030)|(?:by\s+)?(?:end\s+of\s+)?(?:this\s+)?(?:year|next\s+year))/gi
+    const possessionsInResponse: string[] = []
+    while ((match = possessionPattern.exec(response)) !== null) {
+      possessionsInResponse.push(match[0].trim())
+    }
+    for (const poss of possessionsInResponse) {
+      if (systemPrompt.length > 0 && !systemPrompt.toLowerCase().includes(poss.toLowerCase())) {
+        violations.push({
+          type: 'name_fabrication',
+          detail: `possession timing "${poss}" appears in response but not in verified context`,
+        })
+      }
+    }
   }
 
   if (violations.length === 0) {

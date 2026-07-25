@@ -8,6 +8,7 @@ import AnalyticsNav from '@/components/admin/AnalyticsNav'
 import { Skeleton } from '@/components/ui/skeleton'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import { adminFetch } from '@/lib/adminFetch'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer
@@ -26,7 +27,7 @@ export default function SearchAnalytics() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/admin/analytics/summary`, { headers: adminAuthHeaders() })
+      const res = await adminFetch('/admin/analytics/summary')
       const summary = await res.json()
       setData(summary)
     } catch (err) {

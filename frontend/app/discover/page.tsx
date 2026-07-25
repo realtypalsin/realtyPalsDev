@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
 import DiscoveryContent from '@/components/DiscoveryContent';
 import ChatErrorBoundary from '@/components/ChatErrorBoundary';
+import UniversalLoader from '@/components/ui/universal-loader';
 import { getSupabaseClient } from '@/lib/supabase';
 import { migrateSessions } from '@/lib/backend-api';
 
@@ -26,6 +27,7 @@ export default function DiscoverPage() {
   const [ready, setReady] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [newChatNonce, setNewChatNonce] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,6 +101,12 @@ export default function DiscoverPage() {
     return () => { cancelled = true; unsubscribe?.(); };
   }, []);
 
+  useEffect(() => {
+    const h = () => setNewChatNonce(n => n + 1)
+    window.addEventListener('realtypals:new-chat', h)
+    return () => window.removeEventListener('realtypals:new-chat', h)
+  }, []);
+
   if (!ready) {
     return (
       <div className="flex items-center justify-center min-h-[100dvh] bg-transparent">
@@ -119,9 +127,9 @@ export default function DiscoverPage() {
       />
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
         <ChatErrorBoundary>
-          <Suspense fallback={<div className="flex-1 flex items-center justify-center text-gray-500">Opening your advisor…</div>}>
+          <Suspense fallback={<div className="flex-1"><UniversalLoader variant="skeleton-page" label="Opening your advisor…" /></div>}>
             <DiscoveryContent
-              key="new"
+              key={`new-${newChatNonce}`}
               initialSessionId={null}
               userId={userId}
               guestToken={guestToken}

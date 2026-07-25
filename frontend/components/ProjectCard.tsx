@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { m, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import {
   ShieldCheck, SealCheck,
@@ -62,7 +62,19 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
   const [saving, setSaving] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)
   const [askMenuOpen, setAskMenuOpen] = useState(false)
+  const askMenuRef = useRef<HTMLDivElement>(null)
   const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg } = usePreferredImages(project)
+
+  useEffect(() => {
+    if (!askMenuOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (askMenuRef.current && !askMenuRef.current.contains(e.target as Node)) {
+        setAskMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [askMenuOpen])
 
   const isTopPick = index === 0
   const isRTM = project.status === 'ready_to_move'
@@ -315,7 +327,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         {/* Quick Actions */}
         <div className="mt-auto flex items-center justify-between gap-3 pt-2">
           {onAskAI ? (
-            <div className="relative flex-1">
+            <div className="relative flex-1" ref={askMenuRef}>
               <button
                 onClick={(e) => {
                   e.stopPropagation()
@@ -330,15 +342,14 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                 Ask AI
               </button>
 
-              {askMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40 cursor-default"
-                    onClick={(e) => { e.preventDefault(); setAskMenuOpen(false) }}
-                    onMouseDown={(e) => { e.preventDefault() }}
-                  />
-                  <div
+              <AnimatePresence>
+                {askMenuOpen && (
+                  <m.div
                     role="menu"
+                    initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
                     className="absolute bottom-full left-0 mb-3 z-50 w-64 rounded-2xl bg-white dark:bg-[#1a1a1a] ring-1 ring-black/10 dark:ring-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.2)] p-2 origin-bottom-left"
                   >
                     {askPrompts.map((p) => (
@@ -378,9 +389,9 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                       <PencilSimple size={16} className="shrink-0" />
                       <span>Ask something else…</span>
                     </button>
-                  </div>
-                </>
-              )}
+                  </m.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <div className="flex-1" />
