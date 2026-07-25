@@ -456,13 +456,22 @@ function MessageBubbleInner({
                                 a: ({ node, ...props }: any) => {
                                   const href = props.href || ''
                                   if (href.startsWith('#entity:')) {
-                                    const id = href.slice(8)
+                                    const projectId = href.slice(8)
+                                    const projectName = String(props.children)
                                     return (
                                       <button
-                                        onClick={() => onAction?.({ type: 'TEXT_MESSAGE', payload: { text: `Tell me more about ${props.children}` } })}
+                                        onClick={() => onAction?.({
+                                          id: `entity:${projectId}`,
+                                          actionType: 'TEXT_MESSAGE',
+                                          label: `Tell me more about ${projectName}`,
+                                          icon: 'ℹ️',
+                                          analyticsId: `entity_mention:${projectId}`,
+                                          priority: 2,
+                                          payload: { text: `Tell me more about ${projectName}` },
+                                        })}
                                         className="text-[#c47860] hover:underline cursor-pointer font-medium"
                                       >
-                                        {props.children}
+                                        {projectName}
                                       </button>
                                     )
                                   }
