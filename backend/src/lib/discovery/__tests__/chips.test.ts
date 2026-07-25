@@ -272,4 +272,56 @@ describe('Chips: Adaptive & Predictive', () => {
       assert.strictEqual(budgetChip1?.id, budgetChip2?.id, 'Same budget clarify chip should have identical ID across calls')
     })
   })
+
+  describe('chip pipeline: never emits zero (regression)', () => {
+    it('emits floor chips when no candidates survive filtering', async () => {
+      // COLD intent, no results, no inventory — every normal path returns []
+      const state = await computeConversationState(
+        {} as never, 'COLD' as never, [], false, [], undefined, undefined, undefined, null as never, true,
+      )
+      assert(state.chips.length > 0, 'Floor chips must be emitted when pipeline returns empty')
+    })
+
+    it('emits grounded chips when results exist but history mentions every label', async () => {
+      const results = [
+        { id: 'p1', name: 'Alpha Heights', sector: 'Sector 75', city: 'Noida', slug: 'alpha', builder: { name: 'Builder A', slug: 'builder-a' }, status: 'under_construction' as const, price_range_label: '₹1–2 Cr', unit_types: [], top_amenities: [], top_connectivity: [], images: [], possession_date: null, marketing_claims: [], matchScore: 85, matchReason: 'Budget match', matchReasons: ['Budget'], concerns: [] },
+        { id: 'p2', name: 'Beta Greens', sector: 'Sector 79', city: 'Noida', slug: 'beta', builder: { name: 'Builder B', slug: 'builder-b' }, status: 'ready_to_move' as const, price_range_label: '₹2–3 Cr', unit_types: [], top_amenities: [], top_connectivity: [], images: [], possession_date: null, marketing_claims: [], matchScore: 80, matchReason: 'Location match', matchReasons: ['Location'], concerns: [] },
+      ] as never
+      const history = [{ role: 'user', content: 'I want a 3BHK near Sector 75' }, { role: 'assistant', content: 'amenities connectivity payment plans RERA legal exit strategy' }]
+      const state = await computeConversationState(
+        {} as never, 'READY_TO_SEARCH' as never, results, false, history, undefined, undefined, undefined, null as never, true,
+      )
+      // assistant-only history must NOT starve the row (Task 2.2 + 2.4)
+      assert(state.chips.length > 0, 'Chips must survive even when history matches all labels')
+    })
+
+    it('capChips fills all four slots even when every priority is >= 4', async () => {
+      const results = Array.from({ length: 8 }, (_, i) => ({
+        id: `p${i}`,
+        name: `Project ${i}`,
+        sector: 'Sector 75',
+        city: 'Noida',
+        slug: `proj-${i}`,
+        builder: { name: `Builder ${i}`, slug: `builder-${i}` },
+        status: 'under_construction' as const,
+        price_range_label: '₹1.5–2 Cr',
+        unit_types: [],
+        top_amenities: [],
+        top_connectivity: [],
+        images: [],
+        possession_date: null,
+        marketing_claims: [],
+        matchScore: 70 + i,
+        matchReason: 'Match',
+        matchReasons: ['Match'],
+        concerns: [],
+      })) as never
+      const state = await computeConversationState(
+        { sector: 'Sector 75' } as never, 'READY_TO_SEARCH' as never, results, false, [],
+        undefined, undefined, undefined, null as never, true,
+      )
+      assert(state.chips.length > 0, 'Chips must be emitted')
+      assert(state.chips.length <= 4, 'Chip count must not exceed 4')
+    })
+  })
 })
