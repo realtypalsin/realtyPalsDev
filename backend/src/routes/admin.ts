@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { timingSafeEqual } from 'crypto'
 import { prisma } from '../lib/db'
-import { createAdminSession, requireAdmin } from '../lib/adminAuth'
+import { createAdminSession, requireAdmin, destroyAdminSession } from '../lib/adminAuth'
 import { computeCompleteness } from '../lib/completeness'
 
 // ProjectDocument has no @relation to Project, and rows may carry either
@@ -49,6 +49,23 @@ router.post('/auth', async (req: Request, res: Response) => {
   const userAgent = (req.headers['user-agent'] as string) || 'unknown'
   const token = await createAdminSession(ip, userAgent)
   res.json({ token })
+})
+
+// DELETE /api/v1/admin/auth — logout: clear session token
+router.delete('/auth', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const token = ((req.cookies as any)?.admin_session ||
+      (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : '')) ?? ''
+
+    if (token) {
+      await destroyAdminSession(token)
+    }
+    res.clearCookie('admin_session', { httpOnly: true, secure: true, sameSite: 'strict' })
+    res.json({ success: true, message: 'Logged out' })
+  } catch (err) {
+    console.error('[admin] logout failed:', err)
+    res.status(500).json({ error: 'Logout failed' })
+  }
 })
 
 // GET /api/v1/admin/callbacks — list all callbacks with filters
