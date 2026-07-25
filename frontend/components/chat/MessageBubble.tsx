@@ -13,6 +13,7 @@ import ProjectCard from '@/components/ProjectCard'
 import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import { SuggestionChip } from '@/components/chat/SuggestionChip'
 import { CardSelectorChip } from '@/components/chat/CardSelectorChip'
+import UniversalLoader from '@/components/ui/universal-loader'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
@@ -44,6 +45,44 @@ function formatStreamingIntent(intent: Record<string, unknown> | null | undefine
   if (Number.isFinite(intent.budgetMax)) parts.push(`under ₹${intent.budgetMax}Cr`)
   else if (Number.isFinite(intent.budgetMin)) parts.push(`from ₹${intent.budgetMin}Cr`)
   return parts.length > 0 ? `Looking for ${parts.join(' · ')}` : 'Scanning available projects…'
+}
+
+function buildAdaptiveThinkingLabel(userMessage: string | undefined, intent: Record<string, unknown> | null, phase: string): { label: string; sublabel?: string } {
+  const intentLabel = formatStreamingIntent(intent)
+
+  // Extract key terms from user message
+  const msg = (userMessage || '').toLowerCase()
+  const hasBudget = /(\d+\s*(cr|crore|lakh|lac))/i.test(userMessage || '')
+  const hasMetro = /metro|station|proximity|near/i.test(msg)
+  const hasFamily = /family|kids|children|school/i.test(msg)
+  const hasInvestment = /invest|invest|appreciation|roi/i.test(msg)
+
+  // Build context phrase
+  let context = ''
+  if (hasBudget && hasMetro) context = 'metro-accessible'
+  else if (hasBudget && hasFamily) context = 'family-focused'
+  else if (hasBudget && hasInvestment) context = 'investment-grade'
+  else if (hasMetro) context = 'near metro stations'
+  else if (hasFamily) context = 'for your family'
+  else context = 'that match your criteria'
+
+  if (phase === 'searching') {
+    return {
+      label: `Searching for properties ${context}`,
+      sublabel: intentLabel || undefined
+    }
+  } else if (phase === 'generating') {
+    return {
+      label: 'Analyzing options',
+      sublabel: intentLabel || undefined
+    }
+  } else {
+    // extraction phase
+    if (intentLabel) {
+      return { label: 'Refining criteria', sublabel: intentLabel }
+    }
+    return { label: 'Understanding your needs' }
+  }
 }
 
 import ReactMarkdown from 'react-markdown'
@@ -261,6 +300,18 @@ function MessageBubbleInner({
 
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
   const touchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const chipPickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!chipPicker) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (chipPickerRef.current && !chipPickerRef.current.contains(e.target as Node)) {
+        onSetChipPicker(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [chipPicker, onSetChipPicker])
 
   useEffect(() => {
     const handleClick = () => setContextMenu(null);
@@ -324,50 +375,16 @@ function MessageBubbleInner({
 
                 // Stage A: waiting — no properties, no content yet
                 if (!hasProperties && !message.content) {
-                  const intentLabel = formatStreamingIntent(intent)
-                  const isSearching = phase === 'searching'
+                  const { label, sublabel } = buildAdaptiveThinkingLabel(message.content ?? undefined, intent ?? null, phase ?? '')
+                  const showCards = phase === 'searching' || phase === 'generating'
+
                   return (
-                    <div className="py-2 space-y-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="relative w-5 h-5 flex-shrink-0">
-                          <div className="absolute inset-0 rounded-full border-2 border-blue-100 dark:border-blue-900 border-t-blue-500 dark:border-t-blue-400 animate-spin" />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
-                          </div>
-                        </div>
-                        <span className="text-[13px] font-medium text-blue-600 dark:text-blue-400">
-                          Understanding your request…
-                        </span>
-                      </div>
-                      
-                      {isSearching && intentLabel && (
-                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3.5 py-2.5 border border-blue-100 dark:border-blue-800/60">
-                          <p className="text-[13px] text-blue-700 dark:text-blue-300 font-medium leading-snug">
-                            {intentLabel}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {isSearching && (
-                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {[0, 1, 2].map(i => (
-                            <div key={i} className="rounded-[24px] overflow-hidden bg-white dark:bg-gray-800 border border-gray-100/80 dark:border-gray-700/60 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                              <div className="h-[220px] bg-gray-100 dark:bg-gray-700 animate-pulse" />
-                              <div className="p-5 space-y-3">
-                                <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-full w-3/4 animate-pulse" />
-                                <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-1/2 animate-pulse" />
-                                <div className="h-6 bg-gray-100 dark:bg-gray-700 rounded-full w-1/3 animate-pulse" />
-                                <div className="flex gap-2 mt-1">
-                                  <div className="h-5 bg-gray-100 dark:bg-gray-700 rounded-full w-16 animate-pulse" />
-                                  <div className="h-5 bg-gray-100 dark:bg-gray-700 rounded-full w-20 animate-pulse" />
-                                </div>
-                                <div className="h-9 bg-gray-100 dark:bg-gray-700 rounded-xl w-full animate-pulse mt-1" />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <UniversalLoader
+                      variant="chat-thinking"
+                      label={label}
+                      sublabel={sublabel}
+                      showCards={showCards}
+                    />
                   )
                 }
 
@@ -823,6 +840,7 @@ function MessageBubbleInner({
 
             {chipPicker && (
               <m.div
+                ref={chipPickerRef}
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
                 animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
@@ -931,7 +949,7 @@ function MessageBubbleInner({
       )}
 
       {/* Persona chips: suggested follow-ups for first recommendation */}
-      {message.type === 'ai' && index <= 1 && isLast && message.properties?.length > 0 && !isSubmitting && (
+      {message.type === 'ai' && index <= 1 && isLast && (message.properties?.length ?? 0) > 0 && !isSubmitting && (
         <m.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -950,7 +968,15 @@ function MessageBubbleInner({
             ].map((chip) => (
               <button
                 key={chip.label}
-                onClick={() => onAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
+                onClick={() => onAction({
+                  id: `followup-${chip.label}`,
+                  actionType: 'TEXT_MESSAGE',
+                  label: chip.label,
+                  icon: '💬',
+                  analyticsId: `followup_${chip.label.replace(/\s+/g, '_').toLowerCase()}`,
+                  priority: 1,
+                  payload: { text: chip.prompt }
+                })}
                 className="text-left px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[13px] font-medium rounded-lg transition-colors border border-blue-200 dark:border-blue-700"
               >
                 {chip.label}
