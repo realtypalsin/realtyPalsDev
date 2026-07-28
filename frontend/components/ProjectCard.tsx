@@ -33,7 +33,8 @@ interface Props {
   onCall?: (project: ProjectCardType) => void
   onShare?: (project: ProjectCardType) => void
   quickActions?: React.ReactNode
-
+  // Optional recommendation display
+  showRecommendation?: boolean
 }
 
 const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
@@ -406,7 +407,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                 trackPropertyEvent(project.id, 'call', sessionId, userId).catch(() => {})
                 onCall?.(project)
               }}
-              className="w-9 h-9 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 active:scale-95 group shadow-2xs"
+              className="w-9 h-9 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-300 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 active:scale-95 group shadow-2xs"
               title="Request a callback"
             >
               <PhoneCall size={15} weight="bold" className="text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:scale-110 transition-transform duration-200" />
