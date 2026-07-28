@@ -77,7 +77,7 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between pb-6 border-b border-zinc-200/50">
         <div>
           <h1 className="text-3xl font-serif font-black text-zinc-950 tracking-tight">Dashboard</h1>
-          <p className="text-sm text-zinc-500 mt-1.5">Overview, metrics, and actionable alerts.</p>
+          <p className="text-sm text-zinc-600 mt-1.5">Overview, metrics, and actionable alerts.</p>
         </div>
         <button
           onClick={load}
