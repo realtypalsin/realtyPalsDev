@@ -24,6 +24,7 @@ import { usePreferredImages } from '@/lib/hooks'
 interface Props {
   project: ProjectCardType
   userId: string | null
+  sessionId?: string | null
   index?: number
   onDetailOpen?: (project: ProjectCardType) => void
   onToast?: (message: string) => void
@@ -131,7 +132,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
         })
         if (!res.ok) throw new Error('Save failed')
         track('property_saved', { project_slug: project.slug, project_name: project.name })
-        trackPropertyEvent(project.id, 'save', undefined, userId).catch(() => {})
+        trackPropertyEvent(project.id, 'save', sessionId, userId).catch(() => {})
 
         onToast?.('Property saved! ✓')
       }
@@ -164,7 +165,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
   }
 
   const handleCardClick = () => {
-    trackPropertyEvent(project.id, 'card_click', undefined, userId).catch(() => {})
+    trackPropertyEvent(project.id, 'card_click', sessionId, userId).catch(() => {})
     onDetailOpen?.(project)
 
   }
@@ -360,7 +361,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
                           e.stopPropagation()
                           setAskMenuOpen(false)
                           track('ask_ai_tapped', { project_slug: project.slug, prompt_type: p.type })
-                          trackPropertyEvent(project.id, 'ask_ai', undefined, userId).catch(() => {})
+                          trackPropertyEvent(project.id, 'ask_ai', sessionId, userId).catch(() => {})
                           window.dispatchEvent(
                             new CustomEvent('realtypals:ask-ai', { detail: { text: p.text, autoSend: true } }),
                           )
@@ -402,7 +403,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen, 
               onClick={(e) => {
                 e.stopPropagation()
                 track('call_tapped', { project_slug: project.slug, project_name: project.name })
-                trackPropertyEvent(project.id, 'call', undefined, userId).catch(() => {})
+                trackPropertyEvent(project.id, 'call', sessionId, userId).catch(() => {})
                 onCall?.(project)
               }}
               className="w-9 h-9 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 active:scale-95 group shadow-2xs"

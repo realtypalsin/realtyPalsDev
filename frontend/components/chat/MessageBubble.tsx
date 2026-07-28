@@ -730,6 +730,7 @@ function MessageBubbleInner({
                           <ProjectCard
                             project={property}
                             userId={userId}
+                            sessionId={sessionId}
                             index={pi}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
@@ -765,6 +766,7 @@ function MessageBubbleInner({
                           <ProjectCard
                             project={property}
                             userId={userId}
+                            sessionId={sessionId}
                             index={pi}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
