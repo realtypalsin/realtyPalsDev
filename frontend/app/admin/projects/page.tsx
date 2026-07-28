@@ -41,7 +41,7 @@ function ProjectThumbnail({ src, alt }: { src?: string | null, alt: string }) {
   }
   return (
     <div className="w-8 h-8 rounded-md overflow-hidden relative border border-zinc-200 flex-shrink-0">
-      <Image src={src} alt={alt} fill unoptimized className="object-cover" onError={() => setError(true)} />
+      <Image src={src} alt={alt} fill sizes="32px" className="object-cover" onError={() => setError(true)} />
     </div>
   )
 }

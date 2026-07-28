@@ -8,9 +8,10 @@ module.exports = createJestConfig({
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^rehype-raw$': '<rootDir>/__mocks__/rehypeRaw.js',
+    '^rehype-sanitize$': '<rootDir>/__mocks__/rehypeSanitize.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(rehype-raw|hast-util-parse-selector|property-information|unist-util-position|unist-util-visit|unist-util-is)/)',
+    'node_modules/(?!(rehype-raw|rehype-sanitize|hast-util-sanitize|hast-util-parse-selector|property-information|unist-util-position|unist-util-visit|unist-util-is)/)',
   ],
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',

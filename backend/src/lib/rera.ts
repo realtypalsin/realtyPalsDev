@@ -33,7 +33,7 @@ const KNOWN_VALID_RERA: Set<string> = new Set([
  */
 function validateReraFormat(rera: string): boolean {
   // Simple format check: RERA/XX/XXX/...
-  const pattern = /^RERA\/[A-Z]{2}\/[A-Z0-9]+\/[A-Z0-9\-]+\/[A-Z0-9\-]+$/;
+  const pattern = /^RERA\/[A-Z]{2}\/[A-Z0-9]+\/[A-Z0-9-]+\/[A-Z0-9-]+$/;
   return pattern.test(rera.toUpperCase());
 }
 

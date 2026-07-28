@@ -16,6 +16,16 @@ import {
 
 const PALETTE = ['#002663', '#00509E', '#0077C8', '#60A3D9', '#9ED3F2']
 
+interface ActiveUserSession {
+  id: string
+  userLabel: string
+  title: string
+  messageCount: number
+  queriesCount: number
+  phase: string
+  lastActive: string
+}
+
 interface UserMetrics {
   totalUsers: number
   repeatedVisitors: number
@@ -30,6 +40,7 @@ interface UserMetrics {
     conversions: number
   }
   mostActiveSectors: Array<{ sector: string; searches: number }>
+  users?: ActiveUserSession[]
 }
 
 export default function UsersAnalytics() {
@@ -70,7 +81,7 @@ export default function UsersAnalytics() {
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-3xl font-serif font-black text-slate-900 tracking-tight">User Behavior</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">User Behavior</h1>
             <p className="text-sm text-slate-500 mt-1">Sessions, patterns, engagement, and conversions</p>
           </div>
         </div>
@@ -205,6 +216,56 @@ export default function UsersAnalytics() {
           </div>
         ) : (
           <p className="text-slate-500 text-center py-8">No funnel data yet</p>
+        )}
+      </div>
+
+      {/* Active User Sessions Table (Live DB Fetched) */}
+      <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+          Recent User Sessions
+          <InfoTooltip text="Live chat sessions dynamically fetched from PostgreSQL, tracking messages, queries, phase, and activity." />
+        </h2>
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded" />
+            ))}
+          </div>
+        ) : data?.users && data.users.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-slate-900">
+                  <th className="text-left py-3 px-4 font-semibold">User</th>
+                  <th className="text-left py-3 px-4 font-semibold">Session Title</th>
+                  <th className="text-center py-3 px-4 font-semibold">Phase</th>
+                  <th className="text-right py-3 px-4 font-semibold">Messages</th>
+                  <th className="text-right py-3 px-4 font-semibold">Queries</th>
+                  <th className="text-right py-3 px-4 font-semibold">Last Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.users.map((session, idx) => (
+                  <tr key={session.id} className={idx % 2 === 0 ? 'bg-slate-50/60' : ''}>
+                    <td className="py-3 px-4 font-medium text-slate-900">{session.userLabel}</td>
+                    <td className="py-3 px-4 text-slate-700 max-w-[240px] truncate">{session.title}</td>
+                    <td className="text-center py-3 px-4">
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                        {session.phase}
+                      </span>
+                    </td>
+                    <td className="text-right py-3 px-4 text-slate-600 font-medium">{session.messageCount}</td>
+                    <td className="text-right py-3 px-4 text-slate-600 font-medium">{session.queriesCount}</td>
+                    <td className="text-right py-3 px-4 text-slate-500 text-xs">
+                      {new Date(session.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-slate-500 text-center py-8">No user sessions found in database</p>
         )}
       </div>
     </div>

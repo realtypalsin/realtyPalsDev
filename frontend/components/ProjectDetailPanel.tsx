@@ -170,22 +170,26 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
   // Lazy-load payment plan when 'Pricing' or 'Residences' tab is opened.
   useEffect(() => {
+    let mounted = true
     if ((activeTab !== 'Pricing' && activeTab !== 'Residences') || !project?.slug || paymentPlan.loaded) return
     getPaymentPlan(project.slug).then((res) => {
-      setPaymentPlan({ loaded: true, available: res.available, data: res.plan ?? null, message: res.message })
+      if (mounted) setPaymentPlan({ loaded: true, available: res.available, data: res.plan ?? null, message: res.message })
     }).catch(() => {
-      setPaymentPlan({ loaded: true, available: false, data: null, message: 'Unable to load payment plan.' })
+      if (mounted) setPaymentPlan({ loaded: true, available: false, data: null, message: 'Unable to load payment plan.' })
     })
+    return () => { mounted = false }
   }, [activeTab, project?.slug, paymentPlan.loaded])
 
   // Lazy-load cost sheet when 'Pricing' tab is opened.
   useEffect(() => {
+    let mounted = true
     if (activeTab !== 'Pricing' || !project?.slug || costSheet.loaded) return
     getCostSheet(project.slug).then((res) => {
-      setCostSheet({ loaded: true, available: res.available, data: res.sheet ?? null, illustration: res.illustration ?? null, note: res.illustration_note, message: res.message })
+      if (mounted) setCostSheet({ loaded: true, available: res.available, data: res.sheet ?? null, illustration: res.illustration ?? null, note: res.illustration_note, message: res.message })
     }).catch(() => {
-      setCostSheet({ loaded: true, available: false, data: null, illustration: null, message: 'Unable to load cost sheet.' })
+      if (mounted) setCostSheet({ loaded: true, available: false, data: null, illustration: null, message: 'Unable to load cost sheet.' })
     })
+    return () => { mounted = false }
   }, [activeTab, project?.slug, costSheet.loaded])
 
   useEffect(() => {

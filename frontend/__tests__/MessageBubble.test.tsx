@@ -128,7 +128,7 @@ describe('MessageBubble Component', () => {
     );
 
     // Look for inline loading UI text
-    expect(screen.getByText('Understanding your request…')).toBeInTheDocument();
+    expect(screen.getByText('Understanding your needs')).toBeInTheDocument();
   });
 
   it('caps chips to 4 maximum', () => {

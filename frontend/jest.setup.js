@@ -14,3 +14,18 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Suppress React 18 act(...), DOM attribute, and intentional chip test warnings during test execution
+const originalError = console.error;
+console.error = (...args) => {
+  if (typeof args[0] === 'string') {
+    if (
+      args[0].includes('was not wrapped in act(...)') ||
+      args[0].includes('non-boolean attribute') ||
+      args[0].startsWith('[CHIP]')
+    ) {
+      return;
+    }
+  }
+  originalError(...args);
+};

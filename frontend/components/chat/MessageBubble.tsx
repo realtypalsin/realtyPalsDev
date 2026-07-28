@@ -20,11 +20,12 @@ import type { ChipPickerState } from './types'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 
+const safeDefaultSchema = defaultSchema || { tagNames: [], attributes: {} }
 const REALTY_SCHEMA = {
-  ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), 'realty-chart', 'realty-box'],
+  ...safeDefaultSchema,
+  tagNames: [...(safeDefaultSchema.tagNames || []), 'realty-chart', 'realty-box'],
   attributes: {
-    ...defaultSchema.attributes,
+    ...(safeDefaultSchema.attributes || {}),
     'realty-chart': ['type', 'data', 'title'],
     'realty-box': ['type', 'title'],
   },

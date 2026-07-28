@@ -7,6 +7,7 @@ import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import { adminFetch } from '@/lib/adminFetch'
 import { Skeleton } from '@/components/ui/skeleton'
+import AnalyticsNav from '@/components/admin/AnalyticsNav'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend
@@ -106,34 +107,21 @@ export default function AnalyticsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-serif font-black text-slate-900 tracking-tight">Analytics Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Real-time insights into user searches, engagement, and AI performance</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Analytics Dashboard</h1>
+          <p className="text-sm text-slate-500 mt-1 font-medium">Real-time insights into user searches, engagement, and AI performance</p>
         </div>
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white shadow-sm border border-gray-200 hover:border-gray-300 px-4 py-2 rounded-xl transition-all disabled:opacity-50"
+          className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white shadow-sm border border-slate-200/80 hover:border-slate-300 px-4 py-2.5 rounded-xl transition-all disabled:opacity-50"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           Refresh Data
         </button>
       </div>
 
-      {/* Top Navigation Tabs */}
-      <div className="flex items-center gap-3 overflow-x-auto sticky top-4 z-40 py-2 px-2 bg-white/70 backdrop-blur-xl border border-gray-200/50 shadow-sm rounded-full w-fit mx-auto sm:mx-0 mb-6">
-        <Link href="/admin/analytics" className="px-4 py-2 text-sm font-semibold rounded-full bg-slate-900 text-white shadow-sm shrink-0">
-          Dashboard
-        </Link>
-        <Link href="/admin/analytics/search" className="px-4 py-2 text-sm font-medium rounded-full bg-white text-slate-600 hover:bg-slate-50 border border-gray-200 transition-colors shrink-0">
-          Search Analytics
-        </Link>
-        <Link href="/admin/analytics/properties" className="px-4 py-2 text-sm font-medium rounded-full bg-white text-slate-600 hover:bg-slate-50 border border-gray-200 transition-colors shrink-0">
-          Property Engagement
-        </Link>
-        <Link href="/admin/analytics/users" className="px-4 py-2 text-sm font-medium rounded-full bg-white text-slate-600 hover:bg-slate-50 border border-gray-200 transition-colors shrink-0">
-          User Behavior
-        </Link>
-      </div>
+      {/* Navigation Tabs */}
+      <AnalyticsNav />
 
       {/* KPI Row */}
     {loading ? (

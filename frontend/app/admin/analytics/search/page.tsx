@@ -48,7 +48,7 @@ export default function SearchAnalytics() {
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-3xl font-serif font-black text-slate-900 tracking-tight">Search Analytics</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Search Analytics</h1>
             <p className="text-sm text-slate-500 mt-1">Sector trends and builder demand</p>
           </div>
         </div>

@@ -637,7 +637,8 @@ router.get('/analytics/summary', requireAdmin, async (_req: Request, res: Respon
 
     const avgQueriesPerChat = totalChats > 0 ? (totalQueries / totalChats).toFixed(1) : '0.0'
     const zeroResultSearchRate = totalQueries > 0 ? `${((zeroResultSearches / totalQueries) * 100).toFixed(1)}%` : '0.0%'
-    const conversionRate = totalChats > 0 ? `${((totalCallbacks / totalChats) * 100).toFixed(1)}%` : totalCallbacks > 0 ? '100.0%' : '0.0%'
+    const effectiveConversions = Math.min(totalCallbacks, totalChats)
+    const conversionRate = totalChats > 0 ? `${((effectiveConversions / totalChats) * 100).toFixed(1)}%` : totalCallbacks > 0 ? '100.0%' : '0.0%'
 
     const avgClarificationsAgg = await prisma.queryMetrics.aggregate({
       _avg: { clarification_count: true },
@@ -645,7 +646,7 @@ router.get('/analytics/summary', requireAdmin, async (_req: Request, res: Respon
     const avgClarifications = (avgClarificationsAgg._avg.clarification_count || 0).toFixed(1)
 
     // Top Searched Sectors: Query Metrics first, fallback to Project table sectors
-    let sectorGroups = await prisma.queryMetrics.groupBy({
+    const sectorGroups = await prisma.queryMetrics.groupBy({
       by: ['sector'],
       _count: { sector: true },
       where: { sector: { not: null } },
@@ -672,7 +673,7 @@ router.get('/analytics/summary', requireAdmin, async (_req: Request, res: Respon
     }
 
     // Top Searched Builders: Query Metrics first, fallback to Builder table
-    let builderGroups = await prisma.queryMetrics.groupBy({
+    const builderGroups = await prisma.queryMetrics.groupBy({
       by: ['builder'],
       _count: { builder: true },
       where: { builder: { not: null } },
@@ -778,10 +779,51 @@ router.get('/analytics/users', requireAdmin, async (_req: Request, res: Response
     const totalUsers = Math.max(uniqueUsersAgg.length, totalChats > 0 ? 1 : 0)
     const repeatedVisitors = Math.max(0, totalChats - totalUsers)
     const avgQueriesPerUser = totalUsers > 0 ? parseFloat((totalQueries / totalUsers).toFixed(1)) : 0
-    const avgSessionDuration = 0
+    // Compute real dynamic avg session duration from DB (created_at vs last_active)
+    const sessionsForDuration = await prisma.chatSession.findMany({
+      take: 100,
+      select: { created_at: true, last_active: true },
+    })
+    let totalDurationSeconds = 0
+    let validDurationCount = 0
+    for (const s of sessionsForDuration) {
+      const dur = (new Date(s.last_active).getTime() - new Date(s.created_at).getTime()) / 1000
+      if (dur > 0) {
+        totalDurationSeconds += dur
+        validDurationCount++
+      }
+    }
+    const avgSessionDuration = validDurationCount > 0 ? Math.round(totalDurationSeconds / validDurationCount) : 0
+
+    // Dynamic list of active user chat sessions from DB
+    const recentSessions = await prisma.chatSession.findMany({
+      take: 25,
+      orderBy: { last_active: 'desc' },
+      select: {
+        id: true,
+        user_id: true,
+        guest_token: true,
+        title: true,
+        message_count: true,
+        created_at: true,
+        last_active: true,
+        chat_phase: true,
+        _count: { select: { query_metrics: true } },
+      },
+    })
+
+    const activeUserList = recentSessions.map((s) => ({
+      id: s.id,
+      userLabel: s.user_id ? `User #${s.user_id.slice(0, 6)}` : s.guest_token ? `Guest #${s.guest_token.slice(0, 6)}` : 'Anonymous',
+      title: s.title || 'Discovery Session',
+      messageCount: s.message_count,
+      queriesCount: s._count.query_metrics,
+      phase: s.chat_phase,
+      lastActive: s.last_active,
+    }))
 
     // Most Searched Sectors: Query metrics first, fallback to Project sectors
-    let sectorGroups = await prisma.queryMetrics.groupBy({
+    const sectorGroups = await prisma.queryMetrics.groupBy({
       by: ['sector'],
       _count: { sector: true },
       where: { sector: { not: null } },
@@ -818,10 +860,10 @@ router.get('/analytics/users', requireAdmin, async (_req: Request, res: Response
         searches: totalQueries,
         clicks: totalClicks,
         saves: totalSaves,
-        conversions: totalConversions,
+        conversions: totalChats > 0 ? Math.min(totalConversions, totalChats) : totalConversions,
       },
       mostActiveSectors,
-      users: [],
+      users: activeUserList,
     })
   } catch (err) {
     console.error('[admin] analytics users failed:', err)
