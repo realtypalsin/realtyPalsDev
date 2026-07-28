@@ -79,10 +79,10 @@ export default function BuilderApplicationsPage() {
   return (
     <div className="max-w-7xl mx-auto py-8">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4 pt-2">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Builder Registrations</h1>
-          <p className="text-slate-500 mt-2 text-sm">Review, approve, and manage developer onboarding requests.</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Builder Registrations</h1>
+          <p className="text-slate-600 mt-2 text-sm">Review, approve, and manage developer onboarding requests.</p>
         </div>
       </div>
 

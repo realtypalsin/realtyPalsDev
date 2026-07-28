@@ -30,10 +30,10 @@ export default function PropertyListingsPage() {
 
   return (
     <div className="max-w-6xl mx-auto py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 pt-2">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">Property Listings</h1>
-          <p className="text-sm text-zinc-500 mt-1">Review and approve property submissions</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Property Listings</h1>
+          <p className="text-sm text-slate-600 mt-2">Review and approve property submissions</p>
         </div>
       </div>
 

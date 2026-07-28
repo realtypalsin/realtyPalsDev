@@ -101,8 +101,8 @@ export default function PromotionsAdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Promotional Management</h1>
+      <div className="flex items-center justify-between pt-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Promotional Management</h1>
         <button
           onClick={() => {
             setEditingId(null)

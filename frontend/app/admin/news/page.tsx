@@ -91,10 +91,10 @@ export default function BuilderNewsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">News & Updates</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your builder news and promotions</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">News & Updates</h1>
+          <p className="text-sm text-slate-600 dark:text-gray-400 mt-2">Manage your builder news and promotions</p>
         </div>
         <button
           onClick={() => {

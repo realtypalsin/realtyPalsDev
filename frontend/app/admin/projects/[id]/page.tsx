@@ -253,10 +253,10 @@ export default function EditProject() {
   return (
     <div className="max-w-[1400px] mx-auto pb-16">
       {/* Page header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <div>
-          <h1 className="text-3xl font-serif font-black tracking-tight text-slate-900">Edit Project</h1>
-          <p className="text-[15px] font-medium text-slate-500 mt-1 font-serif italic">{data.name}</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">Edit Project</h1>
+          <p className="text-sm text-slate-600 mt-2">{data.name}</p>
         </div>
         {adminTab === 'core' && (
           <div className="flex items-center gap-2.5 text-[12px] font-bold text-slate-500 bg-white border border-gray-200 shadow-sm rounded-full px-4 py-2">
