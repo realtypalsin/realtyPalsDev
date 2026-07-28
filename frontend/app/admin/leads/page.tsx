@@ -101,9 +101,9 @@ export default function BuilderLeadsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leads</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Track and manage buyer inquiries</p>
+      <div className="pt-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Leads</h1>
+        <p className="text-sm text-slate-600 dark:text-gray-400 mt-2">Track and manage buyer inquiries</p>
       </div>
 
       {/* Filters */}
@@ -112,10 +112,10 @@ export default function BuilderLeadsPage() {
           <button
             key={status}
             onClick={() => setFilter(status)}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               filter === status
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-900 border dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
             {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}

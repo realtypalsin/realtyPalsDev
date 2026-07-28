@@ -178,16 +178,16 @@ export default function AdminProjects() {
   return (
     <div className="max-w-6xl mx-auto py-8">
       
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 pt-2">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">Projects</h1>
-          <p className="text-sm text-zinc-500 mt-1">{projects.length} total properties</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Projects</h1>
+          <p className="text-sm text-slate-600 mt-2">{projects.length} total properties</p>
         </div>
         <Link
           href="/admin/projects/new"
-          className="flex items-center gap-2 bg-[#1a1a1a] hover:bg-black text-white px-4 py-2 rounded-lg text-[13px] font-medium transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_1px_2px_rgba(0,0,0,0.2)]"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-[13px] font-medium transition-all shadow-sm"
         >
-          <Plus size={15} /> New Project
+          <Plus size={15} strokeWidth={2.5} /> New Project
         </Link>
       </div>
 
@@ -302,7 +302,7 @@ export default function AdminProjects() {
                         handleDelete(p.id, p.name)
                       }} 
                       disabled={deleting === p.id}
-                      className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
+                      className="p-1.5 text-slate-700 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors"
                       aria-label="Delete"
                     >
                       <Trash2 size={14} />

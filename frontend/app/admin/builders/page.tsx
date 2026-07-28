@@ -277,16 +277,16 @@ export default function AdminBuilders() {
   return (
     <div className="max-w-6xl mx-auto py-8">
       
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 pt-2">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">Builders</h1>
-          <p className="text-sm text-zinc-500 mt-1">{builders.length} registered partners</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Builders</h1>
+          <p className="text-sm text-slate-600 mt-2">{builders.length} registered partners</p>
         </div>
         <button
           onClick={() => { setShowAdd(!showAdd); setEditingId(null) }}
-          className="flex items-center gap-2 bg-zinc-900 hover:bg-black text-white px-4 py-2 rounded-lg text-[13px] font-medium transition-all shadow-sm"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-[13px] font-medium transition-all shadow-sm"
         >
-          {showAdd ? <X size={15} /> : <Plus size={15} />}
+          {showAdd ? <X size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {showAdd ? 'Cancel' : 'New Builder'}
         </button>
       </div>
