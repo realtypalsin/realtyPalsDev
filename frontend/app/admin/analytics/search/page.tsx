@@ -44,12 +44,12 @@ export default function SearchAnalytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/admin/analytics" className="text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/admin/analytics" className="text-slate-600 hover:text-slate-900 transition-colors">
             <ArrowLeft size={20} />
           </Link>
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Search Analytics</h1>
-            <p className="text-sm text-slate-500 mt-1">Sector trends and builder demand</p>
+            <p className="text-sm text-slate-600 mt-1">Sector trends and builder demand</p>
           </div>
         </div>
         <button
@@ -116,7 +116,7 @@ export default function SearchAnalytics() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-slate-500 text-center py-12">No data yet</p>
+            <p className="text-slate-600 text-center py-12">No data yet</p>
           )}
         </div>
 
@@ -142,7 +142,7 @@ export default function SearchAnalytics() {
               ))}
             </div>
           ) : (
-            <p className="text-slate-500 text-center py-12">No builder searches yet</p>
+            <p className="text-slate-600 text-center py-12">No builder searches yet</p>
           )}
         </div>
       </div>
@@ -179,7 +179,7 @@ export default function SearchAnalytics() {
             </table>
           </div>
         ) : (
-          <p className="text-slate-500 text-center py-8">No data yet</p>
+          <p className="text-slate-600 text-center py-8">No data yet</p>
         )}
       </div>
     </div>

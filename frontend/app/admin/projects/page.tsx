@@ -35,7 +35,7 @@ function ProjectThumbnail({ src, alt }: { src?: string | null, alt: string }) {
   if (!src || error) {
     return (
       <div className="w-8 h-8 rounded-md bg-zinc-100 border border-zinc-200 flex items-center justify-center flex-shrink-0">
-        <Building2 size={14} className="text-zinc-400" />
+        <Building2 size={14} className="text-zinc-600" />
       </div>
     )
   }
@@ -193,14 +193,14 @@ export default function AdminProjects() {
 
       {/* Notion-style Unified Command Bar */}
       <div className="group flex items-center gap-3 px-4 py-3 bg-white border border-zinc-200/80 rounded-xl shadow-sm mb-6 focus-within:border-zinc-300 focus-within:shadow-md transition-all">
-        <Search size={16} className="text-zinc-400 group-focus-within:text-zinc-600 transition-colors" />
+        <Search size={16} className="text-zinc-600 group-focus-within:text-zinc-600 transition-colors" />
         <input
           ref={searchInputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter projects or use tags like status:ready..."
-          className="flex-1 bg-transparent border-none outline-none text-[14px] text-zinc-900 placeholder:text-zinc-400"
+          className="flex-1 bg-transparent border-none outline-none text-[14px] text-zinc-900 placeholder:text-zinc-600"
         />
         <div className="hidden sm:flex items-center gap-1.5 opacity-50">
           <kbd className="px-1.5 py-0.5 rounded border border-zinc-200 bg-zinc-50 text-[10px] font-medium font-sans">/</kbd>
@@ -211,7 +211,7 @@ export default function AdminProjects() {
       {/* Data-Dense Tabular List (Linear Style) */}
       <div className="bg-white rounded-xl border border-zinc-200/80 shadow-sm overflow-hidden">
         {/* Table Header */}
-        <div className="flex items-center px-4 py-3 bg-zinc-50/50 border-b border-zinc-200/80 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+        <div className="flex items-center px-4 py-3 bg-zinc-50/50 border-b border-zinc-200/80 text-[11px] font-semibold text-zinc-600 uppercase tracking-wider">
           <div className="w-8 mr-4" /> {/* Thumbnail space */}
           <div className="flex-1">Property Name</div>
           <div className="w-[120px] hidden md:block">Status</div>
@@ -228,7 +228,7 @@ export default function AdminProjects() {
             <div className="py-16 flex flex-col items-center justify-center text-center">
               <Building2 size={32} className="text-zinc-200 mb-3" />
               <p className="text-[14px] font-medium text-zinc-900">No projects found</p>
-              <p className="text-[13px] text-zinc-500 mt-1">Try adjusting your filters.</p>
+              <p className="text-[13px] text-zinc-600 mt-1">Try adjusting your filters.</p>
             </div>
           ) : (
             filtered.map((p, idx) => {
@@ -260,7 +260,7 @@ export default function AdminProjects() {
                       <p className="text-[14px] font-medium text-zinc-900 truncate group-hover:text-black">{p.name}</p>
                       {isSelected && <CornerDownLeft size={12} className="text-zinc-300 flex-shrink-0" />}
                     </div>
-                    <div className="flex items-center gap-1.5 mt-0.5 text-[12px] text-zinc-500 truncate">
+                    <div className="flex items-center gap-1.5 mt-0.5 text-[12px] text-zinc-600 truncate">
                       <span className="truncate">{p.builder.name}</span>
                       <span className="w-[3px] h-[3px] bg-zinc-300 rounded-full" />
                       <span className="truncate">{p.sector}</span>
@@ -307,7 +307,7 @@ export default function AdminProjects() {
                     >
                       <Trash2 size={14} />
                     </button>
-                    <div className="p-1.5 text-zinc-400">
+                    <div className="p-1.5 text-zinc-600">
                       <ChevronRight size={14} />
                     </div>
                   </div>

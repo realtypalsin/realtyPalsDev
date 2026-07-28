@@ -145,7 +145,7 @@ export default function AnalyticsDashboard() {
                 <Users size={18} strokeWidth={2.5} />
               </div>
             </div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Chats</p>
+            <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Total Chats</p>
             <p className="text-3xl font-bold text-slate-900 mt-2">{summary.totalChats}</p>
           </div>
 
@@ -157,9 +157,9 @@ export default function AnalyticsDashboard() {
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Searches</p>
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Total Searches</p>
               <p className="text-3xl font-bold text-slate-900 mt-2">{summary.totalQueries}</p>
-              <p className="text-xs text-slate-500 mt-3">{summary.avgQueriesPerChat} per chat</p>
+              <p className="text-xs text-slate-600 mt-3">{summary.avgQueriesPerChat} per chat</p>
             </div>
           </Link>
 
@@ -171,9 +171,9 @@ export default function AnalyticsDashboard() {
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Zero-Result Searches</p>
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Zero-Result Searches</p>
               <p className="text-3xl font-bold text-slate-900 mt-2">{summary.zeroResultSearches}</p>
-              <p className="text-xs text-slate-500 mt-3">{summary.zeroResultSearchRate}</p>
+              <p className="text-xs text-slate-600 mt-3">{summary.zeroResultSearchRate}</p>
             </div>
           </Link>
 
@@ -185,7 +185,7 @@ export default function AnalyticsDashboard() {
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Conversion Rate</p>
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Conversion Rate</p>
               <p className="text-3xl font-bold text-slate-900 mt-2">{summary.conversionRate}</p>
             </div>
           </Link>
@@ -212,7 +212,7 @@ export default function AnalyticsDashboard() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-slate-500 text-center py-8">No data yet</p>
+            <p className="text-slate-600 text-center py-8">No data yet</p>
           )}
         </div>
 
@@ -221,7 +221,7 @@ export default function AnalyticsDashboard() {
           <div className="flex items-center gap-2 mb-4">
             <h2 className="text-lg font-semibold text-slate-900">Conversion Funnel</h2>
             <div className="group relative">
-              <AlertCircle size={16} className="text-slate-400 cursor-help" />
+              <AlertCircle size={16} className="text-slate-600 cursor-help" />
               <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-slate-900 text-white text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 text-center shadow-xl">
                 This shows the user journey from starting a Chat, searching, clicking a property, saving it, and ultimately converting to a Lead.
                 <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-slate-900"></div>
@@ -243,7 +243,7 @@ export default function AnalyticsDashboard() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-slate-500 text-center py-8">No data yet</p>
+            <p className="text-slate-600 text-center py-8">No data yet</p>
           )}
         </div>
       </div>
@@ -255,7 +255,7 @@ export default function AnalyticsDashboard() {
           <div className="flex items-center gap-2 mb-4">
             <h2 className="text-lg font-semibold text-slate-900">Search Results Distribution</h2>
             <div className="group relative">
-              <AlertCircle size={16} className="text-slate-400 cursor-help" />
+              <AlertCircle size={16} className="text-slate-600 cursor-help" />
               <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-slate-900 text-white text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 text-center shadow-xl">
                 The proportion of searches that successfully found matching properties versus those that returned zero results.
                 <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-slate-900"></div>
@@ -287,7 +287,7 @@ export default function AnalyticsDashboard() {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-slate-500 text-center py-8">No data yet</p>
+            <p className="text-slate-600 text-center py-8">No data yet</p>
           )}
         </div>
 
@@ -320,7 +320,7 @@ export default function AnalyticsDashboard() {
               </div>
             </>
           ) : (
-            <p className="text-slate-500 text-center py-8">Loading...</p>
+            <p className="text-slate-600 text-center py-8">Loading...</p>
           )}
         </div>
       </div>
@@ -331,9 +331,9 @@ export default function AnalyticsDashboard() {
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-semibold text-slate-900">Search Analytics</h3>
-              <p className="text-xs text-slate-500 mt-1">Sector trends and builder demand</p>
+              <p className="text-xs text-slate-600 mt-1">Sector trends and builder demand</p>
             </div>
-            <span className="text-slate-400 group-hover:text-slate-900 transition-colors">→</span>
+            <span className="text-slate-600 group-hover:text-slate-900 transition-colors">→</span>
           </div>
         </Link>
 
@@ -341,9 +341,9 @@ export default function AnalyticsDashboard() {
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-semibold text-slate-900">Property Engagement</h3>
-              <p className="text-xs text-slate-500 mt-1">Views, saves, and interactions</p>
+              <p className="text-xs text-slate-600 mt-1">Views, saves, and interactions</p>
             </div>
-            <span className="text-slate-400 group-hover:text-slate-900 transition-colors">→</span>
+            <span className="text-slate-600 group-hover:text-slate-900 transition-colors">→</span>
           </div>
         </Link>
 
@@ -351,9 +351,9 @@ export default function AnalyticsDashboard() {
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-semibold text-slate-900">User Behavior</h3>
-              <p className="text-xs text-slate-500 mt-1">Sessions, patterns, and conversions</p>
+              <p className="text-xs text-slate-600 mt-1">Sessions, patterns, and conversions</p>
             </div>
-            <span className="text-slate-400 group-hover:text-slate-900 transition-colors">→</span>
+            <span className="text-slate-600 group-hover:text-slate-900 transition-colors">→</span>
           </div>
         </Link>
       </div>

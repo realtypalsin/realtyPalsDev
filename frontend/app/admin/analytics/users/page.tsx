@@ -77,12 +77,12 @@ export default function UsersAnalytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/admin/analytics" className="text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/admin/analytics" className="text-slate-600 hover:text-slate-900 transition-colors">
             <ArrowLeft size={20} />
           </Link>
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">User Behavior</h1>
-            <p className="text-sm text-slate-500 mt-1">Sessions, patterns, engagement, and conversions</p>
+            <p className="text-sm text-slate-600 mt-1">Sessions, patterns, engagement, and conversions</p>
           </div>
         </div>
         <button
@@ -155,7 +155,7 @@ export default function UsersAnalytics() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-slate-500 text-center py-8">No data yet</p>
+            <p className="text-slate-600 text-center py-8">No data yet</p>
           )}
         </div>
 
@@ -181,7 +181,7 @@ export default function UsersAnalytics() {
               ))}
             </div>
           ) : (
-            <p className="text-slate-500 text-center py-8">No sector searches yet</p>
+            <p className="text-slate-600 text-center py-8">No sector searches yet</p>
           )}
         </div>
       </div>
@@ -215,7 +215,7 @@ export default function UsersAnalytics() {
             })}
           </div>
         ) : (
-          <p className="text-slate-500 text-center py-8">No funnel data yet</p>
+          <p className="text-slate-600 text-center py-8">No funnel data yet</p>
         )}
       </div>
 
@@ -256,7 +256,7 @@ export default function UsersAnalytics() {
                     </td>
                     <td className="text-right py-3 px-4 text-slate-600 font-medium">{session.messageCount}</td>
                     <td className="text-right py-3 px-4 text-slate-600 font-medium">{session.queriesCount}</td>
-                    <td className="text-right py-3 px-4 text-slate-500 text-xs">
+                    <td className="text-right py-3 px-4 text-slate-600 text-xs">
                       {new Date(session.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
                   </tr>
@@ -265,7 +265,7 @@ export default function UsersAnalytics() {
             </table>
           </div>
         ) : (
-          <p className="text-slate-500 text-center py-8">No user sessions found in database</p>
+          <p className="text-slate-600 text-center py-8">No user sessions found in database</p>
         )}
       </div>
     </div>
