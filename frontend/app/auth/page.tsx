@@ -34,6 +34,8 @@ export default function AuthPage() {
         localStorage.setItem('user_id', data.session.user.id);
         router.replace('/discover');
       }
+    }).catch((err) => {
+      console.error('[auth-session-check] Failed:', err);
     });
     return () => { cancelled = true; };
 
@@ -43,7 +45,6 @@ export default function AuthPage() {
     e.preventDefault();
     if (!email.trim() || !password.trim() || loading) return;
     setLoading(true);
-    track('signup_started', { mode })
     setError('');
 
     try {
@@ -91,6 +92,7 @@ export default function AuthPage() {
           router.push('/discover');
         }
       } else {
+        track('signup_started', { mode })
         const { data, error: authError } = await supabase.auth.signUp({
           email: email.trim().toLowerCase(),
           password,
@@ -103,7 +105,7 @@ export default function AuthPage() {
           // Registration successful — show toast and switch to login with prefilled creds
           track('signup_completed')
 
-          setToast('Account created! Please sign in.');
+          setToast('Account created. Check your inbox to confirm your email, then sign in.');
           setMode('login');
           // email and password stay filled — user just clicks Sign In
         }
@@ -131,8 +133,6 @@ export default function AuthPage() {
       </div>
 
       {/* Ambient blobs */}
-      <div className="absolute top-[15%] left-[10%] w-[500px] h-[500px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Back button */}
       <div className="absolute top-8 left-8 z-20">
@@ -156,7 +156,7 @@ export default function AuthPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-[#111111]/80 backdrop-blur-3xl border border-white/10 rounded-[28px] p-8 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.5)] relative before:absolute before:inset-0 before:rounded-[28px] before:pointer-events-none before:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
+        <div className="bg-[#111111] border border-white/10 rounded-[28px] p-8 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.5)] relative">
           {/* Tabs */}
           <div className="flex bg-[#000000]/60 border border-white/5 rounded-2xl p-1 mb-8 gap-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">
 
@@ -164,9 +164,9 @@ export default function AuthPage() {
               <button
                 key={m}
                 onClick={() => switchMode(m)}
-                className={`flex-1 py-2.5 rounded-[14px] text-[13px] font-medium transition-all duration-300 ${mode === m
+                className={`flex-1 py-3.5 rounded-[14px] text-[13px] font-medium transition-all duration-300 ${mode === m
                     ? 'bg-white/[0.12] text-white shadow-[0_2px_8px_rgba(0,0,0,0.2)] ring-1 ring-white/10'
-                    : 'text-white/40 hover:text-white/80 hover:bg-white/[0.04]'
+                    : 'text-white/70 hover:text-white/80 hover:bg-white/[0.04]'
 
                   }`}
               >
@@ -178,7 +178,7 @@ export default function AuthPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div className="relative group">
-                <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-white/70 transition-colors pointer-events-none" />
+                <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/55 group-focus-within:text-white/70 transition-colors pointer-events-none" />
 
                 <input
                   type="text"
@@ -186,14 +186,14 @@ export default function AuthPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Full name"
                   autoComplete="name"
-                  className="w-full bg-[#000000]/40 border border-white/10 rounded-[14px] pl-[42px] pr-4 py-3.5 text-white placeholder:text-white/30 text-[14px] focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 focus:bg-[#000000]/60 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
+                  className="w-full bg-[#000000]/40 border border-white/10 rounded-[14px] pl-[42px] pr-4 py-3.5 text-white placeholder:text-white/60 text-[14px] focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/20 focus:bg-[#000000]/60 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
 
                 />
               </div>
             )}
 
             <div className="relative group">
-              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-white/70 transition-colors pointer-events-none" />
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/55 group-focus-within:text-white/70 transition-colors pointer-events-none" />
 
               <input
                 type="email"
@@ -202,12 +202,12 @@ export default function AuthPage() {
                 placeholder="Email address"
                 required
                 autoComplete="email"
-                className="w-full bg-[#000000]/40 border border-white/10 rounded-[14px] pl-[42px] pr-4 py-3.5 text-white placeholder:text-white/30 text-[14px] focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 focus:bg-[#000000]/60 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
+                className="w-full bg-[#000000]/40 border border-white/10 rounded-[14px] pl-[42px] pr-4 py-3.5 text-white placeholder:text-white/60 text-[14px] focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/20 focus:bg-[#000000]/60 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
               />
             </div>
 
             <div className="relative group">
-              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-white/70 transition-colors pointer-events-none" />
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/55 group-focus-within:text-white/70 transition-colors pointer-events-none" />
 
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -217,15 +217,15 @@ export default function AuthPage() {
                 required
                 minLength={6}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                className="w-full bg-[#000000]/40 border border-white/10 rounded-[14px] pl-[42px] pr-12 py-3.5 text-white placeholder:text-white/30 text-[14px] focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 focus:bg-[#000000]/60 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
+                className="w-full bg-[#000000]/40 border border-white/10 rounded-[14px] pl-[42px] pr-12 py-3.5 text-white placeholder:text-white/60 text-[14px] focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/20 focus:bg-[#000000]/60 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
 
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/80 transition-colors p-2 rounded-lg"
-
-                tabIndex={-1}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/55 hover:text-white/80 transition-colors p-2.5 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -242,24 +242,21 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="relative w-full group overflow-hidden bg-white hover:bg-gray-50 active:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold py-3.5 rounded-[14px] transition-all duration-200 text-[14px] mt-2 flex items-center justify-center shadow-[0_4px_14px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.23)]"
+              aria-busy={loading}
+              className="relative w-full group overflow-hidden bg-white hover:bg-gray-50 active:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold py-3.5 rounded-[14px] transition-all duration-200 text-[14px] mt-2 flex items-center justify-center gap-2 shadow-[0_4px_14px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.23)]"
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-
-              ) : (
-                mode === 'login' ? 'Sign In' : 'Create Account'
-              )}
+              {loading && <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />}
+              <span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span>
             </button>
           </form>
 
           <div className="flex items-center gap-3 my-5">
             <div className="flex-1 h-px bg-white/[0.06]" />
-            <span className="text-white/20 text-[11px]">or</span>
+            <span className="text-white/60 text-[11px]">or</span>
             <div className="flex-1 h-px bg-white/[0.06]" />
           </div>
 
-          <p className="text-center text-white/30 text-[12px]">
+          <p className="text-center text-white/70 text-[12px]">
             {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
             <button
               onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
@@ -273,7 +270,7 @@ export default function AuthPage() {
         <div className="flex justify-center mt-8">
           <button
             onClick={() => router.push('/discover')}
-            className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] hover:border-white/[0.1] text-white/50 hover:text-white text-[13px] font-medium transition-all duration-300"
+            className="group flex items-center gap-2 px-5 py-3 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] hover:border-white/[0.1] text-white/50 hover:text-white text-[13px] font-medium transition-all duration-300"
           >
             Continue as guest
             <span className="group-hover:translate-x-0.5 transition-transform duration-300">→</span>
