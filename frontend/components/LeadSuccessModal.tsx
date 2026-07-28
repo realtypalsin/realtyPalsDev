@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import {  m, AnimatePresence  } from 'framer-motion'
 import { CheckCircle2, Calendar, Phone, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -15,6 +16,18 @@ interface Props {
 
 export default function LeadSuccessModal({ type, projectName, name, visitDate, timeSlot, onClose }: Props) {
   const router = useRouter()
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleEscape)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [onClose])
 
   return (
     <AnimatePresence>

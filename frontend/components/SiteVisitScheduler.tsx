@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {  m, AnimatePresence  } from 'framer-motion'
 import { Calendar, Clock, User, X } from 'lucide-react'
 
@@ -49,6 +49,18 @@ export default function SiteVisitScheduler({ projectId, projectSlug, projectName
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successData, setSuccessData] = useState<{ name: string; visitDate: string; timeSlot: string } | null>(null)
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleEscape)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [onClose])
 
   const dates = getDates(14)
 
