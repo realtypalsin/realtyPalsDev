@@ -224,7 +224,7 @@ export default function Sidebar({
                     if (window.innerWidth < 768) closeMobile();
                     else onToggleCollapse?.();
                   }}
-                  className="p-2 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                  className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                   title="Close sidebar"
                   aria-label="Toggle sidebar"
                   aria-expanded={!isCollapsed}
@@ -246,7 +246,7 @@ export default function Sidebar({
               </Link>
               <button
                 onClick={onToggleCollapse}
-                className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-200"
+                className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-200"
                 title="Open sidebar"
                 aria-label="Toggle sidebar"
                 aria-expanded={!isCollapsed}
@@ -277,12 +277,12 @@ export default function Sidebar({
             ) : (
               <>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 flex items-center justify-center bg-transparent rounded-md text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                  <div className="w-5 h-5 flex items-center justify-center bg-transparent rounded-md text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                     <SquarePen size={18} strokeWidth={2} />
                   </div>
                   <span className="text-[13px] tracking-wide">{isNavigating ? 'Creating...' : 'New chat'}</span>
                 </div>
-                <kbd className="hidden group-hover:inline-flex items-center justify-center h-5 px-1.5 text-[10px] font-medium font-mono text-gray-400 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                <kbd className="hidden group-hover:inline-flex items-center justify-center h-5 px-1.5 text-[10px] font-medium font-mono text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
                   Ctrl + N
                 </kbd>
               </>
@@ -292,7 +292,7 @@ export default function Sidebar({
         
         {/* Fixed Menu Section */}
         <div className="w-full shrink-0 px-3 pb-4">
-          {!isCollapsed && <div className="text-[11px] text-gray-500 uppercase tracking-wider mb-2 px-3 font-semibold mt-1">Menu</div>}
+          {!isCollapsed && <div className="text-[11px] text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2 px-3 font-semibold mt-1">Menu</div>}
           <div className="space-y-1 w-full">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -313,11 +313,11 @@ export default function Sidebar({
                   className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-2.5 px-3 py-2 rounded-[14px]'} ${
                     isActive
                       ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
+                      : 'text-gray-600 dark:text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
                   }`}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  <Icon size={18} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-white' : 'text-gray-500 group-hover/navitem:text-gray-700 dark:text-gray-400 dark:group-hover/navitem:text-gray-200'} />
+                  <Icon size={18} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-white' : 'text-gray-700 dark:text-gray-300 group-hover/navitem:text-gray-700 dark:text-gray-600 dark:text-gray-400 dark:group-hover/navitem:text-gray-200'} />
                   {!isCollapsed && <span className={`text-[14px] font-medium tracking-wide ${isActive ? 'text-white' : ''}`}>{item.label}</span>}
                 </Link>
               </div>
@@ -329,13 +329,13 @@ export default function Sidebar({
         {/* Fixed Recent Chats Header */}
         {!isCollapsed && (userId || guestToken) && (
           <div className="w-full shrink-0 px-3 pb-2 pt-2">
-            <div className="text-[11px] text-gray-500 uppercase tracking-wider px-3 font-semibold flex items-center justify-between">
+            <div className="text-[11px] text-gray-700 dark:text-gray-300 uppercase tracking-wider px-3 font-semibold flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Clock size={12} strokeWidth={2} />
                 <span>Recent</span>
               </div>
               {sessions.length > 0 && (
-                <span className="text-[9px] normal-case font-medium text-gray-400 opacity-70">
+                <span className="text-[9px] normal-case font-medium text-gray-600 dark:text-gray-400 opacity-70">
                   double-click to rename
                 </span>
               )}
@@ -366,14 +366,14 @@ export default function Sidebar({
                     Couldn&apos;t load chats
                   </div>
                 ) : grouped.length === 0 ? (
-                  <div className="px-3 py-2 text-[12px] text-gray-400">
+                  <div className="px-3 py-2 text-[12px] text-gray-600 dark:text-gray-400">
                     No chats yet
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {grouped.map(({ label: groupLabel, items }) => (
                       <div key={groupLabel}>
-                        <div className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider px-2 mb-1">
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 dark:text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider px-2 mb-1">
                           {groupLabel}
                         </div>
                         <div className="space-y-0.5">
@@ -425,7 +425,7 @@ export default function Sidebar({
                     <LogOut 
                       size={14} 
                       strokeWidth={2} 
-                      className="text-gray-400 hover:text-red-500 transition-colors" 
+                      className="text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors" 
                       onClick={(e) => { e.stopPropagation(); handleLogout(); closeMobile(); }}
                     />
                   </div>
@@ -440,7 +440,7 @@ export default function Sidebar({
           ) : (
             <button
               onClick={() => { router.push('/auth'); closeMobile(); }}
-              className={`w-full flex items-center gap-2.5 rounded-xl transition-all duration-200 overflow-hidden text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 ${isCollapsed ? 'justify-center p-0 w-10 h-10 mx-auto' : 'justify-start px-3 py-2'}`}
+              className={`w-full flex items-center gap-2.5 rounded-xl transition-all duration-200 overflow-hidden text-gray-600 dark:text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200 ${isCollapsed ? 'justify-center p-0 w-10 h-10 mx-auto' : 'justify-start px-3 py-2'}`}
               title={isCollapsed ? "Sign in" : undefined}
             >
               <LogOut size={18} strokeWidth={1.5} className="shrink-0 rotate-180" />
