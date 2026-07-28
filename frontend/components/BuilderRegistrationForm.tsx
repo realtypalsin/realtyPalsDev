@@ -24,6 +24,7 @@ export default function BuilderRegistrationForm() {
   const [toast, setToast] = useState<{ message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [applicationId, setApplicationId] = useState<string>('')
+  const [stepErrors, setStepErrors] = useState<Record<string, string[]>>({})
 
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '+91', landline: '', cin: '', website: '', headquarters: '',
@@ -48,7 +49,35 @@ export default function BuilderRegistrationForm() {
 
   const currentIdx = STEPS.indexOf(activeStep)
 
+  const validateStep = (step: FormStep): string[] => {
+    const errors: string[] = []
+    if (step === 'company') {
+      if (!formData.name.trim()) errors.push('Company name required')
+      if (!formData.email.trim()) errors.push('Email required')
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.push('Invalid email')
+      if (!formData.phone.trim() || !/^\+91\d{10}$/.test(formData.phone)) errors.push('Phone: +91 + 10 digits')
+      if (!formData.cin.trim()) errors.push('CIN required')
+      if (!/^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/.test(formData.cin.toUpperCase())) errors.push('Invalid CIN format')
+    }
+    if (step === 'legal') {
+      const hasValidLegal = formData.legalEntities.some(e => e.name?.trim() && e.registration_number?.trim())
+      if (!hasValidLegal) errors.push('Add at least one legal entity')
+    }
+    if (step === 'team') {
+      const hasValidExec = formData.executives.some(e => e.name?.trim() && e.title?.trim())
+      if (!hasValidExec) errors.push('Add at least one executive')
+    }
+    return errors
+  }
+
   const handleNext = () => {
+    const errors = validateStep(activeStep)
+    if (errors.length > 0) {
+      setStepErrors({ ...stepErrors, [activeStep]: errors })
+      setToast({ message: errors[0] })
+      return
+    }
+    setStepErrors({ ...stepErrors, [activeStep]: [] })
     if (currentIdx < STEPS.length - 1) setActiveStep(STEPS[currentIdx + 1])
   }
 

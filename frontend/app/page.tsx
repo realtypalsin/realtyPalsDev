@@ -75,8 +75,8 @@ export default function LandingPage() {
         </h1>
         
         {/* Subtitle */}
-        <p 
-          className="mt-6 text-[15px] md:text-[17px] text-white/50 max-w-xl tracking-tight leading-relaxed animate-fade-in-up"
+        <p
+          className="mt-6 text-[15px] md:text-[17px] text-white/80 max-w-xl tracking-tight leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
           Research RERA-verified projects, compare builders and prices in ₹ Lakh/Cr, and get straight answers — no listings spam, no broker calls.
