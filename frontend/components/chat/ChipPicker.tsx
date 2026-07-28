@@ -110,9 +110,9 @@ function ChipButton({ chip, onAction }: { chip: ChipAction; onAction: (chip: Chi
   if (!chip.label || !chip.label.trim()) return null
 
   const handleClick = () => {
-    // Debounce: ignore clicks within 500ms of the last one
+    // Debounce: ignore clicks within 600ms of the last one
     const now = Date.now()
-    if (now - lastClickRef.current < 500) return
+    if (now - lastClickRef.current < 600) return
     lastClickRef.current = now
 
     if (hasDropdown) {
