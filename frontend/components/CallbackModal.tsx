@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, m } from 'framer-motion';
 import { PhoneCall, User, Phone, X, ShieldCheck, CheckCircle2, Loader2, Sparkles, Building2 } from 'lucide-react';
 import { API_BASE } from '@/lib/env';
@@ -20,6 +20,20 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
   const [form, setForm] = useState({ name: '', phone: '' });
   const [intentTier, setIntentTier] = useState<IntentTier>('immediate');
   const [loanStatus, setLoanStatus] = useState<'pre_approved' | 'need_help' | 'cash' | undefined>(undefined);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [onClose]);
   const [consentGiven, setConsentGiven] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
