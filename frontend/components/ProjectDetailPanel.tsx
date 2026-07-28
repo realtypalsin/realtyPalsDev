@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {  AnimatePresence, m  } from 'framer-motion'
 import Image from 'next/image'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
@@ -60,10 +61,15 @@ type Tab = typeof SECTION_TABS[number]
 const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid' }
 
 export default function ProjectDetailPanel({ project, onClose, inline, initialDetail, userId }: Props) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [detail, setDetail]           = useState<ProjectDetail | null>(initialDetail ?? null)
   const [documents, setDocuments]     = useState<ProjectDocumentPublic[]>([])
   const [loading, setLoading]         = useState(false)
-  const [activeTab, setActiveTab]     = useState<Tab>('Overview')
+  const [activeTab, setActiveTab]     = useState<Tab>(() => {
+    const tab = searchParams.get('tab')
+    return (SECTION_TABS.includes(tab as Tab) ? tab : 'Overview') as Tab
+  })
   const [paymentPlan, setPaymentPlan] = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; message?: string }>({ loaded: false, available: false, data: null })
   const [costSheet, setCostSheet]     = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; illustration: Record<string, number | null> | null; note?: string; message?: string }>({ loaded: false, available: false, data: null, illustration: null })
   const [showVisitScheduler, setShowVisitScheduler] = useState(false)
@@ -86,6 +92,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       scrollContainerMobileRef.current.scrollTo({ top: 0, behavior: 'auto' })
     }
   }, [activeTab])
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams)
+    params.set('tab', activeTab)
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }, [activeTab, router, searchParams])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)')
@@ -435,6 +447,17 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
              <span className="font-bold text-gray-900 dark:text-gray-100 text-[14px] truncate">{d?.name}</span>
            </div>
+           {d?.rera_number && (
+             <a
+               href={d?.rera_url || `https://maharerait.mahaonline.gov.in/PublicSearchRera.aspx?Action=GetProjectDetail&ProjectId=${encodeURIComponent(d.rera_number)}`}
+               target="_blank"
+               rel="noopener noreferrer"
+               title="View RERA registration"
+               className="px-2 py-1 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded text-[11px] font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex-shrink-0 whitespace-nowrap"
+             >
+               RERA: {d.rera_number}
+             </a>
+           )}
            <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0 hidden md:block" />
         </div>
 

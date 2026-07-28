@@ -1257,9 +1257,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             <button
               type="button"
               onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
-              className="mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-gradient-to-br from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 hover:shadow-[0_6px_16px_rgba(37,99,235,0.45)] active:scale-95"
-              title="Send"
-              aria-label="Send message"
+              disabled={!isOnline}
+              className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] active:scale-95 ${isOnline ? 'bg-gradient-to-br from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 hover:shadow-[0_6px_16px_rgba(37,99,235,0.45)]' : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50'}`}
+              title={isOnline ? 'Send' : 'You\'re offline'}
+              aria-label={isOnline ? 'Send message' : 'Send disabled - you\'re offline'}
             >
               <ArrowUp size={20} className="text-current" strokeWidth={3} />
             </button>
@@ -1606,8 +1607,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   className={`absolute bottom-0 left-0 right-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-8 pointer-events-none bg-transparent ${keyboardOpen ? 'pb-safe' : ''}`}
                   style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
                 >
-                  <div className="px-4 w-full max-w-[880px] flex flex-col justify-center pointer-events-auto">
-
+                  <div className="px-4 w-full max-w-[880px] flex flex-col justify-center pointer-events-auto gap-2">
+                    {!isOnline && (
+                      <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                        <span>●</span>
+                        <span>You're offline. Messages will be queued when you're back online.</span>
+                      </div>
+                    )}
                     {chatInputForm}
                   </div>
                 </m.div>
