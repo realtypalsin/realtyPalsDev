@@ -78,6 +78,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const submitLockRef = useRef(false);
   const [rateLimitUntil, setRateLimitUntil] = useState<number | null>(null);
   const [sessionTitle, setSessionTitle] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? navigator.onLine : true);
   const [chatTurnCount, setChatTurnCount] = useState(0);
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [showContextWarning, setShowContextWarning] = useState(false);
@@ -129,6 +130,18 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
   // Notify parent of session changes for sidebar highlighting
   useEffect(() => { onSessionChange?.(sessionId) }, [sessionId, onSessionChange])
+
+  // Track online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Sync state to local session cache so switching chats is seamless
   useEffect(() => {
