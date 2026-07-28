@@ -1,7 +1,5 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-
 interface HomeButtonsProps {
   onPrompt: (text: string) => void
   disabled?: boolean
