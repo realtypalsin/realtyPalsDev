@@ -105,10 +105,10 @@ export default function AnalyticsDashboard() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-8 pb-12">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Analytics Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1 font-medium">Real-time insights into user searches, engagement, and AI performance</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Analytics</h1>
+          <p className="text-sm text-slate-600 mt-2">User searches, engagement, and system performance</p>
         </div>
         <button
           onClick={load}
@@ -139,64 +139,64 @@ export default function AnalyticsDashboard() {
       ) : summary ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Total Chats */}
-          <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all group">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-800 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Users size={18} strokeWidth={2} />
+          <div className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all group">
+            <div className="flex justify-between items-start mb-5">
+              <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
+                <Users size={18} strokeWidth={2.5} />
               </div>
             </div>
-            <p className="text-sm text-slate-600 font-medium">Total Chats</p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">{summary.totalChats}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Chats</p>
+            <p className="text-3xl font-bold text-slate-900 mt-2">{summary.totalChats}</p>
           </div>
 
           {/* Total Searches */}
-          <Link href="/admin/analytics/search" className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all group flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-800 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                <TrendingUp size={18} strokeWidth={2} />
+          <Link href="/admin/analytics/search" className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all group flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-5">
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-200">
+                <TrendingUp size={18} strokeWidth={2.5} />
               </div>
             </div>
             <div>
-              <p className="text-sm text-slate-600 font-medium">Total Searches</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{summary.totalQueries}</p>
-              <p className="text-xs text-slate-500 mt-2">{summary.avgQueriesPerChat} per chat</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Searches</p>
+              <p className="text-3xl font-bold text-slate-900 mt-2">{summary.totalQueries}</p>
+              <p className="text-xs text-slate-500 mt-3">{summary.avgQueriesPerChat} per chat</p>
             </div>
           </Link>
 
           {/* Zero-Result Searches */}
-          <Link href="/admin/analytics/quality" className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all group flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-800 group-hover:bg-red-600 group-hover:text-white transition-colors">
-                <AlertCircle size={18} strokeWidth={2} />
+          <Link href="/admin/analytics/quality" className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all group flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-5">
+              <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors duration-200">
+                <AlertCircle size={18} strokeWidth={2.5} />
               </div>
             </div>
             <div>
-              <p className="text-sm text-slate-600 font-medium">Zero-Result Searches</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{summary.zeroResultSearches}</p>
-              <p className="text-xs text-slate-500 mt-2">{summary.zeroResultSearchRate}</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Zero-Result Searches</p>
+              <p className="text-3xl font-bold text-slate-900 mt-2">{summary.zeroResultSearches}</p>
+              <p className="text-xs text-slate-500 mt-3">{summary.zeroResultSearchRate}</p>
             </div>
           </Link>
 
           {/* Conversion Rate */}
-          <Link href="/admin/analytics/users" className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all group flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-800 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                <Target size={18} strokeWidth={2} />
+          <Link href="/admin/analytics/users" className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all group flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-5">
+              <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-200">
+                <Target size={18} strokeWidth={2.5} />
               </div>
             </div>
             <div>
-              <p className="text-sm text-slate-600 font-medium">Conversion Rate</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{summary.conversionRate}</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Conversion Rate</p>
+              <p className="text-3xl font-bold text-slate-900 mt-2">{summary.conversionRate}</p>
             </div>
           </Link>
         </div>
       ) : null}
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
         {/* Top Sectors */}
-        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Top Searched Sectors</h2>
+        <div className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.1)] border border-slate-200">
+          <h2 className="text-base font-semibold text-slate-900 mb-5">Top Searched Sectors</h2>
           {loading ? (
             <Skeleton className="w-full h-[300px] rounded-xl" />
           ) : summary?.topSectors && summary.topSectors.length > 0 ? (
