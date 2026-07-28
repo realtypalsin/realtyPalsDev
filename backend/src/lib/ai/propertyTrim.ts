@@ -16,16 +16,9 @@ export interface TrimmedProperty {
   concerns?: string[] | null;
   bhk?: number | null;
   builder?: { name: string } | null;
-  pricingTiers?: Array<{ name: string; downPayment?: number; emi?: number }> | null;
 }
 
 export function trimPropertyForPrompt(project: any): TrimmedProperty {
-  const pricingTiers = project.pricingTiers ? project.pricingTiers.map((t: any) => ({
-    name: t.name,
-    downPayment: t.down_payment_pct,
-    emi: t.emi_range_min
-  })) : null;
-
   return {
     id: project.id,
     name: project.name,
@@ -36,7 +29,6 @@ export function trimPropertyForPrompt(project: any): TrimmedProperty {
     concerns: project.concerns,
     bhk: project.bhk,
     builder: project.builder ? { name: project.builder.name } : null,
-    pricingTiers: pricingTiers && pricingTiers.length > 0 ? pricingTiers : null,
   };
 }
 

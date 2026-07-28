@@ -92,7 +92,7 @@ export async function generateDynamicChips(
   if (amenCount > 0) {
     coreChips.push(
       chip(`TEXT_MESSAGE:amenities:${pIds}`, 'TEXT_MESSAGE', 'Explore amenities', '',
-        { actionPrefix: 'List key amenities for', projects: projectsList }, coreChips.length + 1)
+        { text: `What amenities are available in ${topProject.name}?` }, coreChips.length + 1)
     )
   }
 

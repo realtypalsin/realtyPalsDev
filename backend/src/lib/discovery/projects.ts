@@ -52,14 +52,6 @@ const PROJECT_INCLUDE = {
   images: { take: 3, orderBy: { sort_order: 'asc' as const } },
   amenities: { take: 10 },
   connectivity: { take: 5, orderBy: { distance_km: 'asc' as const } },
-  pricingTiers: {
-    select: {
-      name: true,
-      down_payment_pct: true,
-      emi_range_min: true,
-      emi_range_max: true,
-    },
-  },
   recommendation_profile: {
     select: {
       tier: true,
