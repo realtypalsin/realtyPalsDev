@@ -1,6 +1,7 @@
 // backend/src/lib/ai/compression.ts
 import Groq from 'groq-sdk'
 import OpenAI from 'openai'
+import { GoogleGenAI } from '@google/genai'
 import { MODELS } from '../config'
 
 const COMPRESSION_THRESHOLD = 14
@@ -36,11 +37,31 @@ export async function maybeCompress(
   const toCompress = messages.slice(0, messages.length - KEEP_RECENT)
   const recent = messages.slice(messages.length - KEEP_RECENT)
 
-  if (!process.env.OPENAI_API_KEY && !process.env.GROQ_API_KEY) {
+  if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.GROQ_API_KEY) {
     return { messages: recent, newSummary: existingSummary ?? null }
   }
 
   const context = toCompress.map((m) => `${m.role}: ${m.content}`).join('\n')
+
+  try {
+    if (process.env.GEMINI_API_KEY) {
+      const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      const res = await client.models.generateContent({
+        model: MODELS.GEMINI_LITE,
+        contents: [{ role: 'user', parts: [{ text: context }] }],
+        config: {
+          systemInstruction: COMPRESSION_PROMPT,
+          maxOutputTokens: 256,
+          temperature: 0.1,
+        },
+      })
+      const rawSummary = res.text?.trim() ?? ''
+      const combined = existingSummary ? `${existingSummary}\n\n${rawSummary}` : rawSummary
+      return { messages: recent, newSummary: sanitizeSummary(combined) }
+    }
+  } catch (err) {
+    console.warn('[compression] Gemini failed, trying OpenAI:', (err as Error).message)
+  }
 
   try {
     if (process.env.OPENAI_API_KEY) {

@@ -1,3 +1,5 @@
+import { GoogleGenAI } from '@google/genai'
+import OpenAI from 'openai'
 import { getGroq } from '../groq'
 import { MODELS } from '../../config'
 import type { ChipAction } from '../../discovery/conversationEngine'
@@ -22,56 +24,91 @@ Example output:
 }
 `
 
+function parseChipQuestions(content: string): string[] {
+  if (!content) return []
+  try {
+    const parsed = JSON.parse(content)
+    if (Array.isArray(parsed)) return parsed
+    if (parsed.questions && Array.isArray(parsed.questions)) return parsed.questions
+  } catch (e) {
+    console.error('[CHIPS:LLM] failed to parse JSON', content)
+  }
+  return []
+}
+
+async function tryGemini(systemPrompt: string, historyText: string): Promise<string[]> {
+  if (!process.env.GEMINI_API_KEY) return []
+  const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+  const res = await client.models.generateContent({
+    model: MODELS.GEMINI_LITE,
+    contents: [{ role: 'user', parts: [{ text: historyText }] }],
+    config: {
+      systemInstruction: systemPrompt,
+      temperature: 0.5,
+      responseMimeType: 'application/json',
+    },
+  })
+  return parseChipQuestions(res.text?.trim() ?? '')
+}
+
+async function tryOpenAI(systemPrompt: string, historyText: string): Promise<string[]> {
+  if (!process.env.OPENAI_API_KEY) return []
+  const client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: 'https://models.inference.ai.azure.com',
+  })
+  const res = await client.chat.completions.create({
+    model: MODELS.FALLBACK,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: historyText },
+    ],
+    temperature: 0.5,
+    response_format: { type: 'json_object' },
+  })
+  return parseChipQuestions(res.choices[0]?.message?.content?.trim() ?? '')
+}
+
+async function tryGroq(systemPrompt: string, historyText: string): Promise<string[]> {
+  if (!process.env.GROQ_API_KEY) return []
+  const groq = getGroq()
+  const res = await groq.chat.completions.create({
+    model: MODELS.GROQ_FAST,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: historyText },
+    ],
+    temperature: 0.5,
+    response_format: { type: 'json_object' },
+  })
+  return parseChipQuestions(res.choices[0]?.message?.content?.trim() ?? '')
+}
+
 export async function generateContextualLLMChips(
   chatHistory: { role: string; content: string }[],
   priorityStart: number
 ): Promise<ChipAction[]> {
-  try {
-    const groq = getGroq()
-    const historyText = chatHistory.slice(-10).map(m => `${m.role}: ${m.content}`).join('\n')
-    
-    if (!historyText) return []
+  const historyText = chatHistory.slice(-10).map(m => `${m.role}: ${m.content}`).join('\n')
+  if (!historyText) return []
 
-    const response = await groq.chat.completions.create({
-      model: MODELS.GROQ_FAST, // e.g. llama3-8b-8192
-      messages: [
-        { role: 'system', content: CHIP_SYSTEM_PROMPT },
-        { role: 'user', content: historyText }
-      ],
-      temperature: 0.5,
-      response_format: { type: 'json_object' } // well, array isn't technically json_object but some models enforce { "chips": [] }. Let's use json_object with a fixed schema.
-    })
-
-    // To be safe with JSON_OBJECT, change prompt to output { "questions": ["..."] }
-    // Let's parse it safely:
-    const content = response.choices[0]?.message?.content || ''
-    
-    let questions: string[] = []
+  let questions: string[] = []
+  for (const attempt of [tryGemini, tryOpenAI, tryGroq]) {
     try {
-      const parsed = JSON.parse(content)
-      if (Array.isArray(parsed)) {
-        questions = parsed
-      } else if (parsed.questions && Array.isArray(parsed.questions)) {
-        questions = parsed.questions
-      }
-    } catch (e) {
-      console.error('[CHIPS:LLM] failed to parse JSON', content)
+      questions = await attempt(CHIP_SYSTEM_PROMPT, historyText)
+      if (questions.length > 0) break
+    } catch (error) {
+      console.error(`[CHIPS:LLM] ${attempt.name} failed, trying next provider`, error)
     }
-
-    return questions.slice(0, 3).map((q, idx) => 
-      chip(
-        `llm_chip_${idx}`,
-        'TEXT_MESSAGE',
-        // eslint-disable-next-line no-misleading-character-class
-        q.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]+/g, '').trim(), // strip any emojis LLM might add
-        '',
-        { text: q },
-        priorityStart + idx
-      )
-    )
-
-  } catch (error) {
-    console.error('[CHIPS:LLM] Error generating contextual chips', error)
-    return []
   }
+
+  return questions.slice(0, 3).map((q, idx) =>
+    chip(
+      `llm_chip_${idx}`,
+      'TEXT_MESSAGE',
+      q.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim(), // strip any emojis LLM might add
+      '',
+      { text: q },
+      priorityStart + idx
+    )
+  )
 }
