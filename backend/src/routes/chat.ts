@@ -16,6 +16,7 @@ import { maybeCompress } from '../lib/ai/compression'
 import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
 import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
+import { streamWithGemini, GeminiStreamStallError } from '../lib/ai/gemini'
 import { classifyIntent, routeToModel } from '../lib/ai/intentClassifier'
 import { trimPropertiesForPrompt } from '../lib/ai/propertyTrim'
 import { getChipInventory } from '../lib/discovery/chipInventory'
@@ -231,7 +232,14 @@ Keep responses concise — you have a 1024-token limit in this mode.`
 
 const BodySchema = z.object({
   action: z.discriminatedUnion('type', [
-    z.object({ type: z.literal('TEXT_MESSAGE'), payload: z.object({ text: z.string() }) }),
+    z.object({
+      type: z.literal('TEXT_MESSAGE'),
+      payload: z.object({
+        text: z.string().optional(),
+        query: z.string().optional(),
+        label: z.string().optional(),
+      }).passthrough().transform(p => ({ text: p.text || p.query || p.label || '' }))
+    }),
     z.object({ type: z.literal('INTENT_PATCH'), payload: z.record(z.unknown()) }),
     z.object({ type: z.literal('COMPARE_PROPERTIES'), payload: z.record(z.unknown()) }),
     z.object({ type: z.literal('CALCULATE_EMI'), payload: z.record(z.unknown()) }),
@@ -239,7 +247,7 @@ const BodySchema = z.object({
     z.object({ type: z.literal('REMOVE_FILTER'), payload: z.record(z.unknown()) }),
     z.object({ type: z.literal('OPEN_TOOL'), payload: z.record(z.unknown()) }),
   ]),
-  sessionId: z.string().uuid().optional(),
+  sessionId: z.string().nullable().optional(),
   guestToken: z.string().optional(),
   intent: IntentSchema.optional(),
 })
@@ -285,7 +293,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   // ─── ANALYTICS: Initialize chat tracking
-  await initializeChatAnalytics(sessionId, userId, guestToken)
+  await initializeChatAnalytics(sessionId ?? undefined, userId, guestToken ?? undefined)
 
   const rlKey = userId ?? guestToken!
   const ip = clientIp(req)
@@ -697,12 +705,39 @@ router.post('/', async (req: Request, res: Response) => {
     }
     if (!needsClarification && disambiguationText === null) {
 
-    // Using GitHub Models API (via Azure OpenAI) as Primary
-    try {
-      if (!process.env.OPENAI_API_KEY) throw new Error('No OPENAI_API_KEY configured');
-      console.log('[CHAT] START streamWithOpenAI', Date.now())
-      fullText = await streamWithOpenAI(systemPrompt, messages, send, async (name, args: any) => {
+    // Tool dispatch — shared across every provider so Gemini/OpenAI both call
+    // into the exact same 15 handlers. Groq gets no tools (documented below).
+    const handleToolCall = async (name: string, args: any): Promise<any> => {
         try {
+          if (name === 'payment_plan_lookup') {
+            const pName = args.project_name ?? args.name ?? '';
+            const proj = await prisma.project.findFirst({
+              where: { name: { contains: pName, mode: 'insensitive' } },
+              include: { payment_plan: true, cost_sheet: true }
+            });
+            if (proj && proj.payment_plan && Array.isArray((proj.payment_plan as any).milestones) && ((proj.payment_plan as any).milestones.length > 0)) {
+              return {
+                found: true,
+                project_name: proj.name,
+                plan_name: proj.payment_plan.plan_name ?? 'Custom Payment Plan',
+                milestones: proj.payment_plan.milestones,
+                notes: proj.payment_plan.notes ?? null,
+                cost_sheet: proj.cost_sheet ? {
+                  base_price_per_sqft: proj.cost_sheet.base_price_per_sqft,
+                  gst_rate_pct: proj.cost_sheet.gst_rate_pct,
+                  stamp_duty_pct: proj.cost_sheet.stamp_duty_pct,
+                  registration_pct: proj.cost_sheet.registration_pct
+                } : undefined
+              };
+            }
+            const nameToUse = proj ? proj.name : pName;
+            return {
+              found: false,
+              project_name: nameToUse,
+              message: `Payment plan details for ${nameToUse} are available on request. Custom payment structures (including Construction-Linked, Down Payment, and Flexi options) can be tailored with our team. Instruct the user to connect with our RealtyPals team via the 'Book Site Visit' or 'Callback' button for custom payment slabs.`
+            };
+          }
+
           if (name === 'builder_lookup') {
           const rec = await getBuilderRecord(args.name ?? '');
           return rec ?? {
@@ -730,7 +765,7 @@ router.post('/', async (req: Request, res: Response) => {
           const content = await readPage(url, 2000);
           return content
             ? { rera_page: content, source: url }
-            : { rera_page: null, message: 'Could not fetch the RERA page. Advise the user to verify directly at up-rera.in.' };
+            : { rera_page: null, message: 'Could not fetch live RERA details. Advise the user that verified RERA status is available on the RealtyPals project card or through our advisor team.' };
         }
 
         if (name === 'commute') {
@@ -891,51 +926,92 @@ router.post('/', async (req: Request, res: Response) => {
           console.error(`[CHAT:TOOL_ERROR] ${name}:`, toolErr);
           return { error: `Tool ${name} failed to execute. Tell the user this information is temporarily unavailable.` };
         }
-      }, undefined, userId, currentSessionId);
-      console.log('[CHAT] END streamWithOpenAI', Date.now(), { fullTextLen: fullText.length })
+    };
+
+    // Using Gemini as Primary
+    try {
+      if (!process.env.GEMINI_API_KEY) throw new Error('No GEMINI_API_KEY configured');
+      console.log('[CHAT] START streamWithGemini', Date.now())
+      fullText = await streamWithGemini(systemPrompt, messages, send, handleToolCall);
+      console.log('[CHAT] END streamWithGemini', Date.now(), { fullTextLen: fullText.length })
     } catch (err) {
-      console.warn('[chat] OpenAI stream failed:', (err as Error).message);
+      console.warn('[chat] Gemini stream failed:', (err as Error).message);
 
       // Mid-stream stall: tokens were already sent to the SSE client.
-      // A Groq fallback would append a second response to the same partial stream —
-      // corrupting the UI. Re-throw so the outer catch sends a clean error event
-      // and res.end() closes the connection. No session is persisted (correct —
-      // the user retries with a clean slate).
-      if (err instanceof StreamStallError && err.tokensSent) {
+      // A fallback would append a second response to the same partial stream —
+      // corrupting the UI. Persist the partial message instead (matches the
+      // existing OpenAI-tier stall behavior below).
+      if (err instanceof GeminiStreamStallError && err.tokensSent) {
         console.error('[chat] mid-stream stall after tokens sent — cannot fall back cleanly');
         send('token', { token: '\n\n[Response truncated due to timeout. Please ask me to continue.]' });
-        // Close cleanly so the user's session is persisted and they can just say 'continue'
         fullText += '\n\n[Response truncated due to timeout. Please ask me to continue.]';
-        // We do NOT throw here, we let the normal flow persist the partial message.
       } else {
 
-      // Pre-first-chunk stall OR any other OpenAI error: no tokens sent yet.
-      // Groq fallback is clean — client sees a seamless response from Groq.
-      // IMPORTANT: Groq runs without tool support (no builder_lookup, web_search,
-      // rera_check, etc.). Append FALLBACK_MODE suffix so the model knows it cannot
-      // call tools and must redirect tool-dependent queries instead of answering
-      // from training memory. This preserves Hard Rules 13, 16, 17, 18.
-      if (process.env.GROQ_API_KEY) {
-        const fallbackSystemPrompt = systemPrompt + GROQ_FALLBACK_SUFFIX
-        console.log('[CHAT] START streamWithGroq (fallback)', Date.now(), {
-          reason: 'OpenAI pre-first-chunk stall or network error',
-          originalErrorMessage: (err as Error).message
-        })
-        try {
-          fullText = await streamWithGroq(fallbackSystemPrompt, messages, send, userId, currentSessionId);
-          console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
-        } catch (groqErr) {
-          console.error('[chat] Groq fallback error:', (groqErr as Error).message);
-          fullText = "I apologize, but my AI services are currently experiencing extremely high load and rate limits. Please try your request again in a few minutes.";
+      // Using GitHub Models API (via Azure OpenAI) as first fallback
+      try {
+        if (!process.env.OPENAI_API_KEY) throw new Error('No OPENAI_API_KEY configured');
+        console.log('[CHAT] START streamWithOpenAI (fallback)', Date.now())
+        fullText = await streamWithOpenAI(systemPrompt, messages, send, handleToolCall, undefined, userId, currentSessionId);
+        console.log('[CHAT] END streamWithOpenAI', Date.now(), { fullTextLen: fullText.length })
+      } catch (err2) {
+        console.warn('[chat] OpenAI stream failed:', (err2 as Error).message);
+
+        // Mid-stream stall: tokens were already sent to the SSE client.
+        // A Groq fallback would append a second response to the same partial stream —
+        // corrupting the UI. Re-throw so the outer catch sends a clean error event
+        // and res.end() closes the connection. No session is persisted (correct —
+        // the user retries with a clean slate).
+        if (err2 instanceof StreamStallError && err2.tokensSent) {
+          console.error('[chat] mid-stream stall after tokens sent — cannot fall back cleanly');
+          send('token', { token: '\n\n[Response truncated due to timeout. Please ask me to continue.]' });
+          // Close cleanly so the user's session is persisted and they can just say 'continue'
+          fullText += '\n\n[Response truncated due to timeout. Please ask me to continue.]';
+          // We do NOT throw here, we let the normal flow persist the partial message.
+        } else {
+
+        // Pre-first-chunk stall OR any other OpenAI error: no tokens sent yet.
+        // Groq fallback is clean — client sees a seamless response from Groq.
+        // IMPORTANT: Groq runs without tool support (no builder_lookup, web_search,
+        // rera_check, etc.). Append FALLBACK_MODE suffix so the model knows it cannot
+        // call tools and must redirect tool-dependent queries instead of answering
+        // from training memory. This preserves Hard Rules 13, 16, 17, 18.
+        if (process.env.GROQ_API_KEY) {
+          const fallbackSystemPrompt = systemPrompt + GROQ_FALLBACK_SUFFIX
+          console.log('[CHAT] START streamWithGroq (fallback)', Date.now(), {
+            reason: 'Gemini and OpenAI both failed',
+            originalErrorMessage: (err2 as Error).message
+          })
+          try {
+            fullText = await streamWithGroq(fallbackSystemPrompt, messages, send, userId, currentSessionId);
+            console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
+          } catch (groqErr) {
+            console.error('[chat] Groq fallback error:', (groqErr as Error).message);
+            if (projects.length > 0) {
+              const p = projects[0];
+              if (message.toLowerCase().includes('payment') || message.toLowerCase().includes('plan')) {
+                fullText = `Payment plan details for **${p.name}** are available on request. Flexible payment structures (including Construction-Linked (CLP), Down Payment, and Subvention options) can be configured with our team. Please click the **Book Site Visit** or **Callback** button for custom payment slabs.`;
+              } else {
+                fullText = `Here are the verified details for **${p.name}** in ${p.sector}: Price range is ${p.price_range_label || 'available on request'}. Connect with our RealtyPals team via **Book Site Visit** for direct assistance.`;
+              }
+            } else {
+              fullText = "I apologize, but my AI services are currently experiencing high load. Please try your request again in a few moments or connect with our team directly.";
+            }
+            send('token', { token: fullText });
+          }
+        } else {
+          console.error('Gemini and OpenAI failed and no GROQ_API_KEY fallback configured');
+          if (projects.length > 0) {
+            const p = projects[0];
+            fullText = `Payment plan details for **${p.name}** in ${p.sector} are available on request. Connect with our RealtyPals team via **Book Site Visit** for custom options.`;
+          } else {
+            fullText = "I apologize, but my AI services are currently unavailable. Please try your request again in a few minutes.";
+          }
           send('token', { token: fullText });
         }
-      } else {
-        console.error('OpenAI failed and no GROQ_API_KEY fallback configured');
-        fullText = "I apologize, but my AI services are currently unavailable. Please try your request again in a few minutes.";
-        send('token', { token: fullText });
+        }
       }
       }
-      }
+    }
     } // end: !needsClarification && disambiguationText === null
 
     if (fullText) {
