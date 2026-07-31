@@ -262,3 +262,34 @@ export async function getBuilderIntelligence(builderSlug: string): Promise<{
   const data = await res.json()
   return { available: true, builder: data }
 }
+
+export interface ProjectOverviewData {
+  available: boolean
+  verdict: {
+    total: number
+    tier: string
+    confidence: number
+  } | null
+  live_activity: {
+    viewing_now: number | null
+    visits_booked_last_hour: number | null
+    units_left: number | null
+  }
+  price_history: Array<{ recorded_at: string; price_per_sqft: number | null; total_price_cr: number | null }> | null
+  construction_milestones: Array<{ name: string; status: string; completed_at: string | null; photo_urls: string[] }> | null
+  on_time_delivery_pct: number | null
+}
+
+export async function getProjectOverview(slug: string): Promise<ProjectOverviewData> {
+  const empty: ProjectOverviewData = {
+    available: false,
+    verdict: null,
+    live_activity: { viewing_now: null, visits_booked_last_hour: null, units_left: null },
+    price_history: null,
+    construction_milestones: null,
+    on_time_delivery_pct: null,
+  }
+  const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/overview`)
+  if (!res.ok) return empty
+  return res.json()
+}

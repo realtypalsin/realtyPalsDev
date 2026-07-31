@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import {
   Building2, MapPin, Sparkles, ChevronRight, TrainFront,
@@ -10,6 +10,7 @@ import { Warning } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import type { ProjectDocumentPublic } from '@/components/ProjectDetailPanel'
 import { Card } from './Card'
+import { getProjectOverview, type ProjectOverviewData } from '@/lib/backend-api'
 
 const DropletLeafIcon = (props: any) => (
   <svg
@@ -48,6 +49,61 @@ export interface OverviewTabProps {
   onGoToLocation: () => void
   onGoToDocuments: () => void
   onGoToPricing: () => void
+}
+
+function VerdictBadge({ verdict }: { verdict: ProjectOverviewData['verdict'] }) {
+  if (!verdict) return null
+  const tierLabel: Record<string, string> = {
+    STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid',
+  }
+  return (
+    <div className="rounded-3xl border border-gray-100 dark:border-gray-800/40 bg-white dark:bg-[#171412] p-4 flex items-center gap-3">
+      <div className="text-2xl font-extrabold text-gray-900 dark:text-white">
+        {Math.round(verdict.total)}<span className="text-sm text-gray-400">/100</span>
+      </div>
+      <div>
+        <div className="text-[15px] font-bold text-green-700 dark:text-green-400">{tierLabel[verdict.tier] ?? verdict.tier}</div>
+        <div className="text-xs text-gray-500">{verdict.confidence}% confidence</div>
+      </div>
+    </div>
+  )
+}
+
+function LiveActivityStrip({ activity }: { activity: ProjectOverviewData['live_activity'] }) {
+  const items = [
+    activity.viewing_now != null ? { label: 'People viewing this property now', value: activity.viewing_now } : null,
+    activity.visits_booked_last_hour != null ? { label: 'Site visits booked in last hour', value: activity.visits_booked_last_hour } : null,
+    activity.units_left != null ? { label: 'Units left in this phase', value: activity.units_left } : null,
+  ].filter((x): x is { label: string; value: number } => x !== null)
+
+  if (items.length === 0) return null
+  return (
+    <div className="flex flex-wrap gap-4">
+      {items.map((item) => (
+        <div key={item.label} className="flex items-center gap-2 text-sm">
+          <span className="font-extrabold text-gray-900 dark:text-white">{item.value}</span>
+          <span className="text-gray-500">{item.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ConstructionTimeline({ milestones }: { milestones: ProjectOverviewData['construction_milestones'] }) {
+  if (!milestones || milestones.length === 0) return null
+  return (
+    <div className="space-y-3">
+      <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">Construction Updates</h2>
+      <div className="flex gap-4 overflow-x-auto">
+        {milestones.map((m) => (
+          <div key={m.name} className="flex flex-col items-center gap-1 min-w-[90px]">
+            <div className={`w-3 h-3 rounded-full ${m.status === 'completed' ? 'bg-green-500' : m.status === 'in_progress' ? 'bg-blue-500' : 'bg-gray-300'}`} />
+            <div className="text-xs text-center text-gray-700 dark:text-gray-300">{m.name}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function AlternativesCard({ competitors }: { competitors: NonNullable<ProjectDetail['competitors']> }) {
@@ -118,6 +174,15 @@ export default function OverviewTab({
   const [showAllAmenities, setShowAllAmenities] = useState(false)
   const [showAllDetails, setShowAllDetails] = useState(false)
   const [showAllHighlights, setShowAllHighlights] = useState(false)
+  const [overview, setOverview] = useState<ProjectOverviewData | null>(null)
+
+  const slug = detail?.slug ?? project?.slug
+  useEffect(() => {
+    if (!slug) return
+    let cancelled = false
+    getProjectOverview(slug).then((data) => { if (!cancelled) setOverview(data) })
+    return () => { cancelled = true }
+  }, [slug])
 
   const marketingClaims = detail?.marketing_claims ?? []
   const amenities = (detail?.all_amenities ?? []) as { name: string; category: string }[]
@@ -146,6 +211,9 @@ export default function OverviewTab({
 
     return (
       <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
+
+        <VerdictBadge verdict={overview?.verdict ?? null} />
+        <LiveActivityStrip activity={overview?.live_activity ?? { viewing_now: null, visits_booked_last_hour: null, units_left: null }} />
 
         {/* 3. Quick Info Icon Bar — only shown when we have real DB data */}
         {quickInfoItems.length > 0 && (
@@ -348,6 +416,8 @@ export default function OverviewTab({
           )}
 
         </div>
+
+        <ConstructionTimeline milestones={overview?.construction_milestones ?? null} />
 
         {/* Alternatives */}
         {competitors.length > 0 && (
