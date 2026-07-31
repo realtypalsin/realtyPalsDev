@@ -145,18 +145,17 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
   // Restore scroll position per session
   useEffect(() => {
-    if (!sessionId || !scrollContainerRef.current) return;
+    if (!sessionId || !chatContainerRef.current) return;
     const scrollKey = `scroll_pos_${sessionId}`;
     const savedScroll = sessionStorage.getItem(scrollKey);
     if (savedScroll) {
-      scrollContainerRef.current.scrollTop = parseInt(savedScroll, 10);
+      chatContainerRef.current.scrollTop = parseInt(savedScroll, 10);
     }
   }, [sessionId]);
 
   // Persist scroll position
   const handleMessageScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
-    setIsScrolled(scrollTop > 200);
     if (sessionId) {
       sessionStorage.setItem(`scroll_pos_${sessionId}`, scrollTop.toString());
     }

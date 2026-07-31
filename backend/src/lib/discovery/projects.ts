@@ -26,6 +26,7 @@ import {
 } from './scoring'
 import { getNearbySectors } from './sectors'
 import { isCityLevel } from './intent'
+import { CITY_LEVEL_ALIASES } from './constants'
 import { SUPPORTED_CITIES } from '../config/cities'
 
 /** Bidirectional substring match — mirrors SQL ILIKE fallback used in discovery Branch 1. */
@@ -112,6 +113,21 @@ const PROJECT_INCLUDE = {
       amenity_depth_label: true,
     },
   },
+  payment_plan: {
+    select: {
+      plan_name: true,
+      milestones: true,
+      notes: true,
+    },
+  },
+  cost_sheet: {
+    select: {
+      base_price_per_sqft: true,
+      gst_rate_pct: true,
+      stamp_duty_pct: true,
+      registration_pct: true,
+    },
+  },
 } satisfies Prisma.ProjectInclude
 
 type RawProject = Prisma.ProjectGetPayload<{ include: typeof PROJECT_INCLUDE }>
@@ -128,8 +144,46 @@ type RawProject = Prisma.ProjectGetPayload<{ include: typeof PROJECT_INCLUDE }>
  * project with "3BHK @ 2.5Cr + 1BHK @ 1.2Cr" would falsely match
  * "3BHK under 1.5Cr".
  */
-function buildHardFilters(intent: Intent, overrideSectors?: string[]): Prisma.ProjectWhereInput {
+// Region filter for a city-level query ("Noida", "Greater Noida",
+// "Greater Noida West" / "Noida Extension"). Sector text wins when it explicitly
+// mentions a region ("Sector 10 Greater Noida West"); when the sector text is
+// silent about it (e.g. plain "Sector 10"), falls back to the `city` column —
+// which we know is inconsistently tagged, so it's only trusted as a tiebreaker,
+// never as the primary signal.
+function regionFilter(region: 'noida' | 'greater_noida' | 'greater_noida_west'): Prisma.ProjectWhereInput {
+  const containsWest: Prisma.ProjectWhereInput = { sector: { contains: 'greater noida west', mode: 'insensitive' } }
+  const containsGreaterNoida: Prisma.ProjectWhereInput = { sector: { contains: 'greater noida', mode: 'insensitive' } }
+  const sectorSilent: Prisma.ProjectWhereInput = { NOT: containsGreaterNoida }
+
+  if (region === 'greater_noida_west') {
+    return { OR: [containsWest, { AND: [sectorSilent, { city: { equals: 'Greater Noida West', mode: 'insensitive' } }] }] }
+  }
+  if (region === 'greater_noida') {
+    return {
+      OR: [
+        { AND: [containsGreaterNoida, { NOT: containsWest }] },
+        { AND: [sectorSilent, { city: { equals: 'Greater Noida', mode: 'insensitive' } }] },
+      ],
+    }
+  }
+  // 'noida' — sector text carries no Greater Noida marker, and city (when sector is
+  // silent) isn't one of the Greater Noida variants either.
+  return {
+    AND: [
+      sectorSilent,
+      { NOT: { city: { equals: 'Greater Noida West', mode: 'insensitive' } } },
+      { NOT: { city: { equals: 'Greater Noida', mode: 'insensitive' } } },
+    ],
+  }
+}
+
+export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Prisma.ProjectWhereInput {
   const where: Prisma.ProjectWhereInput = {}
+
+  if (!overrideSectors && intent.sector && isCityLevel(intent.sector)) {
+    const region = CITY_LEVEL_ALIASES[intent.sector.toLowerCase().trim()]
+    if (region) where.AND = [regionFilter(region)]
+  }
 
   // Sector — whole-word match (case-insensitive).
   // This ensures 'Sector 10' matches 'Sector 10 Greater Noida West' but NOT 'Sector 107'.

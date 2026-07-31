@@ -20,6 +20,8 @@ export const HEADROOM_CAP = 0.5
 export const CITY_LEVEL_TERMS = [
   'noida',
   'greater noida',
+  'greater noida west',
+  'noida extension', // buyer-colloquial name for Greater Noida West — same place
   'gurgaon',
   'gurugram',
   'delhi',
@@ -29,6 +31,17 @@ export const CITY_LEVEL_TERMS = [
   'pune',
   'chennai',
 ]
+
+// Canonical region a city-level term resolves to, for sector-text-based filtering.
+// The DB `city` column is inconsistent (some Greater Noida West projects are
+// mistagged city="Greater Noida"), so region matching is done against the
+// `sector` string instead, which reliably carries "Greater Noida West" when true.
+export const CITY_LEVEL_ALIASES: Record<string, 'noida' | 'greater_noida' | 'greater_noida_west'> = {
+  'noida': 'noida',
+  'greater noida': 'greater_noida',
+  'greater noida west': 'greater_noida_west',
+  'noida extension': 'greater_noida_west',
+}
 
 // Noida / Greater Noida sector adjacency map.
 // Keys are canonical sector strings as stored in the DB.
