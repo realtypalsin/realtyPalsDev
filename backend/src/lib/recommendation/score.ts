@@ -12,9 +12,11 @@ export interface ScoreDimension {
 }
 
 export interface RecommendationScore {
-  total:      number              // 0–100, rounded to 1 dp
-  tier:       string              // STRONG_BUY | BUY | HOLD | WATCH | AVOID
-  dimensions: ScoreDimension[]
+  total:       number              // 0–100, rounded to 1 dp
+  tier:        string              // STRONG_BUY | BUY | HOLD | WATCH | AVOID
+  dimensions:  ScoreDimension[]
+  basis_count: number              // 0–6, how many of the 6 DNA scores were real (non-null)
+  confidence:  number              // 0–100, basis_count / 6 as a percentage
 }
 
 export interface ScoreInput {
@@ -120,6 +122,17 @@ function tierFromScore(
 export function computeRecommendationScore(input: ScoreInput): RecommendationScore {
   const d = input.dna
 
+  const dnaFields = [
+    d?.builder_track_record_score,
+    d?.price_position_score,
+    d?.locality_score,
+    d?.rera_compliance_score,
+    d?.amenity_depth_score,
+    d?.possession_certainty_score,
+  ]
+  const basis_count = dnaFields.filter((v) => v != null).length
+  const confidence = Math.round((basis_count / 6) * 100)
+
   // ── Raw dimension scores (0–100) ──────────────────────────────────────────
   const builderRaw   = d?.builder_track_record_score ?? NEUTRAL
   const valueRaw     = d?.price_position_score       ?? NEUTRAL
@@ -163,6 +176,8 @@ export function computeRecommendationScore(input: ScoreInput): RecommendationSco
   return {
     total: rounded,
     tier,
+    basis_count,
+    confidence,
     dimensions: [
       dim('builder',      'Builder Confidence', WEIGHTS.builder,       builderRaw),
       dim('value',        'Value',              WEIGHTS.value,         valueRaw),
