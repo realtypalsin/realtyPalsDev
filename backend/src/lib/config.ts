@@ -2,6 +2,8 @@
 // Centralized configuration module — env-overridable settings for AI, financial, discovery
 
 export const MODELS = {
+  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-2.5-flash',
+  GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-2.5-flash-lite',
   MAIN: process.env.AI_MAIN_MODEL || 'gpt-4o',
   FALLBACK: process.env.AI_FALLBACK_MODEL || 'gpt-4o-mini',
   GROQ_FAST: process.env.GROQ_FAST_MODEL || 'llama-3.1-8b-instant',
