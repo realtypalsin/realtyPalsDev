@@ -5,6 +5,8 @@ import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { computeRecommendationScore } from '../lib/recommendation/score'
 import { routeCache } from '../lib/routeCache'
+import { computeLiveActivity } from '../lib/liveActivity'
+import { computeOnTimeDeliveryPct } from '../lib/builderDelivery'
 
 const router = Router()
 
@@ -282,6 +284,69 @@ router.get('/:slug/investment', async (req: Request, res: Response) => {
       potential_appreciation: potentialAppreciation,
       data_note:              'Investment projections are indicative only — not financial advice. Verify rental yields and capital appreciation with a licensed advisor.',
     },
+  })
+})
+
+router.get('/:slug/overview', async (req: Request, res: Response) => {
+  const project = await prisma.project.findUnique({
+    where: { slug: req.params.slug },
+    select: {
+      id: true,
+      status: true,
+      possession_date: true,
+      project_risk_flag: true,
+      builder: { select: { id: true, legal_flag: true } },
+      dna: {
+        select: {
+          builder_track_record_score: true,
+          price_position_score:       true,
+          locality_score:             true,
+          rera_compliance_score:      true,
+          amenity_depth_score:        true,
+          possession_certainty_score: true,
+        },
+      },
+    },
+  })
+  if (!project) { res.status(404).json({ error: 'Not found' }); return }
+
+  const fiveYearsAgo = new Date()
+  fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5)
+
+  const [liveActivity, priceHistory, milestones, deliveryRecords] = await Promise.all([
+    computeLiveActivity(project.id),
+    prisma.priceHistory.findMany({
+      where: { project_id: project.id, recorded_at: { gte: fiveYearsAgo } },
+      select: { recorded_at: true, price_per_sqft: true, total_price_cr: true },
+      orderBy: { recorded_at: 'asc' },
+    }),
+    prisma.constructionMilestone.findMany({
+      where: { project_id: project.id },
+      select: { name: true, status: true, completed_at: true, photo_urls: true },
+      orderBy: { sort_order: 'asc' },
+    }),
+    prisma.builderDeliveryRecord.findMany({
+      where: { builder_id: project.builder!.id },
+      select: { promised_date: true, actual_date: true },
+    }),
+  ])
+
+  const verdict = computeRecommendationScore({
+    dna: project.dna,
+    status: project.status as 'under_construction' | 'ready_to_move' | 'new_launch',
+    possession_date: project.possession_date,
+    project_risk_flag: project.project_risk_flag ?? null,
+    builder: { legal_flag: project.builder?.legal_flag ?? null },
+  })
+
+  res.json({
+    available: true,
+    // Hide the whole verdict badge when fewer than half the DNA dimensions have real data.
+    verdict: verdict.basis_count >= 3 ? verdict : null,
+    live_activity: liveActivity,
+    price_history: priceHistory.length > 0 ? priceHistory : null,
+    construction_milestones: milestones.length > 0 ? milestones : null,
+    on_time_delivery_pct: computeOnTimeDeliveryPct(deliveryRecords),
   })
 })
 
