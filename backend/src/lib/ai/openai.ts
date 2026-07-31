@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
-import { MODELS, FINANCIAL } from '../config'
+import { MODELS } from '../config'
 import { recordUsage } from './cost'
+import { toOpenAITools, validateToolArgs, capToolResult } from './tools'
 
 type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null; name?: string; tool_calls?: any[], tool_call_id?: string };
 type SendFn = (event: string, data: Record<string, unknown>) => void;
@@ -17,41 +18,6 @@ export interface InferenceConfig {
 
 export const INFERENCE_DEFAULTS: InferenceConfig = {
   maxTokens: 1500,
-}
-
-// ── Tool safety ───────────────────────────────────────────────────────────────
-// Max chars for string args passed to each tool. Prevents the model from passing
-// arbitrarily large strings that waste tokens or reach external services.
-const TOOL_ARG_LIMITS: Record<string, Record<string, number>> = {
-  web_search:     { query: 200 },
-  builder_lookup: { name: 100 },
-  area_info:      { sector: 100, city: 50 },
-  rera_check:     { rera_number: 50, rera_url: 200 },
-  commute:        { origin: 200, destination: 200 },
-}
-
-function validateToolArgs(name: string, args: Record<string, unknown>): Record<string, unknown> {
-  const limits = TOOL_ARG_LIMITS[name]
-  if (!limits) return args
-  const validated = { ...args }
-  for (const [field, maxLen] of Object.entries(limits)) {
-    if (typeof validated[field] === 'string' && (validated[field] as string).length > maxLen) {
-      console.warn('[openai] tool arg truncated', { tool: name, field, originalLength: (validated[field] as string).length })
-      validated[field] = (validated[field] as string).slice(0, maxLen)
-    }
-  }
-  return validated
-}
-
-// Cap tool result size before injecting into the message history.
-// Prevents a large web search or RERA page crawl from blowing the context window.
-const TOOL_RESULT_MAX_CHARS = 6000
-
-function capToolResult(result: unknown, toolName: string): string {
-  const str = typeof result === 'string' ? result : JSON.stringify(result)
-  if (str.length <= TOOL_RESULT_MAX_CHARS) return str
-  console.warn('[openai] tool result truncated', { tool: toolName, originalLength: str.length })
-  return str.slice(0, TOOL_RESULT_MAX_CHARS) + '…[truncated for token budget]'
 }
 
 // Thrown when the stream stalls (no chunk for INACTIVITY_MS) or headers never arrive.
@@ -96,151 +62,7 @@ export async function streamWithOpenAI(
     ...messages.map(m => ({ role: m.role, content: m.content })),
   ];
 
-  const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
-    {
-      type: 'function',
-      function: {
-        name: 'builder_lookup',
-        description: 'Look up VERIFIED facts about a builder from the RealtyPals database — founding year, delivered units, projects, RERA, CREDAI membership, awards. Use when the user asks about a builder\'s reputation, track record, or projects. Never invent builder stats; use this.',
-        parameters: {
-          type: 'object',
-          properties: { name: { type: 'string', description: 'Builder name, e.g. "Godrej", "ATS", "Gaur"' } },
-          required: ['name'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'web_search',
-        description: 'Search the live web for current information: builder news/controversies, RERA status, market/price trends, metro expansion, school/hospital quality, or anything time-sensitive RealtyPals does not store. Returns source-attributed snippets. Cite sources in your answer.',
-        parameters: {
-          type: 'object',
-          properties: { query: { type: 'string', description: 'Specific search query, e.g. "ATS Noida delivery track record complaints 2025"' } },
-          required: ['query'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'area_info',
-        description: 'Get background information about a Noida/Greater Noida sector or area from Wikipedia. Use for "tell me about Sector 150", "how is this area".',
-        parameters: {
-          type: 'object',
-          properties: {
-            sector: { type: 'string', description: 'Sector or area name, e.g. "Sector 150"' },
-            city: { type: 'string', description: 'City, e.g. "Noida"' },
-          },
-          required: ['sector', 'city'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'rera_check',
-        description: 'Fetch live RERA registration details from the UP-RERA portal. Use to verify a project\'s RERA status when asked.',
-        parameters: {
-          type: 'object',
-          properties: {
-            rera_number: { type: 'string', description: 'RERA registration number e.g. UPRERAPRJ12345' },
-            rera_url: { type: 'string', description: 'Direct RERA project URL if known' },
-          },
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'commute',
-        description: 'Calculate driving time and distance between two places in India. Use for "how far is X from Y", "commute to office/metro/airport".',
-        parameters: {
-          type: 'object',
-          properties: {
-            origin: { type: 'string', description: 'Start address/location' },
-            destination: { type: 'string', description: 'Destination address/location' },
-          },
-          required: ['origin', 'destination'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'calculate_emi',
-        description: 'Calculate monthly home-loan EMI, total payment and total interest. Use for EMI / affordability questions.',
-        parameters: {
-          type: 'object',
-          properties: {
-            principalCr: { type: 'number', description: 'Loan amount in crore' },
-            annualRate: { type: 'number', description: `Annual interest rate %, defaults to ${FINANCIAL.EMI_RATE}` },
-            tenureYears: { type: 'number', description: `Tenure in years, defaults to ${FINANCIAL.LOAN_TENURE_YEARS}` },
-          },
-          required: ['principalCr'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'calculate_stamp_duty',
-        description: 'Calculate UP/Noida stamp duty + registration charges. Rate depends on buyer gender.',
-        parameters: {
-          type: 'object',
-          properties: {
-            priceCr: { type: 'number', description: 'Property price in crore' },
-            gender: { type: 'string', description: 'male, female, or joint' },
-          },
-          required: ['priceCr'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'calculate_gst',
-        description: 'Calculate GST on a property purchase. 5% for under-construction, 0% for ready-to-move, 1% for affordable.',
-        parameters: {
-          type: 'object',
-          properties: {
-            priceCr: { type: 'number', description: 'Property price in crore' },
-            status: { type: 'string', description: 'under_construction or ready_to_move' },
-            carpetSqm: { type: 'number', description: 'Carpet area in sqm (for affordable-housing check)' },
-          },
-          required: ['priceCr', 'status'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'project_competitors',
-        description: 'Get competitor comparisons for a specific project. Use when the user asks how a project compares to others, or asks for alternatives.',
-        parameters: {
-          type: 'object',
-          properties: {
-            project_id: { type: 'string', description: 'The internal project ID (must be from the properties data)' },
-          },
-          required: ['project_id'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'project_documents',
-        description: 'Get text extracted from project brochures and documents. Use to find highly specific details like floor plans, specifications, or marketing claims not present in the main data block.',
-        parameters: {
-          type: 'object',
-          properties: {
-            project_id: { type: 'string', description: 'The internal project ID (must be from the properties data)' },
-          },
-          required: ['project_id'],
-        },
-      },
-    },
-  ];
+  const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = toOpenAITools();
 
   let fullText = '';
   // Tracks whether any token has been sent to the SSE client in this call.
