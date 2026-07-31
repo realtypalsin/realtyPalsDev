@@ -83,6 +83,7 @@ model Builder {
   account                    BuilderAccount?
   leads                      BuilderLead[]
   theme                      BuilderTheme?
+  delivery_records           BuilderDeliveryRecord[]
 
   @@map("builders")
 }
@@ -96,6 +97,8 @@ model Project {
   rera_number              String?
   rera_url                 String?
   city                     String                 @default("Noida")
+  state                    String                 @default("Uttar Pradesh")
+  country                  String                 @default("India")
   sector                   String
   address                  String?
   lat                      Float?
@@ -153,6 +156,8 @@ model Project {
   unit_types               UnitType[]
   payment_plan             PaymentPlan?
   cost_sheet               CostSheet?
+  price_history            PriceHistory[]
+  construction_milestones  ConstructionMilestone[]
 
   @@index([city, sector])
   @@index([status])
@@ -320,6 +325,54 @@ model UnitType {
   @@index([project_id, bhk])
   @@index([project_id, price_min_cr, price_max_cr])
   @@map("unit_types")
+}
+
+model PriceHistory {
+  id             String   @id @default(uuid())
+  project_id     String
+  recorded_at    DateTime @default(now())
+  price_per_sqft Float?
+  total_price_cr Float?
+  source         String   @default("monthly_auto_snapshot") // "admin_update" | "monthly_auto_snapshot"
+  project        Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, recorded_at])
+  @@map("price_history")
+}
+
+model ConstructionMilestone {
+  id           String    @id @default(uuid())
+  project_id   String
+  name         String
+  status       ConstructionStatus @default(upcoming)
+  completed_at DateTime?
+  photo_urls   String[]  @default([])
+  sort_order   Int       @default(0)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  project      Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, sort_order])
+  @@map("construction_milestones")
+}
+
+enum ConstructionStatus {
+  completed
+  in_progress
+  upcoming
+}
+
+model BuilderDeliveryRecord {
+  id            String    @id @default(uuid())
+  builder_id    String
+  project_name  String
+  promised_date DateTime
+  actual_date   DateTime?
+  created_at    DateTime  @default(now())
+  builder       Builder   @relation(fields: [builder_id], references: [id], onDelete: Cascade)
+
+  @@index([builder_id])
+  @@map("builder_delivery_records")
 }
 
 model ProjectImage {
