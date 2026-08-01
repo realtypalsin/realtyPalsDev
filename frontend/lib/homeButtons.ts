@@ -8,7 +8,7 @@ export interface HomeButtonGroup {
   title: string;
   primaryPrompt: string;
   icon: string;
-  colorClass: string;
+  badgeGradient: string;
   options: HomeButtonSubItem[];
 }
 
@@ -18,7 +18,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '3 BHK in Sector 75 Noida',
     primaryPrompt: 'Show me 3 BHK apartments available for immediate purchase in Sector 75.',
     icon: 'Building2',
-    colorClass: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-blue-400',
+    badgeGradient: 'from-blue-500 to-indigo-600 text-white shadow-blue-500/25',
     options: [
       {
         label: 'Immediate purchase 3 BHK',
@@ -39,7 +39,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '2 BHK in Sector 76 Noida',
     primaryPrompt: 'Show me budget friendly 2 BHK flats available in Sector 76.',
     icon: 'Home',
-    colorClass: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400',
+    badgeGradient: 'from-emerald-500 to-teal-600 text-white shadow-emerald-500/25',
     options: [
       {
         label: 'Budget friendly 2 BHK',
@@ -60,7 +60,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '3 BHK in Sector 77 Noida',
     primaryPrompt: 'Show me the most popular 3 BHK housing societies in Sector 77.',
     icon: 'Key',
-    colorClass: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50 dark:text-amber-400',
+    badgeGradient: 'from-amber-500 to-orange-600 text-white shadow-amber-500/25',
     options: [
       {
         label: 'Popular housing societies',
@@ -81,7 +81,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '4 BHK in Sector 78 Noida',
     primaryPrompt: 'Find large 4 BHK flats and penthouses available in Sector 78.',
     icon: 'Crown',
-    colorClass: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50 dark:text-purple-400',
+    badgeGradient: 'from-purple-500 to-violet-600 text-white shadow-purple-500/25',
     options: [
       {
         label: 'Large 4 BHK & Penthouses',
@@ -102,7 +102,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '3 BHK in Sector 79 Noida',
     primaryPrompt: 'Find 3 BHK flats near sports parks and green areas in Sector 79.',
     icon: 'Trees',
-    colorClass: 'text-teal-600 bg-teal-50 dark:bg-teal-950/50 dark:text-teal-400',
+    badgeGradient: 'from-teal-500 to-cyan-600 text-white shadow-teal-500/25',
     options: [
       {
         label: 'Flats near sports & parks',
@@ -119,53 +119,11 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     ]
   },
   {
-    id: 'sec10',
-    title: '2 BHK in Sector 10 Noida Extension',
-    primaryPrompt: 'Show me affordable 2 BHK apartments in Sector 10 Greater Noida West.',
-    icon: 'Wallet',
-    colorClass: 'text-sky-600 bg-sky-50 dark:bg-sky-950/50 dark:text-sky-400',
-    options: [
-      {
-        label: 'Affordable 2 BHK flats',
-        prompt: 'Show me affordable 2 BHK apartments in Sector 10 Greater Noida West.'
-      },
-      {
-        label: 'Under construction 3 BHK',
-        prompt: 'Find family sized 3 BHK flats under construction in Sector 10.'
-      },
-      {
-        label: 'Retail & commercial shops',
-        prompt: 'Are there retail shops available for purchase in Sector 10 Noida Extension?'
-      }
-    ]
-  },
-  {
-    id: 'sec12',
-    title: '3 BHK in Sector 12 Noida Extension',
-    primaryPrompt: 'Show me newly launched 3 BHK luxury projects in Sector 12.',
-    icon: 'Sparkles',
-    colorClass: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50 dark:text-indigo-400',
-    options: [
-      {
-        label: 'Newly launched 3 BHK luxury',
-        prompt: 'Show me newly launched 3 BHK luxury projects in Sector 12.'
-      },
-      {
-        label: 'Premium 4 BHK apartments',
-        prompt: 'Find premium 4 BHK flats and luxury apartments in Sector 12 Greater Noida West.'
-      },
-      {
-        label: 'Independent villa projects',
-        prompt: 'Are there independent villas available for purchase in Sector 12 Noida Extension?'
-      }
-    ]
-  },
-  {
     id: 'sec78_luxury',
     title: 'Luxury Societies in Sector 78',
     primaryPrompt: 'What are the most premium gated communities located in Sector 78 Noida?',
     icon: 'Shield',
-    colorClass: 'text-rose-600 bg-rose-50 dark:bg-rose-950/50 dark:text-rose-400',
+    badgeGradient: 'from-rose-500 to-pink-600 text-white shadow-rose-500/25',
     options: [
       {
         label: 'Top premium gated societies',
@@ -182,3 +140,4 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     ]
   }
 ];
+
