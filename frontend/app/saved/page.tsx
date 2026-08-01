@@ -6,7 +6,6 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import ProjectCard from '@/components/ProjectCard';
 import SkeletonCard from '@/components/SkeletonCard';
-import ProjectDetailPanel from '@/components/ProjectDetailPanel';
 import type { ProjectCard as ProjectCardType } from '@/types/project';
 import { API_BASE } from '@/lib/env';
 import { authHeaders } from '@/lib/authedFetch';
@@ -16,6 +15,10 @@ import {  m  } from 'framer-motion';
 import dynamic from 'next/dynamic';
 
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false });
+// ProjectDetailPanel calls useSearchParams, which cannot be prerendered without a
+// Suspense boundary. Loading it client-side only (as DiscoveryContent does) keeps
+// this page statically exportable and code-splits the heavy panel.
+const ProjectDetailPanel = dynamic(() => import('@/components/ProjectDetailPanel'), { ssr: false });
 
 
 export default function SavedPropertiesPage() {

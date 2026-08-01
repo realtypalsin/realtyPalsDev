@@ -42,8 +42,11 @@ export function MessageContentRenderer({ content, isStreaming, onAction }: Messa
     return <ResponseBlockRenderer blocks={blocks} />
   }
 
+  // react-markdown v9 dropped the `className` prop — it used to render this
+  // wrapper div itself, so wrap explicitly to keep the same markup.
   return (
     <>
+      <div className={proseClass}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, REALTY_SCHEMA]]}
@@ -92,10 +95,10 @@ export function MessageContentRenderer({ content, isStreaming, onAction }: Messa
             return <a {...props} className="text-[#c47860] hover:underline" />
           }
         } as any}
-        className={blocks ? undefined : proseClass}
       >
         {content}
       </ReactMarkdown>
+      </div>
       {isStreaming && (
         <span className="inline-block w-0.5 h-[1em] bg-current animate-pulse ml-0.5 align-middle opacity-70" />
       )}

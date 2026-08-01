@@ -23,6 +23,18 @@ export function ProjectCarousel({
 }: ProjectCarouselProps) {
   const [isAutoplay, setIsAutoplay] = useState(true)
   const validImages = images.filter(Boolean)
+  const hasMultiple = validImages.length > 1
+
+  // Auto-advance every 5s. Declared before the early return below so the hook
+  // order stays identical on every render.
+  useEffect(() => {
+    if (!isAutoplay || !hasMultiple) return
+    const timer = setInterval(() => {
+      const nextIndex = (activeIndex + 1) % validImages.length
+      onImageChange?.(nextIndex)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [isAutoplay, activeIndex, validImages.length, hasMultiple, onImageChange])
 
   if (!validImages.length) {
     return (
@@ -35,7 +47,6 @@ export function ProjectCarousel({
     )
   }
 
-  const hasMultiple = validImages.length > 1
   const currentImage = validImages[activeIndex % validImages.length]
 
   const handleNext = () => {
@@ -49,16 +60,6 @@ export function ProjectCarousel({
     const prevIndex = (activeIndex - 1 + validImages.length) % validImages.length
     onImageChange?.(prevIndex)
   }
-
-  // Auto-advance every 5s
-  useEffect(() => {
-    if (!isAutoplay || !hasMultiple) return
-    const timer = setInterval(() => {
-      const nextIndex = (activeIndex + 1) % validImages.length
-      onImageChange?.(nextIndex)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [isAutoplay, activeIndex, validImages.length, hasMultiple, onImageChange])
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">

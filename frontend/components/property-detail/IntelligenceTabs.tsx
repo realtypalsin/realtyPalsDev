@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, Zap, Building2, Home, BarChart3, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface IntelligenceData {
@@ -80,8 +79,28 @@ const TabContent: React.FC<{ data: Record<string, any> | undefined; title: strin
   );
 };
 
+type TabKey = 'financial' | 'market' | 'builder' | 'property' | 'comparative' | 'resources';
+
+const TABS: { key: TabKey; label: string; icon: React.ReactNode; title: string }[] = [
+  { key: 'financial',   label: 'Financial', icon: <TrendingUp size={14} />, title: 'Financial Intelligence' },
+  { key: 'market',      label: 'Market',    icon: <BarChart3 size={14} />,  title: 'Market Intelligence' },
+  { key: 'builder',     label: 'Builder',   icon: <Building2 size={14} />,  title: 'Builder Intelligence' },
+  { key: 'property',    label: 'Property',  icon: <Home size={14} />,       title: 'Property Intelligence' },
+  { key: 'comparative', label: 'Compare',   icon: <Zap size={14} />,        title: 'Comparative Analysis' },
+  { key: 'resources',   label: 'Docs',      icon: <FileText size={14} />,   title: 'Resources & Documents' },
+];
+
 export default function IntelligenceTabs({ data, isAdmin = false }: IntelligenceTabsProps) {
-  const [editingField, setEditingField] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>('financial');
+
+  const blockFor: Record<TabKey, Record<string, any> | undefined> = {
+    financial: data.financial_intelligence,
+    market: data.market_intelligence,
+    builder: data.builder_intelligence,
+    property: data.property_intelligence,
+    comparative: data.comparative_analysis,
+    resources: data.resources_documents,
+  };
 
   const hasAnyIntelligence = !!(
     data.financial_intelligence ||
@@ -114,58 +133,50 @@ export default function IntelligenceTabs({ data, isAdmin = false }: Intelligence
         </div>
       )}
 
-      <Tabs defaultValue="financial" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
-          <TabsTrigger value="financial" className="flex gap-1">
-            <TrendingUp size={14} />
-            <span className="hidden sm:inline text-xs">Financial</span>
-          </TabsTrigger>
-          <TabsTrigger value="market" className="flex gap-1">
-            <BarChart3 size={14} />
-            <span className="hidden sm:inline text-xs">Market</span>
-          </TabsTrigger>
-          <TabsTrigger value="builder" className="flex gap-1">
-            <Building2 size={14} />
-            <span className="hidden sm:inline text-xs">Builder</span>
-          </TabsTrigger>
-          <TabsTrigger value="property" className="flex gap-1">
-            <Home size={14} />
-            <span className="hidden sm:inline text-xs">Property</span>
-          </TabsTrigger>
-          <TabsTrigger value="comparative" className="flex gap-1">
-            <Zap size={14} />
-            <span className="hidden sm:inline text-xs">Compare</span>
-          </TabsTrigger>
-          <TabsTrigger value="resources" className="flex gap-1">
-            <FileText size={14} />
-            <span className="hidden sm:inline text-xs">Docs</span>
-          </TabsTrigger>
-        </TabsList>
+      <div className="w-full">
+        <div
+          role="tablist"
+          aria-label="Intelligence sections"
+          className="grid grid-cols-3 lg:grid-cols-6 gap-1 p-1 bg-gray-100 rounded-lg"
+        >
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                id={`intel-tab-${tab.key}`}
+                aria-selected={isActive}
+                aria-controls={`intel-panel-${tab.key}`}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center justify-center gap-1 px-2 py-2 rounded-md transition-colors ${
+                  isActive
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                }`}
+              >
+                {tab.icon}
+                <span className="hidden sm:inline text-xs font-medium">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-        <TabsContent value="financial">
-          <TabContent data={data.financial_intelligence} title="Financial Intelligence" />
-        </TabsContent>
-
-        <TabsContent value="market">
-          <TabContent data={data.market_intelligence} title="Market Intelligence" />
-        </TabsContent>
-
-        <TabsContent value="builder">
-          <TabContent data={data.builder_intelligence} title="Builder Intelligence" />
-        </TabsContent>
-
-        <TabsContent value="property">
-          <TabContent data={data.property_intelligence} title="Property Intelligence" />
-        </TabsContent>
-
-        <TabsContent value="comparative">
-          <TabContent data={data.comparative_analysis} title="Comparative Analysis" />
-        </TabsContent>
-
-        <TabsContent value="resources">
-          <TabContent data={data.resources_documents} title="Resources & Documents" />
-        </TabsContent>
-      </Tabs>
+        {TABS.map((tab) => (
+          <div
+            key={tab.key}
+            role="tabpanel"
+            id={`intel-panel-${tab.key}`}
+            aria-labelledby={`intel-tab-${tab.key}`}
+            hidden={activeTab !== tab.key}
+          >
+            {activeTab === tab.key && (
+              <TabContent data={blockFor[tab.key]} title={tab.title} />
+            )}
+          </div>
+        ))}
+      </div>
 
       {isAdmin && (
         <div className="pt-4 border-t flex gap-2">

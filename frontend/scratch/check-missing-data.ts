@@ -36,7 +36,18 @@ async function checkMissingData() {
     ]
 
     const missingDataReport = projects.map(p => {
-      const intelData = (p.decision_profile?.intelligence_data as any) || {}
+      // The single intelligence_data blob was split into six explicit columns by
+      // migration 20260801170000_simplify_intelligence_schema. Merge them back
+      // into one object so the key-presence check below still works.
+      const dp = p.decision_profile
+      const intelData: Record<string, any> = {
+        ...(dp?.financial_intelligence as any),
+        ...(dp?.market_intelligence as any),
+        ...(dp?.builder_intelligence as any),
+        ...(dp?.property_intelligence as any),
+        ...(dp?.comparative_analysis as any),
+        ...(dp?.resources_documents as any),
+      }
       
       const missingFields = fullySeededKeys.filter(key => {
         // If it doesn't exist, it's missing

@@ -141,7 +141,7 @@ export default function IntelligenceManager() {
         </div>
 
         {/* Incomplete Projects */}
-        {status?.incomplete_count > 0 && (
+        {status && status.incomplete_count > 0 && (
           <div className="border-t pt-6 mt-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2 text-orange-600">
               <AlertCircle size={18} />
