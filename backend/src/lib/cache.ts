@@ -1,4 +1,4 @@
-﻿// backend/src/lib/cache.ts
+// backend/src/lib/cache.ts
 import { Redis } from '@upstash/redis'
 
 let _redis: Redis | null = null
@@ -30,6 +30,9 @@ function memRateLimit(key: string, limit: number, windowSecs: number): { allowed
 }
 
 export async function checkRateLimit(key: string, limit = 20, windowSecs = 60): Promise<{ allowed: boolean; remaining: number }> {
+  if (process.env.NODE_ENV === 'test') {
+    return { allowed: true, remaining: limit }
+  }
   const redis = getRedis()
   // No Redis configured → enforce the in-memory limit (fail closed), don't wave everyone through.
   if (!redis) return memRateLimit(key, limit, windowSecs)

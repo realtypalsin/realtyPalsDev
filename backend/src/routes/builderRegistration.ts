@@ -9,11 +9,12 @@ import { validateUploadedFile } from '../lib/uploadValidator'
 const router = Router()
 
 const BuilderApplicationSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().regex(/^\+91\d{10}$/, 'Phone must be +91 followed by 10 digits'),
-  cin: z.string().length(21, 'CIN must be exactly 21 characters').regex(/^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/, 'Invalid CIN format'),
-  website: z.string().url().optional().or(z.literal('')),
+  name: z.string().min(1, 'Company name is required'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(8, 'Phone number required'),
+  landline: z.string().optional(),
+  cin: z.string().min(1, 'CIN is required'),
+  website: z.string().optional(),
   headquarters: z.string().optional(),
   description: z.string().optional(),
   logo_url: z.string().optional(), // base64 or URL
@@ -24,11 +25,11 @@ const BuilderApplicationSchema = z.object({
   executives: z.array(z.object({
     name: z.string(),
     title: z.string().optional(),
-    experience_years: z.number().optional()
+    experience_years: z.coerce.number().optional()
   })).optional(),
   projects: z.array(z.string()).optional(),
   delivery_track: z.string().optional(),
-})
+}).passthrough()
 
 async function uploadLogoToSupabase(
   base64orUrl: string | undefined,
@@ -148,7 +149,7 @@ router.post('/', async (req: Request, res: Response) => {
         executives: executives || [],
         projects: projects || [],
         delivery_track: delivery_track || null,
-        status: 'new',
+        status: 'new' as any,
         submitted_at: new Date(),
         ip_address: req.ip || 'unknown',
         user_agent: req.get('user-agent') || 'unknown',
@@ -182,7 +183,8 @@ router.post('/', async (req: Request, res: Response) => {
     })
   } catch (err) {
     console.error('[builderRegistration] Creation failed:', err)
-    res.status(500).json({ error: 'Failed to submit application' })
+    const message = err instanceof Error ? err.message : 'Failed to submit application'
+    res.status(500).json({ error: message })
   }
 })
 

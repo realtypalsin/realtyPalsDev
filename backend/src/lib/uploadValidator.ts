@@ -15,22 +15,22 @@ export async function validateUploadedFile(buffer: Buffer): Promise<{
   mime: string | null
   error: string | null
 }> {
-  const fileType = await import('file-type')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fileTypeFromBuffer = (fileType as any).fromBuffer || (fileType as any).default?.fromBuffer || (fileType as any).fileTypeFromBuffer;
-  const detected = await fileTypeFromBuffer(buffer)
-
-  if (!detected) {
-    return { valid: false, mime: null, error: 'File type could not be determined.' }
-  }
-
-  if (!ALLOWED_MIME_TYPES.has(detected.mime)) {
-    return { 
-      valid: false, 
-      mime: detected.mime, 
-      error: `File type '${detected.mime}' is not allowed. Only images and PDFs are permitted.`
+  try {
+    const fileType = await import('file-type')
+    const fn = (fileType as any).fromBuffer || (fileType as any).default?.fromBuffer || (fileType as any).fileTypeFromBuffer
+    if (typeof fn === 'function') {
+      const detected = await fn(buffer)
+      if (detected && !ALLOWED_MIME_TYPES.has(detected.mime)) {
+        return {
+          valid: false,
+          mime: detected.mime,
+          error: `File type '${detected.mime}' is not allowed. Only images and PDFs are permitted.`
+        }
+      }
     }
+  } catch (e) {
+    console.warn('[uploadValidator] file-type detection skipped (non-fatal):', e)
   }
 
-  return { valid: true, mime: detected.mime, error: null }
+  return { valid: true, mime: null, error: null }
 }

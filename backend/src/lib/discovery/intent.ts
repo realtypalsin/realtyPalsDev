@@ -4,22 +4,23 @@ import { Intent, IntentState } from './types'
 import { CITY_LEVEL_TERMS } from './constants'
 
 export const IntentSchema = z.object({
-  bhk: z.number().array().optional(),
-  budgetMin: z.number().optional(),
-  budgetMax: z.number().optional(),
-  possession: z.enum(['immediate', '1year', '2year', '3year+']).optional(),
-  sector: z.string().optional(),
-  areaMin: z.number().optional(),
-  areaMax: z.number().optional(),
-  purpose: z.enum(['endUse', 'investment']).optional(),
-  builderName: z.string().optional(),
-  lifestyleKeywords: z.string().array().optional(),
-  projectNames: z.string().array().optional(),
-  riskProfile: z.enum(['nri', 'retiree', 'risk_averse', 'first_time_buyer']).optional(),
-  is_comparison_query: z.boolean().optional(),
-  gathering_loop_count: z.number().optional(),
-  legal_check: z.boolean().optional(),
-}).partial().strict()
+  bhk: z.number().array().nullable().optional(),
+  budgetMin: z.number().nullable().optional(),
+  budgetMax: z.number().nullable().optional(),
+  possession: z.enum(['immediate', '1year', '2year', '3year+']).nullable().optional(),
+  sector: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  areaMin: z.number().nullable().optional(),
+  areaMax: z.number().nullable().optional(),
+  purpose: z.enum(['endUse', 'investment']).nullable().optional(),
+  builderName: z.string().nullable().optional(),
+  lifestyleKeywords: z.string().array().nullable().optional(),
+  projectNames: z.string().array().nullable().optional(),
+  riskProfile: z.enum(['nri', 'retiree', 'risk_averse', 'first_time_buyer']).nullable().optional(),
+  is_comparison_query: z.boolean().nullable().optional(),
+  gathering_loop_count: z.number().nullable().optional(),
+  legal_check: z.boolean().nullable().optional(),
+}).partial().passthrough()
 
 export function isCityLevel(sector: string): boolean {
   return CITY_LEVEL_TERMS.includes(sector.toLowerCase().trim())
@@ -48,8 +49,11 @@ export function getIntentState(intent: Intent, hasExistingResults = false): Inte
     hasBuilder ||
     signals >= 2 ||
     (hasSector && hasLifestyleKeywords) ||
-    (hasSector && hasPossession) ||   // "RTM Sector 137" → search immediately
-    (hasBudget && hasPossession)      // "under 2Cr ready to move" → enough signal
+    (hasSector && hasPossession) ||     // "RTM Sector 137" → search immediately
+    (hasBhk && hasLifestyleKeywords) || // "3BHK near metro" → search immediately!
+    (hasBhk && hasPossession) ||        // "3BHK ready to move" → search immediately!
+    (hasBudget && hasPossession) ||     // "under 2Cr ready to move" → enough signal
+    (hasBudget && hasLifestyleKeywords) // "under 2Cr near metro" → search immediately!
   ) {
     return hasExistingResults ? 'SHORTLISTED' : 'READY_TO_SEARCH'
   }

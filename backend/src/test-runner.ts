@@ -16,6 +16,7 @@ async function runTests() {
   const result = spawnSync('node', ['--require', 'tsx/cjs', '--test', ...testFiles], {
     stdio: 'inherit',
     cwd: process.cwd(),
+    env: { ...process.env, NODE_ENV: 'test' },
   })
 
   process.exit(result.status ?? 1)

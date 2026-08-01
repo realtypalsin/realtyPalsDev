@@ -582,6 +582,38 @@ export default function OverviewTab({
             </button>
           </div>
 
+          {/* Resources & Documents Section */}
+          <div className="mt-8 rounded-3xl border border-gray-100 dark:border-gray-800/40 bg-white dark:bg-[#171412] p-6 md:p-8">
+            <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight mb-6">Resources & Documents</h2>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+              {documents && documents.length > 0 ? (
+                documents.slice(0, 6).map((doc: any) => (
+                  <a
+                    key={doc.id}
+                    href={doc.storage_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                      <span className="text-[12px] font-bold text-blue-600 dark:text-blue-400">📄</span>
+                    </div>
+                    <p className="text-[11px] font-semibold text-gray-900 dark:text-white text-center line-clamp-2">{doc.name}</p>
+                  </a>
+                ))
+              ) : (
+                <div className="col-span-3 md:col-span-6 p-4 text-center">
+                  <p className="text-[12px] text-gray-500">No documents available</p>
+                </div>
+              )}
+            </div>
+            {documents && documents.length > 6 && (
+              <button className="w-full mt-4 py-2 text-[12px] font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                View All Documents →
+              </button>
+            )}
+          </div>
+
         </div>
 
       </div>

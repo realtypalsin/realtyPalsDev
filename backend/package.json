@@ -19,7 +19,6 @@
     "schema": "../frontend/prisma/schema.prisma"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.52.0",
     "@google/genai": "^2.15.0",
     "@prisma/client": "^5.20.0",
     "@sentry/node": "^8.0.0",

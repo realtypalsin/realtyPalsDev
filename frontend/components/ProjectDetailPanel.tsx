@@ -24,7 +24,7 @@ const IntelligenceTab = dynamic(() => import('@/components/property-detail/Intel
 import ResidencesTab from '@/components/property-detail/ResidencesTab'
 import ProjectPricingTab from '@/components/property-detail/ProjectPricingTab'
 import LocationTab from '@/components/property-detail/LocationTab'
-import DocumentsTab from '@/components/property-detail/DocumentsTab'
+import BuilderTab from '@/components/property-detail/BuilderTab'
 import { API_BASE } from '@/lib/env'
 import { getPaymentPlan, getCostSheet } from '@/lib/backend-api'
 import { resolveImgUrl } from '@/lib/utils'
@@ -55,7 +55,7 @@ const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 )
 
-const SECTION_TABS = ['Overview', 'Analysis', 'Residences', 'Pricing', 'Location', 'Documents'] as const
+const SECTION_TABS = ['Overview', 'Analysis', 'Floor Plans', 'Pricing', 'Location', 'Builder'] as const
 type Tab = typeof SECTION_TABS[number]
 
 const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid' }
@@ -183,7 +183,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   // Lazy-load payment plan when 'Pricing' or 'Residences' tab is opened.
   useEffect(() => {
     let mounted = true
-    if ((activeTab !== 'Pricing' && activeTab !== 'Residences') || !project?.slug || paymentPlan.loaded) return
+    if ((activeTab !== 'Pricing' && activeTab !== 'Floor Plans') || !project?.slug || paymentPlan.loaded) return
     getPaymentPlan(project.slug).then((res) => {
       if (mounted) setPaymentPlan({ loaded: true, available: res.available, data: res.plan ?? null, message: res.message })
     }).catch(() => {
@@ -288,8 +288,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           documents={documents}
           whyBuy={whyBuy}
           onGoToLocation={() => setActiveTab('Location')}
-          onGoToDocuments={() => setActiveTab('Documents')}
-          onGoToPricing={() => setActiveTab('Residences')}
+          onGoToDocuments={() => setActiveTab('Builder')}
+          onGoToPricing={() => setActiveTab('Pricing')}
         />
       )}
 
@@ -307,7 +307,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         />
       )}
 
-      {activeTab === 'Residences' && (
+      {activeTab === 'Floor Plans' && (
         <div className="space-y-8 pb-12">
           <ResidencesTab
             unitTypes={d?.unit_types ?? []}
@@ -343,33 +343,15 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         />
       )}
 
-      {activeTab === 'Documents' && (() => {
-        const intelDocs = detail?.decision_profile?.intelligence_data?.documents || []
-        const transparencyChecks = detail?.decision_profile?.intelligence_data?.transparency_checks || []
-        const mappedDocs = documents.map(doc => {
-          const meta = intelDocs.find((m: any) => m.id === doc.id || m.file_name === doc.storage_url.split('/').pop())
-          return {
-            ...doc,
-            description: meta?.description || undefined,
-            is_quick_access: meta?.is_quick_access || false,
-            thumbnail_url: meta?.thumbnail_url || undefined,
-            file_format: meta?.file_format || undefined,
-            verified_by: meta?.verified_by || undefined,
-            category_description: meta?.category?.category_description || undefined,
-            category_icon_name: meta?.category?.category_icon_name || undefined
-          }
-        })
-        return (
-          <DocumentsTab
-            documents={mappedDocs}
+      {activeTab === 'Builder' && (
+        <div className="space-y-8 pb-12">
+          <BuilderTab
+            builder={(d as any)?.builder || null}
+            project={d as any}
             loading={loading && !detail}
-            projectSlug={(d as any)?.slug}
-            projectId={project?.id}
-            userId={userId}
-            transparency_checks={transparencyChecks}
           />
-        )
-      })()}
+        </div>
+      )}
       </m.div>
     </AnimatePresence>
   )
@@ -409,10 +391,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const tabIcons: Record<Tab, React.ReactNode> = {
     Overview: <Building2 size={15} />,
     Analysis: <LineChart size={15} />,
-    Residences: <BedDouble size={15} />,
+    'Floor Plans': <BedDouble size={15} />,
     Pricing: <IndianRupee size={15} />,
     Location: <MapPin size={15} />,
-    Documents: <FileText size={15} />
+    Builder: <FileText size={15} />
   }
 
   const tabStrip = (
