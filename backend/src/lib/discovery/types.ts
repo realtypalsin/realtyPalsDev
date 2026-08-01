@@ -104,13 +104,7 @@ export interface ScoredProject {
   recommendation_profile?: {
     tier?: string | null
     primary_thesis?: string | null
-    family_thesis?: string | null
-    investment_thesis?: string | null
-    luxury_thesis?: string | null
     walk_away_conditions?: string[]
-    end_use_thesis?: string | null
-    investor_thesis?: string | null
-    risk_thesis?: string | null
     timeline_advice?: string | null
   } | null
   decision_profile?: {
@@ -136,18 +130,13 @@ export interface ScoredProject {
     verdict?: string | null
   }>
   dna?: {
-    builder_track_record_score?: number | null
-    builder_track_record_label?: string | null
-    rera_compliance_score?: number | null
-    rera_compliance_label?: string | null
-    possession_certainty_score?: number | null
-    possession_certainty_label?: string | null
-    price_position_score?: number | null
-    price_position_label?: string | null
-    locality_score?: number | null
-    locality_label?: string | null
-    amenity_depth_score?: number | null
-    amenity_depth_label?: string | null
+    overall_score?: number | null
+    builder_score?: number | null
+    price_score?: number | null
+    location_score?: number | null
+    legal_score?: number | null
+    amenity_score?: number | null
+    possession_score?: number | null
   } | null
   // Eager intelligence — computed sync in mapToScored(), zero extra DB cost
   decisionIntelligence?: import('../ai/intelligence').DecisionIntelligence | null

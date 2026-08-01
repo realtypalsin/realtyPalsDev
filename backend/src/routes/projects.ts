@@ -243,14 +243,14 @@ router.get('/:slug/investment', async (req: Request, res: Response) => {
       possession_date: true,
       dna: {
         select: {
-          locality_score: true,
-          price_position_score: true,
-          possession_certainty_score: true,
-          builder_track_record_score: true,
+          location_score: true,
+          price_score: true,
+          possession_score: true,
+          builder_score: true,
         },
       },
       recommendation_profile: {
-        select: { investment_thesis: true, investor_thesis: true },
+        select: { tier: true, primary_thesis: true },
       },
     },
   })
@@ -273,8 +273,8 @@ router.get('/:slug/investment', async (req: Request, res: Response) => {
       sector:                 project.sector,
       status:                 project.status,
       possession_date:        project.possession_date,
-      investment_thesis:      project.recommendation_profile?.investment_thesis ?? null,
-      investor_thesis:        project.recommendation_profile?.investor_thesis ?? null,
+      recommendation_tier:    project.recommendation_profile?.tier ?? null,
+      recommendation_thesis:  project.recommendation_profile?.primary_thesis ?? null,
       potential_appreciation: potentialAppreciation,
       data_note:              'Investment projections are indicative only — not financial advice. Verify rental yields and capital appreciation with a licensed advisor.',
     },

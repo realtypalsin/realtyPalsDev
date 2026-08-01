@@ -319,7 +319,7 @@ router.get('/projects/:id/completeness', requireAdmin, async (req: Request, res:
     })
 
     // Responded unwrapped: the admin project page does setCompleteness(json) directly.
-    res.json(computeCompleteness({ ...project, documents: docs }))
+    res.json(computeCompleteness({ ...project, documents: docs } as any))
   } catch (err) {
     console.error('[admin] project completeness failed:', err)
     res.status(500).json({ error: 'Failed to compute completeness' })

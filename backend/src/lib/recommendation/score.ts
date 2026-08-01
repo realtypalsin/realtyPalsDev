@@ -21,12 +21,13 @@ export interface RecommendationScore {
 
 export interface ScoreInput {
   dna: {
-    builder_track_record_score: number | null
-    price_position_score:       number | null
-    locality_score:             number | null
-    rera_compliance_score:      number | null
-    amenity_depth_score:        number | null
-    possession_certainty_score: number | null
+    builder_score:    number | null
+    price_score:      number | null
+    location_score:   number | null
+    legal_score:      number | null
+    amenity_score:    number | null
+    possession_score: number | null
+    overall_score?:   number | null
   } | null
   status:            'under_construction' | 'ready_to_move' | 'new_launch'
   possession_date:   Date | null
@@ -123,23 +124,23 @@ export function computeRecommendationScore(input: ScoreInput): RecommendationSco
   const d = input.dna
 
   const dnaFields = [
-    d?.builder_track_record_score,
-    d?.price_position_score,
-    d?.locality_score,
-    d?.rera_compliance_score,
-    d?.amenity_depth_score,
-    d?.possession_certainty_score,
+    d?.builder_score,
+    d?.price_score,
+    d?.location_score,
+    d?.legal_score,
+    d?.amenity_score,
+    d?.possession_score,
   ]
   const basis_count = dnaFields.filter((v) => v != null).length
   const confidence = Math.round((basis_count / 6) * 100)
 
   // ── Raw dimension scores (0–100) ──────────────────────────────────────────
-  const builderRaw   = d?.builder_track_record_score ?? NEUTRAL
-  const valueRaw     = d?.price_position_score       ?? NEUTRAL
-  const locationRaw  = d?.locality_score             ?? NEUTRAL
-  const reraRaw      = d?.rera_compliance_score      ?? NEUTRAL
-  const lifestyleRaw = d?.amenity_depth_score        ?? NEUTRAL
-  const possRaw      = d?.possession_certainty_score ?? NEUTRAL
+  const builderRaw   = d?.builder_score ?? NEUTRAL
+  const valueRaw     = d?.price_score       ?? NEUTRAL
+  const locationRaw  = d?.location_score             ?? NEUTRAL
+  const reraRaw      = d?.legal_score      ?? NEUTRAL
+  const lifestyleRaw = d?.amenity_score        ?? NEUTRAL
+  const possRaw      = d?.possession_score ?? NEUTRAL
 
   const riskRaw        = deriveRisk(reraRaw, possRaw, input.project_risk_flag, input.builder.legal_flag)
   const liquidityRaw   = deriveLiquidity(input.status, input.possession_date, locationRaw)

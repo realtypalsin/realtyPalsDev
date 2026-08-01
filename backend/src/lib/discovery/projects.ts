@@ -363,7 +363,7 @@ function mapToScored(p: RawProject, intent: Intent): ScoredProject {
     decision_profile: p.decision_profile ?? null,
     persona_profile: p.persona_profile ?? null,
     competitors: p.competitors ?? [],
-    dna: p.dna ?? null,
+    dna: (p.dna ?? null) as any,
     // Eager intelligence — pure sync, no DB cost
     decisionIntelligence: buildDecisionIntelligence({
       dna: p.dna ?? null,

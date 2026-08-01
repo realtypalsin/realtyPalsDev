@@ -191,10 +191,6 @@ function serializeProjects(projects: ScoredProject[]): string {
       ...(p.recommendation_profile ? {
         recommendation_tier:    p.recommendation_profile.tier,
         recommendation_thesis:  p.recommendation_profile.primary_thesis,
-        family_thesis:          p.recommendation_profile.family_thesis,
-        investment_thesis:      p.recommendation_profile.investment_thesis,
-        luxury_thesis:          p.recommendation_profile.luxury_thesis,
-        risk_thesis:            p.recommendation_profile.risk_thesis,
         walk_away_conditions:   p.recommendation_profile.walk_away_conditions,
       } : {}),
       ...(p.decision_profile ? {
@@ -208,10 +204,10 @@ function serializeProjects(projects: ScoredProject[]): string {
         primary_persona:    p.persona_profile.primary_persona,
       } : {}),
       ...(p.dna ? {
-        builder_reputation:   p.dna.builder_track_record_label,
-        rera_standing:        p.dna.rera_compliance_label,
-        delivery_confidence:  p.dna.possession_certainty_label,
-        value_positioning:    p.dna.price_position_label,
+        builder_reputation:   p.dna.builder_score,
+        legal_standing:       p.dna.legal_score,
+        delivery_confidence:  p.dna.possession_score,
+        value_positioning:    p.dna.price_score,
       } : {}),
       ...(p.decisionIntelligence ? {
         decision_confidence:  p.decisionIntelligence.confidence,
