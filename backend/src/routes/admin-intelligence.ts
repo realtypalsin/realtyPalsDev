@@ -188,3 +188,32 @@ router.get('/status/summary', async (req: Request, res: Response) => {
 })
 
 export default router
+
+// PATCH /api/admin/intelligence/:projectId/verify
+// Mark intelligence as verified by admin
+router.patch('/:projectId/verify', async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params
+
+    const decision = await prisma.decisionProfile.update({
+      where: { project_id: projectId },
+      data: {
+        status: 'VERIFIED',
+        last_verified_at: new Date(),
+        verified_by: req.user?.id || 'admin'
+      }
+    })
+
+    res.json({
+      message: 'Intelligence verified',
+      projectId,
+      verified_at: decision.last_verified_at,
+      status: decision.status
+    })
+  } catch (error) {
+    console.error('Verify error:', error)
+    res.status(500).json({ error: 'Failed to verify intelligence' })
+  }
+})
+
+export default router
