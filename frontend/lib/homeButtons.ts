@@ -8,7 +8,7 @@ export interface HomeButtonGroup {
   title: string;
   primaryPrompt: string;
   icon: string;
-  badgeGradient: string;
+  colorClass: string;
   options: HomeButtonSubItem[];
 }
 
@@ -18,7 +18,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '3 BHK in Sector 75 Noida',
     primaryPrompt: 'Show me 3 BHK apartments available for immediate purchase in Sector 75.',
     icon: 'Building2',
-    badgeGradient: 'from-blue-500 to-indigo-600 text-white shadow-blue-500/25',
+    colorClass: 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 group-hover/main:bg-blue-600 group-hover/main:text-white',
     options: [
       {
         label: 'Immediate purchase 3 BHK',
@@ -39,7 +39,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '2 BHK in Sector 76 Noida',
     primaryPrompt: 'Show me budget friendly 2 BHK flats available in Sector 76.',
     icon: 'Home',
-    badgeGradient: 'from-emerald-500 to-teal-600 text-white shadow-emerald-500/25',
+    colorClass: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 group-hover/main:bg-emerald-600 group-hover/main:text-white',
     options: [
       {
         label: 'Budget friendly 2 BHK',
@@ -60,7 +60,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '3 BHK in Sector 77 Noida',
     primaryPrompt: 'Show me the most popular 3 BHK housing societies in Sector 77.',
     icon: 'Key',
-    badgeGradient: 'from-amber-500 to-orange-600 text-white shadow-amber-500/25',
+    colorClass: 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 group-hover/main:bg-amber-600 group-hover/main:text-white',
     options: [
       {
         label: 'Popular housing societies',
@@ -81,7 +81,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '4 BHK in Sector 78 Noida',
     primaryPrompt: 'Find large 4 BHK flats and penthouses available in Sector 78.',
     icon: 'Crown',
-    badgeGradient: 'from-purple-500 to-violet-600 text-white shadow-purple-500/25',
+    colorClass: 'bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 group-hover/main:bg-purple-600 group-hover/main:text-white',
     options: [
       {
         label: 'Large 4 BHK & Penthouses',
@@ -102,7 +102,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: '3 BHK in Sector 79 Noida',
     primaryPrompt: 'Find 3 BHK flats near sports parks and green areas in Sector 79.',
     icon: 'Trees',
-    badgeGradient: 'from-teal-500 to-cyan-600 text-white shadow-teal-500/25',
+    colorClass: 'bg-teal-50 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400 group-hover/main:bg-teal-600 group-hover/main:text-white',
     options: [
       {
         label: 'Flats near sports & parks',
@@ -123,7 +123,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     title: 'Luxury Societies in Sector 78',
     primaryPrompt: 'What are the most premium gated communities located in Sector 78 Noida?',
     icon: 'Shield',
-    badgeGradient: 'from-rose-500 to-pink-600 text-white shadow-rose-500/25',
+    colorClass: 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 group-hover/main:bg-rose-600 group-hover/main:text-white',
     options: [
       {
         label: 'Top premium gated societies',
@@ -140,4 +140,5 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     ]
   }
 ];
+
 

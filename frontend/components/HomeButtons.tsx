@@ -10,18 +10,17 @@ import {
   Trees,
   Shield,
   ChevronDown,
-  ChevronRight,
-  Sparkles
+  ChevronRight
 } from 'lucide-react';
 import { HOME_BUTTON_GROUPS } from '@/lib/homeButtons';
 
 const iconMap: Record<string, React.ReactNode> = {
-  Building2: <Building2 size={13} className="text-white" />,
-  Home: <Home size={13} className="text-white" />,
-  Key: <Key size={13} className="text-white" />,
-  Crown: <Crown size={13} className="text-white" />,
-  Trees: <Trees size={13} className="text-white" />,
-  Shield: <Shield size={13} className="text-white" />
+  Building2: <Building2 size={13} />,
+  Home: <Home size={13} />,
+  Key: <Key size={13} />,
+  Crown: <Crown size={13} />,
+  Trees: <Trees size={13} />,
+  Shield: <Shield size={13} />
 };
 
 interface HomeButtonsProps {
@@ -75,10 +74,10 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 450, damping: 25 }}
-              className={`group flex items-center rounded-full text-xs font-semibold border transition-all duration-200 shadow-xs ${
+              className={`group flex items-center rounded-full text-xs font-semibold border transition-all duration-200 shadow-2xs ${
                 isOpen
                   ? 'bg-white dark:bg-[#18181c] border-blue-500/80 dark:border-blue-400/80 text-zinc-900 dark:text-zinc-100 ring-2 ring-blue-500/25 shadow-md'
-                  : 'bg-white/90 dark:bg-[#141416]/90 backdrop-blur-md border-zinc-200/90 dark:border-zinc-800 text-zinc-700 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-sm'
+                  : 'bg-white/95 dark:bg-[#141416]/95 backdrop-blur-md border-zinc-200/90 dark:border-zinc-800 text-zinc-700 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs'
               }`}
             >
               {/* Left Main Clickable Button */}
@@ -88,7 +87,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                 className="flex items-center gap-2 pl-3 py-1.5 pr-2.5 rounded-l-full cursor-pointer hover:bg-zinc-100/80 dark:hover:bg-zinc-800/70 transition-colors group/main min-w-0"
                 title={`Ask: "${group.primaryPrompt}"`}
               >
-                <span className={`flex-shrink-0 p-1.5 rounded-full bg-gradient-to-br shadow-xs transition-transform duration-200 group-hover/main:scale-110 ${group.badgeGradient}`}>
+                <span className={`flex-shrink-0 p-1.5 rounded-full transition-all duration-200 group-hover/main:scale-105 ${group.colorClass}`}>
                   {iconMap[group.icon]}
                 </span>
                 <span className="truncate group-hover/main:text-blue-600 dark:group-hover/main:text-blue-400 transition-colors tracking-tight">
@@ -96,8 +95,8 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                 </span>
               </button>
 
-              {/* Vertical Subtle Gradient Divider */}
-              <div className="h-4 w-px bg-gradient-to-b from-transparent via-zinc-200 dark:via-zinc-800 to-transparent shrink-0" />
+              {/* Vertical Subtle Divider */}
+              <div className="h-4 w-px bg-zinc-200/80 dark:bg-zinc-800/90 shrink-0" />
 
               {/* Right Dropdown Toggle Button */}
               <button
@@ -129,20 +128,20 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                   transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                   className={`absolute top-full mt-2 z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/98 dark:bg-[#141416]/98 backdrop-blur-2xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.7)] p-2 ${alignClass}`}
                 >
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold tracking-wider text-blue-600 dark:text-blue-400 uppercase bg-blue-50/60 dark:bg-blue-950/40 rounded-xl mb-1.5 border border-blue-100/60 dark:border-blue-900/40">
-                    <Sparkles size={11} className="text-blue-500 shrink-0" />
-                    <span>Popular Queries</span>
+                  <div className="px-3 pt-2 pb-1.5 text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase border-b border-zinc-100 dark:border-zinc-800/80 mb-1 flex items-center justify-between">
+                    <span>Select Query</span>
+                    <span className="text-[9px] font-normal text-zinc-400 dark:text-zinc-500 normal-case tracking-normal">3 presets</span>
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {group.options.map((option, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleOptionSelect(option.prompt)}
-                        className="group/item w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/30 dark:hover:from-blue-950/40 dark:hover:to-indigo-950/20 cursor-pointer border border-transparent hover:border-blue-200/40 dark:hover:border-blue-800/40"
+                        className="group/item w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 hover:bg-zinc-100/90 dark:hover:bg-zinc-800/80 cursor-pointer"
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="text-xs font-bold text-zinc-800 dark:text-zinc-100 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors leading-snug">
+                          <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-100 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors leading-snug">
                             {option.label}
                           </div>
                           <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-normal leading-snug mt-0.5 line-clamp-2">
@@ -165,5 +164,6 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
     </div>
   );
 }
+
 
 
