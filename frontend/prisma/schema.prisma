@@ -154,7 +154,7 @@ model Project {
   recommendation_profile   RecommendationProfile?
   saved_by                 SavedProperty[]
   unit_types               UnitType[]
-  payment_plan             PaymentPlan?
+  payment_plans            PaymentPlan[]
   cost_sheet               CostSheet?
   price_history            PriceHistory[]
   construction_milestones  ConstructionMilestone[]
@@ -628,9 +628,13 @@ enum ConnectivityType {
 
 model PaymentPlan {
   id              String   @id @default(uuid())
-  project_id      String   @unique
+  project_id      String
+  // construction_linked | down_payment | flexi | possession_linked | subvention
+  // | investor | easy_payment | corporate_bulk | nri | special_offer
+  plan_type       String   @default("construction_linked")
   plan_name       String?
   milestones      Json     @default("[]")
+  sort_order      Int      @default(0)
   source          String?
   source_url      String?
   verified_at     DateTime?
@@ -640,6 +644,9 @@ model PaymentPlan {
   updated_at      DateTime @updatedAt
   project         Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
+  // Many plans per project, but only one of each type — keeps upserts keyed
+  @@unique([project_id, plan_type])
+  @@index([project_id, sort_order])
   @@map("payment_plans")
 }
 

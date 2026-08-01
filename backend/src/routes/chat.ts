@@ -713,15 +713,29 @@ router.post('/', async (req: Request, res: Response) => {
             const pName = args.project_name ?? args.name ?? '';
             const proj = await prisma.project.findFirst({
               where: { name: { contains: pName, mode: 'insensitive' } },
-              include: { payment_plan: true, cost_sheet: true }
+              include: {
+                payment_plans: { orderBy: [{ sort_order: 'asc' }, { created_at: 'asc' }] },
+                cost_sheet: true,
+              }
             });
-            if (proj && proj.payment_plan && Array.isArray((proj.payment_plan as any).milestones) && ((proj.payment_plan as any).milestones.length > 0)) {
+            const populatedPlans = (proj?.payment_plans ?? []).filter(
+              p => Array.isArray(p.milestones) && (p.milestones as unknown[]).length > 0
+            );
+            if (proj && populatedPlans.length > 0) {
+              const primary = populatedPlans[0];
               return {
                 found: true,
                 project_name: proj.name,
-                plan_name: proj.payment_plan.plan_name ?? 'Custom Payment Plan',
-                milestones: proj.payment_plan.milestones,
-                notes: proj.payment_plan.notes ?? null,
+                plan_name: primary.plan_name ?? 'Custom Payment Plan',
+                milestones: primary.milestones,
+                notes: primary.notes ?? null,
+                // All available plans, so the advisor can compare them for the buyer.
+                plans: populatedPlans.map(p => ({
+                  plan_type: p.plan_type,
+                  plan_name: p.plan_name ?? 'Custom Payment Plan',
+                  milestones: p.milestones,
+                  notes: p.notes ?? null,
+                })),
                 cost_sheet: proj.cost_sheet ? {
                   base_price_per_sqft: proj.cost_sheet.base_price_per_sqft,
                   gst_rate_pct: proj.cost_sheet.gst_rate_pct,
@@ -815,14 +829,18 @@ router.post('/', async (req: Request, res: Response) => {
           if (!projectId) {
             return { error: 'project_id is required' };
           }
-          const [costSheet, paymentPlan] = await Promise.all([
+          const [costSheet, paymentPlans] = await Promise.all([
             (prisma as any).costSheet.findUnique({ where: { project_id: projectId } }),
-            (prisma as any).paymentPlan.findUnique({ where: { project_id: projectId } }),
+            (prisma as any).paymentPlan.findMany({
+              where: { project_id: projectId },
+              orderBy: [{ sort_order: 'asc' }, { created_at: 'asc' }],
+            }),
           ]);
           return {
             cost_sheet: costSheet || null,
-            payment_plan: paymentPlan || null,
-            message: !costSheet && !paymentPlan ? 'Cost details not yet verified in database. Output exactly this: <realty-action type="contact" />' : undefined,
+            payment_plan: paymentPlans[0] || null,
+            payment_plans: paymentPlans,
+            message: !costSheet && !paymentPlans.length ? 'Cost details not yet verified in database. Output exactly this: <realty-action type="contact" />' : undefined,
           };
         }
 

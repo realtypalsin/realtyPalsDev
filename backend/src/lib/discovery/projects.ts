@@ -102,12 +102,14 @@ const PROJECT_INCLUDE = {
       possession_score: true,
     },
   },
-  payment_plan: {
+  payment_plans: {
     select: {
+      plan_type: true,
       plan_name: true,
       milestones: true,
       notes: true,
     },
+    orderBy: [{ sort_order: 'asc' }, { created_at: 'asc' }],
   },
   cost_sheet: {
     select: {

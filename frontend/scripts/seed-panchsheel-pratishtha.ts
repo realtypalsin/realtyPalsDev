@@ -277,8 +277,10 @@ async function seed() {
     // 9. Payment Plan
     const paymentPlanData = {
       project_id: project.id,
+      plan_type: (data.payment_plan as any).plan_type ?? 'construction_linked',
       plan_name: data.payment_plan.plan_name,
       milestones: data.payment_plan.milestones,
+      sort_order: 0,
       source: data.payment_plan.source,
       notes: data.payment_plan.notes,
       verified_at: new Date(),
@@ -286,7 +288,7 @@ async function seed() {
     }
 
     await prisma.paymentPlan.upsert({
-      where: { project_id: project.id },
+      where: { project_id_plan_type: { project_id: project.id, plan_type: paymentPlanData.plan_type } },
       create: paymentPlanData,
       update: paymentPlanData
     })

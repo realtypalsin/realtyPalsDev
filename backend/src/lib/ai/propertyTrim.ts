@@ -16,17 +16,24 @@ export interface TrimmedProperty {
   concerns?: string[] | null;
   bhk?: number | null;
   builder?: { name: string } | null;
-  payment_plan?: {
+  payment_plans?: {
+    plan_type?: string | null;
     plan_name?: string | null;
     milestones?: unknown;
     notes?: string | null;
-  } | null;
+  }[] | null;
   cost_sheet?: {
     base_price_per_sqft?: number | null;
     gst_rate_pct?: number | null;
     stamp_duty_pct?: number | null;
     registration_pct?: number | null;
   } | null;
+}
+
+function normalisePaymentPlans(project: any): any[] {
+  if (Array.isArray(project.payment_plans)) return project.payment_plans;
+  if (project.payment_plan) return [project.payment_plan];
+  return [];
 }
 
 export function trimPropertyForPrompt(project: any): TrimmedProperty {
@@ -40,11 +47,13 @@ export function trimPropertyForPrompt(project: any): TrimmedProperty {
     concerns: project.concerns,
     bhk: project.bhk,
     builder: project.builder ? { name: typeof project.builder === 'string' ? project.builder : project.builder.name } : null,
-    payment_plan: project.payment_plan ? {
-      plan_name: project.payment_plan.plan_name,
-      milestones: project.payment_plan.milestones,
-      notes: project.payment_plan.notes,
-    } : null,
+    // Accepts either the new payment_plans array or a legacy single payment_plan.
+    payment_plans: normalisePaymentPlans(project).map((p: any) => ({
+      plan_type: p.plan_type ?? null,
+      plan_name: p.plan_name ?? null,
+      milestones: p.milestones,
+      notes: p.notes ?? null,
+    })),
     cost_sheet: project.cost_sheet ? {
       base_price_per_sqft: project.cost_sheet.base_price_per_sqft,
       gst_rate_pct: project.cost_sheet.gst_rate_pct,

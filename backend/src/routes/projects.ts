@@ -159,11 +159,12 @@ router.get('/:slug/payment-plan', async (req: Request, res: Response) => {
   })
   if (!project) { res.status(404).json({ error: 'Not found' }); return }
 
-  const plan = await (prisma as any).paymentPlan.findUnique({
+  const plans = await (prisma as any).paymentPlan.findMany({
     where: { project_id: project.id },
+    orderBy: [{ sort_order: 'asc' }, { created_at: 'asc' }],
   })
 
-  if (!plan) {
+  if (!plans.length) {
     res.json({
       available: false,
       message: 'Payment schedule not yet verified. Contact our advisors for the latest payment plan.',
@@ -171,7 +172,8 @@ router.get('/:slug/payment-plan', async (req: Request, res: Response) => {
     return
   }
 
-  res.json({ available: true, plan })
+  // `plan` is the primary plan, kept for existing clients that render one plan.
+  res.json({ available: true, plan: plans[0], plans })
 })
 
 router.get('/:slug/cost-sheet', async (req: Request, res: Response) => {

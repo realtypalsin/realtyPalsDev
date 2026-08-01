@@ -209,16 +209,25 @@ export async function migrateSessions(userId: string, guestToken: string) {
 
 // ─── Intelligence endpoints (lazy, on-demand) ─────────────────────────────────
 
+export interface PaymentPlanDto {
+  plan_type: string
+  plan_name: string | null
+  milestones: unknown[]
+  sort_order: number
+  source: string | null
+  verified_at: string | null
+  notes: string | null
+  // Consumers pass plans around as Record<string, unknown> lazy state.
+  [key: string]: unknown
+}
+
 export async function getPaymentPlan(slug: string): Promise<{
   available: boolean
   message?: string
-  plan?: {
-    plan_name: string | null
-    milestones: unknown[]
-    source: string | null
-    verified_at: string | null
-    notes: string | null
-  }
+  /** Primary plan (lowest sort_order). */
+  plan?: PaymentPlanDto
+  /** Every plan offered for this project, ordered. */
+  plans?: PaymentPlanDto[]
 }> {
   const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/payment-plan`)
   if (!res.ok) return { available: false, message: 'Unable to load payment plan.' }

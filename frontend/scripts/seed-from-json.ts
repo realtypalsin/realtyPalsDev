@@ -302,23 +302,31 @@ async function seed() {
     // ─────────────────────────────────────────────────
     // 9. PAYMENT PLAN
     // ─────────────────────────────────────────────────
-    if (data.payment_plan) {
+    // Many plans per project — accepts a `payment_plans` array or a single
+    // legacy `payment_plan` object.
+    const rawPlans: any[] = Array.isArray((data as any).payment_plans)
+      ? (data as any).payment_plans
+      : data.payment_plan ? [data.payment_plan] : []
+
+    for (const [i, plan] of rawPlans.entries()) {
       const planData = {
         project_id: project.id,
-        plan_name:  data.payment_plan.plan_name ?? null,
-        milestones: data.payment_plan.milestones ?? [],
-        source:     data.payment_plan.source    ?? null,
-        notes:      data.payment_plan.notes     ?? null,
+        plan_type:  plan.plan_type  ?? 'construction_linked',
+        plan_name:  plan.plan_name  ?? null,
+        milestones: plan.milestones ?? [],
+        sort_order: plan.sort_order ?? i,
+        source:     plan.source     ?? null,
+        notes:      plan.notes      ?? null,
         verified_at: new Date(),
         verified_by: 'seed',
       }
       await prisma.paymentPlan.upsert({
-        where:  { project_id: project.id },
+        where:  { project_id_plan_type: { project_id: project.id, plan_type: planData.plan_type } },
         create: planData,
         update: planData,
       })
-      console.log('✓ Payment Plan')
     }
+    if (rawPlans.length) console.log(`✓ Payment Plans (${rawPlans.length})`)
 
     // ─────────────────────────────────────────────────
     // 10. CONNECTIVITY (Nearby Establishments)

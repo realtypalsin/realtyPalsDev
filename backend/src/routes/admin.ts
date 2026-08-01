@@ -246,7 +246,7 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
         connectivity: true,
         decision_profile: true,
         persona_profile: true,
-        payment_plan: true,
+        payment_plans: { orderBy: [{ sort_order: 'asc' }, { created_at: 'asc' }] },
         cost_sheet: true,
       },
     })
@@ -260,6 +260,9 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
       ...project,
       unit_types: project.unit_types ?? [],
       images: project.images ?? [],
+      payment_plans: project.payment_plans ?? [],
+      // Primary plan — the admin editor edits one plan at a time.
+      payment_plan: project.payment_plans?.[0] ?? null,
     }
 
     res.json({ project: safeProject, ...safeProject })

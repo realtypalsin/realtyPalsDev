@@ -1,7 +1,7 @@
 // Phase 4: Endpoint to generate and populate intelligence data
 import { Router, Request, Response } from 'express'
-import { prisma } from '@/lib/db'
-import { generateAllIntelligence, ProjectDataForIntelligence } from '@/lib/ai/generateIntelligence'
+import { prisma } from '../lib/db'
+import { generateAllIntelligence, ProjectDataForIntelligence } from '../lib/ai/generateIntelligence'
 
 const router = Router()
 
@@ -18,28 +18,32 @@ router.post('/generate', async (req: Request, res: Response) => {
       include: {
         builder: true,
         unit_types: { take: 10 },
-        amenities: { take: 10 },
-        areas: { take: 5 }
+        amenities: { take: 10 }
       }
     })
 
     if (!project) return res.status(404).json({ error: 'Project not found' })
 
     // Map to intelligence input
+    // Project has no price_max_cr column — derive the ceiling from unit types.
+    const unitPriceMax = project.unit_types
+      .map((u: { price_max_cr: number | null }) => u.price_max_cr)
+      .filter((v): v is number => typeof v === 'number')
+
     const projectData: ProjectDataForIntelligence = {
       name: project.name,
       builder_name: project.builder.name,
       price_min_cr: project.price_min_cr,
-      price_max_cr: project.price_max_cr,
+      price_max_cr: unitPriceMax.length ? Math.max(...unitPriceMax) : null,
       possession_date: project.possession_date?.toISOString().split('T')[0],
       sector: project.sector,
       total_towers: project.total_towers,
-      amenities: project.amenities.map((a: any) => a.name),
-      location_connectivity: project.neighborhood_description || '',
-      bhk_units: project.unit_types.map((u: any) => ({
+      amenities: project.amenities.map((a: { name: string }) => a.name),
+      location_connectivity: project.long_description || project.description || '',
+      bhk_units: project.unit_types.map((u: { bhk: number; super_area_sqft: number | null; price_max_cr: number | null }) => ({
         bhk: u.bhk,
-        area_sqft: u.super_area_sqft,
-        price: u.price_max_cr
+        area_sqft: u.super_area_sqft ?? undefined,
+        price: u.price_max_cr ?? undefined
       })),
       rera_number: project.rera_number,
       launch_date: project.launch_date?.toISOString().split('T')[0]
@@ -53,7 +57,8 @@ router.post('/generate', async (req: Request, res: Response) => {
       where: { project_id: projectId },
       create: {
         project_id: projectId,
-        status: 'VERIFIED',
+        // Generated data starts as DRAFT — a human verifies before publish.
+        status: 'DRAFT',
         decision_thesis: `${project.name} in ${project.sector} — evaluate based on your budget and timeline`,
         why_buy: ['Established builder', 'Growing sector', 'Good connectivity'],
         why_avoid: ['Check possession timeline', 'Verify builder track record'],

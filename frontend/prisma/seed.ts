@@ -53,7 +53,7 @@ async function main() {
       continue
     }
 
-    const { unit_types, amenities, connectivity, project_images, builder_slug, dna, decision_profile, persona_profile, recommendation_profile, competitors, payment_plan, cost_sheet, ...projectData } = p
+    const { unit_types, amenities, connectivity, project_images, builder_slug, dna, decision_profile, persona_profile, recommendation_profile, competitors, payment_plan, payment_plans, cost_sheet, ...projectData } = p as any
 
 
     // Upsert project
@@ -143,13 +143,19 @@ async function main() {
       })
     }
 
-    // Cost plan tables (payment_plan / cost_sheet are 1:1 relations, upsert on project_id)
-    if (payment_plan) {
-      const cleanPaymentPlan = { ...payment_plan }
+    // Payment plans: many per project, keyed on (project_id, plan_type).
+    // Accepts a `payment_plans` array or a single legacy `payment_plan` object.
+    const plansToSeed: any[] = Array.isArray(payment_plans)
+      ? payment_plans
+      : payment_plan ? [payment_plan] : []
+
+    for (const [i, plan] of plansToSeed.entries()) {
+      const planType = plan.plan_type ?? 'construction_linked'
+      const cleanPlan = { ...plan, plan_type: planType, sort_order: plan.sort_order ?? i }
       await (prisma as any).paymentPlan.upsert({
-        where: { project_id: project.id },
-        update: { ...cleanPaymentPlan, verified_at: verifiedAt, verified_by: 'seed' },
-        create: { ...cleanPaymentPlan, project: { connect: { id: project.id } }, verified_at: verifiedAt, verified_by: 'seed' },
+        where: { project_id_plan_type: { project_id: project.id, plan_type: planType } },
+        update: { ...cleanPlan, verified_at: verifiedAt, verified_by: 'seed' },
+        create: { ...cleanPlan, project: { connect: { id: project.id } }, verified_at: verifiedAt, verified_by: 'seed' },
       })
     }
     if (cost_sheet) {

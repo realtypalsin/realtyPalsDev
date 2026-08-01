@@ -1,7 +1,7 @@
 // Phase 5: Admin endpoints for intelligence management
 import { Router, Request, Response } from 'express'
-import { prisma } from '@/lib/db'
-import { generateAllIntelligence, ProjectDataForIntelligence } from '@/lib/ai/generateIntelligence'
+import { prisma } from '../lib/db'
+import { generateAllIntelligence, ProjectDataForIntelligence } from '../lib/ai/generateIntelligence'
 
 const router = Router()
 
@@ -17,7 +17,7 @@ router.post('/batch', async (req: Request, res: Response) => {
         where: { sector },
         select: { id: true }
       })
-      ids = projects.map((p) => p.id)
+      ids = projects.map((p: { id: string }) => p.id)
     }
 
     if (!ids.length) return res.status(400).json({ error: 'No projects specified' })
@@ -41,20 +41,25 @@ router.post('/batch', async (req: Request, res: Response) => {
           continue
         }
 
+        // Project has no price_max_cr column — derive the ceiling from unit types.
+        const unitPriceMax = project.unit_types
+          .map((u: { price_max_cr: number | null }) => u.price_max_cr)
+          .filter((v): v is number => typeof v === 'number')
+
         const projectData: ProjectDataForIntelligence = {
           name: project.name,
           builder_name: project.builder.name,
           price_min_cr: project.price_min_cr,
-          price_max_cr: project.price_max_cr,
+          price_max_cr: unitPriceMax.length ? Math.max(...unitPriceMax) : null,
           possession_date: project.possession_date?.toISOString().split('T')[0],
           sector: project.sector,
           total_towers: project.total_towers,
-          amenities: project.amenities.map((a: any) => a.name),
-          location_connectivity: project.neighborhood_description || '',
-          bhk_units: project.unit_types.map((u: any) => ({
+          amenities: project.amenities.map((a: { name: string }) => a.name),
+          location_connectivity: project.long_description || project.description || '',
+          bhk_units: project.unit_types.map((u: { bhk: number; super_area_sqft: number | null; price_max_cr: number | null }) => ({
             bhk: u.bhk,
-            area_sqft: u.super_area_sqft,
-            price: u.price_max_cr
+            area_sqft: u.super_area_sqft ?? undefined,
+            price: u.price_max_cr ?? undefined
           })),
           rera_number: project.rera_number,
           launch_date: project.launch_date?.toISOString().split('T')[0]
@@ -66,7 +71,8 @@ router.post('/batch', async (req: Request, res: Response) => {
           where: { project_id: projectId },
           create: {
             project_id: projectId,
-            status: 'VERIFIED',
+            // Generated data starts as DRAFT — a human verifies before publish.
+            status: 'DRAFT',
             decision_thesis: `${project.name} in ${project.sector}`,
             ...intelligence
           },
@@ -187,8 +193,6 @@ router.get('/status/summary', async (req: Request, res: Response) => {
   }
 })
 
-export default router
-
 // PATCH /api/admin/intelligence/:projectId/verify
 // Mark intelligence as verified by admin
 router.patch('/:projectId/verify', async (req: Request, res: Response) => {
@@ -198,9 +202,9 @@ router.patch('/:projectId/verify', async (req: Request, res: Response) => {
     const decision = await prisma.decisionProfile.update({
       where: { project_id: projectId },
       data: {
-        status: 'VERIFIED',
+        status: 'PUBLISHED',
         last_verified_at: new Date(),
-        verified_by: req.user?.id || 'admin'
+        verified_by: (req.headers['x-admin-user'] as string) || 'admin'
       }
     })
 
