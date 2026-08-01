@@ -15,24 +15,20 @@ const suggestedPrompts = [
     prompt: 'Show me budget friendly 2 BHK flats available in Sector 76.'
   },
   {
-    label: 'Ready Flats in Sector 77',
-    prompt: 'Which completed projects in Sector 77 have ready to move apartments?'
+    label: '3 BHK in Sector 77 Noida',
+    prompt: 'Show me the most popular 3 BHK housing societies in Sector 77.'
   },
   {
-    label: 'Luxury Societies in Sector 78',
-    prompt: 'What are the most premium gated communities located in Sector 78 Noida?'
+    label: '4 BHK in Sector 78 Noida',
+    prompt: 'Find large 4 BHK flats and luxury apartments available in Sector 78.'
   },
   {
     label: '3 BHK in Sector 79 Noida',
     prompt: 'Find 3 BHK flats near sports parks and green areas in Sector 79.'
   },
   {
-    label: '3 BHK in Sector 10 Noida Extension',
-    prompt: 'Find family sized 3 BHK flats under construction in Sector 10.'
-  },
-  {
-    label: '4 BHK in Sector 12 Noida Extension',
-    prompt: 'Find premium 4 BHK flats and luxury apartments in Sector 12 Greater Noida West.'
+    label: '2 BHK in Sector 10 Noida Extension',
+    prompt: 'Show me affordable 2 BHK apartments in Sector 10 Greater Noida West.'
   }
 ]
 

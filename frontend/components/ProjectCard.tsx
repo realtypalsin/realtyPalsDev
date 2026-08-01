@@ -59,7 +59,7 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
   university: BookOpen,
 }
 
-export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onToast, onAskAI, onSetSiteVisit, onCall, onShare, quickActions }: Props) {
+export default function ProjectCard({ project, userId, sessionId, index = 0, onDetailOpen, onToast, onAskAI, onSetSiteVisit, onCall, onShare, quickActions }: Props) {
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)
