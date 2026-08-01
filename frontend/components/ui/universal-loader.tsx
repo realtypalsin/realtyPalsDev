@@ -1,5 +1,8 @@
 'use client'
-import { m } from 'framer-motion'
+import { useState } from 'react'
+import { m, AnimatePresence } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
+import StatusSteps from '@/components/chat/StatusSteps'
 
 type Variant = 'chat-thinking' | 'skeleton-page' | 'skeleton-list' | 'inline'
 
@@ -10,6 +13,13 @@ interface UniversalLoaderProps {
   rows?: number
   showCards?: boolean
   className?: string
+  // chat-thinking only: when provided, shows a collapsible chevron that expands
+  // into the real pipeline trace (extracting -> searching -> generating), not
+  // just decorative labels — reuses the same streaming state MessageBubble
+  // already tracks.
+  phase?: 'extracting' | 'searching' | 'generating' | null
+  intent?: Record<string, unknown> | null
+  resultCount?: number | null
 }
 
 function Spinner() {
@@ -44,8 +54,14 @@ export default function UniversalLoader({
   rows = 6,
   showCards = false,
   className = '',
+  phase,
+  intent,
+  resultCount,
 }: UniversalLoaderProps) {
+  const [expanded, setExpanded] = useState(false)
+
   if (variant === 'chat-thinking') {
+    const canExpand = !!phase
     return (
       <div className={`py-2 space-y-3 ${className}`}>
         <div className="flex items-center gap-2.5">
@@ -54,12 +70,36 @@ export default function UniversalLoader({
             {label ?? 'Thinking'}
             <m.span animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1.4, repeat: Infinity }} className="ml-0.5">…</m.span>
           </span>
+          {canExpand && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+              aria-label={expanded ? 'Hide reasoning steps' : 'Show reasoning steps'}
+              className="ml-auto flex items-center justify-center w-6 h-6 rounded-full text-blue-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+            >
+              <ChevronDown size={14} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+            </button>
+          )}
         </div>
         {sublabel && (
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3.5 py-2.5 border border-blue-100 dark:border-blue-800/60">
             <p className="text-[13px] text-blue-700 dark:text-blue-300 font-medium leading-snug">{sublabel}</p>
           </div>
         )}
+        <AnimatePresence>
+          {expanded && canExpand && (
+            <m.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800 bg-white/60 dark:bg-black/20"
+            >
+              <StatusSteps phase={phase ?? null} intent={intent} resultCount={resultCount} />
+            </m.div>
+          )}
+        </AnimatePresence>
         {showCards && (
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[0, 1, 2].map(i => <SkeletonCard key={i} />)}

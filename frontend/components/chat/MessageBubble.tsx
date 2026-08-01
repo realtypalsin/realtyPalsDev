@@ -385,6 +385,9 @@ function MessageBubbleInner({
                       label={label}
                       sublabel={sublabel}
                       showCards={showCards}
+                      phase={phase}
+                      intent={intent}
+                      resultCount={resultCount}
                     />
                   )
                 }
