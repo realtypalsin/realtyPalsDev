@@ -317,7 +317,7 @@ router.get('/:slug/overview', async (req: Request, res: Response) => {
     }),
     prisma.constructionMilestone.findMany({
       where: { project_id: project.id },
-      select: { name: true, status: true, completed_at: true, photo_urls: true },
+      select: { name: true, status: true, date_label: true, completed_at: true, photo_urls: true, sort_order: true },
       orderBy: { sort_order: 'asc' },
     }),
     prisma.builderDeliveryRecord.findMany({

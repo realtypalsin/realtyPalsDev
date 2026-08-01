@@ -214,8 +214,8 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
                 key={filter}
                 onClick={() => setSelectedMapFilter(filter)}
                 className={`px-5 py-2 font-bold rounded-full text-[12px] transition-all ${selectedMapFilter === filter
-                    ? 'bg-gray-900 text-white shadow-md'
-                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  ? 'bg-gray-900 text-white shadow-md'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                   }`}
               >
                 {filter}
@@ -284,9 +284,9 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
                 const type = typeof item === 'string' ? 'Place' : (item.type || 'Other')
                 const capType = type.charAt(0).toUpperCase() + type.slice(1)
                 if (!groupedEssentials[capType]) groupedEssentials[capType] = { places: [] }
-                groupedEssentials[capType].places.push({ 
-                  name: typeof item === 'string' ? item : (item.name || 'Unknown'), 
-                  distance: item.distance_km ? `${item.distance_km} km` : 'Nearby' 
+                groupedEssentials[capType].places.push({
+                  name: typeof item === 'string' ? item : (item.name || 'Unknown'),
+                  distance: item.distance_km ? `${item.distance_km} km` : 'Nearby'
                 })
               })
             } else {
@@ -298,37 +298,38 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
               const placesArray = Array.isArray(data) ? data : (data?.places || [])
               const visiblePlaces = isExpanded ? placesArray : placesArray.slice(0, 3)
               const CategoryIcon = ICONS[category.toLowerCase()] || MapPin
-            return (
-              <div key={i} className="group bg-gray-50/50 dark:bg-white/5 rounded-3xl p-5 hover:bg-white dark:hover:bg-[#111] hover:shadow-lg transition-all duration-300 ring-1 ring-transparent hover:ring-black/5 dark:hover:ring-white/10">
-                <div className="flex items-center gap-3 mb-5 border-b border-gray-100 dark:border-gray-800 pb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                    <CategoryIcon size={24} />
-                  </div>
-                  <h4 className="text-[18px] font-black text-gray-900 dark:text-white">{category}</h4>
-                </div>
-                <div className="space-y-3">
-                  {Array.isArray(visiblePlaces) && visiblePlaces.map((place: any, j: number) => (
-                    <div
-                      key={j}
-                      onClick={() => triggerCommuteCalculator(place?.name)}
-                      className="flex justify-between items-center border-b border-gray-50 pb-2 last:border-0 cursor-pointer hover:text-blue-600 transition-colors"
-                    >
-                      <span className="text-[13px] font-medium text-gray-700 truncate pr-2 hover:underline">{place?.name || '—'}</span>
-                      <span className="text-[12px] text-gray-400 whitespace-nowrap">{place?.dist || place?.distance || '—'}</span>
+              return (
+                <div key={i} className="group bg-gray-50/50 dark:bg-white/5 rounded-3xl p-5 hover:bg-white dark:hover:bg-[#111] hover:shadow-lg transition-all duration-300 ring-1 ring-transparent hover:ring-black/5 dark:hover:ring-white/10">
+                  <div className="flex items-center gap-3 mb-5 border-b border-gray-100 dark:border-gray-800 pb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                      <CategoryIcon size={24} />
                     </div>
-                  ))}
+                    <h4 className="text-[18px] font-black text-gray-900 dark:text-white">{category}</h4>
+                  </div>
+                  <div className="space-y-3">
+                    {Array.isArray(visiblePlaces) && visiblePlaces.map((place: any, j: number) => (
+                      <div
+                        key={j}
+                        onClick={() => triggerCommuteCalculator(place?.name)}
+                        className="flex justify-between items-center border-b border-gray-50 pb-2 last:border-0 cursor-pointer hover:text-blue-600 transition-colors"
+                      >
+                        <span className="text-[13px] font-medium text-gray-700 truncate pr-2 hover:underline">{place?.name || '—'}</span>
+                        <span className="text-[12px] text-gray-400 whitespace-nowrap">{place?.dist || place?.distance || '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {placesArray.length > 3 && (
+                    <button
+                      onClick={() => toggleCategoryExpansion(category)}
+                      className="text-[13px] font-bold text-blue-600 mt-3 hover:underline"
+                    >
+                      {isExpanded ? 'Show less' : `+ ${placesArray.length - 3} more`}
+                    </button>
+                  )}
                 </div>
-                {placesArray.length > 3 && (
-                  <button
-                    onClick={() => toggleCategoryExpansion(category)}
-                    className="text-[13px] font-bold text-blue-600 mt-3 hover:underline"
-                  >
-                    {isExpanded ? 'Show less' : `+ ${placesArray.length - 3} more`}
-                  </button>
-                )}
-              </div>
-            )
-          })})()}
+              )
+            })
+          })()}
         </div>
       </div>
 
@@ -363,7 +364,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-900 dark:from-black dark:via-indigo-950/30 dark:to-black rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl border border-blue-800/50">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
         <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/20 blur-[80px] rounded-full pointer-events-none"></div>
-        
+
         <div className="relative z-10 text-center md:text-left">
           <h3 className="text-[24px] md:text-[28px] font-black text-white tracking-tight leading-tight">Love the location?</h3>
           <p className="text-[14px] md:text-[15px] text-blue-200/80 mt-2 max-w-md font-medium leading-relaxed">Schedule a site visit to experience the surroundings and neighborhood yourself.</p>

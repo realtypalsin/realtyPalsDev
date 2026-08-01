@@ -86,7 +86,10 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
 
     mutationCountRef.current++;
     try {
-      const res = await fetch(`${API_BASE}/chat/session/${sessionId}`, {
+      let url = `${API_BASE}/chat/session/${sessionId}`;
+      if (guestToken && !userId) url += `?guestToken=${guestToken}`;
+
+      const res = await fetch(url, {
         method: 'DELETE',
         headers: await authHeaders(),
       });
@@ -112,10 +115,13 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
 
     mutationCountRef.current++;
     try {
-      const res = await fetch(`${API_BASE}/chat/session/${sessionId}`, {
+      let url = `${API_BASE}/chat/session/${sessionId}`;
+      if (guestToken && !userId) url += `?guestToken=${guestToken}`;
+
+      const res = await fetch(url, {
         method: 'PATCH',
         headers: await authHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title, guestToken }),
       });
       if (!res.ok) throw new Error('Failed to rename session');
     } catch (err) {

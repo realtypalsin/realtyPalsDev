@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 'use client'
 import { useState } from 'react'
-import {  m, AnimatePresence  } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
@@ -92,7 +92,7 @@ export default function ResidencesTab({
   // Pricing Insights computation
   const withPrice = unitTypes.filter((u) => u.price_min_cr != null)
   const withArea = unitTypes.filter((u) => areaSqft(u) != null)
-  
+
   const lowestEntry = withPrice.length > 0 ? withPrice.reduce((a, b) => (a.price_min_cr! < b.price_min_cr! ? a : b)) : null
   const largest = withArea.length > 0 ? withArea.reduce((a, b) => (areaSqft(a)! > areaSqft(b)! ? a : b)) : null
   const bestValue = unitTypes.find(u => u.name.includes('Study')) || unitTypes[Math.min(1, unitTypes.length - 1)]
@@ -109,9 +109,8 @@ export default function ResidencesTab({
         <div className="flex items-center gap-1.5 flex-wrap bg-gray-100/80 dark:bg-gray-900/60 p-1 rounded-full border border-gray-200/50 dark:border-gray-800">
           <button
             onClick={() => { setFilter('all'); setExpandedUnitId(null); }}
-            className={`text-[12px] font-bold px-4 py-1.5 rounded-full transition-all ${
-              filter === 'all' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
-            }`}
+            className={`text-[12px] font-bold px-4 py-1.5 rounded-full transition-all ${filter === 'all' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
           >
             All
           </button>
@@ -119,9 +118,8 @@ export default function ResidencesTab({
             <button
               key={opt}
               onClick={() => { setFilter(opt); setExpandedUnitId(null); }}
-              className={`text-[12px] font-bold px-4 py-1.5 rounded-full transition-all ${
-                filter === opt ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
-              }`}
+              className={`text-[12px] font-bold px-4 py-1.5 rounded-full transition-all ${filter === opt ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               {opt} BHK
             </button>
@@ -136,7 +134,7 @@ export default function ResidencesTab({
           const area = areaSqft(unit)
           const floorPlans = getUnitFloorPlans(unit.bhk)
           const previewImg = floorPlans[0]
-          
+
           // Cast dynamic highlights & properties
           const subtitleStr = unit.subtitle || 'Premium configuration designed for modern living.'
           const descStr = unit.description || 'Exquisite layout prioritizing comfort, privacy, and expansive living spaces.'
@@ -152,7 +150,7 @@ export default function ResidencesTab({
 
           const perfectFor = parseArray(unit.perfect_for)
           if (perfectFor.length === 0) perfectFor.push('Families', 'End Users')
-          
+
           const highlightsList = parseArray(unit.key_highlights)
           const includedList = parseArray(unit.whats_included)
           const viewsList = parseArray(unit.views)
@@ -160,9 +158,8 @@ export default function ResidencesTab({
           return (
             <div
               key={unit.id}
-              className={`rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#131211] shadow-sm overflow-hidden transition-all duration-300 ${
-                isExpanded ? 'ring-2 ring-gray-100 dark:ring-gray-900/50 shadow-md' : 'hover:shadow-md'
-              }`}
+              className={`rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#131211] shadow-sm overflow-hidden transition-all duration-300 ${isExpanded ? 'ring-2 ring-gray-100 dark:ring-gray-900/50 shadow-md' : 'hover:shadow-md'
+                }`}
             >
               {/* Header Toggle Row */}
               <div
@@ -247,7 +244,7 @@ export default function ResidencesTab({
                                 {area && <span className="flex items-center gap-1"><Ruler size={14} className="text-gray-400" /> {area.toLocaleString()} sqft</span>}
                               </div>
                             </div>
-                            
+
                             <div className="text-left lg:text-right">
                               <span className="text-[28px] font-black text-gray-900 dark:text-white tracking-tight">{priceLabel(unit)}</span>
                               <p className="text-[11px] text-gray-400 mt-1 font-medium">Price range</p>
@@ -354,7 +351,7 @@ export default function ResidencesTab({
                           <div className="space-y-3">
                             <h4 className="text-[13px] font-bold text-gray-900 dark:text-white uppercase tracking-wider">Floor Plan & Views</h4>
                             <p className="text-[12px] text-gray-400 mt-1">Understand your space and the view you&apos;ll wake up to.</p>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-5 pt-1.5">
                               {/* Left side: Typical Floor Plan */}
                               <div className="md:col-span-5 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 bg-gray-50/50 dark:bg-gray-900/10 flex flex-col justify-between">
@@ -385,12 +382,12 @@ export default function ResidencesTab({
                                             <Eye size={24} className="text-gray-300" />
                                           </div>
                                           {vw.image_url && (
-                                            <Image 
-                                              src={resolveImgUrl(vw.image_url)} 
-                                              alt={vw.title} 
-                                              fill 
-                                              className="object-cover relative z-10" 
-                                              onError={(e) => { e.currentTarget.style.display = 'none' }} 
+                                            <Image
+                                              src={resolveImgUrl(vw.image_url)}
+                                              alt={vw.title}
+                                              fill
+                                              className="object-cover relative z-10"
+                                              onError={(e) => { e.currentTarget.style.display = 'none' }}
                                             />
                                           )}
                                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />

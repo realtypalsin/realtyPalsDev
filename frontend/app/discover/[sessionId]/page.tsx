@@ -8,31 +8,7 @@ import ChatErrorBoundary from '@/components/ChatErrorBoundary';
 import UniversalLoader from '@/components/ui/universal-loader';
 import { getSupabaseClient } from '@/lib/supabase';
 import { migrateSessions } from '@/lib/backend-api';
-
-function generateGuestToken(): string {
-  return 'guest-' + crypto.randomUUID();
-}
-
-function getOrCreateGuestToken(): string {
-  const GUEST_TOKEN_KEY = 'realtypals_guest_token';
-  const OLD_KEY = 'guest_token';
-
-  // Migrate old key if present
-  let token = localStorage.getItem(GUEST_TOKEN_KEY);
-  if (!token) {
-    token = localStorage.getItem(OLD_KEY);
-    if (token) {
-      localStorage.setItem(GUEST_TOKEN_KEY, token);
-      localStorage.removeItem(OLD_KEY);
-    }
-  }
-
-  if (!token) {
-    token = generateGuestToken();
-    localStorage.setItem(GUEST_TOKEN_KEY, token);
-  }
-  return token;
-}
+import { getOrCreateGuestToken, clearGuestToken } from '@/lib/guestToken';
 
 export default function SessionDiscoverPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -43,13 +19,6 @@ export default function SessionDiscoverPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    // [TIMING]
-    const nt = (window as any).__navTimings
-    if (nt) {
-      nt.pageMounted = performance.now()
-      console.log(`[NAV] 3. page-mount       +${(nt.pageMounted - nt.t0).toFixed(1)}ms`)
-    }
-
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;
 
@@ -78,10 +47,10 @@ export default function SessionDiscoverPage() {
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session) {
           const uid = session.user.id;
-          const existingGuestToken = localStorage.getItem('guest_token');
+          const existingGuestToken = getOrCreateGuestToken();
           if (existingGuestToken) {
             migrateSessions(uid, existingGuestToken).catch(() => {}).finally(() => {
-              localStorage.removeItem('guest_token');
+              clearGuestToken();
             });
           }
           localStorage.setItem('user_id', uid);
@@ -122,8 +91,8 @@ export default function SessionDiscoverPage() {
         <ChatErrorBoundary>
           <Suspense fallback={<div className="flex-1"><UniversalLoader variant="skeleton-page" label="Loading chat…" /></div>}>
             <DiscoveryContent
-              key={activeSessionId ?? 'new'}
-              initialSessionId={activeSessionId}
+              key={sessionId ?? 'new'}
+              initialSessionId={sessionId}
               userId={userId}
               guestToken={guestToken}
               onSessionChange={setActiveSessionId}

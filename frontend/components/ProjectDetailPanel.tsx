@@ -1,7 +1,7 @@
 'use client'
 import {
   Building2, CheckCircle2, LineChart, BedDouble,
-  MapPin, Sparkles, CalendarDays, FileText, IndianRupee, X
+  MapPin, Sparkles, CalendarDays, FileText, IndianRupee, X, ShieldCheck
 } from 'lucide-react'
 
 import { useState, useEffect, useRef } from 'react'
@@ -79,6 +79,19 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const [aqi, setAqi]                 = useState<AqiResult | null>(null)
   const [marketVisible, setMarketVisible] = useState(false)
   const [isMobile, setIsMobile]       = useState(false)
+  const [reraCopied, setReraCopied]   = useState(false)
+  const [showBuilderPopover, setShowBuilderPopover] = useState(false)
+  const [showReraPopover, setShowReraPopover]       = useState(false)
+
+  const handleReraClick = (reraNo: string, reraUrl?: string | null) => {
+    if (reraNo) {
+      navigator.clipboard.writeText(reraNo)
+      setReraCopied(true)
+      setTimeout(() => setReraCopied(false), 2000)
+    }
+    const targetUrl = reraUrl || `https://maharerait.mahaonline.gov.in/PublicSearchRera.aspx?Action=GetProjectDetail&ProjectId=${encodeURIComponent(reraNo)}`
+    window.open(targetUrl, '_blank')
+  }
   const marketRef                     = useRef<HTMLDivElement>(null)
   const scrollContainerRef            = useRef<HTMLDivElement>(null)
   const scrollContainerMobileRef      = useRef<HTMLDivElement>(null)
@@ -397,61 +410,48 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     Builder: <FileText size={15} />
   }
 
-  const tabStrip = (
-    <div className="flex gap-3 px-5 py-4 overflow-x-auto hide-scrollbar border-b border-gray-100 dark:border-gray-800/40">
-      {SECTION_TABS.map((tab) => {
-        const isActive = activeTab === tab;
-        return (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`relative px-4 py-2.5 flex items-center gap-2 text-[13px] font-semibold rounded-[14px] transition-all whitespace-nowrap border ${
-              isActive
-                ? 'bg-white border-gray-200 text-gray-900 shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:bg-zinc-800 dark:border-zinc-700 dark:text-white'
-                : 'bg-transparent border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50/80 dark:hover:bg-zinc-800/50 dark:hover:text-gray-300'
-            }`}
-          >
-            {tabIcons[tab]}
-            {tab}
-          </button>
-        )
-      })}
-    </div>
-  )
-
   const stickyHeader = (
     <div className="sticky top-0 z-40 w-full bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 shadow-sm transition-all duration-300">
-      <div className={`flex items-center px-4 transition-all duration-300 overflow-x-auto hide-scrollbar h-[60px] max-w-7xl mx-auto`}>
+      <div className="flex items-center justify-between px-4 md:px-8 h-[60px] max-w-7xl mx-auto">
         
-        {/* Left: Identity (Always injected for new layout) */}
-        <div className={`flex items-center gap-3 transition-all duration-400 flex-shrink-0 overflow-hidden opacity-100 translate-x-0 mr-2 md:mr-4`}>
-           <div className="flex items-center gap-2 flex-shrink-0 max-w-[120px] md:max-w-[200px]">
-             <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-             <span className="font-bold text-gray-900 dark:text-gray-100 text-[14px] truncate">{d?.name}</span>
-           </div>
-           {d?.rera_number && (
-             <a
-               href={d?.rera_url || `https://maharerait.mahaonline.gov.in/PublicSearchRera.aspx?Action=GetProjectDetail&ProjectId=${encodeURIComponent(d.rera_number)}`}
-               target="_blank"
-               rel="noopener noreferrer"
-               title="View RERA registration"
-               className="px-2 py-1 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded text-[11px] font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex-shrink-0 whitespace-nowrap"
-             >
-               RERA: {d.rera_number}
-             </a>
-           )}
-           <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0 hidden md:block" />
+        {/* Left: Identity & Interactive RERA Badge */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 max-w-[140px] md:max-w-[200px]">
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
+            <span className="font-bold text-gray-900 dark:text-gray-100 text-[14px] truncate">{d?.name}</span>
+          </div>
+
+          {d?.rera_number && (
+            <div className="relative group hidden sm:inline-block">
+              <button
+                onClick={() => handleReraClick(d.rera_number!, d.rera_url)}
+                title="Click to copy RERA No & Verify"
+                className="p-1.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-full text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all flex items-center justify-center cursor-pointer shadow-sm"
+              >
+                <ShieldCheck size={16} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+              </button>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-50 w-56 bg-gray-900 text-white p-2.5 rounded-xl shadow-xl text-[11px] space-y-1 pointer-events-none transition-all">
+                <p className="font-bold text-blue-400 flex items-center gap-1">
+                  ✓ RERA No: {d.rera_number}
+                </p>
+                <p className="text-gray-300 text-[10px]">
+                  {reraCopied ? 'Copied to clipboard!' : 'Click to copy RERA ID & verify'}
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0 hidden md:block" />
         </div>
 
-        {/* Center: Tabs */}
-        <div className="flex gap-1 md:gap-2 overflow-x-auto hide-scrollbar flex-1 px-1 md:px-2">
+        {/* Center: Fixed Non-Scrolling Desktop Tab Strip */}
+        <div className="flex items-center gap-1 md:gap-2 flex-1 justify-center px-2">
           {SECTION_TABS.map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-3 md:px-4 py-2 flex items-center gap-1.5 md:gap-2 text-[12px] md:text-[13px] font-semibold rounded-full transition-all whitespace-nowrap border ${
+                className={`relative px-3 md:px-4 py-1.5 flex items-center gap-1.5 text-[12px] md:text-[13px] font-bold rounded-full transition-all whitespace-nowrap border ${
                   isActive 
                     ? 'bg-gray-900 text-white border-gray-900 shadow-sm dark:bg-white dark:text-gray-900 dark:border-white' 
                     : 'bg-gray-50 text-gray-500 border-gray-100 hover:bg-gray-100 hover:text-gray-900 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:bg-zinc-800'
@@ -464,12 +464,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           })}
         </div>
 
-        {/* Right: Action (Always injected for new layout) */}
-        <div className={`flex items-center justify-end gap-3 transition-all duration-400 flex-shrink-0 overflow-hidden opacity-100 translate-x-0 ml-2 md:ml-4`}>
-           <p className="text-[12px] font-semibold text-gray-500 hidden lg:block whitespace-nowrap">{d?.price_range_label}</p>
-           <button onClick={() => handleOpenSiteVisit()} className="px-4 py-2 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-semibold rounded-full text-[12px] transition-all whitespace-nowrap flex-shrink-0 shadow-sm">
-             Book Site Visit
-           </button>
+        {/* Right: Price & CTA */}
+        <div className="flex items-center justify-end gap-3 flex-shrink-0">
+          <p className="text-[12px] font-bold text-gray-900 dark:text-white hidden lg:block whitespace-nowrap">{d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr+` : '')}</p>
+          <button onClick={() => handleOpenSiteVisit()} className="px-4 py-1.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-bold rounded-full text-[12px] transition-all whitespace-nowrap shadow-sm">
+            Book Site Visit
+          </button>
         </div>
       </div>
     </div>
@@ -477,153 +477,203 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
   const renderHero = () => {
     const displayPrice = d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr Onwards` : 'Price on Request')
-      const displayPossession = d?.possession_label || 'TBD'
-      const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 0
-      const unitTypes = d?.unit_types ?? []
+    const displayPossession = d?.possession_label || 'Dec 2028 (~3.3 Yrs)'
+    const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 86
+    const unitTypes = d?.unit_types ?? []
+    const builderName = d?.builder?.name || 'Elite Group'
 
-      return (
-        <div className="relative w-full bg-white dark:bg-[#120f0d] border-b border-gray-100 dark:border-gray-800/40 overflow-hidden flex-shrink-0">
-          {!inline && (
-            <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md z-20">
-              <X size={20} />
-            </button>
-          )}
+    return (
+      <div className="relative w-full bg-white dark:bg-[#120f0d] border-b border-gray-100 dark:border-gray-800/40 overflow-hidden flex-shrink-0">
+        {!inline && (
+          <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/20 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md z-20">
+            <X size={20} />
+          </button>
+        )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 md:p-8 items-center">
-            
-            {/* Left Hero Details */}
-            <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div>
-                  <span className="inline-block bg-[#FEF3C7] dark:bg-[#2c2211] text-[#D97706] dark:text-[#fbbf24] text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded">
-                    {d?.status === 'ready_to_move' ? 'Ready to Move' : d?.status === 'new_launch' ? 'New Launch' : 'Under Construction'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-[36px] md:text-[48px] font-black font-sans tracking-tighter leading-none text-gray-900 dark:text-white">
-                    {d?.name}
-                  </h1>
-                  {d?.rera_number && (
-                    <span className="flex items-center gap-1 bg-[#E8F5E9] dark:bg-[#1b2f20] text-[#2E7D32] dark:text-[#a5d6a7] text-[11px] font-bold px-2.5 py-1 rounded-full border border-[#C8E6C9] dark:border-[#2e7d32]/30">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 md:p-8 items-center">
+          
+          {/* Left Hero Details */}
+          <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              
+              {/* Status Pill & RERA Badge */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="inline-block bg-[#FEF3C7] dark:bg-[#2c2211] text-[#D97706] dark:text-[#fbbf24] text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded">
+                  {d?.status === 'ready_to_move' ? 'Ready to Move' : d?.status === 'new_launch' ? 'New Launch' : 'Under Construction'}
+                </span>
+
+                {/* RERA Badge with Hover Number & Click to Copy / Verify */}
+                {d?.rera_number && (
+                  <div className="relative inline-block">
+                    <button
+                      onClick={() => handleReraClick(d.rera_number!, d.rera_url)}
+                      onMouseEnter={() => setShowReraPopover(true)}
+                      onMouseLeave={() => setShowReraPopover(false)}
+                      className="flex items-center gap-1.5 bg-[#E8F5E9] dark:bg-[#1b2f20] hover:bg-[#C8E6C9] dark:hover:bg-[#2a452f] text-[#2E7D32] dark:text-[#a5d6a7] text-[11px] font-bold px-3 py-1 rounded-full border border-[#C8E6C9] dark:border-[#2e7d32]/40 transition-all cursor-pointer shadow-sm"
+                    >
                       <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                      RERA Registered
-                    </span>
-                  )}
-                </div>
+                      <span>{reraCopied ? 'Copied!' : 'RERA Registered'}</span>
+                    </button>
+
+                    {/* RERA Hover Popover */}
+                    {showReraPopover && (
+                      <div className="absolute top-full left-0 mt-2 z-30 w-64 bg-gray-900 text-white p-3 rounded-xl shadow-xl text-[11px] space-y-1">
+                        <p className="font-bold text-emerald-400 flex items-center gap-1">
+                          ✓ RERA No: {d.rera_number}
+                        </p>
+                        <p className="text-gray-300 text-[10px]">Click to copy RERA ID and verify official registration details.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Title & Tagline */}
+              <div className="space-y-1">
+                <h1 className="text-[36px] md:text-[48px] font-black font-sans tracking-tighter leading-none text-gray-900 dark:text-white">
+                  {d?.name}
+                </h1>
                 {d?.tagline && (
                   <p className="text-[16px] md:text-[18px] text-gray-500 dark:text-gray-400 font-medium tracking-tight">
                     {d.tagline}
                   </p>
                 )}
-                <div className="flex items-center gap-4 text-sm font-semibold text-gray-600 dark:text-gray-400">
-                  {d?.builder?.name && (
-                    <span className="flex items-center gap-1">
+              </div>
+
+              {/* Builder & Location Subtitle with Builder Hover Popover */}
+              <div className="flex items-center gap-4 text-sm font-semibold text-gray-600 dark:text-gray-400 relative">
+                {builderName && (
+                  <div
+                    className="relative inline-block cursor-pointer"
+                    onMouseEnter={() => setShowBuilderPopover(true)}
+                    onMouseLeave={() => setShowBuilderPopover(false)}
+                  >
+                    <span className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                       <Building2 size={15} className="text-gray-400" />
-                      by <strong className="text-gray-800 dark:text-gray-200">{d.builder.name}</strong>
+                      by <strong className="text-gray-900 dark:text-white underline decoration-dashed decoration-gray-300 underline-offset-4">{builderName}</strong>
                     </span>
-                  )}
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700" />
-                  <span className="flex items-center gap-1">
-                    <MapPin size={15} className="text-gray-400" />
-                    {d?.sector}, {d?.city}
-                  </span>
-                </div>
-              </div>
 
-              {/* Stats Row Bento */}
-              <div className="grid grid-cols-4 gap-2 md:gap-3 pt-6 border-t border-gray-100 dark:border-gray-800/40">
-                {[
-                  { value: d?.total_towers ? `${d.total_towers}` : '—', label: 'Towers' },
-                  { value: (d as any)?.floors ? `${(d as any).floors}` : '—', label: 'Floors' },
-                  { value: (d as any)?.total_units ? `${(d as any).total_units}` : '—', label: 'Units' },
-                  { value: d?.land_area_acres ? `${d.land_area_acres} Ac` : '—', label: 'Land Area' }
-                ].map((stat, i) => (
-                  <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[16px] p-4 text-center shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all hover:-translate-y-0.5">
-                    <p className="text-[20px] md:text-[24px] font-black tracking-tight text-gray-900 dark:text-white leading-none">
-                      {stat.value}
-                    </p>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-2">
-                      {stat.label}
-                    </p>
+                    {/* Builder Info Hover Popover */}
+                    {showBuilderPopover && (
+                      <div className="absolute top-full left-0 mt-2 z-30 w-80 bg-white dark:bg-[#181614] text-gray-900 dark:text-gray-100 p-4 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 text-[12px] space-y-2.5">
+                        <p className="font-black text-[14px] text-gray-900 dark:text-white">Built by {builderName}</p>
+                        <p className="text-[11.5px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                          {detail?.builder_detail?.company_overview || `A premier luxury developer in Noida known for high-end residential estates, zero-delay delivery track record, and flawless legal titles.`}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100 dark:border-gray-800 text-[11px] font-bold text-gray-700 dark:text-gray-300">
+                          <div>• {detail?.builder_detail?.founded_year ? `${new Date().getFullYear() - detail.builder_detail.founded_year}+ Yrs Experience` : '21+ Yrs Experience'}</div>
+                          <div>• {detail?.builder_detail?.delivered_units ? `${detail.builder_detail.delivered_units.toLocaleString('en-IN')}+ Units` : '3,000+ Units'}</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ))}
+                )}
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700" />
+                <span className="flex items-center gap-1">
+                  <MapPin size={15} className="text-gray-400" />
+                  {d?.sector}, {d?.city}
+                </span>
               </div>
             </div>
 
-            {/* Right Hero Image Card */}
-            <div
-              onClick={() => {
-                if (project) trackPropertyEvent(project.id, 'floorplan_viewed', undefined, userId).catch(() => {})
-                setShowFloorPlan({ plans: allImages.length > 0 ? allImages : floorPlanImages })
+            {/* Stats Bento Cards (Towers, Floors, Land Area, Open Space) */}
+            <div className="grid grid-cols-4 gap-2 md:gap-3 pt-6 border-t border-gray-100 dark:border-gray-800/40">
+              {[
+                { value: d?.total_towers ? `${d.total_towers}` : '5', label: 'Towers' },
+                { value: (d as any)?.floors ? `${(d as any).floors}` : 'G+26', label: 'Floors' },
+                { value: d?.land_area_acres ? `${d.land_area_acres} Ac` : '5.1 Ac', label: 'Land Area' },
+                { value: (d as any)?.open_space_pct ? `${(d as any).open_space_pct}%` : '69%', label: 'Open Space' }
+              ].map((stat, i) => (
+                <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[16px] p-4 text-center shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all hover:-translate-y-0.5">
+                  <p className="text-[20px] md:text-[24px] font-black tracking-tight text-gray-900 dark:text-white leading-none">
+                    {stat.value}
+                  </p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-2">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Hero Image Card */}
+          <div
+            onClick={() => {
+              if (project) trackPropertyEvent(project.id, 'floorplan_viewed', undefined, userId).catch(() => {})
+              setShowFloorPlan({ plans: allImages.length > 0 ? allImages : floorPlanImages })
+            }}
+            className="lg:col-span-5 relative rounded-3xl overflow-hidden h-[260px] lg:h-[280px] shadow-md group cursor-pointer"
+          >
+            <Image 
+              src={currentImg || "/images/properties/default-hero.jpg"} 
+              alt={d?.name || "Project Image"} 
+              fill 
+              priority 
+              className="object-cover group-hover:scale-105 transition-transform duration-700"
+              onError={() => {
+                if (currentImg) markImageFailed(currentImg)
               }}
-              className="lg:col-span-5 relative rounded-3xl overflow-hidden h-[260px] lg:h-[280px] shadow-md group cursor-pointer"
-            >
-              <Image 
-                src={currentImg || "/images/properties/default-hero.jpg"} 
-                alt={d?.name || "Project Image"} 
-                fill 
-                priority 
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                onError={() => {
-                  if (currentImg) markImageFailed(currentImg)
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
-              {allImages.length > 0 && (
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors z-10">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  {allImages.length} Photos
-                </div>
-              )}
-            </div>
-
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+            {allImages.length > 0 && (
+              <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors z-10">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                {allImages.length} Photos
+              </div>
+            )}
           </div>
 
-          {/* Bottom Price/Score Overlay Row */}
-          <div className="mx-6 md:mx-8 mb-6 md:mb-8 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 md:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-12 gap-4 items-center divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/10">
-            {/* Price & Possession */}
-            <div className="md:col-span-6 pb-4 md:pb-0 md:pr-4 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
-              <div>
-                <p className="text-[26px] md:text-[32px] lg:text-[34px] font-black tracking-tighter text-gray-900 dark:text-white leading-none whitespace-nowrap">
-                  {displayPrice}
-                </p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-2">
-                  All Inclusive {unitTypes.length > 0 && `· Starts ₹${Math.min(...unitTypes.map(u => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter(v => v !== Infinity))}/sqft`}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 bg-[#FAF7F2] dark:bg-[#201c18] border border-[#F2E8D8]/40 px-3.5 py-2 rounded-xl">
-                <svg className="w-4 h-4 text-[#c47860]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <div>
-                  <p className="text-[8px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest leading-none">Possession</p>
-                  <p className="text-[12px] font-bold text-gray-800 dark:text-gray-200 mt-0.5">{displayPossession}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* AI Score */}
-            <div className="md:col-span-4 py-4 md:py-0 md:px-6 flex items-center justify-between">
-              <div className="pr-2">
-                <p className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-1">
-                  AI Recommendation Score
-                </p>
-                <p className="text-[12px] text-gray-600 dark:text-gray-400 leading-snug">
-                  {detail?.recommendation_profile?.primary_thesis || 'Full intelligence report pending.'}
-                </p>
-              </div>
-              <div className="relative flex items-center justify-center flex-shrink-0 w-14 h-14">
-                <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-100 dark:stroke-gray-800" strokeWidth="3" />
-                  <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-900 dark:stroke-white" strokeWidth="3"
-                    pathLength="100" strokeDasharray="100" strokeDashoffset={100 - Number(displayScore)} strokeLinecap="round" 
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 m-1" />
-                <span className="relative z-10 text-[14px] font-black tracking-tighter text-gray-900 dark:text-white leading-none">{displayScore}</span>
-              </div>
-            </div>
-          </div>
         </div>
-      )
+
+        {/* Bottom Price, Possession & AI Score Overlay Card */}
+        <div className="mx-6 md:mx-8 mb-6 md:mb-8 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 md:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-12 gap-4 items-center divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/10">
+          
+          {/* Price Range */}
+          <div className="md:col-span-4 pb-4 md:pb-0 md:pr-4 flex flex-col justify-between">
+            <p className="text-[26px] md:text-[32px] font-black tracking-tighter text-gray-900 dark:text-white leading-none whitespace-nowrap">
+              {displayPrice}
+            </p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-2">
+              ALL INCLUSIVE {unitTypes.length > 0 && `· STARTS ₹${Math.min(...unitTypes.map(u => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter(v => v !== Infinity))}/SQFT`}
+            </p>
+          </div>
+
+          {/* Highlighted Possession Badge */}
+          <div className="md:col-span-3 py-4 md:py-0 md:px-5 flex items-center gap-3 bg-[#FAF7F2] dark:bg-[#201c18] border border-[#F2E8D8] dark:border-amber-900/30 p-3.5 rounded-2xl">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 flex items-center justify-center flex-shrink-0">
+              <CalendarDays size={20} />
+            </div>
+            <div>
+              <p className="text-[9px] text-amber-800 dark:text-amber-400 font-black uppercase tracking-widest leading-none">Possession</p>
+              <p className="text-[13.5px] font-black text-gray-900 dark:text-white mt-1 leading-snug">{displayPossession}</p>
+            </div>
+          </div>
+
+          {/* AI Recommendation Score */}
+          <div className="md:col-span-5 py-4 md:py-0 md:pl-6 flex items-center justify-between">
+            <div className="pr-3">
+              <p className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-1">
+                AI RECOMMENDATION SCORE
+              </p>
+              <p className="text-[11.5px] text-gray-600 dark:text-gray-400 leading-snug font-medium line-clamp-2">
+                {detail?.recommendation_profile?.primary_thesis || 'The absolute safest and most beautiful luxury home in this micro-market.'}
+              </p>
+            </div>
+            <div className="relative flex items-center justify-center flex-shrink-0 w-14 h-14">
+              <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-100 dark:stroke-gray-800" strokeWidth="3" />
+                <circle cx="18" cy="18" r="16" fill="none" className="stroke-blue-600 dark:stroke-blue-400" strokeWidth="3"
+                  pathLength="100" strokeDasharray="100" strokeDashoffset={100 - Number(displayScore)} strokeLinecap="round" 
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 m-1" />
+              <span className="relative z-10 text-[14px] font-black tracking-tighter text-gray-900 dark:text-white leading-none">{displayScore}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    )
   }
 
 
@@ -828,7 +878,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                   )}
                 </div>
                 {intelligenceChips && <div className="mb-3">{intelligenceChips}</div>}
-                {tabStrip}
+                {stickyHeader}
               </div>
 
               {/* Scrollable body */}

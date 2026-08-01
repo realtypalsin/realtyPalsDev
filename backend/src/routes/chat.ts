@@ -1406,7 +1406,9 @@ router.get('/session', asyncHandler(async (req: Request, res: Response) => {
   if (specificId) {
     // Guests can restore their own sessions too (guest_token match) — mirrors
     // the ownership check already used by PATCH/DELETE /session/:id below.
-    const ownerFilter = userId ? { user_id: userId } : { guest_token: guestToken }
+    const ownerFilter = userId
+      ? { OR: [{ user_id: userId }, ...(guestToken ? [{ guest_token: guestToken }] : [])] }
+      : { guest_token: guestToken }
     const session = await prisma.chatSession.findFirst({
       where: { id: specificId, ...ownerFilter },
       include: { messages: { orderBy: { created_at: 'desc' }, take: MAX_MESSAGES } },
@@ -1480,7 +1482,7 @@ router.get('/session', asyncHandler(async (req: Request, res: Response) => {
 // PATCH /chat/session/:id — rename session
 router.patch('/session/:id', asyncHandler(async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
-  const guestToken = req.query.guestToken as string | undefined
+  const guestToken = (req.query.guestToken as string | undefined) || (req.body?.guestToken as string | undefined) || (req.headers['x-guest-token'] as string | undefined)
 
   if (!userId && !guestToken) {
     res.status(401).json({ error: 'Auth required' })
@@ -1522,7 +1524,7 @@ router.patch('/session/:id', asyncHandler(async (req: Request, res: Response) =>
 // DELETE /chat/session/:id — remove session
 router.delete('/session/:id', asyncHandler(async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
-  const guestToken = req.query.guestToken as string | undefined
+  const guestToken = (req.query.guestToken as string | undefined) || (req.body?.guestToken as string | undefined) || (req.headers['x-guest-token'] as string | undefined)
 
   if (!userId && !guestToken) {
     res.status(401).json({ error: 'Auth required' })

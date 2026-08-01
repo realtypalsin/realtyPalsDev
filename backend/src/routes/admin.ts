@@ -373,6 +373,78 @@ router.delete('/projects/:id', requireAdmin, async (req: Request, res: Response)
   }
 })
 
+// GET /api/v1/admin/projects/:id/milestones — fetch construction milestones
+router.get('/projects/:id/milestones', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true, slug: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    const milestones = await prisma.constructionMilestone.findMany({
+      where: { project_id: project.id },
+      orderBy: { sort_order: 'asc' }
+    })
+
+    res.json({ milestones })
+  } catch (err) {
+    console.error('[admin] fetch milestones failed:', err)
+    res.status(500).json({ error: 'Failed to fetch milestones' })
+  }
+})
+
+// PUT /api/v1/admin/projects/:id/milestones — save/update construction milestones
+router.put('/projects/:id/milestones', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { milestones } = req.body as { milestones: Array<{ name: string; status: 'completed' | 'in_progress' | 'upcoming'; date_label?: string; sort_order?: number }> }
+
+  if (!Array.isArray(milestones)) {
+    res.status(400).json({ error: 'milestones array required' })
+    return
+  }
+
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true, slug: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.constructionMilestone.deleteMany({ where: { project_id: project.id } })
+      if (milestones.length > 0) {
+        await tx.constructionMilestone.createMany({
+          data: milestones.map((m, idx) => ({
+            project_id: project.id,
+            name: m.name.trim(),
+            status: m.status as any,
+            date_label: m.date_label ? m.date_label.trim() : null,
+            sort_order: m.sort_order ?? (idx + 1)
+          }))
+        })
+      }
+    })
+
+    const updated = await prisma.constructionMilestone.findMany({
+      where: { project_id: project.id },
+      orderBy: { sort_order: 'asc' }
+    })
+
+    res.json({ ok: true, milestones: updated })
+  } catch (err) {
+    console.error('[admin] update milestones failed:', err)
+    res.status(500).json({ error: 'Failed to save construction milestones' })
+  }
+})
+
 // GET /api/v1/admin/builders — list builders
 router.get('/builders', requireAdmin, async (req: Request, res: Response) => {
   const { limit = '100', offset = '0', q, search } = req.query

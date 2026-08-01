@@ -6,6 +6,7 @@ import { PhoneCall, User, Phone, X, ShieldCheck, CheckCircle2, Loader2, Sparkles
 import { API_BASE } from '@/lib/env';
 import { track } from '@/lib/analytics';
 import { authHeaders } from '@/lib/authedFetch';
+import { getGuestToken } from '@/lib/guestToken';
 import type { ProjectCard } from '@/types/project';
 
 interface CallbackModalProps {
@@ -47,8 +48,7 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
     setSubmitting(true);
     setError(null);
     try {
-      // Get guestToken from localStorage for anonymous users (convert null to undefined for Zod validation)
-      const guestToken = typeof window !== 'undefined' ? (localStorage.getItem('realtypals_guest_token') || localStorage.getItem('guest_token') || undefined) : undefined
+      const guestToken = getGuestToken() || undefined
 
       const res = await fetch(`${API_BASE}/leads/callback`, {
         method: 'POST',

@@ -363,6 +363,7 @@ model ConstructionMilestone {
   project_id   String
   name         String
   status       ConstructionStatus @default(upcoming)
+  date_label   String?   // e.g. "Q1 2024"
   completed_at DateTime?
   photo_urls   String[]  @default([])
   sort_order   Int       @default(0)

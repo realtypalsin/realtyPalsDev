@@ -14,6 +14,7 @@ import PaymentPlanEditor from '@/components/admin/PaymentPlanEditor'
 import CostSheetEditor from '@/components/admin/CostSheetEditor'
 import InvestmentInsightsEditor from '@/components/admin/InvestmentInsightsEditor'
 import LocationIntelligenceEditor from '@/components/admin/LocationIntelligenceEditor'
+import ConstructionMilestonesEditor from '@/components/admin/ConstructionMilestonesEditor'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Loader2, LayoutPanelLeft, Cpu, Images, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
@@ -318,6 +319,9 @@ export default function EditProject() {
               connectivity={data.connectivity ?? []}
               projectId={id}
               onSaved={handleSaved}
+            />
+            <ConstructionMilestonesEditor
+              projectId={id}
             />
           </div>
           <div>

@@ -629,7 +629,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           ));
 
           // Auto-generate smart title on first turn only
-          if (chatTurnCount === 0 && userId && newSessionId) {
+          if (chatTurnCount === 0 && (userId || guestToken) && newSessionId) {
             const buildSmartTitle = (text: string, intent: Record<string, unknown> | null): string => {
               if (!intent) return text.length > 35 ? text.slice(0, 35) + '...' : text;
 

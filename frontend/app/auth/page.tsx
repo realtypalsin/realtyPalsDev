@@ -12,6 +12,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { track, identifyUser } from '@/lib/analytics';
 import Toast from '@/components/Toast';
 import { API_BASE } from '@/lib/env';
+import { getGuestToken, clearGuestToken } from '@/lib/guestToken';
 
 type Mode = 'login' | 'register';
 
@@ -69,7 +70,7 @@ export default function AuthPage() {
           localStorage.setItem('user_id', data.user.id);
           identifyUser(data.user.id, { email: data.user.email })
 
-          const guestToken = localStorage.getItem('realtypals_guest_token');
+          const guestToken = getGuestToken();
           if (guestToken) {
             try {
               const migrateRes = await fetch(`${API_BASE}/chat/sessions/migrate`, {
@@ -82,7 +83,7 @@ export default function AuthPage() {
               });
 
               if (!migrateRes.ok) throw new Error(`Migration failed: ${migrateRes.status}`);
-              localStorage.removeItem('realtypals_guest_token');
+              clearGuestToken();
             } catch (err) {
               console.error('[session-migrate] Failed:', err);
               setToast('Your previous research couldn\'t be transferred. Your new searches will be saved.');

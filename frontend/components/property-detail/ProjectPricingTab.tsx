@@ -212,7 +212,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
           {bookingAmtPct && <StatCard icon={Percent} value={bookingAmtPct} label="Booking Amount" />}
         </div>
 
-        <PricingCharts 
+        <PricingCharts
           priceHistory={investmentInsights?.price_history}
           unitPriceCr={lowestEntry?.price_min_cr || undefined}
           otherCharges={otherCharges}
@@ -582,7 +582,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
       <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-[#1a1a2e] to-indigo-950 dark:from-gray-950 dark:via-black dark:to-indigo-950/50 rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl border border-gray-800">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/20 blur-[80px] rounded-full pointer-events-none"></div>
-        
+
         <div className="relative z-10 text-center md:text-left">
           <h3 className="text-[24px] md:text-[28px] font-black text-white tracking-tight leading-tight">Ready to book <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">{detail?.name ?? 'this project'}</span>?</h3>
           <p className="text-[14px] md:text-[15px] text-indigo-200/80 mt-2 max-w-md font-medium leading-relaxed">Our relationship manager will help you choose the best plan and guide you through the process seamlessly.</p>

@@ -21,10 +21,20 @@ export async function getAccessToken(): Promise<string | null> {
   }
 }
 
-/** Merge an Authorization header (when logged in) into an existing headers object. */
+import { getGuestToken } from '@/lib/guestToken'
+
+/** Merge an Authorization header (when logged in) and X-Guest-Token into an existing headers object. */
 export async function authHeaders(base: Record<string, string> = {}): Promise<Record<string, string>> {
   const token = await getAccessToken()
-  return token ? { ...base, Authorization: `Bearer ${token}` } : { ...base }
+  const guestToken = getGuestToken()
+  const headers: Record<string, string> = { ...base }
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  if (guestToken) {
+    headers['X-Guest-Token'] = guestToken
+  }
+  return headers
 }
 
 /** Get admin Authorization header from localStorage token. */

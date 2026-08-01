@@ -7,19 +7,7 @@ import ChatErrorBoundary from '@/components/ChatErrorBoundary';
 import UniversalLoader from '@/components/ui/universal-loader';
 import { getSupabaseClient } from '@/lib/supabase';
 import { migrateSessions } from '@/lib/backend-api';
-
-function generateGuestToken(): string {
-  return 'guest-' + crypto.randomUUID()
-}
-
-function getOrCreateGuestToken(): string {
-  let token = localStorage.getItem('guest_token')
-  if (!token) {
-    token = generateGuestToken()
-    localStorage.setItem('guest_token', token)
-  }
-  return token
-}
+import { getOrCreateGuestToken, clearGuestToken } from '@/lib/guestToken';
 
 export default function DiscoverPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -54,10 +42,10 @@ export default function DiscoverPage() {
       supabase.auth.getSession().then(({ data }) => {
         if (data.session?.user) {
           const uid = data.session.user.id;
-          const existingGuestToken = typeof window !== 'undefined' ? localStorage.getItem('guest_token') : null;
+          const existingGuestToken = getOrCreateGuestToken();
           if (existingGuestToken) {
             migrateSessions(uid, existingGuestToken).catch(() => {}).finally(() => {
-              try { localStorage.removeItem('guest_token'); } catch {}
+              clearGuestToken();
             });
           }
           try { localStorage.setItem('user_id', uid); } catch {}
@@ -76,10 +64,10 @@ export default function DiscoverPage() {
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
           const uid = session.user.id;
-          const existingGuestToken = typeof window !== 'undefined' ? localStorage.getItem('guest_token') : null;
+          const existingGuestToken = getOrCreateGuestToken();
           if (existingGuestToken) {
             migrateSessions(uid, existingGuestToken).catch(() => {}).finally(() => {
-              try { localStorage.removeItem('guest_token'); } catch {}
+              clearGuestToken();
             });
           }
           try { localStorage.setItem('user_id', uid); } catch {}
@@ -110,7 +98,6 @@ export default function DiscoverPage() {
   if (!ready) {
     return (
       <div className="flex items-center justify-center min-h-[100dvh] bg-transparent">
-
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
       </div>
     );
@@ -137,7 +124,6 @@ export default function DiscoverPage() {
             />
           </Suspense>
         </ChatErrorBoundary>
-
       </main>
     </div>
   );
