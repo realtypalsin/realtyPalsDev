@@ -32,6 +32,7 @@ const ProjectDetailPanel = dynamic(() => import('@/components/ProjectDetailPanel
 const LeadSuccessModal = dynamic(() => import('@/components/LeadSuccessModal'), { ssr: false })
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false })
 const ReEngagementBanner = dynamic(() => import('@/components/chat/ReEngagementBanner'), { ssr: false })
+const HomeButtons = dynamic(() => import('@/components/HomeButtons'), { ssr: false })
 
 function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => void }) {
   const [secsLeft, setSecsLeft] = useState(Math.ceil((until - Date.now()) / 1000));
@@ -1440,62 +1441,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               {chatInputForm}
             </div>
 
-            {/* Sleek v0-style starter prompt chips — guaranteed max 2 rows */}
-            <div className="w-full max-w-[880px] flex flex-wrap items-center justify-center gap-2">
-              {[
-                {
-                  label: 'Metro Apartments',
-                  icon: <Train size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors shrink-0" />,
-                  prompt: 'Find me homes that are within walking distance to a functional metro station.'
-                },
-                {
-                  label: 'Ready to Move',
-                  icon: <Key size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors shrink-0" />,
-                  prompt: 'Show me fully completed homes in central Noida that I can move into today.'
-                },
-                {
-                  label: 'Under ₹1.5 Cr',
-                  icon: <Wallet size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-500 transition-colors shrink-0" />,
-                  prompt: 'What are the best three bedroom apartments I can buy for less than 1.5 crore rupees?'
-                },
-                {
-                  label: 'Green Sectors',
-                  icon: <Trees size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-green-500 transition-colors shrink-0" />,
-                  prompt: 'Show me housing projects in Noida that have the most open parks and the fewest crowded buildings.'
-                },
-                {
-                  label: 'Luxury Penthouses',
-                  icon: <Crown size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-violet-500 transition-colors shrink-0" />,
-                  prompt: 'Find me the most exclusive penthouses available in the top sectors of Noida.'
-                },
-                {
-                  label: 'Independent Villas',
-                  icon: <Building2 size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-indigo-500 transition-colors shrink-0" />,
-                  prompt: 'Show me gated communities in Noida that offer independent villas for sale.'
-                },
-                {
-                  label: 'Family Neighborhoods',
-                  icon: <ShieldCheck size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-teal-500 transition-colors shrink-0" />,
-                  prompt: 'Find me the safest residential areas in Noida that are perfect for raising children.'
-                },
-                {
-                  label: 'Top School Zones',
-                  icon: <GraduationCap size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-sky-500 transition-colors shrink-0" />,
-                  prompt: 'Show me family homes located within ten minutes of the best schools in Noida.'
-                },
-              ].map((chip, idx) => (
-                <m.button
-                  key={idx}
-                  whileHover={{ y: -1, scale: 1.02 }}
-                  whileTap={{ scale: 0.96 }}
-                  transition={{ type: 'spring', stiffness: 450, damping: 25 }}
-                  onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chip.prompt } })}
-                  className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-medium bg-white/90 dark:bg-[#18181b]/90 backdrop-blur-md border border-zinc-200/90 dark:border-zinc-800/90 text-zinc-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-[#222226] hover:border-blue-400/60 dark:hover:border-blue-500/50 hover:text-zinc-950 dark:hover:text-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_18px_rgba(59,130,246,0.12)] dark:hover:shadow-[0_4px_20px_rgba(59,130,246,0.22)] transition-all duration-200 cursor-pointer select-none"
-                >
-                  <span className="flex-shrink-0 flex items-center justify-center">{chip.icon}</span>
-                  <span className="whitespace-nowrap font-medium tracking-tight">{chip.label}</span>
-                </m.button>
-              ))}
+            {/* Home buttons — organized by sector */}
+            <div className="w-full max-w-[880px]">
+              <HomeButtons
+                onButtonClick={(prompt) => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: prompt } })}
+              />
             </div>
           </div>
         ) : (
