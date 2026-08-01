@@ -218,14 +218,8 @@ function serializeProjects(projects: ScoredProject[]): string {
         decision_tier:        p.decisionIntelligence.tier,
         decision_bottom_line: p.decisionIntelligence.bottomLine,
       } : {}),
-      // Track C: Add intelligence_data fields to AI context (compacted)
-      ...((p as any).intelligence_data?.riskRadar ? {
-        risk_summary: (p as any).intelligence_data.riskRadar.summary_score || (p as any).intelligence_data.riskRadar.overall_risk_level
-      } : {}),
-      ...((p as any).intelligence_data?.investment_insights ? {
-        rental_yield: (p as any).intelligence_data.investment_insights.rental_yield,
-        appreciation_annual: (p as any).intelligence_data.investment_insights.appreciation_annual,
-      } : {}),
+      // Intelligence fields are now explicit in schema (financial_intelligence, market_intelligence, etc.)
+      // No need to parse from intelligence_data anymore
       ...(p.competitors && p.competitors.length > 0 ? {
         competitors: p.competitors.map(c => ({
           name: sanitizeForPrompt(c.competitor_name),

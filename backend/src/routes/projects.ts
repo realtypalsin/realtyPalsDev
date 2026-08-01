@@ -57,20 +57,14 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
       connectivity: { orderBy: { distance_km: 'asc' } },
       dna: {
         select: {
-          builder_track_record_label: true,
-          price_position_label:       true,
-          locality_label:             true,
-          rera_compliance_label:      true,
-          amenity_depth_label:        true,
-          possession_certainty_label: true,
-          last_verified_at:           true,
-          // raw scores for deterministic recommendation scoring
-          builder_track_record_score: true,
-          price_position_score:       true,
-          locality_score:             true,
-          rera_compliance_score:      true,
-          amenity_depth_score:        true,
-          possession_certainty_score: true,
+          overall_score:    true,
+          builder_score:    true,
+          price_score:      true,
+          location_score:   true,
+          legal_score:      true,
+          amenity_score:    true,
+          possession_score: true,
+          last_verified_at: true,
         },
       },
       decision_profile: {
@@ -82,7 +76,12 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
           best_for:           true,
           not_ideal_for:      true,
           confidence_sources: true,
-          intelligence_data:   true,
+          financial_intelligence: true,
+          market_intelligence: true,
+          builder_intelligence: true,
+          property_intelligence: true,
+          comparative_analysis: true,
+          resources_documents: true,
           last_verified_at:   true,
         },
       },
@@ -92,12 +91,6 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
           status:               true,
           tier:                 true,
           primary_thesis:       true,
-          end_use_thesis:       true,
-          investment_thesis:    true,
-          family_thesis:        true,
-          investor_thesis:      true,
-          luxury_thesis:        true,
-          risk_thesis:          true,
           walk_away_conditions: true,
           timeline_advice:      true,
           negotiation_leverage: true,
@@ -131,15 +124,16 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
     builder: { legal_flag: project.builder?.legal_flag ?? null },
   })
 
-  // Strip internal raw score fields from dna before sending to client
+  // Public DNA with simplified scores
   const publicDna = project.dna ? {
-    builder_track_record_label: project.dna.builder_track_record_label,
-    price_position_label:       project.dna.price_position_label,
-    locality_label:             project.dna.locality_label,
-    rera_compliance_label:      project.dna.rera_compliance_label,
-    amenity_depth_label:        project.dna.amenity_depth_label,
-    possession_certainty_label: project.dna.possession_certainty_label,
-    last_verified_at:           project.dna.last_verified_at,
+    overall_score:     project.dna.overall_score,
+    builder_score:     project.dna.builder_score,
+    price_score:       project.dna.price_score,
+    location_score:    project.dna.location_score,
+    legal_score:       project.dna.legal_score,
+    amenity_score:     project.dna.amenity_score,
+    possession_score:  project.dna.possession_score,
+    last_verified_at:  project.dna.last_verified_at,
   } : null
 
   const reportUrl = `/api/projects/${project.slug}/report`;
@@ -263,8 +257,8 @@ router.get('/:slug/investment', async (req: Request, res: Response) => {
   if (!project) { res.status(404).json({ error: 'Not found' }); return }
 
   // Investment intelligence is derived, never fabricated
-  const locationScore = project.dna?.locality_score ?? null
-  const valueScore    = project.dna?.price_position_score ?? null
+  const locationScore = project.dna?.location_score ?? null
+  const valueScore    = project.dna?.price_score ?? null
 
   const potentialAppreciation = (() => {
     if (locationScore == null || valueScore == null) return null
@@ -298,12 +292,13 @@ router.get('/:slug/overview', async (req: Request, res: Response) => {
       builder: { select: { id: true, legal_flag: true } },
       dna: {
         select: {
-          builder_track_record_score: true,
-          price_position_score:       true,
-          locality_score:             true,
-          rera_compliance_score:      true,
-          amenity_depth_score:        true,
-          possession_certainty_score: true,
+          overall_score:    true,
+          builder_score:    true,
+          price_score:      true,
+          location_score:   true,
+          legal_score:      true,
+          amenity_score:    true,
+          possession_score: true,
         },
       },
     },

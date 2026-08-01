@@ -167,28 +167,25 @@ model Project {
 }
 
 model ProjectDna {
-  id                 String    @id @default(uuid())
-  project_id         String    @unique
-
-  // Overall score (0-100)
-  overall_score      Int?
-
-  // Category scores (0-100, simple manual entry)
-  builder_score      Int?      // Track record + quality
-  price_score        Int?      // Position relative to location/market
-  location_score     Int?      // Proximity, connectivity, future growth
-  legal_score        Int?      // RERA, litigation, compliance
-  amenity_score      Int?      // Amenities, spacing, common areas
-  possession_score   Int?      // Timeline certainty, builder track record
-
-  // Tracking
-  last_verified_at   DateTime?
-  verified_by        String?
-  created_at         DateTime  @default(now())
-  updated_at         DateTime  @updatedAt
-
-  // Relation
-  project            Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  id                         String    @id @default(uuid())
+  project_id                 String    @unique
+  builder_track_record_score Int?
+  builder_track_record_label String?
+  price_position_score       Int?
+  price_position_label       String?
+  locality_score             Int?
+  locality_label             String?
+  rera_compliance_score      Int?
+  rera_compliance_label      String?
+  amenity_depth_score        Int?
+  amenity_depth_label        String?
+  possession_certainty_score Int?
+  possession_certainty_label String?
+  last_verified_at           DateTime?
+  verified_by                String?
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @updatedAt
+  project                    Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
   @@map("project_dna")
 }
@@ -197,27 +194,15 @@ model DecisionProfile {
   id                   String             @id @default(uuid())
   project_id           String             @unique
   status               IntelligenceStatus @default(DRAFT)
-
-  // Decision context
   decision_thesis      String?
   why_buy              String[]           @default([])
   why_avoid            String[]           @default([])
   best_for             String?
   not_ideal_for        String?
-
-  // Intelligence breakdown (explicit JSON fields for manual entry)
-  financial_intelligence Json?            // {wealth_projection_3yr, emis_5pct, opportunity_cost, backed_by}
-  market_intelligence Json?               // {supply_demand, price_appreciation, infra_catalyst, backed_by}
-  builder_intelligence Json?              // {track_record, delivery_on_time_pct, satisfaction, backed_by}
-  property_intelligence Json?             // {space_utilization, sun_exposure, floor_recommendation, backed_by}
-  comparative_analysis Json?              // {price_vs_competitors, appreciation_potential}
-  resources_documents  Json?              // {documents: [brochure, price_list, floor_plan, ...]}
-
-  // Confidence tracking
   confidence_sources   String[]           @default([])
   recommendation_notes String?
   advisor_notes        String?
-
+  intelligence_data    Json?
   last_verified_at     DateTime?
   verified_by          String?
   created_at           DateTime           @default(now())
@@ -251,28 +236,25 @@ model PersonaProfile {
 model RecommendationProfile {
   id                   String             @id @default(uuid())
   project_id           String             @unique
-  project              Project            @relation(fields: [project_id], references: [id], onDelete: Cascade)
-
   status               IntelligenceStatus @default(DRAFT)
-
-  // Single recommendation (replaces 6 specialized thesis fields)
-  tier                 String?            // "STRONG_BUY" | "BUY" | "HOLD" | "WATCH" | "AVOID"
-  primary_thesis       String?            // Main reason for this tier
-
-  // Deal conditions
+  tier                 String?
+  primary_thesis       String?
+  end_use_thesis       String?
+  investment_thesis    String?
+  family_thesis        String?
+  investor_thesis      String?
+  luxury_thesis        String?
+  risk_thesis          String?
   walk_away_conditions String[]           @default([])
   timeline_advice      String?
   negotiation_leverage String[]           @default([])
-
-  // Admin notes
   internal_confidence  String?
   admin_notes          String?
-
-  // Tracking
   last_verified_at     DateTime?
   verified_by          String?
   created_at           DateTime           @default(now())
   updated_at           DateTime           @updatedAt
+  project              Project            @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
   @@map("recommendation_profiles")
 }
