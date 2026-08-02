@@ -507,6 +507,19 @@ router.post('/', async (req: Request, res: Response) => {
     // bypass discovery and use verified data pipeline instead.
     const classification = classifyIntent(message)
     if (classification.category === 'project_detail' && classification.projectDetail && action.type === 'TEXT_MESSAGE') {
+      // EDGE CASE: Validate input message (Phase 8)
+      const { validateUserMessage, sanitizeMessage, getMissingProjectClarification, createFallbackResponse } = await import('../lib/discovery/queryPlanner.guards')
+      const inputError = validateUserMessage(message)
+      if (inputError) {
+        console.log('[CHAT:PROJECT_DETAIL:INPUT_ERROR]', inputError.type, inputError.message)
+        send('token', { token: getMissingProjectClarification(0, []) })
+        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
+        res.end()
+        return
+      }
+
+      const cleanMessage = sanitizeMessage(message)
+
       console.log('[CHAT:PROJECT_DETAIL]', Date.now(), {
         detailType: classification.projectDetail.detailType,
         projectIdentifier: classification.projectDetail.projectIdentifier,
@@ -514,10 +527,20 @@ router.post('/', async (req: Request, res: Response) => {
       })
 
       // Step 1: Plan the query (planner auto-detects intent from message)
-      const plan = await planProjectDetailQuery({
-        userMessage: message,
-        conversationContext: { activeProjects: intent.projectNames },
-      })
+      let plan
+      try {
+        plan = await planProjectDetailQuery({
+          userMessage: cleanMessage,
+          conversationContext: { activeProjects: intent.projectNames },
+        })
+      } catch (err) {
+        console.error('[CHAT:PROJECT_DETAIL:PLAN_ERROR]', err)
+        const { createFallbackResponse } = await import('../lib/discovery/queryPlanner.guards')
+        send('token', { token: createFallbackResponse(err as Error) })
+        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
+        res.end()
+        return
+      }
 
       console.log('[CHAT:PROJECT_DETAIL:PLAN]', Date.now(), {
         isActionable: isActionable(plan),
@@ -543,15 +566,40 @@ router.post('/', async (req: Request, res: Response) => {
         return
       }
 
-      const gatewayResponse = await getProjectDataForQuery({
-        projectId: plan.projectIds[0],
-        intent: plan.intent as any, // Safe cast: queryPlanner ensures valid intent
-        requiredFields: plan.requiredFields,
-      })
+      let gatewayResponse
+      try {
+        const { handleDatabaseError, repairGatewayResponse } = await import('../lib/projectDataGateway.guards')
+        gatewayResponse = await getProjectDataForQuery({
+          projectId: plan.projectIds[0],
+          intent: plan.intent as any, // Safe cast: queryPlanner ensures valid intent
+          requiredFields: plan.requiredFields,
+        })
 
-      if (!gatewayResponse.found || !gatewayResponse.data || !gatewayResponse.completeness) {
-        send('token', { token: 'Unable to retrieve project data. Please contact our team.' })
-        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
+        // EDGE CASE: Repair incomplete response (Phase 8)
+        const repair = repairGatewayResponse(gatewayResponse)
+        if (repair.repaired) {
+          console.log('[CHAT:PROJECT_DETAIL:GATEWAY_REPAIRED]', repair.message)
+        }
+
+        if (!gatewayResponse.found || !gatewayResponse.data || !gatewayResponse.completeness) {
+          const { handleMissingProject } = await import('../lib/projectDataGateway.guards')
+          const missing = handleMissingProject(plan.projectIds[0])
+          console.log('[CHAT:PROJECT_DETAIL:NOT_FOUND]', missing.message)
+          send('token', { token: 'Unable to retrieve project data. Please contact our team.' })
+          send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
+          res.end()
+          return
+        }
+      } catch (err) {
+        console.error('[CHAT:PROJECT_DETAIL:GATEWAY_ERROR]', err)
+        const { handleDatabaseError } = await import('../lib/projectDataGateway.guards')
+        const dbError = handleDatabaseError(err as Error)
+        send('token', { token: dbError.message })
+        if (!dbError.recoverable) {
+          send('done', { sessionId: currentSessionId, intentState: 'ERROR', intent })
+        } else {
+          send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
+        }
         res.end()
         return
       }

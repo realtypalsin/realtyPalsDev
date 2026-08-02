@@ -296,18 +296,54 @@ const COMPONENT_RENDERERS: Record<string, React.ComponentType<{ props: Record<st
 
 export interface ComponentRendererProps {
   specs: ComponentSpec[]
+  onError?: (error: Error, componentType: string) => void
 }
 
-export const ComponentRenderer = memo(function ComponentRenderer({ specs }: ComponentRendererProps) {
+export const ComponentRenderer = memo(function ComponentRenderer({ specs, onError }: ComponentRendererProps) {
+  if (!specs || specs.length === 0) {
+    return (
+      <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl text-center text-sm text-gray-500 dark:text-gray-400">
+        No data to display
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-3">
       {specs.map((spec, i) => {
-        const Renderer = COMPONENT_RENDERERS[spec.type]
-        if (!Renderer) {
-          console.warn(`[ComponentRenderer] Unknown component type: ${spec.type}`)
-          return null
+        try {
+          // EDGE CASE: Validate spec before rendering (Phase 8)
+          if (!spec || !spec.type || !spec.props) {
+            console.warn(`[ComponentRenderer] Invalid spec at index ${i}:`, spec)
+            return (
+              <div key={i} className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm text-yellow-700 dark:text-yellow-300">
+                Invalid data format for component
+              </div>
+            )
+          }
+
+          const Renderer = COMPONENT_RENDERERS[spec.type]
+          if (!Renderer) {
+            console.warn(`[ComponentRenderer] Unknown component type: ${spec.type}`)
+            return (
+              <div key={i} className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+                Component type not supported: {spec.type}
+              </div>
+            )
+          }
+
+          return <Renderer key={i} props={spec.props} />
+        } catch (error) {
+          const err = error instanceof Error ? error : new Error(String(error))
+          console.error(`[ComponentRenderer] Error rendering component at index ${i}:`, err)
+          onError?.(err, spec.type)
+
+          return (
+            <div key={i} className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
+              Error displaying component: {err.message}
+            </div>
+          )
         }
-        return <Renderer key={i} props={spec.props} />
       })}
     </div>
   )
