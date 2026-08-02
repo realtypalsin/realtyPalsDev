@@ -11,6 +11,12 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
         },
         take: 25,
       },
+      // Promised-vs-actual per project. Without this the model can only quote the
+      // delayed_projects_count aggregate and cannot say which project slipped.
+      delivery_records: {
+        orderBy: { promised_date: 'asc' },
+        take: 40,
+      },
     },
   })
   if (!builder) return null
@@ -85,7 +91,24 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
       possession_claimed_by_builder: p.possession_label ?? null,
     })),
 
+    // Promised vs actual, per project. delay_months is derived, never stored.
+    delivery_track_record: builder.delivery_records.map((r) => {
+      const promised = r.promised_date
+      const actual = r.actual_date
+      const delayMonths = actual
+        ? Math.round(((actual.getTime() - promised.getTime()) / (1000 * 60 * 60 * 24 * 30.44)) * 10) / 10
+        : null
+      return {
+        project_name: r.project_name,
+        promised_date: promised.toISOString().split('T')[0],
+        actual_date: actual ? actual.toISOString().split('T')[0] : null,
+        delivered: !!actual,
+        delay_months: delayMonths,
+        on_time: delayMonths != null ? delayMonths <= 0 : null,
+      }
+    }),
+
     data_gaps: dataGaps,
-    note: 'Use ONLY the structured fields above. If legal_flag is non-null, it MUST be disclosed immediately — it represents a verified legal risk. Do not recommend this builder for new purchases if legal_flag is set. If a score is null, state "not yet verified" — do not infer scores from training memory. delivered_units is a total volume count, NOT a proxy for on-time delivery.',
+    note: 'Use ONLY the structured fields above. delivery_track_record gives promised vs actual per project — delay_months is derived from those two dates, positive means late. A null actual_date means not yet delivered, which is not the same as delayed. If legal_flag is non-null, it MUST be disclosed immediately — it represents a verified legal risk. Do not recommend this builder for new purchases if legal_flag is set. If a score is null, state "not yet verified" — do not infer scores from training memory. delivered_units is a total volume count, NOT a proxy for on-time delivery.',
   }
 }

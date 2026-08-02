@@ -278,8 +278,8 @@ function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
     prev.message.isSearching === next.message.isSearching &&
     prev.isExpanded === next.isExpanded &&
     prev.carouselIndex === next.carouselIndex &&
-    prev.chips === next.chips
-
+    prev.chips === next.chips &&
+    prev.message.chips === next.message.chips
   )
 }
 
@@ -849,7 +849,9 @@ function MessageBubbleInner({
 
       {/* Progressive chips from Conversation Engine */}
       {(() => {
-        const shouldShow = message.type === 'ai' && displayContent && combinedChips.length > 0;
+        const hasOwnChips = Array.isArray(message.chips) && message.chips.length > 0;
+        const shouldShow = message.type === 'ai' && displayContent && combinedChips.length > 0
+          && (isLast ? !isSubmitting : hasOwnChips);
         return shouldShow;
       })() && (
 

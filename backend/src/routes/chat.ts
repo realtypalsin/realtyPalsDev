@@ -19,7 +19,24 @@ import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
 import { streamWithGemini, GeminiStreamStallError } from '../lib/ai/gemini'
 import { classifyIntent, routeToModel } from '../lib/ai/intentClassifier'
 import { trimPropertiesForPrompt } from '../lib/ai/propertyTrim'
+import {
+  getBuyerFit,
+  getFloorPlans,
+  getPriceHistory,
+  getConstructionStatus,
+  getProjectIntelligence,
+  getFullCostSheet,
+  getAmenitiesAndConnectivity,
+  getProjectImages,
+  getBuilderNews,
+  getUserSavedState,
+  getSectorProjects,
+} from '../lib/projectFacts'
+import { gatePublished } from '../lib/intelligenceGate'
 import { getChipInventory } from '../lib/discovery/chipInventory'
+import { planProjectDetailQuery, isActionable, getClarificationMessage } from '../lib/discovery/queryPlanner'
+import { getProjectDataForQuery, computeResponseConfidence } from '../lib/projectDataGateway'
+import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { FINANCIAL } from '../lib/config'
 import { DEFAULT_CITY, PILOT_SCOPE_LABEL } from '../lib/config/cities'
 import { verifyUser } from '../lib/auth'
@@ -485,6 +502,141 @@ router.post('/', async (req: Request, res: Response) => {
 
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
+    // ─── PROJECT DETAIL PIPELINE (Phase 5 Integration) ───────────────────────
+    // If user is asking about a specific project detail (EMI, investment, location, etc.),
+    // bypass discovery and use verified data pipeline instead.
+    const classification = classifyIntent(message)
+    if (classification.category === 'project_detail' && classification.projectDetail && action.type === 'TEXT_MESSAGE') {
+      console.log('[CHAT:PROJECT_DETAIL]', Date.now(), {
+        detailType: classification.projectDetail.detailType,
+        projectIdentifier: classification.projectDetail.projectIdentifier,
+        confidence: classification.projectDetail.confidence,
+      })
+
+      // Step 1: Plan the query (planner auto-detects intent from message)
+      const plan = await planProjectDetailQuery({
+        userMessage: message,
+        conversationContext: { activeProjects: intent.projectNames },
+      })
+
+      console.log('[CHAT:PROJECT_DETAIL:PLAN]', Date.now(), {
+        isActionable: isActionable(plan),
+        projectIds: plan.projectIds,
+        requiredFields: plan.requiredFields.slice(0, 3),
+      })
+
+      // Step 2: Validate plan is actionable
+      if (!isActionable(plan)) {
+        const clarification = getClarificationMessage(plan)
+        console.log('[CHAT:PROJECT_DETAIL:CLARIFY]', Date.now(), { question: clarification })
+        send('token', { token: clarification })
+        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
+        res.end()
+        return
+      }
+
+      // Step 3: Fetch verified data from gateway
+      if (plan.projectIds.length === 0) {
+        send('token', { token: 'I need a project name to answer that. Which project are you asking about?' })
+        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
+        res.end()
+        return
+      }
+
+      const gatewayResponse = await getProjectDataForQuery({
+        projectId: plan.projectIds[0],
+        intent: plan.intent as any, // Safe cast: queryPlanner ensures valid intent
+        requiredFields: plan.requiredFields,
+      })
+
+      if (!gatewayResponse.found || !gatewayResponse.data || !gatewayResponse.completeness) {
+        send('token', { token: 'Unable to retrieve project data. Please contact our team.' })
+        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
+        res.end()
+        return
+      }
+
+      console.log('[CHAT:PROJECT_DETAIL:GATEWAY]', Date.now(), {
+        projectId: plan.projectIds[0],
+        complete: gatewayResponse.completeness.complete,
+        coverage: Math.round(gatewayResponse.completeness.coverage * 100),
+      })
+
+      // Step 4: Compute confidence
+      const confidence = computeResponseConfidence(gatewayResponse.data)
+
+      // Step 5: Check if data is sufficient
+      if (!gatewayResponse.completeness.complete || confidence < 0.65) {
+        const missing = gatewayResponse.completeness.missingByImportance?.critical?.slice(0, 3) ?? []
+        const msg = missing.length > 0
+          ? `I have partial data for this project (${Math.round(confidence * 100)}% confident). Missing: ${missing.join(', ')}. Please contact our team for complete details.`
+          : `I have partial data for this project (${Math.round(confidence * 100)}% confident). Please contact our team for complete details.`
+        send('token', { token: msg })
+        send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent })
+        res.end()
+        return
+      }
+
+      // Step 6: Generate summary from verified facts
+      // Build facts summary for LLM reasoning
+      const factsList = Object.entries(gatewayResponse.data)
+        .map(([k, v]) => ({
+          key: k,
+          value: v.value,
+          source: v.source,
+          confidence: v.confidence,
+        }))
+        .sort((a, b) => b.confidence - a.confidence)
+
+      const factsJson = JSON.stringify(factsList.slice(0, 8), null, 2)
+      const projectDataMsg = `User question: "${message}"\n\nVerified facts available:\n${factsJson}\n\nProvide a brief response (2-3 sentences) based only on these facts. Never invent numbers.`
+
+      let componentSummary = ''
+      try {
+        const systemMsg = 'You are a real estate advisor analyzing verified project data. Respond with a concise, data-grounded summary. Base all claims on the provided facts.'
+        // streamWithGemini handles streaming via send callback and returns final text
+        componentSummary = await streamWithGemini(
+          systemMsg,
+          [{ role: 'user' as const, content: projectDataMsg }],
+          send,
+          async () => ({ error: 'No tools for project detail flow' })
+        )
+      } catch (err) {
+        console.warn('[CHAT:PROJECT_DETAIL:LLM_ERROR]', (err as Error).message)
+        // Fallback: build summary from top facts
+        const topFacts = factsList.slice(0, 3).map(f => `${f.key}: ${f.value}`).join('. ')
+        componentSummary = `Based on verified data: ${topFacts}`
+        send('token', { token: componentSummary })
+      }
+
+      // Step 7: Build component response
+      // Map 'general' intent to 'details' for component spec
+      const componentIntent: 'payment' | 'investment' | 'location' | 'timeline' | 'builder' | 'details' | 'compare' =
+        plan.intent === 'general' ? 'details' : (plan.intent as any)
+      const sources = (gatewayResponse.sources ?? []).map(String)
+
+      const componentResponse = buildComponentResponse({
+        summary: componentSummary,
+        confidence,
+        facts: gatewayResponse.data,
+        intent: componentIntent,
+        projectId: plan.projectIds[0],
+        sources,
+      })
+
+      console.log('[CHAT:PROJECT_DETAIL:RESPONSE]', Date.now(), {
+        componentCount: componentResponse.components.length,
+        confidence: Math.round(confidence * 100),
+        sources: componentResponse.sources,
+      })
+
+      // Send components as response
+      send('components', componentResponse as unknown as Record<string, unknown>)
+      send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent })
+      res.end()
+      return
+    }
+
     if (skipForCachedQuery) {
       logRouting(cacheDecision!.reason, { budgetOnly: cacheDecision!.budgetOnly, cachedCount: cachedProjectsFromSession!.length })
     } else if (cacheDecision && !cacheDecision.reuse) {
@@ -760,6 +912,59 @@ router.post('/', async (req: Request, res: Response) => {
           };
         }
 
+        // ── On-demand detail lookups ────────────────────────────────────────
+        // Pull-based by design: these read tables the system prompt does not
+        // carry, so the buyer sees this depth only when they ask for it.
+        if (name === 'buyer_fit_analysis') {
+          return getBuyerFit(args.project_name ?? '');
+        }
+
+        if (name === 'floor_plans_lookup') {
+          return getFloorPlans(args.project_name ?? '');
+        }
+
+        if (name === 'price_history_lookup') {
+          return getPriceHistory(args.project_name ?? '');
+        }
+
+        if (name === 'construction_status') {
+          return getConstructionStatus(args.project_name ?? '');
+        }
+
+        if (name === 'project_intelligence') {
+          return getProjectIntelligence(args.project_name ?? '', args.topic);
+        }
+
+        if (name === 'cost_sheet_lookup') {
+          return getFullCostSheet(args.project_name ?? '');
+        }
+
+        if (name === 'amenities_lookup') {
+          return getAmenitiesAndConnectivity(args.project_name ?? '');
+        }
+
+        if (name === 'project_images') {
+          return getProjectImages(args.project_name ?? '');
+        }
+
+        if (name === 'builder_news') {
+          return getBuilderNews(args.builder_name ?? '');
+        }
+
+        if (name === 'user_saved_state') {
+          return getUserSavedState(userId);
+        }
+
+        if (name === 'sector_projects') {
+          return getSectorProjects({
+            sector: args.sector,
+            city: args.city ?? DEFAULT_CITY,
+            bhk: args.bhk != null ? Number(args.bhk) : undefined,
+            maxBudgetCr: args.max_budget_cr != null ? Number(args.max_budget_cr) : undefined,
+            limit: args.limit != null ? Number(args.limit) : undefined,
+          });
+        }
+
         if (name === 'web_search') {
           const ctx = await webSearch(args.query ?? '', 3);
           return ctx
@@ -925,17 +1130,22 @@ router.post('/', async (req: Request, res: Response) => {
         if (name === 'select_property') {
           const propertyId = args.property_id;
           if (!propertyId) return { error: 'property_id is required' };
-          const property = await (prisma as any).project.findUnique({
+          const raw = await (prisma as any).project.findUnique({
             where: { id: propertyId },
             include: {
               builder: { select: { name: true, slug: true } },
               unit_types: { select: { bhk: true, price_min_cr: true, price_max_cr: true, super_area_sqft: true } },
               images: { where: { type: 'hero' }, take: 1, select: { url: true } },
-              decision_profile: { select: { why_buy: true, why_avoid: true, decision_thesis: true } },
-              recommendation_profile: { select: { primary_thesis: true } }
+              decision_profile: { select: { status: true, why_buy: true, why_avoid: true, decision_thesis: true } },
+              recommendation_profile: { select: { status: true, primary_thesis: true } }
             }
           });
-          if (!property) return { error: 'Property not found.' };
+          if (!raw) return { error: 'Property not found.' };
+          const property = {
+            ...raw,
+            decision_profile: gatePublished(raw.decision_profile),
+            recommendation_profile: gatePublished(raw.recommendation_profile),
+          };
           return { property };
         }
 

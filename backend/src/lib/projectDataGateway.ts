@@ -1,0 +1,656 @@
+/**
+ * Project Data Gateway — Single source of truth for all project data.
+ *
+ * All project queries route through here. No data is returned without validation,
+ * completeness tracking, and source attribution. The AI layer never talks to DB
+ * directly — only through this gateway.
+ *
+ * Design principle: Verified DB facts only. No hallucinations. No guessing.
+ */
+
+import { prisma } from './db'
+import {
+  getFloorPlans,
+  getPriceHistory,
+  getConstructionStatus,
+  getProjectIntelligence,
+  getFullCostSheet,
+  getAmenitiesAndConnectivity,
+  getBuyerFit,
+  getProjectImages,
+  getBuilderNews,
+  getUserSavedState,
+  getSectorProjects,
+} from './projectFacts'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Core Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type DataSource = 'database' | 'google_maps' | 'calculator' | 'estimated' | 'derived'
+
+export interface FactValidation {
+  fact: string
+  value: unknown
+  source: DataSource
+  confidence: number // 0-1: 1 = verified DB, 0.95 = external API, 0.6 = estimated
+  validated: boolean
+  reason?: string // Why confidence < 1
+  dataAge?: number // Days since data was recorded
+  lastVerifiedAt?: string // ISO date
+}
+
+export interface DataCompleteness {
+  complete: boolean
+  coverage: number // 0-1: percentage of expected fields present
+  missing: string[]
+  missingByImportance: { critical: string[]; optional: string[] }
+}
+
+export interface ProjectDataGatewayResponse {
+  projectId: string
+  projectName: string
+  found: boolean
+  message?: string // If not found
+  data?: Record<string, FactValidation> // Validated facts
+  completeness?: DataCompleteness
+  sources?: DataSource[]
+  timestamp: string
+  cacheKey?: string
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Confidence Scoring
+// ─────────────────────────────────────────────────────────────────────────────
+
+function scoreConfidence(params: {
+  source: DataSource
+  validated: boolean
+  dataAgeDays?: number
+  isCritical?: boolean
+}): number {
+  let score = 1.0
+
+  // Base score by source
+  if (params.source === 'database') score = 0.98
+  else if (params.source === 'google_maps') score = 0.92
+  else if (params.source === 'calculator') score = 0.95
+  else if (params.source === 'derived') score = 0.85
+  else if (params.source === 'estimated') score = 0.65
+
+  // Reduce if not validated
+  if (!params.validated) score *= 0.75
+
+  // Reduce if stale (older than 90 days)
+  if (params.dataAgeDays && params.dataAgeDays > 90) {
+    const staleFactor = Math.max(0.5, 1 - params.dataAgeDays / 500)
+    score *= staleFactor
+  }
+
+  return Math.max(0.3, Math.min(1.0, score))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Project Resolution
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function resolveProject(nameOrId: string) {
+  const term = (nameOrId ?? '').trim()
+  if (!term) return null
+
+  return prisma.project.findFirst({
+    where: {
+      OR: [
+        { id: term },
+        { slug: term },
+        { name: { equals: term, mode: 'insensitive' } },
+        { name: { contains: term, mode: 'insensitive' } },
+      ],
+    },
+    select: {
+      id: true,
+      name: true,
+      sector: true,
+      city: true,
+      status: true,
+      price_range_label: true,
+      builder_id: true,
+    },
+    orderBy: { name: 'asc' },
+  })
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Individual Data Fetchers (wrapped with validation)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch and validate floor plan data.
+ * Critical fields: name, bhk, price_min_cr, carpet_area_sqft
+ */
+async function getFloorPlansWithValidation(
+  projectId: string,
+  projectName: string
+): Promise<Record<string, FactValidation>> {
+  const facts: Record<string, FactValidation> = {}
+
+  const data = (await getFloorPlans(projectId)) as Record<string, unknown>
+
+  if (!data.found) {
+    return facts
+  }
+
+  const configs = (data.configurations as unknown[]) || []
+  facts['floor_plan_count'] = {
+    fact: `Total floor plan configurations`,
+    value: configs.length,
+    source: 'database',
+    confidence: 1.0,
+    validated: true,
+  }
+
+  // Validate each configuration
+  configs.forEach((config: any, idx: number) => {
+    if (!config.name || !config.bhk) return
+
+    const prefix = `config_${idx}_${config.bhk}bhk`
+    facts[`${prefix}_name`] = {
+      fact: `Configuration name`,
+      value: config.name,
+      source: 'database',
+      confidence: 1.0,
+      validated: !!config.name,
+    }
+
+    facts[`${prefix}_price_min_cr`] = {
+      fact: `Minimum price (Cr)`,
+      value: config.price_min_cr,
+      source: 'database',
+      confidence: config.price_min_cr ? 0.98 : 0.5,
+      validated: !!config.price_min_cr,
+      reason: config.price_min_cr ? undefined : 'Price not recorded',
+    }
+
+    facts[`${prefix}_carpet_area_sqft`] = {
+      fact: `Carpet area (sqft)`,
+      value: config.carpet_area_sqft,
+      source: 'database',
+      confidence: config.carpet_area_sqft ? 0.98 : 0.6,
+      validated: !!config.carpet_area_sqft,
+      reason: config.carpet_area_sqft ? undefined : 'Carpet area not recorded',
+    }
+
+    if (config.super_area_sqft) {
+      facts[`${prefix}_super_area_sqft`] = {
+        fact: `Super area (sqft)`,
+        value: config.super_area_sqft,
+        source: 'database',
+        confidence: 0.98,
+        validated: true,
+      }
+
+      facts[`${prefix}_carpet_efficiency_pct`] = {
+        fact: `Carpet efficiency %`,
+        value: config.carpet_to_super_ratio_pct,
+        source: 'derived',
+        confidence: 0.95,
+        validated: true,
+      }
+    }
+  })
+
+  return facts
+}
+
+/**
+ * Fetch and validate price history.
+ * Critical fields: series data points with dates and prices
+ */
+async function getPriceHistoryWithValidation(
+  projectId: string,
+  projectName: string
+): Promise<Record<string, FactValidation>> {
+  const facts: Record<string, FactValidation> = {}
+
+  const data = (await getPriceHistory(projectId)) as Record<string, unknown>
+
+  if (!data.found) {
+    return facts
+  }
+
+  facts['price_history_count'] = {
+    fact: 'Historical price data points',
+    value: data.data_point_count,
+    source: 'database',
+    confidence: 1.0,
+    validated: true,
+  }
+
+  if (data.trend) {
+    const trend = data.trend as Record<string, unknown>
+    facts['price_cagr_pct'] = {
+      fact: 'Compound annual growth rate (%)',
+      value: trend.cagr_pct,
+      source: 'derived',
+      confidence: trend.cagr_pct ? 0.95 : 0.6,
+      validated: !!trend.cagr_pct,
+      reason: trend.cagr_pct ? undefined : 'Insufficient data span for CAGR',
+    }
+
+    facts['price_direction'] = {
+      fact: 'Price direction',
+      value: trend.direction,
+      source: 'derived',
+      confidence: 0.95,
+      validated: true,
+    }
+  }
+
+  return facts
+}
+
+/**
+ * Fetch and validate construction status.
+ * Critical fields: milestone completions, dates
+ */
+async function getConstructionStatusWithValidation(
+  projectId: string,
+  projectName: string
+): Promise<Record<string, FactValidation>> {
+  const facts: Record<string, FactValidation> = {}
+
+  const data = (await getConstructionStatus(projectId)) as Record<string, unknown>
+
+  if (!data.found) {
+    return facts
+  }
+
+  facts['project_status'] = {
+    fact: 'Overall project status',
+    value: data.project_status,
+    source: 'database',
+    confidence: 1.0,
+    validated: true,
+  }
+
+  facts['construction_progress_pct'] = {
+    fact: 'Construction progress percentage',
+    value: data.progress_pct,
+    source: 'database',
+    confidence: 0.95,
+    validated: true,
+    reason: 'Based on milestone completion count, not surveyed percentage',
+  }
+
+  facts['construction_milestone_count'] = {
+    fact: 'Total construction milestones',
+    value: data.milestone_count,
+    source: 'database',
+    confidence: 1.0,
+    validated: true,
+  }
+
+  return facts
+}
+
+/**
+ * Fetch and validate amenities and connectivity.
+ * Critical fields: names, types, distances
+ */
+async function getAmenitiesAndConnectivityWithValidation(
+  projectId: string,
+  projectName: string
+): Promise<Record<string, FactValidation>> {
+  const facts: Record<string, FactValidation> = {}
+
+  const data = (await getAmenitiesAndConnectivity(projectId)) as Record<string, unknown>
+
+  if (!data.found) {
+    return facts
+  }
+
+  facts['amenity_count'] = {
+    fact: 'Total amenities',
+    value: data.amenity_count,
+    source: 'database',
+    confidence: 1.0,
+    validated: true,
+  }
+
+  facts['connectivity_count'] = {
+    fact: 'Nearby places tracked',
+    value: data.connectivity_count,
+    source: 'database',
+    confidence: 0.95,
+    validated: true,
+  }
+
+  // Validate connectivity data
+  const connectivity = (data.connectivity as unknown[]) || []
+  connectivity.forEach((conn: any, idx: number) => {
+    if (!conn.type || !conn.name) return
+
+    facts[`connectivity_${idx}_${conn.type}`] = {
+      fact: `${conn.type}: ${conn.name}`,
+      value: conn.distance_km,
+      source: conn.source === 'brochure' ? 'database' : 'google_maps',
+      confidence: conn.distance_km ? (conn.source === 'brochure' ? 0.8 : 0.92) : 0.5,
+      validated: !!conn.distance_km,
+      reason: conn.distance_km ? undefined : 'Distance not recorded',
+    }
+  })
+
+  return facts
+}
+
+/**
+ * Fetch and validate cost sheet.
+ * Critical fields: base price, charges breakdown
+ */
+async function getCostSheetWithValidation(
+  projectId: string,
+  projectName: string
+): Promise<Record<string, FactValidation>> {
+  const facts: Record<string, FactValidation> = {}
+
+  const data = (await getFullCostSheet(projectId)) as Record<string, unknown>
+
+  if (!data.found) {
+    return facts
+  }
+
+  facts['base_price_per_sqft'] = {
+    fact: 'Base price per sqft',
+    value: data.base_price_per_sqft,
+    source: 'database',
+    confidence: data.base_price_per_sqft ? 0.98 : 0.5,
+    validated: !!data.base_price_per_sqft,
+    reason: data.base_price_per_sqft ? undefined : 'Base price not recorded',
+  }
+
+  facts['parking_cost_lakh'] = {
+    fact: 'Parking cost (lakh)',
+    value: data.parking_cost_lakh,
+    source: 'database',
+    confidence: data.parking_cost_lakh ? 0.98 : 0.6,
+    validated: !!data.parking_cost_lakh,
+  }
+
+  facts['gst_rate_pct'] = {
+    fact: 'GST rate (%)',
+    value: data.gst_rate_pct,
+    source: 'database',
+    confidence: 0.98,
+    validated: !!data.gst_rate_pct,
+  }
+
+  facts['stamp_duty_pct'] = {
+    fact: 'Stamp duty rate (%)',
+    value: data.stamp_duty_pct,
+    source: 'database',
+    confidence: 0.98,
+    validated: !!data.stamp_duty_pct,
+  }
+
+  return facts
+}
+
+/**
+ * Fetch and validate project intelligence (analysis).
+ * Critical fields: decision thesis, why_buy, why_avoid (only if PUBLISHED)
+ */
+async function getProjectIntelligenceWithValidation(
+  projectId: string,
+  projectName: string
+): Promise<Record<string, FactValidation>> {
+  const facts: Record<string, FactValidation> = {}
+
+  const data = (await getProjectIntelligence(projectId)) as Record<string, unknown>
+
+  if (!data.found) {
+    return facts
+  }
+
+  // Only include if published
+  if (data.blocks && typeof data.blocks === 'object') {
+    const blocks = data.blocks as Record<string, unknown>
+
+    facts['decision_thesis'] = {
+      fact: 'Investment thesis',
+      value: data.decision_thesis,
+      source: 'database',
+      confidence: 0.95,
+      validated: !!data.decision_thesis,
+      lastVerifiedAt: data.last_verified_at as string,
+    }
+
+    Object.entries(blocks).forEach(([key, value]) => {
+      facts[`intelligence_${key}`] = {
+        fact: `${key} analysis`,
+        value: value,
+        source: 'database',
+        confidence: 0.95,
+        validated: !!value,
+        lastVerifiedAt: data.last_verified_at as string,
+      }
+    })
+  }
+
+  return facts
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Atomic Data Fetcher
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch ALL project data atomically.
+ * Used when building complete project detail context.
+ *
+ * Returns all verified facts with confidence scores and source attribution.
+ */
+export async function getAllProjectData(projectId: string): Promise<ProjectDataGatewayResponse> {
+  const project = await resolveProject(projectId)
+
+  if (!project) {
+    return {
+      projectId,
+      projectName: projectId,
+      found: false,
+      message: `Project "${projectId}" not found in database`,
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  const allFacts: Record<string, FactValidation> = {}
+  const sources = new Set<DataSource>()
+
+  // Fetch all data in parallel
+  const [floorPlans, priceHistory, construction, amenities, costSheet, intelligence] =
+    await Promise.all([
+      getFloorPlansWithValidation(project.id, project.name),
+      getPriceHistoryWithValidation(project.id, project.name),
+      getConstructionStatusWithValidation(project.id, project.name),
+      getAmenitiesAndConnectivityWithValidation(project.id, project.name),
+      getCostSheetWithValidation(project.id, project.name),
+      getProjectIntelligenceWithValidation(project.id, project.name),
+    ])
+
+  // Merge all facts
+  ;[floorPlans, priceHistory, construction, amenities, costSheet, intelligence].forEach(
+    (factSet) => {
+      Object.entries(factSet).forEach(([key, fact]) => {
+        allFacts[key] = fact
+        sources.add(fact.source)
+      })
+    }
+  )
+
+  // Calculate completeness
+  const completeness = computeCompleteness(allFacts)
+
+  return {
+    projectId: project.id,
+    projectName: project.name,
+    found: true,
+    data: allFacts,
+    completeness,
+    sources: Array.from(sources),
+    timestamp: new Date().toISOString(),
+    cacheKey: `project_data:${project.id}`,
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Query-Specific Data Fetcher
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch only the data needed for a specific user query.
+ *
+ * Example:
+ *   Query: "What's the EMI for ATS Pristine?"
+ *   RequiredFields: ['price_min_cr', 'price_max_cr']
+ *   Returns: Only payment-related facts
+ */
+export async function getProjectDataForQuery(params: {
+  projectId: string
+  requiredFields: string[]
+  intent: 'details' | 'payment' | 'investment' | 'location' | 'timeline' | 'builder' | 'compare'
+}): Promise<ProjectDataGatewayResponse> {
+  const project = await resolveProject(params.projectId)
+
+  if (!project) {
+    return {
+      projectId: params.projectId,
+      projectName: params.projectId,
+      found: false,
+      message: `Project not found`,
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  const allFacts: Record<string, FactValidation> = {}
+  const sources = new Set<DataSource>()
+
+  // Fetch based on intent
+  const intentFetchers: Record<string, () => Promise<Record<string, FactValidation>>> = {
+    payment: async () => ({
+      ...(await getCostSheetWithValidation(project.id, project.name)),
+    }),
+    timeline: async () => ({
+      ...(await getConstructionStatusWithValidation(project.id, project.name)),
+    }),
+    location: async () => ({
+      ...(await getAmenitiesAndConnectivityWithValidation(project.id, project.name)),
+    }),
+    investment: async () => ({
+      ...(await getPriceHistoryWithValidation(project.id, project.name)),
+      ...(await getProjectIntelligenceWithValidation(project.id, project.name)),
+    }),
+    details: async () => ({
+      ...(await getFloorPlansWithValidation(project.id, project.name)),
+      ...(await getAmenitiesAndConnectivityWithValidation(project.id, project.name)),
+    }),
+    compare: async () => ({
+      ...(await getFloorPlansWithValidation(project.id, project.name)),
+      ...(await getPriceHistoryWithValidation(project.id, project.name)),
+      ...(await getConstructionStatusWithValidation(project.id, project.name)),
+    }),
+    builder: async () => ({}), // TODO: Add builder data fetcher
+  }
+
+  const fetcher = intentFetchers[params.intent] || intentFetchers.details
+
+  const facts = await fetcher()
+  Object.entries(facts).forEach(([key, fact]) => {
+    allFacts[key] = fact
+    sources.add(fact.source)
+  })
+
+  // Filter to requested fields if specified
+  let filteredFacts = allFacts
+  if (params.requiredFields.length > 0) {
+    filteredFacts = {}
+    params.requiredFields.forEach((field) => {
+      if (allFacts[field]) {
+        filteredFacts[field] = allFacts[field]
+      }
+    })
+  }
+
+  const completeness = computeCompleteness(filteredFacts)
+
+  return {
+    projectId: project.id,
+    projectName: project.name,
+    found: true,
+    data: filteredFacts,
+    completeness,
+    sources: Array.from(sources),
+    timestamp: new Date().toISOString(),
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Compute data completeness.
+ * Returns coverage % and lists of missing critical vs optional fields.
+ */
+function computeCompleteness(facts: Record<string, FactValidation>): DataCompleteness {
+  const CRITICAL_FIELDS = [
+    'project_status',
+    'price_min_cr',
+    'possession_date',
+    'floor_plan_count',
+    'amenity_count',
+  ]
+
+  const OPTIONAL_FIELDS = [
+    'price_cagr_pct',
+    'carpet_efficiency_pct',
+    'connectivity_count',
+    'intelligence_market',
+  ]
+
+  const allExpected = [...CRITICAL_FIELDS, ...OPTIONAL_FIELDS]
+  const present = Object.keys(facts).filter((k) => facts[k].validated)
+  const coverage = Math.round((present.length / allExpected.length) * 100) / 100
+
+  const missing = allExpected.filter((f) => !facts[f] || !facts[f].validated)
+  const missingCritical = missing.filter((m) => CRITICAL_FIELDS.includes(m))
+  const missingOptional = missing.filter((m) => OPTIONAL_FIELDS.includes(m))
+
+  return {
+    complete: missingCritical.length === 0,
+    coverage,
+    missing,
+    missingByImportance: {
+      critical: missingCritical,
+      optional: missingOptional,
+    },
+  }
+}
+
+/**
+ * Compute overall response confidence.
+ * Geometric mean of all fact confidences, capped if critical fields missing.
+ */
+export function computeResponseConfidence(facts: Record<string, FactValidation>): number {
+  if (Object.keys(facts).length === 0) return 0
+
+  const confidences = Object.values(facts).map((f) => f.confidence)
+  const product = confidences.reduce((a, b) => a * b, 1)
+  let confidence = Math.pow(product, 1 / confidences.length)
+
+  // Cap if critical fields missing
+  const hasCriticalData = Object.values(facts).some(
+    (f) => f.source === 'database' && f.confidence > 0.9
+  )
+  if (!hasCriticalData) confidence = Math.min(confidence, 0.65)
+
+  return Math.round(confidence * 100) / 100
+}

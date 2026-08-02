@@ -1,6 +1,6 @@
 // backend/src/lib/ai/tools.ts
 // Provider-neutral tool-calling schema, shared by every LLM provider (OpenAI, Gemini, ...)
-// so the 10 tool definitions and their safety limits are defined exactly once.
+// so the tool definitions and their safety limits are defined exactly once.
 import { FINANCIAL } from '../config'
 
 export interface NeutralToolParam {
@@ -141,6 +141,118 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
       required: ['project_id'],
     },
   },
+
+  // ── On-demand detail lookups ────────────────────────────────────────────────
+  // These read tables the system prompt deliberately does not carry, so the
+  // detail reaches the buyer only when they ask for it. Call them when asked;
+  // do not call them to pad an answer.
+  {
+    name: 'buyer_fit_analysis',
+    description: 'Get detailed buyer-fit analysis for a project from the RealtyPals database: target persona (income, family stage, work location, risk appetite, timeline), and deal conditions (walk-away criteria, timing advice, negotiation leverage). Use for "is this right for a young family", "what income level", "when should I buy", "can I negotiate on price".',
+    parameters: {
+      type: 'object',
+      properties: { project_name: { type: 'string', description: 'Project name as the user referred to it' } },
+      required: ['project_name'],
+    },
+  },
+  {
+    name: 'floor_plans_lookup',
+    description: 'Get every unit configuration (floor plan) for a project from the RealtyPals database: carpet/super/balcony area, carpet efficiency, bathrooms, towers, price per configuration, availability, inclusions and views. Use whenever the user asks about floor plans, layouts, configurations, sizes, carpet area, or "what BHK options are there". Two different layouts of the same BHK are returned separately — keep them distinct.',
+    parameters: {
+      type: 'object',
+      properties: { project_name: { type: 'string', description: 'Project name as the user referred to it, e.g. "Elite X"' } },
+      required: ['project_name'],
+    },
+  },
+  {
+    name: 'price_history_lookup',
+    description: 'Get the recorded price history for a project plus derived trend (total change, CAGR, direction). Use when the user asks how prices have moved, past appreciation, whether it is getting more expensive, or price trend. Do not use it to predict future prices — the data is historical only.',
+    parameters: {
+      type: 'object',
+      properties: { project_name: { type: 'string', description: 'Project name' } },
+      required: ['project_name'],
+    },
+  },
+  {
+    name: 'construction_status',
+    description: 'Get stage-by-stage construction milestones and derived completion for a project. Use when the user asks about construction progress, what stage it is at, how far along it is, or whether it will finish on time.',
+    parameters: {
+      type: 'object',
+      properties: { project_name: { type: 'string', description: 'Project name' } },
+      required: ['project_name'],
+    },
+  },
+  {
+    name: 'project_intelligence',
+    description: 'Get RealtyPals verified analysis for a project. Topics: financial (EMI, wealth projection, opportunity cost), market (supply/demand, appreciation, infrastructure), builder (track record, delivery), property (space utilisation, sun exposure, floor recommendation), comparative (price vs competitors), resources (available documents). Use for "is this a good investment", "should I buy", "how is the layout", "which floor". Returns why_buy and why_avoid together — always give both sides.',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_name: { type: 'string', description: 'Project name' },
+        topic: { type: 'string', description: 'One of: financial, market, builder, property, comparative, resources. Omit for all topics.' },
+      },
+      required: ['project_name'],
+    },
+  },
+  {
+    name: 'cost_sheet_lookup',
+    description: 'Get the full verified charge breakdown for a project: base rate per sqft, floor rise, PLC charges, parking, IFMS, club membership, other charges, GST/stamp duty/registration rates, and the assumptions behind them. Use when the user asks what a property will actually cost, about hidden charges, or for a total cost breakdown. Always state the assumptions with any total.',
+    parameters: {
+      type: 'object',
+      properties: { project_name: { type: 'string', description: 'Project name' } },
+      required: ['project_name'],
+    },
+  },
+  {
+    name: 'amenities_lookup',
+    description: 'Get the complete amenity list (grouped by category) and every recorded connectivity entry with road distances for a project. Use when the user asks what facilities/amenities a project has, or what is nearby (schools, hospitals, metro, malls). The main data block only carries a short preview, so call this when the user wants the full list. For travel time rather than distance, use the commute tool.',
+    parameters: {
+      type: 'object',
+      properties: { project_name: { type: 'string', description: 'Project name' } },
+      required: ['project_name'],
+    },
+  },
+  {
+    name: 'project_images',
+    description: 'Get all photos for a project grouped by type (marketing renderings, construction progress, etc.) from the RealtyPals database. Use when the user asks to see project images, construction progress, or wants to understand what the project looks like.',
+    parameters: {
+      type: 'object',
+      properties: { project_name: { type: 'string', description: 'Project name as the user referred to it' } },
+      required: ['project_name'],
+    },
+  },
+  {
+    name: 'builder_news',
+    description: 'Get published news and announcements from a builder from the RealtyPals database: recent project launches, completions, awards, partnerships. Use when the user asks what the builder has been doing, to give context on builder activity and momentum.',
+    parameters: {
+      type: 'object',
+      properties: { builder_name: { type: 'string', description: 'Builder name as the user referred to it, e.g. "Godrej", "DLF", "Prestige"' } },
+      required: ['builder_name'],
+    },
+  },
+  {
+    name: 'user_saved_state',
+    description: 'Get the logged-in user\'s saved state: shortlisted properties, active price alerts, and shared shortlists. Requires user authentication. Use when the user asks "what did I shortlist", "show me my saved properties", "any price drops on my alerts".',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: 'sector_projects',
+    description: 'List projects in a sector or city ranked by RealtyPals verified score, optionally filtered by BHK and budget. Use for "top properties in Sector 79", "what is available in Noida under 2 crore", "best projects in this area". Ranking is by our verified score then entry price — never describe it as a market ranking.',
+    parameters: {
+      type: 'object',
+      properties: {
+        sector: { type: 'string', description: 'Sector number or name, e.g. "79" or "Sector 79"' },
+        city: { type: 'string', description: 'City, e.g. "Noida" or "Greater Noida"' },
+        bhk: { type: 'number', description: 'Filter to configurations with this bedroom count' },
+        max_budget_cr: { type: 'number', description: 'Maximum budget in crore' },
+        limit: { type: 'number', description: 'How many projects to return, default 8, max 20' },
+      },
+    },
+  },
 ]
 
 export function toOpenAITools() {
@@ -165,6 +277,20 @@ const TOOL_ARG_LIMITS: Record<string, Record<string, number>> = {
   area_info:      { sector: 100, city: 50 },
   rera_check:     { rera_number: 50, rera_url: 200 },
   commute:        { origin: 200, destination: 200 },
+
+  // On-demand detail lookups. project_name is fed straight into a `contains`
+  // query, so it is capped for the same reason as the others.
+  buyer_fit_analysis:    { project_name: 100 },
+  floor_plans_lookup:    { project_name: 100 },
+  price_history_lookup:  { project_name: 100 },
+  construction_status:   { project_name: 100 },
+  project_intelligence:  { project_name: 100, topic: 30 },
+  cost_sheet_lookup:     { project_name: 100 },
+  amenities_lookup:      { project_name: 100 },
+  project_images:        { project_name: 100 },
+  builder_news:          { builder_name: 100 },
+  user_saved_state:      {},
+  sector_projects:       { sector: 50, city: 50 },
 }
 
 export function validateToolArgs(name: string, args: Record<string, unknown>): Record<string, unknown> {

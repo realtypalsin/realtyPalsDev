@@ -4,6 +4,7 @@ import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { computeRecommendationScore } from '../lib/recommendation/score'
+import { gatePublished } from '../lib/intelligenceGate'
 import { routeCache } from '../lib/routeCache'
 import { computeLiveActivity } from '../lib/liveActivity'
 import { computeOnTimeDeliveryPct } from '../lib/builderDelivery'
@@ -115,30 +116,38 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
 
   if (!project) { res.status(404).json({ error: 'Not found' }); return }
 
+  // Gate unverified intelligence. Any DRAFT analysis is nulled so it does not
+  // reach a buyer. The `status` field itself is stripped.
+  const gated = {
+    ...project,
+    decision_profile: gatePublished(project.decision_profile),
+    recommendation_profile: gatePublished(project.recommendation_profile),
+  }
+
   // Compute deterministic recommendation score from raw DNA scores
   const recommendation_score = computeRecommendationScore({
-    dna: project.dna ?? null,
-    status: project.status as 'under_construction' | 'ready_to_move' | 'new_launch',
-    possession_date: project.possession_date ?? null,
-    project_risk_flag: project.project_risk_flag ?? null,
-    builder: { legal_flag: project.builder?.legal_flag ?? null },
+    dna: gated.dna ?? null,
+    status: gated.status as 'under_construction' | 'ready_to_move' | 'new_launch',
+    possession_date: gated.possession_date ?? null,
+    project_risk_flag: gated.project_risk_flag ?? null,
+    builder: { legal_flag: gated.builder?.legal_flag ?? null },
   })
 
   // Public DNA with simplified scores
-  const publicDna = project.dna ? {
-    overall_score:     project.dna.overall_score,
-    builder_score:     project.dna.builder_score,
-    price_score:       project.dna.price_score,
-    location_score:    project.dna.location_score,
-    legal_score:       project.dna.legal_score,
-    amenity_score:     project.dna.amenity_score,
-    possession_score:  project.dna.possession_score,
-    last_verified_at:  project.dna.last_verified_at,
+  const publicDna = gated.dna ? {
+    overall_score:     gated.dna.overall_score,
+    builder_score:     gated.dna.builder_score,
+    price_score:       gated.dna.price_score,
+    location_score:    gated.dna.location_score,
+    legal_score:       gated.dna.legal_score,
+    amenity_score:     gated.dna.amenity_score,
+    possession_score:  gated.dna.possession_score,
+    last_verified_at:  gated.dna.last_verified_at,
   } : null
 
-  const reportUrl = `/api/projects/${project.slug}/report`;
+  const reportUrl = `/api/projects/${gated.slug}/report`;
 
-  res.json({ project: { ...project, builder_detail: project.builder, dna: publicDna, recommendation_score, reportUrl, all_amenities: project.amenities, all_connectivity: project.connectivity } })
+  res.json({ project: { ...gated, builder_detail: gated.builder, dna: publicDna, recommendation_score, reportUrl, all_amenities: gated.amenities, all_connectivity: gated.connectivity } })
 })
 
 router.get('/:slug/documents', async (req: Request, res: Response) => {
@@ -258,6 +267,9 @@ router.get('/:slug/investment', async (req: Request, res: Response) => {
   })
   if (!project) { res.status(404).json({ error: 'Not found' }); return }
 
+  // Gate unverified intelligence before exposing it.
+  const recProfile = gatePublished(project.recommendation_profile)
+
   // Investment intelligence is derived, never fabricated
   const locationScore = project.dna?.location_score ?? null
   const valueScore    = project.dna?.price_score ?? null
@@ -275,8 +287,8 @@ router.get('/:slug/investment', async (req: Request, res: Response) => {
       sector:                 project.sector,
       status:                 project.status,
       possession_date:        project.possession_date,
-      recommendation_tier:    project.recommendation_profile?.tier ?? null,
-      recommendation_thesis:  project.recommendation_profile?.primary_thesis ?? null,
+      recommendation_tier:    recProfile?.tier ?? null,
+      recommendation_thesis:  recProfile?.primary_thesis ?? null,
       potential_appreciation: potentialAppreciation,
       data_note:              'Investment projections are indicative only — not financial advice. Verify rental yields and capital appreciation with a licensed advisor.',
     },

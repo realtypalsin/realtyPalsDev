@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client'
 import crypto from 'crypto'
 import { prisma } from '../db'
 import { getCached, setCached } from '../cache'
+import { gatePublished } from '../intelligenceGate'
 import { DISCOVERY } from '../config'
 import { Intent, ScoredProject, DiscoveryResult } from './types'
 import {
@@ -53,8 +54,11 @@ const PROJECT_INCLUDE = {
   images: { take: 3, orderBy: { sort_order: 'asc' as const } },
   amenities: { take: 10 },
   connectivity: { take: 5, orderBy: { distance_km: 'asc' as const } },
+  // `status` is selected purely so gatePublished() can drop DRAFT profiles —
+  // it is stripped again before the project leaves mapToScored().
   recommendation_profile: {
     select: {
+      status: true,
       tier: true,
       primary_thesis: true,
       walk_away_conditions: true,
@@ -63,6 +67,7 @@ const PROJECT_INCLUDE = {
   },
   decision_profile: {
     select: {
+      status: true,
       decision_thesis: true,
       why_buy: true,
       why_avoid: true,
@@ -243,7 +248,16 @@ export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Pr
 
 // ─── Raw project → ScoredProject mapper ──────────────────────────────────────
 
-function mapToScored(p: RawProject, intent: Intent): ScoredProject {
+function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
+  // Single choke point for every discovery query. Unpublished analysis is nulled
+  // here so scoring, match signals, decisionIntelligence and the chat prompt all
+  // see the same verified-only view — none of them need their own gate.
+  const p = {
+    ...raw,
+    decision_profile: gatePublished(raw.decision_profile),
+    recommendation_profile: gatePublished(raw.recommendation_profile),
+  }
+
   const allPrices    = p.unit_types.filter((u) => u.price_min_cr != null).map((u) => u.price_min_cr!)
   const allMaxPrices = p.unit_types.filter((u) => u.price_max_cr != null).map((u) => u.price_max_cr!)
   const minP = allPrices.length    ? Math.min(...allPrices)    : null
