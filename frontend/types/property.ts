@@ -74,6 +74,44 @@ export interface PropertyDetail {
   images: { url: string; caption?: string; type: string }[];
 }
 
+export type ComponentType =
+  | 'property-card' | 'price-chart' | 'emi-calculator' | 'map-view'
+  | 'amenities-grid' | 'connectivity-list' | 'builder-card' | 'timeline'
+  | 'comparison-table' | 'payment-breakdown' | 'location-scorecard'
+  | 'investment-score' | 'floor-plan-gallery' | 'decision-card'
+  | 'confidence-badge' | 'risk-meter' | 'possession-timeline'
+  | 'society-stats' | 'commute-card' | 'rental-yield-card'
+  | 'nearby-projects' | 'reviews-summary' | 'transaction-history'
+
+export type QueryIntent = 'payment' | 'investment' | 'location' | 'timeline' | 'builder' | 'details' | 'compare'
+
+export interface FactValidation {
+  fact: string;
+  value: unknown;
+  source: 'database' | 'google_maps' | 'calculator' | 'estimated' | 'derived';
+  confidence: number;
+  validated: boolean;
+  reason?: string;
+  dataAge?: number;
+  lastVerifiedAt?: string;
+}
+
+export interface ComponentSpec {
+  type: ComponentType;
+  props: Record<string, any>;
+  title?: string;
+  description?: string;
+}
+
+export interface ComponentResponse {
+  summary: string;
+  confidence: number;
+  components: ComponentSpec[];
+  sources: string[];
+  intent?: QueryIntent;
+  projectId?: string;
+}
+
 export interface ChatMessage {
   id: string;
   type: 'user' | 'ai';
@@ -94,7 +132,9 @@ export interface ChatMessage {
   userQuery?: string;
   timestamp: string;
   // Response mode — drives which UI components render (mutually exclusive)
-  responseMode?: 'search' | 'comparison' | 'chat';
+  responseMode?: 'search' | 'comparison' | 'chat' | 'components';
+  // Component response — verified data pipeline for project details
+  componentResponse?: ComponentResponse;
   // Inline thinking UI — tracks which phase the streaming message is in
   streamingPhase?: 'extracting' | 'searching' | 'generating' | null;
   streamingIntent?: Record<string, unknown> | null;

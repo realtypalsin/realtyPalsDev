@@ -568,6 +568,18 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               ? { ...m, content: m.content + event.token, isSearching: false }
               : m
           ));
+        } else if (event.type === 'components') {
+          // Project detail pipeline response: structured data + component specs
+          setChatHistory(prev => prev.map(m =>
+            m.id === streamId
+              ? {
+                ...m,
+                responseMode: 'components' as const,
+                componentResponse: event.response,
+                isSearching: false,
+              }
+              : m
+          ));
         } else if (event.type === 'ui_state') {
           // New conversation engine backend state
           if (DEBUG) console.log('[UI_STATE]', { stage: event.stage, chipsCount: event.chips?.length ?? 0, chips: event.chips });

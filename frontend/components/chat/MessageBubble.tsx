@@ -92,6 +92,7 @@ import ReactMarkdown from 'react-markdown'
 
 const SectorMap = dynamic(() => import('@/components/SectorMap'), { ssr: false })
 const ComparisonTable = dynamic(() => import('@/components/ComparisonTable'), { ssr: false })
+const ComponentRenderer = dynamic(() => import('@/components/ComponentRenderer').then(m => ({ default: m.ComponentRenderer })), { ssr: false })
 
 
 // ── Props ──────────────────────────────────────────────────────────────────
@@ -413,7 +414,59 @@ function MessageBubbleInner({
                   )
                 }
 
-                // Stage C: AI text streaming or complete
+                // Stage C: Component response (verified data pipeline)
+                if (message.responseMode === 'components' && message.componentResponse) {
+                  const { summary, confidence, components, sources } = message.componentResponse
+                  return (
+                    <>
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100 dark:border-gray-700/60">
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Verified Data</span>
+                      </div>
+                      <m.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.25 }}
+                        className="space-y-3"
+                      >
+                        {/* Summary text */}
+                        {summary && (
+                          <div className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 mb-3">
+                            {summary}
+                          </div>
+                        )}
+
+                        {/* Confidence badge */}
+                        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
+                          confidence >= 0.8 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+                          confidence >= 0.65 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
+                          'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            confidence >= 0.8 ? 'bg-green-600 dark:bg-green-400' :
+                            confidence >= 0.65 ? 'bg-yellow-600 dark:bg-yellow-400' :
+                            'bg-orange-600 dark:bg-orange-400'
+                          }`} />
+                          {Math.round(confidence * 100)}% confident
+                        </div>
+
+                        {/* Component specs */}
+                        <div className="mt-4">
+                          <ComponentRenderer specs={components} />
+                        </div>
+
+                        {/* Sources attribution */}
+                        {sources && sources.length > 0 && (
+                          <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60 text-xs text-gray-600 dark:text-gray-300">
+                            <span className="font-medium">Sources: </span>
+                            {sources.join(', ')}
+                          </div>
+                        )}
+                      </m.div>
+                    </>
+                  )
+                }
+
+                // Stage D: AI text streaming or complete
                 if (displayContent) {
                   const streaming = isLast && isSubmitting
                   const blocks = streaming ? null : parseResponseBlocks(displayContent)

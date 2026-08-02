@@ -3,6 +3,7 @@
 
 import { authHeaders } from '@/lib/authedFetch'
 import type { ConversationAction, ConversationStage, ChipAction } from '@/components/chat/types'
+import type { ComponentResponse } from '@/types/property'
 
 // Default aligned with backend/.env (PORT=3001). Override via NEXT_PUBLIC_BACKEND_URL.
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3001'
@@ -82,6 +83,7 @@ export type SSEEvent =
   | { type: 'intent'; intent: Record<string, unknown>; intentState: string }
   | { type: 'properties'; exactResults: ScoredProject[]; nearbyResults: ScoredProject[]; expansion: NearbyExpansion | null }
   | { type: 'token'; token: string }
+  | { type: 'components'; response: ComponentResponse }
   | { type: 'done'; sessionId: string; intentState: string; intent?: Record<string, unknown>; responseMode: 'search' | 'comparison' | 'chat' }
   | { type: 'error'; message: string }
   | { type: 'ui_state'; stage: ConversationStage; thinking: string; chips: ChipAction[]; missingFields: string[]; confidence: 'HIGH' | 'MEDIUM' | 'LOW' }
