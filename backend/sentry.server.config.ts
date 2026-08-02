@@ -1,19 +1,20 @@
 /**
- * Sentry Client-Side Configuration
- * Error tracking and performance monitoring for frontend
+ * Sentry Server-Side Configuration
+ * Error tracking and performance monitoring for backend
  */
 
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/node'
+import { ProfilingIntegration } from '@sentry/profiling-node'
 
 /**
- * Initialize Sentry for frontend
+ * Initialize Sentry for backend
  */
-export function initSentryClient(): void {
-  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
+export function initSentryServer(): void {
+  const dsn = process.env.SENTRY_DSN
   const env = process.env.NODE_ENV || 'development'
 
   if (!dsn) {
-    console.warn('NEXT_PUBLIC_SENTRY_DSN not set; frontend error tracking disabled')
+    console.warn('SENTRY_DSN not set; error tracking disabled')
     return
   }
 
@@ -21,26 +22,33 @@ export function initSentryClient(): void {
     dsn,
     environment: env,
     tracesSampleRate: env === 'production' ? 0.1 : 1.0,
+    profilesSampleRate: env === 'production' ? 0.1 : 1.0,
     integrations: [
-      new Sentry.Replay({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
+      new ProfilingIntegration(),
+      new Sentry.Integrations.Http({ tracing: true }),
+      new Sentry.Integrations.OnUncaughtException(),
+      new Sentry.Integrations.OnUnhandledRejection(),
     ],
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
     ignoreErrors: [
-      // Network/user action errors (expected)
+      // Network errors (expected in production)
       'NetworkError',
-      'Failed to fetch',
-      'Network request failed',
+      'Request failed',
       // Browser extensions
       'chrome-extension://',
       'moz-extension://',
-      // Third-party errors
-      'https://pagead2.googlesyndication.com',
     ],
   })
+}
+
+/**
+ * Middleware for Express to capture transactions
+ */
+export function sentryRequestHandler() {
+  return Sentry.Handlers.requestHandler()
+}
+
+export function sentryErrorHandler() {
+  return Sentry.Handlers.errorHandler()
 }
 
 /**
@@ -87,6 +95,7 @@ export function addBreadcrumb(
     message,
     level,
     data,
+    timestamp: Date.now() / 1000,
   })
 }
 
@@ -98,4 +107,16 @@ export function startTransaction(name: string, op: string = 'http.request') {
     name,
     op,
   })
+}
+
+/**
+ * Flush Sentry
+ */
+export async function flushSentry(): Promise<boolean> {
+  try {
+    return await Sentry.close(5000)
+  } catch (err) {
+    console.error('Sentry flush failed:', err)
+    return false
+  }
 }

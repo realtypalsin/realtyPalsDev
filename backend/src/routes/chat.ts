@@ -55,6 +55,8 @@ import {
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
 import { filterNewChips, filterNewChipsWithFloor, markChipShown, hydrateFromDb, persistToDb } from '../lib/discovery/chipDedup'
 import { isOverDailyBudget } from '../lib/ai/cost'
+import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monitoring/posthog'
+import { captureException, addBreadcrumb, setSentryUser } from '@/sentry.server.config'
 
 const router = Router()
 
@@ -506,6 +508,21 @@ router.post('/', async (req: Request, res: Response) => {
     // If user is asking about a specific project detail (EMI, investment, location, etc.),
     // bypass discovery and use verified data pipeline instead.
     const classification = classifyIntent(message)
+
+    // Track intent classification (Phase 11)
+    trackEvent(userId, ANALYTICS_EVENTS.INTENT_CLASSIFIED, {
+      category: classification.category,
+      detailType: classification.projectDetail?.detailType,
+      confidence: classification.projectDetail?.confidence || 0,
+      messageLength: message.length,
+    })
+
+    // Set user context in Sentry
+    if (userId) {
+      setSentryUser(userId)
+      trackUserProperties(userId, { sessionId: currentSessionId })
+    }
+
     if (classification.category === 'project_detail' && classification.projectDetail && action.type === 'TEXT_MESSAGE') {
       // EDGE CASE: Validate input message (Phase 8)
       const { validateUserMessage, sanitizeMessage, getMissingProjectClarification, createFallbackResponse } = await import('../lib/discovery/queryPlanner.guards')
@@ -535,6 +552,12 @@ router.post('/', async (req: Request, res: Response) => {
         })
       } catch (err) {
         console.error('[CHAT:PROJECT_DETAIL:PLAN_ERROR]', err)
+        // Track planning error (Phase 11)
+        trackEvent(userId, ANALYTICS_EVENTS.API_ERROR, {
+          stage: 'query_planning',
+          error: err instanceof Error ? err.message : 'Unknown error',
+        })
+        captureException(err, { stage: 'query_planning', intent: 'project_detail' })
         const { createFallbackResponse } = await import('../lib/discovery/queryPlanner.guards')
         send('token', { token: createFallbackResponse(err as Error) })
         send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
@@ -594,6 +617,13 @@ router.post('/', async (req: Request, res: Response) => {
         console.error('[CHAT:PROJECT_DETAIL:GATEWAY_ERROR]', err)
         const { handleDatabaseError } = await import('../lib/projectDataGateway.guards')
         const dbError = handleDatabaseError(err as Error)
+        // Track database error (Phase 11)
+        trackEvent(userId, ANALYTICS_EVENTS.DATABASE_ERROR, {
+          error: dbError.message,
+          recoverable: dbError.recoverable,
+          intent: plan.intent,
+        })
+        captureException(err, { stage: 'data_gateway', intent: plan.intent, recoverable: dbError.recoverable })
         send('token', { token: dbError.message })
         if (!dbError.recoverable) {
           send('done', { sessionId: currentSessionId, intentState: 'ERROR', intent })
@@ -613,8 +643,24 @@ router.post('/', async (req: Request, res: Response) => {
       // Step 4: Compute confidence
       const confidence = computeResponseConfidence(gatewayResponse.data)
 
+      // Track confidence score (Phase 11)
+      trackEvent(userId, ANALYTICS_EVENTS.CONFIDENCE_COMPUTED, {
+        confidence: Math.round(confidence * 100),
+        intent: plan.intent,
+        projectId: plan.projectIds[0],
+        dataAge: Object.values(gatewayResponse.data).map(f => f.dataAge || 0).reduce((a, b) => Math.max(a, b), 0),
+      })
+
       // Step 5: Check if data is sufficient
       if (!gatewayResponse.completeness.complete || confidence < 0.65) {
+        // Track low confidence (Phase 11)
+        trackEvent(userId, ANALYTICS_EVENTS.LOW_CONFIDENCE, {
+          confidence: Math.round(confidence * 100),
+          intent: plan.intent,
+          projectId: plan.projectIds[0],
+          missing: gatewayResponse.completeness.missing?.length || 0,
+        })
+        addBreadcrumb('low_confidence', `Confidence ${Math.round(confidence * 100)}% for ${plan.intent}`, 'warning')
         const missing = gatewayResponse.completeness.missingByImportance?.critical?.slice(0, 3) ?? []
         const msg = missing.length > 0
           ? `I have partial data for this project (${Math.round(confidence * 100)}% confident). Missing: ${missing.join(', ')}. Please contact our team for complete details.`
@@ -651,6 +697,13 @@ router.post('/', async (req: Request, res: Response) => {
         )
       } catch (err) {
         console.warn('[CHAT:PROJECT_DETAIL:LLM_ERROR]', (err as Error).message)
+        // Track LLM error (Phase 11)
+        trackEvent(userId, ANALYTICS_EVENTS.LLM_TIMEOUT, {
+          error: err instanceof Error ? err.message : 'Unknown error',
+          intent: plan.intent,
+          projectId: plan.projectIds[0],
+        })
+        captureException(err, { stage: 'llm_reasoning', intent: plan.intent })
         // Fallback: build summary from top facts
         const topFacts = factsList.slice(0, 3).map(f => `${f.key}: ${f.value}`).join('. ')
         componentSummary = `Based on verified data: ${topFacts}`
@@ -676,6 +729,16 @@ router.post('/', async (req: Request, res: Response) => {
         componentCount: componentResponse.components.length,
         confidence: Math.round(confidence * 100),
         sources: componentResponse.sources,
+      })
+
+      // Track successful component response (Phase 11)
+      trackEvent(userId, ANALYTICS_EVENTS.COMPONENTS_RENDERED, {
+        componentCount: componentResponse.components.length,
+        confidence: Math.round(confidence * 100),
+        componentTypes: componentResponse.components.map(c => c.type),
+        sources: componentResponse.sources,
+        intent: componentIntent,
+        projectId: plan.projectIds[0],
       })
 
       // Send components as response
