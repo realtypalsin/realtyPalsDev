@@ -18,13 +18,13 @@
 | 4 | Replace mock inventory array with `unit_inventory` query | `ResidencesTab.tsx:119-124` | 2h | ✅ |
 | 5 | Replace hardcoded channel partners with `project_channel_partners` join | `BuilderTab.tsx:35-41` | 1h | ✅ |
 
-### Before launch — 8h total (3h done, 5h remaining)
+### Before launch — 8h total (4h done, 1h deferred)
 
 | # | Fix | File | Effort | Status |
 |---|-----|------|--------|--------|
 | 6 | Cache invalidation on admin edits (project update → expire discovery + gateway cache) | `admin.ts` + gateway cache | 1h | ⏳ deferred |
 | 7 | Run DB migration: `unit_inventory`, `project_channel_partners`, `unit_types` columns | migration (§3) | 4h | ✅ created (20260806000000) |
-| 8 | Replace cost-sheet rates with DB lookups (stamp duty, registration, GST, club, IFMS, utilities, PLC) | `ProjectPricingTab.tsx` | 1h | 🟡 partial (PLC + other DB-driven, rest need work) |
+| 8 | Replace cost-sheet rates with DB lookups (stamp duty, registration, GST, club, IFMS, utilities, PLC) | `ProjectPricingTab.tsx` | 1h | ✅ all rates now use DB fields |
 | 9 | Add `LIMIT` to unbounded daily analytics query | `admin.ts:958-961` | 1h | ✅ LIMIT 1000 |
 | 10 | Index `CallbackRequest.status`, `SiteVisitRequest.status` | migration | 30m | ✅ in migration |
 
