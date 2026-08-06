@@ -177,6 +177,91 @@ async function main() {
 
   }
 
+  // ── 3. Seed unit inventory for first project ────────────────────────────
+  console.log('\n📦 Seeding unit inventory...')
+  const firstProject = await (prisma as any).project.findFirst({
+    include: { unit_types: true }
+  })
+
+  if (firstProject && firstProject.unit_types && firstProject.unit_types.length > 0) {
+    const unitType = firstProject.unit_types[0]
+    const towers = ['Tower A', 'Tower B', 'Tower C']
+    const facings = ['North', 'South', 'East', 'West', 'NE', 'NW', 'SE', 'SW']
+    const views = ['Park', 'Main road', 'Garden', 'Lake', 'Golf course']
+    const statuses = ['available', 'booked', 'reserved']
+
+    let inventoryCount = 0
+    for (const tower of towers) {
+      for (let floor = 1; floor <= 8; floor++) {
+        for (let unit = 1; unit <= 3; unit++) {
+          try {
+            const unitNumber = `${floor}${String(unit).padStart(2, '0')}`
+            await (prisma as any).unitInventory.upsert({
+              where: {
+                projectId_towerName_floorNumber_unitNumber: {
+                  projectId: firstProject.id,
+                  towerName: tower,
+                  floorNumber: floor,
+                  unitNumber: unitNumber
+                }
+              },
+              update: {},
+              create: {
+                projectId: firstProject.id,
+                unitTypeId: unitType.id,
+                towerName: tower,
+                floorNumber: floor,
+                unitNumber: unitNumber,
+                facing: facings[Math.floor(Math.random() * facings.length)],
+                view: views[Math.floor(Math.random() * views.length)],
+                status: statuses[Math.floor(Math.random() * statuses.length)]
+              }
+            })
+            inventoryCount++
+          } catch (e: any) {
+            if (!e.message.includes('Unique constraint failed')) {
+              console.error(`  ✗ Error seeding inventory: ${e.message}`)
+            }
+          }
+        }
+      }
+    }
+    console.log(`  ✓ ${inventoryCount} units seeded for ${firstProject.name}`)
+  }
+
+  // ── 4. Seed project-channel partnerships ────────────────────────────
+  console.log('\n🔗 Seeding project-channel partnerships...')
+  const projects = await (prisma as any).project.findMany({ take: 3 })
+  const partners = await (prisma as any).channelPartner.findMany({ take: 3 })
+
+  let partnershipCount = 0
+  for (const project of projects) {
+    for (let i = 0; i < partners.length; i++) {
+      try {
+        await (prisma as any).projectChannelPartner.upsert({
+          where: {
+            projectId_channelPartnerId: {
+              projectId: project.id,
+              channelPartnerId: partners[i].id
+            }
+          },
+          update: {},
+          create: {
+            projectId: project.id,
+            channelPartnerId: partners[i].id,
+            isFeatured: i < 2 // Feature first 2 partners
+          }
+        })
+        partnershipCount++
+      } catch (e: any) {
+        if (!e.message.includes('Unique constraint failed')) {
+          console.error(`  ✗ Error seeding partnership: ${e.message}`)
+        }
+      }
+    }
+  }
+  console.log(`  ✓ ${partnershipCount} project-partner links created`)
+
   console.log('\n✅ Seed complete.')
 }
 
