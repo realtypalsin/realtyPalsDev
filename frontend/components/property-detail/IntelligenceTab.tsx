@@ -267,36 +267,29 @@ export default function IntelligenceTab({
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
+    <div className="p-4 md:p-8 space-y-8 text-gray-900 dark:text-gray-100">
 
-      {/* ── 1. ROI & INVESTMENT SNAPSHOT ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-white/5 pb-4">
+      {/* ── 1. ROI & INVESTMENT SNAPSHOT (Distilled) ── */}
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
               ROI & Investment Snapshot
             </h2>
             <p className="text-[12px] text-gray-500 font-medium mt-0.5">
-              Key investment metrics and potential returns for {pData?.name || 'this project'}.
+              Key metrics for {pData?.name || 'this project'}.
             </p>
           </div>
-          <span className="self-start sm:self-center px-3.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Data Confidence: High
-          </span>
         </div>
 
-        {/* 5 Top ROI Metric Badges */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Expected Appreciation (3 Yrs)</p>
-            <p className="text-[22px] font-black text-gray-900 dark:text-white leading-none">{expectedAppreciation ?? '--'}</p>
-            <p className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-              <TrendingUp size={12} /> Above micro-market avg.
-            </p>
+        {/* 4 Core ROI Metrics (simplified, mobile-first stacking) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Appreciation</p>
+            <p className="text-[20px] font-black text-gray-900 dark:text-white">{expectedAppreciation ?? '--'}</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
+          <div className="space-y-1">
             <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Rental Yield (Annual)</p>
             <p className="text-[22px] font-black text-gray-900 dark:text-white leading-none">{rentalYield ?? '--'}</p>
             <p className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
@@ -304,28 +297,19 @@ export default function IntelligenceTab({
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Investment Grade</p>
-            <p className="text-[22px] font-black text-gray-900 dark:text-white leading-none">{investmentGrade ?? 'A'}</p>
-            <p className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-bold">
-              • Highly Investable
-            </p>
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Investment Grade</p>
+            <p className="text-[20px] font-black text-gray-900 dark:text-white">{investmentGrade ?? 'A'}</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Liquidity Score</p>
-            <p className="text-[22px] font-black text-gray-900 dark:text-white leading-none">{liquidityScore ?? '--'}</p>
-            <p className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-bold">
-              • High Liquidity
-            </p>
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Liquidity</p>
+            <p className="text-[20px] font-black text-gray-900 dark:text-white">{liquidityScore ?? '--'}</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Break-even (Resale)</p>
-            <p className="text-[22px] font-black text-gray-900 dark:text-white leading-none">{breakevenYrs ?? '--'}</p>
-            <p className="text-[10.5px] text-gray-400 font-semibold">
-              Estimated
-            </p>
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Break-even</p>
+            <p className="text-[20px] font-black text-gray-900 dark:text-white">{breakevenYrs ?? '--'}</p>
           </div>
         </div>
 
@@ -473,7 +457,7 @@ export default function IntelligenceTab({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
             <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Inventory in Micro-market</p>
             <p className="text-[20px] font-black text-gray-900 dark:text-white">
@@ -528,7 +512,7 @@ export default function IntelligenceTab({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
               { label: 'Location Preference Match', score: locationFit, tag: 'Excellent' },
               { label: 'Budget Fit', score: budgetFit, tag: 'Very Good' },
@@ -721,7 +705,7 @@ export default function IntelligenceTab({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {[
             { label: 'RERA Status', val: pData?.rera_number ? 'Registered' : 'Verified', color: 'text-emerald-600' },
             { label: 'Legal Due Diligence', val: pData?.legal_flag || 'Clear', color: 'text-emerald-600' },

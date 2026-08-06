@@ -141,38 +141,39 @@ export default function AdminProjectEditPage({
   ]
 
   return (
-    <div className="max-w-[1400px] mx-auto pb-16">
-      
-      {/* Apple-Style Frosted Glass Header Bar — Pinned with generous whitespace & subtle translucent blur */}
-      <div className="sticky top-0 z-30 -mt-4 md:-mt-6 -mx-4 md:-mx-6 px-4 md:px-8 py-3.5 mb-6 bg-white/75 dark:bg-[#09090b]/75 backdrop-blur-2xl border-b border-gray-200/50 dark:border-white/5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-3 transition-all">
-        
-        {/* Top Tier: Identity & Quick Actions */}
+    <>
+      {/* ── Sticky Project Header ─────────────────────────────────────────────
+          Direct first child of <main> so it sticks flush right below the
+          "Admin > Projects > Edit" breadcrumb bar with zero gap.
+          -mt-4 md:-mt-6 / -mx-4 md:-mx-6 cancel <main>'s p-4 md:p-6 padding.
+      ──────────────────────────────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-30 -mt-4 md:-mt-6 -mx-4 md:-mx-6 px-4 md:px-8 py-3 bg-[#EEEEEE] dark:bg-[#09090b] border-b border-slate-300/60 dark:border-zinc-800 shadow-xs space-y-3">
+
+        {/* Identity row */}
         <div className="flex items-center justify-between gap-4">
-          
-          {/* Left: Back Button + Project Name & Status Badge */}
+
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/admin/projects"
-              className="w-8 h-8 rounded-full bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/80 transition-all flex-shrink-0 flex items-center justify-center"
+              className="w-9 h-9 rounded-xl border border-slate-300/80 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-700 transition-all flex-shrink-0 shadow-xs flex items-center justify-center"
               title="Back to Projects"
             >
-              <ArrowLeft size={15} />
+              <ArrowLeft size={16} />
             </Link>
 
-            <div className="flex items-center gap-2.5 min-w-0">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight truncate leading-none">
+            <div className="flex items-center gap-3 min-w-0">
+              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight truncate leading-none">
                 {data.name}
               </h1>
-              <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300 border border-gray-200/60 dark:border-white/10 flex-shrink-0">
+              <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs flex-shrink-0">
                 {data.status?.replace('_', ' ')}
               </span>
             </div>
           </div>
 
-          {/* Right: Actions & Live Status */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2.5 flex-shrink-0">
             {adminTab === 'core' && (
-              <div className="hidden sm:flex items-center gap-2 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-800/40 rounded-full px-3 py-1 shadow-xs">
+              <div className="hidden sm:flex items-center gap-2 text-xs font-extrabold text-emerald-800 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/60 border border-emerald-300/70 dark:border-emerald-800/60 rounded-xl px-3.5 py-1.5 shadow-xs">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -180,22 +181,21 @@ export default function AdminProjectEditPage({
                 <span>Live Preview Sync</span>
               </div>
             )}
-
             <a
               href={`/projects/${data.slug}`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gray-100/80 dark:bg-white/10 text-xs font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-white/15 transition-all shadow-xs"
+              className="flex items-center gap-2 px-4 py-1.5 rounded-xl border border-slate-300/80 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-extrabold text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all shadow-xs"
             >
-              <Eye size={14} />
+              <Eye size={15} />
               <span>View Public</span>
             </a>
           </div>
 
         </div>
 
-        {/* Bottom Tier: Apple Segmented Control Tab Bar */}
-        <div className="flex items-center p-1 bg-gray-100/70 dark:bg-zinc-900/60 rounded-xl overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden backdrop-blur-md">
+        {/* Tab rail */}
+        <div className="flex items-center p-1.5 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/90 dark:border-zinc-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-sm">
           <div className="flex items-center gap-1 min-w-full sm:min-w-0">
             {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
               const isActive = adminTab === tabId
@@ -203,13 +203,13 @@ export default function AdminProjectEditPage({
                 <button
                   key={tabId}
                   onClick={() => setAdminTab(tabId)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 text-xs rounded-lg transition-all duration-150 whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-4 py-2 text-xs rounded-xl transition-all duration-150 whitespace-nowrap ${
                     isActive
-                      ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] font-semibold'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium hover:bg-white/40 dark:hover:bg-white/5'
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md font-black'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold hover:bg-slate-100 dark:hover:bg-zinc-800'
                   }`}
                 >
-                  <Icon size={14} className={isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400'} />
+                  <Icon size={15} className={isActive ? 'text-blue-400 dark:text-blue-600' : 'text-slate-400'} />
                   <span>{label}</span>
                 </button>
               )
@@ -219,112 +219,117 @@ export default function AdminProjectEditPage({
 
       </div>
 
-      {/* Completeness banner — shown on core + media tabs */}
-      {adminTab !== 'intelligence' && completeness && showCompleteness && (
-        <CompletenessBar result={completeness} onClose={() => setShowCompleteness(false)} />
-      )}
+      {/* ── Scrollable Content ──────────────────────────────────────────────── */}
+      <div className="max-w-[1400px] mx-auto pt-6 pb-16">
 
-      {/* 1. Core Info tab */}
-      {adminTab === 'core' && (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-[#121214] rounded-3xl border border-gray-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8">
-              <ProjectForm
-                initialData={formData}
+        {/* Completeness banner — shown on core + media tabs */}
+        {adminTab !== 'intelligence' && completeness && showCompleteness && (
+          <CompletenessBar result={completeness} onClose={() => setShowCompleteness(false)} />
+        )}
+
+        {/* 1. Core Info tab */}
+        {adminTab === 'core' && (
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-[#121214] rounded-3xl border border-gray-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8">
+                <ProjectForm
+                  initialData={formData}
+                  projectId={id}
+                  onFormChange={handleFormChange}
+                  onSaved={handleSaved}
+                />
+              </div>
+              <UnitsEditor
+                unitTypes={data.unit_types ?? []}
                 projectId={id}
-                onFormChange={handleFormChange}
+                onSaved={handleSaved}
+              />
+              <AmenitiesEditor
+                amenities={data.amenities ?? []}
+                projectId={id}
                 onSaved={handleSaved}
               />
             </div>
-            <UnitsEditor
-              unitTypes={data.unit_types ?? []}
+            <div>
+              {preview && (
+                <ProjectPreview
+                  project={preview}
+                  onRefresh={handleSaved}
+                  refreshing={refreshing}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 2. Pricing & Location tab */}
+        {adminTab === 'pricing' && (
+          <div className="max-w-4xl space-y-6">
+            <PaymentPlanEditor projectId={id} initialData={data.payment_plan} />
+            <CostSheetEditor projectId={id} initialData={data.cost_sheet} />
+            <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile} />
+            <ConnectivityEditor
+              connectivity={data.connectivity ?? []}
               projectId={id}
               onSaved={handleSaved}
             />
-            <AmenitiesEditor
-              amenities={data.amenities ?? []}
+            <LocationIntelligenceEditor projectId={id} initialData={data} />
+          </div>
+        )}
+
+        {/* 3. Media tab */}
+        {adminTab === 'media' && (
+          <div className="max-w-4xl space-y-6">
+            <ImagesEditor
+              images={data.images ?? []}
               projectId={id}
+              slug={data.slug ?? id}
+              onSaved={handleSaved}
+            />
+            <DocumentsEditor
+              documents={documents}
+              projectId={id}
+              slug={data.slug ?? id}
               onSaved={handleSaved}
             />
           </div>
-          <div>
-            {preview && (
-              <ProjectPreview
-                project={preview}
-                onRefresh={handleSaved}
-                refreshing={refreshing}
-              />
-            )}
+        )}
+
+        {/* 4. Intelligence tab */}
+        {adminTab === 'intelligence' && (
+          <IntelligenceWorkspace
+            projectId={id}
+            initialDna={data.dna ?? data.project_dna}
+            initialDecision={data.decision_profile}
+            initialPersona={data.persona_profile}
+            initialRecommendation={data.recommendation_profile}
+            initialCompetitors={data.competitors ?? []}
+          />
+        )}
+
+        {/* 5. Updates & Timeline tab */}
+        {adminTab === 'updates' && (
+          <div className="max-w-4xl space-y-6">
+            <ConstructionMilestonesEditor projectId={id} />
+            <ProjectUpdatesEditor
+              projectId={id}
+              projectStatus={data.status}
+            />
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 2. Pricing & Location tab */}
-      {adminTab === 'pricing' && (
-        <div className="max-w-4xl space-y-6">
-          <PaymentPlanEditor projectId={id} initialData={data.payment_plan} />
-          <CostSheetEditor projectId={id} initialData={data.cost_sheet} />
-          <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile} />
-          <ConnectivityEditor
-            connectivity={data.connectivity ?? []}
-            projectId={id}
-            onSaved={handleSaved}
-          />
-          <LocationIntelligenceEditor projectId={id} initialData={data} />
-        </div>
-      )}
+        {/* 6. Channel Partners tab */}
+        {adminTab === 'partners' && (
+          <div className="max-w-4xl space-y-6">
+            <ChannelPartnersEditor
+              projectId={id}
+              initialPartners={data.channel_partners ?? []}
+              onSaved={handleSaved}
+            />
+          </div>
+        )}
 
-      {/* 3. Media tab */}
-      {adminTab === 'media' && (
-        <div className="max-w-4xl space-y-6">
-          <ImagesEditor
-            images={data.images ?? []}
-            projectId={id}
-            slug={data.slug ?? id}
-            onSaved={handleSaved}
-          />
-          <DocumentsEditor
-            documents={documents}
-            projectId={id}
-            slug={data.slug ?? id}
-            onSaved={handleSaved}
-          />
-        </div>
-      )}
-
-      {/* 4. Intelligence tab */}
-      {adminTab === 'intelligence' && (
-        <IntelligenceWorkspace
-          projectId={id}
-          initialDna={data.dna ?? data.project_dna}
-          initialDecision={data.decision_profile}
-          initialPersona={data.persona_profile}
-          initialRecommendation={data.recommendation_profile}
-          initialCompetitors={data.competitors ?? []}
-        />
-      )}
-
-      {/* 5. Updates & Timeline tab */}
-      {adminTab === 'updates' && (
-        <div className="max-w-4xl space-y-6">
-          <ConstructionMilestonesEditor projectId={id} />
-          <ProjectUpdatesEditor
-            projectId={id}
-            projectStatus={data.status}
-          />
-        </div>
-      )}
-
-      {/* 6. Channel Partners tab */}
-      {adminTab === 'partners' && (
-        <div className="max-w-4xl space-y-6">
-          <ChannelPartnersEditor
-            projectId={id}
-            initialPartners={data.channel_partners ?? []}
-            onSaved={handleSaved}
-          />
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   )
 }

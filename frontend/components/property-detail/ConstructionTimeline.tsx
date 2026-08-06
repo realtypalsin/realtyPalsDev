@@ -185,7 +185,7 @@ export default function ConstructionTimeline({
 
       {/* Main Timeline Card Grid (Matching reference image exact colors, fonts & spacing) */}
       <div className="pt-6 pb-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5">
           {list.map((m: any, i: number) => {
             const isDone = m.status === 'completed'
             const isInProgress = m.status === 'in_progress'

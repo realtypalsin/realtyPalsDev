@@ -163,7 +163,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
       </div>
 
       {/* ── 2. LEGACY & DELIVERED STAT METRICS BANNER ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           { title: `${legacyYears}+`, label: 'Years of Legacy', icon: Clock, color: 'text-blue-600 bg-blue-50' },
           { title: `${builder?.projects_delivered_count || 42}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' },
@@ -272,7 +272,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
           <p className="text-[12px] text-gray-500 font-medium mt-0.5">Verified promoter status and industry memberships.</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {[
             { title: 'RERA Registered', sub: builder?.rera_promoter_id || 'UPRERAPRJ916631', tag: 'Registered', color: 'bg-blue-50 text-blue-600' },
             { title: 'ISO 9001:2015', sub: 'Quality Management', tag: 'Certified', color: 'bg-indigo-50 text-indigo-600' },
@@ -301,7 +301,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
           <p className="text-[12px] text-gray-500 font-medium mt-0.5">Numbers that reflect our commitment to excellence and trust.</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {[
             { val: `${legacyYears}+`, label: 'Years of Legacy' },
             { val: `${builder?.projects_delivered_count || 42}+`, label: 'Projects Delivered' },
@@ -363,7 +363,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             {dbMedia.slice(0, 4).map((pub: string, i: number) => (
               <div key={i} className="h-16 rounded-xl bg-gray-50/80 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-center text-[13px] font-black text-gray-700 dark:text-gray-300">
                 {pub}
