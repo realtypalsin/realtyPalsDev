@@ -958,6 +958,7 @@ router.get('/analytics/properties', requireAdmin, async (_req: Request, res: Res
     const events = await prisma.propertyEvent.groupBy({
       by: ['project_id', 'action'],
       _count: { action: true },
+      take: 1000,
     })
 
     const eventMap: Record<string, Record<string, number>> = {}

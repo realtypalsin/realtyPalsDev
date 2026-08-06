@@ -107,12 +107,12 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const ifmsAmt = dbCostSheet?.ifms ?? 75000
   const utilAmt = dbCostSheet?.utilities_cost ?? 125000
 
-  // Cost items breakdown calculations
+  // Cost items breakdown calculations (using DB rates, fallback to defaults if missing)
   const baseCostVal = propertyPrice
-  const plcCostVal = Math.round(baseCostVal * 0.02)
+  const plcCostVal = dbCostSheet?.plc_percentage ? Math.round(baseCostVal * (dbCostSheet.plc_percentage / 100)) : Math.round(baseCostVal * 0.02)
   const clubCostVal = clubAmt
   const ifmsCostVal = ifmsAmt
-  const otherCostVal = 125000
+  const otherCostVal = dbCostSheet?.other_charges || 125000
   const constructionTotalCost = baseCostVal + plcCostVal + clubCostVal + ifmsCostVal + otherCostVal
 
   const stampDutyCost = Math.round(baseCostVal * (stampDutyPct / 100))
