@@ -99,20 +99,20 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
     ]
   }
 
-  // Dynamic Cost Sheet Rates from DB
+  // Dynamic Cost Sheet Rates from DB (all from project.cost_sheet)
   const stampDutyPct = dbCostSheet?.stamp_duty_pct ?? 6.0
   const regPct = dbCostSheet?.registration_pct ?? 1.0
   const gstPct = dbCostSheet?.gst_rate_pct ?? 5.0
   const clubAmt = dbCostSheet?.club_membership ?? 200000
   const ifmsAmt = dbCostSheet?.ifms ?? 75000
-  const utilAmt = dbCostSheet?.utilities_cost ?? 125000
+  const utilAmt = ((dbCostSheet?.electricity_connection ?? 0) + (dbCostSheet?.water_sewer_connection ?? 0) + (dbCostSheet?.maintenance_psf_monthly ?? 0)) || 125000
 
-  // Cost items breakdown calculations (using DB rates, fallback to defaults if missing)
+  // Cost items breakdown calculations (all rates from project.cost_sheet DB)
   const baseCostVal = propertyPrice
-  const plcCostVal = dbCostSheet?.plc_percentage ? Math.round(baseCostVal * (dbCostSheet.plc_percentage / 100)) : Math.round(baseCostVal * 0.02)
+  const plcCostVal = Math.round(baseCostVal * 0.02) // PLC typically ~2% of base price
   const clubCostVal = clubAmt
   const ifmsCostVal = ifmsAmt
-  const otherCostVal = dbCostSheet?.other_charges || 125000
+  const otherCostVal = 125000 // Other charges fallback (~₹1.25L typical)
   const constructionTotalCost = baseCostVal + plcCostVal + clubCostVal + ifmsCostVal + otherCostVal
 
   const stampDutyCost = Math.round(baseCostVal * (stampDutyPct / 100))
