@@ -121,7 +121,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
               </span>
             </div>
 
-            <h1 className="text-[28px] md:text-[34px] font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-[20px] sm:text-[24px] md:text-[28px] font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
               {builderName}
               <CheckCircle2 className="text-blue-500 fill-blue-500 text-white inline-block" size={20} />
             </h1>
