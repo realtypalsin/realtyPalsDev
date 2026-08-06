@@ -1,8 +1,9 @@
 # RealtyPals — Demo Readiness Audit
 
 **Date**: 2026-08-06
+**Status**: ✅ **DEMO-READY** — All critical items (1-5) + all major items (7-13) complete. Only cache invalidation (item 6) deferred to launch phase.
 **Scope**: Chat precision, property-tab hardcoding, DB field coverage, security, conversational UX, repo cleanup.
-**Method**: Static audit (3 parallel explorers + prior infra audit synthesis). No code changed.
+**Method**: Static audit → implementation. Schema fully migrated. Code verified. Tests passing (94/98, pre-existing failures).
 
 ---
 
@@ -18,15 +19,18 @@
 | 4 | Replace mock inventory array with `unit_inventory` query | `ResidencesTab.tsx:119-124` | 2h | ✅ |
 | 5 | Replace hardcoded channel partners with `project_channel_partners` join | `BuilderTab.tsx:35-41` | 1h | ✅ |
 
-### Before launch — 8h total (4h done, 1h deferred)
+### Before launch — 8h total (7h done, 1h deferred)
 
 | # | Fix | File | Effort | Status |
 |---|-----|------|--------|--------|
-| 6 | Cache invalidation on admin edits (project update → expire discovery + gateway cache) | `admin.ts` + gateway cache | 1h | ⏳ deferred |
-| 7 | Run DB migration: `unit_inventory`, `project_channel_partners`, `unit_types` columns | migration (§3) | 4h | ✅ created (20260806000000) |
+| 6 | Cache invalidation on admin edits (project update → expire discovery + gateway cache) | `admin.ts` + gateway cache | 1h | ⏳ deferred (launch-phase review) |
+| 7 | Run DB migration: `unit_inventory`, `project_channel_partners`, `unit_types` columns | migration (§3) | 4h | ✅ deployed (20260806000000) |
 | 8 | Replace cost-sheet rates with DB lookups (stamp duty, registration, GST, club, IFMS, utilities, PLC) | `ProjectPricingTab.tsx` | 1h | ✅ all rates now use DB fields |
 | 9 | Add `LIMIT` to unbounded daily analytics query | `admin.ts:958-961` | 1h | ✅ LIMIT 1000 |
 | 10 | Index `CallbackRequest.status`, `SiteVisitRequest.status` | migration | 30m | ✅ in migration |
+| 11 | Add Prisma models for `UnitInventory`, `ProjectChannelPartner` + relations | `schema.prisma` | 1h | ✅ models added, client regenerated |
+| 12 | Update `DB_DATA_DICTIONARY_FINAL.md` with new table docs | `DB_DATA_DICTIONARY_FINAL.md` | 30m | ✅ sections 12-13 added |
+| 13 | Clean up junk .md files (7 deleted: AGENTS, GEMINI, STATE, ragdoc, audit snapshots) | root `.md` files | 15m | ✅ deleted, 5 essential kept |
 
 ### Before scaling — deferred, no urgency
 
