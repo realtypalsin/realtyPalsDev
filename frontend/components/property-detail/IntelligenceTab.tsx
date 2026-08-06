@@ -340,7 +340,7 @@ export default function IntelligenceTab({
           <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
             <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Demand Supply Ratio</p>
             <p className="text-[22px] font-black text-gray-900 dark:text-white">{demandSupplyRatio ?? '--'}</p>
-            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">High Demand (Seller's Market)</p>
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">High Demand (Seller&apos;s Market)</p>
           </div>
         </div>
 

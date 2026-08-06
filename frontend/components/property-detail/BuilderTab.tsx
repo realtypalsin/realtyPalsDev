@@ -35,8 +35,8 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
   const channelPartnersList = (project?.channel_partners || []).length > 0
     ? (project.channel_partners as any[]).map((cp: any) => ({
         name: cp.name || '—',
-        type: 'Channel Partner',
-        logo: cp.logo || '🌐'
+        type: cp.type || 'Channel Partner',
+        logo: '🌐'
       }))
     : []
 

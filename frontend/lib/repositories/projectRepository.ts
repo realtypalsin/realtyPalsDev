@@ -186,6 +186,13 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
       amenities: true,
       connectivity: true,
       images: { orderBy: { sort_order: 'asc' }, take: 10 },
+      unit_inventory: true,
+      channel_partners: {
+        where: { is_featured: true, channel_partner: { is_active: true } },
+        include: { channel_partner: true },
+        orderBy: { created_at: 'asc' },
+        take: 5,
+      },
     },
   })
   if (!project) return null
@@ -201,6 +208,20 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
     marketing_claims: project.marketing_claims ?? [],
     all_amenities: project.amenities.map((a: { name: string; category: string }) => ({ name: a.name, category: a.category })),
     all_connectivity: project.connectivity.map((c: { type: string; name: string; distance_km: number | null }) => ({ type: c.type, name: c.name, distance_km: c.distance_km })),
+    unit_inventory: project.unit_inventory.map((u) => ({
+      unit_type_id: u.unit_type_id,
+      tower_name: u.tower_name,
+      floor_number: u.floor_number,
+      unit_number: u.unit_number,
+      facing: u.facing,
+      view: u.view,
+      status: u.status,
+    })),
+    channel_partners: project.channel_partners.map((cp) => ({
+      name: cp.channel_partner.name,
+      type: cp.channel_partner.type,
+      is_verified: cp.channel_partner.is_verified,
+    })),
     builder_detail: {
       name: b.name,
       slug: b.slug,

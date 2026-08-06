@@ -198,20 +198,20 @@ async function main() {
             const unitNumber = `${floor}${String(unit).padStart(2, '0')}`
             await (prisma as any).unitInventory.upsert({
               where: {
-                projectId_towerName_floorNumber_unitNumber: {
-                  projectId: firstProject.id,
-                  towerName: tower,
-                  floorNumber: floor,
-                  unitNumber: unitNumber
+                project_id_tower_name_floor_number_unit_number: {
+                  project_id: firstProject.id,
+                  tower_name: tower,
+                  floor_number: floor,
+                  unit_number: unitNumber
                 }
               },
               update: {},
               create: {
-                projectId: firstProject.id,
-                unitTypeId: unitType.id,
-                towerName: tower,
-                floorNumber: floor,
-                unitNumber: unitNumber,
+                project_id: firstProject.id,
+                unit_type_id: unitType.id,
+                tower_name: tower,
+                floor_number: floor,
+                unit_number: unitNumber,
                 facing: facings[Math.floor(Math.random() * facings.length)],
                 view: views[Math.floor(Math.random() * views.length)],
                 status: statuses[Math.floor(Math.random() * statuses.length)]
@@ -240,16 +240,16 @@ async function main() {
       try {
         await (prisma as any).projectChannelPartner.upsert({
           where: {
-            projectId_channelPartnerId: {
-              projectId: project.id,
-              channelPartnerId: partners[i].id
+            project_id_channel_partner_id: {
+              project_id: project.id,
+              channel_partner_id: partners[i].id
             }
           },
           update: {},
           create: {
-            projectId: project.id,
-            channelPartnerId: partners[i].id,
-            isFeatured: i < 2 // Feature first 2 partners
+            project_id: project.id,
+            channel_partner_id: partners[i].id,
+            is_featured: i < 2 // Feature first 2 partners
           }
         })
         partnershipCount++

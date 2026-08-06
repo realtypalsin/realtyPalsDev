@@ -1445,39 +1445,39 @@ model ChannelLead {
 // Individual unit tracking — one row per physical unit in a project
 model UnitInventory {
   id                String    @id @default(uuid())
-  projectId         String
-  unitTypeId        String
-  towerName         String
-  floorNumber       Int
-  unitNumber        String
+  project_id        String
+  unit_type_id      String
+  tower_name        String
+  floor_number      Int
+  unit_number       String
   facing            String?   // "North", "East", "NE", etc.
   view              String?   // "Park", "Main road", "Garden", etc.
   status            String    @default("available") // "available" | "booked" | "reserved" | "sold"
-  createdAt         DateTime  @default(now())
+  created_at        DateTime  @default(now())
 
-  project           Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  unitType          UnitType  @relation(fields: [unitTypeId], references: [id], onDelete: Cascade)
+  project           Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  unit_type         UnitType  @relation(fields: [unit_type_id], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, towerName, floorNumber, unitNumber])
-  @@index([projectId])
-  @@index([unitTypeId])
+  @@unique([project_id, tower_name, floor_number, unit_number])
+  @@index([project_id])
+  @@index([unit_type_id])
   @@index([status])
   @@map("unit_inventory")
 }
 
 // Junction table: link projects to channel partners with featured flag
 model ProjectChannelPartner {
-  id                String    @id @default(uuid())
-  projectId         String
-  channelPartnerId  String
-  isFeatured        Boolean   @default(true)
-  createdAt         DateTime  @default(now())
+  id                  String    @id @default(uuid())
+  project_id          String
+  channel_partner_id  String
+  is_featured         Boolean   @default(true)
+  created_at          DateTime  @default(now())
 
-  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  channelPartner    ChannelPartner  @relation(fields: [channelPartnerId], references: [id], onDelete: Cascade)
+  project             Project         @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  channel_partner     ChannelPartner  @relation(fields: [channel_partner_id], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, channelPartnerId])
-  @@index([projectId])
-  @@index([isFeatured])
+  @@unique([project_id, channel_partner_id])
+  @@index([project_id])
+  @@index([is_featured])
   @@map("project_channel_partners")
 }

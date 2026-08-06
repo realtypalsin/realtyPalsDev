@@ -118,7 +118,8 @@ export default function ResidencesTab({
   // Unit availability from unit_inventory table, fallback to empty if no DB data
   const unitInventory = (detail as any)?.unit_inventory || []
   const filteredInventory = activeUnit?.id ? unitInventory.filter((u: any) => u.unit_type_id === activeUnit.id) : unitInventory
-  const mockAvailability = filteredInventory.length > 0 ? filteredInventory.map((u: any) => ({
+  type AvailabilityRow = { tower: string; floor: string; unitNo: string; facing: string; view: string; price: string; status: string }
+  const mockAvailability: AvailabilityRow[] = filteredInventory.map((u: any) => ({
     tower: u.tower_name || '—',
     floor: u.floor_number ? String(u.floor_number) : '—',
     unitNo: u.unit_number || '—',
@@ -126,7 +127,7 @@ export default function ResidencesTab({
     view: u.view || '—',
     price: priceLabel(activeUnit || {} as any),
     status: u.status === 'available' ? 'Available' : u.status === 'booked' ? 'Booked' : 'Hold'
-  })) : []
+  }))
 
   if (loading && !detail) {
     return (

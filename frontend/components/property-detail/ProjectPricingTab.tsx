@@ -38,6 +38,11 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const [propertyPrice, setPropertyPrice] = useState<number>(unitMinCr * 10000000)
   const [downPaymentPct, setDownPaymentPct] = useState<number>(20)
   const [tenureYears, setTenureYears] = useState<number>(20)
+
+  // DB-backed payment plan & cost sheet properties
+  const dbPaymentPlan = detail?.payment_plan ?? null
+  const dbCostSheet = detail?.cost_sheet ?? null
+
   const interestRatePct = dbCostSheet?.base_interest_rate || 8.5
 
   const downPaymentAmount = propertyPrice * (downPaymentPct / 100)
@@ -67,10 +72,6 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const reraNum = detail?.rera_number ?? 'UPRERAPRJ916631/02/2024'
   const possessionLabel = detail?.possession_label ?? 'Dec 2028'
   const pricePsf = selectedUnit?.super_area_sqft ? Math.round((unitMinCr * 10000000) / selectedUnit.super_area_sqft) : 14388
-
-  // DB-backed payment plan & cost sheet properties
-  const dbPaymentPlan = detail?.payment_plan ?? null
-  const dbCostSheet = detail?.cost_sheet ?? null
 
   // Dynamic payment plan milestones derived from DB or structured templates
   const paymentPlanMilestones = {
