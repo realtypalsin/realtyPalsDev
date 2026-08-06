@@ -242,7 +242,7 @@ export default function AdminBuilders() {
     })
   }
 
-  async function saveEdit(id: string) {
+  const saveEdit = useCallback(async (id: string) => {
     setEditSaving(true)
     try {
       const res = await adminFetch(`/admin/builders/${id}`, {
@@ -272,7 +272,7 @@ export default function AdminBuilders() {
     } finally {
       setEditSaving(false)
     }
-  }
+  }, [editForm])
 
   return (
     <div className="max-w-6xl mx-auto py-8">

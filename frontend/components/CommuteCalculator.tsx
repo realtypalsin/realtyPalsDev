@@ -34,16 +34,7 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
     if (saved) setSavedOffice(saved)
   }, [])
 
-  // Sync initialDestination if passed externally
-  useEffect(() => {
-    if (initialDestination) {
-      setDestination(initialDestination)
-      calculate(initialDestination)
-    }
-  }, [initialDestination, calculate])
-
-
-  async function calculate(dest?: string) {
+  const calculate = useCallback(async (dest?: string) => {
     const target = (dest ?? destination).trim()
     if (!target) return
     setLoading(true)
@@ -65,7 +56,15 @@ export default function CommuteCalculator({ projectAddress, initialDestination }
     } finally {
       setLoading(false)
     }
-  }
+  }, [destination, projectAddress])
+
+  // Sync initialDestination if passed externally
+  useEffect(() => {
+    if (initialDestination) {
+      setDestination(initialDestination)
+      calculate(initialDestination)
+    }
+  }, [initialDestination, calculate])
 
   return (
     <div className="space-y-4">

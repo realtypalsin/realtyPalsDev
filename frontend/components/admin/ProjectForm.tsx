@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Save, Loader2, Plus, X } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
@@ -242,7 +242,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
     return (value: string) => setForm((f) => ({ ...f, [key]: value }))
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError('')
@@ -300,7 +300,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
     } else {
       router.push('/admin/projects')
     }
-  }
+  }, [form, projectId, onSaved])
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
