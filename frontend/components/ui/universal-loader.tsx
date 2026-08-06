@@ -64,9 +64,11 @@ export default function UniversalLoader({
     const canExpand = !!phase
     return (
       <div className={`py-2 space-y-3 ${className}`}>
-        <div className="flex items-center gap-2.5">
-          <Spinner />
-          <span className="text-[13px] font-medium text-blue-600 dark:text-blue-400">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 shadow-inner">
+             <div className="w-2.5 h-2.5 bg-gray-600 dark:bg-gray-400 rounded-full animate-pulse" />
+          </div>
+          <span className="text-[14px] font-semibold tracking-tight text-gray-700 dark:text-gray-300">
             {label ?? 'Thinking'}
             <m.span animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1.4, repeat: Infinity }} className="ml-0.5">…</m.span>
           </span>
@@ -76,17 +78,12 @@ export default function UniversalLoader({
               onClick={() => setExpanded((v) => !v)}
               aria-expanded={expanded}
               aria-label={expanded ? 'Hide reasoning steps' : 'Show reasoning steps'}
-              className="ml-auto flex items-center justify-center w-6 h-6 rounded-full text-blue-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+              className="ml-auto flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <ChevronDown size={14} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+              <ChevronDown size={16} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
             </button>
           )}
         </div>
-        {sublabel && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3.5 py-2.5 border border-blue-100 dark:border-blue-800/60">
-            <p className="text-[13px] text-blue-700 dark:text-blue-300 font-medium leading-snug">{sublabel}</p>
-          </div>
-        )}
         <AnimatePresence>
           {expanded && canExpand && (
             <m.div
@@ -94,9 +91,26 @@ export default function UniversalLoader({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800 bg-white/60 dark:bg-black/20"
+              className="overflow-hidden mt-2"
             >
-              <StatusSteps phase={phase ?? null} intent={intent} resultCount={resultCount} />
+              <div className="bg-gray-50/50 dark:bg-[#1A1A1A] rounded-2xl border border-gray-200/60 dark:border-gray-800/80 shadow-sm overflow-hidden mb-1">
+                {sublabel && (
+                  <div className="px-4 py-3 border-b border-gray-200/60 dark:border-gray-800/80 bg-white/50 dark:bg-black/20 flex items-start gap-3">
+                    <div className="mt-0.5">
+                      <div className="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5">Constraints Identified</p>
+                      <p className="text-[13px] text-gray-800 dark:text-gray-200 font-medium leading-snug">{sublabel}</p>
+                    </div>
+                  </div>
+                )}
+                <div className="bg-white/60 dark:bg-black/20">
+                  <StatusSteps phase={phase ?? null} intent={intent} resultCount={resultCount} />
+                </div>
+              </div>
             </m.div>
           )}
         </AnimatePresence>

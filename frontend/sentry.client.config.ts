@@ -22,7 +22,7 @@ export function initSentryClient(): void {
     environment: env,
     tracesSampleRate: env === 'production' ? 0.1 : 1.0,
     integrations: [
-      new Sentry.Replay({
+      Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
       }),
@@ -94,8 +94,5 @@ export function addBreadcrumb(
  * Start performance transaction
  */
 export function startTransaction(name: string, op: string = 'http.request') {
-  return Sentry.startTransaction({
-    name,
-    op,
-  })
+  return Sentry.startSpan({ name, op }, (span) => span)
 }

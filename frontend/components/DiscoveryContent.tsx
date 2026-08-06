@@ -204,7 +204,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       track('property_viewed', { project_slug: project.slug, project_name: project.name });
       recordEngagement(project.id);
     }
-  }, [recordEngagement]);
+  }, []);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState(false);
   const [showHeaderDropdown, setShowHeaderDropdown] = useState(false);
@@ -590,6 +590,21 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             missingFields: event.missingFields,
             confidence: event.confidence
           });
+        } else if (event.type === 'focus') {
+          // Phase 3: Focus event for text-only queries
+          // Scroll and highlight existing card instead of re-rendering
+          if (DEBUG) console.log('[FOCUS]', { projectId: event.projectId, name: event.name, anchor: event.anchor });
+          // The frontend will scroll to and highlight the card with data-project-id={projectId}
+          // This is handled via ref callback in ProjectCard component
+          const cardElement = document.querySelector(`[data-project-id="${event.projectId}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Add highlight animation class temporarily
+            cardElement.classList.add('ring-2', 'ring-amber-400');
+            setTimeout(() => {
+              cardElement.classList.remove('ring-2', 'ring-amber-400');
+            }, 2000);
+          }
         } else if (event.type === 'error') {
           setStatusPhase(null);
           setResultCount(null);

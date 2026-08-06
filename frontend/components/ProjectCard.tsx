@@ -173,6 +173,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, onD
 
   return (
     <div
+      data-project-id={project.id}
       onClick={handleCardClick}
       className={`group relative w-full h-full flex flex-col rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-300 ease-out cursor-pointer ${
         isTopPick

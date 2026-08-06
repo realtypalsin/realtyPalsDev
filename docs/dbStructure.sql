@@ -48,7 +48,7 @@ CREATE TABLE public.builders (
   logo_url text,
   luxury_specialization boolean NOT NULL DEFAULT false,
   outstanding_dues_cr double precision,
-  projects_delivered_count integer NOT NULL DEFAULT 18,
+  projects_delivered_count integer DEFAULT 18,
   rera_compliance_score integer,
   rera_promoter_id text,
   total_projects_count integer,
@@ -102,12 +102,32 @@ CREATE TABLE public.projects (
   price_min_cr double precision,
   price_range_label text,
   project_risk_flag text,
-  project_type text NOT NULL DEFAULT 'Residential'::text,
+  project_type text DEFAULT 'Residential'::text,
   registry_embargo_reasons ARRAY,
   registry_status text,
   restaurants_nearby_count integer,
   schools_nearby_count integer,
   shopping_nearby_count integer,
+  country text NOT NULL DEFAULT 'India'::text,
+  state text NOT NULL DEFAULT 'Uttar Pradesh'::text,
+  aqi_annual_avg double precision,
+  commute_matrix jsonb,
+  flood_waterlogging_risk text,
+  legal_flag text,
+  legal_flag_detail text,
+  litigation_count integer,
+  location_advantages jsonb,
+  location_concerns ARRAY,
+  location_verdict text,
+  oc_obtained boolean,
+  oc_obtained_date timestamp without time zone,
+  oc_restrictions text,
+  oc_valid_until text,
+  possession_confidence text,
+  possession_confidence_note text,
+  rera_compliance_score integer,
+  rera_valid_until timestamp without time zone,
+  walkability_score integer,
   CONSTRAINT projects_pkey PRIMARY KEY (id),
   CONSTRAINT projects_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
 );
@@ -126,7 +146,7 @@ CREATE TABLE public.unit_types (
   price_min_cr double precision,
   price_max_cr double precision,
   price_label text,
-  price_is_estimated boolean NOT NULL DEFAULT false,
+  price_is_estimated boolean NOT NULL DEFAULT true,
   category_badge text,
   description text,
   inventory_left integer,
@@ -135,6 +155,19 @@ CREATE TABLE public.unit_types (
   subtitle text,
   views jsonb,
   whats_included jsonb,
+  balconies integer,
+  carpet_to_super_ratio_pct double precision,
+  has_servant_room boolean NOT NULL DEFAULT false,
+  has_study boolean NOT NULL DEFAULT false,
+  inventory_as_of timestamp without time zone,
+  layout_cons ARRAY,
+  layout_efficiency_pct double precision,
+  layout_pros ARRAY,
+  layout_shape text,
+  orientation_price_premium_pct double precision,
+  price_per_sqft double precision,
+  super_area_range_sqft text,
+  unit_orientations ARRAY,
   CONSTRAINT unit_types_pkey PRIMARY KEY (id),
   CONSTRAINT unit_types_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
@@ -167,6 +200,13 @@ CREATE TABLE public.connectivity (
   distance_km double precision,
   data_source USER-DEFINED NOT NULL DEFAULT 'brochure'::"DataSource",
   notes text,
+  category_rank integer,
+  extra_detail text,
+  is_operational boolean NOT NULL DEFAULT true,
+  peak_travel_time_min integer,
+  rating double precision,
+  travel_mode text,
+  travel_time_min integer,
   CONSTRAINT connectivity_pkey PRIMARY KEY (id),
   CONSTRAINT connectivity_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
@@ -177,11 +217,17 @@ CREATE TABLE public.chat_sessions (
   title text,
   message_count integer NOT NULL DEFAULT 0,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_active timestamp without time zone NOT NULL,
+  last_active timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   chat_phase text NOT NULL DEFAULT 'DISCOVERY'::text,
   last_projects jsonb,
   shown_chip_ids jsonb DEFAULT '[]'::jsonb,
   summary text,
+  focus_project_id text,
+  focus_set_at timestamp without time zone,
+  property_reactions jsonb DEFAULT '[]'::jsonb,
+  summary_financial text,
+  summary_location text,
+  summary_timeline text,
   CONSTRAINT chat_sessions_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.chat_messages (
@@ -192,6 +238,7 @@ CREATE TABLE public.chat_messages (
   intent_snapshot jsonb,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   artifacts jsonb,
+  chips jsonb DEFAULT '[]'::jsonb,
   CONSTRAINT chat_messages_pkey PRIMARY KEY (id),
   CONSTRAINT chat_messages_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.chat_sessions(id)
 );
@@ -218,7 +265,7 @@ CREATE TABLE public.user_memory (
 );
 CREATE TABLE public.saved_properties (
   id text NOT NULL,
-  user_id text,
+  user_id text NOT NULL,
   project_id text NOT NULL,
   saved_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT saved_properties_pkey PRIMARY KEY (id),
@@ -259,6 +306,7 @@ CREATE TABLE public.project_documents (
   content_text text,
   doc_type text NOT NULL DEFAULT 'brochure'::text,
   created_at timestamp without time zone NOT NULL DEFAULT now(),
+  file_size_bytes integer,
   CONSTRAINT project_documents_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public._prisma_migrations (
@@ -343,22 +391,17 @@ CREATE TABLE public.property_events (
 CREATE TABLE public.project_dna (
   id text NOT NULL,
   project_id text NOT NULL,
-  builder_track_record_score integer,
-  builder_track_record_label text,
-  price_position_score integer,
-  price_position_label text,
-  locality_score integer,
-  locality_label text,
-  rera_compliance_score integer,
-  rera_compliance_label text,
-  amenity_depth_score integer,
-  amenity_depth_label text,
-  possession_certainty_score integer,
-  possession_certainty_label text,
   last_verified_at timestamp without time zone,
   verified_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
+  overall_score integer,
+  builder_score integer,
+  price_score integer,
+  location_score integer,
+  legal_score integer,
+  amenity_score integer,
+  possession_score integer,
   CONSTRAINT project_dna_pkey PRIMARY KEY (id),
   CONSTRAINT project_dna_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
@@ -374,11 +417,16 @@ CREATE TABLE public.decision_profiles (
   confidence_sources ARRAY DEFAULT ARRAY[]::text[],
   recommendation_notes text,
   advisor_notes text,
-  intelligence_data jsonb,
   last_verified_at timestamp without time zone,
   verified_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
+  financial_intelligence jsonb,
+  market_intelligence jsonb,
+  builder_intelligence jsonb,
+  property_intelligence jsonb,
+  comparative_analysis jsonb,
+  resources_documents jsonb,
   CONSTRAINT decision_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT decision_profiles_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
@@ -407,12 +455,6 @@ CREATE TABLE public.recommendation_profiles (
   status USER-DEFINED NOT NULL DEFAULT 'DRAFT'::"IntelligenceStatus",
   tier text,
   primary_thesis text,
-  end_use_thesis text,
-  investment_thesis text,
-  family_thesis text,
-  investor_thesis text,
-  luxury_thesis text,
-  risk_thesis text,
   walk_away_conditions ARRAY DEFAULT ARRAY[]::text[],
   timeline_advice text,
   negotiation_leverage ARRAY DEFAULT ARRAY[]::text[],
@@ -440,6 +482,12 @@ CREATE TABLE public.project_competitors (
   verified_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
+  competitor_amenity_count integer,
+  competitor_possession_status text,
+  competitor_price_max_cr double precision,
+  competitor_price_min_cr double precision,
+  competitor_price_psf double precision,
+  reason text,
   CONSTRAINT project_competitors_pkey PRIMARY KEY (id),
   CONSTRAINT project_competitors_competitor_project_id_fkey FOREIGN KEY (competitor_project_id) REFERENCES public.projects(id),
   CONSTRAINT project_competitors_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
@@ -465,6 +513,16 @@ CREATE TABLE public.callback_requests (
   guest_token text,
   status text NOT NULL DEFAULT 'new'::text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  lead_score double precision,
+  lead_tier text,
+  intent_tier text,
+  loan_pre_approved boolean,
+  ai_summary text,
+  consent_given boolean,
+  projects_saved integer DEFAULT 0,
+  projects_viewed integer DEFAULT 0,
+  budget_min_cr double precision,
+  budget_max_cr double precision,
   CONSTRAINT callback_requests_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.payment_plans (
@@ -479,6 +537,15 @@ CREATE TABLE public.payment_plans (
   notes text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
+  plan_type text NOT NULL DEFAULT 'construction_linked'::text,
+  sort_order integer NOT NULL DEFAULT 0,
+  best_for text,
+  booking_amount_lakh double precision,
+  description text,
+  discount_offered_pct double precision,
+  down_payment_pct double precision,
+  total_duration_months integer,
+  watch_out text,
   CONSTRAINT payment_plans_pkey PRIMARY KEY (id),
   CONSTRAINT payment_plans_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
@@ -500,6 +567,14 @@ CREATE TABLE public.cost_sheets (
   verified_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
+  all_inclusive_per_sqft double precision,
+  all_inclusive_price_cr double precision,
+  base_cost_cr double precision,
+  electricity_connection double precision,
+  gst_applicable boolean,
+  gst_note text,
+  maintenance_psf_monthly double precision,
+  water_sewer_connection double precision,
   CONSTRAINT cost_sheets_pkey PRIMARY KEY (id),
   CONSTRAINT cost_sheets_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
 );
@@ -540,7 +615,7 @@ CREATE TABLE public.promotionals (
   created_by text,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
-  type text NOT NULL,
+  type USER-DEFINED NOT NULL,
   CONSTRAINT promotionals_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.promotional_interactions (
@@ -571,7 +646,7 @@ CREATE TABLE public.builder_news (
   archived_at timestamp without time zone,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   published_at timestamp without time zone,
-  status text NOT NULL,
+  status USER-DEFINED NOT NULL,
   CONSTRAINT builder_news_pkey PRIMARY KEY (id),
   CONSTRAINT builder_news_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
 );
@@ -596,7 +671,7 @@ CREATE TABLE public.builder_application_forms (
   reviewed_by text,
   review_notes text,
   linked_builder text,
-  status text NOT NULL,
+  status USER-DEFINED NOT NULL,
   CONSTRAINT builder_application_forms_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.builder_accounts (
@@ -631,7 +706,7 @@ CREATE TABLE public.builder_leads (
   converted_at timestamp without time zone,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL,
-  status text NOT NULL,
+  status USER-DEFINED NOT NULL,
   CONSTRAINT builder_leads_pkey PRIMARY KEY (id),
   CONSTRAINT builder_leads_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
 );
@@ -661,18 +736,176 @@ CREATE TABLE public.builder_themes (
   active_until timestamp without time zone,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT builder_themes_pkey PRIMARY KEY (id)
+  CONSTRAINT builder_themes_pkey PRIMARY KEY (id),
+  CONSTRAINT builder_themes_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
 );
-CREATE TABLE public.failed_webhooks (
+CREATE TABLE public.ai_usage_events (
   id text NOT NULL,
-  lead_type text NOT NULL,
-  name text NOT NULL,
-  phone text NOT NULL,
-  project_name text,
-  payload jsonb NOT NULL,
-  error text,
-  retries integer NOT NULL DEFAULT 0,
-  resolved boolean NOT NULL DEFAULT false,
+  user_id text,
+  session_id text,
+  provider text NOT NULL,
+  model text NOT NULL,
+  prompt_tokens integer NOT NULL,
+  completion_tokens integer NOT NULL,
+  cost_usd numeric NOT NULL,
+  endpoint text NOT NULL,
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT failed_webhooks_pkey PRIMARY KEY (id)
+  CONSTRAINT ai_usage_events_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.shared_shortlists (
+  id text NOT NULL,
+  project_slugs ARRAY NOT NULL DEFAULT ARRAY[]::text[],
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at timestamp without time zone NOT NULL DEFAULT (now() + '30 days'::interval),
+  CONSTRAINT shared_shortlists_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.price_history (
+  id text NOT NULL,
+  project_id text NOT NULL,
+  recorded_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  price_per_sqft double precision,
+  total_price_cr double precision,
+  source text NOT NULL DEFAULT 'monthly_auto_snapshot'::text,
+  bhk integer,
+  event_note text,
+  quarter_label text,
+  CONSTRAINT price_history_pkey PRIMARY KEY (id),
+  CONSTRAINT price_history_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
+);
+CREATE TABLE public.construction_milestones (
+  id text NOT NULL,
+  project_id text NOT NULL,
+  name text NOT NULL,
+  status USER-DEFINED NOT NULL DEFAULT 'upcoming'::"ConstructionStatus",
+  completed_at timestamp without time zone,
+  photo_urls ARRAY DEFAULT ARRAY[]::text[],
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp without time zone NOT NULL,
+  actual_start timestamp without time zone,
+  completion_pct integer,
+  critical_path boolean NOT NULL DEFAULT false,
+  date_label text,
+  is_payment_trigger boolean NOT NULL DEFAULT false,
+  planned_end timestamp without time zone,
+  planned_start timestamp without time zone,
+  stage_code text,
+  tower text,
+  verified_by_source text,
+  CONSTRAINT construction_milestones_pkey PRIMARY KEY (id),
+  CONSTRAINT construction_milestones_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
+);
+CREATE TABLE public.builder_delivery_records (
+  id text NOT NULL,
+  builder_id text NOT NULL,
+  project_name text NOT NULL,
+  promised_date timestamp without time zone NOT NULL,
+  actual_date timestamp without time zone,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT builder_delivery_records_pkey PRIMARY KEY (id),
+  CONSTRAINT builder_delivery_records_builder_id_fkey FOREIGN KEY (builder_id) REFERENCES public.builders(id)
+);
+CREATE TABLE public.construction_updates (
+  id text NOT NULL,
+  project_id text NOT NULL,
+  title text NOT NULL,
+  description text,
+  update_date timestamp without time zone NOT NULL,
+  quarter_label text,
+  completion_pct integer,
+  photo_urls ARRAY DEFAULT ARRAY[]::text[],
+  source text,
+  verified_by text,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp without time zone NOT NULL,
+  CONSTRAINT construction_updates_pkey PRIMARY KEY (id),
+  CONSTRAINT construction_updates_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
+);
+CREATE TABLE public.project_lifecycle_updates (
+  id text NOT NULL,
+  project_id text NOT NULL,
+  update_type text NOT NULL,
+  title text NOT NULL,
+  description text,
+  update_date timestamp without time zone NOT NULL,
+  impact text,
+  source text,
+  verified_by text,
+  affects_pricing boolean NOT NULL DEFAULT false,
+  affects_recommendation boolean NOT NULL DEFAULT false,
+  legal_flag_cleared boolean NOT NULL DEFAULT false,
+  maintenance_fee_monthly_psf double precision,
+  maintenance_fee_previous double precision,
+  note text,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp without time zone NOT NULL,
+  CONSTRAINT project_lifecycle_updates_pkey PRIMARY KEY (id),
+  CONSTRAINT project_lifecycle_updates_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
+);
+CREATE TABLE public.sector_intelligence (
+  id text NOT NULL,
+  city text NOT NULL,
+  sector text NOT NULL,
+  sector_overview text,
+  sector_stage text,
+  dominant_segment text,
+  avg_price_per_sqft double precision,
+  price_5yr_cagr_pct double precision,
+  rental_yield_pct double precision,
+  avg_rent_3bhk_monthly double precision,
+  sector_strengths ARRAY,
+  sector_weaknesses ARRAY,
+  who_should_buy text,
+  who_should_avoid text,
+  infrastructure_pipeline jsonb,
+  last_verified_at timestamp without time zone,
+  verified_by text,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp without time zone NOT NULL,
+  CONSTRAINT sector_intelligence_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.channel_partners (
+  id text NOT NULL,
+  name text NOT NULL,
+  slug text NOT NULL,
+  type text NOT NULL,
+  description text,
+  website text,
+  phone text,
+  email text,
+  operating_cities ARRAY DEFAULT ARRAY[]::text[],
+  primary_contact text,
+  contact_phone text,
+  contact_email text,
+  is_verified boolean NOT NULL DEFAULT false,
+  verification_date timestamp without time zone,
+  total_leads integer NOT NULL DEFAULT 0,
+  total_conversions integer NOT NULL DEFAULT 0,
+  conversion_rate_pct double precision,
+  rera_compliant boolean NOT NULL DEFAULT false,
+  credai_member boolean NOT NULL DEFAULT false,
+  specializations ARRAY DEFAULT ARRAY[]::text[],
+  commission_rate_pct double precision,
+  payment_terms text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp without time zone NOT NULL,
+  CONSTRAINT channel_partners_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.channel_leads (
+  id text NOT NULL,
+  partner_id text NOT NULL,
+  user_id text,
+  name text NOT NULL,
+  email text NOT NULL,
+  phone text NOT NULL,
+  interested_sectors ARRAY DEFAULT ARRAY[]::text[],
+  budget_range text,
+  interested_bhk ARRAY DEFAULT ARRAY[]::integer[],
+  status text NOT NULL DEFAULT 'new'::text,
+  conversion_date timestamp without time zone,
+  notes text,
+  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp without time zone NOT NULL,
+  CONSTRAINT channel_leads_pkey PRIMARY KEY (id)
 );

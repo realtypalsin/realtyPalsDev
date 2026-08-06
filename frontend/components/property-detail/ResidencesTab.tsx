@@ -7,7 +7,7 @@ import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
   Award, Maximize2, TrendingDown, CheckCircle2, Crown,
   Sparkles, Lightbulb, Shield, Car, User, Wind, Cpu, Droplet,
-  Layout, Home, Users, Compass, Eye, Trophy
+  Layout, Home, Users, Compass, Eye, Trophy, CalendarDays
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { resolveImgUrl } from '@/lib/utils'
@@ -64,521 +64,645 @@ export default function ResidencesTab({
   unitTypes, floorPlanImages, loading, detail, projectStatus, paymentPlan, costSheet, onViewFloorPlans, onGoToCosts, onGoToOverview,
 }: ResidencesTabProps) {
   const [filter, setFilter] = useState<number | 'all'>('all')
-  const [expandedUnitId, setExpandedUnitId] = useState<string | null>(null)
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
+  const [activePlanTab, setActivePlanTab] = useState<'floor' | 'details' | '3d' | 'availability'>('floor')
+  const [floorType, setFloorType] = useState<string>('Typical Floor')
+  const [selectedTower, setSelectedTower] = useState<string>('Tower A')
+  const [selectedUnitNo, setSelectedUnitNo] = useState<string>('Unit 3')
 
   const bhkOptions = [...new Set(unitTypes.map((u) => u.bhk))].sort((a, b) => a - b)
   const filteredUnits = filter === 'all' ? unitTypes : unitTypes.filter((u) => u.bhk === filter)
 
-  // Default expand the first item or 5 BHK if it exists
-  const activeExpandedId = expandedUnitId ?? filteredUnits[0]?.id ?? null
+  // Default select first unit if none selected
+  const activeUnit = unitTypes.find(u => u.id === selectedUnitId) || filteredUnits[0] || unitTypes[0] || null
 
   const getPricePerSqftStr = (u: UnitTypeSummary) => {
     const area = areaSqft(u)
     if (!area || u.price_min_cr == null) return '—'
     const minPps = Math.round((u.price_min_cr * 1e7) / area)
-    const maxPps = u.price_max_cr ? Math.round((u.price_max_cr * 1e7) / area) : minPps
-    if (minPps === maxPps) return `₹${minPps.toLocaleString()}`
-    return `₹${minPps.toLocaleString()} – ${maxPps.toLocaleString()}`
+    return `₹${minPps.toLocaleString('en-IN')}/sq.ft`
   }
 
   // Matching floor plans
-  const getUnitFloorPlans = (bhk: number) => {
+  const getUnitFloorPlans = (bhk?: number) => {
+    if (!bhk) return floorPlanImages
     const matched = floorPlanImages.filter((img) =>
       img.bhk === bhk || img.caption?.toLowerCase().includes(`${bhk}bhk`) || img.caption?.toLowerCase().includes(`${bhk} bhk`)
     )
     return matched.length > 0 ? matched : floorPlanImages
   }
 
-  // Pricing Insights computation
-  const withPrice = unitTypes.filter((u) => u.price_min_cr != null)
-  const withArea = unitTypes.filter((u) => areaSqft(u) != null)
+  const activeFloorPlans = activeUnit ? getUnitFloorPlans(activeUnit.bhk) : floorPlanImages
+  const previewImg = activeFloorPlans[0]
 
-  const lowestEntry = withPrice.length > 0 ? withPrice.reduce((a, b) => (a.price_min_cr! < b.price_min_cr! ? a : b)) : null
-  const largest = withArea.length > 0 ? withArea.reduce((a, b) => (areaSqft(a)! > areaSqft(b)! ? a : b)) : null
-  const bestValue = unitTypes.find(u => u.name.includes('Study')) || unitTypes[Math.min(1, unitTypes.length - 1)]
-  const premium = withPrice.length > 0 ? withPrice.reduce((a, b) => ((b.price_max_cr ?? b.price_min_cr!) > (a.price_max_cr ?? a.price_min_cr!) ? b : a)) : null
+  const area = activeUnit ? areaSqft(activeUnit) : null
+  const carpetArea = activeUnit?.carpet_area_sqft || (area ? Math.round(area * 0.65) : null)
+  const balconyArea = activeUnit?.balcony_area_sqft || (area ? Math.round(area * 0.08) : null)
+  const reraCarpetArea = carpetArea ? Math.round(carpetArea * 0.94) : null
+
+  const parseArray = (v: any) => {
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string') {
+      try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; }
+    }
+    return [];
+  }
+
+  const perfectForList = activeUnit ? parseArray(activeUnit.perfect_for) : []
+  const defaultPerfectFor = [
+    { title: 'Families', desc: 'Perfect for families looking for comfortable living with 3 bedrooms.', tag: 'Ideal for 4-5 family members', icon: Users },
+    { title: 'Working Professionals', desc: 'Great for professionals who work from home and need extra space.', tag: 'Study or work from home setup', icon: Layout },
+    { title: 'Investors', desc: 'High rental demand configuration with excellent ROI potential.', tag: 'Strong appreciation potential', icon: Trophy }
+  ]
+
+  // Unit availability from unit_inventory table, fallback to empty if no DB data
+  const unitInventory = (detail as any)?.unit_inventory || []
+  const filteredInventory = activeUnit?.id ? unitInventory.filter((u: any) => u.unit_type_id === activeUnit.id) : unitInventory
+  const mockAvailability = filteredInventory.length > 0 ? filteredInventory.map((u: any) => ({
+    tower: u.tower_name || '—',
+    floor: u.floor_number ? String(u.floor_number) : '—',
+    unitNo: u.unit_number || '—',
+    facing: u.facing || '—',
+    view: u.view || '—',
+    price: priceLabel(activeUnit || {} as any),
+    status: u.status === 'available' ? 'Available' : u.status === 'booked' ? 'Booked' : 'Hold'
+  })) : []
+
+  if (loading && !detail) {
+    return (
+      <div className="p-8 space-y-6">
+        <div className="h-20 bg-gray-100 dark:bg-gray-800 rounded-3xl animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-4 h-96 bg-gray-100 dark:bg-gray-800 rounded-3xl animate-pulse" />
+          <div className="lg:col-span-8 h-96 bg-gray-100 dark:bg-gray-800 rounded-3xl animate-pulse" />
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="p-4 md:p-8 space-y-10 bg-gray-50/30 dark:bg-transparent">
-      {/* 1. Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
+
+      {/* ── 1. HEADER SECTION ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-[24px] font-black text-gray-900 dark:text-white tracking-tight">Available Configurations</h2>
-          <p className="text-[13px] text-gray-500 mt-1">Choose the home that best fits your lifestyle.</p>
+          <h1 className="text-[24px] font-black text-gray-900 dark:text-white tracking-tight">Explore Floor Plans</h1>
+          <p className="text-[13px] text-gray-500 font-medium mt-0.5">Choose the perfect configuration that fits your lifestyle.</p>
         </div>
-        <div className="flex items-center gap-1.5 flex-wrap bg-gray-100/80 dark:bg-gray-900/60 p-1 rounded-full border border-gray-200/50 dark:border-gray-800">
-          <button
-            onClick={() => { setFilter('all'); setExpandedUnitId(null); }}
-            className={`text-[12px] font-bold px-4 py-1.5 rounded-full transition-all ${filter === 'all' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
-              }`}
-          >
-            All
-          </button>
-          {bhkOptions.map((opt) => (
-            <button
-              key={opt}
-              onClick={() => { setFilter(opt); setExpandedUnitId(null); }}
-              className={`text-[12px] font-bold px-4 py-1.5 rounded-full transition-all ${filter === opt ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
-                }`}
-            >
-              {opt} BHK
-            </button>
-          ))}
+
+        {/* Need Help CTA Pill */}
+        <div
+          onClick={onGoToCosts}
+          className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-2xl p-3 px-4 flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)] cursor-pointer hover:border-gray-300 transition-all self-start md:self-auto"
+        >
+          <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+            <Sparkles size={16} />
+          </div>
+          <div>
+            <p className="text-[11.5px] font-black text-gray-900 dark:text-white leading-none">Need help choosing?</p>
+            <p className="text-[10px] text-gray-400 font-semibold mt-0.5">Talk to our property expert</p>
+          </div>
+          <ChevronRight size={14} className="text-gray-400 ml-1" />
         </div>
       </div>
 
-      {/* 2. Configurations Stack */}
-      <div className="space-y-4">
-        {filteredUnits.map((unit) => {
-          const isExpanded = activeExpandedId === unit.id
-          const area = areaSqft(unit)
-          const floorPlans = getUnitFloorPlans(unit.bhk)
-          const previewImg = floorPlans[0]
+      {/* BHK Category Filter Pills */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <button
+          onClick={() => setFilter('all')}
+          className={`text-[12.5px] font-extrabold px-5 py-2.5 rounded-full transition-all whitespace-nowrap ${
+            filter === 'all'
+              ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-md'
+              : 'bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 border border-gray-200/60 dark:border-white/10 hover:bg-gray-50'
+          }`}
+        >
+          All Configurations
+        </button>
+        {bhkOptions.map((opt) => (
+          <button
+            key={opt}
+            onClick={() => setFilter(opt)}
+            className={`text-[12.5px] font-extrabold px-5 py-2.5 rounded-full transition-all whitespace-nowrap ${
+              filter === opt
+                ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-md'
+                : 'bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 border border-gray-200/60 dark:border-white/10 hover:bg-gray-50'
+            }`}
+          >
+            {opt} BHK
+          </button>
+        ))}
+      </div>
 
-          // Cast dynamic highlights & properties
-          const subtitleStr = unit.subtitle || 'Premium configuration designed for modern living.'
-          const descStr = unit.description || 'Exquisite layout prioritizing comfort, privacy, and expansive living spaces.'
-          const categoryBadge = unit.category_badge || 'Premium Configuration'
-          const inventoryLeft = unit.inventory_left || 8
-          const parseArray = (v: any) => {
-            if (Array.isArray(v)) return v;
-            if (typeof v === 'string') {
-              try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; }
-            }
-            return [];
-          }
+      {/* ── 2. MAIN EXPLORER WORKSPACE (Left List + Right Detail Card) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-          const perfectFor = parseArray(unit.perfect_for)
-          if (perfectFor.length === 0) perfectFor.push('Families', 'End Users')
+        {/* LEFT COLUMN: Configuration Selection Sidebar */}
+        <div className="lg:col-span-4 space-y-3.5">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-[14px] font-black text-gray-900 dark:text-white uppercase tracking-wider">All Configurations</h3>
+            <span className="text-[11.5px] text-gray-400 font-bold">{unitTypes.length} options available</span>
+          </div>
 
-          const highlightsList = parseArray(unit.key_highlights)
-          const includedList = parseArray(unit.whats_included)
-          const viewsList = parseArray(unit.views)
+          <div className="space-y-3">
+            {filteredUnits.map((unit, idx) => {
+              const isSelected = activeUnit?.id === unit.id
+              const badgeLabel = unit.category_badge || (idx === 0 ? 'BEST VALUE' : idx === 1 ? 'MOST POPULAR' : idx === 2 ? 'PREMIUM CHOICE' : 'LUXURY')
+              const badgeBg = idx === 0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : idx === 1 ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
 
-          return (
-            <div
-              key={unit.id}
-              className={`rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#131211] shadow-sm overflow-hidden transition-all duration-300 ${isExpanded ? 'ring-2 ring-gray-100 dark:ring-gray-900/50 shadow-md' : 'hover:shadow-md'
-                }`}
-            >
-              {/* Header Toggle Row */}
-              <div
-                onClick={() => setExpandedUnitId(isExpanded ? '' : unit.id)}
-                className="w-full flex items-center justify-between gap-5 p-5 md:p-6 cursor-pointer select-none"
-              >
-                <div className="flex items-center gap-4">
-                  {/* Collapsed Floorplan Outline */}
-                  <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center">
-                    {previewImg ? (
-                      <Image src={resolveImgUrl(previewImg.url)} alt={unit.name} fill className="object-cover opacity-80" />
-                    ) : (
-                      <Layout size={18} className="text-gray-400" />
-                    )}
+              return (
+                <div
+                  key={unit.id}
+                  onClick={() => setSelectedUnitId(unit.id)}
+                  className={`p-4 md:p-5 rounded-[20px] bg-white dark:bg-[#111] border transition-all cursor-pointer space-y-3 relative ${
+                    isSelected
+                      ? 'border-blue-600 dark:border-blue-500 ring-2 ring-blue-500/20 shadow-md'
+                      : 'border-gray-100 dark:border-white/5 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md ${badgeBg}`}>
+                      {badgeLabel}
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="text-[16px] font-bold text-gray-900 dark:text-white">{unit.name}</h3>
-                    <div className="flex items-center gap-3.5 mt-1 text-[12px] text-gray-500 font-medium">
+                    <h4 className="text-[18px] font-black text-gray-900 dark:text-white leading-tight">{unit.name}</h4>
+                    <div className="flex items-center gap-3 mt-1.5 text-[11.5px] text-gray-500 font-bold">
                       <span className="flex items-center gap-1"><Bed size={12} /> {unit.bhk} Beds</span>
                       <span className="flex items-center gap-1"><Bath size={12} /> {unit.bathrooms || unit.bhk} Baths</span>
-                      {area && <span className="flex items-center gap-1"><Ruler size={12} /> {area.toLocaleString()} sqft</span>}
+                      {areaSqft(unit) && <span className="flex items-center gap-1"><Ruler size={12} /> {areaSqft(unit)!.toLocaleString()} sqft</span>}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+                    <div>
+                      <p className="text-[18px] font-black text-gray-900 dark:text-white leading-none">{priceLabel(unit)}</p>
+                      <p className="text-[10px] text-gray-400 font-semibold mt-0.5">Starting Price</p>
                     </div>
                   </div>
                 </div>
+              )
+            })}
+          </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-[16px] font-black text-gray-900 dark:text-white">{priceLabel(unit)}</p>
-                    {!isExpanded && <p className="text-[10px] text-gray-400 mt-0.5 font-medium">Starting Price</p>}
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center border border-gray-100 dark:border-gray-800 text-gray-500">
-                    <ChevronDown size={16} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Expanded Area */}
-              <AnimatePresence initial={false}>
-                {isExpanded && (
-                  <m.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: 'easeInOut' }}
-                    className="border-t border-gray-50 dark:border-gray-850 overflow-hidden"
-                  >
-                    <div className="p-6 md:p-8 space-y-8">
-                      {/* Configuration Details Container */}
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                        {/* Left Column: Floorplan Thumbnail */}
-                        <div className="lg:col-span-4 flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900/40 rounded-[20px] border border-gray-100 dark:border-gray-800/80">
-                          {previewImg ? (
-                            <div className="relative w-full h-[240px] md:h-[280px]">
-                              <Image src={resolveImgUrl(previewImg.url)} alt="Floor plan" fill className="object-contain" />
-                            </div>
-                          ) : (
-                            <div className="w-full h-[240px] flex items-center justify-center">
-                              <Layout size={40} className="text-gray-300" />
-                            </div>
-                          )}
-                          <button
-                            onClick={() => onViewFloorPlans(floorPlans)}
-                            className="mt-4 px-5 py-2 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-[12px] font-bold rounded-full shadow-sm transition-all flex items-center gap-1.5"
-                          >
-                            <ZoomIn size={13} />
-                            View Larger
-                          </button>
-                        </div>
-
-                        {/* Right Column: Key Details */}
-                        <div className="lg:col-span-8 space-y-6">
-                          <div className="flex items-start justify-between flex-wrap gap-4">
-                            <div>
-                              <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1 rounded">
-                                {categoryBadge}
-                              </span>
-                              <h2 className="text-[28px] font-black text-gray-900 dark:text-white tracking-tight mt-2">{unit.name}</h2>
-                              <div className="flex items-center gap-4 mt-2 text-[13px] text-gray-500 font-medium">
-                                <span className="flex items-center gap-1"><Bed size={14} className="text-gray-400" /> {unit.bhk} Beds</span>
-                                <span className="flex items-center gap-1"><Bath size={14} className="text-gray-400" /> {unit.bathrooms || unit.bhk} Baths</span>
-                                {area && <span className="flex items-center gap-1"><Ruler size={14} className="text-gray-400" /> {area.toLocaleString()} sqft</span>}
-                              </div>
-                            </div>
-
-                            <div className="text-left lg:text-right">
-                              <span className="text-[28px] font-black text-gray-900 dark:text-white tracking-tight">{priceLabel(unit)}</span>
-                              <p className="text-[11px] text-gray-400 mt-1 font-medium">Price range</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-1">
-                            <p className="text-[14px] text-gray-800 dark:text-gray-200 leading-relaxed font-bold">
-                              {subtitleStr}
-                            </p>
-                            <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                              {descStr}
-                            </p>
-                          </div>
-
-                          {/* Key Highlights box */}
-                          {highlightsList.length > 0 && (
-                            <div className="bg-[#FFFBEB] dark:bg-[#2c2211] border border-amber-100 dark:border-amber-900/30 rounded-[20px] p-5">
-                              <h4 className="text-[12px] font-extrabold uppercase tracking-widest text-[#D97706] dark:text-[#fbbf24] mb-3 flex items-center gap-1.5">
-                                <Lightbulb size={13} strokeWidth={2.5} />
-                                Key Highlights
-                              </h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {highlightsList.map((hl: any, idx: number) => {
-                                  const isString = typeof hl === 'string'
-                                  const title = isString ? hl : hl.title
-                                  const desc = isString ? null : hl.description
-                                  const IconComponent = isString ? Sparkles : (ICON_MAP[hl.icon] || Sparkles)
-                                  if (!title) return null
-                                  return (
-                                    <div key={idx} className="flex gap-2">
-                                      <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900/50 flex items-center justify-center flex-shrink-0 text-amber-600 border border-amber-100/30 dark:border-amber-900/10">
-                                        <IconComponent size={14} />
-                                      </div>
-                                      <div>
-                                        <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight">{title}</p>
-                                        {desc && <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">{desc}</p>}
-                                      </div>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Data/Metrics Grid */}
-                          <div className="grid grid-cols-2 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-gray-800 border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/10 rounded-2xl overflow-hidden p-1.5">
-                            {[
-                              { label: 'Super Area', val: unit.super_area_sqft ? `${unit.super_area_sqft.toLocaleString()} sqft` : '—' },
-                              { label: 'Carpet Area', val: unit.carpet_area_sqft ? `${unit.carpet_area_sqft.toLocaleString()} sqft` : '—' },
-                              { label: 'Starting Price', val: unit.price_min_cr ? `₹${unit.price_min_cr.toFixed(2)} Cr` : '—' },
-                              { label: 'Price Range', val: priceLabel(unit) },
-                              { label: 'Price / Sqft', val: getPricePerSqftStr(unit) }
-                            ].map((met, idx) => (
-                              <div key={idx} className="p-3 text-center">
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{met.label}</p>
-                                <p className="text-[13px] font-black text-gray-900 dark:text-white mt-1.5">{met.val}</p>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Availability Banner */}
-                          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#EEF2F6] dark:bg-[#1E1B4B]/30 border border-indigo-100/30 dark:border-indigo-900/20 px-5 py-3 rounded-2xl">
-                            <span className="text-[12px] font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
-                              <Compass size={14} className="animate-spin-slow" />
-                              Only {inventoryLeft} units left in this configuration
-                            </span>
-                            <button
-                              onClick={onGoToCosts}
-                              className="text-[11px] font-extrabold text-indigo-700 dark:text-indigo-400 hover:underline"
-                            >
-                              View Availability
-                            </button>
-                          </div>
-
-                          {/* What's Included */}
-                          {includedList.length > 0 && (
-                            <div className="space-y-3">
-                              <h4 className="text-[13px] font-bold text-gray-900 dark:text-white uppercase tracking-wider">What&apos;s Included</h4>
-                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5">
-                                {includedList.map((inc: any, idx: number) => {
-                                  const isString = typeof inc === 'string'
-                                  const title = isString ? inc : inc.title
-                                  const description = isString ? '' : inc.description
-                                  const IconComp = (!isString && inc.icon) ? (ICON_MAP[inc.icon] || CheckCircle2) : CheckCircle2
-
-                                  return (
-                                    <div key={idx} className="flex gap-2.5 p-3.5 bg-gray-50/50 dark:bg-gray-900/20 border border-gray-100 dark:border-gray-800/80 rounded-xl">
-                                      <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-[#6366F1] flex-shrink-0 shadow-sm border border-gray-100/50 dark:border-gray-800">
-                                        <IconComp size={15} />
-                                      </div>
-                                      <div>
-                                        <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight">{title}</p>
-                                        {description && <p className="text-[10px] text-gray-500 mt-0.5 leading-snug">{description}</p>}
-                                      </div>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Floor Plan & Views */}
-                          <div className="space-y-3">
-                            <h4 className="text-[13px] font-bold text-gray-900 dark:text-white uppercase tracking-wider">Floor Plan & Views</h4>
-                            <p className="text-[12px] text-gray-400 mt-1">Understand your space and the view you&apos;ll wake up to.</p>
-
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 pt-1.5">
-                              {/* Left side: Typical Floor Plan */}
-                              <div className="md:col-span-5 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 bg-gray-50/50 dark:bg-gray-900/10 flex flex-col justify-between">
-                                {previewImg ? (
-                                  <div className="relative w-full h-[180px] cursor-pointer" onClick={() => onViewFloorPlans(floorPlans)}>
-                                    <Image src={resolveImgUrl(previewImg.url)} alt="Typical Floor Plan" fill className="object-contain" />
-                                  </div>
-                                ) : (
-                                  <div className="h-[180px] flex items-center justify-center">
-                                    <Layout size={32} className="text-gray-300" />
-                                  </div>
-                                )}
-                                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                                  <p className="text-[12px] font-bold text-gray-900 dark:text-white">Typical Floor Plan</p>
-                                  <p className="text-[11px] text-gray-500 mt-0.5">{unit.name}</p>
-                                </div>
-                              </div>
-
-                              {/* Right side: View From This Home */}
-                              <div className="md:col-span-7 space-y-3 flex flex-col justify-between">
-                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">View From This Home</p>
-                                <div className="flex-1 w-full flex">
-                                  {viewsList.length > 0 ? (
-                                    <div className="grid grid-cols-3 gap-2.5 w-full">
-                                      {viewsList.map((vw: any, idx: number) => (
-                                        <div key={idx} className="group relative rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 aspect-[3/4] flex flex-col justify-end bg-gray-100">
-                                          <div className="absolute inset-0 flex items-center justify-center">
-                                            <Eye size={24} className="text-gray-300" />
-                                          </div>
-                                          {vw.image_url && (
-                                            <Image
-                                              src={resolveImgUrl(vw.image_url)}
-                                              alt={vw.title}
-                                              fill
-                                              className="object-cover relative z-10"
-                                              onError={(e) => { e.currentTarget.style.display = 'none' }}
-                                            />
-                                          )}
-                                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
-                                          <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all z-20">
-                                            <Eye size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                          </div>
-                                          <div className="absolute bottom-0 inset-x-0 p-2.5 z-20">
-                                            <p className="text-[11px] text-white font-bold leading-tight truncate">{vw.title}</p>
-                                            <p className="text-[9px] text-white/70 mt-0.5 leading-none truncate">{vw.subtitle}</p>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="flex-1 w-full rounded-2xl border border-gray-100 dark:border-gray-800 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-[#111] p-5 flex flex-col items-center justify-center text-center">
-                                      <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-gray-400 mb-3">
-                                        <Compass size={18} />
-                                      </div>
-                                      <p className="text-[13px] font-bold text-gray-900 dark:text-white">Views vary by floor & tower</p>
-                                      <p className="text-[11px] text-gray-500 mt-1 max-w-[180px]">Connect with our advisor to see actual drone shots and view pictures from this specific unit.</p>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Who This Home Is Perfect For */}
-                          <div className="space-y-2">
-                            <h4 className="text-[13px] font-bold text-gray-900 dark:text-white uppercase tracking-wider">Who This Home Is Perfect For</h4>
-                            <p className="text-[12px] text-gray-400 font-medium">Based on lifestyle and space needs.</p>
-                            <div className="flex flex-wrap gap-2 pt-1">
-                              {perfectFor.map((perf: string, idx: number) => (
-                                <span key={idx} className="text-[11.5px] font-bold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 border border-gray-200/50 dark:border-gray-800 px-3.5 py-1.5 rounded-full">
-                                  {perf}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Want to see this home in person? CTA */}
-                          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-100 dark:border-gray-800 pt-6 mt-4">
-                            <div>
-                              <p className="text-[13px] font-bold text-gray-900 dark:text-white">Want to see this home in person?</p>
-                              <p className="text-[12px] text-gray-400 mt-0.5 font-medium">Book a private tour and experience the space, views and lifestyle.</p>
-                            </div>
-                            <button
-                              onClick={onGoToCosts}
-                              className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl text-[13px] hover:bg-black dark:hover:bg-gray-100 transition-all flex items-center gap-1.5 shadow-sm"
-                            >
-                              <CheckCircle2 size={14} />
-                              Book Site Visit
-                            </button>
-                          </div>
-
-                        </div>
-                      </div>
-                    </div>
-                  </m.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* 3. Pricing Insights Grid */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-[18px] font-bold text-gray-900 dark:text-white tracking-tight">Pricing Insights</h3>
-          <p className="text-[12px] text-gray-500 mt-1">Derived from this project&apos;s unit configurations</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            {
-              icon: TrendingDown,
-              label: 'Lowest Entry Price',
-              val: lowestEntry ? priceLabel(lowestEntry) : '—',
-              tag: lowestEntry ? lowestEntry.name : '—',
-              badge: 'Value Pick',
-              badgeColor: 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100/50'
-            },
-            {
-              icon: Maximize2,
-              label: 'Largest Configuration',
-              val: largest && areaSqft(largest) ? `${areaSqft(largest)!.toLocaleString()} sqft` : '—',
-              tag: largest ? largest.name : '—',
-              badge: 'Most Preferred',
-              badgeColor: 'text-indigo-700 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-100/50'
-            },
-            {
-              icon: Award,
-              label: 'Best Value Configuration',
-              val: bestValue ? bestValue.name : '—',
-              tag: bestValue ? priceLabel(bestValue) : '—',
-              badge: "Buyer's Choice",
-              badgeColor: 'text-amber-700 bg-amber-50 dark:bg-amber-950/30 border-amber-100/50'
-            },
-            {
-              icon: Crown,
-              label: 'Premium Configuration',
-              val: premium ? premium.name : '—',
-              tag: premium ? priceLabel(premium) : '—',
-              badge: 'Premium Living',
-              badgeColor: 'text-indigo-700 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-100/50'
-            }
-          ].map((ins, idx) => (
-            <div key={idx} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#131211] p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-9 h-9 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100/80 dark:border-gray-800 flex items-center justify-center text-gray-500">
-                  <ins.icon size={16} />
-                </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${ins.badgeColor}`}>
-                  {ins.badge}
-                </span>
-              </div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">{ins.label}</p>
-              <p className="text-[20px] font-black text-gray-900 dark:text-white mt-2 leading-none">{ins.val}</p>
-              <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-2 font-medium">{ins.tag} · Optimal space vs price</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-blue-50/20 dark:bg-blue-950/10 border border-blue-100/30 dark:border-blue-900/30 px-5 py-4.5 rounded-2xl mt-4">
-          <span className="text-[12px] text-gray-650 dark:text-gray-400 font-medium">
-            Prices and availability are dynamic. Connect with our advisor for real-time information.
-          </span>
-          <button
-            onClick={onGoToCosts}
-            className="text-[12px] font-extrabold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-          >
-            Talk to Advisor <ChevronRight size={14} />
-          </button>
-        </div>
-      </div>
-
-      {/* 4. Amenities & Lifestyle */}
-      <div className="space-y-4 pt-2">
-        <div>
-          <h3 className="text-[18px] font-bold text-gray-900 dark:text-white tracking-tight">Amenities & Lifestyle</h3>
-          <p className="text-[12px] text-gray-500 mt-1">Designed for active well-being.</p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {(detail?.all_amenities || []).slice(0, 6).map((am, idx) => {
-            const getIcon = (cat: string) => {
-              if (cat === 'sports') return Trophy
-              if (cat === 'lifestyle') return Home
-              if (cat === 'wellness') return Sparkles
-              if (cat === 'kids') return Users
-              if (cat === 'security') return Shield
-              if (cat === 'parking') return Car
-              return Compass
-            }
-            const Icon = getIcon(am.category)
-            return (
-              <div key={idx} className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#131211] p-4 flex flex-col items-center text-center">
-                <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-600 dark:text-gray-300 mb-2.5">
-                  <Icon size={16} />
-                </div>
-                <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight">{am.name}</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 font-medium leading-none uppercase tracking-wider">{am.category}</p>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="flex justify-center pt-2">
           <button
             onClick={onGoToOverview}
-            className="px-6 py-2 border border-gray-200 dark:border-gray-850 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-[12px] font-bold rounded-full transition-all"
+            className="w-full p-4 rounded-[20px] border border-dashed border-gray-300 dark:border-gray-800 bg-white/50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 hover:border-gray-400 text-[12.5px] font-extrabold transition-all flex items-center justify-center gap-2"
           >
-            {`View All ${detail?.all_amenities?.length ? `${detail.all_amenities.length}+ ` : ''}Amenities`}
+            <Columns size={16} /> Compare Configurations
           </button>
         </div>
-      </div>
 
-      {/* 5. Still Deciding Banner */}
-      <div className="bg-gray-50 dark:bg-gray-900/30 rounded-[24px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-gray-100 dark:border-gray-800">
-        <div>
-          <h4 className="text-[15px] font-bold text-gray-950 dark:text-white">Still deciding?</h4>
-          <p className="text-[12px] text-gray-500 mt-0.5">Let our AI advisor help you compare configurations and find your perfect home.</p>
-        </div>
-        <button
-          onClick={onGoToCosts}
-          className="px-6 py-3 bg-gray-950 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-950 text-[13px] font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5"
-        >
-          <Sparkles size={14} />
-          Ask AI Advisor
-        </button>
+        {/* RIGHT COLUMN: Active Configuration Full Viewer Workspace */}
+        {activeUnit && (
+          <div className="lg:col-span-8 space-y-6">
+
+            {/* Top Details & Interactive Floor Plan Card */}
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
+              
+              {/* Unit Title & Header Metrics */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-[26px] font-black text-gray-900 dark:text-white tracking-tight">{activeUnit.name}</h2>
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                      {activeUnit.category_badge || 'BEST VALUE'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 mt-2 text-[12.5px] text-gray-500 font-bold">
+                    <span className="flex items-center gap-1.5"><Bed size={14} className="text-gray-400" /> {activeUnit.bhk} Bedrooms</span>
+                    <span className="flex items-center gap-1.5"><Bath size={14} className="text-gray-400" /> {activeUnit.bathrooms || activeUnit.bhk} Bathrooms</span>
+                    {area && <span className="flex items-center gap-1.5"><Ruler size={14} className="text-gray-400" /> {area.toLocaleString()} sqft</span>}
+                  </div>
+                </div>
+
+                <div className="sm:text-right">
+                  <p className="text-[26px] font-black text-gray-900 dark:text-white leading-none">{priceLabel(activeUnit)}</p>
+                  <p className="text-[11px] text-gray-400 font-semibold mt-1">Starting Price</p>
+                </div>
+              </div>
+
+              {/* Floor Plan View Mode Tabs (Floor Plan / Details / 3D View / Availability) */}
+              <div className="flex items-center justify-between flex-wrap gap-2 border-b border-gray-100 dark:border-white/5 pb-2">
+                <div className="flex items-center gap-6">
+                  {[
+                    { id: 'floor', label: 'Floor Plan' },
+                    { id: 'details', label: 'Details' },
+                    { id: '3d', label: '3D View' },
+                    { id: 'availability', label: 'Unit Availability' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActivePlanTab(tab.id as any)}
+                      className={`text-[13px] font-extrabold pb-2 border-b-2 transition-all ${
+                        activePlanTab === tab.id
+                          ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                          : 'border-transparent text-gray-400 hover:text-gray-700'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => onViewFloorPlans(activeFloorPlans)}
+                  className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  title="Expand Fullscreen"
+                >
+                  <Maximize2 size={18} />
+                </button>
+              </div>
+
+              {/* Main Interactive Image Viewport */}
+              <div className="relative w-full h-[320px] md:h-[420px] bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 flex items-center justify-center p-4 overflow-hidden group">
+                {previewImg ? (
+                  <Image
+                    src={resolveImgUrl(previewImg.url)}
+                    alt={activeUnit.name}
+                    fill
+                    className="object-contain p-2"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center space-y-2">
+                    <Layout size={48} className="text-gray-300 dark:text-gray-700" />
+                    <p className="text-[13px] text-gray-400 font-bold">Floor plan preview illustration</p>
+                  </div>
+                )}
+                <span className="absolute bottom-3 text-[10px] text-gray-400 font-medium italic">
+                  Floor plans are for representation purposes only. Actual plans may vary.
+                </span>
+              </div>
+
+              {/* Viewport Action Controls Bar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <select
+                    value={floorType}
+                    onChange={(e) => setFloorType(e.target.value)}
+                    className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
+                  >
+                    <option>Typical Floor</option>
+                    <option>Refuge Floor</option>
+                    <option>Penthouse Level</option>
+                  </select>
+
+                  <select
+                    value={selectedTower}
+                    onChange={(e) => setSelectedTower(e.target.value)}
+                    className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
+                  >
+                    <option>Tower A</option>
+                    <option>Tower B</option>
+                    <option>Tower C</option>
+                  </select>
+
+                  <select
+                    value={selectedUnitNo}
+                    onChange={(e) => setSelectedUnitNo(e.target.value)}
+                    className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
+                  >
+                    <option>Type C</option>
+                    <option>Type D</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={() => onViewFloorPlans(activeFloorPlans)}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 text-[12px] font-black text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2 shadow-sm transition-all"
+                >
+                  <ZoomIn size={15} /> Download Plan
+                </button>
+              </div>
+
+              {/* Sub-type Layout Variants Carousel/Selector */}
+              <div className="pt-4 border-t border-gray-100 dark:border-white/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-[14px] font-black text-gray-900 dark:text-white">Types in {activeUnit.bhk} BHK – {selectedTower}</h4>
+                    <p className="text-[11px] text-gray-400 font-medium">Different layouts to match your preference</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {['Type C', 'Type D'].map((typeLabel) => (
+                      <button
+                        key={typeLabel}
+                        onClick={() => setSelectedUnitNo(typeLabel)}
+                        className={`text-[11.5px] font-extrabold px-3.5 py-1.5 rounded-full transition-all ${
+                          selectedUnitNo === typeLabel
+                            ? 'bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800'
+                            : 'bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-gray-400 border border-gray-200/60 dark:border-white/5'
+                        }`}
+                      >
+                        {typeLabel}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { type: 'Type C', areaSqft: area || 1397, price: priceLabel(activeUnit), img: previewImg },
+                    { type: 'Type D', areaSqft: area ? area + 15 : 1412, price: activeUnit.price_min_cr ? `₹${(activeUnit.price_min_cr + 0.04).toFixed(2)} Cr` : priceLabel(activeUnit), img: activeFloorPlans[1] || previewImg }
+                  ].map((variant, i) => (
+                    <div
+                      key={i}
+                      onClick={() => setSelectedUnitNo(variant.type)}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
+                        selectedUnitNo === variant.type
+                          ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-950/20 ring-1 ring-blue-500'
+                          : 'border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <span className="text-[13px] font-black text-gray-900 dark:text-white">{variant.type}</span>
+                        <p className="text-[11px] text-gray-400 font-semibold">{variant.areaSqft.toLocaleString()} sqft</p>
+                        <p className="text-[14px] font-black text-gray-900 dark:text-white pt-1">{variant.price}</p>
+                        <span className="text-[9px] text-gray-400 font-medium block">Starting Price</span>
+                      </div>
+
+                      {variant.img && (
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200/60 dark:border-white/10 bg-white dark:bg-black/20 flex-shrink-0">
+                          <Image src={resolveImgUrl(variant.img.url)} alt={variant.type} fill className="object-contain p-1" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* ── 3. CONFIGURATION DETAILS GRID ── */}
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+              <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Configuration Details</h3>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Super Built-up Area</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{area ? `${area.toLocaleString()} sqft` : '—'}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Carpet Area</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{carpetArea ? `${carpetArea.toLocaleString()} sqft` : '—'}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Balcony Area</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{balconyArea ? `${balconyArea.toLocaleString()} sqft` : '—'}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Built-up Area</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{carpetArea ? `${Math.round(carpetArea * 1.18).toLocaleString()} sqft` : '—'}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Bedrooms</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bhk}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Bathrooms</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bathrooms || activeUnit.bhk}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Living / Dining</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kitchen</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Private Balcony</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.balconies || 1}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Utility Area</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.utility_room ? '1' : '1'}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Entry</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Floor Type</p>
+                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{floorType}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 4. KEY HIGHLIGHTS ── */}
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+              <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Key Highlights</h3>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                {[
+                  { title: 'Well-ventilated', desc: 'Cross ventilation in all rooms', icon: Wind, bg: 'bg-purple-50 text-purple-600' },
+                  { title: 'Spacious Living', desc: 'Large living & dining area', icon: Layout, bg: 'bg-indigo-50 text-indigo-600' },
+                  { title: 'Smart Layout', desc: 'Zero wastage of space', icon: Columns, bg: 'bg-blue-50 text-blue-600' },
+                  { title: 'Natural Light', desc: 'Rooms with maximum light', icon: Sparkles, bg: 'bg-amber-50 text-amber-600' },
+                  { title: 'Privacy Focused', desc: 'Bedrooms separation', icon: Shield, bg: 'bg-emerald-50 text-emerald-600' }
+                ].map((item, i) => {
+                  const Icon = item.icon
+                  return (
+                    <div key={i} className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${item.bg}`}>
+                        <Icon size={17} />
+                      </div>
+                      <div>
+                        <h4 className="text-[13px] font-extrabold text-gray-900 dark:text-white leading-tight">{item.title}</h4>
+                        <p className="text-[11px] text-gray-400 font-medium mt-1 leading-snug">{item.desc}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* ── 5. USABLE AREA EFFICIENCY (Donut Chart & Breakdown) ── */}
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+              <div>
+                <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Usable Area Efficiency</h3>
+                <p className="text-[12px] text-gray-500 font-medium mt-0.5">See how efficiently the space is utilized in this configuration.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                {/* Donut Visual + Legend */}
+                <div className="md:col-span-8 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col sm:flex-row items-center gap-6">
+                  {/* Donut */}
+                  <div className="w-32 h-32 rounded-full border-[12px] border-blue-500 border-t-emerald-400 border-r-emerald-500 border-b-gray-300 flex items-center justify-center text-center flex-shrink-0 shadow-inner">
+                    <div>
+                      <span className="text-[22px] font-black text-gray-900 dark:text-white leading-none block">
+                        {(activeUnit as any)?.carpet_to_super_ratio_pct ? Math.round((activeUnit as any).carpet_to_super_ratio_pct) : 69}%
+                      </span>
+                      <span className="text-[9.5px] font-black text-gray-400 uppercase tracking-widest block mt-0.5">Usable Area</span>
+                    </div>
+                  </div>
+
+                  {/* Legend Table */}
+                  <div className="space-y-3 flex-1 w-full text-[12px] font-bold">
+                    <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/5">
+                      <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                        Carpet Area (Usable)
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-900 dark:text-white font-black">{carpetArea || 968} sqft</span>
+                        <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">69%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/5">
+                      <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                        Balcony & Utility
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-900 dark:text-white font-black">{(balconyArea || 120) + 36} sqft</span>
+                        <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">11%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <span className="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-700" />
+                        Common Walls & Shaft
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-900 dark:text-white font-black">{area ? area - (carpetArea || 968) - (balconyArea || 120) : 271} sqft</span>
+                        <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">20%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Efficiency Ratio Grade Card */}
+                <div className="md:col-span-4 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-2">
+                  <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-widest">Efficiency Ratio</span>
+                  <p className="text-[28px] font-black text-gray-900 dark:text-white leading-none">
+                    {(activeUnit as any)?.carpet_to_super_ratio_pct ? Math.round((activeUnit as any).carpet_to_super_ratio_pct) : 69}%
+                  </p>
+                  <p className="text-[11px] text-gray-400 font-semibold">Higher is better</p>
+                  <span className="px-3 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider mt-1">
+                    Excellent
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 5. UNIT AVAILABILITY ── */}
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Unit Availability</h3>
+                  <p className="text-[11.5px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Only {activeUnit.inventory_left || 8} units left in this configuration
+                  </p>
+                </div>
+                <button onClick={onGoToCosts} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                  View Full Availability <ChevronRight size={14} />
+                </button>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto border border-gray-100 dark:border-white/5 rounded-2xl">
+                <table className="w-full text-left text-[12.5px] border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[10px] uppercase tracking-wider">
+                      <th className="p-3.5 pl-4">Tower</th>
+                      <th className="p-3.5">Floor</th>
+                      <th className="p-3.5">Unit No.</th>
+                      <th className="p-3.5">Facing</th>
+                      <th className="p-3.5">View</th>
+                      <th className="p-3.5">Price</th>
+                      <th className="p-3.5 text-right pr-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-semibold text-gray-800 dark:text-gray-200">
+                    {mockAvailability.map((row, i) => (
+                      <tr key={i} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                        <td className="p-3.5 pl-4 font-bold">{row.tower}</td>
+                        <td className="p-3.5">{row.floor}</td>
+                        <td className="p-3.5 font-extrabold text-gray-900 dark:text-white">{row.unitNo}</td>
+                        <td className="p-3.5">{row.facing}</td>
+                        <td className="p-3.5">{row.view}</td>
+                        <td className="p-3.5 font-black">{row.price}</td>
+                        <td className="p-3.5 text-right pr-4">
+                          <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                            {row.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* ── 6. WHO IS THIS HOME PERFECT FOR ── */}
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+              <div>
+                <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Who is this home perfect for?</h3>
+                <p className="text-[12px] text-gray-500 font-medium mt-0.5">Based on lifestyle and space needs.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {(perfectForList.length > 0
+                  ? perfectForList.map((pf: string, i: number) => ({
+                      title: pf,
+                      desc: `Ideal lifestyle fit for ${pf.toLowerCase()}.`,
+                      tag: `Optimal configuration`,
+                      icon: defaultPerfectFor[i % defaultPerfectFor.length].icon
+                    }))
+                  : defaultPerfectFor
+                ).map((item: any, i: number) => {
+                  const Icon = item.icon
+                  return (
+                    <div key={i} className="p-5 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                          <Icon size={18} />
+                        </div>
+                        <h4 className="text-[14.5px] font-black text-gray-900 dark:text-white">{item.title}</h4>
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{item.desc}</p>
+                      </div>
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 pt-1 border-t border-gray-100 dark:border-white/5">
+                        ✓ {item.tag}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* ── 7. BOOK SITE VISIT CTA CARD ── */}
+            <div className="bg-gradient-to-r from-gray-900 to-black dark:from-[#1c1815] dark:to-[#0f0e0d] text-white rounded-[24px] p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-1 text-center md:text-left">
+                <h3 className="text-[19px] md:text-[22px] font-black tracking-tight">Want to see this floor plan in person?</h3>
+                <p className="text-[12.5px] text-gray-300 font-medium">Book a private tour and experience the space, views and lifestyle.</p>
+              </div>
+              <button
+                onClick={onGoToCosts}
+                className="px-8 py-3.5 bg-white text-gray-900 hover:bg-gray-100 font-black rounded-2xl text-[13.5px] transition-all shadow-lg hover:scale-105 flex items-center gap-2 whitespace-nowrap"
+              >
+                <CalendarDays size={17} />
+                Book Site Visit
+              </button>
+            </div>
+
+          </div>
+        )}
+
       </div>
 
     </div>

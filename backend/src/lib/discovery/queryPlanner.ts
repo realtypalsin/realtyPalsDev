@@ -248,20 +248,33 @@ async function extractProjectIds(
     }
   }
 
-  // Pronoun resolution: "that project", "the first one"
-  if (!projectIds.length) {
-    if (/that project|this project|the project|it\b/.test(msg)) {
-      // Use first from conversation context if available
-      if (conversationContext?.activeProjects?.length) {
-        projectIds.push(conversationContext.activeProjects[0])
+  // Pronoun & contextual active project resolution:
+  // If no explicit project name found in user message (e.g. "Can I see the price list?", "What are the payment plans?"),
+  // automatically resolve from active projects in conversation context.
+  if (!projectIds.length && conversationContext?.activeProjects?.length) {
+    // If only 1 project is active in context, resolve directly to it
+    if (conversationContext.activeProjects.length === 1) {
+      const activeTerm = conversationContext.activeProjects[0]
+      const match = projects.find(
+        p => p.id === activeTerm || p.slug.toLowerCase() === activeTerm.toLowerCase() || p.name.toLowerCase() === activeTerm.toLowerCase()
+      )
+      if (match) {
+        projectIds.push(match.id)
+      } else {
+        projectIds.push(activeTerm)
+      }
+    } else if (/that project|this project|the project|it\b/.test(msg)) {
+      // If multiple projects active, resolve pronoun to the first active project
+      const activeTerm = conversationContext.activeProjects[0]
+      const match = projects.find(
+        p => p.id === activeTerm || p.slug.toLowerCase() === activeTerm.toLowerCase() || p.name.toLowerCase() === activeTerm.toLowerCase()
+      )
+      if (match) {
+        projectIds.push(match.id)
+      } else {
+        projectIds.push(activeTerm)
       }
     }
-  }
-
-  // For compare: extract multiple projects
-  if (/compare|vs|versus/.test(msg)) {
-    // Already extracted from regex matches above
-    // If only one project mentioned, ask for second
   }
 
   return projectIds
@@ -440,11 +453,7 @@ export async function planProjectDetailQuery(params: {
       'Which project are you asking about? (e.g., "ATS Pristine", "Godrej")'
     )
   }
-  if (!availability.available && availability.missingFields.length > 0) {
-    clarificationOptions.push(
-      `Some details are unavailable: ${availability.missingFields.join(', ')}`
-    )
-  }
+  // Missing fields are internal; don't expose them to user (filtered via availability check above)
   if (patternMatch.intent === 'compare' && projectIds.length < 2) {
     clarificationOptions.push('Which second project should I compare with?')
   }

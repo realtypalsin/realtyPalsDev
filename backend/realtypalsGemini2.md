@@ -766,3 +766,4 @@ A real estate reasoning engine could additionally detect:
 * Two projects have unusually high maintenance charges that materially affect long-term ownership costs.
 
 Those insights don't come from the LLM's memory—they come from combining multiple verified data sources and deterministic analyses. The AI's job is then to explain those findings clearly. That's the difference between an AI that **answers questions** and one that **helps people make better property decisions**.
+    

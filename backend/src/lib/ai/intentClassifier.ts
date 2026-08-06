@@ -72,7 +72,7 @@ function detectProjectDetail(userMessage: string): ProjectDetailIntent | null {
   const locationKeywords = /\b(metro|school|hospital|mall|nearby|distance|commute|connectivity|how far|how long)\b/i
   const timelineKeywords = /\b(possession|ready|completion|delivery|delay|when|timeline|move in)\b/i
   const builderKeywords = /\b(builder|developer|track|reputation|credibility|delivery|rera|complaint)\b/i
-  const overviewKeywords = /\b(tell me|about|details|configuration|layout|bhk|amenities|features|highlights)\b/i
+  const overviewKeywords = /\b(tell me|about|details|configuration|layout|amenities|features|highlights)\b/i
 
   // Check for project mention (words after "for", "about", "in", "at")
   const projectMention = msg.match(/(?:for|about|in|at)\s+([a-z\s]+?)(?:\?|$)/i)

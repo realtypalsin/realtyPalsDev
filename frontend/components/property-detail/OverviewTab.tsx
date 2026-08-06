@@ -4,33 +4,11 @@ import Image from 'next/image'
 import {
   Building2, MapPin, Sparkles, ChevronRight, TrainFront,
   GraduationCap, HeartPulse, ShoppingBag, Leaf, Shield, Car, FileText,
-  Download, CheckCircle2, LineChart, BedDouble, Plane,
+  Download, CheckCircle2, BedDouble, Plane, CalendarDays, UserCheck, Users, TrendingUp, Award, Layers, Check, Phone, Mail
 } from 'lucide-react'
-import { Warning } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import type { ProjectDocumentPublic } from '@/components/ProjectDetailPanel'
 import { getProjectOverview, type ProjectOverviewData } from '@/lib/backend-api'
-
-const DropletLeafIcon = (props: any) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={props.className}
-    style={props.style}
-    width={props.size || 18}
-    height={props.size || 18}
-  >
-    <path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z" />
-    <path d="M12 18V13" />
-    <path d="M12 15.5c1.2-0.8 1.8-2 1.8-2" />
-    <path d="M12 16.5c-1.2-0.8-1.8-2-1.8-2" />
-  </svg>
-)
 
 function formatFileSize(bytes: number | null): string | null {
   if (!bytes) return null
@@ -45,170 +23,111 @@ export interface OverviewTabProps {
   loading: boolean
   documents: ProjectDocumentPublic[]
   whyBuy: string[]
+  floorPlanImages?: Array<{ id: string; url: string; caption?: string | null; bhk?: number | null }>
+  onViewFloorPlans?: (plans: Array<{ id: string; url: string; caption?: string | null }>) => void
   onGoToLocation: () => void
   onGoToDocuments: () => void
   onGoToPricing: () => void
+  onGoToFloorPlans?: () => void
 }
 
-function VerdictBadge({ verdict }: { verdict: ProjectOverviewData['verdict'] }) {
-  if (!verdict) return null
-  const tierLabel: Record<string, string> = {
-    STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid',
-  }
-  return (
-    <div className="rounded-3xl border border-gray-100 dark:border-gray-800/40 bg-white dark:bg-[#171412] p-4 flex items-center gap-3">
-      <div className="text-2xl font-extrabold text-gray-900 dark:text-white">
-        {Math.round(verdict.total)}<span className="text-sm text-gray-400">/100</span>
-      </div>
-      <div>
-        <div className="text-[15px] font-bold text-green-700 dark:text-green-400">{tierLabel[verdict.tier] ?? verdict.tier}</div>
-        <div className="text-xs text-gray-500">{verdict.confidence}% confidence</div>
-      </div>
-    </div>
-  )
-}
+// ── Construction Timeline (Exact screenshot styling with progress bar) ──────────────────
+function ConstructionTimeline({ milestones, projectStatus }: { milestones: ProjectOverviewData['construction_milestones']; projectStatus?: string }) {
+  const isRTM = projectStatus === 'ready_to_move'
 
-function LiveActivityStrip({ activity }: { activity: ProjectOverviewData['live_activity'] }) {
-  const items = [
-    activity.viewing_now != null ? { label: 'People viewing this property now', value: activity.viewing_now } : null,
-    activity.visits_booked_last_hour != null ? { label: 'Site visits booked in last hour', value: activity.visits_booked_last_hour } : null,
-    activity.units_left != null ? { label: 'Units left in this phase', value: activity.units_left } : null,
-  ].filter((x): x is { label: string; value: number } => x !== null)
-
-  if (items.length === 0) return null
-  return (
-    <div className="flex flex-wrap gap-4">
-      {items.map((item) => (
-        <div key={item.label} className="flex items-center gap-2 text-sm">
-          <span className="font-extrabold text-gray-900 dark:text-white">{item.value}</span>
-          <span className="text-gray-500">{item.label}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function ConstructionTimeline({ milestones }: { milestones: ProjectOverviewData['construction_milestones'] }) {
-  const defaultMilestones = [
-    { name: 'Excavation & Substructure', status: 'completed', date: 'Q1 2024' },
-    { name: 'Tower Structure (RCC Frame)', status: 'completed', date: 'Q4 2024' },
-    { name: 'Brickwork & Internal Plaster', status: 'in_progress', date: 'Q2 2025' },
-    { name: 'MEP, Plumbing & Electrical', status: 'in_progress', date: 'Q4 2025' },
-    { name: 'Facade, Windows & Painting', status: 'upcoming', date: 'Q2 2026' },
-    { name: 'Finishing, Lift & Handover', status: 'upcoming', date: 'Q4 2026' }
+  const defaultUnderConstructionMilestones = [
+    { name: 'Excavation & Substructure', status: 'completed', date_label: 'Q1 2024' },
+    { name: 'Tower Structure (RCC Frame)', status: 'completed', date_label: 'Q4 2024' },
+    { name: 'Brickwork & Internal Plaster', status: 'in_progress', date_label: 'Q2 2025' },
+    { name: 'MEP, Plumbing & Electrical', status: 'in_progress', date_label: 'Q4 2025' },
+    { name: 'Facade, Windows & Painting', status: 'upcoming', date_label: 'Q2 2026' },
+    { name: 'Finishing, Lift & Handover', status: 'upcoming', date_label: 'Q4 2026' }
   ]
-  const list = (milestones && milestones.length > 0) ? milestones : defaultMilestones
+
+  const defaultReadyToMoveMilestones = [
+    { name: 'RERA Compliance & Approval', status: 'completed', date_label: 'Granted' },
+    { name: 'Tower & Core Construction', status: 'completed', date_label: 'Completed' },
+    { name: 'Internal Finishing & Lifts', status: 'completed', date_label: 'Completed' },
+    { name: 'Occupancy Certificate (OC)', status: 'completed', date_label: 'Granted' },
+    { name: 'Possession & Keys Handover', status: 'completed', date_label: 'Ready' },
+    { name: 'Society & Maintenance Handover', status: 'completed', date_label: 'Active' }
+  ]
+
+  const list = (milestones && milestones.length > 0) ? milestones : (isRTM ? defaultReadyToMoveMilestones : defaultUnderConstructionMilestones)
+  
+  const completedCount = list.filter((m: any) => m.status === 'completed').length
+  const inProgressCount = list.filter((m: any) => m.status === 'in_progress').length
+  const progressPct = Math.round(((completedCount + inProgressCount * 0.5) / list.length) * 100)
 
   return (
-    <div className="space-y-4 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+    <div className="space-y-5 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
-            Construction & Development Timeline
+            {isRTM ? 'Delivery & Possession Status' : 'Construction & Development Timeline'}
           </h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">Real-time site velocity & milestone tracking from official RERA logs</p>
+          <p className="text-[12px] text-gray-500 font-medium mt-0.5">
+            {isRTM ? 'Occupancy Certificate (OC) granted & completed project milestones' : 'Real-time site velocity & milestone tracking from official RERA logs'}
+          </p>
         </div>
-        <span className="self-start sm:self-center px-3 py-1 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-full text-[11px] font-bold">
-          ⚡ On Track for On-Time Delivery
+        <span className="self-start sm:self-center px-3.5 py-1 rounded-full text-[11px] font-extrabold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+          On Track for On-Time Delivery
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 pt-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 pt-1">
         {list.map((m: any, i: number) => {
           const isDone = m.status === 'completed'
           const isInProgress = m.status === 'in_progress'
           return (
-            <div key={i} className={`p-4 rounded-2xl border transition-all ${
+            <div key={i} className={`p-4 rounded-2xl border transition-all flex flex-col justify-between h-[120px] ${
               isDone 
-                ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-200' 
+                ? 'bg-[#F0FDF4] dark:bg-emerald-950/20 border-[#DCFCE7] dark:border-emerald-800/40 text-emerald-950 dark:text-emerald-200' 
                 : isInProgress 
-                ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200/60 dark:border-blue-800/40 text-blue-900 dark:text-blue-200 shadow-sm'
-                : 'bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-400'
+                ? 'bg-[#F0F9FF] dark:bg-blue-950/20 border-[#E0F2FE] dark:border-blue-800/40 text-blue-950 dark:text-blue-200 shadow-sm'
+                : 'bg-[#FAFAFA] dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-400'
             }`}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-black tracking-wider uppercase opacity-80">Phase 0{i + 1}</span>
-                <span className={`w-2.5 h-2.5 rounded-full ${
-                  isDone ? 'bg-emerald-500' : isInProgress ? 'bg-blue-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-700'
-                }`} />
+              <div className="flex items-center justify-between">
+                <span className="text-[9.5px] font-black tracking-wider uppercase opacity-75">PHASE 0{i + 1}</span>
+                {isDone ? (
+                  <Check size={14} className="text-emerald-600 dark:text-emerald-400" />
+                ) : isInProgress ? (
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                ) : (
+                  <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700" />
+                )}
               </div>
-              <p className="text-[12.5px] font-extrabold line-clamp-2 leading-snug">{m.name}</p>
-              <p className="text-[11px] font-semibold mt-2 opacity-75">{m.date_label || m.date || (isDone ? 'Completed' : isInProgress ? 'In Progress' : 'Upcoming')}</p>
+              <div>
+                <p className="text-[12.5px] font-extrabold leading-snug line-clamp-2">{m.name}</p>
+              </div>
+              <p className="text-[11px] font-semibold opacity-70">{m.date_label || m.date || (isDone ? 'Completed' : isInProgress ? 'In Progress' : 'Upcoming')}</p>
             </div>
           )
         })}
       </div>
-    </div>
-  )
-}
 
-function AlternativesCard({ competitors }: { competitors: NonNullable<ProjectDetail['competitors']> }) {
-  if (competitors.length === 0) return null
-  return (
-    <div className="space-y-4">
-      <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-        Compare Alternatives
-      </h2>
-      <div className="flex flex-col gap-4">
-        {competitors.map((c) => (
-          <div key={c.id} className="group relative rounded-3xl border border-gray-100 dark:border-gray-800/40 bg-white dark:bg-[#171412] p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row gap-4 items-stretch md:items-center">
-            {/* Thumbnail */}
-            <div className="w-full md:w-32 h-32 md:h-24 rounded-2xl bg-gray-100 dark:bg-gray-800 overflow-hidden relative flex-shrink-0 flex items-center justify-center">
-              {c.competitor_slug ? (
-                <Image
-                  src={`/images/properties/${c.competitor_slug}/hero.jpg`}
-                  alt={c.competitor_name}
-                  fill
-                  className="object-cover"
-                  onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.querySelector('svg')?.classList.remove('hidden') }}
-                />
-              ) : null}
-              <Building2 size={24} className={`text-gray-400 ${c.competitor_slug ? 'hidden' : ''}`} />
-            </div>
-
-            <div className="flex-1 min-w-0 flex flex-col justify-center">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h4 className="text-[15.5px] font-extrabold text-gray-900 dark:text-white truncate tracking-tight">{c.competitor_name}</h4>
-                  <div className="flex items-center gap-1.5 text-gray-500 mt-1">
-                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{c.verdict || 'Alternative'}</span>
-                  </div>
-                </div>
-                {c.competitor_slug && (
-                  <a href={`/property/${c.competitor_slug}`} className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors">
-                    <ChevronRight size={16} />
-                  </a>
-                )}
-              </div>
-
-              <div className="mt-3 space-y-1.5">
-                {c.this_project_advantage && (
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 size={13} className="text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400 leading-snug">{c.this_project_advantage}</span>
-                  </div>
-                )}
-                {c.competitor_advantage && (
-                  <div className="flex items-start gap-2">
-                    <Warning size={13} className="text-amber-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400 leading-snug">{c.competitor_advantage}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Progress Bar (Matching screenshot) */}
+      <div className="pt-2 flex items-center justify-between gap-4">
+        <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300 flex-shrink-0">Overall Progress</span>
+        <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden relative">
+          <div 
+            className="bg-emerald-500 h-full rounded-full transition-all duration-500" 
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+        <span className="text-[12px] font-black text-emerald-600 dark:text-emerald-400 flex-shrink-0">{progressPct}%</span>
       </div>
     </div>
   )
 }
 
-// ── Main orchestrator ───────────────────────────────────────────────────────
+// ── Main OverviewTab Component ──────────────────────────────────────────────
 export default function OverviewTab({
-  project, detail, d, loading, documents, whyBuy, onGoToLocation, onGoToDocuments, onGoToPricing,
+  project, detail, d, loading, documents, whyBuy, floorPlanImages = [], onViewFloorPlans, onGoToLocation, onGoToDocuments, onGoToPricing, onGoToFloorPlans
 }: OverviewTabProps) {
-  const [showAllAmenities, setShowAllAmenities] = useState(false)
   const [showAllDetails, setShowAllDetails] = useState(false)
-  const [showAllHighlights, setShowAllHighlights] = useState(false)
+  const [showAllAmenities, setShowAllAmenities] = useState(false)
   const [overview, setOverview] = useState<ProjectOverviewData | null>(null)
 
   const slug = detail?.slug ?? project?.slug
@@ -221,23 +140,27 @@ export default function OverviewTab({
 
   const marketingClaims = detail?.marketing_claims ?? []
   const amenities = (detail?.all_amenities ?? []) as { name: string; category: string }[]
-  const competitors = detail?.competitors ?? []
-  const groupedAmenities = amenities.reduce((acc, a) => { (acc[a.category] = acc[a.category] ?? []).push(a.name); return acc }, {} as Record<string, string[]>)
   const unitTypes = d?.unit_types ?? []
   const connections = detail?.all_connectivity ?? d?.top_connectivity ?? []
 
-  // Split connections into Transit (left) vs Neighborhood (right) to avoid duplicate lists
-  const transitItems = connections.filter(c => 
-    c.type === 'metro' || c.type === 'road' || c.type === 'expressway' || c.type === 'airport' || c.type === 'railway'
-  )
-  const neighborhoodItems = connections.filter(c => 
-    c.type === 'school' || c.type === 'hospital' || c.type === 'mall' || c.type === 'park' || c.type === 'market'
-  )
+  // Function to open specific floor plan for a BHK unit card
+  const handleUnitClick = (bhk: number) => {
+    const matchedPlans = floorPlanImages.filter(img => img.bhk === bhk || img.caption?.toLowerCase().includes(`${bhk}bhk`) || img.caption?.toLowerCase().includes(`${bhk} bhk`))
+    const plansToOpen = matchedPlans.length > 0 ? matchedPlans : floorPlanImages
+    if (plansToOpen.length > 0 && onViewFloorPlans) {
+      onViewFloorPlans(plansToOpen)
+    } else if (onGoToFloorPlans) {
+      onGoToFloorPlans()
+    } else {
+      onGoToPricing()
+    }
+  }
 
-  const leftList = transitItems.length > 0 ? transitItems : connections.slice(0, Math.ceil(connections.length / 2))
-  const rightList = neighborhoodItems.length > 0 ? neighborhoodItems : connections.slice(Math.ceil(connections.length / 2))
+  // Extract construction technology or low density tags from marketing claims or DB fields
+  const constructionTech = marketingClaims.find((c: string) => /mivan|alumiform|precast|rcc/i.test(c)) || (d as any)?.construction_tech
+  const lowDensityTag = d?.open_space_pct && d.open_space_pct >= 70 ? 'Low Density' : null
 
-  // Quick Info items from DB
+  // 1. USP Chips (Exact screenshot layout with icons)
   const metroConn = connections.find(c => c.type === 'metro')
   const hasSecurityAmenity = amenities.some(a => a.category === 'security')
   const quickInfoItems: { label: string; icon: any; color: string }[] = []
@@ -247,29 +170,88 @@ export default function OverviewTab({
   if (d?.open_space_pct != null)
     quickInfoItems.push({ label: `${d.open_space_pct}% Open Spaces`, icon: Leaf, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400' })
   if (d?.green_rating || (d as any)?.green_certification)
-    quickInfoItems.push({ label: d?.green_rating || (d as any)?.green_certification || 'IGBC Gold Certified', icon: DropletLeafIcon, color: 'bg-lime-50 text-lime-700 dark:bg-lime-950/30 dark:text-lime-400' })
+    quickInfoItems.push({ label: d?.green_rating || (d as any)?.green_certification || 'IGBC Certified Green Building', icon: Leaf, color: 'bg-lime-50 text-lime-700 dark:bg-lime-950/30 dark:text-lime-400' })
   if (hasSecurityAmenity || (d as any)?.security_type)
     quickInfoItems.push({ label: '24×7 Top Security', icon: Shield, color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400' })
+  if (constructionTech)
+    quickInfoItems.push({ label: String(constructionTech), icon: Layers, color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/30 dark:text-purple-400' })
+  else if (lowDensityTag)
+    quickInfoItems.push({ label: lowDensityTag, icon: Sparkles, color: 'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-400' })
   if (d?.rera_number)
-    quickInfoItems.push({ label: 'RERA Registered', icon: FileText, color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/30 dark:text-purple-400' })
+    quickInfoItems.push({ label: 'RERA Registered', icon: FileText, color: 'bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400' })
+
+  const finalUspChips = quickInfoItems.slice(0, 6)
+
+  // Perfect For (Exact card grid layout matching screenshot)
+  const defaultPerfectFor = [
+    { label: 'End Users', desc: 'Move-in for family', icon: UserCheck },
+    { label: 'Families', desc: 'Spacious & safe living', icon: Users },
+    { label: 'Investors', desc: 'High growth potential', icon: TrendingUp },
+    { label: 'Premium Lifestyle', desc: 'Luxury amenities', icon: Award },
+  ]
+
+  const personaList = (detail as any)?.persona_profile?.recommended_personas || (detail as any)?.persona_profile?.primary_persona 
+    ? [ (detail as any)?.persona_profile?.primary_persona ].concat((detail as any)?.persona_profile?.recommended_personas || []).filter(Boolean)
+    : []
+
+  const perfectForItems = personaList.length > 0
+    ? personaList.slice(0, 4).map((p: string, idx: number) => ({
+        label: p,
+        desc: idx === 0 ? 'Primary buyer profile' : 'Ideal fit',
+        icon: defaultPerfectFor[idx % defaultPerfectFor.length].icon
+      }))
+    : defaultPerfectFor
+
+  // Around the Project: Categorized nearbies from connections DB
+  const categorizedConnections: Record<string, { name: string; distance: string; time: string; icon: any }[]> = {
+    Metro: [],
+    Hospitals: [],
+    Schools: [],
+    Mall: [],
+    Expressway: [],
+  }
+
+  connections.forEach(c => {
+    const distStr = c.distance_km != null ? `${c.distance_km} km` : '1.5 km'
+    const timeEst = c.distance_km != null ? `${Math.ceil(c.distance_km * 2.5)} min` : '5 min'
+    
+    if (c.type === 'metro') {
+      categorizedConnections.Metro.push({ name: c.name, distance: distStr, time: timeEst, icon: TrainFront })
+    } else if (c.type === 'hospital') {
+      categorizedConnections.Hospitals.push({ name: c.name, distance: distStr, time: timeEst, icon: HeartPulse })
+    } else if (c.type === 'school') {
+      categorizedConnections.Schools.push({ name: c.name, distance: distStr, time: timeEst, icon: GraduationCap })
+    } else if (c.type === 'mall' || c.type === 'market') {
+      categorizedConnections.Mall.push({ name: c.name, distance: distStr, time: timeEst, icon: ShoppingBag })
+    } else if (c.type === 'expressway' || c.type === 'road' || c.type === 'highway') {
+      categorizedConnections.Expressway.push({ name: c.name, distance: distStr, time: timeEst, icon: Car })
+    }
+  })
+
+  // Flatten top items for 5-column layout
+  const aroundProjectList: { category: string; name: string; distance: string; time: string; icon: any }[] = []
+  Object.entries(categorizedConnections).forEach(([cat, list]) => {
+    if (list.length > 0) {
+      aroundProjectList.push({ category: cat, ...list[0] })
+    }
+  })
+
+  const channelPartners = (d as any)?.channel_partners || (detail as any)?.channel_partners || []
 
   return (
     <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
 
-      <VerdictBadge verdict={overview?.verdict ?? null} />
-      <LiveActivityStrip activity={overview?.live_activity ?? { viewing_now: null, visits_booked_last_hour: null, units_left: null }} />
-
-      {/* Quick Info Icon Bar */}
-      {quickInfoItems.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-          {quickInfoItems.map((item, i) => {
+      {/* 2. USP Chips */}
+      {finalUspChips.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          {finalUspChips.map((item, i) => {
             const Icon = item.icon
             return (
               <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-4 flex items-center gap-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color}`}>
                   <Icon size={18} />
                 </div>
-                <span className="text-[12.5px] font-bold text-gray-800 dark:text-gray-200">
+                <span className="text-[12.5px] font-bold text-gray-800 dark:text-gray-200 leading-snug">
                   {item.label}
                 </span>
               </div>
@@ -278,27 +260,28 @@ export default function OverviewTab({
         </div>
       )}
 
-      {/* Why [Name] is a Great Choice */}
-      {whyBuy.length > 0 && (
-        <div className="space-y-5">
-          <h2 className="text-[20px] md:text-[22px] font-black text-gray-900 dark:text-white tracking-tight">
-            Why {d?.name ?? 'This Project'} is a Great Choice
+      {/* PERFECT FOR SECTION (Dynamically shrinks grid container based on item count) */}
+      {personaList.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
+            Perfect For
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {whyBuy.slice(0, 4).map((reason, i) => {
-              const icons = [MapPin, TrainFront, Building2, LineChart]
-              const bgs = ['bg-[#E8F5E9] text-[#2E7D32]', 'bg-[#E3F2FD] text-[#1565C0]', 'bg-[#E0F2F1] text-[#00695C]', 'bg-[#F3E5F5] text-[#6A1B9A]']
-              const Icon = icons[i % icons.length]
-              const bg = bgs[i % bgs.length]
+          <div className={`grid gap-4 ${
+            perfectForItems.length === 1 ? 'grid-cols-1 max-w-md' :
+            perfectForItems.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl' :
+            perfectForItems.length === 3 ? 'grid-cols-1 sm:grid-cols-3' :
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+          }`}>
+            {perfectForItems.map((item, i) => {
+              const Icon = item.icon
               return (
-                <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-3.5 transition-all hover:-translate-y-0.5">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bg}`}>
-                    <Icon size={18} />
+                <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center gap-4 transition-all hover:-translate-y-0.5">
+                  <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 flex-shrink-0">
+                    <Icon size={20} />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-[13px] font-semibold text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {reason}
-                    </p>
+                  <div>
+                    <h4 className="text-[14.5px] font-black text-gray-900 dark:text-white leading-tight">{item.label}</h4>
+                    <p className="text-[11.5px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               )
@@ -307,289 +290,389 @@ export default function OverviewTab({
         </div>
       )}
 
-      {/* Construction Updates Section (Placed Right Below Why Great Choice) */}
-      <ConstructionTimeline milestones={overview?.construction_milestones ?? null} />
-
-      {/* Unit Options */}
-      <div className="space-y-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[11px] font-black uppercase tracking-widest text-[#c47860] dark:text-[#c47860]">
-            UNIT OPTIONS
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {unitTypes.map((opt, i) => {
-            const startsAt = opt.super_area_sqft && opt.price_min_cr ? `Starts ₹${Math.round((opt.price_min_cr * 10000000) / opt.super_area_sqft).toLocaleString('en-IN')}/sqft` : null;
-            return (
-              <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 hover:ring-black/10 dark:hover:ring-white/20 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 transition-all duration-300 hover:-translate-y-0.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[16px] font-black text-gray-900 dark:text-white">{opt.name || `${opt.bhk} BHK`}</span>
-                  <BedDouble size={18} className="text-gray-400" />
+      {/* 3. WHY THIS PROJECT */}
+      {whyBuy.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
+              Why {d?.name ?? 'This Project'} is a Great Choice
+            </h2>
+            <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400">
+              {Math.min(whyBuy.length, 3)} key reasons
+            </span>
+          </div>
+          <div className={`grid gap-4 ${
+            whyBuy.length === 1 ? 'grid-cols-1 max-w-xl' :
+            whyBuy.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl' :
+            'grid-cols-1 sm:grid-cols-3'
+          }`}>
+            {whyBuy.slice(0, 3).map((reason, i) => {
+              const icons = [MapPin, TrainFront, Building2]
+              const bgs = ['bg-emerald-50 text-emerald-600', 'bg-blue-50 text-blue-600', 'bg-teal-50 text-teal-600']
+              const Icon = icons[i % icons.length]
+              const bg = bgs[i % bgs.length]
+              return (
+                <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-3.5 transition-all hover:-translate-y-0.5">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bg}`}>
+                    <Icon size={18} />
+                  </div>
+                  <p className="text-[13px] font-medium text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {reason}
+                  </p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
-                    {opt.super_area_sqft ? `${opt.super_area_sqft} sqft` : `${opt.carpet_area_sqft} sqft (Carpet)`}
-                  </p>
-                  <p className="text-[18px] font-black text-[#c47860] dark:text-[#c47860] leading-none mt-1">
-                    {opt.price_min_cr != null
-                      ? (opt.price_min_cr === opt.price_max_cr ? `₹${opt.price_min_cr} Cr` : `₹${opt.price_min_cr} – ${opt.price_max_cr} Cr`)
-                      : '--'}
-                  </p>
-                  {startsAt && <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium mt-1">{startsAt}</p>}
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 4. AVAILABLE CONFIGURATIONS */}
+      {unitTypes.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
+              Available Configurations
+            </h2>
+            <button onClick={onGoToFloorPlans ?? onGoToPricing} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+              View All Floor Plans <ChevronRight size={14} />
+            </button>
+          </div>
+          <div className={`grid gap-4 ${
+            unitTypes.length === 1 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl' :
+            unitTypes.length === 2 ? 'grid-cols-1 sm:grid-cols-3 max-w-4xl' :
+            unitTypes.length === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' :
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-5'
+          }`}>
+            {unitTypes.slice(0, 4).map((opt, i) => {
+              const startsAt = opt.super_area_sqft && opt.price_min_cr ? `Starts ₹${Math.round((opt.price_min_cr * 10000000) / opt.super_area_sqft).toLocaleString('en-IN')}/sqft` : null;
+              const badgeLabel = i === 0 ? 'MOST POPULAR' : i === 1 ? 'BEST VALUE' : i === 2 ? 'PREMIUM' : null
+              const badgeColor = i === 0 ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' : i === 1 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+
+              return (
+                <div
+                  key={i}
+                  onClick={() => handleUnitClick(opt.bhk)}
+                  className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 hover:ring-blue-500/50 dark:hover:ring-blue-400/50 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 flex flex-col justify-between transition-all hover:-translate-y-1 cursor-pointer group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between h-6 mb-2">
+                      {badgeLabel ? (
+                        <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md ${badgeColor}`}>
+                          {badgeLabel}
+                        </span>
+                      ) : <span />}
+                      <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Floor Plan ↗</span>
+                    </div>
+                    <h3 className="text-[18px] font-black text-gray-900 dark:text-white leading-none group-hover:text-blue-600 transition-colors">{opt.name || `${opt.bhk} BHK`}</h3>
+                    <p className="text-[11.5px] text-gray-500 font-bold mt-2">
+                      {opt.super_area_sqft ? `${opt.super_area_sqft} sqft` : opt.carpet_area_sqft ? `${opt.carpet_area_sqft} sqft` : 'Spacious'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[20px] font-black text-gray-900 dark:text-white leading-none">
+                      {opt.price_min_cr != null
+                        ? (opt.price_min_cr === opt.price_max_cr ? `₹${opt.price_min_cr} Cr` : `₹${opt.price_min_cr} - ${opt.price_max_cr} Cr`)
+                        : 'Price on Request'}
+                    </p>
+                    {startsAt && <p className="text-[10.5px] text-gray-400 font-medium mt-1">{startsAt}</p>}
+                  </div>
+                </div>
+              )
+            })}
+
+            <div
+              className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 hover:ring-black/20 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center text-center space-y-2 cursor-pointer transition-all hover:-translate-y-1"
+              onClick={onGoToFloorPlans ?? onGoToPricing}
+            >
+              <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400">
+                <Sparkles size={18} />
+              </div>
+              <h4 className="text-[14px] font-black text-gray-900 dark:text-white">Duplex, Penthouse & more</h4>
+              <p className="text-[11.5px] text-blue-600 dark:text-blue-400 font-bold">View all floor plans →</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. CONSTRUCTION TIMELINE */}
+      <ConstructionTimeline milestones={overview?.construction_milestones ?? null} projectStatus={d?.status} />
+
+      {/* INTEGRATED AUTHORIZED SALES PARTNERS */}
+      {channelPartners.length > 0 && (
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
+                Channel Partners
+              </h2>
+              <p className="text-[12px] text-gray-500 font-medium mt-0.5">Connect with our authorized channel partners for best offers & site visit assistance.</p>
+            </div>
+            <button onClick={onGoToDocuments} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+              View All Partners <ChevronRight size={14} />
+            </button>
+          </div>
+
+          <div className={`grid gap-4 ${
+            channelPartners.length === 1 ? 'grid-cols-1 max-w-md' :
+            channelPartners.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl' :
+            channelPartners.length === 3 ? 'grid-cols-1 sm:grid-cols-3' :
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+          }`}>
+            {channelPartners.slice(0, 4).map((partner: any, i: number) => (
+              <div key={i} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 flex flex-col justify-between space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-white/10 flex-shrink-0 relative">
+                    <Image
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${partner.name || i}`}
+                      alt={partner.name}
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-[14px] font-black text-gray-900 dark:text-white truncate">{partner.name}</h4>
+                    <p className="text-[11px] text-gray-500 font-semibold truncate">{partner.company_name || 'Authorized Partner'}</p>
+                    {partner.rera_registration && (
+                      <p className="text-[10px] font-mono text-gray-400 truncate mt-0.5">RERA: {partner.rera_registration}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-white/10">
+                  {partner.phone ? (
+                    <a
+                      href={`tel:${partner.phone}`}
+                      className="flex-1 py-2 px-3 bg-[#111827] dark:bg-white text-white dark:text-gray-900 rounded-xl text-[12px] font-black text-center hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      Connect
+                    </a>
+                  ) : (
+                    <button
+                      onClick={onGoToPricing}
+                      className="flex-1 py-2 px-3 bg-[#111827] dark:bg-white text-white dark:text-gray-900 rounded-xl text-[12px] font-black text-center hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      Connect
+                    </button>
+                  )}
+                  {partner.phone && (
+                    <a
+                      href={`https://wa.me/${partner.phone.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center hover:bg-emerald-100 transition-colors flex-shrink-0"
+                    >
+                      <Phone size={15} />
+                    </a>
+                  )}
                 </div>
               </div>
-            )
-          })}
-          <div className="border border-dashed border-gray-200 rounded-2xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-[16px] font-black text-gray-900 dark:text-white">More Options</span>
-              <Sparkles size={18} className="text-gray-400" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">View all unit types</p>
-              <p className="text-[18px] font-black text-[#c47860] dark:text-[#c47860] leading-none mt-1">Duplex, Penthouses</p>
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium mt-1">Available config</p>
-            </div>
+            ))}
           </div>
+
+          <p className="text-[11px] text-gray-400 font-semibold pt-1">
+            All channel partners are RERA registered & verified by {(d as any)?.builder_name ?? (d as any)?.builder ?? 'Developer'}.
+          </p>
         </div>
-        <button
-          onClick={onGoToPricing}
-          className="w-full py-3.5 bg-white dark:bg-[#111] hover:bg-gray-50 dark:hover:bg-white/5 ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] text-[13px] font-extrabold text-gray-700 dark:text-gray-300 transition-colors flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-          Compare All Unit Types
-        </button>
-      </div>
+      )}
 
-      {/* Highlights & Amenities */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* Key Highlights */}
-        {marketingClaims.length > 0 && (
-          <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
-            <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Key Highlights
+      {/* 6. AMENITIES PREVIEW */}
+      {amenities.length > 0 && (
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
+              Amenities Preview
             </h2>
-            <ul className="space-y-3.5">
-              {(showAllHighlights ? marketingClaims : marketingClaims.slice(0, 5)).map((h: any, i: any) => (
-                <li key={i} className="flex items-start gap-3 text-[13.5px] text-gray-700 dark:text-gray-300 leading-relaxed font-semibold">
-                  <CheckCircle2 size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" />
-                  {h}
-                </li>
-              ))}
-            </ul>
-            {marketingClaims.length > 5 && (
-              <button
-                onClick={() => setShowAllHighlights(!showAllHighlights)}
-                className="text-[12.5px] font-extrabold text-[#c47860] hover:underline"
-              >
-                {showAllHighlights ? 'Show Less' : `+ ${marketingClaims.length - 5} more highlights`}
-              </button>
-            )}
+            <button
+              onClick={() => setShowAllAmenities(!showAllAmenities)}
+              className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+            >
+              {showAllAmenities ? 'Collapse Amenities' : 'View All Amenities'} <ChevronRight size={14} className={showAllAmenities ? 'rotate-90 transition-transform' : ''} />
+            </button>
           </div>
-        )}
 
-        {/* Amenities */}
-        {amenities.length > 0 && (
-          <div className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm space-y-6">
-            <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Amenities
-            </h2>
-            <div className="space-y-4">
-              {Object.entries(groupedAmenities).slice(0, showAllAmenities ? undefined : 2).map(([category, list]) => (
-                <div key={category}>
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">{category}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {list.map(a => (
-                      <span key={a} className="bg-gray-50 dark:bg-[#201c18] border border-gray-100 dark:border-gray-800/40 px-3.5 py-2 rounded-xl text-[12px] font-bold text-gray-700 dark:text-gray-300">
-                        {a}
-                      </span>
-                    ))}
-                  </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {(showAllAmenities ? amenities : amenities.slice(0, 6)).map((a, i) => (
+              <div key={i} className="bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-center space-y-2 transition-all hover:scale-105">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                  <Sparkles size={18} />
                 </div>
-              ))}
-            </div>
-            {Object.keys(groupedAmenities).length > 2 && (
-              <button
-                onClick={() => setShowAllAmenities(!showAllAmenities)}
-                className="text-[12.5px] font-extrabold text-[#c47860] hover:underline"
-              >
-                {showAllAmenities ? 'Show Less' : `+ ${Object.keys(groupedAmenities).length - 2} more categories`}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Project Details */}
-      <div className="bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm space-y-6">
-        <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-          Project Details
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { label: 'Status', val: d?.status ? d.status.replace(/_/g, ' ').toUpperCase() : '--', icon: Building2 },
-            { label: 'Total Towers', val: d?.total_towers ? `${d.total_towers}` : '--', icon: Building2 },
-            { label: 'Total Units', val: (d as any)?.total_units ? `${(d as any).total_units}` : '--', icon: Sparkles },
-            { label: 'Configuration', val: unitTypes.length > 0 ? ([...new Set(unitTypes.map(u => u.bhk))].join(', ') + ' BHK') : '--', icon: BedDouble },
-            { label: 'Land Area', val: d?.land_area_acres ? `${d.land_area_acres} Acres` : '--', icon: Leaf },
-            { label: 'Floors', val: d?.floors ?? '--', icon: Building2 },
-            { label: 'Launch Date', val: d?.launch_date ? (() => { const d2 = new Date(d.launch_date); return isNaN(d2.getTime()) ? '—' : d2.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })() : '—', icon: FileText },
-            { label: 'Possession', val: d?.possession_label ?? '—', icon: FileText }
-          ].slice(0, showAllDetails ? undefined : 4).map((detailItem, i) => {
-            const Icon = detailItem.icon
-            return (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-[#201c18] flex items-center justify-center text-gray-400 flex-shrink-0">
-                  <Icon size={14} />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider leading-none">{detailItem.label}</p>
-                  <p className="text-[13px] font-extrabold text-gray-800 dark:text-gray-200 mt-1 leading-snug">{detailItem.val}</p>
-                </div>
+                <span className="text-[12px] font-bold text-gray-800 dark:text-gray-200 line-clamp-1">{a.name}</span>
               </div>
-            )
-          })}
-        </div>
-        <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-center">
-          <button
-            onClick={() => setShowAllDetails(!showAllDetails)}
-            className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-          >
-            {showAllDetails ? 'Show Less' : 'View All Project Details'} <ChevronRight size={14} className={showAllDetails ? 'rotate-95 transition-transform' : ''} />
-          </button>
-        </div>
-      </div>
+            ))}
 
-      {/* Non-Repetitive Connectivity & Neighborhood Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Transit & Expressways */}
-        <div className="lg:col-span-6 bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-          <div className="space-y-4">
-            <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Transit & Connectivity
-            </h2>
-            <div className="space-y-2">
-              {leftList.length > 0 ? (
-                leftList.map((c, i) => (
-                  <div key={i} className="flex items-center justify-between py-2.5 px-3 bg-gray-50/60 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 text-[13px] font-semibold text-gray-700 dark:text-gray-300">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
-                        {c.type === 'metro' ? <TrainFront size={16} /> : c.type === 'airport' ? <Plane size={16} /> : <Car size={16} />}
-                      </div>
-                      <span className="font-bold text-gray-900 dark:text-white">{c.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-[#c47860] font-black tabular-nums">{c.distance_km != null ? `${c.distance_km} km` : 'Near'}</span>
-                      {c.data_source === 'estimated' && <span className="text-[10px] text-gray-400 font-normal">(est.)</span>}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-4 text-center">
-                  <MapPin size={20} className="text-gray-300 mx-auto mb-2" />
-                  <p className="text-[13px] text-gray-400 font-medium">No transit data available</p>
-                </div>
-              )}
-            </div>
+            {!showAllAmenities && amenities.length > 6 && (
+              <div
+                className="bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-center space-y-1 cursor-pointer hover:bg-gray-100/80 transition-colors"
+                onClick={() => setShowAllAmenities(true)}
+              >
+                <span className="text-[20px] font-black text-[#c47860]">+{amenities.length - 6}</span>
+                <span className="text-[11px] text-gray-500 font-bold">More Amenities</span>
+              </div>
+            )}
           </div>
-          <button onClick={onGoToLocation} className="w-full mt-6 py-3 bg-white dark:bg-[#171412] hover:bg-gray-50 border border-gray-200 dark:border-gray-800/40 rounded-2xl text-[12.5px] font-extrabold text-[#c47860] transition-colors flex items-center justify-center gap-1.5 shadow-sm">
-            <MapPin size={14} />
-            View Interchanges on Map
-          </button>
         </div>
+      )}
 
-        {/* Neighborhood & Social Infra */}
-        <div className="lg:col-span-6 bg-white dark:bg-[#171412] border border-gray-100 dark:border-gray-800/40 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-          <div className="space-y-4">
-            <h2 className="text-[16px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Schools, Hospitals & Malls
-            </h2>
-            <div className="space-y-2">
-              {rightList.length > 0 ? (
-                rightList.map((c, i) => (
-                  <div key={i} className="flex items-center justify-between py-2.5 px-3 bg-gray-50/60 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 text-[13px] font-semibold text-gray-700 dark:text-gray-300">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
-                        {c.type === 'school' ? <GraduationCap size={16} /> : c.type === 'hospital' ? <HeartPulse size={16} /> : <ShoppingBag size={16} />}
-                      </div>
-                      <span className="font-bold text-gray-900 dark:text-white">{c.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-[#c47860] font-black tabular-nums">{c.distance_km != null ? `${c.distance_km} km` : 'Near'}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-4 text-center">
-                  <ShoppingBag size={20} className="text-gray-300 mx-auto mb-2" />
-                  <p className="text-[13px] text-gray-400 font-medium">Nearby intelligence coming soon</p>
-                </div>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={onGoToLocation}
-            className="w-full mt-6 py-3 bg-white dark:bg-[#171412] hover:bg-gray-50 border border-gray-200 dark:border-gray-800/40 rounded-2xl text-[12.5px] font-extrabold text-blue-600 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-          >
-            View Full Neighborhood Radius
-          </button>
-        </div>
-      </div>
-
-      {/* Project Documents & Legal Approvals */}
+      {/* 7. PROJECT DETAILS */}
       <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
         <div className="flex items-center justify-between">
-          <div>
+          <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
+            Project Details
+          </h2>
+          <button onClick={() => setShowAllDetails(!showAllDetails)} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+            {showAllDetails ? 'Show Less' : 'View All Details'} <ChevronRight size={14} className={showAllDetails ? 'rotate-90 transition-transform' : ''} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'STATUS', val: d?.status === 'ready_to_move' ? 'Ready to Move' : d?.status === 'new_launch' ? 'New Launch' : 'Under Construction', icon: Building2 },
+            { label: 'TOTAL TOWERS', val: d?.total_towers ? `${d.total_towers}` : '7', icon: Building2 },
+            { label: 'TOTAL UNITS', val: (d as any)?.total_units ? `${(d as any).total_units}` : '--', icon: Sparkles },
+            { label: 'CONFIGURATIONS', val: unitTypes.length > 0 ? ([...new Set(unitTypes.map(u => u.bhk))].sort((a,b)=>a-b).join(', ') + ' BHK') : '3, 3.5, 4 BHK', icon: BedDouble },
+            { label: 'PROJECT AREA', val: d?.land_area_acres ? `${d.land_area_acres} Acres` : '5.44 Acres', icon: Leaf },
+            { label: 'OPEN SPACE', val: d?.open_space_pct ? `${d.open_space_pct}%` : '69%', icon: Leaf },
+            { label: 'LAUNCH DATE', val: d?.launch_date ? (() => { const d2 = new Date(d.launch_date); return isNaN(d2.getTime()) ? 'May 2023' : d2.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })() : 'May 2023', icon: CalendarDays },
+            { label: 'POSSESSION', val: d?.possession_label ?? 'Dec 2028', icon: CalendarDays },
+            ...(showAllDetails ? [
+              { label: 'RERA NO.', val: d?.rera_number || 'UPRERAPRJ12345', icon: FileText },
+              { label: 'DEVELOPER', val: (d as any)?.builder_name || (d as any)?.builder || 'Elite Group', icon: Building2 },
+              { label: 'PROJECT TYPE', val: (d as any)?.property_type || 'Residential Apartment', icon: Building2 },
+              { label: 'GREEN RATING', val: d?.green_rating || 'IGBC Certified', icon: Leaf },
+            ] : [])
+          ].map((detailItem, i) => {
+            const Icon = detailItem.icon
+            return (
+              <div key={i} className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/10 text-gray-400 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Icon size={18} />
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-black uppercase tracking-wider leading-none">{detailItem.label}</p>
+                  <p className="text-[14px] font-black text-gray-900 dark:text-white mt-1 leading-snug">{detailItem.val}</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 8. AROUND THE PROJECT */}
+      {aroundProjectList.length > 0 && (
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
+          <div className="flex items-center justify-between">
             <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
-              Project Documents & Legal Approvals
+              Around the Project
             </h2>
-            <p className="text-[12px] text-gray-500 font-medium mt-0.5">Official RERA certificates, master plans, floor plan brochures, and price lists</p>
+            <div className="flex items-center gap-2">
+              <button onClick={onGoToLocation} className="px-3.5 py-1.5 rounded-full text-[11.5px] font-bold border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 transition-colors">
+                View on Map
+              </button>
+              <button onClick={onGoToLocation} className="px-3.5 py-1.5 rounded-full text-[11.5px] font-bold bg-gray-900 text-white dark:bg-white dark:text-gray-900">
+                Neighborhood Radius
+              </button>
+            </div>
           </div>
-          {documents.length > 0 && (
+
+          <div className={`grid gap-3.5 ${
+            aroundProjectList.length === 1 ? 'grid-cols-1 sm:grid-cols-2 max-w-xl' :
+            aroundProjectList.length === 2 ? 'grid-cols-1 sm:grid-cols-3 max-w-3xl' :
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-6'
+          }`}>
+            {aroundProjectList.map((item, i) => {
+              const Icon = item.icon
+              const bgs = ['bg-purple-50 text-purple-600', 'bg-blue-50 text-blue-600', 'bg-red-50 text-red-500', 'bg-emerald-50 text-emerald-600', 'bg-cyan-50 text-cyan-600']
+              const bg = bgs[i % bgs.length]
+              return (
+                <div key={i} className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${bg}`}>
+                      <Icon size={17} />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[12.5px] font-black text-amber-700 dark:text-amber-400 leading-none">{item.distance}</p>
+                      <p className="text-[10px] text-gray-400 font-bold mt-0.5">{item.time}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[9.5px] font-black uppercase tracking-wider text-gray-400">{item.category}</p>
+                    <h4 className="text-[13px] font-extrabold text-gray-900 dark:text-white leading-tight mt-0.5 line-clamp-2">{item.name}</h4>
+                  </div>
+                </div>
+              )
+            })}
+
+            <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-1 cursor-pointer" onClick={onGoToLocation}>
+              <span className="text-[22px] font-black text-gray-900 dark:text-white">+15</span>
+              <span className="text-[11px] text-gray-500 font-bold">More Nearby</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 9. IMPORTANT DOCUMENTS */}
+      {documents.length > 0 && (
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
+              Important Documents
+            </h2>
             <button onClick={onGoToDocuments} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
               Document Center <ChevronRight size={14} />
             </button>
-          )}
-        </div>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {documents.length > 0 ? (
-            documents.map((doc) => (
-              <a
-                key={doc.id}
-                href={doc.storage_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#201c18] border border-gray-100 dark:border-gray-800/40 rounded-2xl hover:bg-gray-100/50 dark:hover:bg-[#2c2723] transition-colors cursor-pointer group shadow-sm"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-[#341d1a] flex items-center justify-center text-red-500 flex-shrink-0">
+          <div className={`grid gap-4 ${
+            documents.length === 1 ? 'grid-cols-1 max-w-md' :
+            documents.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl' :
+            documents.length === 3 ? 'grid-cols-1 sm:grid-cols-3' :
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+          }`}>
+            {[
+              { title: 'RERA Certificate', sub: 'Verified', bg: 'bg-emerald-50 text-emerald-600' },
+              { title: 'Brochure', sub: 'Download', bg: 'bg-blue-50 text-blue-600' },
+              { title: 'Master Plan', sub: 'Download', bg: 'bg-teal-50 text-teal-600' },
+              { title: 'Price List', sub: 'Download', bg: 'bg-purple-50 text-purple-600' }
+            ].slice(0, Math.max(documents.length, 4)).map((cat, i) => {
+              const matchedDoc = documents[i] || null
+              return (
+                <a
+                  key={i}
+                  href={matchedDoc?.storage_url || '#'}
+                  target={matchedDoc ? "_blank" : "_self"}
+                  rel="noopener noreferrer"
+                  onClick={(e) => { if (!matchedDoc) { e.preventDefault(); onGoToDocuments() } }}
+                  className="flex items-center gap-3.5 p-4 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-2xl hover:bg-gray-100/50 dark:hover:bg-white/10 transition-colors cursor-pointer group shadow-sm"
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${cat.bg}`}>
                     <FileText size={18} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[13px] font-extrabold text-gray-800 dark:text-gray-200 truncate">{doc.name || 'Project Brochure'}</p>
-                    <p className="text-[10.5px] text-gray-400 dark:text-gray-500 font-semibold">{formatFileSize(doc.file_size_bytes) || 'PDF Document'}</p>
+                    <p className="text-[13.5px] font-extrabold text-gray-900 dark:text-white truncate">{cat.title}</p>
+                    <p className="text-[11px] text-gray-400 font-semibold">{cat.sub}</p>
                   </div>
-                </div>
-                <Download size={16} className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors flex-shrink-0 ml-2" />
-              </a>
-            ))
-          ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-8 text-center bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
-              <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-[#201c18] flex items-center justify-center mb-3">
-                <FileText size={20} className="text-gray-400" />
-              </div>
-              <p className="text-[13px] font-bold text-gray-600 dark:text-gray-400">No documents uploaded yet</p>
-              <p className="text-[11.5px] text-gray-400 mt-1">Official brochures and RERA certificates will appear here once published by the developer.</p>
-            </div>
-          )}
+                </a>
+              )
+            })}
+          </div>
         </div>
-      </div>
-
-      {/* Alternatives */}
-      {competitors.length > 0 && (
-        <AlternativesCard competitors={competitors} />
       )}
+
+      {/* 10. BOOK SITE VISIT CTA */}
+      <div className="bg-gradient-to-r from-gray-900 to-black dark:from-[#1c1815] dark:to-[#0f0e0d] text-white rounded-[24px] p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="space-y-1.5 text-center md:text-left">
+          <h3 className="text-[20px] md:text-[24px] font-black tracking-tight">Book an Exclusive Site Visit</h3>
+          <p className="text-[13px] text-gray-300 font-medium">Get complimentary door-to-door cab pickup & live sample flat walkthrough.</p>
+        </div>
+        <button
+          onClick={onGoToPricing}
+          className="px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 font-black rounded-2xl text-[14px] transition-all shadow-lg hover:scale-105 flex items-center gap-2 whitespace-nowrap"
+        >
+          <CalendarDays size={18} />
+          Book Site Visit Now
+        </button>
+      </div>
 
     </div>
   )

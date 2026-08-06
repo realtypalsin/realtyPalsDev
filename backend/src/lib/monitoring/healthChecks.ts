@@ -2,8 +2,8 @@
  * Health Checks — Database, Redis, LLM connectivity and response times
  */
 
-import { db } from '@/lib/db'
-import Redis from 'ioredis'
+import { prisma } from '@/lib/db'
+import { Redis } from '@upstash/redis'
 
 let redis: Redis | null = null
 
@@ -12,7 +12,12 @@ let redis: Redis | null = null
  */
 export function initRedisForHealth(redisUrl: string): void {
   try {
-    redis = new Redis(redisUrl)
+    const url = new URL(redisUrl)
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN || ''
+    redis = new Redis({
+      url: url.href,
+      token,
+    })
   } catch (err) {
     console.error('Failed to initialize Redis for health checks:', err)
   }
@@ -47,7 +52,7 @@ interface ComponentHealth {
 async function checkDatabase(): Promise<ComponentHealth> {
   const start = performance.now()
   try {
-    const result = await db.$queryRaw`SELECT 1`
+    const result = await prisma.$queryRaw`SELECT 1`
     const latencyMs = Math.round(performance.now() - start)
 
     if (latencyMs > 1000) {
@@ -203,8 +208,6 @@ export async function isSystemHealthy(): Promise<boolean> {
  * Cleanup
  */
 export async function closeHealthChecks(): Promise<void> {
-  if (redis) {
-    await redis.quit()
-    redis = null
-  }
+  // Upstash Redis doesn't require explicit cleanup
+  redis = null
 }

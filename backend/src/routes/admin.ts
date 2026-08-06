@@ -988,4 +988,43 @@ router.get('/analytics/properties', requireAdmin, async (_req: Request, res: Res
   }
 })
 
+// GET /api/v1/admin/sector-tiers — Phase 5: Compute and show sector tiers
+router.get('/sector-tiers', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { city = 'Noida' } = req.query
+    const { computeSectorTier } = await import('../lib/discovery/sectorTiers')
+
+    const sectorIntelligence = await prisma.sectorIntelligence.findMany({
+      where: { city: city as string },
+    })
+
+    const tiers = sectorIntelligence.map((si) =>
+      computeSectorTier({
+        city: si.city,
+        sector: si.sector,
+        sector_stage: si.sector_stage,
+        avg_price_per_sqft: si.avg_price_per_sqft,
+        price_5yr_cagr_pct: si.price_5yr_cagr_pct,
+      })
+    )
+
+    // Group by tier
+    const grouped: Record<string, any[]> = { tier1: [], tier2: [], tier3: [] }
+    for (const tier of tiers) {
+      grouped[tier.tier].push(tier)
+    }
+
+    res.json({
+      city,
+      tier1: grouped.tier1,
+      tier2: grouped.tier2,
+      tier3: grouped.tier3,
+      total: tiers.length,
+    })
+  } catch (err) {
+    console.error('[admin] sector-tiers failed:', err)
+    res.status(500).json({ error: 'Failed to compute sector tiers' })
+  }
+})
+
 export default router

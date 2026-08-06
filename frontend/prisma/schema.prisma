@@ -122,6 +122,30 @@ model Project {
   launch_date              DateTime?
   possession_date          DateTime?
   possession_label         String?
+  // very_likely | likely | at_risk | uncertain  (dictionary §2.3)
+  possession_confidence      String?
+  possession_confidence_note String?
+  // Occupancy Certificate — drives GST rate (§5.3 stage E) and bank lending (§2.2)
+  oc_obtained              Boolean?
+  oc_obtained_date         DateTime?
+  oc_valid_until           String?
+  oc_restrictions          String?
+  rera_valid_until         DateTime?
+  rera_compliance_score    Int?
+  // none | litigation_pending | nclt_moratorium | registry_embargo | dispute_flagged (§8.9)
+  legal_flag               String?
+  legal_flag_detail        String?
+  litigation_count         Int?
+  // Location intelligence (§6.4)
+  location_advantages      Json?
+  location_concerns        String[]
+  location_verdict         String?
+  walkability_score        Int?
+  // low | medium | high  (§11.5.E)
+  flood_waterlogging_risk  String?
+  aqi_annual_avg           Float?
+  // Commute matrix (§6.3) — [{destination, distance_km, travel_time_min, ...}]
+  commute_matrix           Json?
   description              String?
   long_description         String?
   design_theme             String?
@@ -158,6 +182,8 @@ model Project {
   cost_sheet               CostSheet?
   price_history            PriceHistory[]
   construction_milestones  ConstructionMilestone[]
+  construction_updates     ConstructionUpdate[]
+  lifecycle_updates        ProjectLifecycleUpdate[]
 
   @@index([city, sector])
   @@index([status])
@@ -283,6 +309,13 @@ model ProjectCompetitor {
   competitor_project_id  String?
   competitor_name        String
   competitor_slug        String?
+  // Why this rival was picked — same sector, ±0.5 BHK, ±20% PSF (§10)
+  reason                 String?
+  competitor_price_psf         Float?
+  competitor_price_min_cr      Float?
+  competitor_price_max_cr      Float?
+  competitor_amenity_count     Int?
+  competitor_possession_status String?
   this_project_advantage String?
   competitor_advantage   String?
   verdict                String?
@@ -319,25 +352,43 @@ model UnitType {
   project_id         String
   name               String
   bhk                Int
+  has_study          Boolean  @default(false)
+  has_servant_room   Boolean  @default(false)
   super_area_sqft    Int?
+  super_area_range_sqft String?
   carpet_area_sqft   Int?
+  // carpet ÷ super × 100 (§3.1)
+  carpet_to_super_ratio_pct Float?
+  balconies          Int?
   balcony_area_sqft  Int?
   bathrooms          Int?
   utility_room       Boolean  @default(false)
   dress_area         Boolean  @default(false)
   towers             String[]
+  // east_facing | west_facing | north_facing | south_facing
+  // | garden_view | pool_view | golf_view | road_facing  (§3.1)
+  unit_orientations  String[]
+  orientation_price_premium_pct Float?
   price_min_cr       Float?
   price_max_cr       Float?
   price_label        String?
+  // price_min ÷ SUPER area — never carpet (§Global Conventions)
+  price_per_sqft     Float?
   price_is_estimated Boolean  @default(true)
   subtitle           String?
   description        String?
   category_badge     String?
   inventory_left     Int?
+  inventory_as_of    DateTime?
   perfect_for        String[]
   key_highlights     Json?
   whats_included     Json?
   views              Json?
+  // Layout quality (§3.4)
+  layout_shape           String?
+  layout_efficiency_pct  Float?
+  layout_pros            String[]
+  layout_cons            String[]
   project            Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
   @@index([project_id, bhk])
@@ -349,8 +400,11 @@ model PriceHistory {
   id             String   @id @default(uuid())
   project_id     String
   recorded_at    DateTime @default(now())
+  quarter_label  String?  // e.g. "Q1 2024" (§5.4)
+  bhk            Int?     // config this point refers to; null = project-wide
   price_per_sqft Float?
   total_price_cr Float?
+  event_note     String?  // e.g. "Metro line opened" — explains a jump
   source         String   @default("monthly_auto_snapshot") // "admin_update" | "monthly_auto_snapshot"
   project        Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
@@ -361,10 +415,23 @@ model PriceHistory {
 model ConstructionMilestone {
   id           String    @id @default(uuid())
   project_id   String
+  // 11-stage spine (§7.A): approvals | excavation | foundation | plinth
+  // | superstructure | roof_slab | masonry_plaster | finishing | amenities
+  // | oc_certification | handover
+  stage_code   String?
   name         String
   status       ConstructionStatus @default(upcoming)
+  completion_pct Int?
   date_label   String?   // e.g. "Q1 2024"
+  planned_start DateTime?
+  planned_end   DateTime?
+  actual_start  DateTime?
   completed_at DateTime?
+  tower        String?   // null = whole project
+  is_payment_trigger Boolean @default(false)
+  critical_path      Boolean @default(false)
+  // rera_filing | site_visit | builder_declaration | third_party_inspection
+  verified_by_source String?
   photo_urls   String[]  @default([])
   sort_order   Int       @default(0)
   created_at   DateTime  @default(now())
@@ -373,6 +440,84 @@ model ConstructionMilestone {
 
   @@index([project_id, sort_order])
   @@map("construction_milestones")
+}
+
+/// Public-facing construction update feed (§7.A). One row per site update.
+model ConstructionUpdate {
+  id           String    @id @default(uuid())
+  project_id   String
+  title        String
+  description  String?
+  update_date  DateTime
+  quarter_label String?
+  completion_pct Int?
+  photo_urls   String[]  @default([])
+  source       String?
+  verified_by  String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  project      Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, update_date])
+  @@map("construction_updates")
+}
+
+/// Post-delivery lifecycle updates for ready/delivered projects (§7.B).
+/// 10 update types: amenity_addition | maintenance_team_change | maintenance_fee_update
+/// | possession_issue_resolved | regulatory_compliance | price_update
+/// | possession_status_change | legal_status_change | infrastructure_nearby
+/// | building_certification
+model ProjectLifecycleUpdate {
+  id            String    @id @default(uuid())
+  project_id    String
+  update_type   String
+  title         String
+  description   String?
+  update_date   DateTime
+  impact        String?
+  source        String?
+  verified_by   String?
+  affects_pricing        Boolean @default(false)
+  affects_recommendation Boolean @default(false)
+  legal_flag_cleared     Boolean @default(false)
+  // Populated for maintenance_fee_update rows
+  maintenance_fee_monthly_psf Float?
+  maintenance_fee_previous    Float?
+  note          String?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  project       Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, update_date])
+  @@map("project_lifecycle_updates")
+}
+
+/// Sector-level market intelligence (§6.5). Filled once per sector, reused by every
+/// project in it. Not project-scoped — keyed on (city, sector).
+model SectorIntelligence {
+  id                    String   @id @default(uuid())
+  city                  String
+  sector                String
+  sector_overview       String?
+  // emerging | developing | established | saturated
+  sector_stage          String?
+  dominant_segment      String?
+  avg_price_per_sqft    Float?
+  price_5yr_cagr_pct    Float?
+  rental_yield_pct      Float?
+  avg_rent_3bhk_monthly Float?
+  sector_strengths      String[]
+  sector_weaknesses     String[]
+  who_should_buy        String?
+  who_should_avoid      String?
+  infrastructure_pipeline Json?
+  last_verified_at      DateTime?
+  verified_by           String?
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  @@unique([city, sector])
+  @@map("sector_intelligence")
 }
 
 enum ConstructionStatus {
@@ -427,7 +572,15 @@ model Connectivity {
   project_id  String
   type        ConnectivityType
   name        String
+  // ROAD distance from Google Maps — never straight line (§Global Conventions)
   distance_km Float?
+  travel_time_min      Int?
+  peak_travel_time_min Int?
+  travel_mode          String?  // walk | drive | metro
+  is_operational       Boolean  @default(true)
+  category_rank        Int?     // 1 = closest/best within this type
+  rating               Float?   // 0–5, from Google
+  extra_detail         String?
   data_source DataSource       @default(brochure)
   notes       String?
   project     Project          @relation(fields: [project_id], references: [id], onDelete: Cascade)
@@ -437,23 +590,36 @@ model Connectivity {
 }
 
 model ChatSession {
-  id            String        @id @default(uuid())
-  user_id       String?
-  guest_token   String?
-  title         String?
-  message_count Int           @default(0)
-  created_at    DateTime      @default(now())
-  last_active   DateTime      @default(now())
-  chat_phase    String        @default("DISCOVERY")
-  last_projects Json?
-  shown_chip_ids Json?        @default("[]")
-  summary       String?
-  messages      ChatMessage[]
+  id               String        @id @default(uuid())
+  user_id          String?
+  guest_token      String?
+  title            String?
+  message_count    Int           @default(0)
+  created_at       DateTime      @default(now())
+  last_active      DateTime      @default(now())
+  chat_phase       String        @default("DISCOVERY")
+  last_projects    Json?
+  shown_chip_ids   Json?         @default("[]")
+  summary          String?
+
+  // Phase 0: Conversation Anchor — resolves pronouns in DRILLDOWN queries
+  focus_project_id String?       // FK to projects.id (nullable)
+  focus_set_at     DateTime?     // When focus was set (for debugging)
+
+  // Phase 4: Topic-separated summaries (replace single 500-char summary)
+  summary_location String?       // Sectors, geography, commute concerns
+  summary_financial String?      // Budget, price sensitivity, investment vs. personal
+  summary_timeline String?       // Possession urgency, construction tolerance, decision deadline
+
+  // Phase 4: Property reactions tracking (enables shortlist export later)
+  property_reactions Json?       @default("[]") // [{projectId, sentiment: "interested"|"concerned"|"rejected", signals: [...], timestamp}]
+
+  messages         ChatMessage[]
 
   // Analytics relations
-  analytics     ChatAnalytics[]
-  query_metrics QueryMetrics[]
-  property_events PropertyEvent[]
+  analytics        ChatAnalytics[]
+  query_metrics    QueryMetrics[]
+  property_events  PropertyEvent[]
 
   @@index([user_id])
   @@index([guest_token])
@@ -624,6 +790,9 @@ enum ConnectivityType {
   landmark
   airport
   university
+  park
+  it_park
+  commercial
 }
 
 model PaymentPlan {
@@ -633,7 +802,15 @@ model PaymentPlan {
   // | investor | easy_payment | corporate_bulk | nri | special_offer
   plan_type       String   @default("construction_linked")
   plan_name       String?
+  description     String?
   milestones      Json     @default("[]")
+  // Plan shape (§5.2)
+  down_payment_pct      Float?
+  booking_amount_lakh   Float?
+  total_duration_months Int?
+  discount_offered_pct  Float?
+  best_for        String?
+  watch_out       String?
   sort_order      Int      @default(0)
   source          String?
   source_url      String?
@@ -654,15 +831,26 @@ model CostSheet {
   id                    String   @id @default(uuid())
   project_id            String   @unique
   base_price_per_sqft   Float?
+  base_cost_cr          Float?
   floor_rise_per_floor  Float?
   plc_charges           Json     @default("[]")
+  // ⚠️ parking_cost / ifms / club_membership store RUPEES, not lakhs.
+  // See dictionary §11.7.2b. routes/projects.ts divides these by 1e7 to reach crores.
   parking_cost          Float?
   ifms                  Float?
   club_membership       Float?
   other_charges         Json     @default("[]")
+  gst_applicable        Boolean?
   gst_rate_pct          Float    @default(5.0)
+  gst_note              String?
   stamp_duty_pct        Float    @default(6.0)
   registration_pct      Float    @default(1.0)
+  // Utilities — stage F (§5.3). Rupees, same convention as above.
+  electricity_connection Float?
+  water_sewer_connection Float?
+  maintenance_psf_monthly Float?
+  all_inclusive_price_cr  Float?
+  all_inclusive_per_sqft  Float?
   assumptions           String[]
   verified_at           DateTime?
   verified_by           String?
@@ -1154,4 +1342,88 @@ model SharedShortlist {
   @@index([created_at])
   @@index([expires_at])
   @@map("shared_shortlists")
+}
+
+// ──────────────────────────────────────────────────────────────
+// CHANNEL PARTNERS (brokers, agents, lead sources)
+// ──────────────────────────────────────────────────────────────
+
+model ChannelPartner {
+  id                  String    @id @default(uuid())
+  name                String    @unique
+  slug                String    @unique
+  type                String    // "broker" | "agency" | "agent" | "referral" | "corporate"
+  description         String?
+  website             String?
+  phone               String?
+  email               String?
+
+  // Geography
+  operating_cities    String[]  @default([]) // ["Noida", "Gurgaon", "Bangalore"]
+
+  // Contact details
+  primary_contact     String?   // Name of principal contact
+  contact_phone       String?
+  contact_email       String?
+
+  // Verification
+  is_verified         Boolean   @default(false)
+  verification_date   DateTime?
+
+  // Performance tracking
+  total_leads         Int       @default(0)
+  total_conversions   Int       @default(0)
+  conversion_rate_pct Float?    // Computed: (conversions / leads) * 100
+
+  // Configuration
+  rera_compliant      Boolean   @default(false)
+  credai_member       Boolean   @default(false)
+  specializations     String[]  @default([]) // ["luxury", "budget", "nri", "corporate"]
+
+  // Financial
+  commission_rate_pct Float?    // Commission offered
+  payment_terms       String?   // "net_30" | "net_45" | "on_conversion"
+
+  // Status
+  is_active           Boolean   @default(true)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  @@index([type])
+  @@index([is_active])
+  @@index([created_at])
+  @@map("channel_partners")
+}
+
+// Track leads from channel partners
+model ChannelLead {
+  id                  String    @id @default(uuid())
+  partner_id          String
+  user_id             String?   // FK to User if registered
+
+  // Lead information
+  name                String
+  email               String
+  phone               String
+
+  // Intent
+  interested_sectors  String[]  @default([])
+  budget_range        String?   // "budget" | "mid" | "premium" | "luxury"
+  interested_bhk      Int[]     @default([])
+
+  // Tracking
+  status              String    @default("new") // "new" | "qualified" | "converted" | "lost"
+  conversion_date     DateTime?
+
+  // Notes
+  notes               String?
+
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  @@index([partner_id])
+  @@index([user_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("channel_leads")
 }

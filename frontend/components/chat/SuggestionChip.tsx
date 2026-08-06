@@ -14,9 +14,8 @@ interface SuggestionChipProps {
 
 /** Render topic-matched contextual icon instead of generic star icons */
 function renderChipIcon(chip: ChipAction, isActive: boolean) {
-  if (chip.icon) {
-    return <span className="text-[14px] leading-none flex-shrink-0" aria-hidden="true">{chip.icon}</span>
-  }
+  // Backend might send an emoji in chip.icon, but we want to enforce the premium 
+  // Lucide icons defined below for a more cohesive UI.
 
   const label = chip.label.toLowerCase()
   const iconClass = `flex-shrink-0 transition-colors ${

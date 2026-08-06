@@ -39,18 +39,34 @@ export function matchesProjectName(term: string, projectName: string): boolean {
 
 // ─── Shared include ───────────────────────────────────────────────────────────
 // Defined once so the main query and expansion query use identical shapes.
+// Results per page for pagination (configurable constant).
+const RESULTS_PER_PAGE = 20
+
 const PROJECT_INCLUDE = {
   builder: {
     select: {
+      id: true,
       name: true,
       slug: true,
       credai_member: true,
       delivered_units: true,
-      awards_count: true,
+      litigation_count: true,
       legal_flag: true,
     },
   },
-  unit_types: true,
+  unit_types: {
+    select: {
+      name: true,
+      bhk: true,
+      bathrooms: true,
+      super_area_sqft: true,
+      carpet_area_sqft: true,
+      price_min_cr: true,
+      price_max_cr: true,
+      price_label: true,
+      inventory_left: true,
+    },
+  },
   images: { take: 3, orderBy: { sort_order: 'asc' as const } },
   amenities: { take: 10 },
   connectivity: { take: 5, orderBy: { distance_km: 'asc' as const } },
@@ -246,6 +262,61 @@ export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Pr
   return where
 }
 
+// ─── Builder reputation aggregation (no N+1) ────────────────────────────────
+
+interface BuilderReputation {
+  delivered_units: number | null
+  litigation_count: number | null
+  credai_member: boolean | null
+  legal_flag: string | null
+}
+
+/**
+ * Batch fetch builder reputation metrics for all builders in a result set.
+ * Returns a map keyed by builder ID with pre-aggregated metrics.
+ * Cached for 1h to avoid repeated DB hits across multiple discovery queries.
+ */
+async function aggregateBuilderReputation(builderIds: string[]): Promise<Map<string, BuilderReputation>> {
+  if (builderIds.length === 0) return new Map()
+
+  const uniqueIds = [...new Set(builderIds)]
+  const cacheKey = `builder:reputation:${crypto.createHash('sha256').update(JSON.stringify([...uniqueIds].sort())).digest('hex')}`
+
+  const cached = await getCached<Record<string, BuilderReputation>>(cacheKey)
+  if (cached) {
+    console.log('[DISCOVERY:BUILDER-CACHE] HIT', cacheKey)
+    return new Map(Object.entries(cached))
+  }
+
+  const builders = await prisma.builder.findMany({
+    where: { id: { in: uniqueIds } },
+    select: {
+      id: true,
+      delivered_units: true,
+      litigation_count: true,
+      credai_member: true,
+      legal_flag: true,
+    },
+  })
+
+  const reputationMap = new Map<string, BuilderReputation>()
+  const reputationRecord: Record<string, BuilderReputation> = {}
+
+  for (const builder of builders) {
+    const rep: BuilderReputation = {
+      delivered_units: builder.delivered_units,
+      litigation_count: builder.litigation_count,
+      credai_member: builder.credai_member,
+      legal_flag: builder.legal_flag,
+    }
+    reputationMap.set(builder.id, rep)
+    reputationRecord[builder.id] = rep
+  }
+
+  await setCached(cacheKey, reputationRecord, 3600) // 1h TTL
+  return reputationMap
+}
+
 // ─── Raw project → ScoredProject mapper ──────────────────────────────────────
 
 function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
@@ -274,6 +345,27 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     intent
   )
 
+  // Phase 5: Compute sector tier for boost
+  // Import here to avoid circular dependency
+  const { computeSectorTier } = require('./sectorTiers')
+  const { getMarketTier } = require('./marketTiers')
+
+  const sectorIntelligence = (p as any).sector_intelligence // populated via dynamic SQL join if available
+  let sectorTier: any = undefined
+  if (sectorIntelligence) {
+    const tierInfo = computeSectorTier({
+      city: p.city,
+      sector: p.sector,
+      sector_stage: sectorIntelligence.sector_stage,
+      avg_price_per_sqft: sectorIntelligence.avg_price_per_sqft,
+      price_5yr_cagr_pct: sectorIntelligence.price_5yr_cagr_pct,
+    })
+    sectorTier = tierInfo.tier
+  }
+
+  // Get market tier from lowest price
+  const marketTierValue = getMarketTier(minP)
+
   const matchScore = Math.max(
     scoreProject(
       {
@@ -290,7 +382,8 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
         persona_profile: p.persona_profile,
       },
       intent,
-      budgetStatus
+      budgetStatus,
+      sectorTier // Phase 5: pass sector tier for boost
     ),
     0
   )
@@ -325,6 +418,10 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     price_min_cr: minP,
     price_max_cr: maxP,
     price_range_label: buildPriceRangeLabel(minP, maxP),
+    floor_plan_count: p.unit_types.length,
+    project_status: String(p.status),
+    amenity_count: p.amenities.length,
+    construction_progress_pct: (p as any).construction_milestones?.find((m: any) => m.critical_path)?.completion_pct ?? 0,
     unit_types: p.unit_types.map((u) => ({
       name: u.name,
       bhk: u.bhk,
@@ -334,6 +431,7 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
       price_min_cr: u.price_min_cr ?? null,
       price_max_cr: u.price_max_cr ?? null,
       price_label: u.price_label ?? null,
+      inventory_left: u.inventory_left ?? null,
     })),
     top_amenities: p.amenities.map((a) => ({
       name: a.name,
@@ -355,6 +453,7 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     })),
     matchScore,
     matchReason: buildMatchReason(p, intent, budgetStatus),
+    market_tier: marketTierValue, // Phase 5: market tier tag
     ...buildMatchSignals(
       {
         unit_types: p.unit_types,
@@ -490,12 +589,18 @@ function isGenericName(name: string): boolean {
   return words.every((w) => GENERIC_NAME_WORDS.has(w))
 }
 
-export async function discoverProjects(intent: Intent): Promise<DiscoveryResult> {
-  const cacheKey = `discovery:${crypto.createHash('sha256').update(JSON.stringify(intent)).digest('hex')}`
+export async function discoverProjects(intent: Intent, offset: number = 0): Promise<DiscoveryResult> {
+  // Include offset in cache key so different pages don't collide
+  const cacheKey = `discovery:${crypto.createHash('sha256').update(JSON.stringify({ ...intent, offset })).digest('hex')}`
   const cached = await getCached<DiscoveryResult>(cacheKey)
   if (cached) {
     console.log('[DISCOVERY:CACHE] HIT', cacheKey)
     return cached
+  }
+
+  // Validate offset
+  if (offset < 0) {
+    throw new Error('offset must be >= 0')
   }
 
   // ── Branch 1: explicit project names → direct fetch, skip all filters ──
@@ -586,11 +691,19 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
   // Use effectiveIntent so budget/sector signals still apply even when
   // generic names were stripped from projectNames above.
   const where = buildHardFilters(effectiveIntent)
-  let rawProjects = await prisma.project.findMany({
-    where,
-    include: PROJECT_INCLUDE,
-    take: 200,
-  })
+
+  // Get total count and paginated results
+  const [totalCount, rawProjectsUnpaginated] = await Promise.all([
+    prisma.project.count({ where }),
+    prisma.project.findMany({
+      where,
+      include: PROJECT_INCLUDE,
+      skip: offset,
+      take: RESULTS_PER_PAGE,
+    }),
+  ])
+
+  let rawProjects = rawProjectsUnpaginated
 
   // Fallback: if sector-only query returned 0 results, try simplified sector-only search
   // This catches cases where complex hard filters (BHK, budget combinations) fail but
@@ -659,7 +772,15 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
 
     const threshold = isBuilderOnly ? BUILDER_ONLY_THRESHOLD : SCORE_THRESHOLD
     const scored = scoreAndSort(rawProjects, effectiveIntent, threshold)
-    const res: DiscoveryResult = { exactResults: scored, nearbyResults: [] }
+    const hasMore = offset + RESULTS_PER_PAGE < totalCount
+    const pageIndex = Math.floor(offset / RESULTS_PER_PAGE)
+    const res: DiscoveryResult = {
+      exactResults: scored,
+      nearbyResults: [],
+      pageIndex,
+      totalCount,
+      hasMore,
+    }
     await setCached(cacheKey, res, 300)
     return res
   }
@@ -671,16 +792,23 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
   if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)) {
     const nearbySectors = getNearbySectors(effectiveIntent.sector)
     if (nearbySectors.length > 0) {
-      const allExpandedRaw = await prisma.project.findMany({
-        where: buildHardFilters({ ...effectiveIntent, sector: undefined }, nearbySectors),
-        include: PROJECT_INCLUDE,
-        take: Math.min(200, nearbySectors.length * 50),
-      })
+      const nearbyWhere = buildHardFilters({ ...effectiveIntent, sector: undefined }, nearbySectors)
+      const [nearbyTotalCount, allExpandedRaw] = await Promise.all([
+        prisma.project.count({ where: nearbyWhere }),
+        prisma.project.findMany({
+          where: nearbyWhere,
+          include: PROJECT_INCLUDE,
+          skip: offset,
+          take: RESULTS_PER_PAGE,
+        }),
+      ])
 
       if (allExpandedRaw.length > 0) {
         const scored = scoreAndSort(allExpandedRaw, effectiveIntent, SCORE_THRESHOLD)
         if (scored.length > 0) {
           const searchedSectors = [...new Set(allExpandedRaw.map(p => p.sector))]
+          const hasMore = offset + RESULTS_PER_PAGE < nearbyTotalCount
+          const pageIndex = Math.floor(offset / RESULTS_PER_PAGE)
           const res: DiscoveryResult = {
             exactResults: [],
             nearbyResults: scored,
@@ -689,6 +817,9 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
               searchedSectors,
               reason: 'no_results_in_requested_sector',
             },
+            pageIndex,
+            totalCount: nearbyTotalCount,
+            hasMore,
           }
           await setCached(cacheKey, res, 300)
           return res
@@ -700,24 +831,129 @@ export async function discoverProjects(intent: Intent): Promise<DiscoveryResult>
   // ── Branch 4: Fallback to top city projects ─────────────────────────────
   // If the sector was completely unknown, fetch top projects across the city
   // so we can still push our own inventory instead of a dead end.
-  const fallbackRaw = await prisma.project.findMany({
-    where: { city: { equals: DISCOVERY.DEFAULT_CITY, mode: 'insensitive' } },
-    include: PROJECT_INCLUDE,
-    take: 5,
-    orderBy: { created_at: 'desc' },
-  })
+  const fallbackWhere = { city: { equals: DISCOVERY.DEFAULT_CITY, mode: 'insensitive' as const } }
+  const [fallbackTotalCount, fallbackRaw] = await Promise.all([
+    prisma.project.count({ where: fallbackWhere }),
+    prisma.project.findMany({
+      where: fallbackWhere,
+      include: PROJECT_INCLUDE,
+      skip: offset,
+      take: RESULTS_PER_PAGE,
+      orderBy: { created_at: 'desc' },
+    }),
+  ])
 
-  const scoredFallback = scoreAndSort(fallbackRaw, effectiveIntent, 0)
-  
-  const res: DiscoveryResult = { 
-    exactResults: [], 
+  const scoredFallback = scoreAndSort(fallbackRaw as RawProject[], effectiveIntent, 0)
+  const hasMore = offset + RESULTS_PER_PAGE < fallbackTotalCount
+  const pageIndex = Math.floor(offset / RESULTS_PER_PAGE)
+
+  const res: DiscoveryResult = {
+    exactResults: [],
     nearbyResults: scoredFallback,
     expansion: {
       requestedSector: effectiveIntent.sector || 'Unknown',
       searchedSectors: ['Noida Citywide Top Properties'],
       reason: 'no_results_in_requested_sector',
     },
+    pageIndex,
+    totalCount: fallbackTotalCount,
+    hasMore,
   }
   await setCached(cacheKey, res, 300)
   return res
+}
+
+/**
+ * Phase 5: Curated ranking helpers
+ * Registered as tools when queryKind=RANKING
+ */
+
+/**
+ * Get best value projects for a sector and budget.
+ * Sorted by (headroom + amenity_depth).
+ */
+export async function bestValueProjects(
+  sector: string,
+  budgetMaxCr?: number
+): Promise<ScoredProject[]> {
+  const where: Prisma.ProjectWhereInput = {
+    sector: { equals: sector, mode: 'insensitive' },
+    status: { in: ['under_construction', 'ready_to_move'] },
+  }
+
+  const projects = await prisma.project.findMany({
+    where,
+    include: PROJECT_INCLUDE,
+    take: 10,
+  })
+
+  const scored = projects.map((p) => mapToScored(p as RawProject, { budgetMax: budgetMaxCr }))
+  // Sort by match score (which includes headroom + amenities)
+  return scored.sort((a, b) => b.matchScore - a.matchScore)
+}
+
+/**
+ * Get fastest possession projects for a sector and budget.
+ * Possession date ascending, filter >12mo delays.
+ */
+export async function fastestPossessionProjects(
+  sector: string,
+  budgetMaxCr?: number
+): Promise<ScoredProject[]> {
+  const cutoffDate = new Date()
+  cutoffDate.setMonth(cutoffDate.getMonth() + 36) // 3 years from now
+
+  const where: Prisma.ProjectWhereInput = {
+    sector: { equals: sector, mode: 'insensitive' },
+    status: { in: ['under_construction', 'ready_to_move'] },
+    possession_date: { lte: cutoffDate },
+  }
+
+  const projects = await prisma.project.findMany({
+    where,
+    include: PROJECT_INCLUDE,
+    orderBy: { possession_date: 'asc' },
+    take: 10,
+  })
+
+  const scored = projects.map((p) => mapToScored(p as RawProject, { budgetMax: budgetMaxCr }))
+  // Already sorted by possession_date from DB
+  return scored.sort((a, b) => {
+    const aDate = a.possession_date ? new Date(a.possession_date) : new Date(9999, 0, 1)
+    const bDate = b.possession_date ? new Date(b.possession_date) : new Date(9999, 0, 1)
+    return aDate.getTime() - bDate.getTime()
+  })
+}
+
+/**
+ * Get best projects for families (school/amenities focus).
+ */
+export async function bestForFamiliesProjects(
+  sector: string,
+  budgetMaxCr?: number
+): Promise<ScoredProject[]> {
+  const where: Prisma.ProjectWhereInput = {
+    sector: { equals: sector, mode: 'insensitive' },
+    status: { in: ['under_construction', 'ready_to_move'] },
+  }
+
+  const projects = await prisma.project.findMany({
+    where,
+    include: PROJECT_INCLUDE,
+    take: 10,
+  })
+
+  const scored = projects.map((p) => mapToScored(p as RawProject, { budgetMax: budgetMaxCr }))
+
+  // Sort by amenity count + school/connectivity signals
+  return scored.sort((a, b) => {
+    const aAmenities = a.top_amenities?.length || 0
+    const aSchools = a.top_connectivity?.filter((c) => c.type.toLowerCase().includes('school')).length || 0
+    const bAmenities = b.top_amenities?.length || 0
+    const bSchools = b.top_connectivity?.filter((c) => c.type.toLowerCase().includes('school')).length || 0
+
+    const aScore = aAmenities * 2 + aSchools * 3
+    const bScore = bAmenities * 2 + bSchools * 3
+    return bScore - aScore
+  })
 }

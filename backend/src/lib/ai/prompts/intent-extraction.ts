@@ -65,6 +65,9 @@ Output: {"bhk":[3],"lifestyleKeywords":["playground","park","sports","pool"]}
 Input: "ready to move 3BHK near metro under 2Cr"
 Output: {"bhk":[3],"possession":"immediate","budgetMax":2,"lifestyleKeywords":["metro"]}
 
+Input: "3 BHK apartments available for immediate purchase in Sector 75"
+Output: {"bhk":[3],"possession":"immediate","sector":"Sector 75"}
+
 Input: "investment ke liye dedh se do crore mein dikhao"
 Output: {"budgetMin":1.5,"budgetMax":2,"purpose":"investment"}
 
@@ -73,6 +76,9 @@ Output: {"builderName":"Godrej Properties","sector":"Sector 150"}
 
 Input: "3-4 BHK RTM Sector 137 ya 143 mein chahiye"
 Output: {"bhk":[3,4],"sector":"Sector 137","possession":"immediate"}
+
+Input: "show me ready possession 3BHK under 1.5 crore"
+Output: {"bhk":[3],"possession":"immediate","budgetMax":1.5}
 
 Input: "2BHK under 80 lakhs noida expressway"
 Output: {"bhk":[2],"budgetMax":0.8}

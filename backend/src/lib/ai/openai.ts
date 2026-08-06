@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { MODELS } from '../config'
+import { MODELS, AI_CONFIG } from '../config'
 import { recordUsage } from './cost'
 import { toOpenAITools, validateToolArgs, capToolResult } from './tools'
 
@@ -7,6 +7,38 @@ type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string
 type SendFn = (event: string, data: Record<string, unknown>) => void;
 
 const MAX_TOOL_CYCLES = 3;
+
+export interface OpenAIProvider {
+  apiKey: string;
+  baseURL?: string;
+  name: string; // 'azure' | 'openai'
+}
+
+// Detect and prefer Azure OpenAI or GitHub Models
+function getOpenAIProvider(): OpenAIProvider {
+  // Azure OpenAI as primary
+  if (AI_CONFIG.AZURE_OPENAI_API_KEY && AI_CONFIG.AZURE_OPENAI_ENDPOINT) {
+    return {
+      apiKey: AI_CONFIG.AZURE_OPENAI_API_KEY,
+      baseURL: AI_CONFIG.AZURE_OPENAI_ENDPOINT,
+      name: 'azure',
+    };
+  }
+  // GitHub Models API via Azure endpoint (GitHub PAT)
+  if (process.env.OPENAI_API_KEY?.startsWith('github_pat_')) {
+    return {
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: 'https://models.inference.ai.azure.com',
+      name: 'github',
+    };
+  }
+  // Fallback to standard OpenAI API
+  return {
+    apiKey: process.env.OPENAI_API_KEY || '',
+    baseURL: process.env.OPENAI_BASE_URL,
+    name: 'openai',
+  };
+}
 
 // ── Inference configuration ───────────────────────────────────────────────────
 // Centralise token limits so they can vary per request type without touching
@@ -45,17 +77,21 @@ export async function streamWithOpenAI(
   userId?: string | null,
   sessionId?: string | null,
 ): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const isGitHubPat = apiKey?.startsWith('github_pat_');
-  const baseURL = process.env.OPENAI_BASE_URL || (isGitHubPat ? 'https://models.inference.ai.azure.com' : undefined);
+  const provider = getOpenAIProvider();
+
+  if (!provider.apiKey) {
+    throw new Error('No OpenAI API key configured (AZURE_OPENAI_API_KEY, OPENAI_API_KEY, or github_pat)');
+  }
 
   const client = new OpenAI({
-    apiKey,
-    baseURL,
+    apiKey: provider.apiKey,
+    baseURL: provider.baseURL,
     // No SDK-level timeout — inactivity timer owns all phases including body reads.
     // No retries — a retry on a stalled stream extends the hang; inactivity timer handles it.
     maxRetries: 0,
   });
+
+  console.log('[openai] using provider:', provider.name, provider.baseURL ? `(${provider.baseURL})` : '');
 
   const msgs: any[] = [
     { role: 'system', content: system },

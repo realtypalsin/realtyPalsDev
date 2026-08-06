@@ -20,6 +20,9 @@ export const IntentSchema = z.object({
   is_comparison_query: z.boolean().nullable().optional(),
   gathering_loop_count: z.number().nullable().optional(),
   legal_check: z.boolean().nullable().optional(),
+
+  // Phase 0: Query classification
+  queryKind: z.enum(['DISCOVERY', 'DRILLDOWN', 'RANKING', 'COMPARISON', 'SUMMARY', 'ADVISORY', 'CLARIFY']).nullable().optional(),
 }).partial().passthrough()
 
 export function isCityLevel(sector: string): boolean {

@@ -4,10 +4,18 @@
 export const MODELS = {
   GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-2.5-flash',
   GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-2.5-flash-lite',
-  MAIN: process.env.AI_MAIN_MODEL || 'gpt-4o',
-  FALLBACK: process.env.AI_FALLBACK_MODEL || 'gpt-4o-mini',
+  OPENAI_AZURE: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
+  OPENAI_FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
   GROQ_FAST: process.env.GROQ_FAST_MODEL || 'llama-3.1-8b-instant',
   GROQ_SMART: process.env.GROQ_SMART_MODEL || 'llama-3.3-70b-versatile',
+}
+
+export const AI_CONFIG = {
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  AZURE_OPENAI_API_KEY: process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+  AZURE_OPENAI_ENDPOINT: process.env.AZURE_OPENAI_ENDPOINT || 'https://models.inference.ai.azure.com',
+  AZURE_OPENAI_DEPLOYMENT: process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o',
+  GROQ_API_KEY: process.env.GROQ_API_KEY,
 }
 
 export const FINANCIAL = {

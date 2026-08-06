@@ -8,11 +8,16 @@ import { checkRateLimit, invalidateSessionList, getCached, setCached } from '../
 import { extractIntent } from '../lib/ai/intent'
 import { IntentSchema, getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel, matchesProjectName } from '../lib/discovery'
 import type { Intent, ScoredProject } from '../lib/discovery'
+import { classifyQuery } from '../lib/discovery/queryClassifier'
+import { resolveAnchor } from '../lib/discovery/anchorResolution'
 import { computeConfidence, buildClarificationOptions } from '../lib/discovery/confidence'
 import { findProjectsMentioned, buildProseChips } from '../lib/discovery/proseEntities'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
+import { maybeCompressTopical, TopicSummaries } from '../lib/chat/summaryCompression'
+import { scorePropertyEngagement } from '../lib/chat/propertyEngagement'
+import { detectPropertyReactions, PropertyReaction } from '../lib/chat/reactionDetector'
 import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
 import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
@@ -31,6 +36,7 @@ import {
   getBuilderNews,
   getUserSavedState,
   getSectorProjects,
+  getProjectFinancialDetails,
 } from '../lib/projectFacts'
 import { gatePublished } from '../lib/intelligenceGate'
 import { getChipInventory } from '../lib/discovery/chipInventory'
@@ -56,7 +62,7 @@ import { sanitizeUserMessage } from '../lib/ai/sanitize'
 import { filterNewChips, filterNewChipsWithFloor, markChipShown, hydrateFromDb, persistToDb } from '../lib/discovery/chipDedup'
 import { isOverDailyBudget } from '../lib/ai/cost'
 import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monitoring/posthog'
-import { captureException, addBreadcrumb, setSentryUser } from '@/sentry.server.config'
+import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
 
 const router = Router()
 
@@ -269,6 +275,7 @@ const BodySchema = z.object({
   sessionId: z.string().nullable().optional(),
   guestToken: z.string().optional(),
   intent: IntentSchema.optional(),
+  offset: z.number().int().min(0).default(0).optional(),
 })
 
 import { inputGuardrail, outputGuardrail } from '../lib/ai/guardrails'
@@ -285,7 +292,7 @@ router.post('/', async (req: Request, res: Response) => {
     return
   }
 
-  const { action, sessionId } = parsed.data
+  const { action, sessionId, offset } = parsed.data
   let { guestToken } = parsed.data
   const prevIntent = (parsed.data.intent ?? {}) as Record<string, unknown>
   let message = action.type === 'TEXT_MESSAGE' ? (action.payload.text as string) : ''
@@ -359,6 +366,7 @@ router.post('/', async (req: Request, res: Response) => {
   let nearbyProjects: Awaited<ReturnType<typeof discoverProjects>>['nearbyResults'] = []
   let projectDisambiguation: Awaited<ReturnType<typeof discoverProjects>>['disambiguation'] | undefined
   let sectorDisambiguation: { query: string; candidates: string[] } | undefined
+  let renderTarget: 'cards' | 'text' | 'both' = 'text' // Phase 0: Default to text, updated by classifier
 
   try {
     console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
@@ -408,6 +416,12 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     const existingSummary = sessionData?.summary ?? null
+    const sessionDataTyped = sessionData as any // Allow access to new Phase 4 fields
+    const existingTopicSummaries: TopicSummaries | null = sessionData ? {
+      location: sessionDataTyped?.summary_location ?? null,
+      financial: sessionDataTyped?.summary_financial ?? null,
+      timeline: sessionDataTyped?.summary_timeline ?? null,
+    } : null
     const chatHistoryRaw = sessionData?.messages ?? []
     // If it was ordered desc, we must reverse it to ascending for the context window
     const chatHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [...chatHistoryRaw].reverse().map((m) => ({
@@ -439,6 +453,17 @@ router.post('/', async (req: Request, res: Response) => {
       (rawIntent.riskProfile === 'retiree' || rawIntent.riskProfile === 'first_time_buyer')
     ) ? { ...rawIntent, purpose: 'endUse' } : rawIntent
     console.log('[CHAT] END extractIntent', Date.now(), { intent })
+
+    // ─── Phase 0: Query Classification (deterministic + LLM fallback)
+    const queryClassification = classifyQuery(message, intent as Record<string, unknown>)
+    intent.queryKind = queryClassification.queryKind
+    renderTarget = queryClassification.renderTarget
+    console.log('[CHAT] Query classification', Date.now(), {
+      queryKind: queryClassification.queryKind,
+      renderTarget: queryClassification.renderTarget,
+      confidence: queryClassification.confidence,
+      reason: queryClassification.reason,
+    })
 
     // ─── GATHERING Loop Fallback
     const currentIntentState = getIntentState(intent)
@@ -510,7 +535,7 @@ router.post('/', async (req: Request, res: Response) => {
     const classification = classifyIntent(message)
 
     // Track intent classification (Phase 11)
-    trackEvent(userId, ANALYTICS_EVENTS.INTENT_CLASSIFIED, {
+    trackEvent(userId ?? null, ANALYTICS_EVENTS.INTENT_CLASSIFIED, {
       category: classification.category,
       detailType: classification.projectDetail?.detailType,
       confidence: classification.projectDetail?.confidence || 0,
@@ -546,14 +571,18 @@ router.post('/', async (req: Request, res: Response) => {
       // Step 1: Plan the query (planner auto-detects intent from message)
       let plan
       try {
+        const activeProjectList = (intent.projectNames && intent.projectNames.length > 0)
+          ? intent.projectNames
+          : (cachedProjectsFromSession ?? []).map(p => p.name || p.id).filter(Boolean)
+
         plan = await planProjectDetailQuery({
           userMessage: cleanMessage,
-          conversationContext: { activeProjects: intent.projectNames },
+          conversationContext: { activeProjects: activeProjectList },
         })
       } catch (err) {
         console.error('[CHAT:PROJECT_DETAIL:PLAN_ERROR]', err)
         // Track planning error (Phase 11)
-        trackEvent(userId, ANALYTICS_EVENTS.API_ERROR, {
+        trackEvent(userId ?? null, ANALYTICS_EVENTS.API_ERROR, {
           stage: 'query_planning',
           error: err instanceof Error ? err.message : 'Unknown error',
         })
@@ -618,7 +647,7 @@ router.post('/', async (req: Request, res: Response) => {
         const { handleDatabaseError } = await import('../lib/projectDataGateway.guards')
         const dbError = handleDatabaseError(err as Error)
         // Track database error (Phase 11)
-        trackEvent(userId, ANALYTICS_EVENTS.DATABASE_ERROR, {
+        trackEvent(userId ?? null, ANALYTICS_EVENTS.DATABASE_ERROR, {
           error: dbError.message,
           recoverable: dbError.recoverable,
           intent: plan.intent,
@@ -644,7 +673,7 @@ router.post('/', async (req: Request, res: Response) => {
       const confidence = computeResponseConfidence(gatewayResponse.data)
 
       // Track confidence score (Phase 11)
-      trackEvent(userId, ANALYTICS_EVENTS.CONFIDENCE_COMPUTED, {
+      trackEvent(userId ?? null, ANALYTICS_EVENTS.CONFIDENCE_COMPUTED, {
         confidence: Math.round(confidence * 100),
         intent: plan.intent,
         projectId: plan.projectIds[0],
@@ -654,7 +683,7 @@ router.post('/', async (req: Request, res: Response) => {
       // Step 5: Check if data is sufficient
       if (!gatewayResponse.completeness.complete || confidence < 0.65) {
         // Track low confidence (Phase 11)
-        trackEvent(userId, ANALYTICS_EVENTS.LOW_CONFIDENCE, {
+        trackEvent(userId ?? null, ANALYTICS_EVENTS.LOW_CONFIDENCE, {
           confidence: Math.round(confidence * 100),
           intent: plan.intent,
           projectId: plan.projectIds[0],
@@ -698,7 +727,7 @@ router.post('/', async (req: Request, res: Response) => {
       } catch (err) {
         console.warn('[CHAT:PROJECT_DETAIL:LLM_ERROR]', (err as Error).message)
         // Track LLM error (Phase 11)
-        trackEvent(userId, ANALYTICS_EVENTS.LLM_TIMEOUT, {
+        trackEvent(userId ?? null, ANALYTICS_EVENTS.LLM_TIMEOUT, {
           error: err instanceof Error ? err.message : 'Unknown error',
           intent: plan.intent,
           projectId: plan.projectIds[0],
@@ -732,7 +761,7 @@ router.post('/', async (req: Request, res: Response) => {
       })
 
       // Track successful component response (Phase 11)
-      trackEvent(userId, ANALYTICS_EVENTS.COMPONENTS_RENDERED, {
+      trackEvent(userId ?? null, ANALYTICS_EVENTS.COMPONENTS_RENDERED, {
         componentCount: componentResponse.components.length,
         confidence: Math.round(confidence * 100),
         componentTypes: componentResponse.components.map(c => c.type),
@@ -743,6 +772,24 @@ router.post('/', async (req: Request, res: Response) => {
 
       // Send components as response
       send('components', componentResponse as unknown as Record<string, unknown>)
+      
+      // Re-emit ui_state to populate chips AFTER the component response
+      // For project detail we can just generate standard chips based on the project.
+      const { computeConversationState } = await import('../lib/discovery/conversationEngine')
+      const postDetailUiState = await computeConversationState(
+        intent,
+        'SHORTLISTED', // because we found the project and answered
+        [{ id: plan.projectIds[0], name: plan.projectIds[0], priority: 1 } as any],
+        false,
+        chatHistory,
+        undefined,
+        undefined,
+        undefined,
+        chipInventory,
+        true
+      )
+      send('ui_state', postDetailUiState as unknown as Record<string, unknown>)
+
       send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent })
       res.end()
       return
@@ -832,8 +879,9 @@ router.post('/', async (req: Request, res: Response) => {
       }
 
       // Fix 3: sync frontend cards with filtered/reused result set
-      if (projects.length > 0 || nearbyProjects.length > 0) {
-        send('properties', { exactResults: projects, nearbyResults: nearbyProjects, expansion: null })
+      // Phase 3: Guard on renderTarget — cards only emit when renderTarget !== 'text'
+      if (renderTarget !== 'text' && (projects.length > 0 || nearbyProjects.length > 0)) {
+        send('properties', { exactResults: projects, nearbyResults: nearbyProjects, expansion: null, renderTarget })
       }
       logRouting('DISCOVERY_SKIPPED', { intentState })
     } else if (intentState === 'READY_TO_SEARCH' || intentState === 'SHORTLISTED') {
@@ -841,11 +889,12 @@ router.post('/', async (req: Request, res: Response) => {
       // discoverProjects() returns all matching projects via BUILDER_ONLY_THRESHOLD;
       // the AI summarizes. Pre-disambiguation here blocked discoverProjects() from
       // running, so no property cards were emitted for builder searches.
-      console.log('[CHAT] START discoverProjects', Date.now(), { intent })
-      const cacheKey = `search:${JSON.stringify(intent)}`
+      const searchOffset = offset ?? 0
+      console.log('[CHAT] START discoverProjects', Date.now(), { intent, offset: searchOffset })
+      const cacheKey = `search:${JSON.stringify({ ...intent, offset: searchOffset })}`
       let discoveryResult = await getCached(cacheKey) as Awaited<ReturnType<typeof discoverProjects>> | null
       if (!discoveryResult) {
-        discoveryResult = await discoverProjects(intent)
+        discoveryResult = await discoverProjects(intent, searchOffset)
         await setCached(cacheKey, discoveryResult, 600)
       }
       console.log('[CHAT] END discoverProjects', Date.now(), { exact: discoveryResult.exactResults.length, nearby: discoveryResult.nearbyResults.length, expansion: discoveryResult.expansion ?? null, notFound: discoveryResult.notFoundNames ?? [] })
@@ -861,6 +910,23 @@ router.post('/', async (req: Request, res: Response) => {
       nearbyProjects = discoveryResult.nearbyResults
       discoveryExpansion = discoveryResult.expansion
       notFoundNames = discoveryResult.notFoundNames
+
+      // ─── Phase 0: Anchor Resolution
+      // NOTE: Anchor resolution commented out pending schema update for focus_project_id and focus_set_at fields.
+      // Resolve focus project for DRILLDOWN queries and set it in the session.
+      // const anchorResolution = await resolveAnchor(
+      //   currentSessionId,
+      //   message,
+      //   intent.projectNames,
+      //   projects,
+      //   nearbyProjects,
+      //   (intent.queryKind as any) ?? 'DISCOVERY'
+      // )
+      // console.log('[ANCHOR]', Date.now(), {
+      //   action: anchorResolution.action,
+      //   focusProjectId: anchorResolution.focusProjectId,
+      //   reason: anchorResolution.reason,
+      // })
 
       // Handle project disambiguation (multi-project match)
       if (discoveryResult.disambiguation) {
@@ -882,13 +948,31 @@ router.post('/', async (req: Request, res: Response) => {
         console.log('[CHAT:DISAMBIG] sector ambiguity detected', { query, count: candidates.length })
       }
 
-      // Always send the properties event when intent is ready — even empty exactResults
-      // is meaningful (triggers empty state UI and nearby section on the frontend, and clears previous results).
-      send('properties', {
-        exactResults: projects,
-        nearbyResults: nearbyProjects,
-        expansion: discoveryExpansion ?? null,
-      })
+      // Phase 3: Guard on renderTarget — cards only emit when renderTarget !== 'text'
+      // For text-only queries mentioning a project, emit focus event instead
+      if (renderTarget !== 'text') {
+        // Always send the properties event when intent is ready — even empty exactResults
+        // is meaningful (triggers empty state UI and nearby section on the frontend, and clears previous results).
+        send('properties', {
+          exactResults: projects,
+          nearbyResults: nearbyProjects,
+          expansion: discoveryExpansion ?? null,
+          renderTarget,
+        })
+      }
+      // NOTE: Anchor resolution commented out pending schema update
+      // else if (anchorResolution.focusProjectId) {
+      //   // Text-only: emit focus event to scroll/highlight existing card
+      //   const focusProject = projects.find(p => p.id === anchorResolution.focusProjectId) ||
+      //                        nearbyProjects.find(p => p.id === anchorResolution.focusProjectId)
+      //   if (focusProject) {
+      //     send('focus', {
+      //       projectId: anchorResolution.focusProjectId,
+      //       name: focusProject.name,
+      //       anchor: 'project-card',
+      //     })
+      //   }
+      // }
 
       // ─── ANALYTICS: Track results shown
       if (sessionId && (projects.length > 0 || nearbyProjects.length > 0)) {
@@ -910,8 +994,13 @@ router.post('/', async (req: Request, res: Response) => {
       true // isUserMessage
     )
 
-    // Deduplicate chips based on session
-    const postChips = filterNewChipsWithFloor(currentSessionId, postSearchUiState.chips, 2)
+    // Deduplicate chips based on session, preserving chips from preSearchUiState
+    let postChips = postSearchUiState.chips
+    if (postSearchUiState.stage !== 'CLARIFYING') {
+      const filtered = filterNewChipsWithFloor(currentSessionId, postSearchUiState.chips, 2)
+      const preChipIds = new Set(preSearchUiState.chips.map(c => c.id))
+      postChips = postSearchUiState.chips.filter(c => preChipIds.has(c.id) || filtered.some(f => f.id === c.id))
+    }
     postChips.forEach(c => markChipShown(currentSessionId, c.id))
     postSearchUiState.chips = postChips
 
@@ -930,9 +1019,27 @@ router.post('/', async (req: Request, res: Response) => {
     console.log('[CHAT] END getSectorContext', Date.now(), { found: !!sectorCtx })
 
     console.log('[CHAT] START maybeCompress', Date.now(), { historyLen: chatHistory.length })
-    const { messages: compressedHistory, newSummary } = await maybeCompress(chatHistory, existingSummary)
-    console.log('[CHAT] END maybeCompress', Date.now(), { compressedLen: compressedHistory.length, newSummary: !!newSummary })
-    const { systemSuffix, messages: rawMessages } = buildContextMessages(message, compressedHistory, newSummary ?? existingSummary, memory)
+    const { messages: compressedHistory, newSummaries } = await maybeCompressTopical(chatHistory, existingTopicSummaries)
+    console.log('[CHAT] END maybeCompress', Date.now(), { compressedLen: compressedHistory.length, newSummaries: !!newSummaries })
+
+    // Select relevant summary based on queryKind (fall back to old summary if not topical)
+    let selectedSummary = existingSummary
+    if (newSummaries) {
+      if (queryClassification.queryKind === 'DISCOVERY' && newSummaries.location) {
+        selectedSummary = newSummaries.location
+      } else if (queryClassification.queryKind === 'DRILLDOWN' && intent.queryKind?.includes('cost') && newSummaries.financial) {
+        selectedSummary = newSummaries.financial
+      } else if (queryClassification.queryKind === 'DRILLDOWN' && intent.queryKind?.includes('timeline') && newSummaries.timeline) {
+        selectedSummary = newSummaries.timeline
+      } else if (newSummaries.location && newSummaries.financial && newSummaries.timeline) {
+        // Fallback: concatenate all three if available
+        selectedSummary = [newSummaries.location, newSummaries.financial, newSummaries.timeline]
+          .filter(Boolean)
+          .join(' | ')
+      }
+    }
+
+    const { systemSuffix, messages: rawMessages } = buildContextMessages(message, compressedHistory, selectedSummary, memory)
     // ponytail: cache blockedBuilders for 1h, invalidate when legal flag updated.
     let blockedBuilders: Array<{ name: string; legal_flag?: string }> | null = await getCached('blockedBuilders')
     if (!blockedBuilders) {
@@ -1048,6 +1155,10 @@ router.post('/', async (req: Request, res: Response) => {
 
         if (name === 'cost_sheet_lookup') {
           return getFullCostSheet(args.project_name ?? '');
+        }
+
+        if (name === 'project_financial_details') {
+          return getProjectFinancialDetails(args.project_name ?? '');
         }
 
         if (name === 'amenities_lookup') {
@@ -1329,6 +1440,9 @@ router.post('/', async (req: Request, res: Response) => {
               const p = projects[0];
               if (message.toLowerCase().includes('payment') || message.toLowerCase().includes('plan')) {
                 fullText = `Payment plan details for **${p.name}** are available on request. Flexible payment structures (including Construction-Linked (CLP), Down Payment, and Subvention options) can be configured with our team. Please click the **Book Site Visit** or **Callback** button for custom payment slabs.`;
+              } else if (projects.length > 1) {
+                const names = projects.slice(0, 3).map(p => `**${p.name}**`).join(', ');
+                fullText = `Here are the verified details for ${names} and others in ${p.sector}. Please review the property cards below. Connect with our RealtyPals team via **Book Site Visit** for direct assistance.`;
               } else {
                 fullText = `Here are the verified details for **${p.name}** in ${p.sector}: Price range is ${p.price_range_label || 'available on request'}. Connect with our RealtyPals team via **Book Site Visit** for direct assistance.`;
               }
@@ -1420,6 +1534,38 @@ router.post('/', async (req: Request, res: Response) => {
     // Pre-generate ID for new sessions so send('done') never blocks on DB write.
     // (Already generated at the start of the try block)
 
+    // ── Phase 4: Engagement Scoring and Reaction Detection ───────────────────
+    // Track property engagement (weighted) and sentiment reactions
+    const projectIdCount = projects.reduce(
+      (acc: Record<string, number>, p) => {
+        acc[p.id] = (acc[p.id] || 0) + 1
+        return acc
+      },
+      {}
+    )
+    const engagementScores = await scorePropertyEngagement(currentSessionId, projectIdCount)
+    console.log('[CHAT] Engagement scores computed', { count: engagementScores.length })
+
+    // Detect sentiment reactions on DRILLDOWN/COMPARISON queries
+    const mentionedProjectIds = projects.map(p => p.id)
+    const reactions = detectPropertyReactions(message, queryClassification.queryKind, mentionedProjectIds)
+    console.log('[CHAT] Property reactions detected', { count: reactions.length })
+
+    // Load existing reactions and merge with new ones
+    const existingReactions: PropertyReaction[] = sessionDataTyped?.property_reactions
+      ? (sessionDataTyped.property_reactions as unknown as PropertyReaction[])
+      : []
+    const mergedReactions = [...existingReactions]
+    for (const reaction of reactions) {
+      const idx = mergedReactions.findIndex(r => r.projectId === reaction.projectId)
+      if (idx >= 0) {
+        // Update existing reaction (latest sentiment wins)
+        mergedReactions[idx] = reaction
+      } else {
+        mergedReactions.push(reaction)
+      }
+    }
+
     const persistPromises: Promise<unknown>[] = []
 
     if (isNewSession) {
@@ -1433,7 +1579,10 @@ router.post('/', async (req: Request, res: Response) => {
             title: message.slice(0, 60),
             chat_phase: intentState,
             message_count: 2,
-            ...(newSummary ? { summary: newSummary } : {}),
+            ...(newSummaries?.location ? { summary_location: newSummaries.location } : {}),
+            ...(newSummaries?.financial ? { summary_financial: newSummaries.financial } : {}),
+            ...(newSummaries?.timeline ? { summary_timeline: newSummaries.timeline } : {}),
+            ...(mergedReactions.length > 0 ? { property_reactions: mergedReactions as unknown as Prisma.InputJsonValue } : {}),
           },
         }).then(() => {
           // Bust the Next.js session list Redis cache so the sidebar reflects the new session immediately.
@@ -1466,7 +1615,10 @@ router.post('/', async (req: Request, res: Response) => {
             last_active: new Date(),
             chat_phase: intentState,
             message_count: { increment: 2 },
-            ...(newSummary ? { summary: newSummary } : {}),
+            ...(newSummaries?.location ? { summary_location: newSummaries.location } : {}),
+            ...(newSummaries?.financial ? { summary_financial: newSummaries.financial } : {}),
+            ...(newSummaries?.timeline ? { summary_timeline: newSummaries.timeline } : {}),
+            ...(mergedReactions.length > 0 ? { property_reactions: mergedReactions as unknown as Prisma.InputJsonValue } : {}),
             ...(() => {
               const tagged = [
                 ...projects.map((p) => ({ ...p, cacheSource: 'exact' as const })),

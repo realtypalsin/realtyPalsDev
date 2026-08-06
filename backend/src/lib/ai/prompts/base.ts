@@ -3,18 +3,22 @@
 import { FINANCIAL } from '../../config'
 import { getCityPromptPack } from '../../config/cityPrompts'
 import type { SupportedCity } from '../../config/cities'
+import { filterToolsByIntent, type QueryKind } from '../toolRegistry'
+import type { Intent } from '../../discovery'
 
 // ─── BASE SYSTEM PROMPT ───────────────────────────────────────────────────────
 // Core identity, rules, and routing only.
 // Response format blocks are injected conditionally in buildAdvisorSystemPrompt().
 
 export const getBaseSystemPrompt = (
-  intent?: Record<string, unknown>,
+  intent?: Intent | Record<string, unknown>,
   blockedBuilders?: Array<{ name: string; legal_flag?: string }>,
   city?: SupportedCity,
-  intentState?: string
+  intentState?: string,
+  queryKind?: QueryKind,
+  userMessage?: string
 ) => {
-  const isVerbose = intent?.verbose === true
+  const isVerbose = (intent as any)?.verbose === true
   const cityPack = getCityPromptPack(city)
   
   const budgetRules = isVerbose 
@@ -76,11 +80,18 @@ ${intentState === 'GATHERING' || intentState === 'COLD' ? `**A. COLD or GATHERIN
 Ask exactly ONE question in your text response, in priority order: (1) BHK, (2) Budget, (3) Sector. Match the user's language (e.g. "How many BHKs?" or "Kitne BHK chahiye?"). Never combine questions in the text. Always acknowledge what you know (e.g. "3BHK — noted. What is your budget?").
 Override: For process, legal, NRI, builder reputation, calculations, area knowledge, comparisons, or general questions → answer immediately. For builder queries: call builder_lookup first.
 ` : ''}
-**B. SECTOR ADVISORY** — "Sector Advisory Data" block present → use SECTOR ADVISORY FORMAT.
+**B. RANKING QUERY** — queryKind=RANKING — Use RANKING FORMAT.
+Phase 5: Always state how results are ranked. Examples:
+- "Ranked by our verified project score (builder track record, location, construction quality, legal standing, amenities, possession timeline)"
+- "Ranked by value — price position relative to location weighted by amenities"
+- "Ranked by possession timeline — fastest first"
+Ranking basis must be stated BEFORE the project list.
 
-**C. PROPERTY RESULTS** — "Properties Found" block present → use RESPONSE FORMAT — SEARCH RESULTS.
+**C. SECTOR ADVISORY** — "Sector Advisory Data" block present → use SECTOR ADVISORY FORMAT.
 
-**D. BUILDER/TRUST/RESEARCH** — Call builder_lookup first. See BUILDER DATA RULES.
+**D. PROPERTY RESULTS** — "Properties Found" block present → use RESPONSE FORMAT — SEARCH RESULTS.
+
+**E. BUILDER/TRUST/RESEARCH** — Call builder_lookup first. See BUILDER DATA RULES.
 
 **E. CALCULATION** — EMI, stamp duty, GST, total cost → CALCULATION FORMAT. Show working.
 
@@ -98,16 +109,46 @@ Override: For process, legal, NRI, builder reputation, calculations, area knowle
 
 ## TOOLS
 Call tools instead of guessing. Never mention tool names or internal mechanics in responses.
-- **builder_lookup** — verified builder facts (delivered units, RERA, CREDAI, awards). Always call before any builder quality claim.
-- **web_search** — live data: builder news, market trends, RERA status, infrastructure. Cite returned sources.
-- **area_info** — ${cityPack.areaInfoDescription}
-- **rera_check** — live UP-RERA portal lookup for a specific project.
-- **commute** — real driving time between two locations.
-- **calculate_emi / calculate_stamp_duty / calculate_gst** — exact financial math. Use instead of mental arithmetic.
-- **project_costs** — payment milestones, cost breakdown, PLC charges, taxes, GST. Call for payment plans, cost sheets, financial details.
-- **project_nearby** — connectivity data: metro stations, roads, schools, hospitals, malls. Call for location/commute questions.
-- **project_amenities** — amenities by category: clubhouse, sports, security, parking. Call for lifestyle/feature questions.
-- **project_documents** — downloadable files: brochures, floor plans, payment schedules. Call when user asks for documents.
+
+${(() => {
+  // Phase 2: Dynamic tool injection based on queryKind
+  const filteredTools = queryKind && userMessage
+    ? filterToolsByIntent(queryKind, userMessage)
+    : ['builder_lookup', 'web_search', 'calculate_emi', 'calculate_stamp_duty', 'calculate_gst', 'project_intelligence', 'sector_projects']
+
+  const toolDescriptions: Record<string, string> = {
+    'builder_lookup': '**builder_lookup** — verified builder facts (delivered units, RERA, CREDAI, awards). Always call before any builder quality claim.',
+    'web_search': '**web_search** — live data: builder news, market trends, RERA status, infrastructure. Cite returned sources.',
+    'area_info': `**area_info** — ${cityPack.areaInfoDescription}`,
+    'rera_check': '**rera_check** — live UP-RERA portal lookup for a specific project.',
+    'commute': '**commute** — real driving time between two locations.',
+    'calculate_emi': '**calculate_emi** — monthly home-loan EMI calculation.',
+    'calculate_stamp_duty': '**calculate_stamp_duty** — exact stamp duty + registration charges (rate depends on buyer gender).',
+    'calculate_gst': '**calculate_gst** — exact GST calculation (5% UC, 0% RTM, 1% affordable).',
+    'payment_plan_lookup': '**payment_plan_lookup** — verified payment milestones and cost structure (Booking %, Agreement %, Registry %, CLP/DP plans). Use for payment schedules and offers.',
+    'floor_plans_lookup': '**floor_plans_lookup** — every unit configuration: carpet/super/balcony area, efficiency, bathrooms, towers, price per configuration, availability. Use for floor plans, layouts, sizes.',
+    'cost_sheet_lookup': '**cost_sheet_lookup** — full charge breakdown: base rate, floor rise, PLC, parking, IFMS, club, other charges, tax rates, assumptions. Use for total cost or hidden charges.',
+    'amenities_lookup': '**amenities_lookup** — complete amenity list (grouped by category) and connectivity entries with distances. Use when user wants full list.',
+    'project_nearby': '**project_nearby** — connectivity data: metro stations, roads, schools, hospitals, malls. Call for location/connectivity questions.',
+    'project_amenities': '**project_amenities** — amenities by category: clubhouse, sports, security, parking. Call for lifestyle/feature questions.',
+    'project_documents': '**project_documents** — downloadable files: brochures, floor plans, payment schedules. Call when user asks for documents.',
+    'project_intelligence': '**project_intelligence** — verified analysis by topic: financial (EMI, wealth), market (supply, appreciation), builder (track record), property (space, floor), comparative (vs competitors), resources. Use for "is this good", "should I buy".',
+    'sector_projects': '**sector_projects** — projects in a sector ranked by RealtyPals verified score, filterable by BHK/budget. Use for "top properties in Sector X", "what is available under Y crore".',
+    'buyer_fit_analysis': '**buyer_fit_analysis** — target persona (income, family stage, work location, timeline) and deal conditions (walk-away criteria, timing). Use for "fit for young family", "what income level".',
+    'price_history_lookup': '**price_history_lookup** — recorded price snapshots, total change, CAGR, direction. Use for "how have prices moved", "price trend" (historical only).',
+    'construction_status': '**construction_status** — milestone-by-milestone progress and completion estimate. Use for "what construction stage", "how far along".',
+    'builder_news': '**builder_news** — published builder news and announcements. Use for context on builder activity and momentum.',
+    'project_images': '**project_images** — all photos grouped by type. Use when user asks to see project images.',
+    'project_competitors': '**project_competitors** — competitor comparisons for a project. Use when user asks how a project compares.',
+    'user_saved_state': '**user_saved_state** — logged-in user shortlisted properties, price alerts, shared shortlists. Use for "show my saved".',
+    'list_available_tools': '**list_available_tools** — if you need access to additional tools not shown here, call this escape hatch to ask.',
+  }
+
+  return filteredTools
+    .map((tool: string) => toolDescriptions[tool] || '')
+    .filter(Boolean)
+    .join('\n')
+})()}
 
 ### Detail lookups — answer anything we hold, but only when asked
 The properties block above is a summary. These tools read verified detail that is deliberately kept out of it. Anything in our database is answerable — call the right tool the moment the user asks, and say "not yet verified in our records" only after the tool tells you it is missing.

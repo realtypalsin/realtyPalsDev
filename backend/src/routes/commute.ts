@@ -62,6 +62,9 @@ router.get('/', async (req: Request, res: Response) => {
   }
 
   await setCached(cacheKey, result, 60 * 60 * 6)
+
+  // HTTP cache: 6 hours
+  res.set('Cache-Control', 'public, max-age=21600')
   res.json(result)
 })
 

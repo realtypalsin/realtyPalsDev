@@ -29,16 +29,24 @@ router.post('/engagement', async (req: Request, res: Response) => {
 
     if (!chatAnalytics && data.session_id) {
       // If no analytics record exists yet, we should create it if the session exists
-      try {
-        await prisma.chatAnalytics.create({
-          data: {
-            session_id: data.session_id,
-            chat_started_at: new Date(),
-          }
-        })
-      } catch (err) {
-        // Session ID might not be created in ChatSession DB table yet; ignore FK constraint error gracefully
-        console.warn(`[analytics/engagement] Could not create ChatAnalytics for session ${data.session_id}`)
+      const sessionExists = await prisma.chatSession.findUnique({
+        where: { id: data.session_id },
+        select: { id: true }
+      })
+
+      if (sessionExists) {
+        try {
+          await prisma.chatAnalytics.create({
+            data: {
+              session_id: data.session_id,
+              chat_started_at: new Date(),
+            }
+          })
+        } catch (err) {
+          console.warn(`[analytics/engagement] Could not create ChatAnalytics for session ${data.session_id}`)
+        }
+      } else {
+        console.warn(`[analytics/engagement] Session ${data.session_id} does not exist yet. Skipping analytics creation.`)
       }
     }
 

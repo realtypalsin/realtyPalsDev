@@ -1,6 +1,8 @@
 // backend/src/lib/discovery/scoring.ts
 import { Intent, BudgetStatus } from './types'
 import { BUDGET_TOLERANCE_WARN, HEADROOM_CAP } from './constants'
+import { getMarketTier, getMarketTierBias } from './marketTiers'
+import { getTierBoost, type SectorTier } from './sectorTiers'
 
 export function buildPriceRangeLabel(minP: number | null, maxP: number | null): string {
   if (minP != null) {
@@ -68,7 +70,6 @@ export function scoreProject(
     builder: {
       credai_member?: boolean | null
       delivered_units?: number | null
-      awards_count?: number | null
       legal_flag?: string | null
     }
     hero_image_url: string | null
@@ -82,7 +83,8 @@ export function scoreProject(
     } | null
   },
   intent: Intent,
-  budgetStatus?: BudgetStatus
+  budgetStatus?: BudgetStatus,
+  sectorTier?: SectorTier // Phase 5: sector tier for boost
 ): number {
   if (!p) return 0
   let score = 0
@@ -150,10 +152,9 @@ export function scoreProject(
     score += 4 // no lifestyle intent — neutral
   }
 
-  // ── Builder quality (max 4) ─────────────────────────────────────────
+  // ── Builder quality (max 3) ─────────────────────────────────────────
   if (p.builder.credai_member)               score += 2
   if ((p.builder.delivered_units ?? 0) > 0)  score += 1
-  if ((p.builder.awards_count ?? 0) > 0)     score += 1
 
   // ── Data quality (max 3) ────────────────────────────────────────────
   if (p.hero_image_url || p.images.some((i) => i.type === 'exterior' || i.type === 'hero')) score += 2
@@ -203,6 +204,26 @@ export function scoreProject(
       legalText.includes('nclt') || legalText.includes('insolvency') ||
       riskText.includes('nclt')  || riskText.includes('insolvency')
     if (hasInsolvencyRisk) score -= 100
+  }
+
+  // ── Phase 5: Sector tier boost ─────────────────────────────────────
+  // Data-driven tier boost: tier1 = +10pts, tier2 = +5pts, tier3 = 0pts
+  if (sectorTier) {
+    score += getTierBoost(sectorTier)
+  }
+
+  // ── Phase 5: Market tier bias ──────────────────────────────────────
+  // When user provides budget: bias to matching tier (+20pts exact, +5pts adjacent)
+  if (intent.budgetMax) {
+    const prices = p.unit_types
+      .map((u) => u.price_min_cr)
+      .filter((x): x is number => x != null)
+    if (prices.length > 0) {
+      const lowestPrice = Math.min(...prices)
+      const projectTier = getMarketTier(lowestPrice)
+      const marketBias = getMarketTierBias(projectTier, intent.budgetMax)
+      score += marketBias
+    }
   }
 
   return Math.max(score, 0)

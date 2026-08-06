@@ -4,7 +4,6 @@
  */
 
 import * as Sentry from '@sentry/node'
-import { ProfilingIntegration } from '@sentry/profiling-node'
 
 /**
  * Initialize Sentry for backend
@@ -22,13 +21,6 @@ export function initSentryServer(): void {
     dsn,
     environment: env,
     tracesSampleRate: env === 'production' ? 0.1 : 1.0,
-    profilesSampleRate: env === 'production' ? 0.1 : 1.0,
-    integrations: [
-      new ProfilingIntegration(),
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Integrations.OnUncaughtException(),
-      new Sentry.Integrations.OnUnhandledRejection(),
-    ],
     ignoreErrors: [
       // Network errors (expected in production)
       'NetworkError',
@@ -42,13 +34,17 @@ export function initSentryServer(): void {
 
 /**
  * Middleware for Express to capture transactions
+ * Note: Sentry v8 has built-in middleware
  */
 export function sentryRequestHandler() {
-  return Sentry.Handlers.requestHandler()
+  return (req: any, res: any, next: any) => next()
 }
 
 export function sentryErrorHandler() {
-  return Sentry.Handlers.errorHandler()
+  return (err: any, req: any, res: any, next: any) => {
+    Sentry.captureException(err)
+    next(err)
+  }
 }
 
 /**
@@ -66,11 +62,15 @@ export function captureException(error: unknown, context?: Record<string, unknow
 /**
  * Set user context
  */
-export function setSentryUser(userId: string, email?: string, username?: string): void {
+export function setSentryUser(userId: string | null, email?: string, username?: string): void {
+  if (!userId) {
+    Sentry.setUser(null)
+    return
+  }
   Sentry.setUser({
     id: userId,
-    email,
-    username,
+    email: email || undefined,
+    username: username || undefined,
   })
 }
 
@@ -100,13 +100,17 @@ export function addBreadcrumb(
 }
 
 /**
- * Start performance transaction
+ * Start performance transaction (Sentry v8 uses automatic transactions)
  */
 export function startTransaction(name: string, op: string = 'http.request') {
-  return Sentry.startTransaction({
-    name,
-    op,
-  })
+  try {
+    return Sentry.startSpan({
+      name,
+      op,
+    }, (span) => span)
+  } catch {
+    return null
+  }
 }
 
 /**

@@ -14,6 +14,8 @@ import {
   buildSectorAdvisoryFormatBlock,
   buildComparisonFormatBlock,
 } from './blocks'
+import { filterToolsByIntent, type QueryKind } from '../toolRegistry'
+import { truncateByTiers, estimateTokens, injectPersonaContext } from '../contextBuilder'
 
 export { INTENT_EXTRACTION_PROMPT } from './intent-extraction'
 export { getBaseSystemPrompt } from './base'
@@ -62,8 +64,29 @@ export function buildAdvisorSystemPrompt(
   const sectorBlock          = sectorCtx ? buildSectorBlock(sectorCtx, intent) : ''
   const sectorsOverviewBlock = hasSectorsOverview ? buildSectorsOverviewBlock(sectorsOverview!, intent) : ''
   const expansionBlock       = expansion ? buildExpansionBlock(expansion) : ''
-  const projectsBlock        = buildProjectsBlock(exactResults, sectorCtx, expansion, nearbyResults, notFoundNames)
 
-  const finalPrompt = getBaseSystemPrompt(intent as Record<string, unknown>, blockedBuilders, city ?? DEFAULT_CITY) + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
+  // Phase 2: Apply tiered truncation if token budget gets tight
+  // Step 1: Build base prompt to measure token footprint (with dynamic tools based on queryKind)
+  const queryKind = (intent.queryKind ?? 'DISCOVERY') as QueryKind
+  const userMessage = '' // Note: userMessage would come from the chat context in chat.ts
+  const basePrompt = getBaseSystemPrompt(intent, blockedBuilders, city ?? DEFAULT_CITY, intentState, queryKind, userMessage)
+  const baseTokens = estimateTokens(basePrompt)
+  const extraBlocksTokens = estimateTokens(propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock)
+  const systemPromptEstimate = baseTokens + extraBlocksTokens
+
+  // Step 2: Apply tiered truncation to properties
+  let truncatedExact = exactResults
+  let truncatedNearby = nearbyResults
+  if (hasExactResults && systemPromptEstimate > 85_000) {
+    // Only truncate if we're already consuming a lot of tokens
+    truncatedExact = truncateByTiers(exactResults, systemPromptEstimate, 100_000)
+    if (nearbyResults && nearbyResults.length > 0) {
+      truncatedNearby = truncateByTiers(nearbyResults, systemPromptEstimate + estimateTokens(JSON.stringify(truncatedExact)), 100_000)
+    }
+  }
+
+  const projectsBlock = buildProjectsBlock(truncatedExact, sectorCtx, expansion, truncatedNearby, notFoundNames)
+
+  const finalPrompt = basePrompt + propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock + projectsBlock
   return finalPrompt
 }

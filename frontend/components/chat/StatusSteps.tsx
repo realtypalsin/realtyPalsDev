@@ -50,42 +50,53 @@ const PHASE_CONTENT: Record<
 
 const STEPS = ['extracting', 'searching', 'generating'] as const;
 
+import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
+
 export default function StatusSteps({ phase, intent, resultCount }: Props) {
   if (!phase) return null;
 
   const activeIndex = STEPS.indexOf(phase);
-  const content = PHASE_CONTENT[phase];
-  const detail = content.detail?.(intent, resultCount);
 
   return (
-    <div className="px-4 py-2 space-y-1.5">
-      {/* Step rail */}
-      <div className="flex items-center gap-2 text-xs text-gray-500">
-        {STEPS.map((step, i) => {
-          const done = i < activeIndex;
-          const active = i === activeIndex;
-          return (
-            <div key={step} className="flex items-center gap-1.5">
-              <span
-                className={[
-                  'w-1.5 h-1.5 rounded-full transition-all',
-                  done ? 'bg-green-400' : active ? 'bg-blue-400 animate-pulse' : 'bg-gray-200',
-                ].join(' ')}
-              />
-              <span className={active ? 'text-blue-600 font-medium' : done ? 'text-green-600' : 'text-gray-300'}>
-                {PHASE_CONTENT[step].label}
-              </span>
-              {i < STEPS.length - 1 && <span className="text-gray-200 mx-0.5">›</span>}
+    <div className="p-4 space-y-4 font-sans bg-white dark:bg-transparent">
+      {STEPS.map((step, i) => {
+        const done = i < activeIndex;
+        const active = i === activeIndex;
+        const content = PHASE_CONTENT[step];
+        const detail = content.detail?.(intent, resultCount);
+
+        return (
+          <div key={step} className="relative flex gap-3">
+            {/* Vertical line connector */}
+            {i < STEPS.length - 1 && (
+              <div className="absolute left-2 top-6 bottom-[-16px] w-[1.5px] bg-gray-100 dark:bg-gray-800" />
+            )}
+            
+            {/* Icon */}
+            <div className="relative z-10 flex-shrink-0 mt-0.5 bg-white dark:bg-[#111]">
+              {done ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+              ) : active ? (
+                <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+              ) : (
+                <Circle className="w-4 h-4 text-gray-200 dark:text-gray-800" />
+              )}
             </div>
-          );
-        })}
-      </div>
-      {/* Phase detail line */}
-      {detail && (
-        <p className="text-[11px] text-gray-400 font-mono pl-0.5 truncate">
-          {detail}
-        </p>
-      )}
+            
+            {/* Content */}
+            <div className="flex flex-col flex-1 min-w-0 -mt-0.5 pb-1">
+              <span className={`text-[13px] font-semibold tracking-tight ${active ? 'text-gray-900 dark:text-gray-100' : done ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400 dark:text-gray-600'}`}>
+                {content.label}
+              </span>
+              {detail && (active || done) && (
+                <span className="text-[12px] text-gray-500 dark:text-gray-500 mt-0.5 leading-relaxed font-mono truncate">
+                  {detail}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

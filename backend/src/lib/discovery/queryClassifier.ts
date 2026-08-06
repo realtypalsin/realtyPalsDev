@@ -1,0 +1,217 @@
+/**
+ * Phase 0: Query Classification Taxonomy
+ *
+ * Deterministic + LLM fallback approach to classify user queries into:
+ * - DISCOVERY: User wants recommendations (default fallback)
+ * - DRILLDOWN: User wants details on specific project/attribute
+ * - RANKING: User wants comparison/ranking of options
+ * - COMPARISON: User wants to compare 2+ named projects
+ * - SUMMARY: User wants overview/summary
+ * - ADVISORY: User wants advice/opinion
+ * - CLARIFY: Bot needs clarification before proceeding
+ *
+ * Deterministic pre-pass evaluates before LLM fallback.
+ * LLM fallback folds queryKind into intent extraction (no extra round-trip).
+ */
+
+import type { Intent } from './types'
+import { inferRankingProfile, type RankingProfile } from './rankingProfiles'
+
+export type QueryKind =
+  | 'DISCOVERY'   // User searching for properties
+  | 'DRILLDOWN'   // Detail-focused on specific project
+  | 'RANKING'     // Comparative/ranking query
+  | 'COMPARISON'  // Compare 2+ projects
+  | 'SUMMARY'     // High-level overview
+  | 'ADVISORY'    // Ask for advice/opinion
+  | 'CLARIFY'     // Need clarification
+
+export type RenderTarget = 'cards' | 'text' | 'both'
+
+export interface QueryClassification {
+  queryKind: QueryKind
+  renderTarget: RenderTarget
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW'
+  reason: string
+  rankingProfile?: RankingProfile // Phase 5: inferred from phrasing when queryKind=RANKING
+}
+
+/**
+ * Render target mapping from queryKind.
+ * Tells frontend how to render the response.
+ */
+function getRenderTarget(queryKind: QueryKind): RenderTarget {
+  switch (queryKind) {
+    case 'DISCOVERY':
+      return 'cards'
+    case 'DRILLDOWN':
+    case 'SUMMARY':
+    case 'ADVISORY':
+    case 'CLARIFY':
+      return 'text'
+    case 'COMPARISON':
+    case 'RANKING':
+      return 'both'
+    default:
+      return 'text'
+  }
+}
+
+/**
+ * Deterministic pre-pass: keyword + pattern matching.
+ * Returns classification if pattern is clear, otherwise returns null for LLM fallback.
+ */
+export function classifyQueryDeterministic(
+  userMessage: string,
+  intent: Record<string, unknown>,
+): QueryClassification | null {
+  const msg = userMessage.toLowerCase().trim()
+  const intentObj = intent as Partial<Intent>
+
+  // COMPARISON: User explicitly asks to compare 2+ named projects
+  // "Compare X vs Y", "Compare X and Y", "Compare X with Y"
+  const comparePattern = /(?:compare|vs|versus|which.*better|which.*more suitable)\s+([^?]+)\s+(?:vs|versus|with|and|or)\s+([^?]+)/i
+  const compareMatch = userMessage.match(comparePattern)
+  if (compareMatch && intentObj.projectNames?.length && intentObj.projectNames.length >= 2) {
+    return {
+      queryKind: 'COMPARISON',
+      renderTarget: 'both',
+      confidence: 'HIGH',
+      reason: 'Explicit comparison request with 2+ project names',
+    }
+  }
+
+  // DRILLDOWN: Intent unchanged + attribute keyword (no new project names)
+  // "payment plan for it", "cost of that one", "carpet area details"
+  const attributeKeywords = /\b(payment\s+plan|cost|price|carpet|carpet\s+area|emi|maintenance|parking|amenities|facilities|layout|bhk|configuration|timeline|possession|construction|status|builder|reputation|trust|verification|rera)\b/i
+  const isDetailQuery = attributeKeywords.test(msg)
+
+  // Check if user is asking about a project they've already mentioned
+  // (same projectNames as previous intent, or pronoun reference like "it" / "that one")
+  const pronounPatterns = /\b(it|that|this one|the one|one you mentioned)\b/i
+  const hasPronounRef = pronounPatterns.test(msg)
+  const hasNewProject = (intentObj.projectNames?.length ?? 0) === 0 ||
+    (userMessage.match(/[A-Z][a-zA-Z\s]+(?:Project|Phase|\d+)?/g) ?? []).length > 0
+
+  if (isDetailQuery && !hasNewProject) {
+    return {
+      queryKind: 'DRILLDOWN',
+      renderTarget: 'text',
+      confidence: 'HIGH',
+      reason: 'Attribute keyword + no new project names',
+    }
+  }
+
+  // DRILLDOWN with pronoun resolution
+  if (isDetailQuery && hasPronounRef) {
+    return {
+      queryKind: 'DRILLDOWN',
+      renderTarget: 'text',
+      confidence: 'MEDIUM',
+      reason: 'Attribute keyword + pronoun reference to previous project',
+    }
+  }
+
+  // RANKING: Superlative + scope (Phase 5: extended with value/trust/speed/family phrasing)
+  // "best projects under 1.5cr", "top 3 options in sector 62", "which is cheapest"
+  // "best value", "safest builders", "fastest possession", "best for families"
+  const superlativePattern = /\b(best|top|most|least|cheapest|fastest|largest|highest|lowest|fewest|which.*best|which.*most|which.*least|value|budget-friendly|affordable|safest|trusted|quick|families|family|premium|luxury|rank)\b/i
+  const scopePattern = /\b(in|near|under|over|within|around|sector|area|range)\b/i
+  if (superlativePattern.test(msg) && scopePattern.test(msg)) {
+    const rankingProfile = inferRankingProfile(msg)
+    return {
+      queryKind: 'RANKING',
+      renderTarget: 'both',
+      confidence: 'HIGH',
+      reason: 'Superlative + scope pattern (best, top, etc.)',
+      rankingProfile: rankingProfile ?? undefined,
+    }
+  }
+
+  // SUMMARY: User asks for overview/summary
+  // "Summary of", "overview of", "tell me about the sector", "what's available"
+  const summaryPattern = /\b(summary|overview|quick|brief|gist|summary of|tell me about|what.*available|what.*options)\b/i
+  if (summaryPattern.test(msg)) {
+    return {
+      queryKind: 'SUMMARY',
+      renderTarget: 'text',
+      confidence: 'HIGH',
+      reason: 'Summary/overview keywords',
+    }
+  }
+
+  // ADVISORY: Asking for advice/opinion without comparison
+  // "Should I buy X?", "Is X good for investment?", "What do you think of X?"
+  const advisoryPattern = /\b(should|should i|would you|is.*good|is.*worth|is.*right|do you think|what do you think|recommendation|advice|your opinion|opinion on)\b/i
+  const projectRef = /\b(for|about|on|of)\s+\w+$/
+  if (advisoryPattern.test(msg) && projectRef.test(msg)) {
+    return {
+      queryKind: 'ADVISORY',
+      renderTarget: 'text',
+      confidence: 'MEDIUM',
+      reason: 'Advisory keywords + project reference',
+    }
+  }
+
+  // Fallback: return null to signal LLM fallback
+  return null
+}
+
+/**
+ * Determine if a query needs explicit LLM classification.
+ * Returns true if deterministic pre-pass couldn't classify.
+ */
+export function needsLLMFallback(classification: QueryClassification | null): boolean {
+  return classification === null
+}
+
+/**
+ * Parse queryKind from LLM intent extraction.
+ * Called INSIDE extractIntent to fold queryKind into the response schema.
+ * The LLM includes queryKind in its intent JSON output.
+ *
+ * Default to DISCOVERY if not specified (fail-open).
+ */
+export function parseQueryKindFromIntent(rawIntent: Record<string, unknown>): QueryKind {
+  const queryKind = rawIntent.queryKind as string | undefined
+
+  const valid: QueryKind[] = ['DISCOVERY', 'DRILLDOWN', 'RANKING', 'COMPARISON', 'SUMMARY', 'ADVISORY', 'CLARIFY']
+
+  if (queryKind && valid.includes(queryKind as QueryKind)) {
+    return queryKind as QueryKind
+  }
+
+  // Fail-open: unknown → DISCOVERY
+  return 'DISCOVERY'
+}
+
+/**
+ * Complete classification: combine deterministic + LLM fallback.
+ * Called from chat.ts after intent extraction.
+ */
+export function classifyQuery(
+  userMessage: string,
+  intent: Record<string, unknown>,
+): QueryClassification {
+  // Try deterministic first
+  const deterministic = classifyQueryDeterministic(userMessage, intent)
+  if (deterministic) {
+    return deterministic
+  }
+
+  // Fallback to LLM-provided queryKind (already in intent from extractIntent)
+  const queryKind = parseQueryKindFromIntent(intent)
+  const renderTarget = getRenderTarget(queryKind)
+
+  return {
+    queryKind,
+    renderTarget,
+    confidence: 'MEDIUM', // LLM-derived, less confident than deterministic
+    reason: 'LLM classification',
+  }
+}
+
+/**
+ * Export render target resolver for use in chat.ts
+ */
+export { getRenderTarget }

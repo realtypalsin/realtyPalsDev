@@ -87,6 +87,7 @@ export type SSEEvent =
   | { type: 'done'; sessionId: string; intentState: string; intent?: Record<string, unknown>; responseMode: 'search' | 'comparison' | 'chat' }
   | { type: 'error'; message: string }
   | { type: 'ui_state'; stage: ConversationStage; thinking: string; chips: ChipAction[]; missingFields: string[]; confidence: 'HIGH' | 'MEDIUM' | 'LOW' }
+  | { type: 'focus'; projectId: string; name: string; anchor: string }
 
 export function streamChat(
   action: ConversationAction,

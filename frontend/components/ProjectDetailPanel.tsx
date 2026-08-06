@@ -1,10 +1,10 @@
 'use client'
 import {
   Building2, CheckCircle2, LineChart, BedDouble,
-  MapPin, Sparkles, CalendarDays, FileText, IndianRupee, X, ShieldCheck
+  MapPin, Sparkles, CalendarDays, FileText, IndianRupee, X, ShieldCheck, Users
 } from 'lucide-react'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {  AnimatePresence, m  } from 'framer-motion'
 import Image from 'next/image'
@@ -25,6 +25,7 @@ import ResidencesTab from '@/components/property-detail/ResidencesTab'
 import ProjectPricingTab from '@/components/property-detail/ProjectPricingTab'
 import LocationTab from '@/components/property-detail/LocationTab'
 import BuilderTab from '@/components/property-detail/BuilderTab'
+import PartnersTab from '@/components/property-detail/PartnersTab'
 import { API_BASE } from '@/lib/env'
 import { getPaymentPlan, getCostSheet } from '@/lib/backend-api'
 import { resolveImgUrl } from '@/lib/utils'
@@ -107,9 +108,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   }, [activeTab])
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams)
-    params.set('tab', activeTab)
-    router.replace(`?${params.toString()}`, { scroll: false })
+    const currentTab = searchParams.get('tab')
+    if (currentTab !== activeTab) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('tab', activeTab)
+      router.replace(`?${params.toString()}`, { scroll: false })
+    }
   }, [activeTab, router, searchParams])
 
   useEffect(() => {
@@ -177,11 +181,14 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     setLoading(false)
   }, [initialDetail, project])
 
-  useEffect(() => {
-
+  const fetchAqi = useCallback(() => {
     if (!project) return
     getAqi(project.lat, project.lng, 'noida').then(setAqi).catch(() => {})
   }, [project])
+
+  useEffect(() => {
+    fetchAqi()
+  }, [fetchAqi])
 
   useEffect(() => {
     if (!project) return
@@ -300,9 +307,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           loading={loading}
           documents={documents}
           whyBuy={whyBuy}
+          floorPlanImages={floorPlanImages}
+          onViewFloorPlans={(plans) => setShowFloorPlan({ plans })}
           onGoToLocation={() => setActiveTab('Location')}
           onGoToDocuments={() => setActiveTab('Builder')}
           onGoToPricing={() => setActiveTab('Pricing')}
+          onGoToFloorPlans={() => setActiveTab('Floor Plans')}
         />
       )}
 
@@ -317,6 +327,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           walkAwayConditions={walkAwayConditions}
           marketVisible={marketVisible}
           marketRef={marketRef}
+          onGoToPricing={() => setActiveTab('Pricing')}
+          onGoToOverview={() => setActiveTab('Overview')}
         />
       )}
 
@@ -639,36 +651,38 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           </div>
 
           {/* Highlighted Possession Badge */}
-          <div className="md:col-span-3 py-4 md:py-0 md:px-5 flex items-center gap-3 bg-[#FAF7F2] dark:bg-[#201c18] border border-[#F2E8D8] dark:border-amber-900/30 p-3.5 rounded-2xl">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 flex items-center justify-center flex-shrink-0">
-              <CalendarDays size={20} />
+          <div className="md:col-span-3 py-3.5 md:py-0 md:px-4 flex items-center gap-3 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 p-3 rounded-2xl">
+            <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center flex-shrink-0">
+              <CalendarDays size={18} />
             </div>
             <div>
-              <p className="text-[9px] text-amber-800 dark:text-amber-400 font-black uppercase tracking-widest leading-none">Possession</p>
-              <p className="text-[13.5px] font-black text-gray-900 dark:text-white mt-1 leading-snug">{displayPossession}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider leading-none">Possession</p>
+              <p className="text-[13.5px] font-extrabold text-gray-900 dark:text-white mt-1 leading-snug">{displayPossession}</p>
             </div>
           </div>
 
-          {/* AI Recommendation Score */}
-          <div className="md:col-span-5 py-4 md:py-0 md:pl-6 flex items-center justify-between">
-            <div className="pr-3">
-              <p className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-1">
-                AI RECOMMENDATION SCORE
-              </p>
-              <p className="text-[11.5px] text-gray-600 dark:text-gray-400 leading-snug font-medium line-clamp-2">
-                {detail?.recommendation_profile?.primary_thesis || 'The absolute safest and most beautiful luxury home in this micro-market.'}
+          {/* Configurations */}
+          <div className="md:col-span-3 py-3.5 md:py-0 md:px-4 flex items-center gap-3 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 p-3 rounded-2xl">
+            <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center flex-shrink-0">
+              <BedDouble size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider leading-none">Configurations</p>
+              <p className="text-[13.5px] font-extrabold text-gray-900 dark:text-white mt-1 leading-snug">
+                {unitTypes.length > 0 ? [...new Set(unitTypes.map(u => u.bhk))].sort((a,b)=>a-b).join(' • ') + ' BHK' : '3 • 3.5 • 4 BHK'}
               </p>
             </div>
-            <div className="relative flex items-center justify-center flex-shrink-0 w-14 h-14">
-              <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
-                <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-100 dark:stroke-gray-800" strokeWidth="3" />
-                <circle cx="18" cy="18" r="16" fill="none" className="stroke-blue-600 dark:stroke-blue-400" strokeWidth="3"
-                  pathLength="100" strokeDasharray="100" strokeDashoffset={100 - Number(displayScore)} strokeLinecap="round" 
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/50 dark:bg-black/20 m-1" />
-              <span className="relative z-10 text-[14px] font-black tracking-tighter text-gray-900 dark:text-white leading-none">{displayScore}</span>
-            </div>
+          </div>
+
+          {/* Book Site Visit CTA */}
+          <div className="md:col-span-2 py-4 md:py-0 md:pl-4 flex items-center justify-end">
+            <button
+              onClick={() => handleOpenSiteVisit()}
+              className="w-full py-3.5 px-4 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-gray-900 font-extrabold rounded-2xl text-[13px] transition-all shadow-md flex items-center justify-center gap-2"
+            >
+              <CalendarDays size={16} />
+              Book Site Visit
+            </button>
           </div>
 
         </div>

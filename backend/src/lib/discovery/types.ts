@@ -17,6 +17,9 @@ export interface Intent {
   is_comparison_query?: boolean   // explicit: user asked to compare named projects
   gathering_loop_count?: number
   legal_check?: boolean
+
+  // Phase 0: Query classification
+  queryKind?: 'DISCOVERY' | 'DRILLDOWN' | 'RANKING' | 'COMPARISON' | 'SUMMARY' | 'ADVISORY' | 'CLARIFY'
 }
 
 export type IntentState = 'COLD' | 'GATHERING' | 'READY_TO_SEARCH' | 'SHORTLISTED'
@@ -38,6 +41,7 @@ export interface UnitTypeSummary {
   price_min_cr?: number | null
   price_max_cr?: number | null
   price_label?: string | null
+  inventory_left?: number | null
 }
 
 export interface AmenitySummary {
@@ -81,6 +85,10 @@ export interface ScoredProject {
   price_min_cr?: number | null
   price_max_cr?: number | null
   price_range_label: string
+  floor_plan_count: number
+  project_status?: string
+  amenity_count: number
+  construction_progress_pct: number
   unit_types: UnitTypeSummary[]
   top_amenities: AmenitySummary[]
   top_connectivity: ConnSummary[]
@@ -98,6 +106,7 @@ export interface ScoredProject {
   matchReasons: string[]
   concerns: string[]
   budgetStatus?: BudgetStatus
+  market_tier?: 'budget' | 'mid' | 'premium' | 'luxury' // Phase 5: market tier tag
   /** Fix 6: set when persisted via last_projects — distinguishes exact vs nearby results on cache restore */
   cacheSource?: 'exact' | 'nearby'
   best_for?: string | null
@@ -162,6 +171,10 @@ export interface DiscoveryResult {
     query: string
     candidates: string[]
   }
+  /** Pagination info for exactResults + nearbyResults combined */
+  pageIndex?: number
+  totalCount?: number
+  hasMore?: boolean
 }
 
 export interface SectorContext {

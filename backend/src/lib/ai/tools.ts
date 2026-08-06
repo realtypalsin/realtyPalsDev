@@ -240,6 +240,42 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
     },
   },
   {
+    name: 'best_value_projects',
+    description: 'Phase 5: Get best value projects for a sector and budget. Ranked by price position + amenities. Use for "best value projects", "affordable options", "best bang for buck".',
+    parameters: {
+      type: 'object',
+      properties: {
+        sector: { type: 'string', description: 'Sector name, e.g. "Sector 150"' },
+        budget_max_cr: { type: 'number', description: 'Maximum budget in crore (optional)' },
+      },
+      required: ['sector'],
+    },
+  },
+  {
+    name: 'fastest_possession_projects',
+    description: 'Phase 5: Get fastest possession projects for a sector and budget. Ranked by possession timeline. Use for "fastest possession", "ready soon", "quickest available".',
+    parameters: {
+      type: 'object',
+      properties: {
+        sector: { type: 'string', description: 'Sector name, e.g. "Sector 150"' },
+        budget_max_cr: { type: 'number', description: 'Maximum budget in crore (optional)' },
+      },
+      required: ['sector'],
+    },
+  },
+  {
+    name: 'best_for_families_projects',
+    description: 'Phase 5: Get best projects for families (schools, amenities, connectivity). Use for "best for families", "schools nearby", "family-friendly".',
+    parameters: {
+      type: 'object',
+      properties: {
+        sector: { type: 'string', description: 'Sector name, e.g. "Sector 150"' },
+        budget_max_cr: { type: 'number', description: 'Maximum budget in crore (optional)' },
+      },
+      required: ['sector'],
+    },
+  },
+  {
     name: 'sector_projects',
     description: 'List projects in a sector or city ranked by RealtyPals verified score, optionally filtered by BHK and budget. Use for "top properties in Sector 79", "what is available in Noida under 2 crore", "best projects in this area". Ranking is by our verified score then entry price — never describe it as a market ranking.',
     parameters: {
@@ -251,6 +287,15 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
         max_budget_cr: { type: 'number', description: 'Maximum budget in crore' },
         limit: { type: 'number', description: 'How many projects to return, default 8, max 20' },
       },
+    },
+  },
+  {
+    name: 'project_financial_details',
+    description: 'Get comprehensive financial data for a project in a single call: cost sheet (base rate, charges, GST rates), payment plans (all available milestones), and price history (trend). Use for "what are payment plans", "cost breakdown", "price trends", "payment options". Replaces three separate lookups (cost_sheet_lookup, payment_plan_lookup, price_history_lookup) with a single efficient batch call.',
+    parameters: {
+      type: 'object',
+      properties: { project_name: { type: 'string', description: 'Project name, e.g. "Ivy County", "Elite X", "Godrej Woods"' } },
+      required: ['project_name'],
     },
   },
 ]
@@ -291,6 +336,7 @@ const TOOL_ARG_LIMITS: Record<string, Record<string, number>> = {
   builder_news:          { builder_name: 100 },
   user_saved_state:      {},
   sector_projects:       { sector: 50, city: 50 },
+  project_financial_details: { project_name: 100 },
 }
 
 export function validateToolArgs(name: string, args: Record<string, unknown>): Record<string, unknown> {

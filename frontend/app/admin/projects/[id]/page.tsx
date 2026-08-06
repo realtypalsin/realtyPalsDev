@@ -165,7 +165,7 @@ export default function EditProject() {
   const [refreshing, setRefreshing]   = useState(false)
   const [adminTab, setAdminTab]       = useState<AdminTab>('core')
 
-  async function loadProject() {
+  const loadProject = useCallback(async () => {
     const [projectRes, docsRes, completenessRes] = await Promise.all([
       adminFetch(`/admin/projects/${id}`),
       adminFetch(`/admin/projects/${id}/documents`),
@@ -180,9 +180,9 @@ export default function EditProject() {
     setCompleteness(completenessJson)
     setShowCompleteness(true)
     setLoading(false)
-  }
+  }, [id])
 
-  useEffect(() => { loadProject() }, [id, loadProject])
+  useEffect(() => { loadProject() }, [loadProject])
 
   const handleFormChange = useCallback((formValues: any) => {
     setPreview((prev: any) => ({

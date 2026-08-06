@@ -3,7 +3,7 @@
  */
 
 import type { ProjectDataGatewayResponse } from './projectDataGateway'
-import type { QueryIntent } from '../discovery/queryPlanner'
+import type { QueryIntent } from './discovery/queryPlanner'
 
 export interface CacheEntry {
   data: ProjectDataGatewayResponse
