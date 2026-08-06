@@ -244,8 +244,13 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
         images: true,
         amenities: true,
         connectivity: true,
+        dna: true,
         decision_profile: true,
         persona_profile: true,
+        recommendation_profile: true,
+        competitors: { orderBy: { sort_order: 'asc' } },
+        construction_updates: { orderBy: { update_date: 'desc' } },
+        channel_partners: { include: { channel_partner: true }, orderBy: { created_at: 'asc' } },
         payment_plans: { orderBy: [{ sort_order: 'asc' }, { created_at: 'asc' }] },
         cost_sheet: true,
       },
@@ -258,6 +263,7 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
 
     const safeProject = {
       ...project,
+      dna: project.dna ?? null,
       unit_types: project.unit_types ?? [],
       images: project.images ?? [],
       payment_plans: project.payment_plans ?? [],
@@ -955,9 +961,10 @@ router.get('/analytics/properties', requireAdmin, async (_req: Request, res: Res
       orderBy: { name: 'asc' },
     })
 
-    const events = await prisma.propertyEvent.groupBy({
+    const events = await (prisma.propertyEvent as any).groupBy({
       by: ['project_id', 'action'],
       _count: { action: true },
+      orderBy: { _count: { action: 'desc' } },
       take: 1000,
     })
 
@@ -995,11 +1002,11 @@ router.get('/sector-tiers', requireAdmin, async (req: Request, res: Response) =>
     const { city = 'Noida' } = req.query
     const { computeSectorTier } = await import('../lib/discovery/sectorTiers')
 
-    const sectorIntelligence = await prisma.sectorIntelligence.findMany({
+    const sectorIntelligence: any[] = (await (prisma as any).sectorIntelligence?.findMany({
       where: { city: city as string },
-    })
+    })) || []
 
-    const tiers = sectorIntelligence.map((si) =>
+    const tiers = sectorIntelligence.map((si: any) =>
       computeSectorTier({
         city: si.city,
         sector: si.sector,
@@ -1025,6 +1032,139 @@ router.get('/sector-tiers', requireAdmin, async (req: Request, res: Response) =>
   } catch (err) {
     console.error('[admin] sector-tiers failed:', err)
     res.status(500).json({ error: 'Failed to compute sector tiers' })
+  }
+})
+
+// GET /api/v1/admin/channel-partners — List all available master channel partners
+router.get('/channel-partners', requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const partners = await prisma.channelPartner.findMany({
+      where: { is_active: true },
+      orderBy: { name: 'asc' },
+    })
+    res.json({ partners, channel_partners: partners })
+  } catch (err) {
+    console.error('[admin] fetch channel-partners failed:', err)
+    res.status(500).json({ error: 'Failed to fetch channel partners' })
+  }
+})
+
+// GET /api/v1/admin/projects/:id/channel-partners — Fetch project's linked partners
+router.get('/projects/:id/channel-partners', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const partners = await prisma.projectChannelPartner.findMany({
+      where: { project_id: id },
+      include: { channel_partner: true },
+    })
+    res.json({ channel_partners: partners })
+  } catch (err) {
+    console.error('[admin] fetch project channel-partners failed:', err)
+    res.status(500).json({ error: 'Failed to fetch project channel partners' })
+  }
+})
+
+// PUT /api/v1/admin/projects/:id/channel-partners — Save project's channel partners
+router.put('/projects/:id/channel-partners', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { channel_partners } = req.body
+    await prisma.projectChannelPartner.deleteMany({ where: { project_id: id } })
+    if (Array.isArray(channel_partners) && channel_partners.length > 0) {
+      await prisma.projectChannelPartner.createMany({
+        data: channel_partners.map((p: any) => ({
+          project_id: id,
+          channel_partner_id: p.channel_partner_id,
+          is_featured: p.is_featured ?? true,
+        })),
+      })
+    }
+    const updated = await prisma.projectChannelPartner.findMany({
+      where: { project_id: id },
+      include: { channel_partner: true },
+    })
+    res.json({ ok: true, channel_partners: updated })
+  } catch (err) {
+    console.error('[admin] save project channel-partners failed:', err)
+    res.status(500).json({ error: 'Failed to save project channel partners' })
+  }
+})
+
+// GET /api/v1/admin/projects/:id/milestones — Fetch project construction milestones
+router.get('/projects/:id/milestones', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const milestones = await prisma.constructionMilestone.findMany({
+      where: { project_id: id },
+      orderBy: { sort_order: 'asc' },
+    })
+    res.json({ milestones })
+  } catch (err) {
+    console.error('[admin] fetch milestones failed:', err)
+    res.status(500).json({ error: 'Failed to fetch milestones' })
+  }
+})
+
+// PUT /api/v1/admin/projects/:id/milestones — Save project construction milestones
+router.put('/projects/:id/milestones', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { milestones } = req.body
+    await prisma.constructionMilestone.deleteMany({ where: { project_id: id } })
+    if (Array.isArray(milestones) && milestones.length > 0) {
+      await prisma.constructionMilestone.createMany({
+        data: milestones.map((m: any, idx: number) => ({
+          project_id: id,
+          name: m.name || 'Construction Phase',
+          status: m.status || 'upcoming',
+          date_label: m.date_label || null,
+          sort_order: m.sort_order ?? idx + 1,
+        })),
+      })
+    }
+    res.json({ success: true })
+  } catch (err) {
+    console.error('[admin] save milestones failed:', err)
+    res.status(500).json({ error: 'Failed to save milestones' })
+  }
+})
+
+// GET /api/v1/admin/projects/:id/updates — Fetch project updates
+router.get('/projects/:id/updates', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const updates = await prisma.constructionUpdate.findMany({
+      where: { project_id: id },
+      orderBy: { update_date: 'desc' },
+    })
+    res.json({ updates })
+  } catch (err) {
+    console.error('[admin] fetch updates failed:', err)
+    res.status(500).json({ error: 'Failed to fetch updates' })
+  }
+})
+
+// PUT /api/v1/admin/projects/:id/updates — Save project updates
+router.put('/projects/:id/updates', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { updates } = req.body
+    await prisma.constructionUpdate.deleteMany({ where: { project_id: id } })
+    if (Array.isArray(updates) && updates.length > 0) {
+      await prisma.constructionUpdate.createMany({
+        data: updates.map((u: any) => ({
+          project_id: id,
+          title: u.name || 'Site Update',
+          description: u.name,
+          quarter_label: u.date_label || null,
+          update_date: new Date(),
+        })),
+      })
+    }
+    res.json({ success: true })
+  } catch (err) {
+    console.error('[admin] save updates failed:', err)
+    res.status(500).json({ error: 'Failed to save updates' })
   }
 })
 

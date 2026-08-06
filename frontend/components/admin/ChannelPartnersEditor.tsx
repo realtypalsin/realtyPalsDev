@@ -35,7 +35,7 @@ export default function ChannelPartnersEditor({ projectId, initialPartners = [],
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const res = await fetch(`${API_BASE}/v1/admin/channel-partners`, {
+        const res = await fetch(`${API_BASE}/admin/channel-partners`, {
           headers: adminAuthHeaders(),
         })
         if (res.ok) {
@@ -83,10 +83,10 @@ export default function ChannelPartnersEditor({ projectId, initialPartners = [],
         is_featured: featured,
       }))
 
-      const res = await fetch(`${API_BASE}/v1/admin/projects/${projectId}/channel-partners`, {
+      const res = await fetch(`${API_BASE}/admin/projects/${projectId}/channel-partners`, {
         method: 'PUT',
         headers: adminAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ partners }),
+        body: JSON.stringify({ channel_partners: partners }),
       })
 
       if (!res.ok) throw new Error('Failed to save channel partners')
