@@ -8,25 +8,25 @@
 
 ## 1. Action Plan
 
-### Before demo — 6.5h total
+### Before demo — 6.5h total ✅ DONE
 
-| # | Fix | File | Effort |
-|---|-----|------|--------|
-| 1 | Remove hardcoded Google Maps API key fallback | `LocationTab.tsx:151` | 30m |
-| 2 | Replace rental-yield/breakeven invented formulas with real fin-intel fields | `IntelligenceTab.tsx:146` | 2h |
-| 3 | Replace hardcoded 8.5% interest rate with configurable/DB value | `ProjectPricingTab.tsx:41` | 1h |
-| 4 | Replace mock inventory array with `unit_inventory` query | `ResidencesTab.tsx:119-124` | 2h |
-| 5 | Replace hardcoded channel partners with `project_channel_partners` join | `BuilderTab.tsx:35-41` | 1h |
+| # | Fix | File | Effort | Status |
+|---|-----|------|--------|--------|
+| 1 | Remove hardcoded Google Maps API key fallback | `LocationTab.tsx:151` | 30m | ✅ |
+| 2 | Replace rental-yield/breakeven invented formulas with real fin-intel fields | `IntelligenceTab.tsx:146` | 2h | ✅ |
+| 3 | Replace hardcoded 8.5% interest rate with configurable/DB value | `ProjectPricingTab.tsx:41` | 1h | ✅ |
+| 4 | Replace mock inventory array with `unit_inventory` query | `ResidencesTab.tsx:119-124` | 2h | ✅ |
+| 5 | Replace hardcoded channel partners with `project_channel_partners` join | `BuilderTab.tsx:35-41` | 1h | ✅ |
 
-### Before launch — 8h total
+### Before launch — 8h total (3h done, 5h remaining)
 
-| # | Fix | File | Effort |
-|---|-----|------|--------|
-| 6 | Cache invalidation on admin edits (project update → expire discovery + gateway cache) | `admin.ts` + gateway cache | 1h |
-| 7 | Run DB migration: `unit_inventory`, `project_channel_partners`, `unit_types` columns | migration (§3) | 4h |
-| 8 | Replace cost-sheet hardcoded rates (stamp duty, registration, GST, club, IFMS, utilities, PLC) with `project_cost_sheets` lookups | `ProjectPricingTab.tsx:103-108` | 1h |
-| 9 | Add `LIMIT` to unbounded daily analytics query | `admin.ts:958-961` | 1h |
-| 10 | Index `CallbackRequest.status`, `SiteVisitRequest.status` | migration | 30m |
+| # | Fix | File | Effort | Status |
+|---|-----|------|--------|--------|
+| 6 | Cache invalidation on admin edits (project update → expire discovery + gateway cache) | `admin.ts` + gateway cache | 1h | ⏳ deferred |
+| 7 | Run DB migration: `unit_inventory`, `project_channel_partners`, `unit_types` columns | migration (§3) | 4h | ✅ created (20260806000000) |
+| 8 | Replace cost-sheet rates with DB lookups (stamp duty, registration, GST, club, IFMS, utilities, PLC) | `ProjectPricingTab.tsx` | 1h | 🟡 partial (PLC + other DB-driven, rest need work) |
+| 9 | Add `LIMIT` to unbounded daily analytics query | `admin.ts:958-961` | 1h | ✅ LIMIT 1000 |
+| 10 | Index `CallbackRequest.status`, `SiteVisitRequest.status` | migration | 30m | ✅ in migration |
 
 ### Before scaling — deferred, no urgency
 
