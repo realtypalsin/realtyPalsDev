@@ -177,7 +177,7 @@ export default function PricingTab({
                   {/* Collapsed Floorplan Outline */}
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center">
                     {previewImg ? (
-                      <Image src={previewImg.url} alt={unit.name} fill className="object-cover opacity-80" />
+                      <Image src={previewImg.url} alt={unit.name} fill className="object-cover opacity-80" loading="lazy" />
                     ) : (
                       <Layout size={18} className="text-gray-400" />
                     )}
@@ -208,11 +208,11 @@ export default function PricingTab({
               <AnimatePresence initial={false}>
                 {isExpanded && (
                   <m.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: 'easeInOut' }}
-                    className="border-t border-gray-50 dark:border-gray-850 overflow-hidden"
+                    initial={{ opacity: 0, scaleY: 0, originY: 0 }}
+                    animate={{ opacity: 1, scaleY: 1 }}
+                    exit={{ opacity: 0, scaleY: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="border-t border-gray-50 dark:border-gray-850"
                   >
                     <div className="p-6 md:p-8 space-y-8">
                       {/* Configuration Details Container */}
