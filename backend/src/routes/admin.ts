@@ -261,14 +261,15 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
       return
     }
 
+    const p = project as any
     const safeProject = {
-      ...project,
-      dna: project.dna ?? null,
-      unit_types: project.unit_types ?? [],
-      images: project.images ?? [],
-      payment_plans: project.payment_plans ?? [],
+      ...p,
+      dna: p.dna ?? null,
+      unit_types: p.unit_types ?? [],
+      images: p.images ?? [],
+      payment_plans: p.payment_plans ?? [],
       // Primary plan — the admin editor edits one plan at a time.
-      payment_plan: project.payment_plans?.[0] ?? null,
+      payment_plan: p.payment_plans?.[0] ?? null,
     }
 
     res.json({ project: safeProject, ...safeProject })
@@ -1038,7 +1039,7 @@ router.get('/sector-tiers', requireAdmin, async (req: Request, res: Response) =>
 // GET /api/v1/admin/channel-partners — List all available master channel partners
 router.get('/channel-partners', requireAdmin, async (_req: Request, res: Response) => {
   try {
-    const partners = await prisma.channelPartner.findMany({
+    const partners = await (prisma as any).channelPartner.findMany({
       where: { is_active: true },
       orderBy: { name: 'asc' },
     })
@@ -1053,7 +1054,7 @@ router.get('/channel-partners', requireAdmin, async (_req: Request, res: Respons
 router.get('/projects/:id/channel-partners', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const partners = await prisma.projectChannelPartner.findMany({
+    const partners = await (prisma as any).projectChannelPartner.findMany({
       where: { project_id: id },
       include: { channel_partner: true },
     })
@@ -1069,9 +1070,9 @@ router.put('/projects/:id/channel-partners', requireAdmin, async (req: Request, 
   try {
     const { id } = req.params
     const { channel_partners } = req.body
-    await prisma.projectChannelPartner.deleteMany({ where: { project_id: id } })
+    await (prisma as any).projectChannelPartner.deleteMany({ where: { project_id: id } })
     if (Array.isArray(channel_partners) && channel_partners.length > 0) {
-      await prisma.projectChannelPartner.createMany({
+      await (prisma as any).projectChannelPartner.createMany({
         data: channel_partners.map((p: any) => ({
           project_id: id,
           channel_partner_id: p.channel_partner_id,
@@ -1079,7 +1080,7 @@ router.put('/projects/:id/channel-partners', requireAdmin, async (req: Request, 
         })),
       })
     }
-    const updated = await prisma.projectChannelPartner.findMany({
+    const updated = await (prisma as any).projectChannelPartner.findMany({
       where: { project_id: id },
       include: { channel_partner: true },
     })
@@ -1094,7 +1095,7 @@ router.put('/projects/:id/channel-partners', requireAdmin, async (req: Request, 
 router.get('/projects/:id/milestones', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const milestones = await prisma.constructionMilestone.findMany({
+    const milestones = await (prisma as any).constructionMilestone.findMany({
       where: { project_id: id },
       orderBy: { sort_order: 'asc' },
     })
@@ -1110,9 +1111,9 @@ router.put('/projects/:id/milestones', requireAdmin, async (req: Request, res: R
   try {
     const { id } = req.params
     const { milestones } = req.body
-    await prisma.constructionMilestone.deleteMany({ where: { project_id: id } })
+    await (prisma as any).constructionMilestone.deleteMany({ where: { project_id: id } })
     if (Array.isArray(milestones) && milestones.length > 0) {
-      await prisma.constructionMilestone.createMany({
+      await (prisma as any).constructionMilestone.createMany({
         data: milestones.map((m: any, idx: number) => ({
           project_id: id,
           name: m.name || 'Construction Phase',
@@ -1133,7 +1134,7 @@ router.put('/projects/:id/milestones', requireAdmin, async (req: Request, res: R
 router.get('/projects/:id/updates', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const updates = await prisma.constructionUpdate.findMany({
+    const updates = await (prisma as any).constructionUpdate.findMany({
       where: { project_id: id },
       orderBy: { update_date: 'desc' },
     })
@@ -1149,9 +1150,9 @@ router.put('/projects/:id/updates', requireAdmin, async (req: Request, res: Resp
   try {
     const { id } = req.params
     const { updates } = req.body
-    await prisma.constructionUpdate.deleteMany({ where: { project_id: id } })
+    await (prisma as any).constructionUpdate.deleteMany({ where: { project_id: id } })
     if (Array.isArray(updates) && updates.length > 0) {
-      await prisma.constructionUpdate.createMany({
+      await (prisma as any).constructionUpdate.createMany({
         data: updates.map((u: any) => ({
           project_id: id,
           title: u.name || 'Site Update',

@@ -53,7 +53,7 @@ export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under
     setLoading(true)
     try {
       const endpoint = isUnderConstruction ? 'milestones' : 'updates'
-      const res = await fetch(`${API_BASE}/v1/admin/projects/${projectId}/${endpoint}`, {
+      const res = await fetch(`${API_BASE}/admin/projects/${projectId}/${endpoint}`, {
         headers: adminAuthHeaders(),
       })
       if (res.ok) {
@@ -83,7 +83,7 @@ export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under
     try {
       const endpoint = isUnderConstruction ? 'milestones' : 'updates'
       const key = isUnderConstruction ? 'milestones' : 'updates'
-      const res = await fetch(`${API_BASE}/v1/admin/projects/${projectId}/${endpoint}`, {
+      const res = await fetch(`${API_BASE}/admin/projects/${projectId}/${endpoint}`, {
         method: 'PUT',
         headers: adminAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ [key]: updates }),

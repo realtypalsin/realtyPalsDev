@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Route, MapPin, Clock, ArrowRight, Loader2, Navigation, Car, TrainFront } from 'lucide-react';
 
 import { API_BASE } from '@/lib/env'

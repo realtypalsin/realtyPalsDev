@@ -69,8 +69,22 @@ app.set('trust proxy', 1)
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }))
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+]
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true,
 }))
 app.use(express.json({ limit: '100kb' }))

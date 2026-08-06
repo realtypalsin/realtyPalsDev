@@ -154,43 +154,6 @@ export default function AdminBuilders() {
 
   const filtered = builders.filter(smartFilter)
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement?.tagName === 'INPUT' && !['ArrowDown', 'ArrowUp', 'Escape'].includes(e.key)) return
-
-      if (e.key === '/') {
-        e.preventDefault()
-        searchInputRef.current?.focus()
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        setSelectedIndex(prev => Math.min(filtered.length - 1, prev + 1))
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        setSelectedIndex(prev => Math.max(0, prev - 1))
-      } else if (e.key === 'Enter' && selectedIndex >= 0 && selectedIndex < filtered.length) {
-        e.preventDefault()
-        const b = filtered[selectedIndex]
-        if (editingId === b.id) {
-          saveEdit(b.id)
-        } else {
-          startEdit(b)
-        }
-      } else if (e.key === 'Escape') {
-        if (editingId) setEditingId(null)
-        else if (showAdd) setShowAdd(false)
-        else {
-          searchInputRef.current?.blur()
-          setSelectedIndex(-1)
-        }
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [filtered, selectedIndex, editingId, showAdd, saveEdit])
-
-  useEffect(() => setSelectedIndex(-1), [query])
-
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
@@ -273,6 +236,41 @@ export default function AdminBuilders() {
       setEditSaving(false)
     }
   }, [editForm])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSelectedIndex(prev => Math.min(filtered.length - 1, prev + 1))
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSelectedIndex(prev => Math.max(0, prev - 1))
+      } else if (e.key === 'Enter' && selectedIndex >= 0 && selectedIndex < filtered.length) {
+        e.preventDefault()
+        const b = filtered[selectedIndex]
+        if (editingId === b.id) {
+          saveEdit(b.id)
+        } else {
+          startEdit(b)
+        }
+      } else if (e.key === 'Escape') {
+        if (editingId) setEditingId(null)
+        else if (showAdd) setShowAdd(false)
+        else {
+          searchInputRef.current?.blur()
+          setSelectedIndex(-1)
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [filtered, selectedIndex, editingId, showAdd, saveEdit])
+
+  useEffect(() => setSelectedIndex(-1), [query])
 
   return (
     <div className="max-w-6xl mx-auto py-8">

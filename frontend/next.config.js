@@ -35,6 +35,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'storage.realtypals.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com',
+      },
     ],
   },
   async rewrites() {

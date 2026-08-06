@@ -1,10 +1,13 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { use, useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
+import {
+  ArrowLeft, ChevronRight, Eye, LayoutPanelLeft,
+  Images, Cpu, Activity, IndianRupee, Users
+} from 'lucide-react'
+import { adminFetch } from '@/lib/adminFetch'
 import ProjectForm from '@/components/admin/ProjectForm'
-import ProjectPreview from '@/components/admin/ProjectPreview'
-import IntelligenceWorkspace from '@/components/admin/IntelligenceWorkspace'
 import UnitsEditor from '@/components/admin/UnitsEditor'
 import AmenitiesEditor from '@/components/admin/AmenitiesEditor'
 import ConnectivityEditor from '@/components/admin/ConnectivityEditor'
@@ -14,178 +17,61 @@ import PaymentPlanEditor from '@/components/admin/PaymentPlanEditor'
 import CostSheetEditor from '@/components/admin/CostSheetEditor'
 import InvestmentInsightsEditor from '@/components/admin/InvestmentInsightsEditor'
 import LocationIntelligenceEditor from '@/components/admin/LocationIntelligenceEditor'
+import IntelligenceWorkspace from '@/components/admin/IntelligenceWorkspace'
+import ConstructionMilestonesEditor from '@/components/admin/ConstructionMilestonesEditor'
 import ProjectUpdatesEditor from '@/components/admin/ProjectUpdatesEditor'
 import ChannelPartnersEditor from '@/components/admin/ChannelPartnersEditor'
+import CompletenessBar from '@/components/admin/CompletenessBar'
+import ProjectPreview from '@/components/admin/ProjectPreview'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Loader2, LayoutPanelLeft, Cpu, Images, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react'
-import { API_BASE } from '@/lib/env'
-import { adminFetch } from '@/lib/adminFetch'
-import { m, AnimatePresence } from 'framer-motion'
 
-interface CompletenessResult {
-  foundationalScore: number
-  enrichmentScore:   number
-  totalScore:        number
-  canPublish:        boolean
-  foundationalPassed: number
-  foundationalTotal:  number
-  enrichmentPassed:   number
-  enrichmentTotal:    number
-  missing: {
-    overview:     string[]
-    units:        string[]
-    builder:      string[]
-    images:       string[]
-    brochures:    string[]
-    intelligence: string[]
-    competitors:  string[]
-  }
-}
+type AdminTab = 'core' | 'pricing' | 'media' | 'intelligence' | 'updates' | 'partners'
 
-type AdminTab = 'core' | 'pricing' | 'media' | 'intelligence'
-
-function CompletenessBar({ result, onClose }: { result: CompletenessResult; onClose: () => void }) {
-  const [expanded, setExpanded] = useState(false)
-
-  const allMissing = [
-    ...result.missing.overview,
-    ...result.missing.units,
-    ...result.missing.builder,
-    ...result.missing.images,
-    ...result.missing.brochures,
-    ...result.missing.intelligence,
-    ...result.missing.competitors,
-  ]
-
-  const isPerfect = result.canPublish && result.totalScore === 100
-  const isGood = result.canPublish
-  const isWarning = !result.canPublish && result.totalScore >= 50
-  
-  const theme = isPerfect 
-    ? { bg: 'bg-emerald-500', text: 'text-emerald-900', light: 'bg-emerald-50', border: 'border-emerald-200', icon: CheckCircle2, stroke: 'text-emerald-600' }
-    : isGood 
-      ? { bg: 'bg-teal-500', text: 'text-teal-900', light: 'bg-teal-50', border: 'border-teal-200', icon: CheckCircle2, stroke: 'text-teal-600' }
-      : isWarning
-        ? { bg: 'bg-amber-500', text: 'text-amber-900', light: 'bg-amber-50', border: 'border-amber-200', icon: AlertTriangle, stroke: 'text-amber-600' }
-        : { bg: 'bg-rose-500', text: 'text-rose-900', light: 'bg-rose-50', border: 'border-rose-200', icon: XCircle, stroke: 'text-rose-500' }
-
-  const Icon = theme.icon
-
-  const headline = result.canPublish
-    ? `Ready to publish — ${result.totalScore}% complete`
-    : `Not ready to publish — ${result.foundationalTotal - result.foundationalPassed} required field${result.foundationalTotal - result.foundationalPassed !== 1 ? 's' : ''} missing`
-
-  return (
-    <div className={`rounded-2xl border ${theme.border} ${theme.light} mb-8 overflow-hidden transition-all duration-300 shadow-sm relative`}>
-      {/* Background progress bar for a subtle, premium look */}
-      <div 
-        className={`absolute top-0 left-0 bottom-0 ${theme.bg} opacity-[0.08] transition-all duration-1000 ease-out`}
-        style={{ width: `${result.totalScore}%` }}
-      />
-      
-      <div className="px-5 py-4 relative z-10">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-white/60 ${theme.stroke} shrink-0`}>
-              <Icon size={20} strokeWidth={2.5} />
-            </div>
-
-            <div className="min-w-0">
-              <p className={`text-[15px] font-bold ${theme.text} tracking-tight truncate`}>{headline}</p>
-              <div className="flex items-center gap-3 mt-0.5">
-                <p className={`text-[12px] font-medium opacity-80 ${theme.text} flex items-center gap-1.5`}>
-                  Foundational <span className="font-bold opacity-100">{result.foundationalPassed}/{result.foundationalTotal}</span>
-                </p>
-                <span className={`w-1 h-1 rounded-full ${theme.bg} opacity-30 shrink-0`} />
-                <p className={`text-[12px] font-medium opacity-80 ${theme.text} flex items-center gap-1.5`}>
-                  Enrichment <span className="font-bold opacity-100">{result.enrichmentPassed}/{result.enrichmentTotal}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2.5 shrink-0">
-            {allMissing.length > 0 && (
-              <button
-                onClick={() => setExpanded(v => !v)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/60 hover:bg-white text-[12px] font-bold ${theme.text} transition-colors shadow-sm border border-white`}
-              >
-                {expanded ? 'Hide Details' : 'View Details'}
-                {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              </button>
-            )}
-            <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-full bg-white/60 hover:bg-white border border-white transition-colors shadow-sm ${theme.text}`}>
-              <XCircle size={15} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Expandable missing items */}
-      <AnimatePresence>
-        {expanded && allMissing.length > 0 && (
-          <m.div 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden relative z-10"
-          >
-            <div className={`px-5 pb-5 pt-3 border-t border-white/40 bg-white/30`}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
-                {[
-                  { label: 'Overview',     items: result.missing.overview },
-                  { label: 'Units',        items: result.missing.units },
-                  { label: 'Builder',      items: result.missing.builder },
-                  { label: 'Images',       items: result.missing.images },
-                  { label: 'Brochures',    items: result.missing.brochures },
-                  { label: 'Intelligence', items: result.missing.intelligence },
-                  { label: 'Competitors',  items: result.missing.competitors },
-                ].flatMap(({ items }) => items).map((item, i) => (
-                  <div key={i} className="flex items-start gap-2.5">
-                    <div className={`mt-1.5 w-1.5 h-1.5 rounded-full ${theme.bg} shrink-0`} />
-                    <span className={`text-[12.5px] font-medium ${theme.text} leading-snug opacity-90`}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </m.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
-export default function EditProject() {
-  const { id } = useParams<{ id: string }>()
-  const [data, setData]               = useState<any>(null)
-  const [documents, setDocuments]     = useState<any[]>([])
-  const [completeness, setCompleteness] = useState<CompletenessResult | null>(null)
+export default function AdminProjectEditPage({
+  params,
+}: {
+  params: { id: string } | Promise<{ id: string }>
+}) {
+  const id = (params as any)?.id ?? (typeof (params as any)?.then === 'function' ? (use(params as unknown as Promise<{ id: string }>) as any)?.id : '')
+  const [data, setData] = useState<any>(null)
+  const [documents, setDocuments] = useState<any[]>([])
+  const [completeness, setCompleteness] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [adminTab, setAdminTab] = useState<AdminTab>('core')
+  const [preview, setPreview] = useState<any>(null)
   const [showCompleteness, setShowCompleteness] = useState(true)
-  const [loading, setLoading]         = useState(true)
-  const [preview, setPreview]         = useState<any>(null)
-  const [refreshing, setRefreshing]   = useState(false)
-  const [adminTab, setAdminTab]       = useState<AdminTab>('core')
+  const [refreshing, setRefreshing] = useState(false)
 
-  const loadProject = useCallback(async () => {
-    const [projectRes, docsRes, completenessRes] = await Promise.all([
-      adminFetch(`/admin/projects/${id}`),
-      adminFetch(`/admin/projects/${id}/documents`),
-      adminFetch(`/admin/projects/${id}/completeness`),
-    ])
-    const projectJson     = await projectRes.json()
-    const docsJson        = docsRes.ok ? await docsRes.json() : { documents: [] }
-    const completenessJson = completenessRes.ok ? await completenessRes.json() : null
-    setData(projectJson.project)
-    setPreview(projectJson.project)
-    setDocuments(docsJson.documents ?? [])
-    setCompleteness(completenessJson)
-    setShowCompleteness(true)
-    setLoading(false)
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [projectRes, docsRes, completenessRes] = await Promise.all([
+          adminFetch(`/admin/projects/${id}`),
+          adminFetch(`/admin/projects/${id}/documents`),
+          adminFetch(`/admin/projects/${id}/completeness`),
+        ])
+        if (!projectRes.ok) {
+          setData(null)
+          return
+        }
+        const projectJson     = await projectRes.json()
+        const docsJson        = docsRes.ok ? await docsRes.json() : { documents: [] }
+        const completenessJson = completenessRes.ok ? await completenessRes.json() : null
+        setData(projectJson.project)
+        setPreview(projectJson.project)
+        setDocuments(docsJson.documents ?? [])
+        setCompleteness(completenessJson)
+      } catch (err) {
+        console.error('[AdminProjectEditPage] Failed to load data:', err)
+        setData(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
   }, [id])
 
-  useEffect(() => { loadProject() }, [loadProject])
-
-  const handleFormChange = useCallback((formValues: any) => {
+  const handleFormChange = useCallback((formValues: Record<string, any>) => {
     setPreview((prev: any) => ({
       ...prev,
       ...formValues,
@@ -219,7 +105,7 @@ export default function EditProject() {
           <Skeleton className="h-6 w-1/3 rounded-lg" />
         </div>
         <div className="flex gap-2">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-10 w-32 rounded-lg" />
           ))}
         </div>
@@ -230,7 +116,7 @@ export default function EditProject() {
     )
   }
 
-  if (!data) return <p className="text-gray-500">Project not found.</p>
+  if (!data) return <p className="text-gray-500 p-8">Project not found.</p>
 
   const formData = {
     ...data,
@@ -246,47 +132,91 @@ export default function EditProject() {
   }
 
   const TAB_ITEMS: { id: AdminTab; label: string; icon: React.ElementType }[] = [
-    { id: 'core',         label: 'Core Info',          icon: LayoutPanelLeft },
-    { id: 'pricing',      label: 'Pricing & Location', icon: IndianRupee },
-    { id: 'media',        label: 'Media',              icon: Images },
-    { id: 'intelligence', label: 'Intelligence',       icon: Cpu },
+    { id: 'core',         label: 'Core Info',            icon: LayoutPanelLeft },
+    { id: 'pricing',      label: 'Pricing & Location',   icon: IndianRupee },
+    { id: 'media',        label: 'Media',                icon: Images },
+    { id: 'intelligence', label: 'Intelligence',         icon: Cpu },
+    { id: 'updates',      label: 'Updates & Timeline',   icon: Activity },
+    { id: 'partners',     label: 'Channel Partners',     icon: Users },
   ]
 
   return (
     <div className="max-w-[1400px] mx-auto pb-16">
-      {/* Page header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">Edit Project</h1>
-          <p className="text-sm text-slate-600 mt-2">{data.name}</p>
-        </div>
-        {adminTab === 'core' && (
-          <div className="flex items-center gap-2.5 text-[12px] font-bold text-slate-500 bg-white border border-gray-200 shadow-sm rounded-full px-4 py-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            Live preview active
-          </div>
-        )}
-      </div>
+      
+      {/* Apple-Style Frosted Glass Header Bar — Pinned with generous whitespace & subtle translucent blur */}
+      <div className="sticky top-0 z-30 -mt-4 md:-mt-6 -mx-4 md:-mx-6 px-4 md:px-8 py-3.5 mb-6 bg-white/75 dark:bg-[#09090b]/75 backdrop-blur-2xl border-b border-gray-200/50 dark:border-white/5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-3 transition-all">
+        
+        {/* Top Tier: Identity & Quick Actions */}
+        <div className="flex items-center justify-between gap-4">
+          
+          {/* Left: Back Button + Project Name & Status Badge */}
+          <div className="flex items-center gap-3 min-w-0">
+            <Link
+              href="/admin/projects"
+              className="w-8 h-8 rounded-full bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/80 transition-all flex-shrink-0 flex items-center justify-center"
+              title="Back to Projects"
+            >
+              <ArrowLeft size={15} />
+            </Link>
 
-      {/* Tab bar */}
-      <div className="flex p-1.5 bg-white rounded-full w-fit mb-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100">
-        {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => (
-          <button
-            key={tabId}
-            onClick={() => setAdminTab(tabId)}
-            className={`flex items-center gap-2 px-6 py-2.5 text-[13px] font-bold rounded-full transition-all duration-300 ${
-              adminTab === tabId
-                ? 'bg-slate-900 text-white shadow-md scale-100'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 scale-95 hover:scale-100'
-            }`}
-          >
-            <Icon size={16} />
-            {label}
-          </button>
-        ))}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight truncate leading-none">
+                {data.name}
+              </h1>
+              <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300 border border-gray-200/60 dark:border-white/10 flex-shrink-0">
+                {data.status?.replace('_', ' ')}
+              </span>
+            </div>
+          </div>
+
+          {/* Right: Actions & Live Status */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {adminTab === 'core' && (
+              <div className="hidden sm:flex items-center gap-2 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-800/40 rounded-full px-3 py-1 shadow-xs">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Live Preview Sync</span>
+              </div>
+            )}
+
+            <a
+              href={`/projects/${data.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gray-100/80 dark:bg-white/10 text-xs font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-white/15 transition-all shadow-xs"
+            >
+              <Eye size={14} />
+              <span>View Public</span>
+            </a>
+          </div>
+
+        </div>
+
+        {/* Bottom Tier: Apple Segmented Control Tab Bar */}
+        <div className="flex items-center p-1 bg-gray-100/70 dark:bg-zinc-900/60 rounded-xl overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden backdrop-blur-md">
+          <div className="flex items-center gap-1 min-w-full sm:min-w-0">
+            {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
+              const isActive = adminTab === tabId
+              return (
+                <button
+                  key={tabId}
+                  onClick={() => setAdminTab(tabId)}
+                  className={`flex items-center gap-2 px-3.5 py-1.5 text-xs rounded-lg transition-all duration-150 whitespace-nowrap ${
+                    isActive
+                      ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] font-semibold'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium hover:bg-white/40 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <Icon size={14} className={isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400'} />
+                  <span>{label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
       </div>
 
       {/* Completeness banner — shown on core + media tabs */}
@@ -294,11 +224,11 @@ export default function EditProject() {
         <CompletenessBar result={completeness} onClose={() => setShowCompleteness(false)} />
       )}
 
-      {/* Core Info tab */}
+      {/* 1. Core Info tab */}
       {adminTab === 'core' && (
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
           <div className="space-y-6">
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8">
+            <div className="bg-white dark:bg-[#121214] rounded-3xl border border-gray-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8">
               <ProjectForm
                 initialData={formData}
                 projectId={id}
@@ -316,20 +246,6 @@ export default function EditProject() {
               projectId={id}
               onSaved={handleSaved}
             />
-            <ConnectivityEditor
-              connectivity={data.connectivity ?? []}
-              projectId={id}
-              onSaved={handleSaved}
-            />
-            <ChannelPartnersEditor
-              projectId={id}
-              initialPartners={data.channel_partners ?? []}
-              onSaved={handleSaved}
-            />
-            <ProjectUpdatesEditor
-              projectId={id}
-              projectStatus={data.status}
-            />
           </div>
           <div>
             {preview && (
@@ -343,19 +259,24 @@ export default function EditProject() {
         </div>
       )}
 
-      {/* Pricing & Location tab */}
+      {/* 2. Pricing & Location tab */}
       {adminTab === 'pricing' && (
-        <div className="max-w-3xl space-y-6">
+        <div className="max-w-4xl space-y-6">
           <PaymentPlanEditor projectId={id} initialData={data.payment_plan} />
           <CostSheetEditor projectId={id} initialData={data.cost_sheet} />
           <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile} />
+          <ConnectivityEditor
+            connectivity={data.connectivity ?? []}
+            projectId={id}
+            onSaved={handleSaved}
+          />
           <LocationIntelligenceEditor projectId={id} initialData={data} />
         </div>
       )}
 
-      {/* Media tab */}
+      {/* 3. Media tab */}
       {adminTab === 'media' && (
-        <div className="max-w-3xl space-y-6">
+        <div className="max-w-4xl space-y-6">
           <ImagesEditor
             images={data.images ?? []}
             projectId={id}
@@ -371,7 +292,7 @@ export default function EditProject() {
         </div>
       )}
 
-      {/* Intelligence tab */}
+      {/* 4. Intelligence tab */}
       {adminTab === 'intelligence' && (
         <IntelligenceWorkspace
           projectId={id}
@@ -381,6 +302,28 @@ export default function EditProject() {
           initialRecommendation={data.recommendation_profile}
           initialCompetitors={data.competitors ?? []}
         />
+      )}
+
+      {/* 5. Updates & Timeline tab */}
+      {adminTab === 'updates' && (
+        <div className="max-w-4xl space-y-6">
+          <ConstructionMilestonesEditor projectId={id} />
+          <ProjectUpdatesEditor
+            projectId={id}
+            projectStatus={data.status}
+          />
+        </div>
+      )}
+
+      {/* 6. Channel Partners tab */}
+      {adminTab === 'partners' && (
+        <div className="max-w-4xl space-y-6">
+          <ChannelPartnersEditor
+            projectId={id}
+            initialPartners={data.channel_partners ?? []}
+            onSaved={handleSaved}
+          />
+        </div>
       )}
     </div>
   )

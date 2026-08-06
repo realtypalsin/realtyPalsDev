@@ -127,10 +127,18 @@ function initDna(raw?: any): DnaState {
   if (!raw) return {}
   const d: DnaState = {}
   DNA_DIMS.forEach(({ key }) => {
-    d[`${key}_score`] = raw[`${key}_score`] ?? ''
-    // labels are now computed — not stored in local state
+    let val = raw[`${key}_score`]
+    if (val === undefined || val === '' || val === null) {
+      if (key === 'builder_track_record') val = raw.builder_score
+      if (key === 'price_position') val = raw.price_score
+      if (key === 'locality') val = raw.location_score
+      if (key === 'rera_compliance') val = raw.legal_score
+      if (key === 'amenity_depth') val = raw.amenity_score
+      if (key === 'possession_certainty') val = raw.possession_score
+    }
+    d[`${key}_score`] = val ?? ''
   })
-  d.last_verified_at = raw.last_verified_at ?? ''
+  d.last_verified_at = raw.last_verified_at ? new Date(raw.last_verified_at).toISOString().slice(0, 10) : ''
   d.verified_by      = raw.verified_by ?? ''
   return d
 }

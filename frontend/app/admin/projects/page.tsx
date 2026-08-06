@@ -176,42 +176,42 @@ export default function AdminProjects() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-8">
-      
-      <div className="flex items-center justify-between mb-8 pt-2">
+    <div className="max-w-6xl mx-auto py-lg">
+
+      <div className="flex items-center justify-between mb-lg pt-md">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Projects</h1>
-          <p className="text-sm text-slate-600 mt-2">{projects.length} total properties</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">Projects</h1>
+          <p className="text-sm text-text-secondary mt-md">{projects.length} total properties</p>
         </div>
         <Link
           href="/admin/projects/new"
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-[13px] font-medium transition-all shadow-sm"
+          className="flex items-center gap-md bg-primary hover:bg-primary-dark text-white px-lg py-md rounded-md text-xs font-medium transition-all shadow-xs"
         >
           <Plus size={15} strokeWidth={2.5} /> New Project
         </Link>
       </div>
 
       {/* Notion-style Unified Command Bar */}
-      <div className="group flex items-center gap-3 px-4 py-3 bg-white border border-zinc-200/80 rounded-xl shadow-sm mb-6 focus-within:border-zinc-300 focus-within:shadow-md transition-all">
-        <Search size={16} className="text-zinc-600 group-focus-within:text-zinc-600 transition-colors" />
+      <div className="group flex items-center gap-md px-lg py-md bg-surface border border-border rounded-md shadow-xs mb-lg focus-within:border-border-heavy focus-within:shadow-sm transition-all">
+        <Search size={16} className="text-text-muted group-focus-within:text-text-secondary transition-colors" />
         <input
           ref={searchInputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter projects or use tags like status:ready..."
-          className="flex-1 bg-transparent border-none outline-none text-[14px] text-zinc-900 placeholder:text-zinc-600"
+          className="flex-1 bg-transparent border-none outline-none text-sm text-text-primary placeholder:text-text-muted"
         />
-        <div className="hidden sm:flex items-center gap-1.5 opacity-50">
-          <kbd className="px-1.5 py-0.5 rounded border border-zinc-200 bg-zinc-50 text-[10px] font-medium font-sans">/</kbd>
-          <span className="text-[11px] font-medium">to focus</span>
+        <div className="hidden sm:flex items-center gap-md opacity-50">
+          <kbd className="px-md py-xs rounded border border-border bg-surface-2 text-xs font-medium font-sans">/</kbd>
+          <span className="text-xs font-medium">to focus</span>
         </div>
       </div>
 
       {/* Data-Dense Tabular List (Linear Style) */}
-      <div className="bg-white rounded-xl border border-zinc-200/80 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-xs overflow-hidden">
         {/* Table Header */}
-        <div className="flex items-center px-4 py-3 bg-zinc-50/50 border-b border-zinc-200/80 text-[11px] font-semibold text-zinc-600 uppercase tracking-wider">
+        <div className="flex items-center px-lg py-md bg-surface-2 border-b border-border text-xs font-semibold text-text-muted uppercase tracking-wider">
           <div className="w-8 mr-4" /> {/* Thumbnail space */}
           <div className="flex-1">Property Name</div>
           <div className="w-[120px] hidden md:block">Status</div>
@@ -221,14 +221,14 @@ export default function AdminProjects() {
         </div>
 
         {/* Table Body */}
-        <div className="divide-y divide-zinc-100">
+        <div className="divide-y divide-border">
           {loading ? (
-            <div className="p-4"><UniversalLoader variant="skeleton-list" rows={10} /></div>
+            <div className="p-lg"><UniversalLoader variant="skeleton-list" rows={10} /></div>
           ) : filtered.length === 0 ? (
-            <div className="py-16 flex flex-col items-center justify-center text-center">
-              <Building2 size={32} className="text-zinc-200 mb-3" />
-              <p className="text-[14px] font-medium text-zinc-900">No projects found</p>
-              <p className="text-[13px] text-zinc-600 mt-1">Try adjusting your filters.</p>
+            <div className="py-3xl flex flex-col items-center justify-center text-center">
+              <Building2 size={32} className="text-text-muted mb-md" />
+              <p className="text-sm font-medium text-text-primary">No projects found</p>
+              <p className="text-xs text-text-secondary mt-md">Try adjusting your filters.</p>
             </div>
           ) : (
             filtered.map((p, idx) => {
@@ -238,16 +238,16 @@ export default function AdminProjects() {
               const isSelected = selectedIndex === idx
 
               return (
-                <Link 
+                <Link
                   key={p.id}
                   href={`/admin/projects/${p.id}`}
-                  className={`group flex items-center px-4 py-3 transition-colors outline-none ${
-                    isSelected ? 'bg-zinc-50' : 'hover:bg-zinc-50/80'
+                  className={`group flex items-center px-lg py-md transition-colors outline-none ${
+                    isSelected ? 'bg-surface-2' : 'hover:bg-surface-2/50'
                   }`}
                   onClick={() => setSelectedIndex(idx)}
                 >
                   {/* Thumbnail */}
-                  <div className="mr-4">
+                  <div className="mr-lg">
                     <ProjectThumbnail 
                       src={p.images?.find(i => i.type === 'hero')?.url || p.images?.[0]?.url || p.hero_image_url} 
                       alt={p.name} 
@@ -255,59 +255,59 @@ export default function AdminProjects() {
                   </div>
                   
                   {/* Title & Location */}
-                  <div className="flex-1 min-w-0 pr-4">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[14px] font-medium text-zinc-900 truncate group-hover:text-black">{p.name}</p>
-                      {isSelected && <CornerDownLeft size={12} className="text-zinc-300 flex-shrink-0" />}
+                  <div className="flex-1 min-w-0 pr-lg">
+                    <div className="flex items-center gap-md">
+                      <p className="text-sm font-medium text-text-primary truncate group-hover:text-text-primary">{p.name}</p>
+                      {isSelected && <CornerDownLeft size={12} className="text-text-muted flex-shrink-0" />}
                     </div>
-                    <div className="flex items-center gap-1.5 mt-0.5 text-[12px] text-zinc-600 truncate">
+                    <div className="flex items-center gap-md mt-xs text-xs text-text-secondary truncate">
                       <span className="truncate">{p.builder.name}</span>
-                      <span className="w-[3px] h-[3px] bg-zinc-300 rounded-full" />
+                      <span className="w-0.5 h-0.5 bg-border rounded-full" />
                       <span className="truncate">{p.sector}</span>
                     </div>
                   </div>
 
                   {/* Status */}
                   <div className="w-[120px] hidden md:flex items-center">
-                    <div className={`px-2 py-0.5 rounded-md text-[10px] font-medium border ${s.chip}`}>
+                    <div className={`px-md py-xs rounded-sm text-xs font-medium border ${s.chip}`}>
                       {s.label}
                     </div>
                   </div>
 
                   {/* Pricing (Tabular) */}
-                  <div className="w-[100px] hidden sm:block text-right pr-4">
-                    <span className="text-[13px] font-medium text-zinc-600 font-mono tracking-tight">
+                  <div className="w-[100px] hidden sm:block text-right pr-lg">
+                    <span className="text-sm font-medium text-text-secondary font-mono tracking-tight">
                       {priceRange(p.unit_types)}
                     </span>
                   </div>
 
                   {/* Health */}
-                  <div className="w-[80px] hidden sm:flex justify-end pr-4">
-                    <div 
-                      className={`flex items-center gap-1.5 text-[12px] font-semibold tabular-nums ${
-                        pct === 100 ? 'text-emerald-600' : pct >= 60 ? 'text-amber-600' : 'text-rose-500'
+                  <div className="w-[80px] hidden sm:flex justify-end pr-lg">
+                    <div
+                      className={`flex items-center gap-md text-xs font-semibold tabular-nums ${
+                        pct === 100 ? 'text-success' : pct >= 60 ? 'text-warning' : 'text-danger'
                       }`}
                       title={missing.length > 0 ? `Missing: ${missing.join(', ')}` : 'Perfect Health'}
                     >
-                      {pct === 100 && <CheckCircle2 size={12} className="text-emerald-500" strokeWidth={2.5} />}
+                      {pct === 100 && <CheckCircle2 size={12} className="text-success" strokeWidth={2.5} />}
                       {pct}%
                     </div>
                   </div>
 
                   {/* Actions (Appear on Hover/Select) */}
-                  <div className="w-[60px] flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-[60px] flex items-center justify-end gap-md opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={(e) => {
                         e.preventDefault()
                         handleDelete(p.id, p.name)
                       }} 
                       disabled={deleting === p.id}
-                      className="p-1.5 text-slate-700 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors"
+                      className="p-md text-text-secondary hover:text-danger hover:bg-danger/5 rounded-md transition-colors"
                       aria-label="Delete"
                     >
                       <Trash2 size={14} />
                     </button>
-                    <div className="p-1.5 text-zinc-600">
+                    <div className="p-md text-text-muted">
                       <ChevronRight size={14} />
                     </div>
                   </div>

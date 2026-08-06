@@ -15,10 +15,10 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const fetchSessionsRef = useRef<(() => Promise<void>) | null>(null);
+  const fetchSessionsRef = useRef<((isRetry?: boolean) => Promise<void>) | null>(null);
   const mutationCountRef = useRef(0);
 
-  const fetchSessions = useCallback(async () => {
+  const fetchSessions = useCallback(async (isRetry = false) => {
     if (!userId && !guestToken) return;
 
     abortControllerRef.current?.abort();
@@ -28,7 +28,7 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
     setError(null);
     try {
       let url = `${API_BASE}/chat/session/list`;
-      if (guestToken && !userId) url += `?guestToken=${guestToken}`;
+      if (guestToken && !userId) url += `?guestToken=${encodeURIComponent(guestToken)}`;
 
       const res = await fetch(url, {
         headers: await authHeaders(),
@@ -39,7 +39,14 @@ export function useSessions(userId: string | null, guestToken?: string | null) {
       setSessions(data.sessions ?? []);
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
-        setError((err as Error).message);
+        if (!isRetry) {
+          // Retry once after 1.5s delay for transient dev server restarts
+          setTimeout(() => {
+            fetchSessionsRef.current?.(true);
+          }, 1500);
+        } else {
+          setError((err as Error).message);
+        }
       }
     } finally {
       setLoading(false);

@@ -41,7 +41,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
   const projectLat = project?.lat || SECTOR_CENTROIDS[project?.sector || '']?.[0] || 28.535
   const projectLng = project?.lng || SECTOR_CENTROIDS[project?.sector || '']?.[1] || 77.391
 
-  // Real DB connectivity
+  // Real DB connectivity with proper token styling
   const connectivity = detail?.all_connectivity || [
     { name: 'Sector 10 Metro Station (Proposed)', type: 'Metro', distance: '1.2 km', time: '4 mins', mode: 'drive' },
     { name: 'Gaur City Bus Stop', type: 'Bus Stop', distance: '800 m', time: '3 mins', mode: 'walk' },

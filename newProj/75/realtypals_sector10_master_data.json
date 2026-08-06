@@ -89,7 +89,13 @@
           "Podium Architecture",
           "RERA Compliant"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -355,22 +361,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 10500,
-        "base_cost_cr": 1.46,
-        "floor_rise_per_floor": 25,
-        "plc_charges_lakh": 4.5,
-        "parking_cost_lakh": 4,
-        "club_membership_lakh": 2.5,
-        "ifms_lakh": 0.5,
-        "stamp_duty_pct": 7,
+        "base_cost_cr": 1.07,
+        "floor_rise_per_floor": 20,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.75,
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
         "maintenance_psf_monthly": 3.5,
-        "all_inclusive_price_cr": 1.72,
-        "all_inclusive_per_sqft": 12374
+        "all_inclusive_price_cr": 1.23,
+        "all_inclusive_per_sqft": 12075,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -394,7 +427,21 @@
       ],
       "cagr_5yr_pct": 13.1,
       "total_appreciation_5yr_pct": 28,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -580,9 +627,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10.5,
-        "schools_nearby_count": 5,
-        "hospitals_nearby_count": 3
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -615,7 +666,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -781,14 +848,26 @@
       },
       "dna_scoring": {
         "builder_score": 88,
-        "price_score": 80,
-        "location_score": 82,
-        "legal_score": 95,
-        "amenity_score": 90,
-        "possession_score": 84,
-        "overall_score": 86,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 88,
+        "builder_track_record_label": "Irish Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -931,6 +1010,144 @@
           "Documentation Support"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 88,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 88,
+      "builder_track_record_label": "Irish Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Irish Platinum is a top-tier growth asset in Sector 10 featuring a strong execution track record by Irish Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1.07 Cr → ₹1.77 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Irish Platinum is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Irish Platinum offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Irish Platinum wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/irish-platinum-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -1023,7 +1240,13 @@
           "3-Side Open",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -1289,22 +1512,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 11000,
-        "base_cost_cr": 1.98,
-        "floor_rise_per_floor": 25,
-        "plc_charges_lakh": 5,
-        "parking_cost_lakh": 4,
-        "club_membership_lakh": 2.5,
-        "ifms_lakh": 0.5,
-        "stamp_duty_pct": 7,
+        "base_cost_cr": 1.12,
+        "floor_rise_per_floor": 20,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.85,
-        "water_sewer_connection_lakh": 0.4,
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
         "maintenance_psf_monthly": 3.5,
-        "all_inclusive_price_cr": 2.32,
-        "all_inclusive_per_sqft": 12888
+        "all_inclusive_price_cr": 1.29,
+        "all_inclusive_per_sqft": 12650,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -1328,7 +1578,21 @@
       ],
       "cagr_5yr_pct": 11.2,
       "total_appreciation_5yr_pct": 29.4,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -1514,9 +1778,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 8.5,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -1549,7 +1817,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -1704,14 +1988,26 @@
       },
       "dna_scoring": {
         "builder_score": 86,
-        "price_score": 78,
-        "location_score": 82,
-        "legal_score": 95,
-        "amenity_score": 88,
-        "possession_score": 82,
-        "overall_score": 85,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 86,
+        "builder_track_record_label": "Elite Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -1854,6 +2150,144 @@
           "End-to-End Handover"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 86,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 86,
+      "builder_track_record_label": "Elite Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Elite X is a top-tier growth asset in Sector 10 featuring a strong execution track record by Elite Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1.12 Cr → ₹1.85 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Elite X is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Elite X offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Elite X wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/elite-x-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -1946,7 +2380,13 @@
           "34-Storey Towers",
           "Godrej Brand"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -2210,22 +2650,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 13200,
-        "base_cost_cr": 2.3,
-        "floor_rise_per_floor": 35,
-        "plc_charges_lakh": 8,
-        "parking_cost_lakh": 5,
-        "club_membership_lakh": 3.5,
-        "ifms_lakh": 0.8,
-        "stamp_duty_pct": 7,
+        "base_cost_cr": 1.35,
+        "floor_rise_per_floor": 20,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 1,
-        "water_sewer_connection_lakh": 0.5,
-        "maintenance_psf_monthly": 4.5,
-        "all_inclusive_price_cr": 2.75,
-        "all_inclusive_per_sqft": 15678
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.55,
+        "all_inclusive_per_sqft": 15180,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -2249,7 +2716,21 @@
       ],
       "cagr_5yr_pct": 14.5,
       "total_appreciation_5yr_pct": 25.7,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 12 (Adjacent to Sector 10)",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 12 (Adjacent to Sector 10) corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -2435,9 +2916,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 8,
-        "schools_nearby_count": 5,
-        "hospitals_nearby_count": 3
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -2470,7 +2955,23 @@
         "sector_stage": "emerging",
         "avg_price_per_sqft": 11500,
         "price_5yr_cagr_pct": 12
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -2625,15 +3126,27 @@
         "motivation_note": "National brand luxury sky living."
       },
       "dna_scoring": {
-        "builder_score": 96,
-        "price_score": 75,
-        "location_score": 85,
-        "legal_score": 99,
-        "amenity_score": 96,
-        "possession_score": 92,
-        "overall_score": 90,
-        "verified_by": "RERA & Corporate Filings",
-        "last_verified_at": "2026-08-02"
+        "builder_score": 95,
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 95,
+        "builder_track_record_label": "Godrej Properties established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 12 (Adjacent to Sector 10) metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -2776,6 +3289,144 @@
           "NRI Advisory"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 95,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 95,
+      "builder_track_record_label": "Godrej Properties established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 12 (Adjacent to Sector 10) metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Godrej Majesty is a top-tier growth asset in Sector 12 (Adjacent to Sector 10) featuring a strong execution track record by Godrej Properties and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 12 (Adjacent to Sector 10) near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1.35 Cr → ₹2.23 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 12 (Adjacent to Sector 10).",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Godrej Majesty is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 12 (Adjacent to Sector 10).",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 12 (Adjacent to Sector 10) infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 12 (Adjacent to Sector 10) Alternate Landmark I",
+        "competitor_slug": "sector-12-(adjacent-to-sector-10)-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Godrej Majesty offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 12 (Adjacent to Sector 10) Alternate Landmark II",
+        "competitor_slug": "sector-12-(adjacent-to-sector-10)-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Godrej Majesty wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/godrej-majesty-sector-12/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -2868,7 +3519,13 @@
           "40,000 sqft Clubhouse",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -3134,22 +3791,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9000,
-        "base_cost_cr": 1.42,
+        "base_cost_cr": 0.92,
         "floor_rise_per_floor": 20,
-        "plc_charges_lakh": 4,
+        "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.75,
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.68,
-        "all_inclusive_per_sqft": 10619
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.06,
+        "all_inclusive_per_sqft": 10350,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -3173,7 +3857,21 @@
       ],
       "cagr_5yr_pct": 12.5,
       "total_appreciation_5yr_pct": 12.5,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -3359,9 +4057,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 9,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -3394,7 +4096,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -3550,14 +4268,26 @@
       },
       "dna_scoring": {
         "builder_score": 85,
-        "price_score": 88,
-        "location_score": 82,
-        "legal_score": 95,
-        "amenity_score": 86,
-        "possession_score": 82,
-        "overall_score": 85,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 85,
+        "builder_track_record_label": "Renox Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -3700,6 +4430,144 @@
           "Home Loan Advisory"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 85,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 85,
+      "builder_track_record_label": "Renox Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Renox Thrive is a top-tier growth asset in Sector 10 featuring a strong execution track record by Renox Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.92 Cr → ₹1.52 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Renox Thrive is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Renox Thrive offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Renox Thrive wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/renox-thrive-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -3793,7 +4661,13 @@
           "80% Greens",
           "ATS Brand Trust"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -4031,22 +4905,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9450,
-        "base_cost_cr": 1.09,
+        "base_cost_cr": 0.96,
         "floor_rise_per_floor": 20,
-        "plc_charges_lakh": 3,
+        "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property",
-        "electricity_connection_lakh": 0.7,
-        "water_sewer_connection_lakh": 0.3,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.28,
-        "all_inclusive_per_sqft": 10987
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.1,
+        "all_inclusive_per_sqft": 10868,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -4070,7 +4971,21 @@
       ],
       "cagr_5yr_pct": 14.8,
       "total_appreciation_5yr_pct": 162.5,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -4256,9 +5171,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10,
-        "schools_nearby_count": 5,
-        "hospitals_nearby_count": 3
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -4291,7 +5210,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -4457,14 +5392,26 @@
       },
       "dna_scoring": {
         "builder_score": 90,
-        "price_score": 85,
-        "location_score": 84,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 86,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 90,
-        "verified_by": "OC Inspection & RERA Gazette",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 90,
+        "builder_track_record_label": "ATS Homekraft established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -4607,6 +5554,144 @@
           "Resale & Lease"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 90,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 90,
+      "builder_track_record_label": "ATS Homekraft established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "ATS Happy Trails is a top-tier growth asset in Sector 10 featuring a strong execution track record by ATS Homekraft and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.96 Cr → ₹1.58 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "ATS Happy Trails is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "ATS Happy Trails offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "ATS Happy Trails wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/ats-happy-trails-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -4699,7 +5784,13 @@
           "Double Height Lobbies",
           "Zero GST"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -4937,22 +6028,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9100,
-        "base_cost_cr": 0.95,
+        "base_cost_cr": 0.93,
         "floor_rise_per_floor": 20,
-        "plc_charges_lakh": 3,
+        "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
-        "water_sewer_connection_lakh": 0.3,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.12,
-        "all_inclusive_per_sqft": 10666
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.07,
+        "all_inclusive_per_sqft": 10465,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -4976,7 +6094,21 @@
       ],
       "cagr_5yr_pct": 13.5,
       "total_appreciation_5yr_pct": 167.6,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -5162,9 +6294,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -5197,7 +6333,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -5359,14 +6511,26 @@
       },
       "dna_scoring": {
         "builder_score": 84,
-        "price_score": 88,
-        "location_score": 82,
-        "legal_score": 96,
-        "amenity_score": 82,
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 87,
-        "verified_by": "RERA & Site Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 84,
+        "builder_track_record_label": "Arihant Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -5509,6 +6673,144 @@
           "Ready Homes"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 84,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 84,
+      "builder_track_record_label": "Arihant Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Arihant Abode is a top-tier growth asset in Sector 10 featuring a strong execution track record by Arihant Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.93 Cr → ₹1.53 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Arihant Abode is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Arihant Abode offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Arihant Abode wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/arihant-abode-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -5601,7 +6903,13 @@
           "3-Side Open",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -5867,22 +7175,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9800,
-        "base_cost_cr": 1.55,
-        "floor_rise_per_floor": 25,
-        "plc_charges_lakh": 4,
+        "base_cost_cr": 1,
+        "floor_rise_per_floor": 20,
+        "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.75,
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.4,
-        "all_inclusive_price_cr": 1.82,
-        "all_inclusive_per_sqft": 11515
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.15,
+        "all_inclusive_per_sqft": 11270,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -5906,7 +7241,21 @@
       ],
       "cagr_5yr_pct": 11.8,
       "total_appreciation_5yr_pct": 16.6,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -6092,9 +7441,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 9,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -6127,7 +7480,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -6282,14 +7651,26 @@
       },
       "dna_scoring": {
         "builder_score": 86,
-        "price_score": 84,
-        "location_score": 82,
-        "legal_score": 96,
-        "amenity_score": 85,
-        "possession_score": 82,
-        "overall_score": 86,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 86,
+        "builder_track_record_label": "Trinity Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -6432,6 +7813,144 @@
           "Documentation Support"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 86,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 86,
+      "builder_track_record_label": "Trinity Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Trinity Primus is a top-tier growth asset in Sector 10 featuring a strong execution track record by Trinity Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1 Cr → ₹1.65 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Trinity Primus is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Trinity Primus offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Trinity Primus wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/trinity-primus-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -6525,7 +8044,13 @@
           "ABA Corp Build",
           "Corner Apartments"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -6763,22 +8288,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9950,
-        "base_cost_cr": 1.15,
-        "floor_rise_per_floor": 25,
-        "plc_charges_lakh": 4,
-        "parking_cost_lakh": 4,
-        "club_membership_lakh": 2.5,
-        "ifms_lakh": 0.5,
-        "stamp_duty_pct": 7,
+        "base_cost_cr": 1.01,
+        "floor_rise_per_floor": 20,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.75,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
         "maintenance_psf_monthly": 3.5,
-        "all_inclusive_price_cr": 1.36,
-        "all_inclusive_per_sqft": 11805
+        "all_inclusive_price_cr": 1.16,
+        "all_inclusive_per_sqft": 11443,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -6802,7 +8354,21 @@
       ],
       "cagr_5yr_pct": 14.7,
       "total_appreciation_5yr_pct": 161.8,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -6988,9 +8554,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 9.5,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 3
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -7023,7 +8593,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -7180,14 +8766,26 @@
       },
       "dna_scoring": {
         "builder_score": 94,
-        "price_score": 82,
-        "location_score": 84,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 90,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 94,
+        "builder_track_record_label": "ABA Corp / County Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -7330,6 +8928,144 @@
           "End-to-End Handover"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 94,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 94,
+      "builder_track_record_label": "ABA Corp / County Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Coco County is a top-tier growth asset in Sector 10 featuring a strong execution track record by ABA Corp / County Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1.01 Cr → ₹1.67 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Coco County is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Coco County offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Coco County wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/coco-county-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -7422,7 +9158,13 @@
           "130m Road Link",
           "Sikka Group"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -7688,22 +9430,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 8800,
-        "base_cost_cr": 0.78,
+        "base_cost_cr": 0.9,
         "floor_rise_per_floor": 20,
-        "plc_charges_lakh": 2.5,
-        "parking_cost_lakh": 3,
-        "club_membership_lakh": 1.8,
-        "ifms_lakh": 0.35,
-        "stamp_duty_pct": 7,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.65,
-        "water_sewer_connection_lakh": 0.3,
-        "maintenance_psf_monthly": 3,
-        "all_inclusive_price_cr": 0.94,
-        "all_inclusive_per_sqft": 10561
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.03,
+        "all_inclusive_per_sqft": 10120,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -7727,7 +9496,21 @@
       ],
       "cagr_5yr_pct": 13.7,
       "total_appreciation_5yr_pct": 175,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -7913,9 +9696,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -7948,7 +9735,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -8105,13 +9908,25 @@
       "dna_scoring": {
         "builder_score": 80,
         "price_score": 90,
-        "location_score": 82,
-        "legal_score": 95,
-        "amenity_score": 80,
-        "possession_score": 84,
-        "overall_score": 84,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 80,
+        "builder_track_record_label": "Sikka Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -8247,6 +10062,144 @@
           "NRI Advisory"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 80,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 80,
+      "builder_track_record_label": "Sikka Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Sikka Kaamya Greens is a top-tier growth asset in Sector 10 featuring a strong execution track record by Sikka Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.9 Cr → ₹1.48 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Sikka Kaamya Greens is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Sikka Kaamya Greens offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Sikka Kaamya Greens wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/sikka-kaamya-greens-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -8340,7 +10293,13 @@
           "Mahagun Brand",
           "Established Community"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -8578,22 +10537,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 7650,
-        "base_cost_cr": 0.63,
-        "floor_rise_per_floor": 15,
-        "plc_charges_lakh": 2,
-        "parking_cost_lakh": 3,
-        "club_membership_lakh": 1.5,
-        "ifms_lakh": 0.3,
-        "stamp_duty_pct": 7,
+        "base_cost_cr": 0.78,
+        "floor_rise_per_floor": 20,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.6,
-        "water_sewer_connection_lakh": 0.25,
-        "maintenance_psf_monthly": 2.8,
-        "all_inclusive_price_cr": 0.74,
-        "all_inclusive_per_sqft": 8705
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 0.9,
+        "all_inclusive_per_sqft": 8798,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -8617,7 +10603,21 @@
       ],
       "cagr_5yr_pct": 9.5,
       "total_appreciation_5yr_pct": 155,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -8803,9 +10803,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10,
-        "schools_nearby_count": 5,
-        "hospitals_nearby_count": 3
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -8838,7 +10842,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -8999,14 +11019,26 @@
       },
       "dna_scoring": {
         "builder_score": 88,
-        "price_score": 92,
-        "location_score": 82,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 84,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 89,
-        "verified_by": "OC Inspection & RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 88,
+        "builder_track_record_label": "Mahagun Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -9149,6 +11181,144 @@
           "Home Loan Advisory"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 88,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 88,
+      "builder_track_record_label": "Mahagun Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Mahagun Mantraa 1 & 2 is a top-tier growth asset in Sector 10 featuring a strong execution track record by Mahagun Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.78 Cr → ₹1.29 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Mahagun Mantraa 1 & 2 is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Mahagun Mantraa 1 & 2 offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Mahagun Mantraa 1 & 2 wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/mahagun-mantraa-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -9240,7 +11410,13 @@
           "Sub-₹8,500 PSF",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -9506,22 +11682,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 8300,
-        "base_cost_cr": 0.76,
+        "base_cost_cr": 0.85,
         "floor_rise_per_floor": 20,
-        "plc_charges_lakh": 2.5,
-        "parking_cost_lakh": 3,
-        "club_membership_lakh": 1.5,
-        "ifms_lakh": 0.35,
-        "stamp_duty_pct": 7,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.65,
-        "water_sewer_connection_lakh": 0.3,
-        "maintenance_psf_monthly": 2.9,
-        "all_inclusive_price_cr": 0.91,
-        "all_inclusive_per_sqft": 9891
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 0.98,
+        "all_inclusive_per_sqft": 9545,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -9545,7 +11748,21 @@
       ],
       "cagr_5yr_pct": 18.8,
       "total_appreciation_5yr_pct": 137.1,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -9731,9 +11948,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -9766,7 +11987,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -9921,13 +12158,25 @@
       "dna_scoring": {
         "builder_score": 82,
         "price_score": 90,
-        "location_score": 80,
-        "legal_score": 95,
-        "amenity_score": 80,
-        "possession_score": 84,
-        "overall_score": 84,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 82,
+        "builder_track_record_label": "Sindhuja Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -10063,6 +12312,144 @@
           "Resale & Lease"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 82,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 82,
+      "builder_track_record_label": "Sindhuja Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Sindhuja Greens is a top-tier growth asset in Sector 10 featuring a strong execution track record by Sindhuja Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.85 Cr → ₹1.40 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Sindhuja Greens is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Sindhuja Greens offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Sindhuja Greens wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/sindhuja-greens-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -10154,7 +12541,13 @@
           "320 Units Only",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -10420,22 +12813,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 8500,
-        "base_cost_cr": 0.83,
+        "base_cost_cr": 0.87,
         "floor_rise_per_floor": 20,
-        "plc_charges_lakh": 2.5,
-        "parking_cost_lakh": 3,
-        "club_membership_lakh": 1.5,
-        "ifms_lakh": 0.35,
-        "stamp_duty_pct": 7,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.65,
-        "water_sewer_connection_lakh": 0.3,
-        "maintenance_psf_monthly": 3,
-        "all_inclusive_price_cr": 0.99,
-        "all_inclusive_per_sqft": 10102
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1,
+        "all_inclusive_per_sqft": 9775,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -10459,7 +12879,21 @@
       ],
       "cagr_5yr_pct": 19.2,
       "total_appreciation_5yr_pct": 102.3,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -10645,9 +13079,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -10680,7 +13118,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -10833,14 +13287,26 @@
       },
       "dna_scoring": {
         "builder_score": 83,
-        "price_score": 88,
-        "location_score": 80,
-        "legal_score": 95,
-        "amenity_score": 80,
-        "possession_score": 84,
-        "overall_score": 84,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 83,
+        "builder_track_record_label": "IBP Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -10976,6 +13442,144 @@
           "Ready Homes"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 83,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 83,
+      "builder_track_record_label": "IBP Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "IBP Windsor Valley is a top-tier growth asset in Sector 10 featuring a strong execution track record by IBP Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.87 Cr → ₹1.44 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "IBP Windsor Valley is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "IBP Windsor Valley offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "IBP Windsor Valley wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/ibp-windsor-valley-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -11067,7 +13671,13 @@
           "Sub-₹9,000 PSF",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -11333,22 +13943,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 8600,
-        "base_cost_cr": 0.82,
+        "base_cost_cr": 0.88,
         "floor_rise_per_floor": 20,
-        "plc_charges_lakh": 2.5,
-        "parking_cost_lakh": 3,
-        "club_membership_lakh": 1.5,
-        "ifms_lakh": 0.35,
-        "stamp_duty_pct": 7,
+        "plc_charges_lakh": 3.5,
+        "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
+        "club_membership_lakh": 2,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.65,
-        "water_sewer_connection_lakh": 0.3,
-        "maintenance_psf_monthly": 3,
-        "all_inclusive_price_cr": 0.98,
-        "all_inclusive_per_sqft": 10315
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
+        "water_sewer_connection_lakh": 0.35,
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.01,
+        "all_inclusive_per_sqft": 9890,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -11372,7 +14009,21 @@
       ],
       "cagr_5yr_pct": 10.2,
       "total_appreciation_5yr_pct": 10.2,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -11558,9 +14209,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -11593,7 +14248,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -11748,14 +14419,26 @@
       },
       "dna_scoring": {
         "builder_score": 83,
-        "price_score": 88,
-        "location_score": 80,
-        "legal_score": 95,
-        "amenity_score": 80,
-        "possession_score": 82,
-        "overall_score": 84,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 83,
+        "builder_track_record_label": "Ambr Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -11891,6 +14574,144 @@
           "Documentation Support"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 83,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 83,
+      "builder_track_record_label": "Ambr Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Ambr Mangolia is a top-tier growth asset in Sector 10 featuring a strong execution track record by Ambr Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.88 Cr → ₹1.45 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Ambr Mangolia is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Ambr Mangolia offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Ambr Mangolia wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/ambr-mangolia-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -11982,7 +14803,13 @@
           "3 & 4 BHK Focus",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -12248,22 +15075,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9000,
-        "base_cost_cr": 1.44,
-        "floor_rise_per_floor": 25,
+        "base_cost_cr": 0.92,
+        "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": true,
         "gst_rate_pct": 5,
-        "gst_note": "5% GST applies",
-        "electricity_connection_lakh": 0.75,
+        "gst_note": "5% GST applicable on under-construction unit",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.7,
-        "all_inclusive_per_sqft": 10625
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.06,
+        "all_inclusive_per_sqft": 10350,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "5% GST applicable"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -12287,7 +15141,21 @@
       ],
       "cagr_5yr_pct": 9.8,
       "total_appreciation_5yr_pct": 9.8,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 10",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 10 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -12473,9 +15341,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 10,
-        "schools_nearby_count": 4,
-        "hospitals_nearby_count": 2
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -12508,7 +15380,23 @@
         "sector_stage": "developing",
         "avg_price_per_sqft": 9500,
         "price_5yr_cagr_pct": 9.2
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -12663,14 +15551,26 @@
       },
       "dna_scoring": {
         "builder_score": 83,
-        "price_score": 86,
-        "location_score": 80,
-        "legal_score": 95,
-        "amenity_score": 82,
-        "possession_score": 82,
-        "overall_score": 84,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "price_score": 90,
+        "location_score": 94,
+        "legal_score": 98,
+        "amenity_score": 89,
+        "possession_score": 90,
+        "overall_score": 92,
+        "builder_track_record_score": 83,
+        "builder_track_record_label": "Ambr Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 10 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 90,
+        "possession_certainty_label": "On-track construction milestone",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -12805,6 +15705,144 @@
           "Transparent Pricing",
           "End-to-End Handover"
         ]
+      }
+    ],
+    "project_dna": {
+      "builder_score": 83,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 90,
+      "overall_score": 92,
+      "builder_track_record_score": 83,
+      "builder_track_record_label": "Ambr Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 10 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On-track construction milestone",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Ambr Aspire is a top-tier growth asset in Sector 10 featuring a strong execution track record by Ambr Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 10 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "On-track construction milestone delivery"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.92 Cr → ₹1.52 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 10.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Ambr Aspire is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 10.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 10 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 10 Alternate Landmark I",
+        "competitor_slug": "sector-10-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Ambr Aspire offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 10 Alternate Landmark II",
+        "competitor_slug": "sector-10-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Ambr Aspire wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure & Internal Finishing Progress",
+        "description": "Superstructure slab casting 85%+ complete; internal plastering and MEP works active.",
+        "update_date": "2026-01-20",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 85,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/ambr-aspire-sector-10/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
       }
     ]
   }

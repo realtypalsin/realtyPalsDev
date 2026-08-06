@@ -697,7 +697,7 @@ function MessageBubbleInner({
         if (useNewFormat && !hasExact && !hasNearby) return null
         if (!useNewFormat && !hasLegacy) return null
 
-        const isOpen = isLastProperties ? !isExpanded : isExpanded
+        const isOpen = isExpanded
 
         // Determine the card list to render for map + legacy path
         const primaryCards = useNewFormat ? (hasExact ? exactList : nearbyList) : legacyList
@@ -1032,6 +1032,8 @@ function MessageBubbleInner({
           </AnimatePresence>
         </m.div>
       )}
+
+
 
       {/* Persona chips: suggested follow-ups for first recommendation */}
       {message.type === 'ai' && index <= 1 && isLast && (message.properties?.length ?? 0) > 0 && !isSubmitting && (

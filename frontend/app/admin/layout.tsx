@@ -98,7 +98,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const crumbs = breadcrumb(pathname)
 
   return (
-    <div className="h-screen bg-[#EEEEEE] font-sans text-slate-800 selection:bg-slate-200 selection:text-slate-900 flex overflow-hidden">
+    <div className="h-screen bg-surface-3 font-sans text-text-primary selection:bg-slate-200 selection:text-text-primary flex overflow-hidden">
       
       {/* Command Palette */}
       <AnimatePresence>
@@ -159,10 +159,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside className={`
-        ${isCollapsed ? 'hidden md:flex w-[68px]' : 'w-64 md:w-[260px]'} 
-        flex flex-col h-full bg-[#fdfdfd] border-r border-zinc-200/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)]
+        ${isCollapsed ? 'hidden md:flex w-[68px]' : 'w-64 md:w-[260px]'}
+        flex flex-col h-full bg-surface border-r border-border shadow-xs
         fixed md:relative z-50 md:z-auto shrink-0
-        transition-all duration-300 ease-in-out
+        transition-all duration-base ease-in-out
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         
@@ -262,11 +262,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="relative group/navitem flex justify-center">
-            <button 
+            <button
               onClick={handleLogout}
-              className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-[12px]'} text-zinc-500 hover:bg-red-50 hover:text-red-600`}
+              className={`flex items-center transition-all duration-base overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-lg py-2.5 rounded-md'} text-text-secondary hover:bg-red-50 hover:text-red-600`}
             >
-              <LogOut size={18} strokeWidth={2} className="text-zinc-400 group-hover/navitem:text-red-500" />
+              <LogOut size={18} strokeWidth={2} className="text-text-muted group-hover/navitem:text-red-500" />
               {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">Sign Out</span>}
             </button>
             {isCollapsed && (

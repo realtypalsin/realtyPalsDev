@@ -8,17 +8,17 @@ import { toast } from 'sonner'
 import JsonEditor from './JsonEditor'
 
 export default function InvestmentInsightsEditor({ projectId, initialData }: { projectId: string, initialData?: any }) {
-  const [appreciationAnnual, setAppreciationAnnual] = useState(initialData?.appreciation_annual ?? '')
-  const [appreciationDesc, setAppreciationDesc] = useState(initialData?.appreciation_desc ?? '')
-  const [rentalYield, setRentalYield] = useState(initialData?.rental_yield ?? '')
-  const [rentalDesc, setRentalDesc] = useState(initialData?.rental_desc ?? '')
-  const [marketTrend, setMarketTrend] = useState(initialData?.market_trend ?? '')
-  const [marketDesc, setMarketDesc] = useState(initialData?.market_desc ?? '')
-  const [liquidityScore, setLiquidityScore] = useState(initialData?.liquidity_score ?? '')
-  const [liquidityDesc, setLiquidityDesc] = useState(initialData?.liquidity_desc ?? '')
+  const [appreciationAnnual, setAppreciationAnnual] = useState(initialData?.appreciation_annual ?? initialData?.pricing?.investment_insights?.appreciation_annual ?? '12-15%')
+  const [appreciationDesc, setAppreciationDesc] = useState(initialData?.appreciation_desc ?? initialData?.pricing?.investment_insights?.appreciation_desc ?? 'Annual capital growth estimate')
+  const [rentalYield, setRentalYield] = useState(initialData?.rental_yield ?? initialData?.pricing?.investment_insights?.rental_yield ?? '4.2-4.8%')
+  const [rentalDesc, setRentalDesc] = useState(initialData?.rental_desc ?? initialData?.pricing?.investment_insights?.rental_desc ?? 'Expected annual rental yield')
+  const [marketTrend, setMarketTrend] = useState(initialData?.market_trend ?? initialData?.pricing?.investment_insights?.market_trend ?? 'Bullish')
+  const [marketDesc, setMarketDesc] = useState(initialData?.market_desc ?? initialData?.pricing?.investment_insights?.market_desc ?? 'Strong demand')
+  const [liquidityScore, setLiquidityScore] = useState(initialData?.liquidity_score ?? initialData?.pricing?.investment_insights?.liquidity_score ?? 'High')
+  const [liquidityDesc, setLiquidityDesc] = useState(initialData?.liquidity_desc ?? initialData?.pricing?.investment_insights?.liquidity_desc ?? 'Active resale market')
   
   const [investmentReport, setInvestmentReport] = useState<any>(
-    initialData?.decision_profile?.intelligence_data?.investmentReport || {}
+    initialData?.financial_intelligence?.investmentReport || initialData?.intelligence_data?.investmentReport || initialData?.decision_profile?.intelligence_data?.investmentReport || {}
   )
 
   const handleSave = async () => {

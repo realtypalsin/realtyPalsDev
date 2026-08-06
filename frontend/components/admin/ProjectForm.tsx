@@ -210,34 +210,6 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
 
   const [dirty, setDirty] = useState(false)
 
-  useEffect(() => {
-    fetch(`${API_BASE}/admin/builders`, { headers: adminAuthHeaders() })
-      .then((r) => r.json())
-      .then((d) => setBuilders(d.builders ?? []))
-  }, [])
-
-  // Emit form changes to parent for live preview (debounced via the state update itself)
-  useEffect(() => {
-    const serialized = JSON.stringify(form)
-    if (serialized !== prevFormRef.current) {
-      if (prevFormRef.current !== '') {
-        setDirty(true)
-      }
-      prevFormRef.current = serialized
-      onFormChange?.(form)
-    }
-  }, [form, onFormChange])
-
-  // Autosave effect (only for existing projects)
-  useEffect(() => {
-    if (!dirty || !projectId) return
-    const timer = setTimeout(() => {
-      handleSubmit({ preventDefault: () => {} } as React.FormEvent)
-      setDirty(false)
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [dirty, form, projectId, handleSubmit])
-
   function set(key: keyof ProjectData) {
     return (value: string) => setForm((f) => ({ ...f, [key]: value }))
   }
@@ -300,7 +272,35 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
     } else {
       router.push('/admin/projects')
     }
-  }, [form, projectId, onSaved])
+  }, [form, projectId, onSaved, router])
+
+  useEffect(() => {
+    fetch(`${API_BASE}/admin/builders`, { headers: adminAuthHeaders() })
+      .then((r) => r.json())
+      .then((d) => setBuilders(d.builders ?? []))
+  }, [])
+
+  // Emit form changes to parent for live preview (debounced via the state update itself)
+  useEffect(() => {
+    const serialized = JSON.stringify(form)
+    if (serialized !== prevFormRef.current) {
+      if (prevFormRef.current !== '') {
+        setDirty(true)
+      }
+      prevFormRef.current = serialized
+      onFormChange?.(form)
+    }
+  }, [form, onFormChange])
+
+  // Autosave effect (only for existing projects)
+  useEffect(() => {
+    if (!dirty || !projectId) return
+    const timer = setTimeout(() => {
+      handleSubmit({ preventDefault: () => {} } as React.FormEvent)
+      setDirty(false)
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [dirty, form, projectId, handleSubmit])
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">

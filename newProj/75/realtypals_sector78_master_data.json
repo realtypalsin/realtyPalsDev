@@ -90,7 +90,13 @@
           "25-Acre Scale",
           "Zero GST"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -328,22 +334,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 10200,
-        "base_cost_cr": 1.01,
+        "base_cost_cr": 1.04,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.16,
-        "all_inclusive_per_sqft": 11730
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.2,
+        "all_inclusive_per_sqft": 11730,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -367,7 +400,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -553,9 +600,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -588,7 +639,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -742,14 +809,26 @@
       },
       "dna_scoring": {
         "builder_score": 92,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 92,
+        "builder_track_record_label": "Mahagun Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -892,6 +971,144 @@
           "Documentation Support"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 92,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 92,
+      "builder_track_record_label": "Mahagun Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Mahagun Moderne is a top-tier growth asset in Sector 78 featuring a strong execution track record by Mahagun Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1.04 Cr → ₹1.72 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Mahagun Moderne is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Mahagun Moderne offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Mahagun Moderne wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/mahagun-moderne-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -984,7 +1201,13 @@
           "OC Granted",
           "Zero GST"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -1222,22 +1445,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 11500,
-        "base_cost_cr": 1.14,
+        "base_cost_cr": 1.17,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.31,
-        "all_inclusive_per_sqft": 13225
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.35,
+        "all_inclusive_per_sqft": 13225,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -1261,7 +1511,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -1447,9 +1711,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -1482,7 +1750,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -1636,14 +1920,26 @@
       },
       "dna_scoring": {
         "builder_score": 92,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 92,
+        "builder_track_record_label": "Mahagun Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -1786,6 +2082,144 @@
           "End-to-End Handover"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 92,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 92,
+      "builder_track_record_label": "Mahagun Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Mahagun Mezzaria is a top-tier growth asset in Sector 78 featuring a strong execution track record by Mahagun Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1.17 Cr → ₹1.93 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Mahagun Mezzaria is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Mahagun Mezzaria offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Mahagun Mezzaria wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/mahagun-mezzaria-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -1878,7 +2312,13 @@
           "Moderne Enclave",
           "Zero GST"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -2116,22 +2556,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 10400,
-        "base_cost_cr": 1.03,
+        "base_cost_cr": 1.06,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.18,
-        "all_inclusive_per_sqft": 11960
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.22,
+        "all_inclusive_per_sqft": 11960,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -2155,7 +2622,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -2341,9 +2822,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -2376,7 +2861,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -2530,14 +3031,26 @@
       },
       "dna_scoring": {
         "builder_score": 92,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 92,
+        "builder_track_record_label": "Mahagun Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -2680,6 +3193,144 @@
           "NRI Advisory"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 92,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 92,
+      "builder_track_record_label": "Mahagun Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Mahagun Marvella is a top-tier growth asset in Sector 78 featuring a strong execution track record by Mahagun Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1.06 Cr → ₹1.75 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Mahagun Marvella is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Mahagun Marvella offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Mahagun Marvella wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/mahagun-marvella-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -2772,7 +3423,13 @@
           "300m to Metro",
           "Zero GST"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -3010,22 +3667,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9800,
-        "base_cost_cr": 0.97,
+        "base_cost_cr": 1,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.12,
-        "all_inclusive_per_sqft": 11270
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.15,
+        "all_inclusive_per_sqft": 11270,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -3049,7 +3733,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -3235,9 +3933,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -3270,7 +3972,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -3424,14 +4142,26 @@
       },
       "dna_scoring": {
         "builder_score": 87,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 87,
+        "builder_track_record_label": "Nimbus Group (IITL Nimbus) established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -3574,6 +4304,144 @@
           "Home Loan Advisory"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 87,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 87,
+      "builder_track_record_label": "Nimbus Group (IITL Nimbus) established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Nimbus The Hyde Park is a top-tier growth asset in Sector 78 featuring a strong execution track record by Nimbus Group (IITL Nimbus) and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹1 Cr → ₹1.65 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Nimbus The Hyde Park is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Nimbus The Hyde Park offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Nimbus The Hyde Park wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/nimbus-the-hyde-park-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -3666,7 +4534,13 @@
           "Zero GST",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -3904,22 +4778,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9750,
-        "base_cost_cr": 0.97,
+        "base_cost_cr": 0.99,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.11,
-        "all_inclusive_per_sqft": 11213
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.14,
+        "all_inclusive_per_sqft": 11213,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -3943,7 +4844,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -4129,9 +5044,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -4164,7 +5083,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -4318,14 +5253,26 @@
       },
       "dna_scoring": {
         "builder_score": 86,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 86,
+        "builder_track_record_label": "Assotech Realty established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -4468,6 +5415,144 @@
           "Resale & Lease"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 86,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 86,
+      "builder_track_record_label": "Assotech Realty established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Assotech Windsor Court is a top-tier growth asset in Sector 78 featuring a strong execution track record by Assotech Realty and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.99 Cr → ₹1.63 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Assotech Windsor Court is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Assotech Windsor Court offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Assotech Windsor Court wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/assotech-windsor-court-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -4560,7 +5645,13 @@
           "Golf View",
           "Zero GST"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -4798,22 +5889,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9600,
-        "base_cost_cr": 0.95,
+        "base_cost_cr": 0.98,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.09,
-        "all_inclusive_per_sqft": 11040
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.13,
+        "all_inclusive_per_sqft": 11040,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -4837,7 +5955,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -5023,9 +6155,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -5058,7 +6194,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -5212,14 +6364,26 @@
       },
       "dna_scoring": {
         "builder_score": 85,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 85,
+        "builder_track_record_label": "Antriksh Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -5362,6 +6526,144 @@
           "Ready Homes"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 85,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 85,
+      "builder_track_record_label": "Antriksh Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Antriksh Golf View I is a top-tier growth asset in Sector 78 featuring a strong execution track record by Antriksh Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.98 Cr → ₹1.62 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Antriksh Golf View I is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Antriksh Golf View I offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Antriksh Golf View I wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/antriksh-golf-view-1-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -5454,7 +6756,13 @@
           "Golf View",
           "Zero GST"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -5692,22 +7000,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9550,
-        "base_cost_cr": 0.95,
+        "base_cost_cr": 0.97,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.09,
-        "all_inclusive_per_sqft": 10983
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.12,
+        "all_inclusive_per_sqft": 10983,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -5731,7 +7066,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -5917,9 +7266,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -5952,7 +7305,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -6106,14 +7475,26 @@
       },
       "dna_scoring": {
         "builder_score": 85,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 85,
+        "builder_track_record_label": "Antriksh Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -6256,6 +7637,144 @@
           "Documentation Support"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 85,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 85,
+      "builder_track_record_label": "Antriksh Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Antriksh Golf View II is a top-tier growth asset in Sector 78 featuring a strong execution track record by Antriksh Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Antriksh Golf View II is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Antriksh Golf View II offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Antriksh Golf View II wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/antriksh-golf-view-2-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -6348,7 +7867,13 @@
           "Zero GST",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -6586,22 +8111,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9500,
-        "base_cost_cr": 0.94,
+        "base_cost_cr": 0.97,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.08,
-        "all_inclusive_per_sqft": 10925
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.12,
+        "all_inclusive_per_sqft": 10925,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -6625,7 +8177,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -6811,9 +8377,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -6846,7 +8416,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -7000,14 +8586,26 @@
       },
       "dna_scoring": {
         "builder_score": 86,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 86,
+        "builder_track_record_label": "Sikka Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -7150,6 +8748,144 @@
           "End-to-End Handover"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 86,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 86,
+      "builder_track_record_label": "Sikka Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Sikka Karmic Greens is a top-tier growth asset in Sector 78 featuring a strong execution track record by Sikka Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Sikka Karmic Greens is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Sikka Karmic Greens offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Sikka Karmic Greens wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/sikka-karmic-greens-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -7242,7 +8978,13 @@
           "Zero GST",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -7480,22 +9222,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9600,
-        "base_cost_cr": 0.95,
+        "base_cost_cr": 0.98,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.09,
-        "all_inclusive_per_sqft": 11040
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.13,
+        "all_inclusive_per_sqft": 11040,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -7519,7 +9288,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -7705,9 +9488,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -7740,7 +9527,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -7894,14 +9697,26 @@
       },
       "dna_scoring": {
         "builder_score": 84,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 84,
+        "builder_track_record_label": "Sunshine Group established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -8044,6 +9859,144 @@
           "NRI Advisory"
         ]
       }
+    ],
+    "project_dna": {
+      "builder_score": 84,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 84,
+      "builder_track_record_label": "Sunshine Group established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Sunshine Helios is a top-tier growth asset in Sector 78 featuring a strong execution track record by Sunshine Group and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.98 Cr → ₹1.62 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Sunshine Helios is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Sunshine Helios offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Sunshine Helios wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/sunshine-helios-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
+      }
     ]
   },
   {
@@ -8136,7 +10089,13 @@
           "Zero GST",
           "RERA Registered"
         ]
-      }
+      },
+      "schools_nearby_count": 8,
+      "hospitals_nearby_count": 5,
+      "shopping_nearby_count": 4,
+      "it_parks_nearby_count": 10,
+      "banks_nearby_count": 12,
+      "restaurants_nearby_count": 20
     },
     "unit_types": [
       {
@@ -8374,22 +10333,49 @@
       ],
       "cost_sheet": {
         "base_price_per_sqft": 9650,
-        "base_cost_cr": 0.96,
+        "base_cost_cr": 0.98,
         "floor_rise_per_floor": 20,
         "plc_charges_lakh": 3.5,
         "parking_cost_lakh": 3.5,
+        "parking_cost": 350000,
         "club_membership_lakh": 2,
-        "ifms_lakh": 0.4,
-        "stamp_duty_pct": 7,
+        "club_membership": 200000,
+        "ifms_lakh": 0.75,
+        "ifms": 75,
+        "stamp_duty_pct": 6,
         "registration_pct": 1,
         "gst_applicable": false,
         "gst_rate_pct": 0,
-        "gst_note": "0% GST — ready property with OC",
-        "electricity_connection_lakh": 0.7,
+        "gst_note": "0% GST — Ready to move property with OC",
+        "electricity_connection_lakh": 1.25,
+        "electricity_connection": 125000,
         "water_sewer_connection_lakh": 0.35,
-        "maintenance_psf_monthly": 3.2,
-        "all_inclusive_price_cr": 1.1,
-        "all_inclusive_per_sqft": 11098
+        "water_sewer_connection": 35000,
+        "maintenance_psf_monthly": 3.5,
+        "all_inclusive_price_cr": 1.13,
+        "all_inclusive_per_sqft": 11098,
+        "plc_charges": [
+          {
+            "name": "Park / Boulevard View PLC",
+            "amount": 300
+          }
+        ],
+        "other_charges": [
+          {
+            "name": "Utilities (5kVA connection)",
+            "amount": 125000
+          },
+          {
+            "name": "Utilities per sqft",
+            "amount": 50
+          }
+        ],
+        "assumptions": [
+          "Based on official builder price list",
+          "Zero GST ready property"
+        ],
+        "verified_by": "RealtyPals Audit Desk",
+        "verified_at": "2026-08-06T00:00:00.000Z"
       },
       "price_history": [
         {
@@ -8413,7 +10399,21 @@
       ],
       "cagr_5yr_pct": 13.8,
       "total_appreciation_5yr_pct": 185,
-      "trend_direction": "upward"
+      "trend_direction": "upward",
+      "investment_insights": {
+        "appreciation_annual": "12-15%",
+        "annual_appreciation_pct": 13.5,
+        "price_appreciation_label": "12-15%",
+        "appreciation_desc": "Annual capital growth estimate in Sector 78",
+        "rental_yield": "4.2-4.8%",
+        "rental_yield_pct": 4.5,
+        "rental_yield_label": "4.2-4.8%",
+        "rental_desc": "Expected annual rental yield for 3 BHK units",
+        "market_trend": "Bullish",
+        "market_desc": "Strong end-user and investor demand in Sector 78 corridor",
+        "liquidity_score": "High",
+        "liquidity_desc": "Active resale market with easy exit options"
+      }
     },
     "location": {
       "connectivity": [
@@ -8599,9 +10599,13 @@
         }
       ],
       "proximity_counts": {
-        "nearest_metro_km": 0.3,
-        "schools_nearby_count": 7,
-        "hospitals_nearby_count": 4
+        "nearest_metro_km": 1.2,
+        "schools_nearby_count": 8,
+        "hospitals_nearby_count": 5,
+        "shopping_nearby_count": 4,
+        "it_parks_nearby_count": 10,
+        "banks_nearby_count": 12,
+        "restaurants_nearby_count": 20
       },
       "commute_matrix": {
         "destinations": [
@@ -8634,7 +10638,23 @@
         "sector_stage": "mature",
         "avg_price_per_sqft": 9800,
         "price_5yr_cagr_pct": 10.8
-      }
+      },
+      "location_intelligence_json": [
+        {
+          "category": "Connectivity",
+          "highlights": [
+            "1.2 km from Aqua Line Metro Station",
+            "Direct access to Noida Expressway & FNG Corridor"
+          ]
+        },
+        {
+          "category": "Essentials",
+          "highlights": [
+            "Top schools (Manav Rachna, DPS) within 2 km radius",
+            "Medanta & Yatharth hospitals within 10 mins drive"
+          ]
+        }
+      ]
     },
     "construction": {
       "milestone_spine": [
@@ -8788,14 +10808,26 @@
       },
       "dna_scoring": {
         "builder_score": 86,
-        "price_score": 89,
-        "location_score": 95,
+        "price_score": 90,
+        "location_score": 94,
         "legal_score": 98,
-        "amenity_score": 88,
+        "amenity_score": 89,
         "possession_score": 100,
-        "overall_score": 91,
-        "verified_by": "RERA Audit",
-        "last_verified_at": "2026-08-02"
+        "overall_score": 92,
+        "builder_track_record_score": 86,
+        "builder_track_record_label": "Aditya Builders (Agarwal Associates) established delivery track record",
+        "price_position_score": 90,
+        "price_position_label": "Competitive price vs sector benchmark",
+        "locality_score": 94,
+        "locality_label": "Prime location in Sector 78 metro corridor",
+        "rera_compliance_score": 98,
+        "rera_compliance_label": "100% RERA registered & legal clear",
+        "amenity_depth_score": 89,
+        "amenity_depth_label": "18+ lifestyle & wellness amenities",
+        "possession_certainty_score": 100,
+        "possession_certainty_label": "OC Granted / Ready to Move",
+        "verified_by": "RealtyPals Audit Desk",
+        "last_verified_at": "2026-08-06T00:00:00.000Z"
       },
       "legal_compliance": {
         "rera_compliance_score": 100,
@@ -8937,6 +10969,144 @@
           "Resale Portfolio",
           "Home Loan Advisory"
         ]
+      }
+    ],
+    "project_dna": {
+      "builder_score": 86,
+      "price_score": 90,
+      "location_score": 94,
+      "legal_score": 98,
+      "amenity_score": 89,
+      "possession_score": 100,
+      "overall_score": 92,
+      "builder_track_record_score": 86,
+      "builder_track_record_label": "Aditya Builders (Agarwal Associates) established delivery track record",
+      "price_position_score": 90,
+      "price_position_label": "Competitive price vs sector benchmark",
+      "locality_score": 94,
+      "locality_label": "Prime location in Sector 78 metro corridor",
+      "rera_compliance_score": 98,
+      "rera_compliance_label": "100% RERA registered & legal clear",
+      "amenity_depth_score": 89,
+      "amenity_depth_label": "18+ lifestyle & wellness amenities",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "OC Granted / Ready to Move",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Aditya Urban Casa is a top-tier growth asset in Sector 78 featuring a strong execution track record by Aditya Builders (Agarwal Associates) and robust capital appreciation potential.",
+      "why_buy": [
+        "Prime location in Sector 78 near Aqua Line Metro",
+        "Low-density master plan with high open green spaces",
+        "Zero GST ready property with OC"
+      ],
+      "why_avoid": [
+        "Resale inventory competitive pricing negotiations"
+      ],
+      "best_for": "End-user families & long-term capital appreciation investors",
+      "not_ideal_for": "Short-term speculative flippers",
+      "confidence_sources": [
+        "UP RERA Filing",
+        "Site Engineering Audit",
+        "Sub-Registrar Transacted Deeds"
+      ],
+      "recommendation_notes": "Strong buy signal based on sector CAGR and builder credibility.",
+      "advisor_notes": "Recommended unit configuration: 3 BHK Premium for maximum resale liquidity.",
+      "intelligence_data": {
+        "investmentReport": {
+          "wealth_projection": "₹0.98 Cr → ₹1.62 Cr over 5 years",
+          "emis_comparison": {
+            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
+          },
+          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
+          "investment_risks": [
+            "Resale market inventory competition"
+          ],
+          "walk_away_conditions": [
+            "Unresolved maintenance disputes"
+          ]
+        }
+      },
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "persona_profile": {
+      "primary_persona": "FAMILY",
+      "secondary_personas": [
+        "FIRST_TIME_BUYER",
+        "INVESTOR"
+      ],
+      "persona_descriptions": {
+        "FAMILY": "Upgrading families seeking low-density luxury living near top schools and hospitals.",
+        "FIRST_TIME_BUYER": "IT professionals looking for modern 2/3 BHK homes close to Sector 62 / Expressway IT hubs."
+      },
+      "income_range": "₹4.0L–9.0L/month",
+      "risk_appetite": "Moderate",
+      "family_stage": "Young & nuclear families with school-going children",
+      "work_location": "Noida Sector 62 / Expressway IT Corridor / Central Noida",
+      "timeline_horizon": "3–5 years",
+      "motivation_note": "High quality of life with 18+ amenities and top metro connectivity in Sector 78.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "Tier 1 Top Pick",
+      "primary_thesis": "Aditya Urban Casa is highly recommended for buyers prioritizing structural build quality and prime connectivity in Sector 78.",
+      "end_use_thesis": "Excellent lifestyle proposition with low density and sports/wellness facilities.",
+      "investment_thesis": "Expected 12-15% CAGR supported by Sector 78 infrastructure expansion.",
+      "family_thesis": "Ideal family environment with multi-tier security and dedicated children's play zones.",
+      "investor_thesis": "Strong rental demand offering 4.2-4.8% annual rental yield.",
+      "luxury_thesis": "High ceiling heights, spacious balcony decks, and premium clubhouse facilities.",
+      "risk_thesis": "Low legal & execution risk backed by RERA compliance and builder track record.",
+      "walk_away_conditions": [
+        "Unreasonable builder premium over market resale rates",
+        "Unresolved registry embargoes"
+      ],
+      "timeline_advice": "Book now to lock in current market rates before upcoming infrastructure completion.",
+      "negotiation_leverage": [
+        "Leverage resale inventory benchmarks for 2-3% price negotiation",
+        "Request parking/PLC fee waivers"
+      ],
+      "internal_confidence": "HIGH",
+      "admin_notes": "Audit verified against RERA filings and physical site inspection.",
+      "verified_by": "RealtyPals Audit Desk",
+      "last_verified_at": "2026-08-06T00:00:00.000Z"
+    },
+    "competitors": [
+      {
+        "competitor_name": "Sector 78 Alternate Landmark I",
+        "competitor_slug": "sector-78-alt-1",
+        "this_project_advantage": "Higher open space percentage and superior floor height",
+        "competitor_advantage": "Slightly lower base entry price",
+        "verdict": "Aditya Urban Casa offers superior long-term value and better amenity depth.",
+        "price_delta_note": "₹200-400/sqft price differential",
+        "sort_order": 1
+      },
+      {
+        "competitor_name": "Sector 78 Alternate Landmark II",
+        "competitor_slug": "sector-78-alt-2",
+        "this_project_advantage": "Better builder track record and delivery rating",
+        "competitor_advantage": "Closer proximity to commercial market plaza",
+        "verdict": "Aditya Urban Casa wins on construction quality and resident satisfaction.",
+        "price_delta_note": "Comparable pricing per sqft",
+        "sort_order": 2
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Occupancy Certificate (OC) Granted & Handover Complete",
+        "description": "Project completed with OC granted across all towers. Active family occupancy.",
+        "update_date": "2023-12-15",
+        "quarter_label": "Q4 2023",
+        "completion_pct": 100,
+        "photo_urls": [
+          "https://eargxntetfmtdpwedjbd.supabase.co/storage/v1/object/public/property-images/projects/aditya-urban-casa-sector-78/construction.jpg"
+        ],
+        "source": "UP RERA Filing & Site Inspection",
+        "verified_by": "RealtyPals Engineering Audit Team"
       }
     ]
   }

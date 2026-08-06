@@ -275,12 +275,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
   // ── Tier + persona Notion-style callout (shared mobile/desktop) ─────────────────────
   const intelligenceChips = (tier || persona) && (
-    <div className="flex items-start gap-3 bg-gray-50/80 border border-gray-200/60 rounded-xl p-3">
-      <Sparkles size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
+    <div className="flex items-start gap-md bg-surface-2 border border-border rounded-lg p-lg">
+      <Sparkles size={16} className="text-primary mt-0.5 flex-shrink-0" />
       <div>
-        <p className="text-[11px] font-bold text-gray-900 mb-0.5">Investment Thesis</p>
-        <p className="text-[12px] text-gray-600 leading-relaxed">
-          {tier && <span>Rated as <strong className="text-gray-900">{tierLabel[tier] ?? tier}</strong>. </span>}
+        <p className="text-xs font-bold text-text-primary mb-md">Investment Thesis</p>
+        <p className="text-sm text-text-secondary leading-relaxed">
+          {tier && <span>Rated as <strong className="text-text-primary">{tierLabel[tier] ?? tier}</strong>. </span>}
           {persona && <span>Ideal for {persona.charAt(0) + persona.slice(1).toLowerCase()}.</span>}
         </p>
       </div>
@@ -353,7 +353,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         <div className="space-y-8 pb-12 pt-8">
           <ProjectPricingTab
             unitTypes={d?.unit_types ?? []}
-            detail={{ ...(detail as any), payment_plan: paymentPlan.data, cost_sheet: costSheet.data }}
+            detail={{
+              ...(detail as any),
+              payment_plan: paymentPlan.data || (detail as any)?.payment_plan || (detail as any)?.payment_plans?.[0] || null,
+              payment_plans: (detail as any)?.payment_plans || (paymentPlan.data ? [paymentPlan.data] : []),
+              cost_sheet: costSheet.data || (detail as any)?.cost_sheet || null
+            }}
             onGoToCosts={() => handleOpenSiteVisit()}
           />
         </div>
@@ -456,17 +461,17 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         </div>
 
         {/* Center: Fixed Non-Scrolling Desktop Tab Strip */}
-        <div className="flex items-center gap-1 md:gap-2 flex-1 justify-center px-2">
+        <div className="flex items-center gap-xs flex-1 justify-center px-md overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {SECTION_TABS.map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-3 md:px-4 py-1.5 flex items-center gap-1.5 text-[12px] md:text-[13px] font-bold rounded-full transition-all whitespace-nowrap border ${
-                  isActive 
-                    ? 'bg-gray-900 text-white border-gray-900 shadow-sm dark:bg-white dark:text-gray-900 dark:border-white' 
-                    : 'bg-gray-50 text-gray-500 border-gray-100 hover:bg-gray-100 hover:text-gray-900 dark:bg-zinc-900 dark:border-zinc-800 dark:hover:bg-zinc-800'
+                className={`relative px-lg py-md flex items-center gap-md text-xs md:text-sm font-bold rounded-md transition-all duration-fast whitespace-nowrap border-0 ${
+                  isActive
+                    ? 'bg-text-primary text-surface shadow-sm dark:bg-text-primary dark:text-surface'
+                    : 'bg-surface-2 text-text-secondary border border-border hover:bg-surface-3 hover:text-text-primary dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700'
                 }`}
               >
                 {tabIcons[tab]}
@@ -488,10 +493,25 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   )
 
   const renderHero = () => {
-    const displayPrice = d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr Onwards` : 'Price on Request')
+    const unitTypes = d?.unit_types ?? []
+    const validPricesMin = unitTypes.map((u: any) => u.price_min_cr).filter(Boolean) as number[]
+    const validPricesMax = unitTypes.map((u: any) => u.price_max_cr).filter(Boolean) as number[]
+    const minCalculated = validPricesMin.length > 0 ? Math.min(...validPricesMin) : d?.price_min_cr
+    const maxCalculated = validPricesMax.length > 0 ? Math.max(...validPricesMax) : (d as any)?.price_max_cr
+
+    let displayPrice = 'Price on Request'
+    if (d?.price_range_label && !/price on request|price on demand/i.test(d.price_range_label)) {
+      displayPrice = d.price_range_label
+    } else if (minCalculated != null) {
+      if (maxCalculated != null && maxCalculated > minCalculated) {
+        displayPrice = `₹${minCalculated}–${maxCalculated}Cr`
+      } else {
+        displayPrice = `₹${minCalculated} Cr Onwards`
+      }
+    }
+
     const displayPossession = d?.possession_label || 'Dec 2028 (~3.3 Yrs)'
     const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 86
-    const unitTypes = d?.unit_types ?? []
     const builderName = d?.builder?.name || 'Elite Group'
 
     return (

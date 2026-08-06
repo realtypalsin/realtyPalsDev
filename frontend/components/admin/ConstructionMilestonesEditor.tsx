@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Save, RefreshCw, CheckCircle2, Clock, Calendar } from 'lucide-react';
+import { Plus, Trash2, Save, RefreshCw, CheckCircle2, Clock, Calendar, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminAuthHeaders } from '@/lib/authedFetch';
 import { API_BASE } from '@/lib/env';
+import ConstructionTimeline from '@/components/property-detail/ConstructionTimeline';
 
 export interface MilestoneItem {
   id?: string;
@@ -35,7 +36,7 @@ export default function ConstructionMilestonesEditor({ projectId }: Construction
   const fetchMilestones = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/v1/admin/projects/${projectId}/milestones`, {
+      const res = await fetch(`${API_BASE}/admin/projects/${projectId}/milestones`, {
         headers: adminAuthHeaders(),
       });
       if (res.ok) {
@@ -62,7 +63,7 @@ export default function ConstructionMilestonesEditor({ projectId }: Construction
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/v1/admin/projects/${projectId}/milestones`, {
+      const res = await fetch(`${API_BASE}/admin/projects/${projectId}/milestones`, {
         method: 'PUT',
         headers: adminAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ milestones }),
@@ -201,6 +202,14 @@ export default function ConstructionMilestonesEditor({ projectId }: Construction
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Live Preview Section */}
+      <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3">
+        <h4 className="text-xs font-black uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+          <Eye size={14} className="text-blue-500" /> Live End-User Preview
+        </h4>
+        <ConstructionTimeline milestones={milestones as any} />
       </div>
     </div>
   );

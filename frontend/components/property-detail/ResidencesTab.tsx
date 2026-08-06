@@ -65,7 +65,7 @@ export default function ResidencesTab({
 }: ResidencesTabProps) {
   const [filter, setFilter] = useState<number | 'all'>('all')
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
-  const [activePlanTab, setActivePlanTab] = useState<'floor' | 'details' | '3d' | 'availability'>('floor')
+  const [activePlanTab, setActivePlanTab] = useState<'floor' | 'details' | 'availability'>('floor')
   const [floorType, setFloorType] = useState<string>('Typical Floor')
   const [selectedTower, setSelectedTower] = useState<string>('Tower A')
   const [selectedUnitNo, setSelectedUnitNo] = useState<string>('Unit 3')
@@ -283,13 +283,12 @@ export default function ResidencesTab({
                 </div>
               </div>
 
-              {/* Floor Plan View Mode Tabs (Floor Plan / Details / 3D View / Availability) */}
+              {/* Floor Plan View Mode Tabs (Floor Plan / Details / Unit Availability) */}
               <div className="flex items-center justify-between flex-wrap gap-2 border-b border-gray-100 dark:border-white/5 pb-2">
                 <div className="flex items-center gap-6">
                   {[
                     { id: 'floor', label: 'Floor Plan' },
                     { id: 'details', label: 'Details' },
-                    { id: '3d', label: '3D View' },
                     { id: 'availability', label: 'Unit Availability' }
                   ].map(tab => (
                     <button
@@ -306,131 +305,264 @@ export default function ResidencesTab({
                   ))}
                 </div>
 
-                <button
-                  onClick={() => onViewFloorPlans(activeFloorPlans)}
-                  className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-                  title="Expand Fullscreen"
-                >
-                  <Maximize2 size={18} />
-                </button>
-              </div>
-
-              {/* Main Interactive Image Viewport */}
-              <div className="relative w-full h-[320px] md:h-[420px] bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 flex items-center justify-center p-4 overflow-hidden group">
-                {previewImg ? (
-                  <Image
-                    src={resolveImgUrl(previewImg.url)}
-                    alt={activeUnit.name}
-                    fill
-                    className="object-contain p-2"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center text-center space-y-2">
-                    <Layout size={48} className="text-gray-300 dark:text-gray-700" />
-                    <p className="text-[13px] text-gray-400 font-bold">Floor plan preview illustration</p>
-                  </div>
+                {activePlanTab === 'floor' && (
+                  <button
+                    onClick={() => onViewFloorPlans(activeFloorPlans)}
+                    className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                    title="Expand Fullscreen"
+                  >
+                    <Maximize2 size={18} />
+                  </button>
                 )}
-                <span className="absolute bottom-3 text-[10px] text-gray-400 font-medium italic">
-                  Floor plans are for representation purposes only. Actual plans may vary.
-                </span>
               </div>
 
-              {/* Viewport Action Controls Bar */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <select
-                    value={floorType}
-                    onChange={(e) => setFloorType(e.target.value)}
-                    className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
-                  >
-                    <option>Typical Floor</option>
-                    <option>Refuge Floor</option>
-                    <option>Penthouse Level</option>
-                  </select>
-
-                  <select
-                    value={selectedTower}
-                    onChange={(e) => setSelectedTower(e.target.value)}
-                    className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
-                  >
-                    <option>Tower A</option>
-                    <option>Tower B</option>
-                    <option>Tower C</option>
-                  </select>
-
-                  <select
-                    value={selectedUnitNo}
-                    onChange={(e) => setSelectedUnitNo(e.target.value)}
-                    className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
-                  >
-                    <option>Type C</option>
-                    <option>Type D</option>
-                  </select>
-                </div>
-
-                <button
-                  onClick={() => onViewFloorPlans(activeFloorPlans)}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 text-[12px] font-black text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2 shadow-sm transition-all"
-                >
-                  <ZoomIn size={15} /> Download Plan
-                </button>
-              </div>
-
-              {/* Sub-type Layout Variants Carousel/Selector */}
-              <div className="pt-4 border-t border-gray-100 dark:border-white/5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-[14px] font-black text-gray-900 dark:text-white">Types in {activeUnit.bhk} BHK – {selectedTower}</h4>
-                    <p className="text-[11px] text-gray-400 font-medium">Different layouts to match your preference</p>
+              {/* ── TAB 1: FLOOR PLAN VIEW ── */}
+              {activePlanTab === 'floor' && (
+                <>
+                  {/* Main Interactive Image Viewport */}
+                  <div className="relative w-full h-[320px] md:h-[420px] bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 flex items-center justify-center p-4 overflow-hidden group">
+                    {previewImg ? (
+                      <Image
+                        src={resolveImgUrl(previewImg.url)}
+                        alt={activeUnit.name}
+                        fill
+                        className="object-contain p-2"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center space-y-2">
+                        <Layout size={48} className="text-gray-300 dark:text-gray-700" />
+                        <p className="text-[13px] text-gray-400 font-bold">Floor plan preview illustration</p>
+                      </div>
+                    )}
+                    <span className="absolute bottom-3 text-[10px] text-gray-400 font-medium italic">
+                      Floor plans are for representation purposes only. Actual plans may vary.
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {['Type C', 'Type D'].map((typeLabel) => (
-                      <button
-                        key={typeLabel}
-                        onClick={() => setSelectedUnitNo(typeLabel)}
-                        className={`text-[11.5px] font-extrabold px-3.5 py-1.5 rounded-full transition-all ${
-                          selectedUnitNo === typeLabel
-                            ? 'bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800'
-                            : 'bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-gray-400 border border-gray-200/60 dark:border-white/5'
-                        }`}
+                  {/* Viewport Action Controls Bar */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <select
+                        value={floorType}
+                        onChange={(e) => setFloorType(e.target.value)}
+                        className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
                       >
-                        {typeLabel}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                        <option>Typical Floor</option>
+                        <option>Refuge Floor</option>
+                        <option>Penthouse Level</option>
+                      </select>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[
-                    { type: 'Type C', areaSqft: area || 1397, price: priceLabel(activeUnit), img: previewImg },
-                    { type: 'Type D', areaSqft: area ? area + 15 : 1412, price: activeUnit.price_min_cr ? `₹${(activeUnit.price_min_cr + 0.04).toFixed(2)} Cr` : priceLabel(activeUnit), img: activeFloorPlans[1] || previewImg }
-                  ].map((variant, i) => (
-                    <div
-                      key={i}
-                      onClick={() => setSelectedUnitNo(variant.type)}
-                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
-                        selectedUnitNo === variant.type
-                          ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-950/20 ring-1 ring-blue-500'
-                          : 'border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 hover:border-gray-300'
-                      }`}
+                      <select
+                        value={selectedTower}
+                        onChange={(e) => setSelectedTower(e.target.value)}
+                        className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
+                      >
+                        {((activeUnit as any)?.tower_association && (activeUnit as any).tower_association.length > 0
+                          ? (activeUnit as any).tower_association
+                          : ['Tower A', 'Tower B', 'Tower C']
+                        ).map((t: string) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={selectedUnitNo}
+                        onChange={(e) => setSelectedUnitNo(e.target.value)}
+                        className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
+                      >
+                        <option>Type C</option>
+                        <option>Type D</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={() => onViewFloorPlans(activeFloorPlans)}
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 text-[12px] font-black text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2 shadow-sm transition-all"
                     >
-                      <div className="space-y-1">
-                        <span className="text-[13px] font-black text-gray-900 dark:text-white">{variant.type}</span>
-                        <p className="text-[11px] text-gray-400 font-semibold">{variant.areaSqft.toLocaleString()} sqft</p>
-                        <p className="text-[14px] font-black text-gray-900 dark:text-white pt-1">{variant.price}</p>
-                        <span className="text-[9px] text-gray-400 font-medium block">Starting Price</span>
+                      <ZoomIn size={15} /> Download Plan
+                    </button>
+                  </div>
+
+                  {/* Sub-type Layout Variants Carousel/Selector */}
+                  <div className="pt-4 border-t border-gray-100 dark:border-white/5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-[14px] font-black text-gray-900 dark:text-white">Types in {activeUnit.bhk} BHK – {selectedTower}</h4>
+                        <p className="text-[11px] text-gray-400 font-medium">Different layouts to match your preference</p>
                       </div>
 
-                      {variant.img && (
-                        <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200/60 dark:border-white/10 bg-white dark:bg-black/20 flex-shrink-0">
-                          <Image src={resolveImgUrl(variant.img.url)} alt={variant.type} fill className="object-contain p-1" />
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {['Type C', 'Type D'].map((typeLabel) => (
+                          <button
+                            key={typeLabel}
+                            onClick={() => setSelectedUnitNo(typeLabel)}
+                            className={`text-[11.5px] font-extrabold px-3.5 py-1.5 rounded-full transition-all ${
+                              selectedUnitNo === typeLabel
+                                ? 'bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800'
+                                : 'bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-gray-400 border border-gray-200/60 dark:border-white/5'
+                            }`}
+                          >
+                            {typeLabel}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  ))}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {[
+                        { type: 'Type C', areaSqft: area || 1397, price: priceLabel(activeUnit), img: previewImg },
+                        { type: 'Type D', areaSqft: area ? area + 15 : 1412, price: activeUnit.price_min_cr ? `₹${(activeUnit.price_min_cr + 0.04).toFixed(2)} Cr` : priceLabel(activeUnit), img: activeFloorPlans[1] || previewImg }
+                      ].map((variant, i) => (
+                        <div
+                          key={i}
+                          onClick={() => setSelectedUnitNo(variant.type)}
+                          className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
+                            selectedUnitNo === variant.type
+                              ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-950/20 ring-1 ring-blue-500'
+                              : 'border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="space-y-1">
+                            <span className="text-[13px] font-black text-gray-900 dark:text-white">{variant.type}</span>
+                            <p className="text-[11px] text-gray-400 font-semibold">{variant.areaSqft.toLocaleString()} sqft</p>
+                            <p className="text-[14px] font-black text-gray-900 dark:text-white pt-1">{variant.price}</p>
+                            <span className="text-[9px] text-gray-400 font-medium block">Starting Price</span>
+                          </div>
+
+                          {variant.img && (
+                            <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200/60 dark:border-white/10 bg-white dark:bg-black/20 flex-shrink-0">
+                              <Image src={resolveImgUrl(variant.img.url)} alt={variant.type} fill className="object-contain p-1" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* ── TAB 2: DETAILS VIEW ── */}
+              {activePlanTab === 'details' && (
+                <div className="space-y-6 pt-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Super Built-up Area</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{area ? `${area.toLocaleString()} sqft` : '—'}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Carpet Area</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{carpetArea ? `${carpetArea.toLocaleString()} sqft` : '—'}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Balcony Area</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{balconyArea ? `${balconyArea.toLocaleString()} sqft` : '—'}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Built-up Area</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.built_up_area_sqft ? `${(activeUnit as any).built_up_area_sqft.toLocaleString()} sqft` : (carpetArea ? `${Math.round(carpetArea * 1.18).toLocaleString()} sqft` : '—')}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Bedrooms</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bhk}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Bathrooms</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bathrooms || activeUnit.bhk}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Living / Dining</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kitchen</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Private Balcony</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.balconies || 1}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Utility Area</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.utility_area_sqft ? `${(activeUnit as any).utility_area_sqft} sqft` : '1'}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Efficiency Rating</p>
+                      <p className="text-[16px] font-black text-emerald-600 dark:text-emerald-400">{(activeUnit as any)?.efficiency_rating || 'Excellent'}</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Floor Type</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{floorType}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* ── TAB 3: UNIT AVAILABILITY VIEW ── */}
+              {activePlanTab === 'availability' && (
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[12px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Only {activeUnit.inventory_left || mockAvailability.length || 8} units available in {activeUnit.name}
+                    </p>
+                    <button onClick={onGoToCosts} className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                      Inquire Specific Unit <ChevronRight size={14} />
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto border border-gray-100 dark:border-white/5 rounded-2xl">
+                    <table className="w-full text-left text-[12.5px] border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[10px] uppercase tracking-wider">
+                          <th className="p-3.5 pl-4">Tower</th>
+                          <th className="p-3.5">Floor</th>
+                          <th className="p-3.5">Unit No.</th>
+                          <th className="p-3.5">Facing</th>
+                          <th className="p-3.5">View</th>
+                          <th className="p-3.5">Price</th>
+                          <th className="p-3.5 text-right pr-4">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-semibold text-gray-800 dark:text-gray-200">
+                        {mockAvailability.length > 0 ? (
+                          mockAvailability.map((row, i) => (
+                            <tr key={i} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                              <td className="p-3.5 pl-4 font-bold">{row.tower}</td>
+                              <td className="p-3.5">{row.floor}</td>
+                              <td className="p-3.5 font-extrabold text-gray-900 dark:text-white">{row.unitNo}</td>
+                              <td className="p-3.5">{row.facing}</td>
+                              <td className="p-3.5">{row.view}</td>
+                              <td className="p-3.5 font-black">{row.price}</td>
+                              <td className="p-3.5 text-right pr-4">
+                                <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                  {row.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={7} className="p-6 text-center text-gray-400 font-medium text-[12px]">
+                              No active inventory rows found for this configuration. Contact advisor for offline availability.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
             </div>
 

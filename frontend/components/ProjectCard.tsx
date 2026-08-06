@@ -187,7 +187,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, onD
           <>
             {workingImages.map((src, i) => (
               <Image
-                key={src}
+                key={`${src}-${i}`}
                 src={resolveImgUrl(src) || '/placeholder.png'}
                 alt={project.name}
                 fill
@@ -227,7 +227,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, onD
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10 px-2 py-1 bg-black/40 rounded-full">
               {workingImages.map((_, i) => (
                 <button
-                  key={i}
+                  key={`dot-${i}`}
                   className={`rounded-full transition-all ${i === imgIdx ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
 
                 />

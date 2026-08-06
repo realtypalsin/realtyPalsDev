@@ -1,11 +1,28 @@
 'use client'
 import { useMemo, useState } from 'react'
 import {
-  TrendingUp, ShieldAlert, Award, Calendar, Zap, AlertCircle,
-  FileCheck, ShieldCheck, PieChart as PieChartIcon, UserCheck, CheckCircle2,
-  ChevronRight, ArrowUpRight, DollarSign, Activity, Percent, Layers, BarChart2, Users
+  TrendingUp, Award, Calendar, Zap, UserCheck, CheckCircle2,
+  ChevronRight, DollarSign, Users
 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
+
+// Design token system for consistency
+const TOKEN = {
+  text: {
+    primary: 'text-text-primary dark:text-text-primary',
+    secondary: 'text-text-secondary dark:text-text-secondary',
+    muted: 'text-text-muted dark:text-text-muted',
+  },
+  bg: {
+    surface: 'bg-surface dark:bg-slate-900',
+    surface2: 'bg-surface-2 dark:bg-slate-800',
+    success: 'bg-success/5 dark:bg-success/10',
+    danger: 'bg-danger/5 dark:bg-danger/10',
+  },
+  border: 'border-border dark:border-slate-700',
+  radius: 'rounded-lg',
+  shadow: 'shadow-xs',
+}
 
 interface IntelligenceTabProps {
   project: ProjectCardType | null
@@ -25,32 +42,64 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   
   const baseRate = pricePsf || 14388
-  const cagr = pData?.decision_profile?.market_intelligence?.sector_cagr || 12
+  const sectorCagr = pData?.decision_profile?.market_intelligence?.sector_cagr || 12
+  const projectCagr = pData?.decision_profile?.market_intelligence?.project_cagr || (sectorCagr + 1.2)
 
   const points = useMemo(() => {
     return [0, 1, 2, 3, 4, 5].map((yr) => {
-      const projRate = Math.round(baseRate * Math.pow(1 + (cagr / 100), yr))
-      const avgRate = Math.round((baseRate * 0.88) * Math.pow(1 + ((cagr - 3) / 100), yr))
-      const x = yr * 100
-      // Map 10k -> 110, 25k -> 10
-      const yProj = Math.max(10, Math.min(110, 110 - ((projRate - 10000) / 15000) * 100))
-      const yAvg = Math.max(10, Math.min(110, 110 - ((avgRate - 10000) / 15000) * 100))
-      return { yr, projRate, avgRate, x, yProj, yAvg }
+      const projRate = Math.round(baseRate * Math.pow(1 + (projectCagr / 100), yr))
+      const avgRate = Math.round((baseRate * 0.92) * Math.pow(1 + (sectorCagr / 100), yr))
+      return { yr, projRate, avgRate }
     })
-  }, [baseRate, cagr])
+  }, [baseRate, sectorCagr, projectCagr])
 
-  const projPath = `M0,${points[0].yProj} Q125,${points[1].yProj} 250,${points[2].yProj} T500,${points[5].yProj}`
-  const avgPath = `M0,${points[0].yAvg} Q125,${points[1].yAvg} 250,${points[2].yAvg} T500,${points[5].yAvg}`
+  // Calculate dynamic Y domain for auto-scaling
+  const allRates = points.flatMap(p => [p.projRate, p.avgRate])
+  const minRate = Math.min(...allRates) * 0.95
+  const maxRate = Math.max(...allRates) * 1.05
+  const rateRange = maxRate - minRate || 1
 
-  const hoveredPoint = hoveredIdx !== null ? points[hoveredIdx] : null
+  const chartPoints = useMemo(() => {
+    return points.map((p) => {
+      const x = (p.yr / 5) * 480 + 10 // 10px padding on x
+      const yProj = 110 - ((p.projRate - minRate) / rateRange) * 90 // 10px to 100px range
+      const yAvg = 110 - ((p.avgRate - minRate) / rateRange) * 90
+      return { ...p, x, yProj, yAvg }
+    })
+  }, [points, minRate, rateRange])
+
+  // Generate cubic Bézier SVG path string through points
+  const projPath = useMemo(() => {
+    return chartPoints.reduce((acc, pt, i, arr) => {
+      if (i === 0) return `M ${pt.x},${pt.yProj}`
+      const prev = arr[i - 1]
+      const cp1x = prev.x + (pt.x - prev.x) / 2
+      const cp2x = prev.x + (pt.x - prev.x) / 2
+      return `${acc} C ${cp1x},${prev.yProj} ${cp2x},${pt.yProj} ${pt.x},${pt.yProj}`
+    }, '')
+  }, [chartPoints])
+
+  const avgPath = useMemo(() => {
+    return chartPoints.reduce((acc, pt, i, arr) => {
+      if (i === 0) return `M ${pt.x},${pt.yAvg}`
+      const prev = arr[i - 1]
+      const cp1x = prev.x + (pt.x - prev.x) / 2
+      const cp2x = prev.x + (pt.x - prev.x) / 2
+      return `${acc} C ${cp1x},${prev.yAvg} ${cp2x},${pt.yAvg} ${pt.x},${pt.yAvg}`
+    }, '')
+  }, [chartPoints])
+
+  const projAreaPath = `${projPath} L ${chartPoints[chartPoints.length - 1].x},115 L ${chartPoints[0].x},115 Z`
+
+  const hoveredPoint = hoveredIdx !== null ? chartPoints[hoveredIdx] : null
 
   return (
     <div className="lg:col-span-2 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4">
       <div className="flex items-center justify-between">
         <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Price Appreciation Projection</span>
         <div className="flex items-center gap-4 text-[11px] font-bold">
-          <span className="flex items-center gap-1 text-blue-600"><span className="w-2 h-2 rounded-full bg-blue-600" /> {pData?.name || 'Project'} Projection</span>
-          <span className="flex items-center gap-1 text-gray-400"><span className="w-2 h-2 rounded-full bg-gray-400" /> Micro-market Avg.</span>
+          <span className="flex items-center gap-1 text-blue-600"><span className="w-2 h-2 rounded-full bg-blue-600" /> {pData?.name || 'Project'} ({projectCagr}%)</span>
+          <span className="flex items-center gap-1 text-gray-400"><span className="w-2 h-2 rounded-full bg-gray-400" /> Sector Avg ({sectorCagr}%)</span>
         </div>
       </div>
 
@@ -61,8 +110,8 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
           <div 
             className="absolute z-20 bg-gray-900 text-white dark:bg-white dark:text-gray-900 rounded-xl p-2.5 shadow-xl text-[11px] font-bold space-y-1 pointer-events-none transition-all duration-150 border border-white/10"
             style={{ 
-              left: `${(hoveredPoint.x / 500) * 85 + 5}%`, 
-              top: `${Math.min(hoveredPoint.yProj, 50)}px` 
+              left: `${Math.min(Math.max((hoveredPoint.x / 500) * 80 + 5, 5), 75)}%`, 
+              top: `${Math.min(hoveredPoint.yProj - 10, 50)}px` 
             }}
           >
             <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black">Year {hoveredPoint.yr} Projection</p>
@@ -78,10 +127,20 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
         )}
 
         <svg className="w-full h-full overflow-visible" viewBox="0 0 500 120" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="projGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2563EB" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+            </linearGradient>
+          </defs>
+
           {/* Gridlines */}
           <line x1="0" y1="20" x2="500" y2="20" stroke="currentColor" strokeDasharray="3 3" className="text-gray-200 dark:text-gray-800" />
           <line x1="0" y1="60" x2="500" y2="60" stroke="currentColor" strokeDasharray="3 3" className="text-gray-200 dark:text-gray-800" />
           <line x1="0" y1="100" x2="500" y2="100" stroke="currentColor" strokeDasharray="3 3" className="text-gray-200 dark:text-gray-800" />
+
+          {/* Gradient Area under Project Curve */}
+          <path d={projAreaPath} fill="url(#projGradient)" />
 
           {/* Market Avg Line */}
           <path d={avgPath} fill="none" stroke="#9CA3AF" strokeWidth="2" strokeDasharray="4 4" />
@@ -89,7 +148,7 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
           <path d={projPath} fill="none" stroke="#2563EB" strokeWidth="3" />
 
           {/* Interactive Points */}
-          {points.map((pt, i) => (
+          {chartPoints.map((pt, i) => (
             <g key={i} className="cursor-pointer group" onMouseEnter={() => setHoveredIdx(i)}>
               {/* Target hit area */}
               <circle cx={pt.x} cy={pt.yProj} r="14" fill="transparent" />
@@ -124,7 +183,6 @@ export default function IntelligenceTab({
   onGoToPricing,
   onGoToOverview,
 }: IntelligenceTabProps) {
-  const [activeTab, setActiveTab] = useState<'conservative' | 'moderate' | 'aggressive'>('moderate')
 
   // Extract DB data safely
   const pData = (detail || project || d) as any
@@ -132,7 +190,7 @@ export default function IntelligenceTab({
   const recommendationProfile = pData?.recommendation_profile || {}
   const dna = pData?.dna || {}
   const builder = pData?.builder || pData?.builder_detail || {}
-  const unitTypes = pData?.unit_types || []
+  const unitTypes = useMemo(() => pData?.unit_types || [], [pData?.unit_types])
   const personaProfile = pData?.persona_profile || {}
   const finIntel = decisionProfile?.financial_intelligence || {}
   const marketIntel = decisionProfile?.market_intelligence || {}
@@ -346,16 +404,20 @@ export default function IntelligenceTab({
 
         {/* Price Positioning Bar & Price Includes Breakdown Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="lg:col-span-2 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Price Positioning</span>
               <span className="text-[11px] text-gray-500 font-medium">Where {pData?.name || 'Project'} stands in the micro-market</span>
             </div>
 
-            <div className="space-y-2 pt-2">
+            <div className="space-y-3 pt-6 pb-2">
               <div className="h-3 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-600 rounded-full relative">
-                <div className="absolute top-1/2 -translate-y-1/2 left-[62%] -translate-x-1/2 flex flex-col items-center">
-                  <div className="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md whitespace-nowrap -mt-9">
+                {/* Dynamically position slider dot using dna price_score or fallback 65% */}
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center z-10"
+                  style={{ left: `${Math.min(Math.max(dna?.price_score ?? 65, 12), 88)}%` }}
+                >
+                  <div className="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-[10px] font-black px-2.5 py-1 rounded-lg shadow-xl whitespace-nowrap -mt-10 border border-white/10">
                     {pData?.name || 'Project'} · ₹{pricePsf ? pricePsf.toLocaleString('en-IN') : '--'}/sq.ft
                   </div>
                   <div className="w-4 h-4 bg-gray-900 dark:bg-white rounded-full ring-4 ring-white dark:ring-gray-900 shadow-md" />
@@ -503,12 +565,47 @@ export default function IntelligenceTab({
             <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4">
               <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Unit Mix Distribution</span>
               <div className="flex flex-col sm:flex-row items-center gap-6 pt-2">
-                <div className="w-32 h-32 rounded-full border-[12px] border-blue-600 border-t-emerald-500 border-r-purple-500 border-b-blue-400 flex items-center justify-center text-center flex-shrink-0 shadow-inner">
-                  <div>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Total Units</span>
-                    <span className="text-[18px] font-black text-gray-900 dark:text-white">{totalUnits ? totalUnits.toLocaleString('en-IN') : unitTypes.length}</span>
+                
+                {/* SVG Segmented Donut Chart */}
+                <div className="relative w-32 h-32 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    {(() => {
+                      let accumulatedPct = 0
+                      const colorHexes: Record<string, string> = {
+                        'bg-blue-600': '#2563eb',
+                        'bg-blue-500': '#3b82f6',
+                        'bg-emerald-500': '#10b981',
+                        'bg-purple-500': '#a855f7',
+                        'bg-[#c47860]': '#c47860'
+                      }
+                      return bhkDistribution.map((item, idx) => {
+                        const strokeDasharray = `${item.pct} ${100 - item.pct}`
+                        const strokeDashoffset = -accumulatedPct
+                        accumulatedPct += item.pct
+                        const hexColor = colorHexes[item.color] || '#3b82f6'
+                        return (
+                          <circle
+                            key={idx}
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            fill="transparent"
+                            stroke={hexColor}
+                            strokeWidth="14"
+                            strokeDasharray={strokeDasharray}
+                            strokeDashoffset={strokeDashoffset}
+                            pathLength="100"
+                          />
+                        )
+                      })
+                    })()}
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Total Units</span>
+                    <span className="text-[17px] font-black text-gray-900 dark:text-white leading-none mt-0.5">{totalUnits ? totalUnits.toLocaleString('en-IN') : unitTypes.length}</span>
                   </div>
                 </div>
+
                 <div className="space-y-2.5 flex-1 w-full">
                   {bhkDistribution.map((item, i) => (
                     <div key={i} className="flex items-center justify-between text-[12px] font-bold">

@@ -73,31 +73,52 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const possessionLabel = detail?.possession_label ?? 'Dec 2028'
   const pricePsf = selectedUnit?.super_area_sqft ? Math.round((unitMinCr * 10000000) / selectedUnit.super_area_sqft) : 14388
 
+  // Extract all payment plans dynamically from DB (if present)
+  const dbPlansList: any[] = Array.isArray((detail as any)?.payment_plans)
+    ? (detail as any).payment_plans
+    : (dbPaymentPlan ? [dbPaymentPlan] : [])
+
+  const getMilestonesForType = (typeKey: string, fallback: any[]) => {
+    const matchedPlan = dbPlansList.find((p: any) =>
+      p.plan_type === typeKey ||
+      p.plan_type?.includes(typeKey) ||
+      (typeKey === 'clp' && (p.plan_type === 'construction_linked' || p.plan_type === 'clp')) ||
+      (typeKey === 'investor' && (p.plan_type === 'investor' || p.plan_type === 'down_payment')) ||
+      (typeKey === 'flexi' && (p.plan_type === 'flexi' || p.plan_type === 'easy_payment')) ||
+      (typeKey === 'full' && (p.plan_type === 'full' || p.plan_type === 'full_payment' || p.plan_type === 'possession_linked'))
+    )
+    if (matchedPlan && Array.isArray(matchedPlan.milestones) && matchedPlan.milestones.length > 0) {
+      return matchedPlan.milestones
+    }
+    return fallback
+  }
+
   // Dynamic payment plan milestones derived from DB or structured templates
-  const paymentPlanMilestones = {
-    clp: dbPaymentPlan?.milestones ?? [
-      { milestone: 'Booking', desc: 'At the time of booking', pct: '10%' },
-      { milestone: 'Within 30 days', desc: 'Agreement execution', pct: '10%' },
-      { milestone: 'On Construction Milestones', desc: 'Across 6 stages', pct: '40%' },
-      { milestone: 'On Finishing', desc: 'Interior & finishing stage', pct: '15%' },
-      { milestone: 'On Possession', desc: 'At the time of possession', pct: '25%' }
-    ],
-    investor: [
-      { milestone: 'Booking', desc: 'At the time of booking', pct: '20%' },
-      { milestone: 'Within 60 days', desc: 'Allotment & agreement', pct: '30%' },
-      { milestone: 'On Superstructure', desc: 'Roof slab completion', pct: '30%' },
-      { milestone: 'On Possession', desc: 'Handover & keys', pct: '20%' }
-    ],
-    flexi: [
-      { milestone: 'Booking Amount', desc: 'Initial token', pct: '10%' },
-      { milestone: 'Flexi Installments', desc: 'Quarterly bullet payments', pct: '50%' },
-      { milestone: 'On Finishing', desc: 'Pre-handover check', pct: '20%' },
-      { milestone: 'On Possession', desc: 'Final settlement', pct: '20%' }
-    ],
-    full: [
-      { milestone: 'Booking Amount', desc: 'At booking time', pct: '10%' },
-      { milestone: 'Full Payment', desc: 'Within 45 days of booking', pct: '90%' }
-    ]
+  const paymentPlanMilestones: Record<string, any[]> = {
+    clp: getMilestonesForType('clp', [
+      { milestone: 'At the Time of Booking', due: 'Within 15 days of booking token', pct: 10 },
+      { milestone: 'Within 30 Days of Booking', due: 'Agreement execution & stamp registration', pct: 10 },
+      { milestone: 'On Excavation & Substructure', due: 'Substructure & basement raft completion', pct: 15 },
+      { milestone: 'On Completion of Superstructure', due: 'Top slab casting across core towers', pct: 25 },
+      { milestone: 'On External Facade & Plaster', due: 'Exterior double-glazed glass & painting', pct: 20 },
+      { milestone: 'At the Time of Offer of Possession', due: 'Final keys handover & registry execution', pct: 20 }
+    ]),
+    investor: getMilestonesForType('investor', [
+      { milestone: 'Booking Amount', due: 'At the time of booking', pct: 20 },
+      { milestone: 'Within 60 Days', due: 'Allotment & agreement execution', pct: 30 },
+      { milestone: 'On Completion of Superstructure', due: 'Tower roof slab completion', pct: 30 },
+      { milestone: 'At the Time of Possession', due: 'Keys handover & registry', pct: 20 }
+    ]),
+    flexi: getMilestonesForType('flexi', [
+      { milestone: 'Booking Token Amount', due: 'Immediate token payment', pct: 10 },
+      { milestone: 'Flexi Bullet Installments', due: 'Quarterly milestone bullet payments', pct: 50 },
+      { milestone: 'On Finishing & Fit-outs', due: 'Pre-handover audit check', pct: 20 },
+      { milestone: 'On Offer of Possession', due: 'Final keys & registry execution', pct: 20 }
+    ]),
+    full: getMilestonesForType('full', [
+      { milestone: 'Booking Token Amount', due: 'At booking time', pct: 10 },
+      { milestone: 'Down Payment Balance', due: 'Within 45 days of booking', pct: 90 }
+    ])
   }
 
   // Dynamic Cost Sheet Rates from DB (all from project.cost_sheet)
@@ -490,10 +511,22 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
           
           {/* Milestone Schedule Items with Exact ₹ Amounts */}
           <div className="md:col-span-8 space-y-3">
-            {paymentPlanMilestones[selectedPlanTab].map((item: any, idx: number) => {
-              const rawPctStr = item.pct ? String(item.pct).replace('%', '').trim() : '0'
-              const pctVal = parseFloat(rawPctStr) || 0
-              const milestoneAmt = propertyPrice * (pctVal / 100)
+            {(paymentPlanMilestones[selectedPlanTab] || []).map((item: any, idx: number) => {
+              const milestoneTitle = item.milestone || item.name || item.label || item.stage || item.phase || `Stage ${idx + 1}`
+              const milestoneDesc = item.due || item.desc || item.description || (item.done ? 'Completed stage' : 'As per schedule')
+
+              const rawPctVal = item.pct != null
+                ? (typeof item.pct === 'number' ? item.pct : parseFloat(String(item.pct).replace('%', '').trim()))
+                : (item.percentage != null ? parseFloat(String(item.percentage)) : 0)
+
+              const pctVal = isNaN(rawPctVal) ? 0 : rawPctVal
+              const basePrice = propertyPrice > 0 ? propertyPrice : (unitMinCr * 10000000)
+
+              const milestoneAmt = (item.amt && item.amt > 0)
+                ? item.amt
+                : (item.amount && item.amount > 0)
+                ? item.amount
+                : (basePrice * (pctVal / 100))
 
               return (
                 <div key={idx} className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between gap-4">
@@ -502,15 +535,15 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
                       ₹
                     </div>
                     <div>
-                      <h5 className="text-[13.5px] font-extrabold text-gray-900 dark:text-white leading-tight">{item.milestone || item.label || '--'}</h5>
-                      <p className="text-[11px] text-gray-400 font-semibold">{item.desc || item.due || ''}</p>
+                      <h5 className="text-[13.5px] font-extrabold text-gray-900 dark:text-white leading-tight">{milestoneTitle}</h5>
+                      {milestoneDesc && <p className="text-[11px] text-gray-400 font-semibold">{milestoneDesc}</p>}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2.5 flex-shrink-0">
                     <span className="text-[14px] font-black text-gray-900 dark:text-white">{fmtRs(milestoneAmt)}</span>
                     <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 text-[11.5px] font-black border border-blue-100 dark:border-blue-800/40">
-                      {item.pct ? (String(item.pct).includes('%') ? item.pct : `${item.pct}%`) : '--'}
+                      {pctVal > 0 ? `${pctVal}%` : (item.pct ? String(item.pct) : '--')}
                     </span>
                   </div>
                 </div>

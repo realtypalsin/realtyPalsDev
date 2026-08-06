@@ -93,6 +93,7 @@ export default function Sidebar({
     error: sessionsError,
     deleteSession,
     renameSession,
+    refreshSessions,
   } = useSessions(userId, guestToken);
 
   useEffect(() => {
@@ -362,8 +363,14 @@ export default function Sidebar({
                     ))}
                   </div>
                 ) : sessionsError ? (
-                  <div className="px-3 py-2 text-[12px] text-red-400 dark:text-red-500">
-                    Couldn&apos;t load chats
+                  <div className="px-3 py-2 text-[12px] text-gray-500 flex items-center justify-between">
+                    <span>Couldn&apos;t load chats</span>
+                    <button
+                      onClick={() => refreshSessions()}
+                      className="text-blue-500 hover:underline text-[11px] font-semibold ml-2"
+                    >
+                      Retry
+                    </button>
                   </div>
                 ) : grouped.length === 0 ? (
                   <div className="px-3 py-2 text-[12px] text-gray-600 dark:text-gray-400">

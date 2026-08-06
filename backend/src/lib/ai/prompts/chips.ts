@@ -58,7 +58,7 @@ async function tryOpenAI(systemPrompt: string, historyText: string): Promise<str
     baseURL: 'https://models.inference.ai.azure.com',
   })
   const res = await client.chat.completions.create({
-    model: MODELS.FALLBACK,
+    model: MODELS.OPENAI_FALLBACK,
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: historyText },
@@ -96,8 +96,9 @@ export async function generateContextualLLMChips(
     try {
       questions = await attempt(CHIP_SYSTEM_PROMPT, historyText)
       if (questions.length > 0) break
-    } catch (error) {
-      console.error(`[CHIPS:LLM] ${attempt.name} failed, trying next provider`, error)
+    } catch (error: any) {
+      const msg = error?.message || error?.status || 'API call error'
+      console.warn(`[CHIPS:LLM] ${attempt.name} provider unavailable (${msg}), trying next provider...`)
     }
   }
 
