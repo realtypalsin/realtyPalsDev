@@ -14,7 +14,8 @@ import PaymentPlanEditor from '@/components/admin/PaymentPlanEditor'
 import CostSheetEditor from '@/components/admin/CostSheetEditor'
 import InvestmentInsightsEditor from '@/components/admin/InvestmentInsightsEditor'
 import LocationIntelligenceEditor from '@/components/admin/LocationIntelligenceEditor'
-import ConstructionMilestonesEditor from '@/components/admin/ConstructionMilestonesEditor'
+import ProjectUpdatesEditor from '@/components/admin/ProjectUpdatesEditor'
+import ChannelPartnersEditor from '@/components/admin/ChannelPartnersEditor'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Loader2, LayoutPanelLeft, Cpu, Images, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronUp, IndianRupee } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
@@ -320,8 +321,14 @@ export default function EditProject() {
               projectId={id}
               onSaved={handleSaved}
             />
-            <ConstructionMilestonesEditor
+            <ChannelPartnersEditor
               projectId={id}
+              initialPartners={data.channel_partners ?? []}
+              onSaved={handleSaved}
+            />
+            <ProjectUpdatesEditor
+              projectId={id}
+              projectStatus={data.status}
             />
           </div>
           <div>
@@ -368,7 +375,7 @@ export default function EditProject() {
       {adminTab === 'intelligence' && (
         <IntelligenceWorkspace
           projectId={id}
-          initialDna={data.dna}
+          initialDna={data.dna ?? data.project_dna}
           initialDecision={data.decision_profile}
           initialPersona={data.persona_profile}
           initialRecommendation={data.recommendation_profile}

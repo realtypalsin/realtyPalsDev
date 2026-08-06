@@ -29,6 +29,7 @@ export interface OverviewTabProps {
   onGoToDocuments: () => void
   onGoToPricing: () => void
   onGoToFloorPlans?: () => void
+  onGoToBuilder?: () => void
 }
 
 // ── Construction Timeline (Exact screenshot styling with progress bar) ──────────────────
