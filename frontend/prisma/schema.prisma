@@ -156,6 +156,9 @@ model Project {
   hero_image_url           String?
   price_min_cr             Float?
   price_range_label        String?
+  price_includes_plc       Boolean  @default(false)
+  price_includes_club      Boolean  @default(false)
+  price_includes_taxes     Boolean  @default(false)
   builder_theme            Json?    // {primaryColor, secondaryColor, logoUrl, active_until}
   created_at               DateTime               @default(now())
   updated_at               DateTime               @updatedAt
@@ -184,6 +187,8 @@ model Project {
   construction_milestones  ConstructionMilestone[]
   construction_updates     ConstructionUpdate[]
   lifecycle_updates        ProjectLifecycleUpdate[]
+  unit_inventory           UnitInventory[]
+  channel_partners         ProjectChannelPartner[]
 
   @@index([city, sector])
   @@index([status])
@@ -389,7 +394,14 @@ model UnitType {
   layout_efficiency_pct  Float?
   layout_pros            String[]
   layout_cons            String[]
+  layout_variant_name    String?  @default("Type A")
+  tower_association      String[] @default(["Tower A"])
+  built_up_area_sqft     Int?
+  utility_area_sqft      Int?
+  common_area_shaft_sqft Int?
+  efficiency_rating      String?  @default("Excellent")
   project            Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  unit_inventory     UnitInventory[]
 
   @@index([project_id, bhk])
   @@index([project_id, price_min_cr, price_max_cr])
@@ -1389,6 +1401,8 @@ model ChannelPartner {
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
 
+  project_partners    ProjectChannelPartner[]
+
   @@index([type])
   @@index([is_active])
   @@index([created_at])
@@ -1426,4 +1440,44 @@ model ChannelLead {
   @@index([status])
   @@index([created_at])
   @@map("channel_leads")
+}
+
+// Individual unit tracking — one row per physical unit in a project
+model UnitInventory {
+  id                String    @id @default(uuid())
+  projectId         String
+  unitTypeId        String
+  towerName         String
+  floorNumber       Int
+  unitNumber        String
+  facing            String?   // "North", "East", "NE", etc.
+  view              String?   // "Park", "Main road", "Garden", etc.
+  status            String    @default("available") // "available" | "booked" | "reserved" | "sold"
+  createdAt         DateTime  @default(now())
+
+  project           Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  unitType          UnitType  @relation(fields: [unitTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, towerName, floorNumber, unitNumber])
+  @@index([projectId])
+  @@index([unitTypeId])
+  @@index([status])
+  @@map("unit_inventory")
+}
+
+// Junction table: link projects to channel partners with featured flag
+model ProjectChannelPartner {
+  id                String    @id @default(uuid())
+  projectId         String
+  channelPartnerId  String
+  isFeatured        Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  channelPartner    ChannelPartner  @relation(fields: [channelPartnerId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, channelPartnerId])
+  @@index([projectId])
+  @@index([isFeatured])
+  @@map("project_channel_partners")
 }
