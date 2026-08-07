@@ -206,14 +206,22 @@ export default function AdminProjectEditPage({
     { id: 'partners',     label: 'Channel Partners',     icon: Users },
   ]
 
+  const tabScores: Record<AdminTab, number> = completeness?.tabScores ?? {
+    core: Math.min(100, Math.round(((data?.name ? 15 : 0) + (data?.status ? 15 : 0) + (data?.rera_number ? 15 : 0) + (data?.description ? 15 : 0) + (data?.hero_image_url ? 15 : 0) + ((data?.unit_types?.length || 0) >= 1 ? 15 : 0) + ((data?.amenities?.length || 0) >= 3 ? 10 : 0)))),
+    pricing: Math.min(100, Math.round((((data?.unit_types?.length || 0) > 0 ? 30 : 0) + ((data?.connectivity?.length || 0) >= 3 ? 30 : 0) + ((data?.unit_types?.length || 0) > 0 ? 20 : 0) + (data?.rera_number ? 20 : 0)))),
+    media: Math.min(100, Math.round(((data?.hero_image_url ? 30 : 0) + ((data?.images?.length || 0) >= 3 ? 40 : 20) + (documents?.some((d: any) => d.doc_type === 'brochure') ? 30 : 0)))),
+    intelligence: Math.min(100, Math.round(((data?.decision_profile ? 20 : 0) + (data?.persona_profile ? 20 : 0) + (data?.recommendation_profile ? 20 : 0) + (data?.dna ? 20 : 0) + ((data?.competitors?.length || 0) >= 1 ? 20 : 0)))),
+    updates: 100,
+    partners: 100,
+  }
+
   return (
     <>
       {/* ── Sticky Project Header ─────────────────────────────────────────────
-          Direct first child of <main> so it sticks flush right below the
-          "Admin > Projects > Edit" breadcrumb bar with zero gap.
-          -mt-4 md:-mt-6 / -mx-4 md:-mx-6 cancel <main>'s p-4 md:p-6 padding.
+          Sticky header with natural margin inheritance. Content uses
+          scroll-margin-top for proper scroll positioning.
       ──────────────────────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-30 -mt-4 md:-mt-6 -mx-4 md:-mx-6 px-4 md:px-8 py-3 bg-[#EEEEEE] dark:bg-[#09090b] border-b border-slate-300/60 dark:border-zinc-800 shadow-xs space-y-3">
+      <div className="sticky top-0 z-30 px-4 md:px-6 py-3 bg-[#EEEEEE] dark:bg-[#09090b] border-b border-slate-300/60 dark:border-zinc-800 shadow-xs space-y-3">
 
         {/* Identity row */}
         <div className="flex items-center justify-between gap-4">
@@ -228,10 +236,10 @@ export default function AdminProjectEditPage({
             </Link>
 
             <div className="flex items-center gap-3 min-w-0">
-              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight truncate leading-none">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight truncate leading-none">
                 {data.name}
               </h1>
-              <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs flex-shrink-0">
+              <span className="px-3 py-1 text-xs font-semibold uppercase tracking-widest rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs flex-shrink-0">
                 {data.status?.replace('_', ' ')}
               </span>
             </div>
@@ -262,21 +270,42 @@ export default function AdminProjectEditPage({
 
         {/* Tab rail */}
         <div className="flex items-center p-1.5 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/90 dark:border-zinc-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-sm">
-          <div className="flex items-center gap-1 min-w-full sm:min-w-0">
+          <div className="flex items-center gap-1.5 min-w-full sm:min-w-0">
             {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
               const isActive = adminTab === tabId
+              const pct = tabScores[tabId] ?? 100
+              const isComplete = pct >= 90
+              const isMedium = pct >= 60 && pct < 90
+
               return (
                 <button
                   key={tabId}
                   onClick={() => setAdminTab(tabId)}
-                  className={`flex items-center gap-2 px-4 py-2 text-xs rounded-xl transition-all duration-150 whitespace-nowrap ${
+                  className={`relative flex items-center gap-2 px-4 py-2 text-xs rounded-xl transition-all duration-150 whitespace-nowrap overflow-hidden font-semibold ${
                     isActive
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md font-black'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold hover:bg-slate-100 dark:hover:bg-zinc-800'
+                      ? 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white shadow-md'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800'
                   }`}
                 >
+                  <div
+                    className={`absolute top-0 left-0 h-1 rounded-t-xl transition-all duration-300 ${
+                      isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
+                    }`}
+                    style={{ width: `${pct}%` }}
+                  />
                   <Icon size={15} className={isActive ? 'text-blue-400 dark:text-blue-600' : 'text-slate-400'} />
                   <span>{label}</span>
+                  <span
+                    className={`ml-1 text-xs font-semibold px-1.5 py-0.5 rounded-md ${
+                      isComplete
+                        ? (isActive ? 'bg-emerald-500/20 text-emerald-300 dark:text-emerald-700' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20')
+                        : isMedium
+                        ? (isActive ? 'bg-amber-500/20 text-amber-300 dark:text-amber-700' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20')
+                        : (isActive ? 'bg-rose-500/20 text-rose-300 dark:text-rose-700' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20')
+                    }`}
+                  >
+                    {pct}%
+                  </span>
                 </button>
               )
             })}
@@ -296,7 +325,7 @@ export default function AdminProjectEditPage({
         {/* 1. Core Info tab */}
         {adminTab === 'core' && (
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
-            <div className="space-y-6">
+            <div className="space-y-6 max-w-2xl">
               <div className="bg-white dark:bg-[#121214] rounded-3xl border border-gray-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8">
                 <ProjectForm
                   initialData={formData}
