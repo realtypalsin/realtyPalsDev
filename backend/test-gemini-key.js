@@ -1,79 +1,72 @@
 require('dotenv').config()
-const https = require('https')
+const { GoogleGenAI } = require('@google/genai')
 
 const apiKey = process.env.GEMINI_API_KEY
 
-console.log('Testing Gemini API key...')
-console.log('Key:', apiKey ? `${apiKey.slice(0, 8)}...` : 'NOT FOUND')
+console.log('Testing Gemini API key via @google/genai SDK...')
+console.log('Key prefix:', apiKey ? `${apiKey.slice(0, 10)}...` : 'NOT FOUND')
 
 if (!apiKey) {
   console.error('ERROR: GEMINI_API_KEY is not defined in .env')
   process.exit(1)
 }
 
-// 1. First test: List models endpoint
-const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
-
-https.get(listUrl, (res) => {
-  let data = ''
-  res.on('data', chunk => data += chunk)
-  res.on('end', () => {
-    console.log(`\n[List Models] HTTP Status: ${res.statusCode}`)
-    if (res.statusCode === 200) {
-      try {
-        const json = JSON.parse(data)
-        const models = json.models ? json.models.map(m => m.name) : []
-        console.log('Success! Available models (first 5):', models.slice(0, 5))
-        testGenerateContent(models[0] || 'models/gemini-1.5-flash')
-      } catch (e) {
-        console.error('Failed to parse models response JSON:', e.message)
+async function runTest() {
+  try {
+    const ai = new GoogleGenAI({ apiKey })
+    
+    console.log('\n--- 1. Testing client.models.list() ---')
+    try {
+      const response = await ai.models.list()
+      console.log('client.models.list() succeeded!')
+      const modelNames = []
+      for await (const m of response) {
+        modelNames.push(m.name)
       }
-    } else {
-      console.error('Failed response:', data)
+      console.log('Models found (first 5):', modelNames.slice(0, 5))
+    } catch (listErr) {
+      console.error('client.models.list() error:', listErr.message || listErr)
     }
-  })
-}).on('error', (err) => {
-  console.error('Network Error:', err.message)
-})
 
-function testGenerateContent(modelName) {
-  const modelId = modelName.replace('models/', '')
-  console.log(`\n[Generate Content Test] Pinging model ${modelId}...`)
-  
-  const postData = JSON.stringify({
-    contents: [{ parts: [{ text: 'Hello, respond with "OK" if working.' }] }]
-  })
-
-  const options = {
-    hostname: 'generativelanguage.googleapis.com',
-    port: 443,
-    path: `/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(postData)
+    console.log('\n--- 2. Testing generateContent with gemini-2.5-flash ---')
+    try {
+      const res = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: 'Say hello in 3 words'
+      })
+      console.log('gemini-2.5-flash SUCCESS!')
+      console.log('Response text:', res.text)
+    } catch (err2_5) {
+      console.error('gemini-2.5-flash error:', err2_5.message || err2_5)
     }
+
+    console.log('\n--- 3. Testing generateContent with gemini-1.5-flash ---')
+    try {
+      const res = await ai.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: 'Say hello in 3 words'
+      })
+      console.log('gemini-1.5-flash SUCCESS!')
+      console.log('Response text:', res.text)
+    } catch (err1_5) {
+      console.error('gemini-1.5-flash error:', err1_5.message || err1_5)
+    }
+
+    console.log('\n--- 4. Testing generateContent with gemini-2.0-flash ---')
+    try {
+      const res = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: 'Say hello in 3 words'
+      })
+      console.log('gemini-2.0-flash SUCCESS!')
+      console.log('Response text:', res.text)
+    } catch (err2_0) {
+      console.error('gemini-2.0-flash error:', err2_0.message || err2_0)
+    }
+
+  } catch (err) {
+    console.error('General Error:', err)
   }
-
-  const req = https.request(options, (res) => {
-    let data = ''
-    res.on('data', chunk => data += chunk)
-    res.on('end', () => {
-      console.log(`[Generate Content] HTTP Status: ${res.statusCode}`)
-      if (res.statusCode === 200) {
-        console.log('RESPONSE:', data)
-        console.log('\n>>> SUCCESS: GEMINI API KEY IS WORKING! <<<')
-      } else {
-        console.error('ERROR RESPONSE:', data)
-        console.log('\n>>> FAILURE: GEMINI API KEY RETURNED ERROR <<<')
-      }
-    })
-  })
-
-  req.on('error', (err) => {
-    console.error('Request Error:', err.message)
-  })
-
-  req.write(postData)
-  req.end()
 }
+
+runTest()

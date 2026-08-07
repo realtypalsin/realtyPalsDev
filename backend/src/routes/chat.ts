@@ -40,6 +40,7 @@ import {
 } from '../lib/projectFacts'
 import { gatePublished } from '../lib/intelligenceGate'
 import { getChipInventory } from '../lib/discovery/chipInventory'
+import { getContextualChips, detectQueryContext } from '../lib/discovery/chipContext'
 import { planProjectDetailQuery, isActionable, getClarificationMessage } from '../lib/discovery/queryPlanner'
 import { getProjectDataForQuery, computeResponseConfidence } from '../lib/projectDataGateway'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
@@ -1001,6 +1002,32 @@ router.post('/', async (req: Request, res: Response) => {
       const preChipIds = new Set(preSearchUiState.chips.map(c => c.id))
       postChips = postSearchUiState.chips.filter(c => preChipIds.has(c.id) || filtered.some(f => f.id === c.id))
     }
+
+    // Add context-aware chips based on detected query type
+    if (postChips.length < 8) { // Only add if room available
+      try {
+        const contextChips = await getContextualChips(userMessage, projects.map(p => p.id))
+        for (const contextChip of contextChips) {
+          // Convert contextual chips to chip format
+          const chipData = {
+            id: `ctx_${contextChip.context}_${Date.now()}`,
+            chipId: `CONTEXTUAL:${contextChip.context}`,
+            type: 'SELECTOR',
+            label: contextChip.actionPrefix,
+            payload: {
+              actionPrefix: contextChip.actionPrefix,
+              options: contextChip.options,
+              multiSelect: contextChip.multiSelect,
+            },
+          }
+          postChips.push(chipData as any)
+        }
+      } catch (err) {
+        console.error('[CHAT] Failed to generate contextual chips:', err)
+        // Graceful degradation — continue without contextual chips
+      }
+    }
+
     postChips.forEach(c => markChipShown(currentSessionId, c.id))
     postSearchUiState.chips = postChips
 
