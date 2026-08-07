@@ -189,6 +189,32 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
     }
   }
 
-  console.error('[intent] all providers failed — returning previous intent (degraded)')
-  return { intent: previousIntent, degraded: true }
+  // All providers failed. Use heuristic pattern matching as last resort
+  console.warn('[intent] all providers failed, trying heuristic fallback')
+  const heuristicIntent = extractIntentHeuristic(message, previousIntent)
+
+  console.error('[intent] returning fallback intent (degraded)')
+  return { intent: heuristicIntent, degraded: true }
+}
+
+function extractIntentHeuristic(message: string, previousIntent: Intent): Intent {
+  const fallback = { ...previousIntent }
+
+  // Simple heuristic: extract key patterns from message
+  const bhkMatch = message.match(/(\d)\s*(?:bhk|bed\s*room)/i)
+  if (bhkMatch) {
+    fallback.bhk = [parseInt(bhkMatch[1])]
+  }
+
+  const croreMatch = message.match(/(\d+(?:\.\d+)?)\s*crore/i)
+  if (croreMatch) {
+    fallback.budgetMax = parseFloat(croreMatch[1])
+  }
+
+  const sectorMatch = message.match(/sector\s+(\d+[a-z]*)/i)
+  if (sectorMatch) {
+    fallback.sector = `Sector ${sectorMatch[1]}`
+  }
+
+  return fallback
 }
