@@ -119,7 +119,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
               transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-              className="fixed top-[15vh] left-1/2 -translate-x-1/2 w-full max-w-xl bg-white/80 backdrop-blur-2xl rounded-2xl shadow-[0_32px_64px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] z-50 overflow-hidden"
+              className="fixed top-[15vh] left-1/2 -translate-x-1/2 w-full max-w-xl bg-white rounded-2xl shadow-[0_32px_64px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] z-50 overflow-hidden"
             >
               <div className="flex items-center px-4 border-b border-zinc-200/50">
                 <Search size={18} className="text-zinc-400 mr-3" />
@@ -282,29 +282,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#EEEEEE]">
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-50/70 dark:bg-zinc-950/70">
 
         {/* Top bar */}
-        <header className="bg-[#EEEEEE] px-6 py-4 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center gap-3">
+        <header className="h-14 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shrink-0 px-4 md:px-6 flex items-center justify-between z-40 transition-colors">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setMobileOpen(true)}
-              className="md:hidden text-zinc-500 hover:text-zinc-900 p-1 mr-2"
+              className="md:hidden text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white p-1 mr-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <Menu size={20} />
             </button>
 
             {/* Breadcrumbs */}
-            <nav className="flex items-center gap-1.5 text-[13px] font-semibold min-w-0">
+            <nav className="flex items-center gap-1.5 text-xs font-semibold min-w-0">
+              <Building2 size={15} className="text-zinc-400 dark:text-zinc-500 shrink-0" />
               {crumbs.map((c, i) => (
-                <span key={i} className="flex items-center gap-1 min-w-0">
-                  {i > 0 && <ChevronRight size={12} className="text-zinc-300 flex-shrink-0" />}
+                <span key={i} className="flex items-center gap-1.5 min-w-0">
+                  {i > 0 && <ChevronRight size={13} className="text-zinc-300 dark:text-zinc-600 flex-shrink-0" />}
                   {c.href && i < crumbs.length - 1 ? (
-                    <Link href={c.href} className="text-zinc-500 hover:text-zinc-900 transition-colors truncate">
+                    <Link
+                      href={c.href}
+                      className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white px-2 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-all truncate"
+                    >
                       {c.label}
                     </Link>
                   ) : (
-                    <span className="text-zinc-900 truncate">{c.label}</span>
+                    <span className="text-zinc-900 dark:text-zinc-100 font-bold px-2 py-1 bg-zinc-100/90 dark:bg-zinc-800/90 rounded-md border border-zinc-200/60 dark:border-zinc-700/60 truncate shadow-2xs">
+                      {c.label}
+                    </span>
                   )}
                 </span>
               ))}
@@ -314,16 +320,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Command shortcut hint */}
           <button 
             onClick={() => setCmdOpen(true)}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-zinc-100/50 hover:bg-zinc-100 rounded-lg text-[11px] font-semibold text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="hidden md:flex items-center gap-2.5 px-3 py-1.5 bg-zinc-100/80 hover:bg-zinc-200/70 dark:bg-zinc-800/70 dark:hover:bg-zinc-800 border border-zinc-200/70 dark:border-zinc-700/70 rounded-full text-xs font-medium text-zinc-500 dark:text-zinc-400 transition-all shadow-2xs hover:shadow-xs group cursor-pointer"
           >
-            <Search size={12} />
-            <span>Search</span>
-            <kbd className="font-sans border border-zinc-200/80 rounded px-1.5 py-0.5 bg-white shadow-sm">⌘K</kbd>
+            <Search size={13} className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+            <span className="font-semibold text-[11.5px]">Search</span>
+            <kbd className="font-sans text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 shadow-2xs">⌘K</kbd>
           </button>
         </header>
 
         {/* Page */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-zinc-950/50 relative">{children}</main>
       </div>
     </div>
   )

@@ -59,7 +59,8 @@ export default function AdminProjectEditPage({
 }: {
   params: { id: string } | Promise<{ id: string }>
 }) {
-  const id = (params as any)?.id ?? (typeof (params as any)?.then === 'function' ? (use(params as unknown as Promise<{ id: string }>) as any)?.id : '')
+  const resolvedParams = typeof (params as any)?.then === 'function' ? use(params as unknown as Promise<{ id: string }>) : (params as { id: string })
+  const id = resolvedParams?.id ?? ''
   const [data, setData] = useState<any>(null)
   const [documents, setDocuments] = useState<any[]>([])
   const [completeness, setCompleteness] = useState<any>(null)
@@ -220,29 +221,35 @@ export default function AdminProjectEditPage({
 
   return (
     <>
-      {/* ── Sticky Project Header ─────────────────────────────────────────────
-          Sticky header with natural margin inheritance. Content uses
-          scroll-margin-top for proper scroll positioning.
-      ──────────────────────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-30 px-4 md:px-6 py-3 bg-[#EEEEEE] dark:bg-[#09090b] border-b border-slate-300/60 dark:border-zinc-800 shadow-xs space-y-3">
+      {/* ── Sticky Project Sub-Header ───────────────────────────────────────────── */}
+      <div className="sticky top-0 z-30 w-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shadow-xs px-4 md:px-8 py-3.5 space-y-3.5 transition-all">
 
         {/* Identity row */}
         <div className="flex items-center justify-between gap-4">
 
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3.5 min-w-0">
             <Link
               href="/admin/projects"
-              className="w-9 h-9 rounded-xl border border-slate-300/80 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-700 transition-all flex-shrink-0 shadow-xs flex items-center justify-center"
+              className="w-9 h-9 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700/80 transition-all flex-shrink-0 shadow-2xs flex items-center justify-center group"
               title="Back to Projects"
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
             </Link>
 
             <div className="flex items-center gap-3 min-w-0">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight truncate leading-none">
+              <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight truncate leading-none">
                 {data.name}
               </h1>
-              <span className="px-3 py-1 text-xs font-semibold uppercase tracking-widest rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs flex-shrink-0">
+              <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border shadow-2xs flex-shrink-0 flex items-center gap-1.5 ${
+                data.status === 'ready_to_move'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
+                  : data.status === 'under_construction'
+                  ? 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60'
+                  : 'bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  data.status === 'ready_to_move' ? 'bg-emerald-500' : data.status === 'under_construction' ? 'bg-amber-500 animate-pulse' : 'bg-blue-500'
+                }`} />
                 {data.status?.replace('_', ' ')}
               </span>
             </div>
@@ -250,7 +257,7 @@ export default function AdminProjectEditPage({
 
           <div className="flex items-center gap-2.5 flex-shrink-0">
             {adminTab === 'core' && (
-              <div className="hidden sm:flex items-center gap-2 text-xs font-extrabold text-emerald-800 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/60 border border-emerald-300/70 dark:border-emerald-800/60 rounded-xl px-3.5 py-1.5 shadow-xs">
+              <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl px-3.5 py-1.5 shadow-2xs">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -262,17 +269,17 @@ export default function AdminProjectEditPage({
               href={`/projects/${data.slug}`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 px-4 py-1.5 rounded-xl border border-slate-300/80 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-extrabold text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all shadow-xs"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-xs font-semibold text-white dark:text-zinc-900 transition-all shadow-xs active:scale-[0.98]"
             >
-              <Eye size={15} />
+              <Eye size={14} />
               <span>View Public</span>
             </a>
           </div>
 
         </div>
 
-        {/* Tab rail */}
-        <div className="flex items-center p-1.5 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/90 dark:border-zinc-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-sm">
+        {/* Tab rail with polished completion indicators */}
+        <div className="flex items-center p-1.5 bg-zinc-100/90 dark:bg-zinc-800/70 rounded-2xl border border-zinc-200/80 dark:border-zinc-700/60 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-inner">
           <div className="flex items-center gap-1.5 min-w-full sm:min-w-0">
             {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
               const isActive = adminTab === tabId
@@ -284,31 +291,56 @@ export default function AdminProjectEditPage({
                 <button
                   key={tabId}
                   onClick={() => setAdminTab(tabId)}
-                  className={`relative flex items-center gap-2 px-4 py-2 text-xs rounded-xl transition-all duration-150 whitespace-nowrap overflow-hidden font-semibold ${
+                  className={`relative flex items-center gap-2.5 px-3.5 py-2 text-xs rounded-xl transition-all duration-200 whitespace-nowrap font-medium cursor-pointer ${
                     isActive
-                      ? 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white shadow-md'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800'
+                      ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60'
                   }`}
                 >
-                  <div
-                    className={`absolute top-0 left-0 h-1 rounded-t-xl transition-all duration-300 ${
-                      isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
-                    }`}
-                    style={{ width: `${pct}%` }}
+                  <Icon
+                    size={15}
+                    className={
+                      isActive
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-zinc-400 dark:text-zinc-500'
+                    }
                   />
-                  <Icon size={15} className={isActive ? 'text-blue-400 dark:text-blue-600' : 'text-slate-400'} />
                   <span>{label}</span>
+
                   <span
-                    className={`ml-1 text-xs font-semibold px-1.5 py-0.5 rounded-md ${
+                    className={`flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-lg border transition-colors ${
                       isComplete
-                        ? (isActive ? 'bg-emerald-500/20 text-emerald-300 dark:text-emerald-700' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20')
+                        ? (isActive
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/80'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40')
                         : isMedium
-                        ? (isActive ? 'bg-amber-500/20 text-amber-300 dark:text-amber-700' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20')
-                        : (isActive ? 'bg-rose-500/20 text-rose-300 dark:text-rose-700' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20')
+                        ? (isActive
+                            ? 'bg-amber-100 text-amber-800 border-amber-300/80 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700/80'
+                            : 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40')
+                        : (isActive
+                            ? 'bg-rose-100 text-rose-800 border-rose-300/80 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-700/80'
+                            : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40')
                     }`}
                   >
-                    {pct}%
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{
+                        backgroundColor: isComplete ? '#10b981' : isMedium ? '#f59e0b' : '#f43f5e'
+                      }}
+                    />
+                    <span>{pct}%</span>
                   </span>
+
+                  {isActive && (
+                    <div className="absolute bottom-0.5 left-3 right-3 h-[2.5px] bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
+                        }`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  )}
                 </button>
               )
             })}
@@ -318,7 +350,7 @@ export default function AdminProjectEditPage({
       </div>
 
       {/* ── Scrollable Content ──────────────────────────────────────────────── */}
-      <div className="max-w-[1400px] mx-auto pt-6 pb-16">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-6 pb-16">
 
         {/* Completeness banner — shown on core + media tabs */}
         {adminTab !== 'intelligence' && completeness && showCompleteness && (
