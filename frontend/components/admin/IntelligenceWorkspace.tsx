@@ -315,7 +315,7 @@ function ScorePill({ dim, score }: { dim: string; score: number | null }) {
 function CompPill({ value }: { value: number }) {
   const cls = value >= 80 ? 'bg-emerald-50 text-emerald-600'
             : value >= 40 ? 'bg-amber-50 text-amber-600'
-            : 'bg-gray-100 text-gray-400'
+            : 'bg-gray-100 text-gray-700'
   return (
     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md tabular-nums ${cls}`}>
       {value}%
@@ -370,12 +370,12 @@ function AdminDivider() {
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, string> = {
-    DRAFT:     'bg-gray-100 text-gray-500',
+    DRAFT:     'bg-gray-100 text-gray-700',
     IN_REVIEW: 'bg-amber-100 text-amber-700',
     PUBLISHED: 'bg-emerald-100 text-emerald-700',
   }
   return (
-    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${cfg[status] ?? 'bg-gray-100 text-gray-400'}`}>
+    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${cfg[status] ?? 'bg-gray-100 text-gray-700'}`}>
       {status.replace('_', ' ')}
     </span>
   )
@@ -1199,13 +1199,13 @@ export default function IntelligenceWorkspace({
             {comps.map((comp, idx) => (
               <div key={comp.id ?? `new-${idx}`} className="bg-gray-50/70 rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-gray-500">
+                  <span className="text-[11px] font-semibold text-gray-700">
                     {comp._isNew ? 'New Competitor' : comp.competitor_name || 'Competitor'}
                   </span>
                   <button
                     type="button"
                     onClick={() => deleteComp(idx)}
-                    className="p-1 rounded text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors"
+                    className="p-1 rounded text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
                   >
                     <Trash2 size={12} />
                   </button>
