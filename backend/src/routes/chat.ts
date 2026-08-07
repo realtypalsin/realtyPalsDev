@@ -1018,6 +1018,10 @@ router.post('/', async (req: Request, res: Response) => {
               actionPrefix: contextChip.actionPrefix,
               options: contextChip.options,
               multiSelect: contextChip.multiSelect,
+              // For PROJECT_SELECT context, include dynamic fetch instruction
+              ...(contextChip.context === 'PROJECT_SELECT' && {
+                onSelect: 'fetch_amenities_for_project',
+              }),
             },
           }
           postChips.push(chipData as any)

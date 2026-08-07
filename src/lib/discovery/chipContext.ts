@@ -1,17 +1,14 @@
-// Detect query context and generate contextual chips with actionable options
+// Dynamic context-aware chips — 100% from data, zero hardcoding
 
 import { prisma } from '../db'
 
 export type QueryContext =
   | 'PAYMENT_PLANS'
   | 'AMENITIES'
+  | 'PROJECT_SELECT'
   | 'COMPARISON'
   | 'CONNECTIVITY'
-  | 'LEGAL_RERA'
-  | 'TIMELINE'
-  | 'BUDGET'
   | 'BUILDER_INFO'
-  | 'DISCOVERY'
   | 'UNKNOWN'
 
 export interface ContextualChip {
@@ -27,47 +24,24 @@ const CONTEXT_PATTERNS: Record<QueryContext, RegExp[]> = {
     /payment\s*plan/i,
     /flexi|construction|on.time|flexible/i,
     /installment|emi/i,
-    /payment\s*option/i,
   ],
   AMENITIES: [
-    /amenities?/i,
-    /facility|facilities/i,
-    /gym|pool|park|green/i,
+    /amenities?|facility|facilities/i,
+    /gym|pool|park|green|what\s+have/i,
   ],
+  PROJECT_SELECT: [],
   COMPARISON: [
-    /compare|versus|vs\.|differ|which.*better/i,
-    /side.?by.?side/i,
+    /compare|versus|vs\.|side.?by.?side/i,
   ],
   CONNECTIVITY: [
-    /connectivity|metro|transport|access|distance/i,
-    /school|hospital|mall|market/i,
-  ],
-  LEGAL_RERA: [
-    /rera|legal|compliance|registration|possession/i,
-    /approval|pending/i,
-  ],
-  TIMELINE: [
-    /timeline|possession|when|ready|launch|deliver/i,
-    /year|month|date/i,
-  ],
-  BUDGET: [
-    /budget|price|afford|cost|crore|lakh/i,
-    /expensive|cheap|range|within/i,
+    /connectivity|metro|school|hospital|distance/i,
   ],
   BUILDER_INFO: [
-    /builder|developer|company|track record/i,
-    /delivered|litigation|credai/i,
-  ],
-  DISCOVERY: [
-    /find|search|show|recommend|suggest/i,
-    /bhk|flat|apartment/i,
+    /builder|developer|track\s+record|delivered|litigation/i,
   ],
   UNKNOWN: [],
 }
 
-/**
- * Detect primary query context from user message
- */
 export function detectQueryContext(message: string): QueryContext {
   const msgLower = message.toLowerCase()
   let bestMatch: QueryContext = 'UNKNOWN'
@@ -88,197 +62,178 @@ export function detectQueryContext(message: string): QueryContext {
 }
 
 /**
- * Get payment plan type options
+ * Get projects as options for selection
+ * Used when user asks about amenities/details of multiple projects
  */
-export async function getPaymentPlanOptions(
+export async function getProjectSelector(
   projectIds?: string[]
-): Promise<ContextualChip> {
-  const plans = new Set<string>()
+): Promise<ContextualChip | null> {
+  if (!projectIds?.length || projectIds.length <= 1) return null
 
-  if (projectIds?.length) {
-    const dbPlans = await prisma.paymentPlan.findMany({
-      where: { project_id: { in: projectIds } },
-      select: { plan_type: true, plan_name: true },
-      distinct: ['plan_type'],
-      take: 10,
-    })
-    dbPlans.forEach(p => {
-      if (p.plan_type) plans.add(p.plan_type)
-      if (p.plan_name) plans.add(p.plan_name)
-    })
-  }
+  const projects = await prisma.project.findMany({
+    where: { id: { in: projectIds } },
+    select: { id: true, name: true, sector: true },
+    take: 10,
+  })
 
-  // Fallback to standard payment plan types
-  if (plans.size === 0) {
-    plans.add('Flexi Payment')
-    plans.add('Construction Linked')
-    plans.add('On-Time Payment')
-  }
+  if (projects.length === 0) return null
 
   return {
-    context: 'PAYMENT_PLANS',
-    actionPrefix: 'Which payment plan type interests you?',
-    options: Array.from(plans).map(plan => ({
-      label: plan,
-      value: plan,
+    context: 'PROJECT_SELECT',
+    actionPrefix: 'Which project would you like to explore?',
+    options: projects.map(p => ({
+      label: `${p.name} (${p.sector})`,
+      value: p.id,
     })),
     multiSelect: false,
   }
 }
 
 /**
- * Get amenity category options
+ * Get amenities for a specific project (only dynamic data)
+ * First shows project selector, then amenities when project selected
  */
 export async function getAmenityOptions(
-  projectIds?: string[]
-): Promise<ContextualChip> {
-  const categories = new Set<string>()
+  projectId: string
+): Promise<ContextualChip | null> {
+  if (!projectId) return null
 
-  if (projectIds?.length) {
-    const dbAmenities = await prisma.amenity.findMany({
-      where: { project_id: { in: projectIds } },
-      select: { category: true },
-      distinct: ['category'],
-      take: 15,
-    })
-    dbAmenities.forEach(a => {
-      if (a.category) categories.add(a.category)
-    })
-  }
+  const amenities = await prisma.amenity.findMany({
+    where: { project_id: projectId },
+    select: { name: true, id: true },
+    take: 20,
+  })
 
-  // Fallback categories
-  if (categories.size === 0) {
-    return {
-      context: 'AMENITIES',
-      actionPrefix: 'Which amenities are most important to you?',
-      options: [
-        { label: 'Sports & Recreation', value: 'sports' },
-        { label: 'Health & Wellness', value: 'health' },
-        { label: 'Green & Landscape', value: 'green' },
-        { label: 'Security & Access', value: 'security' },
-        { label: 'Entertainment', value: 'entertainment' },
-      ],
-      multiSelect: true,
-    }
-  }
+  if (amenities.length === 0) return null
 
   return {
     context: 'AMENITIES',
-    actionPrefix: 'Which amenity categories interest you?',
-    options: Array.from(categories)
-      .filter(cat => cat && cat.length > 0)
-      .map(cat => ({
-        label: cat,
-        value: cat.toLowerCase().replace(/\s+/g, '_'),
-      })),
+    actionPrefix: 'Available amenities:',
+    options: amenities.map(a => ({
+      label: a.name,
+      value: a.id,
+    })),
     multiSelect: true,
   }
 }
 
 /**
- * Get connectivity type options (metro, school, hospital, etc.)
+ * Get payment plan types for specific projects (only dynamic data)
  */
-export async function getConnectivityOptions(
+export async function getPaymentPlanOptions(
   projectIds?: string[]
-): Promise<ContextualChip> {
-  const types = new Set<string>()
+): Promise<ContextualChip | null> {
+  if (!projectIds?.length) return null
 
-  if (projectIds?.length) {
-    const dbConn = await prisma.connectivity.findMany({
-      where: { project_id: { in: projectIds } },
-      select: { type: true },
-      distinct: ['type'],
-      take: 10,
-    })
-    dbConn.forEach(c => {
-      if (c.type) types.add(c.type)
-    })
-  }
+  const plans = await prisma.paymentPlan.findMany({
+    where: { project_id: { in: projectIds } },
+    select: { plan_type: true, plan_name: true, id: true },
+    distinct: ['plan_type'],
+    take: 15,
+  })
 
-  // Fallback types
-  if (types.size === 0) {
-    return {
-      context: 'CONNECTIVITY',
-      actionPrefix: 'What connectivity is most important?',
-      options: [
-        { label: 'Metro Station', value: 'metro' },
-        { label: 'Schools & Colleges', value: 'school' },
-        { label: 'Hospitals', value: 'hospital' },
-        { label: 'Shopping Malls', value: 'mall' },
-        { label: 'Highways & Roads', value: 'highway' },
-      ],
-      multiSelect: true,
+  if (plans.length === 0) return null
+
+  // Use plan_type if available, otherwise plan_name
+  const uniquePlans = new Map<string, string>()
+  plans.forEach(p => {
+    const key = p.plan_type || p.plan_name || `Plan ${p.id}`
+    if (key && !uniquePlans.has(key)) {
+      uniquePlans.set(key, p.id)
     }
-  }
+  })
 
   return {
-    context: 'CONNECTIVITY',
-    actionPrefix: 'Which connectivity matters most?',
-    options: Array.from(types)
-      .filter(t => t && t.length > 0)
-      .map(t => ({
-        label: t,
-        value: t.toLowerCase().replace(/\s+/g, '_'),
-      })),
-    multiSelect: true,
-  }
-}
-
-/**
- * Get comparison dimension options
- */
-export function getComparisonOptions(): ContextualChip {
-  return {
-    context: 'COMPARISON',
-    actionPrefix: 'What would you like to compare?',
-    options: [
-      { label: 'Price & EMI', value: 'price' },
-      { label: 'Amenities & Features', value: 'amenities' },
-      { label: 'Location & Connectivity', value: 'connectivity' },
-      { label: 'Timeline & Possession', value: 'timeline' },
-      { label: 'Builder Track Record', value: 'builder' },
-    ],
-    multiSelect: true,
-  }
-}
-
-/**
- * Get timeline/possession options
- */
-export function getTimelineOptions(): ContextualChip {
-  return {
-    context: 'TIMELINE',
-    actionPrefix: 'What possession timeline suits you?',
-    options: [
-      { label: 'Immediate (Ready Now)', value: 'immediate' },
-      { label: 'Within 1 Year', value: '1year' },
-      { label: 'Within 2 Years', value: '2year' },
-      { label: '3+ Years (Open)', value: '3year+' },
-    ],
+    context: 'PAYMENT_PLANS',
+    actionPrefix: 'Available payment plans:',
+    options: Array.from(uniquePlans.entries()).map(([label, value]) => ({
+      label,
+      value,
+    })),
     multiSelect: false,
   }
 }
 
 /**
- * Get budget range options
+ * Get connectivity options for specific projects (only dynamic data)
  */
-export function getBudgetOptions(): ContextualChip {
+export async function getConnectivityOptions(
+  projectIds?: string[]
+): Promise<ContextualChip | null> {
+  if (!projectIds?.length) return null
+
+  const connectivity = await prisma.connectivity.findMany({
+    where: { project_id: { in: projectIds } },
+    select: { type: true, name: true, distance_km: true },
+    distinct: ['type'],
+    take: 15,
+  })
+
+  if (connectivity.length === 0) return null
+
   return {
-    context: 'BUDGET',
-    actionPrefix: 'What\'s your budget range?',
-    options: [
-      { label: 'Under ₹1 Crore', value: 'under_1cr' },
-      { label: '₹1-2 Crore', value: '1cr_2cr' },
-      { label: '₹2-3 Crore', value: '2cr_3cr' },
-      { label: '₹3-5 Crore', value: '3cr_5cr' },
-      { label: '₹5+ Crore', value: '5cr_plus' },
-    ],
+    context: 'CONNECTIVITY',
+    actionPrefix: 'Nearby connectivity:',
+    options: connectivity.map(c => {
+      const label = c.distance_km
+        ? `${c.name} (${c.distance_km} km)`
+        : c.name
+      return {
+        label,
+        value: c.type,
+      }
+    }),
+    multiSelect: true,
+  }
+}
+
+/**
+ * Get builder info options for specific projects (only dynamic data)
+ */
+export async function getBuilderOptions(
+  projectIds?: string[]
+): Promise<ContextualChip | null> {
+  if (!projectIds?.length) return null
+
+  const builders = await prisma.project.findMany({
+    where: { id: { in: projectIds } },
+    select: {
+      builder: {
+        select: {
+          id: true,
+          name: true,
+          credai_member: true,
+          delivered_units: true,
+        },
+      },
+    },
+    take: 10,
+  })
+
+  const uniqueBuilders = new Map<string, any>()
+  builders.forEach(p => {
+    if (p.builder) {
+      uniqueBuilders.set(p.builder.id, p.builder)
+    }
+  })
+
+  if (uniqueBuilders.size === 0) return null
+
+  return {
+    context: 'BUILDER_INFO',
+    actionPrefix: 'Builder details:',
+    options: Array.from(uniqueBuilders.values()).map(b => ({
+      label: `${b.name}${b.credai_member ? ' (CREDAI)' : ''}`,
+      value: b.id,
+    })),
     multiSelect: false,
   }
 }
 
 /**
  * Get context-aware chips based on detected query
+ * ONLY returns chips with data from database
+ * Returns empty array if no matching data found
  */
 export async function getContextualChips(
   message: string,
@@ -287,71 +242,54 @@ export async function getContextualChips(
   const context = detectQueryContext(message)
   const chips: ContextualChip[] = []
 
-  switch (context) {
-    case 'PAYMENT_PLANS':
-      chips.push(await getPaymentPlanOptions(projectIds))
-      break
+  try {
+    switch (context) {
+      case 'PAYMENT_PLANS':
+        if (projectIds?.length) {
+          const chip = await getPaymentPlanOptions(projectIds)
+          if (chip) chips.push(chip)
+        }
+        break
 
-    case 'AMENITIES':
-      chips.push(await getAmenityOptions(projectIds))
-      break
+      case 'AMENITIES':
+        // For multiple projects, show selector first
+        if (projectIds?.length) {
+          if (projectIds.length > 1) {
+            const selector = await getProjectSelector(projectIds)
+            if (selector) chips.push(selector)
+          } else {
+            // Single project, show amenities directly
+            const amenities = await getAmenityOptions(projectIds[0])
+            if (amenities) chips.push(amenities)
+          }
+        }
+        break
 
-    case 'COMPARISON':
-      chips.push(getComparisonOptions())
-      break
+      case 'COMPARISON':
+        // Will be handled separately in chat route with dedicated comparison logic
+        break
 
-    case 'CONNECTIVITY':
-      chips.push(await getConnectivityOptions(projectIds))
-      break
+      case 'CONNECTIVITY':
+        if (projectIds?.length) {
+          const chip = await getConnectivityOptions(projectIds)
+          if (chip) chips.push(chip)
+        }
+        break
 
-    case 'TIMELINE':
-      chips.push(getTimelineOptions())
-      break
+      case 'BUILDER_INFO':
+        if (projectIds?.length) {
+          const chip = await getBuilderOptions(projectIds)
+          if (chip) chips.push(chip)
+        }
+        break
 
-    case 'BUDGET':
-      chips.push(getBudgetOptions())
-      break
-
-    case 'LEGAL_RERA':
-      chips.push({
-        context: 'LEGAL_RERA',
-        actionPrefix: 'What legal information do you need?',
-        options: [
-          { label: 'RERA Registration', value: 'rera' },
-          { label: 'Possession Timeline', value: 'possession' },
-          { label: 'Approval Status', value: 'approval' },
-        ],
-        multiSelect: false,
-      })
-      break
-
-    case 'BUILDER_INFO':
-      chips.push({
-        context: 'BUILDER_INFO',
-        actionPrefix: 'What about the builder?',
-        options: [
-          { label: 'Track Record', value: 'track_record' },
-          { label: 'Delivered Projects', value: 'delivered' },
-          { label: 'Litigation History', value: 'litigation' },
-          { label: 'CREDAI Membership', value: 'credai' },
-        ],
-        multiSelect: false,
-      })
-      break
-
-    default:
-      // Return discovery options for unknown context
-      chips.push({
-        context: 'DISCOVERY',
-        actionPrefix: 'How can we help you today?',
-        options: [
-          { label: 'Find Properties', value: 'search' },
-          { label: 'Compare Options', value: 'compare' },
-          { label: 'Check Payments', value: 'payments' },
-          { label: 'View Amenities', value: 'amenities' },
-        ],
-        multiSelect: false,
-      })
+      default:
+        // No chips for unknown context
+        break
+    }
+  } catch (err) {
+    console.error('[CHIP_CONTEXT] Error generating chips:', err)
+    // Graceful degradation — return empty array, no chips
   }
 
   return chips

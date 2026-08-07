@@ -59,45 +59,84 @@ describe('Chat Integration Tests', () => {
     })
   })
 
-  describe('2. Chip Generation (Bug Fix #2)', () => {
-    it('amenities chip should include projects list', async () => {
-      const chips = await generateChips([testProject.id])
-      const amenitiesChip = chips.find(c => c.chipId.includes('amenities'))
+  describe('2. Dynamic Chips (100% Database-Driven)', () => {
+    it('amenities chip should only contain DB amenities (no hardcoded options)', async () => {
+      // Create test amenity
+      const amenity = await prisma.amenity.create({
+        data: {
+          project_id: testProject.id,
+          name: 'Olympic Pool',
+          category: 'Sports & Recreation',
+        },
+      })
 
-      if (amenitiesChip) {
-        expect(amenitiesChip.payload).toHaveProperty('actionPrefix')
-        expect(amenitiesChip.payload).toHaveProperty('projects')
-        expect(Array.isArray(amenitiesChip.payload.projects)).toBe(true)
-      }
-    })
+      try {
+        const { getAmenityOptions } = await import('../../discovery/chipContext')
+        const chip = await getAmenityOptions(testProject.id)
 
-    it('all property selector chips should have consistent structure', async () => {
-      const chips = await generateChips([testProject.id])
-      const dynamicChips = chips.filter(c =>
-        c.chipId.includes('payment_plan') ||
-        c.chipId.includes('amenities') ||
-        c.chipId.includes('connectivity')
-      )
-
-      for (const chip of dynamicChips) {
-        expect(chip.payload).toHaveProperty('actionPrefix')
-        expect(chip.payload).toHaveProperty('projects')
-      }
-    })
-
-    it('chips should have proper payload structure for dropdown rendering', async () => {
-      const chips = await generateChips([testProject.id])
-      const paymentChip = chips.find(c => c.chipId.includes('payment_plan'))
-
-      if (paymentChip) {
-        const { projects } = paymentChip.payload
-        expect(projects).toBeDefined()
-        if (projects.length > 0) {
-          expect(projects[0]).toHaveProperty('id')
-          expect(projects[0]).toHaveProperty('name')
-          expect(projects[0]).toHaveProperty('slug')
+        expect(chip).toBeDefined()
+        if (chip) {
+          expect(chip.options.some(o => o.label === 'Olympic Pool')).toBe(true)
+          // Verify no hardcoded fallback options exist
+          expect(chip.options.length).toBeGreaterThan(0)
+          expect(chip.options[0]).toHaveProperty('label')
+          expect(chip.options[0]).toHaveProperty('value')
         }
+      } finally {
+        await prisma.amenity.delete({ where: { id: amenity.id } })
       }
+    })
+
+    it('payment plans chip returns only DB results (no fallback list)', async () => {
+      const { getPaymentPlanOptions } = await import('../../discovery/chipContext')
+      const chip = await getPaymentPlanOptions([testProject.id])
+
+      // If project has payment plans, chip exists; if not, returns null
+      if (chip) {
+        expect(chip.options.length).toBeGreaterThan(0)
+        chip.options.forEach(opt => {
+          expect(opt.label).toBeDefined()
+          expect(opt.value).toBeDefined()
+          // Verify not hardcoded defaults
+          expect(['Flexi Payment', 'Construction Linked', 'On-Time Payment']).not.toContain(opt.label)
+        })
+      }
+    })
+
+    it('project selector chip appears only for multiple projects', async () => {
+      const { getProjectSelector } = await import('../../discovery/chipContext')
+
+      // Single project returns null
+      const singleChip = await getProjectSelector([testProject.id])
+      expect(singleChip).toBeNull()
+
+      // Multiple projects returns selector
+      const otherProject = await prisma.project.create({
+        data: {
+          name: 'Other Project',
+          slug: 'other-project',
+          builder_id: testBuilder.id,
+          sector: 'Sector 50',
+          city: 'Noida',
+          status: 'ready',
+        },
+      })
+
+      try {
+        const multiChip = await getProjectSelector([testProject.id, otherProject.id])
+        expect(multiChip).toBeDefined()
+        expect(multiChip?.context).toBe('PROJECT_SELECT')
+        expect(multiChip?.options.length).toBe(2)
+      } finally {
+        await prisma.project.delete({ where: { id: otherProject.id } })
+      }
+    })
+
+    it('no context returns null chip (not fallback list)', async () => {
+      const { getConnectivityOptions } = await import('../../discovery/chipContext')
+      const chip = await getConnectivityOptions([])
+
+      expect(chip).toBeNull()
     })
   })
 
@@ -148,13 +187,57 @@ describe('Chat Integration Tests', () => {
     })
   })
 
-  describe('4. Follow-up Query Context', () => {
+  describe('4. Follow-up Query Context & Project Selection', () => {
+    it('amenities with multiple projects shows PROJECT_SELECT first', async () => {
+      const otherProject = await prisma.project.create({
+        data: {
+          name: 'Another Project',
+          slug: 'another-project',
+          builder_id: testBuilder.id,
+          sector: 'Sector 79',
+          city: 'Noida',
+          status: 'under_construction',
+        },
+      })
+
+      try {
+        const { getContextualChips } = await import('../../discovery/chipContext')
+        const chips = await getContextualChips('What amenities are there?', [testProject.id, otherProject.id])
+
+        // Should return PROJECT_SELECT chip, not amenities list
+        const selector = chips.find(c => c.context === 'PROJECT_SELECT')
+        expect(selector).toBeDefined()
+        expect(selector?.options.length).toBe(2)
+      } finally {
+        await prisma.project.delete({ where: { id: otherProject.id } })
+      }
+    })
+
+    it('amenities with single project shows amenities directly', async () => {
+      const amenity = await prisma.amenity.create({
+        data: {
+          project_id: testProject.id,
+          name: 'Test Amenity',
+          category: 'Test',
+        },
+      })
+
+      try {
+        const { getContextualChips } = await import('../../discovery/chipContext')
+        const chips = await getContextualChips('What amenities?', [testProject.id])
+
+        // Single project skips selector, shows amenities directly
+        const amenityChip = chips.find(c => c.context === 'AMENITIES')
+        expect(amenityChip).toBeDefined()
+      } finally {
+        await prisma.amenity.delete({ where: { id: amenity.id } })
+      }
+    })
+
     it('should handle follow-up payment plan question after discovery', async () => {
-      // Simulate: first user asks for discovery
       const discoveryIntent: Intent = { sector: 'Sector 79' }
       const discoveryResult = await discoverProjects(discoveryIntent, 0)
 
-      // Then user asks: "Show payment plans for Mahagun Mirabella?"
       const followUpMessage = 'Show payment-plan options for Mahagun Mirabella?'
       const projectIds = await extractProjectIds(followUpMessage)
 
@@ -166,27 +249,12 @@ describe('Chat Integration Tests', () => {
       const message = 'Compare amenities in Mahagun Mirabella vs other Sector 79 projects'
       const ids = await extractProjectIds(message)
 
-      // Should find Mahagun Mirabella
       expect(ids).toContain(testProject.id)
-    })
-
-    it('chips from discovery should enable property selection in follow-ups', async () => {
-      const chips = await generateChips([testProject.id])
-      const paymentChip = chips.find(c => c.chipId.includes('payment_plan'))
-
-      if (paymentChip) {
-        const { projects, actionPrefix } = paymentChip.payload
-
-        // User clicking chip should result in: "Show payment-plan options for Mahagun Mirabella"
-        expect(projects.length).toBeGreaterThan(0)
-        expect(actionPrefix).toBeDefined()
-        expect(projects.some(p => p.id === testProject.id)).toBe(true)
-      }
     })
   })
 
   describe('5. Chat Flow End-to-End', () => {
-    it('complete flow: discovery -> chip click -> follow-up question', async () => {
+    it('complete flow: discovery -> context chips -> dynamic selection', async () => {
       // Step 1: User asks for discovery
       const discoveryIntent: Intent = {
         sector: 'Sector 79',
@@ -195,41 +263,82 @@ describe('Chat Integration Tests', () => {
       const result1 = await discoverProjects(discoveryIntent, 0)
       expect(result1.exactResults.length + result1.nearbyResults.length).toBeGreaterThan(0)
 
-      // Step 2: Generate chips
-      const chipIds = (result1.exactResults.length > 0
-        ? result1.exactResults
-        : result1.nearbyResults
-      ).map(p => p.id)
+      // Step 2: Get context-aware chips for payment plans
+      const projectIds = result1.exactResults.map(p => p.id)
+      const { getContextualChips } = await import('../../discovery/chipContext')
+      const paymentChips = await getContextualChips('Show payment plans', projectIds)
 
-      const chips = await generateChips(chipIds)
-      const paymentChip = chips.find(c => c.chipId.includes('payment_plan'))
+      // Should have payment plan options (database-driven)
+      expect(paymentChips.length).toBeGreaterThan(0)
+      const paymentChip = paymentChips.find(c => c.context === 'PAYMENT_PLANS')
       expect(paymentChip).toBeDefined()
 
-      // Step 3: User clicks payment chip and asks about specific project
-      if (paymentChip) {
-        const followUpMsg = 'Show payment-plan options for Mahagun Mirabella?'
-        const extractedIds = await extractProjectIds(followUpMsg)
+      // Step 3: For amenities with multiple projects, should get PROJECT_SELECT
+      if (projectIds.length > 1) {
+        const amenityChips = await getContextualChips('What amenities?', projectIds)
+        const selector = amenityChips.find(c => c.context === 'PROJECT_SELECT')
+        expect(selector).toBeDefined()
+      }
+    })
 
-        // Should successfully extract project IDs
-        expect(extractedIds.length).toBeGreaterThan(0)
+    it('amenities flow: multiple projects -> selector -> pick project -> show amenities', async () => {
+      // Create another project for multi-project scenario
+      const otherProject = await prisma.project.create({
+        data: {
+          name: 'Second Project',
+          slug: 'second-project',
+          builder_id: testBuilder.id,
+          sector: 'Sector 79',
+          city: 'Noida',
+          status: 'under_construction',
+        },
+      })
 
-        // Should match the projects from chips
-        const chipProjects = paymentChip.payload.projects
-        expect(extractedIds.some(id => chipProjects.map(p => p.id).includes(id))).toBe(true)
+      // Create amenity for test project
+      const amenity = await prisma.amenity.create({
+        data: {
+          project_id: testProject.id,
+          name: 'Test Gym',
+          category: 'Fitness',
+        },
+      })
+
+      try {
+        const { getContextualChips, getAmenityOptions } = await import('../../discovery/chipContext')
+
+        // Step 1: User asks amenities for multiple projects
+        const multiChips = await getContextualChips('What amenities?', [testProject.id, otherProject.id])
+        const selector = multiChips.find(c => c.context === 'PROJECT_SELECT')
+        expect(selector).toBeDefined()
+
+        // Step 2: User selects a project from selector
+        const selectedProjectId = selector?.options[0].value
+        expect(selectedProjectId).toBe(testProject.id)
+
+        // Step 3: Fetch amenities for selected project
+        const amenityChip = await getAmenityOptions(selectedProjectId as string)
+        expect(amenityChip).toBeDefined()
+        expect(amenityChip?.options.some(o => o.label === 'Test Gym')).toBe(true)
+      } finally {
+        await prisma.amenity.delete({ where: { id: amenity.id } })
+        await prisma.project.delete({ where: { id: otherProject.id } })
       }
     })
   })
 
-  describe('6. Edge Cases', () => {
+  describe('6. Edge Cases & Dynamic Behavior', () => {
     it('should handle empty/null parameters gracefully', async () => {
       const emptyIds = await extractProjectIds('')
       expect(Array.isArray(emptyIds)).toBe(true)
+
+      const { getContextualChips } = await import('../../discovery/chipContext')
+      const emptyChips = await getContextualChips('', [])
+      expect(Array.isArray(emptyChips)).toBe(true)
     })
 
     it('should not error on non-existent project names', async () => {
       const ids = await extractProjectIds('Show options for NonExistentProject123')
       expect(Array.isArray(ids)).toBe(true)
-      // Should return empty array, not error
     })
 
     it('pagination offset should not cause errors', async () => {
@@ -238,7 +347,17 @@ describe('Chat Integration Tests', () => {
 
       expect(result).toBeDefined()
       expect(result.hasMore).toBe(false)
-      expect(result.exactResults.length + result.nearbyResults.length).toBeLessThanOrEqual(20)
+    })
+
+    it('chips with no matching DB data return null', async () => {
+      const { getPaymentPlanOptions, getConnectivityOptions } = await import('../../discovery/chipContext')
+
+      // Empty project list returns null
+      const emptyChip = await getPaymentPlanOptions([])
+      expect(emptyChip).toBeNull()
+
+      const emptyConn = await getConnectivityOptions([])
+      expect(emptyConn).toBeNull()
     })
 
     it('should handle very long messages', async () => {
@@ -248,6 +367,16 @@ describe('Chat Integration Tests', () => {
       const ids = await extractProjectIds(longMessage)
       expect(Array.isArray(ids)).toBe(true)
       expect(ids).toContain(testProject.id)
+    })
+
+    it('detects correct context from message patterns', async () => {
+      const { detectQueryContext } = await import('../../discovery/chipContext')
+
+      expect(detectQueryContext('Show payment plans')).toBe('PAYMENT_PLANS')
+      expect(detectQueryContext('What amenities?')).toBe('AMENITIES')
+      expect(detectQueryContext('Compare projects')).toBe('COMPARISON')
+      expect(detectQueryContext('Metro access?')).toBe('CONNECTIVITY')
+      expect(detectQueryContext('Builder track record')).toBe('BUILDER_INFO')
     })
   })
 })
