@@ -56,7 +56,7 @@ router.post('/callback', async (req: Request, res: Response) => {
 
   // Rate limit by userId if authenticated, otherwise by guestToken or IP
   const rateLimitKey = userId ? `callback:${userId}` : guestToken ? `callback:guest:${guestToken}` : `callback:ip:${req.ip}`
-  const rl = await checkRateLimit(rateLimitKey, 5, 3600)
+  const rl = await checkRateLimit(rateLimitKey, 30, 3600)
   if (rl.remaining <= 0) { res.status(429).json({ error: 'Too many requests' }); return }
 
   const parsed = CallbackSchema.safeParse(req.body)
@@ -66,11 +66,10 @@ router.post('/callback', async (req: Request, res: Response) => {
   const projectSlug = parsed.data.projectSlug || parsed.data.project_slug
   const phone = parsed.data.phone
   const fiveSecsAgo = new Date(Date.now() - 5000)
-  const recentDuplicate = await prisma.lead.findFirst({
+  const recentDuplicate = await prisma.callbackRequest.findFirst({
     where: {
       phone,
-      ...(projectSlug ? { project: { slug: projectSlug } } : {}),
-      lead_type: 'callback_requested',
+      ...(projectSlug ? { project_slug: projectSlug } : {}),
       created_at: { gte: fiveSecsAgo }
     }
   })
@@ -80,7 +79,7 @@ router.post('/callback', async (req: Request, res: Response) => {
 
   // Support both camelCase and snake_case from frontend
   const finalProjectName = projectName || project_name
-  const finalProjectSlug = projectSlug || project_slug
+  const finalProjectSlug = projectSlug
 
   // Get project and builder info for analytics.
   // unit_types is needed to derive the project's price range — Project itself only
@@ -169,20 +168,22 @@ router.post('/callback', async (req: Request, res: Response) => {
     },
   })
 
-  // Send ONLY what user explicitly filled + qualified metadata
-  // Do NOT spread user preferences (preferred_sector, etc) — send project's actual sector
+  // Send to Webhook (Make.com -> Google Sheets / CRM)
   fireWebhook('callback_requested', {
     // User-provided form data
-    name, phone, project_name: finalProjectName,
+    name,
+    phone,
+    project_name: finalProjectName,
+    project_slug: finalProjectSlug,
     intent_tier: intent_tier ?? null,
-    loan_status,
+    loan_status: loan_status ?? null,
 
-    // Project data (not user preference)
+    // Project data
     bhk: project?.bhk ?? null,
     sector: projectSector,
     price_range: project?.price_range_label ?? null,
 
-    // Engagement metrics (facts, not preferences)
+    // Engagement metrics
     projects_saved: profile.engagement?.projects_saved ?? 0,
     projects_viewed: profile.engagement?.projects_viewed ?? 0,
 
@@ -193,6 +194,7 @@ router.post('/callback', async (req: Request, res: Response) => {
     lead_score: score,
     lead_tier: tier,
     ai_summary: profile.ai_summary ?? null,
+    created_at: cb.created_at.toISOString(),
   }).catch((e) => console.error('[leads] webhook failed:', e))
 
   res.status(201).json({ callback: cb })
@@ -203,8 +205,8 @@ router.post('/site-visit', async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
   if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return }
 
-  // Rate limit: 5 site-visit requests per hour per user
-  const rateLimit = await checkRateLimit(`site-visit:${userId}`, 5, 3600)
+  // Rate limit: 30 site-visit requests per hour per user
+  const rateLimit = await checkRateLimit(`site-visit:${userId}`, 30, 3600)
   if (rateLimit.remaining <= 0) { res.status(429).json({ error: 'Too many requests' }); return }
 
   const parsed = SiteVisitSchema.safeParse(req.body)
@@ -216,11 +218,10 @@ router.post('/site-visit', async (req: Request, res: Response) => {
 
   // Idempotency: check for duplicate request in last 5 seconds
   const fiveSecsAgo = new Date(Date.now() - 5000)
-  const recentDuplicate = await prisma.lead.findFirst({
+  const recentDuplicate = await prisma.siteVisitRequest.findFirst({
     where: {
       phone,
-      ...(projectSlug ? { project: { slug: projectSlug } } : {}),
-      lead_type: 'site_visit_requested',
+      ...(projectSlug ? { project_slug: projectSlug } : {}),
       created_at: { gte: fiveSecsAgo }
     }
   })
@@ -278,7 +279,8 @@ async function fireWebhook(event: string, data: Record<string, unknown>) {
     console.error('[leads] ⚠️ WEBHOOK_URL not configured — lead webhook was not sent. Configure WEBHOOK_URL in environment.')
     return
   }
-  const body = JSON.stringify({ event, data, ts: Date.now() })
+  // Flatten data at root for Make.com / Google Sheets direct field mapping compatibility
+  const body = JSON.stringify({ event, data, ...data, ts: Date.now() })
 
   // Sign the payload so the receiver can verify it actually came from us.
   const secret = process.env.WEBHOOK_SECRET
