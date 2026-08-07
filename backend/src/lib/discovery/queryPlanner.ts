@@ -366,7 +366,7 @@ async function checkDataAvailability(
 
   // Only fetch fields needed for availability check, not entire row
   const projects = await prisma.project.findMany({
-    select: { id: true, status: true, possession_status: true },
+    select: { id: true, status: true, possession_date: true },
     where: { id: { in: projectIds } },
   })
 

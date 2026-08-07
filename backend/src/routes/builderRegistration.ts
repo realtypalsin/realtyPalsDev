@@ -7,6 +7,10 @@ import { supabaseAdmin } from '../lib/supabase'
 import { checkRateLimit } from '../lib/cache'
 import { validateUploadedFile } from '../lib/uploadValidator'
 
+// Form status enum — mirrors Prisma schema
+const FormStatusValues = ['new', 'reviewing', 'approved', 'rejected', 'clarification_requested'] as const
+type FormStatus = (typeof FormStatusValues)[number]
+
 const router = Router()
 
 const BuilderApplicationSchema = z.object({
@@ -150,7 +154,7 @@ router.post('/', async (req: Request, res: Response) => {
         executives: executives || [],
         projects: projects || [],
         delivery_track: delivery_track || null,
-        status: 'new' satisfies typeof FormStatusValues[number],
+        status: 'new' satisfies FormStatus,
         submitted_at: new Date(),
         ip_address: req.ip || 'unknown',
         user_agent: req.get('user-agent') || 'unknown',

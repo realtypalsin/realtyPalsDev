@@ -1474,7 +1474,6 @@ router.post('/', async (req: Request, res: Response) => {
           const severity = gr.blocked ? 'CRITICAL' : 'WARNING'
           console.error(`[GUARDRAIL_${severity}] Output guardrail triggered`, {
             blocked: gr.blocked,
-            reason: gr.reason,
             confidence: gr.confidence,
             violations: gr.violations,
             session_id: sessionId,
