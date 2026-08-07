@@ -74,41 +74,22 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [visibleCount, setVisibleCount] = useState(15);
   const [toast, setToast] = useState<{ message: string } | null>(null);
+  const [, setShowRecommendations] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
+  const [rateLimitUntil, setRateLimitUntil] = useState<number | null>(null);
+  const [sessionTitle, setSessionTitle] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? navigator.onLine : true);
   const [chatTurnCount, setChatTurnCount] = useState(0);
-  const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
-  const [sessionTitle, setSessionTitle] = useState<string | null>(null);
+  const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
+  const [showContextWarning, setShowContextWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null);
   const [conversationState, setConversationState] = useState<import('@/components/chat/types').ConversationState | null>(null);
-
-  // UI state consolidation
-  const [uiState, setUiState] = useState({
-    showRecommendations: false,
-    rateLimitUntil: null as number | null,
-    hasShownLengthWarning: false,
-    showContextWarning: false,
-    detailProject: null as ProjectCardType | null,
-    expandedShortlists: new Set<string>(),
-    showMap: false,
-    showCalculator: false,
-    showHeaderDropdown: false,
-    siteVisitProject: null as ProjectCardType | null,
-    callbackProject: null as ProjectCardType | null,
-    callbackDone: false,
-    shareSheetOpen: false,
-    showReEngagement: true,
-    isInputMinimized: false,
-    showScrollBtn: false,
-    keyboardOpen: false,
-    isMobile: false,
-    isRenamingHeader: false,
-  });
 
   // ChatGPT-style dynamic browser tab title updater
   useEffect(() => {

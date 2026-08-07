@@ -27,7 +27,8 @@ function breadcrumb(pathname: string): { label: string; href?: string }[] {
 
   if (parts.length > 1) {
     const section = parts[1]
-    const label = section.charAt(0).toUpperCase() + section.slice(1)
+    let label = section.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+    if (section === 'builder-applications') label = 'Registrations'
     crumbs.push(parts.length > 2 ? { label, href: `/${parts[0]}/${section}` } : { label })
   }
 
@@ -59,7 +60,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [])
 
   useEffect(() => {
-    document.title = "Admin RealtyPals"
+    const crumbs = breadcrumb(pathname)
+    const titleStr = crumbs.map(c => c.label).join(' · ')
+    document.title = `${titleStr} | RealtyPals`
   }, [pathname])
 
   useEffect(() => {

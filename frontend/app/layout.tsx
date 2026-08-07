@@ -30,7 +30,10 @@ const afacad = Afacad({
 });
 
 export const metadata: Metadata = {
-  title: "RealtyPals — AI Property Advisor for Noida",
+  title: {
+    default: "RealtyPals — AI Property Advisor for Noida",
+    template: "%s | RealtyPals",
+  },
   description: "Find, compare, and evaluate Noida real estate with AI. Get honest project analysis, EMI calculations, and builder track records — in plain language.",
   keywords: ["Noida real estate", "property advisor", "AI property search", "buy flat Noida", "Sector 150", "RERA registered"],
   openGraph: {
@@ -42,7 +45,6 @@ export const metadata: Metadata = {
     icon: "/images/icons/faviconBlack.svg",
     shortcut: "/images/icons/faviconBlack.svg",
     apple: "/images/icons/faviconBlack.svg",
-
   },
 };
 

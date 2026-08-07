@@ -29,33 +29,6 @@ import Toast from '@/components/Toast'
 type AdminTab = 'core' | 'pricing' | 'media' | 'intelligence' | 'updates' | 'partners'
 
 interface ProjectData {
-  id: string
-  slug: string
-  name: string
-  status: string
-  lat?: number
-  lng?: number
-  total_units?: number
-  total_towers?: number
-  land_area_acres?: number
-  launch_date?: string
-  possession_date?: string
-  marketing_claims?: string[]
-  ai_search_keywords?: string[]
-  builder?: Record<string, any>
-  unit_types?: Record<string, any>[]
-  amenities?: Record<string, any>[]
-  connectivity?: Record<string, any>[]
-  images?: Record<string, any>[]
-  payment_plan?: Record<string, any>
-  cost_sheet?: Record<string, any>
-  decision_profile?: Record<string, any>
-  dna?: Record<string, any>
-  project_dna?: Record<string, any>
-  persona_profile?: Record<string, any>
-  recommendation_profile?: Record<string, any>
-  competitors?: Record<string, any>[]
-  channel_partners?: Record<string, any>[]
   [key: string]: any
 }
 
@@ -87,12 +60,12 @@ export default function AdminProjectEditPage({
   params: { id: string } | Promise<{ id: string }>
 }) {
   const id = (params as any)?.id ?? (typeof (params as any)?.then === 'function' ? (use(params as unknown as Promise<{ id: string }>) as any)?.id : '')
-  const [data, setData] = useState<ProjectData | null>(null)
-  const [documents, setDocuments] = useState<ProjectDocument[]>([])
-  const [completeness, setCompleteness] = useState<CompletenessData | null>(null)
+  const [data, setData] = useState<any>(null)
+  const [documents, setDocuments] = useState<any[]>([])
+  const [completeness, setCompleteness] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [adminTab, setAdminTab] = useState<AdminTab>('core')
-  const [preview, setPreview] = useState<ProjectData | null>(null)
+  const [preview, setPreview] = useState<any>(null)
   const [showCompleteness, setShowCompleteness] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -148,12 +121,12 @@ export default function AdminProjectEditPage({
   }, [data?.name])
 
   const handleFormChange = useCallback((formValues: Record<string, any>) => {
-    setPreview((prev) => ({
+    setPreview((prev: any) => ({
       ...prev,
       ...formValues,
       builder: prev?.builder,
       unit_types: prev?.unit_types,
-    } as ProjectData))
+    }))
   }, [])
 
   const handleSaved = useCallback(async () => {
