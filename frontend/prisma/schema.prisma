@@ -189,6 +189,7 @@ model Project {
   lifecycle_updates        ProjectLifecycleUpdate[]
   unit_inventory           UnitInventory[]
   channel_partners         ProjectChannelPartner[]
+  chat_sessions            ChatSession[]          @relation("ProjectFocusedChats")
 
   @@index([city, sector])
   @@index([status])
@@ -616,6 +617,7 @@ model ChatSession {
 
   // Phase 0: Conversation Anchor — resolves pronouns in DRILLDOWN queries
   focus_project_id String?       // FK to projects.id (nullable)
+  focus_project    Project?      @relation("ProjectFocusedChats", fields: [focus_project_id], references: [id], onDelete: SetNull)
   focus_set_at     DateTime?     // When focus was set (for debugging)
 
   // Phase 4: Topic-separated summaries (replace single 500-char summary)
