@@ -1,6 +1,7 @@
 // backend/src/routes/builderApplications.ts
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
+import { randomUUID } from 'crypto'
 import { prisma } from '../lib/db'
 import { requireAdmin } from '../lib/adminAuth'
 
@@ -67,7 +68,7 @@ router.get('/:id', requireAdmin, async (req: Request, res: Response) => {
 
 // PATCH /applications/:id — approve/reject application
 const ApprovalSchema = z.object({
-  status: z.enum(['approved', 'rejected', 'clarification_requested']),
+  status: z.enum(['new', 'reviewing', 'approved', 'rejected', 'clarification_requested']),
   review_notes: z.string().optional(),
 })
 
@@ -75,7 +76,7 @@ router.patch('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const parsed = ApprovalSchema.safeParse(req.body)
     if (!parsed.success) {
-      res.status(400).json({ error: 'Invalid request' })
+      res.status(400).json({ error: 'Invalid request', details: parsed.error.issues })
       return
     }
 
@@ -91,15 +92,16 @@ router.patch('/:id', requireAdmin, async (req: Request, res: Response) => {
       return
     }
 
-    let linkedBuilderId: string | undefined
+    let linkedBuilderId: string | undefined = application.linked_builder || undefined
 
-    // If approving, create a Builder record
-    if (status === 'approved') {
-      const slug = (application.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
+    // If approving and not already linked, create a Builder record
+    if (status === 'approved' && !application.linked_builder) {
+      const baseSlug = application.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      const slug = baseSlug + '-' + randomUUID().slice(0, 8)
       const builder = await prisma.builder.create({
         data: {
           name: application.name,
-          slug: slug + '-' + Date.now(),
+          slug,
           headquarters: application.headquarters || '',
           website: application.website || '',
           description: application.description || '',
@@ -117,12 +119,11 @@ router.patch('/:id', requireAdmin, async (req: Request, res: Response) => {
       linkedBuilderId = builder.id
 
       // Create BuilderAccount linked to this builder
-      // For now, set user_id to null — will be set when builder logs in
       await prisma.builderAccount.create({
         data: {
           builder_id: builder.id,
           email: application.email,
-          auth_method: 'magic_link', // Or password, depending on onboarding flow
+          auth_method: 'magic_link',
           is_active: true,
         }
       })
@@ -134,7 +135,7 @@ router.patch('/:id', requireAdmin, async (req: Request, res: Response) => {
       data: {
         status,
         review_notes: review_notes || null,
-        reviewed_by: 'admin', // In a real system, get from req.user
+        reviewed_by: (req as any).user?.id || 'admin-system',
         linked_builder: linkedBuilderId || null,
       }
     })

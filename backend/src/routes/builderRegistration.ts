@@ -1,6 +1,7 @@
 // backend/src/routes/builderRegistration.ts
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
+import { randomUUID } from 'crypto'
 import { prisma } from '../lib/db'
 import { supabaseAdmin } from '../lib/supabase'
 import { checkRateLimit } from '../lib/cache'
@@ -101,9 +102,9 @@ async function uploadLogoToSupabase(
 
 router.post('/', async (req: Request, res: Response) => {
   try {
-    // Rate limit: 5 registrations per IP per hour
+    // Rate limit: 30 registrations per IP per hour
     const ip = req.ip || 'unknown'
-    const { allowed } = await checkRateLimit(`builder:register:${ip}`, 5, 3600)
+    const { allowed } = await checkRateLimit(`builder:register:${ip}`, 30, 3600)
     if (!allowed) {
       return res.status(429).json({ error: 'Too many registration attempts. Please try again in an hour.' })
     }
@@ -149,7 +150,7 @@ router.post('/', async (req: Request, res: Response) => {
         executives: executives || [],
         projects: projects || [],
         delivery_track: delivery_track || null,
-        status: 'new' as any,
+        status: 'new' satisfies typeof FormStatusValues[number],
         submitted_at: new Date(),
         ip_address: req.ip || 'unknown',
         user_agent: req.get('user-agent') || 'unknown',
