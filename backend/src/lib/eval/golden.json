@@ -1,0 +1,111 @@
+[
+  {
+    "id": "1",
+    "query": "Show me 3BHK properties in Sector 150 under 2 crore",
+    "intent": {
+      "bhk": [3],
+      "sector": "Sector 150",
+      "budgetMax": 2.0
+    },
+    "expectedProjectCount": { "min": 1, "max": 20 },
+    "shouldFindProject": ["Godrej Palm Retreat"],
+    "shouldNotHallucinate": true,
+    "description": "Hard filter discovery with all three signals"
+  },
+  {
+    "id": "2",
+    "query": "What's the payment plan for Godrej Palm Retreat?",
+    "intent": {
+      "projectNames": ["Godrej Palm Retreat"]
+    },
+    "shouldFindProject": ["Godrej Palm Retreat"],
+    "toolCallExpected": "payment_plan_lookup",
+    "shouldNotHallucinate": true,
+    "description": "Project detail + tool call on tool availability"
+  },
+  {
+    "id": "3",
+    "query": "Best properties for first-time buyers in Noida under 1.5 crore",
+    "intent": {
+      "riskProfile": "first_time_buyer",
+      "budgetMax": 1.5,
+      "sector": null
+    },
+    "expectedProjectCount": { "min": 1, "max": 20 },
+    "shouldNotHallucinate": true,
+    "description": "City-wide advisory query (no sector)"
+  },
+  {
+    "id": "4",
+    "query": "Is Amrapali Group a good builder?",
+    "intent": {},
+    "shouldFindProject": null,
+    "shouldNotRecommendBuilder": ["Amrapali Group"],
+    "shouldNotHallucinate": true,
+    "description": "Legal block: Amrapali is court-flagged, should not recommend"
+  },
+  {
+    "id": "5",
+    "query": "Compare Sector 75 and Sector 93 for family buyers",
+    "intent": {
+      "sector": null,
+      "is_comparison_query": true
+    },
+    "expectedProjectCount": { "min": 2, "max": 20 },
+    "shouldNotHallucinate": true,
+    "description": "Comparison query across two sectors"
+  },
+  {
+    "id": "6",
+    "query": "Tell me about the EMI for a 1.5 crore property",
+    "intent": {
+      "budgetMax": 1.5
+    },
+    "toolCallExpected": "calculate_emi",
+    "shouldNotHallucinate": true,
+    "description": "EMI calculator tool invocation"
+  },
+  {
+    "id": "7",
+    "query": "What's the stamp duty for a 2 crore property?",
+    "intent": {
+      "budgetMax": 2.0
+    },
+    "toolCallExpected": "calculate_stamp_duty",
+    "shouldNotHallucinate": true,
+    "description": "Stamp duty calculator tool invocation"
+  },
+  {
+    "id": "8",
+    "query": "2BHK near metro, Sector 62 area, around 80 lakh",
+    "intent": {
+      "bhk": [2],
+      "sector": "Sector 62",
+      "budgetMax": 0.8
+    },
+    "expectedProjectCount": { "min": 1, "max": 20 },
+    "shouldNotHallucinate": true,
+    "description": "Specific sector + BHK + budget query"
+  },
+  {
+    "id": "9",
+    "query": "Which properties have possession ready?",
+    "intent": {
+      "possession": "immediate"
+    },
+    "expectedProjectCount": { "min": 1, "max": 20 },
+    "shouldNotHallucinate": true,
+    "description": "Possession status filter"
+  },
+  {
+    "id": "10",
+    "query": "Show luxury properties above 5 crore in Sector 150",
+    "intent": {
+      "budgetMin": 5.0,
+      "sector": "Sector 150"
+    },
+    "expectedProjectCount": { "min": 0, "max": 10 },
+    "shouldNotHallucinate": true,
+    "description": "Budget floor filter"
+  }
+]
