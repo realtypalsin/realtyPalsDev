@@ -1169,4 +1169,112 @@ router.put('/projects/:id/updates', requireAdmin, async (req: Request, res: Resp
   }
 })
 
+// PATCH /api/v1/admin/projects/:id/dna — save/update project DNA profile
+router.patch('/projects/:id/dna', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const data = req.body
+
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    const updated = await (prisma as any).projectDna.upsert({
+      where: { project_id: project.id },
+      update: { ...data, updated_at: new Date() },
+      create: { project_id: project.id, ...data }
+    })
+    res.json({ success: true, data: updated })
+  } catch (err) {
+    console.error('[admin] save DNA failed:', err)
+    res.status(500).json({ error: 'Failed to save DNA profile' })
+  }
+})
+
+// PATCH /api/v1/admin/projects/:id/decision-profile — save/update decision profile
+router.patch('/projects/:id/decision-profile', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const data = req.body
+
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    const updated = await (prisma as any).decisionProfile.upsert({
+      where: { project_id: project.id },
+      update: { ...data, updated_at: new Date() },
+      create: { project_id: project.id, ...data }
+    })
+    res.json({ success: true, data: updated })
+  } catch (err) {
+    console.error('[admin] save decision profile failed:', err)
+    res.status(500).json({ error: 'Failed to save decision profile' })
+  }
+})
+
+// PATCH /api/v1/admin/projects/:id/persona-profile — save/update persona profile
+router.patch('/projects/:id/persona-profile', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const data = req.body
+
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    const updated = await (prisma as any).personaProfile.upsert({
+      where: { project_id: project.id },
+      update: { ...data, updated_at: new Date() },
+      create: { project_id: project.id, ...data }
+    })
+    res.json({ success: true, data: updated })
+  } catch (err) {
+    console.error('[admin] save persona profile failed:', err)
+    res.status(500).json({ error: 'Failed to save persona profile' })
+  }
+})
+
+// PATCH /api/v1/admin/projects/:id/recommendation-profile — save/update recommendation profile
+router.patch('/projects/:id/recommendation-profile', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const data = req.body
+
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    const updated = await (prisma as any).recommendationProfile.upsert({
+      where: { project_id: project.id },
+      update: { ...data, updated_at: new Date() },
+      create: { project_id: project.id, ...data }
+    })
+    res.json({ success: true, data: updated })
+  } catch (err) {
+    console.error('[admin] save recommendation profile failed:', err)
+    res.status(500).json({ error: 'Failed to save recommendation profile' })
+  }
+})
+
 export default router
