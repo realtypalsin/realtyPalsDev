@@ -279,6 +279,7 @@ const BodySchema = z.object({
 })
 
 import { inputGuardrail, outputGuardrail } from '../lib/ai/guardrails'
+import { validateAgainstFacts } from '../lib/ai/guardrails-v2'
 
 function sseWrite(res: Response, event: string, data: Record<string, unknown>): void {
   res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
@@ -1470,7 +1471,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     if (fullText) {
       try {
-        const gr = await outputGuardrail(fullText, systemPrompt);
+        const gr = await validateAgainstFacts(fullText, systemPrompt);
         if (gr.violations.length > 0) {
           const severity = gr.blocked ? 'CRITICAL' : 'WARNING'
           console.error(`[GUARDRAIL_${severity}] Output guardrail triggered`, {
@@ -1490,7 +1491,7 @@ router.post('/', async (req: Request, res: Response) => {
           }
         }
       } catch (err) {
-        console.error('[GUARDRAIL_ERROR] Failed to run outputGuardrail', err)
+        console.error('[GUARDRAIL_ERROR] Failed to run validateAgainstFacts', err)
       }
     }
 
