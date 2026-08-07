@@ -147,10 +147,7 @@ function canReuseCache(
 // ── Issue 4: Token budget protection — prevent OpenAI 413 ────────────────────
 
 const SAFE_TOKEN_CEILING = 100_000
-
-function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4)
-}
+const estimateTokens = estimateTokensReal
 
 function trimMessagesToBudget(
   systemPrompt: string,
@@ -280,6 +277,7 @@ const BodySchema = z.object({
 
 import { inputGuardrail, outputGuardrail } from '../lib/ai/guardrails'
 import { validateAgainstFacts } from '../lib/ai/guardrails-v2'
+import { estimateTokensReal } from '../lib/ai/tokenizer'
 
 function sseWrite(res: Response, event: string, data: Record<string, unknown>): void {
   res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
