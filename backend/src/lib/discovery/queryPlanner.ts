@@ -233,19 +233,13 @@ async function extractProjectIds(
   const msg = message.toLowerCase()
   const projectIds: string[] = []
 
-  // Look for explicit project names — filter by message text to avoid full table scan
-  const messageLower = msg.toLowerCase()
+  // Get all projects to check against message text
   const projects = await prisma.project.findMany({
     select: { id: true, name: true, slug: true },
-    where: {
-      OR: [
-        { name: { contains: messageLower, mode: 'insensitive' } },
-        { slug: { contains: messageLower, mode: 'insensitive' } }
-      ]
-    },
-    take: 50, // Reasonable limit, but not absolute cap like before
+    take: 200, // Reasonable limit for checking
   })
 
+  // Check which projects are mentioned in the message
   for (const project of projects) {
     const nameRegex = new RegExp(`\\b${project.name.toLowerCase()}\\b`)
     const slugRegex = new RegExp(`\\b${project.slug.toLowerCase()}\\b`)

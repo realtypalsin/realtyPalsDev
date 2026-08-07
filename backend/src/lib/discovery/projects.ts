@@ -543,7 +543,7 @@ function scoreAndSort(
       threshold,
     })))
   }
-  const sorted = passed.sort((a, b) => b.matchScore - a.matchScore).slice(0, MAX_RESULTS)
+  const sorted = passed.sort((a, b) => b.matchScore - a.matchScore)
 
   // Populate whyNot for non-top results now that ranking is known
   if (sorted.length > 1) {
@@ -562,6 +562,7 @@ function scoreAndSort(
     excluded: excluded.length,
     threshold,
     results:  sorted.map((p) => ({ name: p.name, score: p.matchScore })),
+    returned: sorted.length,
   })
   return sorted
 }

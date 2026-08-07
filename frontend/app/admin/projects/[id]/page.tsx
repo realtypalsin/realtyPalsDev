@@ -45,14 +45,6 @@ interface CompletenessData {
   missing: string[]
 }
 
-const formatDateForInput = (date: string | null | undefined): string => {
-  if (!date) return ''
-  try {
-    return new Date(date).toISOString().split('T')[0]
-  } catch {
-    return ''
-  }
-}
 
 export default function AdminProjectEditPage({
   params,

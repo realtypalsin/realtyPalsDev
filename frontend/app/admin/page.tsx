@@ -38,14 +38,13 @@ export default function AdminDashboard() {
     const res = await adminFetch('/admin/projects')
     const data = await res.json()
     const projects = data.projects ?? []
-    const builderCounts: Record<string, number> = {}
-    projects.forEach((p: any) => {
-      if (p.builder?.name) {
-        builderCounts[p.builder.name] = (builderCounts[p.builder.name] || 0) + 1
-      }
-    })
-    
-    const topBuilders = Object.entries(builderCounts)
+
+    const topBuilders = Object.entries(
+      projects.reduce((acc: Record<string, number>, p: any) => {
+        if (p.builder?.name) acc[p.builder.name] = (acc[p.builder.name] ?? 0) + 1
+        return acc
+      }, {})
+    )
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
       .map(([name, count]) => ({ name: name.length > 15 ? name.substring(0, 15) + '...' : name, projects: count }))
