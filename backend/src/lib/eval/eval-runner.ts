@@ -31,11 +31,14 @@ async function runEval() {
     try {
       const response = await fetch(`${endpoint}/api/v1/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eval-test-token',
+        },
         body: JSON.stringify({
-          message: query,
-          sessionId: `eval-${Date.now()}`,
-          previousMessages: [],
+          action: { type: 'TEXT_MESSAGE', payload: { text: query } },
+          sessionId: null,
+          intent: {},
         }),
       })
 

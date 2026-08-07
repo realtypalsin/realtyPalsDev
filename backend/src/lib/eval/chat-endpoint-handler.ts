@@ -11,16 +11,16 @@ export async function createChatEndpointHandler(
   return async (query: string): Promise<string> => {
     // Simulate NextRequest with chat payload
     const body = JSON.stringify({
-      message: query,
-      sessionId: `eval-${Date.now()}`,
-      previousMessages: [],
+      action: { type: 'TEXT_MESSAGE', payload: { text: query } },
+      sessionId: null,
+      intent: {},
     })
 
     const mockReq = new Request('http://localhost:3000/api/v1/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer test-token-eval',
+        'Authorization': 'Bearer eval-test-token',
       },
       body,
     }) as NextRequest
