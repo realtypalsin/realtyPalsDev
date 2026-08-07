@@ -3,6 +3,7 @@ import { timingSafeEqual } from 'crypto'
 import { prisma } from '../lib/db'
 import { createAdminSession, requireAdmin, destroyAdminSession } from '../lib/adminAuth'
 import { computeCompleteness } from '../lib/completeness'
+import { checkRateLimit } from '../lib/cache'
 
 // ProjectDocument has no @relation to Project, and rows may carry either
 // project_id or project_slug. Resolve the :id param (which may be an id OR a
@@ -32,6 +33,15 @@ function passwordMatches(input: string, expected: string): boolean {
 
 // POST /api/v1/admin/auth — exchange the admin password for a session token.
 router.post('/auth', async (req: Request, res: Response) => {
+  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
+
+  // Rate limit: 5 attempts per 15 minutes per IP
+  const isOverLimit = await checkRateLimit(`admin:login:${ip}`, 5, 900)
+  if (isOverLimit) {
+    res.status(429).json({ error: 'Too many login attempts. Try again later.' })
+    return
+  }
+
   const expected = process.env.ADMIN_PASSWORD
   if (!expected) {
     console.error('[admin] ADMIN_PASSWORD not set — refusing login')

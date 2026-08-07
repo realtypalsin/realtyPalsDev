@@ -58,11 +58,23 @@ router.post('/callback', async (req: Request, res: Response) => {
   const rateLimitKey = userId ? `callback:${userId}` : guestToken ? `callback:guest:${guestToken}` : `callback:ip:${req.ip}`
   const rl = await checkRateLimit(rateLimitKey, 5, 3600)
   if (rl.remaining <= 0) { res.status(429).json({ error: 'Too many requests' }); return }
+
   const parsed = CallbackSchema.safeParse(req.body)
-  if (!parsed.success) {
-    res.status(400).json({ error: 'Invalid request', details: parsed.error.errors })
-    return
-  }
+  if (!parsed.success) { res.status(400).json({ error: 'Invalid request', details: parsed.error.errors }); return }
+
+  // Idempotency: check for duplicate request in last 5 seconds
+  const projectSlug = parsed.data.projectSlug || parsed.data.project_slug
+  const phone = parsed.data.phone
+  const fiveSecsAgo = new Date(Date.now() - 5000)
+  const recentDuplicate = await prisma.lead.findFirst({
+    where: {
+      phone,
+      ...(projectSlug ? { project: { slug: projectSlug } } : {}),
+      lead_type: 'callback_requested',
+      created_at: { gte: fiveSecsAgo }
+    }
+  })
+  if (recentDuplicate) { res.status(200).json({ success: true, duplicate: true }); return }
 
   const { name, phone, projectName, project_name, projectSlug, project_slug, session_id, intent_tier, loan_status, consent_given } = parsed.data
 
@@ -201,6 +213,18 @@ router.post('/site-visit', async (req: Request, res: Response) => {
   }
 
   const { name, phone, projectSlug, projectName, visitDate, timeSlot } = parsed.data
+
+  // Idempotency: check for duplicate request in last 5 seconds
+  const fiveSecsAgo = new Date(Date.now() - 5000)
+  const recentDuplicate = await prisma.lead.findFirst({
+    where: {
+      phone,
+      ...(projectSlug ? { project: { slug: projectSlug } } : {}),
+      lead_type: 'site_visit_requested',
+      created_at: { gte: fiveSecsAgo }
+    }
+  })
+  if (recentDuplicate) { res.status(200).json({ success: true, duplicate: true }); return }
 
   if (visitDate) {
     const visitMs = new Date(visitDate).getTime()

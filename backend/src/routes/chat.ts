@@ -335,8 +335,9 @@ router.post('/', async (req: Request, res: Response) => {
     return
   }
 
-  // Check per-user daily AI cost budget
-  if (await isOverDailyBudget(userId ?? null)) {
+  // Check per-user daily AI cost budget (includes guest tokens)
+  const budgetKey = userId || guestToken || null
+  if (await isOverDailyBudget(budgetKey)) {
     res.status(429).json({ error: "You've reached today's usage limit. Please try again tomorrow." })
     return
   }
