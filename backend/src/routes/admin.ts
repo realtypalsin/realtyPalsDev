@@ -55,7 +55,6 @@ router.post('/auth', async (req: Request, res: Response) => {
     return
   }
 
-  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
   const userAgent = (req.headers['user-agent'] as string) || 'unknown'
   const token = await createAdminSession(ip, userAgent)
   res.json({ token })

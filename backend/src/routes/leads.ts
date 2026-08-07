@@ -76,7 +76,7 @@ router.post('/callback', async (req: Request, res: Response) => {
   })
   if (recentDuplicate) { res.status(200).json({ success: true, duplicate: true }); return }
 
-  const { name, phone, projectName, project_name, projectSlug, project_slug, session_id, intent_tier, loan_status, consent_given } = parsed.data
+  const { name, projectName, project_name, session_id, intent_tier, loan_status, consent_given } = parsed.data
 
   // Support both camelCase and snake_case from frontend
   const finalProjectName = projectName || project_name
