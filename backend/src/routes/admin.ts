@@ -484,6 +484,17 @@ router.get('/builders', requireAdmin, async (req: Request, res: Response) => {
         where,
         include: {
           _count: { select: { projects: true } },
+          projects: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              sector: true,
+              city: true,
+              status: true,
+            },
+            orderBy: { name: 'asc' },
+          },
         },
         orderBy: { name: 'asc' },
         take: parseInt(limit as string),
@@ -501,14 +512,28 @@ router.get('/builders', requireAdmin, async (req: Request, res: Response) => {
 
 // POST /api/v1/admin/builders — create builder
 router.post('/builders', requireAdmin, async (req: Request, res: Response) => {
-  const { name, slug, founded_year, headquarters, website, logo_url } = req.body
+  const {
+    name,
+    slug,
+    founded_year,
+    headquarters,
+    website,
+    logo_url,
+    credai_member,
+    delivered_units,
+    rera_compliance_score,
+    iso_certified,
+    company_overview,
+  } = req.body
 
   if (!name) {
     res.status(400).json({ error: 'name is required' })
     return
   }
 
-  const generatedSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+  const { randomUUID } = await import('crypto')
+  const baseSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+  const generatedSlug = baseSlug + '-' + randomUUID().slice(0, 8)
 
   try {
     const builder = await prisma.builder.create({
@@ -517,14 +542,20 @@ router.post('/builders', requireAdmin, async (req: Request, res: Response) => {
         slug: generatedSlug,
         founded_year: founded_year ? parseInt(founded_year) : null,
         headquarters: headquarters || null,
+        website: website || null,
         logo_url: logo_url || null,
+        credai_member: credai_member || false,
+        delivered_units: delivered_units ? parseInt(delivered_units) : null,
+        rera_compliance_score: rera_compliance_score ? parseInt(rera_compliance_score) : null,
+        iso_certified: iso_certified || false,
+        description: company_overview || null,
       },
       include: {
         _count: { select: { projects: true } },
       },
     })
 
-    res.status(201).json({ builder, ...builder })
+    res.status(201).json({ builder })
   } catch (err) {
     console.error('[admin] builder create failed:', err)
     res.status(500).json({ error: 'Failed to create builder' })
@@ -539,15 +570,22 @@ router.patch('/builders/:id', requireAdmin, async (req: Request, res: Response) 
   try {
     const { id: _, created_at: __, _count: ___, projects: ____, ...validFields } = updates
 
+    // Coerce types for numeric fields
+    const data: any = { ...validFields }
+    if (data.founded_year) data.founded_year = parseInt(data.founded_year)
+    if (data.delivered_units) data.delivered_units = parseInt(data.delivered_units)
+    if (data.rera_compliance_score) data.rera_compliance_score = parseInt(data.rera_compliance_score)
+    if (data.company_overview) { data.description = data.company_overview; delete data.company_overview }
+
     const builder = await prisma.builder.update({
       where: { id },
-      data: validFields,
+      data,
       include: {
         _count: { select: { projects: true } },
       },
     })
 
-    res.json({ builder, ...builder })
+    res.json(builder)
   } catch (err) {
     console.error('[admin] builder update failed:', err)
     res.status(500).json({ error: 'Failed to update builder' })
@@ -558,6 +596,16 @@ router.patch('/builders/:id', requireAdmin, async (req: Request, res: Response) 
 router.delete('/builders/:id', requireAdmin, async (req: Request, res: Response) => {
   const { id } = req.params
   try {
+    // Check if builder has linked projects before deleting
+    const projectCount = await prisma.project.count({
+      where: { builder_id: id },
+    })
+
+    if (projectCount > 0) {
+      res.status(409).json({ error: `Cannot delete: ${projectCount} project(s) linked to this builder` })
+      return
+    }
+
     await prisma.builder.delete({ where: { id } })
     res.json({ success: true, message: 'Builder deleted successfully' })
   } catch (err) {
