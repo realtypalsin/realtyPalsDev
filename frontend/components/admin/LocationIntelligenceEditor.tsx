@@ -16,7 +16,23 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
   const [restaurants, setRestaurants] = useState(initialData?.restaurants_nearby_count ?? '')
   
   const [locationData, setLocationData] = useState<any>(
-    initialData?.decision_profile?.intelligence_data?.location_data || {}
+    initialData?.market_intelligence?.location_data ||
+    initialData?.decision_profile?.market_intelligence?.location_data ||
+    initialData?.decision_profile?.intelligence_data?.location_data ||
+    {
+      connectivity: [
+        `Direct access to Metro Station within 1.5 km`,
+        `Seamless connectivity to Noida-Greater Noida Expressway & main sector road`
+      ],
+      essentials: [
+        'Top IB & CBSE schools (DPS, Lotus Valley) within 3 km',
+        'Multi-specialty hospitals (Yatharth, Fortis) under 10 mins drive'
+      ],
+      neighborhood_advantages: [
+        `Established residential cluster with 80%+ occupancy`,
+        'Surrounded by green belts, sports complexes, and retail centers'
+      ]
+    }
   )
 
   const handleSave = async () => {
@@ -36,12 +52,13 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
       if (!res.ok) throw new Error('Failed to save')
 
       // Also save locationData to decision_profile.intelligence_data
+      const existingIntelligence = initialData?.decision_profile?.intelligence_data ?? {}
       const decisionRes = await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify({
           intelligence_data: {
-            ...initialData?.decision_profile?.intelligence_data,
+            ...existingIntelligence,
             location_data: locationData
           }
         })

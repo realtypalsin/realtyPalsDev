@@ -40,11 +40,13 @@ export interface DecisionProfileSnapshot {
 }
 
 export interface PersonaProfileSnapshot {
-  primary_persona: string | null
+  primary_persona?:    string | null
+  secondary_personas?: string[]
 }
 
 export interface RecommendationProfileSnapshot {
-  tier: string | null
+  tier?:           string | null
+  primary_thesis?: string | null
 }
 
 export interface ProjectSnapshot {
@@ -264,32 +266,36 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
   if (!hasConnectivity) missing.overview.push(`Connectivity needs 3+ entries (has ${project.connectivity.length})`)
 
   // Intelligence (4)
-  const hasDecisionThesis = present(project.decision_profile?.decision_thesis ?? null)
+  const hasDecisionThesis = present(project.decision_profile?.decision_thesis ?? null) ||
+    (Array.isArray(project.decision_profile?.why_buy) && project.decision_profile!.why_buy.length > 0)
   enrichment.push(hasDecisionThesis)
   if (!hasDecisionThesis) missing.intelligence.push('Decision thesis missing')
 
-  const hasPersona = project.persona_profile?.primary_persona != null
+  const hasPersona = present(project.persona_profile?.primary_persona ?? null) ||
+    (Array.isArray(project.persona_profile?.secondary_personas) && project.persona_profile!.secondary_personas.length > 0)
   enrichment.push(hasPersona)
   if (!hasPersona) missing.intelligence.push('Primary buyer persona not set')
 
-  const hasRecommendationTier = project.recommendation_profile?.tier != null
+  const hasRecommendationTier = present(project.recommendation_profile?.tier ?? null) ||
+    present(project.recommendation_profile?.primary_thesis ?? null)
   enrichment.push(hasRecommendationTier)
   if (!hasRecommendationTier) missing.intelligence.push('Recommendation tier not set (STRONG_BUY / BUY / HOLD / etc.)')
 
-  const dnaScoresFilled = project.dna == null ? 0 : [
-    project.dna.builder_track_record_score,
-    project.dna.price_position_score,
-    project.dna.locality_score,
-    project.dna.rera_compliance_score,
-    project.dna.amenity_depth_score,
-    project.dna.possession_certainty_score,
-  ].filter(s => s != null).length
+  const dna = project.dna as any
+  const dnaScoresFilled = dna == null ? 0 : [
+    dna.builder_score ?? dna.builder_track_record_score,
+    dna.price_score ?? dna.price_position_score,
+    dna.location_score ?? dna.locality_score,
+    dna.legal_score ?? dna.rera_compliance_score,
+    dna.amenity_score ?? dna.amenity_depth_score,
+    dna.possession_score ?? dna.possession_certainty_score,
+  ].filter(s => s != null && s !== '').length
   const hasDna = dnaScoresFilled >= 3
   enrichment.push(hasDna)
   if (!hasDna) missing.intelligence.push(`DNA scores incomplete (${dnaScoresFilled}/6 filled, need 3+)`)
 
   // Competitors (1)
-  const hasCompetitors = project.competitors.length >= 1
+  const hasCompetitors = (project.competitors?.length ?? 0) >= 1
   enrichment.push(hasCompetitors)
   if (!hasCompetitors) missing.competitors.push('No competitor projects added')
 
@@ -413,7 +419,7 @@ export function checkDecisionProfileCompleteness(
     .map(([key]) => key)
 
   return {
-    project_id: profile.project_id,
+    project_id: profile.project_id ?? '',
     overall_percent: Math.round((completed / total) * 100),
     ...checks,
     missing_fields: missing,

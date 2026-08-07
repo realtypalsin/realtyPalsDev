@@ -211,10 +211,10 @@ export default function AdminProjectEditPage({
   ]
 
   const tabScores: Record<AdminTab, number> = completeness?.tabScores ?? {
-    core: Math.min(100, Math.round(((data?.name ? 15 : 0) + (data?.status ? 15 : 0) + (data?.rera_number ? 15 : 0) + (data?.description ? 15 : 0) + (data?.hero_image_url ? 15 : 0) + ((data?.unit_types?.length || 0) >= 1 ? 15 : 0) + ((data?.amenities?.length || 0) >= 3 ? 10 : 0)))),
-    pricing: Math.min(100, Math.round((((data?.unit_types?.length || 0) > 0 ? 30 : 0) + ((data?.connectivity?.length || 0) >= 3 ? 30 : 0) + ((data?.unit_types?.length || 0) > 0 ? 20 : 0) + (data?.rera_number ? 20 : 0)))),
-    media: Math.min(100, Math.round(((data?.hero_image_url ? 30 : 0) + ((data?.images?.length || 0) >= 3 ? 40 : 20) + (documents?.some((d: any) => d.doc_type === 'brochure') ? 30 : 0)))),
-    intelligence: Math.min(100, Math.round(((data?.decision_profile ? 20 : 0) + (data?.persona_profile ? 20 : 0) + (data?.recommendation_profile ? 20 : 0) + (data?.dna ? 20 : 0) + ((data?.competitors?.length || 0) >= 1 ? 20 : 0)))),
+    core: 0,
+    pricing: 0,
+    media: 0,
+    intelligence: 0,
     updates: 100,
     partners: 100,
   }
@@ -222,131 +222,133 @@ export default function AdminProjectEditPage({
   return (
     <>
       {/* ── Sticky Project Sub-Header ───────────────────────────────────────────── */}
-      <div className="sticky top-0 z-30 w-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shadow-xs px-4 md:px-8 py-3.5 space-y-3.5 transition-all">
+      <div className="sticky top-0 z-30 w-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shadow-xs px-4 md:px-8 py-3 transition-all">
+        <div className="max-w-[1400px] mx-auto space-y-3">
 
-        {/* Identity row */}
-        <div className="flex items-center justify-between gap-4">
-
-          <div className="flex items-center gap-3.5 min-w-0">
-            <Link
-              href="/admin/projects"
-              className="w-9 h-9 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700/80 transition-all flex-shrink-0 shadow-2xs flex items-center justify-center group"
-              title="Back to Projects"
-            >
-              <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-            </Link>
+          {/* Identity row */}
+          <div className="flex items-center justify-between gap-4">
 
             <div className="flex items-center gap-3 min-w-0">
-              <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight truncate leading-none">
-                {data.name}
-              </h1>
-              <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border shadow-2xs flex-shrink-0 flex items-center gap-1.5 ${
-                data.status === 'ready_to_move'
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
-                  : data.status === 'under_construction'
-                  ? 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60'
-                  : 'bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  data.status === 'ready_to_move' ? 'bg-emerald-500' : data.status === 'under_construction' ? 'bg-amber-500 animate-pulse' : 'bg-blue-500'
-                }`} />
-                {data.status?.replace('_', ' ')}
-              </span>
+              <Link
+                href="/admin/projects"
+                className="w-8 h-8 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700/80 transition-all flex-shrink-0 shadow-2xs flex items-center justify-center group"
+                title="Back to Projects"
+              >
+                <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
+              </Link>
+
+              <div className="flex items-center gap-2.5 min-w-0">
+                <h1 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight truncate leading-none">
+                  {data.name}
+                </h1>
+                <span className={`px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider rounded-md border shadow-2xs flex-shrink-0 flex items-center gap-1.5 ${
+                  data.status === 'ready_to_move'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
+                    : data.status === 'under_construction'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60'
+                    : 'bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    data.status === 'ready_to_move' ? 'bg-emerald-500' : data.status === 'under_construction' ? 'bg-amber-500 animate-pulse' : 'bg-blue-500'
+                  }`} />
+                  {data.status?.replace('_', ' ')}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {adminTab === 'core' && (
+                <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl px-3 py-1 shadow-2xs">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>Live Preview Sync</span>
+                </div>
+              )}
+              <a
+                href={`/projects/${data.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-xs font-semibold text-white dark:text-zinc-900 transition-all shadow-xs active:scale-[0.98]"
+              >
+                <Eye size={13} />
+                <span>View Public</span>
+              </a>
+            </div>
+
+          </div>
+
+          {/* Tab rail with polished completion indicators */}
+          <div className="flex items-center p-1 bg-zinc-100/90 dark:bg-zinc-800/70 rounded-2xl border border-zinc-200/80 dark:border-zinc-700/60 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-inner">
+            <div className="flex items-center gap-1 min-w-full sm:min-w-0 justify-between sm:justify-start w-full">
+              {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
+                const isActive = adminTab === tabId
+                const pct = tabScores[tabId] ?? 100
+                const isComplete = pct >= 90
+                const isMedium = pct >= 60 && pct < 90
+
+                return (
+                  <button
+                    key={tabId}
+                    onClick={() => setAdminTab(tabId)}
+                    className={`relative flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl transition-all duration-200 whitespace-nowrap font-medium cursor-pointer ${
+                      isActive
+                        ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60'
+                    }`}
+                  >
+                    <Icon
+                      size={14}
+                      className={
+                        isActive
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-zinc-400 dark:text-zinc-500'
+                      }
+                    />
+                    <span>{label}</span>
+
+                    <span
+                      className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md border transition-colors ${
+                        isComplete
+                          ? (isActive
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/80'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40')
+                          : isMedium
+                          ? (isActive
+                              ? 'bg-amber-100 text-amber-800 border-amber-300/80 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700/80'
+                              : 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40')
+                          : (isActive
+                              ? 'bg-rose-100 text-rose-800 border-rose-300/80 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-700/80'
+                              : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40')
+                      }`}
+                    >
+                      <span
+                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{
+                          backgroundColor: isComplete ? '#10b981' : isMedium ? '#f59e0b' : '#f43f5e'
+                        }}
+                      />
+                      <span>{pct}%</span>
+                    </span>
+
+                    {isActive && (
+                      <div className="absolute bottom-0.5 left-2.5 right-2.5 h-[2px] bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-500 ${
+                            isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
+                          }`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            {adminTab === 'core' && (
-              <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl px-3.5 py-1.5 shadow-2xs">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span>Live Preview Sync</span>
-              </div>
-            )}
-            <a
-              href={`/projects/${data.slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-xs font-semibold text-white dark:text-zinc-900 transition-all shadow-xs active:scale-[0.98]"
-            >
-              <Eye size={14} />
-              <span>View Public</span>
-            </a>
-          </div>
-
         </div>
-
-        {/* Tab rail with polished completion indicators */}
-        <div className="flex items-center p-1.5 bg-zinc-100/90 dark:bg-zinc-800/70 rounded-2xl border border-zinc-200/80 dark:border-zinc-700/60 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-inner">
-          <div className="flex items-center gap-1.5 min-w-full sm:min-w-0">
-            {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
-              const isActive = adminTab === tabId
-              const pct = tabScores[tabId] ?? 100
-              const isComplete = pct >= 90
-              const isMedium = pct >= 60 && pct < 90
-
-              return (
-                <button
-                  key={tabId}
-                  onClick={() => setAdminTab(tabId)}
-                  className={`relative flex items-center gap-2.5 px-3.5 py-2 text-xs rounded-xl transition-all duration-200 whitespace-nowrap font-medium cursor-pointer ${
-                    isActive
-                      ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold'
-                      : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60'
-                  }`}
-                >
-                  <Icon
-                    size={15}
-                    className={
-                      isActive
-                        ? 'text-blue-600 dark:text-blue-400'
-                        : 'text-zinc-400 dark:text-zinc-500'
-                    }
-                  />
-                  <span>{label}</span>
-
-                  <span
-                    className={`flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-lg border transition-colors ${
-                      isComplete
-                        ? (isActive
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/80'
-                            : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40')
-                        : isMedium
-                        ? (isActive
-                            ? 'bg-amber-100 text-amber-800 border-amber-300/80 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700/80'
-                            : 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40')
-                        : (isActive
-                            ? 'bg-rose-100 text-rose-800 border-rose-300/80 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-700/80'
-                            : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40')
-                    }`}
-                  >
-                    <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0"
-                      style={{
-                        backgroundColor: isComplete ? '#10b981' : isMedium ? '#f59e0b' : '#f43f5e'
-                      }}
-                    />
-                    <span>{pct}%</span>
-                  </span>
-
-                  {isActive && (
-                    <div className="absolute bottom-0.5 left-3 right-3 h-[2.5px] bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
-                        }`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
       </div>
 
       {/* ── Scrollable Content ──────────────────────────────────────────────── */}
@@ -434,6 +436,7 @@ export default function AdminProjectEditPage({
             initialPersona={data.persona_profile}
             initialRecommendation={data.recommendation_profile}
             initialCompetitors={data.competitors ?? []}
+            onSaved={handleSaved}
           />
         )}
 

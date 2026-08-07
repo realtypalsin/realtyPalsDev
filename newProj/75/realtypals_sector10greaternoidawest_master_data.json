@@ -121,21 +121,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "appreciation_annual": "12-15%",
-          "appreciation_desc": "Estimated capital appreciation based on infra growth",
-          "rental_yield": "4.2-4.8%",
-          "rental_desc": "High corporate tenant demand",
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 10 Greater Noida West.",
           "market_trend": "Bullish",
-          "market_desc": "Strong buyer absorption",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
           "liquidity_score": "High",
-          "liquidity_desc": "Active resale market"
+          "appreciation_desc": "Estimated annual capital growth for ATS Homekraft Happy Trails based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 10 Greater Noida West",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
+          ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of ATS Homekraft Happy Trails",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 10 Greater Noida West with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },

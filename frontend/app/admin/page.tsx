@@ -161,13 +161,16 @@ export default function AdminDashboard() {
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
                   <RechartsTooltip
-                    cursor={{ fill: '#f4f4f5', opacity: 0.5 }}
+                    cursor={{ fill: 'rgba(59, 130, 246, 0.06)', radius: 6 }}
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         return (
-                          <div className="bg-surface/90 backdrop-blur-sm border border-border p-md rounded-md shadow-sm">
-                            <p className="text-xs font-semibold text-text-muted uppercase tracking-widest mb-1">{label}</p>
-                            <p className="text-base font-bold text-text-primary leading-none">{payload[0].value} <span className="text-xs font-medium text-text-secondary">projects</span></p>
+                          <div className="bg-zinc-900 border border-zinc-800 text-white px-3.5 py-2 rounded-xl shadow-xl z-50">
+                            <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">{label}</p>
+                            <p className="text-sm font-black text-white flex items-center gap-1.5 leading-none">
+                              <span>{payload[0].value}</span>
+                              <span className="text-xs font-semibold text-zinc-400">projects</span>
+                            </p>
                           </div>
                         )
                       }
@@ -219,11 +222,11 @@ export default function AdminDashboard() {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload
                           return (
-                            <div className="bg-surface/90 backdrop-blur-sm border border-border p-md rounded-md shadow-sm flex items-center gap-md">
-                              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: data.color }} />
+                            <div className="bg-zinc-900 border border-zinc-800 text-white px-3.5 py-2 rounded-xl shadow-xl flex items-center gap-2.5 z-50">
+                              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: data.color }} />
                               <div>
-                                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">{data.name}</p>
-                                <p className="text-base font-bold text-text-primary leading-none mt-0.5">{data.value}</p>
+                                <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">{data.name}</p>
+                                <p className="text-sm font-black text-white leading-none mt-0.5">{data.value} <span className="text-xs font-semibold text-zinc-400">properties</span></p>
                               </div>
                             </div>
                           )

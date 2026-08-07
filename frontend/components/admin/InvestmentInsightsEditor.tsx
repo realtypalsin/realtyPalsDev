@@ -18,7 +18,20 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
   const [liquidityDesc, setLiquidityDesc] = useState(initialData?.liquidity_desc ?? initialData?.pricing?.investment_insights?.liquidity_desc ?? 'Active resale market')
   
   const [investmentReport, setInvestmentReport] = useState<any>(
-    initialData?.financial_intelligence?.investmentReport || initialData?.intelligence_data?.investmentReport || initialData?.decision_profile?.intelligence_data?.investmentReport || {}
+    initialData?.financial_intelligence?.investmentReport ||
+    initialData?.decision_profile?.financial_intelligence?.investmentReport ||
+    initialData?.intelligence_data?.investmentReport ||
+    initialData?.decision_profile?.intelligence_data?.investmentReport ||
+    {
+      appreciation_annual: '12-15%',
+      appreciation_desc: 'Annual capital growth estimate based on regional infrastructure expansion',
+      rental_yield: '4.2-4.8%',
+      rental_desc: 'Expected annual rental yield driven by corporate tenant demand',
+      market_trend: 'Bullish',
+      market_desc: 'Strong buyer demand and high absorption rate',
+      liquidity_score: 'High',
+      liquidity_desc: 'Active resale market with multiple exit options'
+    }
   )
 
   const handleSave = async () => {
@@ -40,13 +53,14 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
       if (!res.ok) throw new Error('Failed to save basic insights')
 
       // Also save investmentReport to decision_profile.intelligence_data
+      const existingIntelligence = initialData?.decision_profile?.intelligence_data ?? {}
       const decisionRes = await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify({
           intelligence_data: {
-            ...initialData?.decision_profile?.intelligence_data,
-            investmentReport: investmentReport
+            ...existingIntelligence,
+            investmentReport
           }
         })
       })

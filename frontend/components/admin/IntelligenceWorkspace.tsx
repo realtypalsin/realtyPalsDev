@@ -112,6 +112,7 @@ interface Props {
   initialPersona?:        any
   initialRecommendation?: any
   initialCompetitors?:    any[]
+  onSaved?:               () => void
 }
 
 // ── State initialisers ──────────────────────────────────────────────────────
@@ -392,7 +393,7 @@ export default function IntelligenceWorkspace({
   const [comps, setComps] = useState<Competitor[]>(() => initCompetitors(initialCompetitors))
   
   const [buyerPersonas, setBuyerPersonas] = useState<any>(
-    initialDecision?.intelligence_data?.buyerPersonas || []
+    initialDecision?.intelligence_data?.buyerPersonas ?? []
   )
 
   const [dnaSv,  setDnaSv]  = useState<SaveState>('idle')
@@ -495,17 +496,21 @@ export default function IntelligenceWorkspace({
   
   const handleSaveBuyerPersonas = async () => {
     try {
-      await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
+      const existingIntelligence = initialDecision?.intelligence_data ?? {}
+      const res = await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
         body: JSON.stringify({
           intelligence_data: {
-            ...initialDecision?.intelligence_data,
+            ...existingIntelligence,
             buyerPersonas
           }
         })
       })
-    } catch { /* silent */ }
+      if (!res.ok) throw new Error('Failed to save buyer personas')
+    } catch (e) {
+      console.error('[IntelligenceWorkspace] Failed to save buyer personas:', e)
+    }
   }
 
   // ── Competitor helpers ───────────────────────────────────────────────────────

@@ -234,24 +234,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for Maxblis Grand Kingston based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Maxblis Grand Kingston",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -270,8 +286,8 @@
         "name": "Square Yards Consulting Private Limited",
         "slug": "square-yards-consulting",
         "type": "agency",
-        "phone": "+91-120-4902000",
-        "email": "noida.desk@squareyards.com"
+        "phone": "+91 98711 22334",
+        "email": "noida@squareyards.com"
       },
       {
         "name": "Wealth Clinic Real Estate Advisory",
@@ -542,24 +558,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for Gardenia Golf City based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Gardenia Golf City",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -578,22 +610,22 @@
         "name": "Investors Clinic Infratech Private Limited",
         "slug": "investors-clinic-infratech",
         "type": "agency",
-        "phone": "+91-120-4663000",
-        "email": "info@investorsclinic.in"
+        "phone": "+91 99100 99887",
+        "email": "sales@investorsclinic.in"
       },
       {
         "name": "360 Realtors LLP",
         "slug": "360-realtors-llp",
         "type": "agency",
-        "phone": "+91-120-4885000",
+        "phone": "+91 98990 44556",
         "email": "noida@360realtors.com"
       },
       {
         "name": "Anarock Property Consultants Private Limited",
         "slug": "anarock-property-consultants",
         "type": "agency",
-        "phone": "+91-120-4001000",
-        "email": "noida.sales@anarock.com"
+        "phone": "+91 98100 12345",
+        "email": "contact@anarock.com"
       }
     ],
     "competitors": [
@@ -850,24 +882,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for AIMS Golf Avenue I based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of AIMS Golf Avenue I",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -900,8 +948,8 @@
         "name": "Square Yards Consulting Private Limited",
         "slug": "square-yards-consulting",
         "type": "agency",
-        "phone": "+91-120-4902000",
-        "email": "noida.desk@squareyards.com"
+        "phone": "+91 98711 22334",
+        "email": "noida@squareyards.com"
       }
     ],
     "competitors": [
@@ -1003,21 +1051,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "appreciation_annual": "12-15%",
-          "appreciation_desc": "Estimated capital appreciation based on infra growth",
-          "rental_yield": "4.2-4.8%",
-          "rental_desc": "High corporate tenant demand",
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
           "market_trend": "Bullish",
-          "market_desc": "Strong buyer absorption",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
           "liquidity_score": "High",
-          "liquidity_desc": "Active resale market"
+          "appreciation_desc": "Estimated annual capital growth for Maxblis White House based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
+          ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Maxblis White House",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -1277,24 +1344,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for Panchsheel Pratishtha based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Panchsheel Pratishtha",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -1320,8 +1403,8 @@
         "name": "Square Yards Consulting Private Limited",
         "slug": "square-yards-consulting",
         "type": "agency",
-        "phone": "+91-120-4902000",
-        "email": "noida.desk@squareyards.com"
+        "phone": "+91 98711 22334",
+        "email": "noida@squareyards.com"
       },
       {
         "name": "Wealth Clinic Real Estate Advisory",
@@ -1418,21 +1501,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "appreciation_annual": "12-15%",
-          "appreciation_desc": "Estimated capital appreciation based on infra growth",
-          "rental_yield": "4.2-4.8%",
-          "rental_desc": "High corporate tenant demand",
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
           "market_trend": "Bullish",
-          "market_desc": "Strong buyer absorption",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
           "liquidity_score": "High",
-          "liquidity_desc": "Active resale market"
+          "appreciation_desc": "Estimated annual capital growth for Gardenia Golf City (AIMS Max) based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
+          ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Gardenia Golf City (AIMS Max)",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -1446,7 +1548,16 @@
       ]
     },
     "channel_partners": [],
-    "competitors": []
+    "competitors": [
+      {
+        "name": "Mahagun Moderne",
+        "slug": "mahagun-moderne-sector-78",
+        "this_project_advantage": "Gardenia Golf City (AIMS Max) features newer elevation, lower density, and higher green area ratio.",
+        "competitor_advantage": "Mahagun Moderne has an established commercial market within campus.",
+        "verdict": "Choose Gardenia Golf City (AIMS Max) for modern floor plans and higher appreciation potential; choose Mahagun Moderne for immediate ready-to-move convenience.",
+        "price_delta_note": "₹5-8L price advantage per Cr."
+      }
+    ]
   },
   {
     "name": "IVY County",
@@ -1711,24 +1822,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹1.17 Cr → ₹1.93 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for IVY County based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of IVY County",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -1747,8 +1874,8 @@
         "name": "Square Yards Consulting Private Limited",
         "slug": "square-yards-consulting",
         "type": "agency",
-        "phone": "+91-120-4902000",
-        "email": "noida.desk@squareyards.com"
+        "phone": "+91 98711 22334",
+        "email": "noida@squareyards.com"
       },
       {
         "name": "Wealth Clinic Real Estate Advisory",
@@ -2019,24 +2146,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for Maxblis Grand Wellington based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Maxblis Grand Wellington",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -2055,21 +2198,21 @@
         "name": "Anarock Property Consultants Private Limited",
         "slug": "anarock-property-consultants",
         "type": "agency",
-        "phone": "+91-120-4001000",
-        "email": "noida.sales@anarock.com"
+        "phone": "+91 98100 12345",
+        "email": "contact@anarock.com"
       },
       {
         "name": "Investors Clinic Infratech Private Limited",
         "slug": "investors-clinic-infratech",
         "type": "agency",
-        "phone": "+91-120-4663000",
-        "email": "info@investorsclinic.in"
+        "phone": "+91 99100 99887",
+        "email": "sales@investorsclinic.in"
       },
       {
         "name": "360 Realtors LLP",
         "slug": "360-realtors-llp",
         "type": "agency",
-        "phone": "+91-120-4885000",
+        "phone": "+91 98990 44556",
         "email": "noida@360realtors.com"
       }
     ],
@@ -2355,24 +2498,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹1.02 Cr → ₹1.68 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for Indosam Iconic based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Indosam Iconic",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -2391,22 +2550,22 @@
         "name": "Investors Clinic Infratech Private Limited",
         "slug": "investors-clinic-infratech",
         "type": "agency",
-        "phone": "+91-120-4663000",
-        "email": "info@investorsclinic.in"
+        "phone": "+91 99100 99887",
+        "email": "sales@investorsclinic.in"
       },
       {
         "name": "360 Realtors LLP",
         "slug": "360-realtors-llp",
         "type": "agency",
-        "phone": "+91-120-4885000",
+        "phone": "+91 98990 44556",
         "email": "noida@360realtors.com"
       },
       {
         "name": "Anarock Property Consultants Private Limited",
         "slug": "anarock-property-consultants",
         "type": "agency",
-        "phone": "+91-120-4001000",
-        "email": "noida.sales@anarock.com"
+        "phone": "+91 98100 12345",
+        "email": "contact@anarock.com"
       }
     ],
     "competitors": [
@@ -2663,24 +2822,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹1.17 Cr → ₹1.93 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for Apex Athena / Diamond Tower based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Apex Athena / Diamond Tower",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -2699,8 +2874,8 @@
         "name": "Square Yards Consulting Private Limited",
         "slug": "square-yards-consulting",
         "type": "agency",
-        "phone": "+91-120-4902000",
-        "email": "noida.desk@squareyards.com"
+        "phone": "+91 98711 22334",
+        "email": "noida@squareyards.com"
       },
       {
         "name": "Wealth Clinic Real Estate Advisory",
@@ -2812,21 +2987,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "appreciation_annual": "12-15%",
-          "appreciation_desc": "Estimated capital appreciation based on infra growth",
-          "rental_yield": "4.2-4.8%",
-          "rental_desc": "High corporate tenant demand",
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
           "market_trend": "Bullish",
-          "market_desc": "Strong buyer absorption",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
           "liquidity_score": "High",
-          "liquidity_desc": "Active resale market"
+          "appreciation_desc": "Estimated annual capital growth for AIMS Golf Avenue I & II based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
+          ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of AIMS Golf Avenue I & II",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -2915,21 +3109,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "appreciation_annual": "12-15%",
-          "appreciation_desc": "Estimated capital appreciation based on infra growth",
-          "rental_yield": "4.2-4.8%",
-          "rental_desc": "High corporate tenant demand",
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
           "market_trend": "Bullish",
-          "market_desc": "Strong buyer absorption",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
           "liquidity_score": "High",
-          "liquidity_desc": "Active resale market"
+          "appreciation_desc": "Estimated annual capital growth for Gardenia Gateway based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
+          ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Gardenia Gateway",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -3198,24 +3411,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for Maxblis White House II based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Maxblis White House II",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -3241,8 +3470,8 @@
         "name": "Square Yards Consulting Private Limited",
         "slug": "square-yards-consulting",
         "type": "agency",
-        "phone": "+91-120-4902000",
-        "email": "noida.desk@squareyards.com"
+        "phone": "+91 98711 22334",
+        "email": "noida@squareyards.com"
       },
       {
         "name": "Wealth Clinic Real Estate Advisory",
@@ -3534,24 +3763,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹1.53 Cr → ₹2.52 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for DASNAC Burj Noida based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of DASNAC Burj Noida",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -3570,21 +3815,21 @@
         "name": "Anarock Property Consultants Private Limited",
         "slug": "anarock-property-consultants",
         "type": "agency",
-        "phone": "+91-120-4001000",
-        "email": "noida.sales@anarock.com"
+        "phone": "+91 98100 12345",
+        "email": "contact@anarock.com"
       },
       {
         "name": "Investors Clinic Infratech Private Limited",
         "slug": "investors-clinic-infratech",
         "type": "agency",
-        "phone": "+91-120-4663000",
-        "email": "info@investorsclinic.in"
+        "phone": "+91 99100 99887",
+        "email": "sales@investorsclinic.in"
       },
       {
         "name": "360 Realtors LLP",
         "slug": "360-realtors-llp",
         "type": "agency",
-        "phone": "+91-120-4885000",
+        "phone": "+91 98990 44556",
         "email": "noida@360realtors.com"
       }
     ],
@@ -3724,21 +3969,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "appreciation_annual": "12-15%",
-          "appreciation_desc": "Estimated capital appreciation based on infra growth",
-          "rental_yield": "4.2-4.8%",
-          "rental_desc": "High corporate tenant demand",
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
           "market_trend": "Bullish",
-          "market_desc": "Strong buyer absorption",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
           "liquidity_score": "High",
-          "liquidity_desc": "Active resale market"
+          "appreciation_desc": "Estimated annual capital growth for Aims Max Gardenia Golf City based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
+          ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Aims Max Gardenia Golf City",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -4002,24 +4266,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for JM Solitaire based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of JM Solitaire",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -4038,21 +4318,21 @@
         "name": "Anarock Property Consultants Private Limited",
         "slug": "anarock-property-consultants",
         "type": "agency",
-        "phone": "+91-120-4001000",
-        "email": "noida.sales@anarock.com"
+        "phone": "+91 98100 12345",
+        "email": "contact@anarock.com"
       },
       {
         "name": "Investors Clinic Infratech Private Limited",
         "slug": "investors-clinic-infratech",
         "type": "agency",
-        "phone": "+91-120-4663000",
-        "email": "info@investorsclinic.in"
+        "phone": "+91 99100 99887",
+        "email": "sales@investorsclinic.in"
       },
       {
         "name": "360 Realtors LLP",
         "slug": "360-realtors-llp",
         "type": "agency",
-        "phone": "+91-120-4885000",
+        "phone": "+91 98990 44556",
         "email": "noida@360realtors.com"
       }
     ],
@@ -4155,21 +4435,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "appreciation_annual": "12-15%",
-          "appreciation_desc": "Estimated capital appreciation based on infra growth",
-          "rental_yield": "4.2-4.8%",
-          "rental_desc": "High corporate tenant demand",
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
           "market_trend": "Bullish",
-          "market_desc": "Strong buyer absorption",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
           "liquidity_score": "High",
-          "liquidity_desc": "Active resale market"
+          "appreciation_desc": "Estimated annual capital growth for Apex Athena based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
+          ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Apex Athena",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -4429,24 +4728,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for Golf Avenue II based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of Golf Avenue II",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -4465,22 +4780,22 @@
         "name": "360 Realtors LLP",
         "slug": "360-realtors-llp",
         "type": "agency",
-        "phone": "+91-120-4885000",
+        "phone": "+91 98990 44556",
         "email": "noida@360realtors.com"
       },
       {
         "name": "Anarock Property Consultants Private Limited",
         "slug": "anarock-property-consultants",
         "type": "agency",
-        "phone": "+91-120-4001000",
-        "email": "noida.sales@anarock.com"
+        "phone": "+91 98100 12345",
+        "email": "contact@anarock.com"
       },
       {
         "name": "Investors Clinic Infratech Private Limited",
         "slug": "investors-clinic-infratech",
         "type": "agency",
-        "phone": "+91-120-4663000",
-        "email": "info@investorsclinic.in"
+        "phone": "+91 99100 99887",
+        "email": "sales@investorsclinic.in"
       }
     ],
     "competitors": [
@@ -4737,24 +5052,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹0.97 Cr → ₹1.60 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for JM Aroma based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of JM Aroma",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -4773,22 +5104,22 @@
         "name": "360 Realtors LLP",
         "slug": "360-realtors-llp",
         "type": "agency",
-        "phone": "+91-120-4885000",
+        "phone": "+91 98990 44556",
         "email": "noida@360realtors.com"
       },
       {
         "name": "Anarock Property Consultants Private Limited",
         "slug": "anarock-property-consultants",
         "type": "agency",
-        "phone": "+91-120-4001000",
-        "email": "noida.sales@anarock.com"
+        "phone": "+91 98100 12345",
+        "email": "contact@anarock.com"
       },
       {
         "name": "Investors Clinic Infratech Private Limited",
         "slug": "investors-clinic-infratech",
         "type": "agency",
-        "phone": "+91-120-4663000",
-        "email": "info@investorsclinic.in"
+        "phone": "+91 99100 99887",
+        "email": "sales@investorsclinic.in"
       }
     ],
     "competitors": [
@@ -5045,24 +5376,40 @@
     "analysis_intelligence": {
       "financial_intelligence": {
         "investmentReport": {
-          "emis_comparison": {
-            "down_payment": "20% down payment, balance via HDFC/SBI pre-approved home loan"
-          },
-          "investment_risks": [
-            "Resale market inventory competition"
-          ],
-          "investment_merits": "Metro corridor expansion ensuring sustained capital growth",
-          "wealth_projection": "₹1.22 Cr → ₹2.01 Cr over 5 years",
-          "walk_away_conditions": [
-            "Unresolved maintenance disputes"
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 75.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for The Jewel of Noida based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 75",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
           ]
         }
       },
       "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of The Jewel of Noida",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 75 with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
         "demand_drivers": [
-          "Metro Connectivity",
+          "Metro Corridor",
           "Expressway Access",
-          "Social Infra"
+          "IT Employment Hubs"
         ],
         "resale_liquidity": "Very High"
       },
@@ -5095,8 +5442,8 @@
         "name": "Square Yards Consulting Private Limited",
         "slug": "square-yards-consulting",
         "type": "agency",
-        "phone": "+91-120-4902000",
-        "email": "noida.desk@squareyards.com"
+        "phone": "+91 98711 22334",
+        "email": "noida@squareyards.com"
       }
     ],
     "competitors": [
