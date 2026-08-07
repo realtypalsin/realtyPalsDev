@@ -3,7 +3,7 @@
 import { use, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import {
-  ArrowLeft, ChevronRight, Eye, LayoutPanelLeft,
+  ArrowLeft, ChevronRight, Eye, LayoutPanelLeft, AlertCircle,
   Images, Cpu, Activity, IndianRupee, Users
 } from 'lucide-react'
 import { adminFetch } from '@/lib/adminFetch'
@@ -24,8 +24,62 @@ import ChannelPartnersEditor from '@/components/admin/ChannelPartnersEditor'
 import CompletenessBar from '@/components/admin/CompletenessBar'
 import ProjectPreview from '@/components/admin/ProjectPreview'
 import { Skeleton } from '@/components/ui/skeleton'
+import Toast from '@/components/Toast'
 
 type AdminTab = 'core' | 'pricing' | 'media' | 'intelligence' | 'updates' | 'partners'
+
+interface ProjectData {
+  id: string
+  slug: string
+  name: string
+  status: string
+  lat?: number
+  lng?: number
+  total_units?: number
+  total_towers?: number
+  land_area_acres?: number
+  launch_date?: string
+  possession_date?: string
+  marketing_claims?: string[]
+  ai_search_keywords?: string[]
+  builder?: Record<string, any>
+  unit_types?: Record<string, any>[]
+  amenities?: Record<string, any>[]
+  connectivity?: Record<string, any>[]
+  images?: Record<string, any>[]
+  payment_plan?: Record<string, any>
+  cost_sheet?: Record<string, any>
+  decision_profile?: Record<string, any>
+  dna?: Record<string, any>
+  project_dna?: Record<string, any>
+  persona_profile?: Record<string, any>
+  recommendation_profile?: Record<string, any>
+  competitors?: Record<string, any>[]
+  channel_partners?: Record<string, any>[]
+  [key: string]: any
+}
+
+interface ProjectDocument {
+  id: string
+  name: string
+  url: string
+  file_size?: number
+  created_at?: string
+}
+
+interface CompletenessData {
+  score: number
+  missing: string[]
+}
+
+const formatDateForInput = (date: string | null | undefined): string => {
+  if (!date) return ''
+  try {
+    return new Date(date).toISOString().split('T')[0]
+  } catch {
+    return ''
+  }
+}
 
 export default function AdminProjectEditPage({
   params,
@@ -33,69 +87,86 @@ export default function AdminProjectEditPage({
   params: { id: string } | Promise<{ id: string }>
 }) {
   const id = (params as any)?.id ?? (typeof (params as any)?.then === 'function' ? (use(params as unknown as Promise<{ id: string }>) as any)?.id : '')
-  const [data, setData] = useState<any>(null)
-  const [documents, setDocuments] = useState<any[]>([])
-  const [completeness, setCompleteness] = useState<any>(null)
+  const [data, setData] = useState<ProjectData | null>(null)
+  const [documents, setDocuments] = useState<ProjectDocument[]>([])
+  const [completeness, setCompleteness] = useState<CompletenessData | null>(null)
   const [loading, setLoading] = useState(true)
   const [adminTab, setAdminTab] = useState<AdminTab>('core')
-  const [preview, setPreview] = useState<any>(null)
+  const [preview, setPreview] = useState<ProjectData | null>(null)
   const [showCompleteness, setShowCompleteness] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string } | null>(null)
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [projectRes, docsRes, completenessRes] = await Promise.all([
-          adminFetch(`/admin/projects/${id}`),
-          adminFetch(`/admin/projects/${id}/documents`),
-          adminFetch(`/admin/projects/${id}/completeness`),
-        ])
-        if (!projectRes.ok) {
-          setData(null)
-          return
+  const loadProjectData = useCallback(async (showError = true) => {
+    try {
+      setError(null)
+      const [projectRes, docsRes, completenessRes] = await Promise.all([
+        adminFetch(`/admin/projects/${id}`),
+        adminFetch(`/admin/projects/${id}/documents`),
+        adminFetch(`/admin/projects/${id}/completeness`),
+      ])
+
+      if (!projectRes.ok) {
+        if (showError) {
+          setError('Failed to load project')
+          setToast({ message: 'Failed to load project data' })
         }
-        const projectJson     = await projectRes.json()
-        const docsJson        = docsRes.ok ? await docsRes.json() : { documents: [] }
-        const completenessJson = completenessRes.ok ? await completenessRes.json() : null
-        setData(projectJson.project)
-        setPreview(projectJson.project)
-        setDocuments(docsJson.documents ?? [])
-        setCompleteness(completenessJson)
-      } catch (err) {
-        console.error('[AdminProjectEditPage] Failed to load data:', err)
         setData(null)
-      } finally {
-        setLoading(false)
+        return
       }
+
+      const projectJson = await projectRes.json()
+      const docsJson = docsRes.ok ? await docsRes.json() : { documents: [] }
+      const completenessJson = completenessRes.ok ? await completenessRes.json() : null
+
+      setData(projectJson.project)
+      setPreview(projectJson.project)
+      setDocuments(docsJson.documents ?? [])
+      setCompleteness(completenessJson)
+    } catch (err) {
+      console.error('[AdminProjectEditPage] Failed to load data:', err)
+      if (showError) {
+        setError('Failed to load project data')
+        setToast({ message: 'Error loading project. Please try again.' })
+      }
+      setData(null)
     }
-    loadData()
   }, [id])
 
+  useEffect(() => {
+    (async () => {
+      await loadProjectData(true)
+      setLoading(false)
+    })()
+  }, [id, loadProjectData])
+
+  useEffect(() => {
+    if (data?.name) {
+      document.title = `Admin · Projects · ${data.name} | RealtyPals`
+    }
+  }, [data?.name])
+
   const handleFormChange = useCallback((formValues: Record<string, any>) => {
-    setPreview((prev: any) => ({
+    setPreview((prev) => ({
       ...prev,
       ...formValues,
-      builder:    prev?.builder,
+      builder: prev?.builder,
       unit_types: prev?.unit_types,
-    }))
+    } as ProjectData))
   }, [])
 
   const handleSaved = useCallback(async () => {
     setRefreshing(true)
-    const [projectRes, docsRes, completenessRes] = await Promise.all([
-      adminFetch(`/admin/projects/${id}`),
-      adminFetch(`/admin/projects/${id}/documents`),
-      adminFetch(`/admin/projects/${id}/completeness`),
-    ])
-    const projectJson     = await projectRes.json()
-    const docsJson        = docsRes.ok ? await docsRes.json() : { documents: [] }
-    const completenessJson = completenessRes.ok ? await completenessRes.json() : null
-    setData(projectJson.project)
-    setPreview(projectJson.project)
-    setDocuments(docsJson.documents ?? [])
-    setCompleteness(completenessJson)
-    setRefreshing(false)
-  }, [id])
+    try {
+      await loadProjectData(false)
+      setToast({ message: 'Project updated successfully' })
+    } catch {
+      setToast({ message: 'Failed to refresh project data' })
+    } finally {
+      setRefreshing(false)
+    }
+  }, [loadProjectData])
 
   if (loading) {
     return (
@@ -116,7 +187,29 @@ export default function AdminProjectEditPage({
     )
   }
 
-  if (!data) return <p className="text-gray-500 p-8">Project not found.</p>
+  if (error || !data) {
+    return (
+      <div className="max-w-[1400px] mx-auto p-8">
+        <Link href="/admin/projects" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6">
+          <ArrowLeft size={18} />
+          Back to projects
+        </Link>
+        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-6 flex gap-3">
+          <AlertCircle className="text-red-600 dark:text-red-400 shrink-0 mt-1" size={20} />
+          <div className="flex-1">
+            <h3 className="font-semibold text-red-900 dark:text-red-300 mb-1">Error loading project</h3>
+            <p className="text-red-800 dark:text-red-200 text-sm">{error || 'Project not found'}</p>
+            <button
+              onClick={() => loadProjectData(true)}
+              className="mt-3 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded font-medium"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const formData = {
     ...data,
@@ -330,6 +423,8 @@ export default function AdminProjectEditPage({
         )}
 
       </div>
+
+      {toast && <Toast message={toast.message} onClose={() => setToast(null)} />}
     </>
   )
 }

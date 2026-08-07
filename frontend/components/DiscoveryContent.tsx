@@ -21,6 +21,8 @@ import { useSessions } from '@/hooks/useSessions';
 
 const DEBUG = process.env.NODE_ENV !== 'production'
 const WELCOME_MESSAGE = "Hi, I'm RealtyPal — your advisor for Noida & Greater Noida. Ask me anything: budgets in ₹ Lakh/Cr, RERA status, builder track records, or which sector fits your family. I'll give you straight answers, tradeoffs included."
+const PHASES = ['DISCOVERY', 'ADVISOR'] as const
+const STATUS_PHASES = { extracting: 'extracting', searching: 'searching', generating: 'generating' } as const
 import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } from '@/hooks/useAnalyticsTracking';
 
 // ── Dynamic imports — heavy components excluded from initial bundle ─────────
@@ -72,22 +74,57 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [visibleCount, setVisibleCount] = useState(15);
   const [toast, setToast] = useState<{ message: string } | null>(null);
-  const [, setShowRecommendations] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
-  const [rateLimitUntil, setRateLimitUntil] = useState<number | null>(null);
-  const [sessionTitle, setSessionTitle] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? navigator.onLine : true);
   const [chatTurnCount, setChatTurnCount] = useState(0);
-  const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
-  const [showContextWarning, setShowContextWarning] = useState(false);
-  const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
+  const [sessionTitle, setSessionTitle] = useState<string | null>(null);
+  const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null);
   const [conversationState, setConversationState] = useState<import('@/components/chat/types').ConversationState | null>(null);
+
+  // UI state consolidation
+  const [uiState, setUiState] = useState({
+    showRecommendations: false,
+    rateLimitUntil: null as number | null,
+    hasShownLengthWarning: false,
+    showContextWarning: false,
+    detailProject: null as ProjectCardType | null,
+    expandedShortlists: new Set<string>(),
+    showMap: false,
+    showCalculator: false,
+    showHeaderDropdown: false,
+    siteVisitProject: null as ProjectCardType | null,
+    callbackProject: null as ProjectCardType | null,
+    callbackDone: false,
+    shareSheetOpen: false,
+    showReEngagement: true,
+    isInputMinimized: false,
+    showScrollBtn: false,
+    keyboardOpen: false,
+    isMobile: false,
+    isRenamingHeader: false,
+  });
+
+  // ChatGPT-style dynamic browser tab title updater
+  useEffect(() => {
+    if (sessionTitle && sessionTitle.trim()) {
+      document.title = `${sessionTitle.trim()} | RealtyPals`
+    } else {
+      const userMsg = chatHistory.find(m => m.type === 'user')?.content
+      if (userMsg && userMsg.trim()) {
+        const cleanMsg = userMsg.trim()
+        const truncated = cleanMsg.length > 35 ? `${cleanMsg.slice(0, 35)}...` : cleanMsg
+        document.title = `${truncated} | RealtyPals`
+      } else {
+        document.title = `AI Property Advisor | RealtyPals`
+      }
+    }
+  }, [sessionTitle, chatHistory])
 
   const { deleteSession, renameSession } = useSessions(userId, guestToken);
   const [isRenamingHeader, setIsRenamingHeader] = useState(false);
