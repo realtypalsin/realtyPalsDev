@@ -408,33 +408,9 @@ export default function ResidencesTab({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Only show real unit variants from database, not fabricated types */}
-                      {unitTypesList.slice(0, 2).map((variant, i) => (
-                        <div
-                          key={i}
-                          onClick={() => setSelectedUnitNo(variant.type)}
-                          className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
-                            selectedUnitNo === variant.type
-                              ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-950/20 ring-1 ring-blue-500'
-                              : 'border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="space-y-1">
-                            <span className="text-[13px] font-black text-gray-900 dark:text-white">{variant.type}</span>
-                            <p className="text-[11px] text-gray-400 font-semibold">{variant.areaSqft.toLocaleString()} sqft</p>
-                            <p className="text-[14px] font-black text-gray-900 dark:text-white pt-1">{variant.price}</p>
-                            <span className="text-[9px] text-gray-400 font-medium block">Starting Price</span>
-                          </div>
-
-                          {variant.img && (
-                            <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200/60 dark:border-white/10 bg-white dark:bg-black/20 flex-shrink-0">
-                              <Image src={resolveImgUrl(variant.img.url)} alt={variant.type} fill className="object-contain p-1" />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    {unitTypes.length === 0 && (
+                      <p className="text-gray-500 text-sm">No unit types available</p>
+                    )}
                   </div>
                 </>
               )}

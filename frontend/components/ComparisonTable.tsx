@@ -169,8 +169,7 @@ function categoryWinner(
           d?.persona_profile?.primary_persona,
           ...(d?.persona_profile?.secondary_personas ?? []),
         ]
-        return (personas.includes('FAMILY') ? 2 : 0) +
-               (d?.recommendation_profile?.family_thesis ? 1 : 0)
+        return (personas.includes('FAMILY') ? 2 : 0)
       })
       const candidates = winnerIdx(scores)
       return candidates.length === 1 ? candidates[0] : null
@@ -181,15 +180,13 @@ function categoryWinner(
           d?.persona_profile?.primary_persona,
           ...(d?.persona_profile?.secondary_personas ?? []),
         ]
-        return (personas.includes('INVESTOR') ? 2 : 0) +
-               (d?.recommendation_profile?.investor_thesis ? 1 : 0)
+        return (personas.includes('INVESTOR') ? 2 : 0)
       })
       const candidates = winnerIdx(scores)
       return candidates.length === 1 ? candidates[0] : null
     }
     case 'luxury': {
       const scores = details.map(d =>
-        (d?.recommendation_profile?.luxury_thesis ? 1 : 0) +
         starsCount(d?.dna?.amenity_depth_label)
       )
       const candidates = winnerIdx(scores)
@@ -1160,8 +1157,6 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                 const loserIdx = overallWinnerIdx === 0 ? 1 : 0
                 const loserDetail = details[loserIdx]
                 const altThesis =
-                  loserDetail?.recommendation_profile?.end_use_thesis ??
-                  loserDetail?.recommendation_profile?.investment_thesis ??
                   loserDetail?.decision_profile?.not_ideal_for
                 if (!altThesis) return null
                 return (

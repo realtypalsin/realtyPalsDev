@@ -152,8 +152,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
           { title: `${legacyYears}+`, label: 'Years of Legacy', icon: Clock, color: 'text-blue-600 bg-blue-50' },
           { title: `${builder?.projects_delivered_count || 42}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' },
           { title: `${builder?.delivered_units ? (builder.delivered_units / 1000000).toFixed(1) : '22.4'}M+`, label: 'Sq. Ft. Delivered', icon: Award, color: 'text-amber-600 bg-amber-50' },
-          { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count || 28}+`, label: 'Ongoing Projects', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' },
-          ...(builder?.delivered_families_count ? [{ title: `${builder.delivered_families_count}+`, label: 'Happy Families', icon: Users, color: 'text-rose-600 bg-rose-50' }] : [])
+          { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count || 28}+`, label: 'Ongoing Projects', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' }
         ].map((stat, i) => {
           const Icon = stat.icon
           return (
