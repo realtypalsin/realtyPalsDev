@@ -1101,45 +1101,6 @@ router.put('/projects/:id/channel-partners', requireAdmin, async (req: Request, 
   }
 })
 
-// GET /api/v1/admin/projects/:id/milestones — Fetch project construction milestones
-router.get('/projects/:id/milestones', requireAdmin, async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
-    const milestones = await (prisma as any).constructionMilestone.findMany({
-      where: { project_id: id },
-      orderBy: { sort_order: 'asc' },
-    })
-    res.json({ milestones })
-  } catch (err) {
-    console.error('[admin] fetch milestones failed:', err)
-    res.status(500).json({ error: 'Failed to fetch milestones' })
-  }
-})
-
-// PUT /api/v1/admin/projects/:id/milestones — Save project construction milestones
-router.put('/projects/:id/milestones', requireAdmin, async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
-    const { milestones } = req.body
-    await (prisma as any).constructionMilestone.deleteMany({ where: { project_id: id } })
-    if (Array.isArray(milestones) && milestones.length > 0) {
-      await (prisma as any).constructionMilestone.createMany({
-        data: milestones.map((m: any, idx: number) => ({
-          project_id: id,
-          name: m.name || 'Construction Phase',
-          status: m.status || 'upcoming',
-          date_label: m.date_label || null,
-          sort_order: m.sort_order ?? idx + 1,
-        })),
-      })
-    }
-    res.json({ success: true })
-  } catch (err) {
-    console.error('[admin] save milestones failed:', err)
-    res.status(500).json({ error: 'Failed to save milestones' })
-  }
-})
-
 // GET /api/v1/admin/projects/:id/updates — Fetch project updates
 router.get('/projects/:id/updates', requireAdmin, async (req: Request, res: Response) => {
   try {
