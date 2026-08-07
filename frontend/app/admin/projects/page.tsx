@@ -56,9 +56,13 @@ function quickHealth(p: Project): { score: number; missing: string[] } {
     { ok: !!p.builder?.name, label: 'Builder' },
     { ok: unitTypes.length > 0, label: 'Unit types' },
     { ok: unitTypes.some(u => u.price_min_cr != null), label: 'Pricing' },
+    { ok: !!p.description, label: 'Description' },
+    { ok: (p.amenities?.length || 0) >= 3, label: 'Amenities' },
+    { ok: (p.connectivity?.length || 0) >= 3, label: 'Connectivity' },
   ]
   const missing = checks.filter(c => !c.ok).map(c => c.label)
-  return { score: checks.filter(c => c.ok).length, missing }
+  const scorePct = Math.round((checks.filter(c => c.ok).length / checks.length) * 100)
+  return { score: scorePct, missing }
 }
 
 
@@ -176,9 +180,9 @@ export default function AdminProjects() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-lg">
+    <div className="max-w-6xl mx-auto">
 
-      <div className="flex items-center justify-between mb-lg pt-md">
+      <div className="flex items-center justify-between mb-lg">
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">Projects</h1>
           <p className="text-sm text-text-secondary mt-md">{projects.length} total properties</p>
@@ -234,7 +238,7 @@ export default function AdminProjects() {
             filtered.map((p, idx) => {
               const s = STATUS_MAP[p.status] ?? STATUS_MAP.ready_to_move
               const { score, missing } = quickHealth(p)
-              const pct = Math.round((score / 5) * 100)
+              const pct = score
               const isSelected = selectedIndex === idx
 
               return (
