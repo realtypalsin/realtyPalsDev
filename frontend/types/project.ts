@@ -267,12 +267,6 @@ export interface RecommendationProfilePublic {
   status:               IntelligenceStatus
   tier:                 RecommendationTier | null
   primary_thesis:       string | null
-  end_use_thesis:       string | null
-  investment_thesis:    string | null
-  family_thesis:        string | null
-  investor_thesis:      string | null
-  luxury_thesis:        string | null
-  risk_thesis:          string | null
   walk_away_conditions: string[]
   timeline_advice:      string | null
   negotiation_leverage: string[]

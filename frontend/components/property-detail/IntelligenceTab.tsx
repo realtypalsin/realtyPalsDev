@@ -707,11 +707,11 @@ export default function IntelligenceTab({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {[
-            { label: 'RERA Status', val: pData?.rera_number ? 'Registered' : 'Verified', color: 'text-emerald-600' },
-            { label: 'Legal Due Diligence', val: pData?.legal_flag || 'Clear', color: 'text-emerald-600' },
-            { label: 'Encumbrance Check', val: 'Clear', color: 'text-emerald-600' },
-            { label: 'Approvals', val: pData?.oc_obtained ? 'OC Granted' : 'All Clear', color: 'text-emerald-600' },
-            { label: 'Litigation', val: (pData?.litigation_count || builder?.litigation_count) ? `${pData?.litigation_count || builder?.litigation_count} Flags` : 'None', color: (pData?.litigation_count || builder?.litigation_count) ? 'text-amber-600' : 'text-emerald-600' }
+            { label: 'RERA Status', val: pData?.rera_number || null, displayVal: pData?.rera_number ? 'Registered' : null, color: pData?.rera_number ? 'text-emerald-600' : 'text-gray-400' },
+            { label: 'Legal Due Diligence', val: pData?.legal_flag, displayVal: pData?.legal_flag || null, color: pData?.legal_flag ? 'text-emerald-600' : 'text-gray-400' },
+            { label: 'Encumbrance Check', val: pData?.encumbrance_verified, displayVal: pData?.encumbrance_verified ? 'Verified' : null, color: pData?.encumbrance_verified ? 'text-emerald-600' : 'text-gray-400' },
+            { label: 'Approvals', val: pData?.oc_obtained, displayVal: pData?.oc_obtained ? 'OC Granted' : null, color: pData?.oc_obtained ? 'text-emerald-600' : 'text-gray-400' },
+            { label: 'Litigation', val: (pData?.litigation_count || builder?.litigation_count), displayVal: (pData?.litigation_count || builder?.litigation_count) ? `${pData?.litigation_count || builder?.litigation_count} Flags` : null, color: (pData?.litigation_count || builder?.litigation_count) ? 'text-amber-600' : 'text-gray-400' }
           ].map((item, i) => (
             <div key={i} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
@@ -719,7 +719,7 @@ export default function IntelligenceTab({
               </div>
               <div>
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{item.label}</p>
-                <p className={`text-[13px] font-black ${item.color}`}>{item.val}</p>
+                <p className={`text-[13px] font-black ${item.color}`}>{item.displayVal || 'Not yet verified'}</p>
               </div>
             </div>
           ))}

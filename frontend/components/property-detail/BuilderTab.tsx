@@ -31,19 +31,13 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
   const legacyYears = new Date().getFullYear() - foundedYear
   const builderSlug = builder?.slug || builderName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
-  // ── Dynamic Channel Partners Extraction with High-Quality Fallbacks ──
+  // ── Channel Partners: No fallback to fake data ──
   const rawPartners =
     (project?.channel_partners && project.channel_partners.length > 0)
       ? project.channel_partners
       : ((builder as any)?.channel_partners && (builder as any).channel_partners.length > 0)
       ? (builder as any).channel_partners
-      : [
-          { name: 'Anarock Property Consultants', type: 'Strategic Channel Partner', logo: '🏢', reraReg: 'UPRERAAGT10283', phone: '+91 98765 43210' },
-          { name: 'Square Yards Real Estate', type: 'Primary Sales Partner', logo: '🏬', reraReg: 'UPRERAAGT10452', phone: '+91 98111 22233' },
-          { name: 'PropTiger Advisory Services', type: 'Institutional Partner', logo: '🏛️', reraReg: 'UPRERAAGT10891', phone: '+91 99000 11223' },
-          { name: 'InvestoX Wealth Advisors', type: 'Exclusive Wealth Partner', logo: '💼', reraReg: 'UPRERAAGT11204', phone: '+91 97111 88990' },
-          { name: 'IPC Real Estate Network', type: 'RERA Certified Agency', logo: '🌐', reraReg: 'UPRERAAGT11560', phone: '+91 98999 44332' }
-        ]
+      : []
 
   const channelPartnersList = rawPartners.map((cp: any) => ({
     name: cp.name || cp.company_name || cp.channel_partner?.name || 'Authorized Partner',
@@ -55,13 +49,8 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
 
   const showViewAllPartners = channelPartnersList.length > 5
 
-  // ── Dynamic Featured Projects with Fallback ──
+  // ── Featured Projects: No fake data fallback ──
   const dbProjects = (builder as any)?.projects || (project as any)?.builder_projects || []
-  const defaultFeaturedProjects = [
-    { name: `${builderName} Golf Greens`, sector: `Sector ${project?.sector ? '79' : '79'}, Noida`, config: '3, 4 BHK Luxury Apartments', status: 'Completed', color: 'bg-[#F0FDF4] text-[#00875A] border border-[#DCFCE7]' },
-    { name: `${builderName} Sky Residences`, sector: `Sector ${project?.sector ? '150' : '150'}, Noida`, config: '2, 3, 4 BHK Apartments', status: 'Under Construction', color: 'bg-[#F0F9FF] text-[#0066CC] border border-[#E0F2FE]' },
-    { name: `${builderName} Business Park`, sector: `Sector ${project?.sector ? '62' : '62'}, Noida`, config: 'Commercial & Office Spaces', status: 'Ongoing', color: 'bg-amber-50 text-amber-800 border border-amber-200' }
-  ]
 
   const featuredProjectsList = dbProjects.length > 0
     ? dbProjects.slice(0, 3).map((p: any) => ({
@@ -71,20 +60,15 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
         status: p.status === 'ready_to_move' ? 'Completed' : p.status === 'under_construction' ? 'Under Construction' : 'Ongoing',
         color: p.status === 'ready_to_move' ? 'bg-[#F0FDF4] text-[#00875A] border border-[#DCFCE7]' : 'bg-[#F0F9FF] text-[#0066CC] border border-[#E0F2FE]'
       }))
-    : defaultFeaturedProjects
+    : []
 
   const showViewAllProjects = dbProjects.length > 3
 
-  // ── Dynamic Awards List ──
-  const dbAwards = (builder as any)?.awards || [
-    { title: 'Luxury Project of the Year 2023', src: 'By Realty+ Excellence Awards' },
-    { title: 'Best Sustainable Developer 2022', src: 'By IGBC Green Excellence Awards' },
-    { title: 'Customer Choice Award 2021', src: 'By ET Now Real Estate Awards' }
-  ]
+  // ── Awards & Media: No fake data fallback ──
+  const dbAwards = (builder as any)?.awards || []
   const showViewAllAwards = dbAwards.length > 3
 
-  // ── Dynamic Media List ──
-  const dbMedia = (builder as any)?.media || ['The Economic Times', 'Forbes', 'CNBC TV18', 'ET Realty']
+  const dbMedia = (builder as any)?.media || []
   const showViewAllMedia = dbMedia.length > 4
 
   // ── Explore Our Story Click Handler ──
@@ -169,7 +153,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
           { title: `${builder?.projects_delivered_count || 42}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' },
           { title: `${builder?.delivered_units ? (builder.delivered_units / 1000000).toFixed(1) : '22.4'}M+`, label: 'Sq. Ft. Delivered', icon: Award, color: 'text-amber-600 bg-amber-50' },
           { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count || 28}+`, label: 'Ongoing Projects', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' },
-          { title: '18,000+', label: 'Happy Families', icon: Users, color: 'text-rose-600 bg-rose-50' }
+          ...(builder?.delivered_families_count ? [{ title: `${builder.delivered_families_count}+`, label: 'Happy Families', icon: Users, color: 'text-rose-600 bg-rose-50' }] : [])
         ].map((stat, i) => {
           const Icon = stat.icon
           return (

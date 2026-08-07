@@ -164,15 +164,9 @@ export default function OverviewTab({
     }
   })
 
+  // Channel Partners: No fake data fallback
   const rawChannelPartners = (d as any)?.channel_partners || (detail as any)?.channel_partners || (overview as any)?.channel_partners || []
-  const channelPartners = rawChannelPartners.length > 0
-    ? rawChannelPartners
-    : [
-        { name: 'Anarock Property Consultants', company_name: 'Strategic Channel Partner', rera_registration: 'UPRERAAGT10283', phone: '+919876543210' },
-        { name: 'Square Yards Real Estate', company_name: 'Primary Sales Partner', rera_registration: 'UPRERAAGT10452', phone: '+919811122233' },
-        { name: 'PropTiger Advisory Services', company_name: 'Institutional Partner', rera_registration: 'UPRERAAGT10891', phone: '+919900011223' },
-        { name: 'InvestoX Wealth Advisors', company_name: 'Exclusive Wealth Partner', rera_registration: 'UPRERAAGT11204', phone: '+919711188990' }
-      ]
+  const channelPartners = rawChannelPartners
 
   return (
     <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">

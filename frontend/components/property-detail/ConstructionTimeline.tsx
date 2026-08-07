@@ -139,12 +139,13 @@ export default function ConstructionTimeline({
     }
   ]
 
+  // Use only real milestones, no fabricated defaults
   const list = (milestones && milestones.length > 0)
     ? milestones.map((m: any, idx: number) => ({
         ...m,
-        description: m.description || `Phase ${idx + 1} construction milestone verified by RERA field audit.`
+        description: m.description || `Phase ${idx + 1} construction milestone.`
       }))
-    : (isRTM ? defaultReadyToMoveMilestones : defaultUnderConstructionMilestones)
+    : []
 
   const completedCount = list.filter((m: any) => m.status === 'completed').length
   const inProgressCount = list.filter((m: any) => m.status === 'in_progress').length
@@ -324,10 +325,6 @@ export default function ConstructionTimeline({
 
       {/* Bottom Footer Info Strip */}
       <div className="mt-4 pt-3 border-t border-gray-100 dark:border-white/5 flex flex-wrap items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={13} className="text-emerald-600 dark:text-emerald-400" />
-          <span>Independent RERA Audit Verified • Physical Inspection Velocity Score: <strong className="text-gray-800 dark:text-gray-200">9.4/10</strong></span>
-        </div>
         {formattedPossession && (
           <div className="flex items-center gap-1.5 font-bold text-gray-700 dark:text-gray-300">
             <Calendar size={13} className="text-blue-500" />

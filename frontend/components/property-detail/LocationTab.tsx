@@ -41,14 +41,8 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
   const projectLat = project?.lat || SECTOR_CENTROIDS[project?.sector || '']?.[0] || 28.535
   const projectLng = project?.lng || SECTOR_CENTROIDS[project?.sector || '']?.[1] || 77.391
 
-  // Real DB connectivity with proper token styling
-  const connectivity = detail?.all_connectivity || [
-    { name: 'Sector 10 Metro Station (Proposed)', type: 'Metro', distance: '1.2 km', time: '4 mins', mode: 'drive' },
-    { name: 'Gaur City Bus Stop', type: 'Bus Stop', distance: '800 m', time: '3 mins', mode: 'walk' },
-    { name: 'Auto Stand - Gaur City', type: 'Auto Stand', distance: '750 m', time: '3 mins', mode: 'walk' },
-    { name: 'Noida-Greater Noida Expressway', type: 'Expressway Access', distance: '2.5 km', time: '6 mins', mode: 'drive' },
-    { name: 'Yatharth Super Speciality Hospital', type: 'Hospital', distance: '1.8 km', time: '5 mins', mode: 'drive' }
-  ]
+  // Connectivity: No fake data fallback
+  const connectivity = detail?.all_connectivity || []
 
   const handleGetDirections = () => {
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(projectAddress)}`, '_blank')
@@ -74,13 +68,8 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
 
   const handleCommuteCalc = (destination: string) => {
     setDestInput(destination)
-    if (destination.toLowerCase().includes('airport')) {
-      setCalculatedTime('45 mins (38 km via Noida-Gr Noida Expy)')
-    } else if (destination.toLowerCase().includes('sector 18')) {
-      setCalculatedTime('22 mins (16 km via Vikas Marg)')
-    } else {
-      setCalculatedTime('18 mins (12 km via Expy)')
-    }
+    // Commute calculation requires real API data, not hardcoded values
+    setCalculatedTime('')
   }
 
   const nearbyPlacesList = showAllNearby ? connectivity : connectivity.slice(0, 5)

@@ -593,8 +593,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                           {detail?.builder_detail?.company_overview || `A premier luxury developer in Noida known for high-end residential estates, zero-delay delivery track record, and flawless legal titles.`}
                         </p>
                         <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100 dark:border-gray-800 text-[11px] font-bold text-gray-700 dark:text-gray-300">
-                          <div>• {detail?.builder_detail?.founded_year ? `${new Date().getFullYear() - detail.builder_detail.founded_year}+ Yrs Experience` : '21+ Yrs Experience'}</div>
-                          <div>• {detail?.builder_detail?.delivered_units ? `${detail.builder_detail.delivered_units.toLocaleString('en-IN')}+ Units` : '3,000+ Units'}</div>
+                          {detail?.builder_detail?.founded_year && <div>• {new Date().getFullYear() - detail.builder_detail.founded_year}+ Yrs Experience</div>}
+                          {detail?.builder_detail?.delivered_units && <div>• {detail.builder_detail.delivered_units.toLocaleString('en-IN')}+ Units</div>}
                         </div>
                       </div>
                     )}

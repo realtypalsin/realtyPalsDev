@@ -452,7 +452,7 @@ export default function PricingTab({
               label: 'Lowest Entry Price',
               val: lowestEntry ? priceLabel(lowestEntry) : '₹2.01 Cr',
               tag: lowestEntry ? lowestEntry.name : '3 BHK',
-              badge: '3.2% vs last month',
+              badge: null,
               badgeColor: 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100/50'
             },
             {
@@ -460,7 +460,7 @@ export default function PricingTab({
               label: 'Largest Configuration',
               val: largest ? `${areaSqft(largest)!.toLocaleString()} sqft` : '2,500 sqft',
               tag: largest ? largest.name : '5 BHK',
-              badge: 'Most Preferred',
+              badge: null,
               badgeColor: 'text-indigo-700 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-100/50'
             },
             {
@@ -468,7 +468,7 @@ export default function PricingTab({
               label: 'Best Value Configuration',
               val: bestValue ? bestValue.name : '3.5 BHK',
               tag: bestValue ? priceLabel(bestValue) : '₹2.36 Cr+',
-              badge: "Buyer's Choice",
+              badge: null,
               badgeColor: 'text-amber-700 bg-amber-50 dark:bg-amber-950/30 border-amber-100/50'
             },
             {
@@ -476,7 +476,7 @@ export default function PricingTab({
               label: 'Premium Configuration',
               val: premium ? premium.name : '5 BHK',
               tag: premium ? priceLabel(premium) : '₹3.40 – 4.50 Cr',
-              badge: 'Premium Living',
+              badge: null,
               badgeColor: 'text-indigo-700 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-100/50'
             }
           ].map((ins, idx) => (

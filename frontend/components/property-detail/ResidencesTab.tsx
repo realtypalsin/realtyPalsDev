@@ -409,10 +409,8 @@ export default function ResidencesTab({
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {[
-                        { type: 'Type C', areaSqft: area || 1397, price: priceLabel(activeUnit), img: previewImg },
-                        { type: 'Type D', areaSqft: area ? area + 15 : 1412, price: activeUnit.price_min_cr ? `₹${(activeUnit.price_min_cr + 0.04).toFixed(2)} Cr` : priceLabel(activeUnit), img: activeFloorPlans[1] || previewImg }
-                      ].map((variant, i) => (
+                      {/* Only show real unit variants from database, not fabricated types */}
+                      {unitTypesList.slice(0, 2).map((variant, i) => (
                         <div
                           key={i}
                           onClick={() => setSelectedUnitNo(variant.type)}

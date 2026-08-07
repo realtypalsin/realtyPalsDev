@@ -18,7 +18,10 @@ interface CompletenessBarProps {
 export default function CompletenessBar({ result, onClose }: CompletenessBarProps) {
   if (!result) return null
 
-  const score = result.percentage ?? result.score ?? 85
+  // Only show if real score exists, no fake defaults
+  const score = result.percentage ?? result.score
+  if (score === undefined) return null
+
   const missing = result.missingFields ?? result.missing ?? []
 
   return (
