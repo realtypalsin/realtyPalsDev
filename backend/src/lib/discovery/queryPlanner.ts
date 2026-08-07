@@ -233,10 +233,17 @@ async function extractProjectIds(
   const msg = message.toLowerCase()
   const projectIds: string[] = []
 
-  // Look for explicit project names
+  // Look for explicit project names — filter by message text to avoid full table scan
+  const messageLower = msg.toLowerCase()
   const projects = await prisma.project.findMany({
     select: { id: true, name: true, slug: true },
-    take: 100,
+    where: {
+      OR: [
+        { name: { contains: messageLower, mode: 'insensitive' } },
+        { slug: { contains: messageLower, mode: 'insensitive' } }
+      ]
+    },
+    take: 50, // Reasonable limit, but not absolute cap like before
   })
 
   for (const project of projects) {
@@ -357,7 +364,9 @@ async function checkDataAvailability(
     }
   }
 
+  // Only fetch fields needed for availability check, not entire row
   const projects = await prisma.project.findMany({
+    select: { id: true, status: true, possession_status: true },
     where: { id: { in: projectIds } },
   })
 
