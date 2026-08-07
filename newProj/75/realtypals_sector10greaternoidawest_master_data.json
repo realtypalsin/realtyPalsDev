@@ -1,0 +1,165 @@
+[
+  {
+    "name": "ATS Homekraft Happy Trails",
+    "slug": "ats-homekraft-happy-trails-sector-10-greater-noida-west",
+    "sector": "Sector 10 Greater Noida West",
+    "status": "ready_to_move",
+    "possession_date": "2025-10-15",
+    "rera_number": "UPRERAPRJ15574",
+    "description": "Premium G+27 ready-to-move residential community by ATS Homekraft featuring 80% open green landscape and excellent 130m road access.",
+    "long_description": "ATS Homekraft Happy Trails is one of the most iconic premium ready-to-move-in residential projects located in Sector 10, Noida Extension. Developed by the highly trusted ATS Homekraft (ATS Greens), the project spans 8.59 acres of land. It comprises 12 majestic high-rise towers rising up to G+27 floors, housing a total of 1,239 apartments. Built to high specifications, the project stands out for its green landscape design, dedicating over 80% of its area to expansive lawns, pathways, and beautiful horticulture. Designed by renowned international architects, the project offers highly functional 2 BHK and 3 BHK apartments, with a key focus on privacy and ventilation (featuring only two apartments per floor in select towers). Equipped with a central clubhouse, adult and kids swimming pools, professional-grade squash and lawn tennis courts, and three-layer advanced security, Happy Trails provides a perfect, secure, ready-to-register family home.",
+    "tagline": "A Heavenly Abode in Lush Greens",
+    "address": "Plot No. GH-02A, Sector 10, Greater Noida West, Uttar Pradesh 201306",
+    "lat": 28.5925,
+    "lng": 77.441,
+    "hero_image_url": "/images/properties/ats-homekraft-happy-trails-sector-10-greater-noida-west/hero.jpg",
+    "builder": {
+      "name": "ATS Homekraft",
+      "slug": "ats-homekraft"
+    },
+    "pricing": {
+      "price_min_cr": 1.45,
+      "price_max_cr": 2.05,
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "milestones": [
+            {
+              "amt": 0,
+              "due": "Immediate",
+              "pct": 10,
+              "done": true,
+              "milestone": "Booking Token"
+            },
+            {
+              "amt": 0,
+              "due": "T+15 Days",
+              "pct": 15,
+              "done": false,
+              "milestone": "Execution of Agreement"
+            },
+            {
+              "amt": 0,
+              "due": "T+60 Days",
+              "pct": 75,
+              "done": false,
+              "milestone": "Full Registry and Possession Handovers"
+            }
+          ]
+        }
+      ]
+    },
+    "unit_types": [
+      {
+        "name": "2.5 BHK + Study (Comfort)",
+        "bathrooms": 2,
+        "carpet_area_sqft": 710,
+        "super_area_sqft": 1165,
+        "price_min_cr": 1.45,
+        "price_max_cr": 1.55
+      },
+      {
+        "name": "3.5 BHK + Study (Elite)",
+        "bathrooms": 3,
+        "carpet_area_sqft": 1060,
+        "super_area_sqft": 1625,
+        "price_min_cr": 1.73,
+        "price_max_cr": 2.05
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Adult & Kids Swimming Pools",
+        "category": "sports"
+      },
+      {
+        "name": "Central Clubhouse & Banquet Hall",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Professional Squash Court",
+        "category": "sports"
+      },
+      {
+        "name": "Lawn Tennis & Badminton Courts",
+        "category": "sports"
+      },
+      {
+        "name": "Jogging and Walkway Tracks",
+        "category": "sports"
+      },
+      {
+        "name": "Lush green Landscaped Gardens",
+        "category": "lifestyle"
+      },
+      {
+        "name": "CCTV Camera & Gated 3-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Stilt Level Parking",
+        "category": "parking"
+      }
+    ],
+    "connectivity": [
+      {
+        "distance_km": 1
+      },
+      {
+        "distance_km": 0.2
+      },
+      {
+        "distance_km": 10
+      },
+      {
+        "distance_km": 6
+      },
+      {
+        "distance_km": 2.5
+      }
+    ],
+    "analysis_intelligence": {
+      "financial_intelligence": {
+        "investmentReport": {
+          "appreciation_annual": "12-15%",
+          "appreciation_desc": "Estimated capital appreciation based on infra growth",
+          "rental_yield": "4.2-4.8%",
+          "rental_desc": "High corporate tenant demand",
+          "market_trend": "Bullish",
+          "market_desc": "Strong buyer absorption",
+          "liquidity_score": "High",
+          "liquidity_desc": "Active resale market"
+        }
+      },
+      "market_intelligence": {
+        "demand_drivers": [
+          "Metro Connectivity",
+          "Expressway Access",
+          "Social Infra"
+        ],
+        "resale_liquidity": "Very High"
+      },
+      "decision_thesis": "ATS Homekraft Happy Trails is the premier, ready-to-move-in green residential safe haven in Sector 10, Noida Extension.",
+      "why_buy": [
+        "Unbeatable green layout with over 80% open landscaped area and premium horticulture.",
+        "Excellent construction pedigree of ATS Greens, with Spanish architectural design aesthetics.",
+        "Zero delivery risk with completed handovers, active flat registries, and 0% GST."
+      ],
+      "why_avoid": [
+        "Sustaining premium horticulture and sports courts results in slightly higher monthly maintenance charges.",
+        "Resale pricing has appreciated significantly, trading at a premium to standard developers."
+      ]
+    },
+    "channel_partners": [],
+    "competitors": [
+      {
+        "name": "Arihant Abode",
+        "slug": "arihant-abode-sector-10",
+        "this_project_advantage": "Spanish design theme with much wider green landscaping (80% open) and professional-grade squash courts.",
+        "competitor_advantage": "Slightly cheaper per sqft price positioning.",
+        "verdict": "Choose ATS Happy Trails for premium brand trust and lush green landscapes; choose Arihant Abode for smart concrete construction.",
+        "price_delta_note": "ATS Happy Trails trades at a premium of approx ₹1,500/sqft to Arihant Abode."
+      }
+    ]
+  }
+]

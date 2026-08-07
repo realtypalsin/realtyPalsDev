@@ -1,0 +1,140 @@
+[
+  {
+    "name": "Godrej Palm Retreat (Test)",
+    "slug": "godrej-palm-retreat-noida-test",
+    "sector": "Sector 150",
+    "status": "ready_to_move",
+    "possession_date": "2025-06-01",
+    "rera_number": "UP-RERA-PS-2021-00123",
+    "description": null,
+    "long_description": null,
+    "tagline": null,
+    "address": null,
+    "lat": null,
+    "lng": null,
+    "hero_image_url": "/images/properties/godrej-palm-retreat/hero.avif",
+    "builder": {
+      "name": "Godrej Properties",
+      "slug": "godrej-properties"
+    },
+    "pricing": {
+      "price_min_cr": 1.8,
+      "price_max_cr": 2.2,
+      "payment_plans": []
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK",
+        "bathrooms": 2,
+        "carpet_area_sqft": 1650,
+        "super_area_sqft": 2100,
+        "price_min_cr": 1.8,
+        "price_max_cr": 2.2
+      }
+    ],
+    "amenities": [],
+    "connectivity": [],
+    "analysis_intelligence": {
+      "financial_intelligence": {
+        "investmentReport": {
+          "appreciation_annual": "12-15%",
+          "appreciation_desc": "Estimated capital appreciation based on infra growth",
+          "rental_yield": "4.2-4.8%",
+          "rental_desc": "High corporate tenant demand",
+          "market_trend": "Bullish",
+          "market_desc": "Strong buyer absorption",
+          "liquidity_score": "High",
+          "liquidity_desc": "Active resale market"
+        }
+      },
+      "market_intelligence": {
+        "demand_drivers": [
+          "Metro Connectivity",
+          "Expressway Access",
+          "Social Infra"
+        ],
+        "resale_liquidity": "Very High"
+      },
+      "decision_thesis": "Premier residential development in Sector 150 offering exceptional appreciation and lifestyle.",
+      "why_buy": [
+        "Prime location advantage",
+        "Strong builder track record",
+        "High rental yield potential"
+      ],
+      "why_avoid": [
+        "High initial capital requirement"
+      ]
+    },
+    "channel_partners": [],
+    "competitors": []
+  },
+  {
+    "name": "Godrej Palm Retreat",
+    "slug": "godrej-palm-retreat-noida",
+    "sector": "Sector 150",
+    "status": "ready_to_move",
+    "possession_date": "2025-06-01",
+    "rera_number": "UP-RERA-PS-2021-00123",
+    "description": null,
+    "long_description": null,
+    "tagline": null,
+    "address": null,
+    "lat": null,
+    "lng": null,
+    "hero_image_url": "/images/properties/godrej-palm-retreat/hero.avif",
+    "builder": {
+      "name": "Godrej Properties",
+      "slug": "godrej-properties"
+    },
+    "pricing": {
+      "price_min_cr": 1.8,
+      "price_max_cr": 2.2,
+      "payment_plans": []
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK",
+        "bathrooms": 2,
+        "carpet_area_sqft": 1650,
+        "super_area_sqft": 2100,
+        "price_min_cr": 1.8,
+        "price_max_cr": 2.2
+      }
+    ],
+    "amenities": [],
+    "connectivity": [],
+    "analysis_intelligence": {
+      "financial_intelligence": {
+        "investmentReport": {
+          "appreciation_annual": "12-15%",
+          "appreciation_desc": "Estimated capital appreciation based on infra growth",
+          "rental_yield": "4.2-4.8%",
+          "rental_desc": "High corporate tenant demand",
+          "market_trend": "Bullish",
+          "market_desc": "Strong buyer absorption",
+          "liquidity_score": "High",
+          "liquidity_desc": "Active resale market"
+        }
+      },
+      "market_intelligence": {
+        "demand_drivers": [
+          "Metro Connectivity",
+          "Expressway Access",
+          "Social Infra"
+        ],
+        "resale_liquidity": "Very High"
+      },
+      "decision_thesis": "Premier residential development in Sector 150 offering exceptional appreciation and lifestyle.",
+      "why_buy": [
+        "Prime location advantage",
+        "Strong builder track record",
+        "High rental yield potential"
+      ],
+      "why_avoid": [
+        "High initial capital requirement"
+      ]
+    },
+    "channel_partners": [],
+    "competitors": []
+  }
+]

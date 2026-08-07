@@ -121,12 +121,15 @@ export default function AdminProjectEditPage({
   }, [data?.name])
 
   const handleFormChange = useCallback((formValues: Record<string, any>) => {
-    setPreview((prev: any) => ({
-      ...prev,
-      ...formValues,
-      builder: prev?.builder,
-      unit_types: prev?.unit_types,
-    }))
+    setPreview((prev: any) => {
+      if (!prev) return null
+      return {
+        ...prev,
+        ...formValues,
+        builder: prev.builder,
+        unit_types: prev.unit_types,
+      }
+    })
   }, [])
 
   const handleSaved = useCallback(async () => {

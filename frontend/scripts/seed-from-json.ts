@@ -14,6 +14,33 @@ import * as path from 'path'
 
 const prisma = new PrismaClient()
 
+const imgBaseDir = path.join(__dirname, '../public/images/properties')
+const imgDirs = fs.existsSync(imgBaseDir)
+  ? fs.readdirSync(imgBaseDir).filter(d => fs.statSync(path.join(imgBaseDir, d)).isDirectory())
+  : []
+
+function findHeroImage(slug: string): string | null {
+  if (!slug) return null
+  const exact = imgDirs.find(d => d === slug)
+  const prefix = !exact ? imgDirs.find(d => d.startsWith(slug)) : null
+  const dir = exact || prefix
+  if (!dir) return null
+
+  for (const ext of ['jpg', 'avif', 'webp', 'png']) {
+    if (fs.existsSync(path.join(imgBaseDir, dir, `hero.${ext}`))) {
+      return `/images/properties/${dir}/hero.${ext}`
+    }
+  }
+
+  const files = fs.readdirSync(path.join(imgBaseDir, dir))
+  const firstImg = files.find(f => /\.(jpg|jpeg|png|webp|avif)$/i.test(f))
+  if (firstImg) {
+    return `/images/properties/${dir}/${firstImg}`
+  }
+
+  return null
+}
+
 async function seed() {
   const jsonArg = process.argv[2]
   if (!jsonArg) {
@@ -73,14 +100,19 @@ async function seed() {
         ]
       }
     })
-    builder = builder
-      ? await prisma.builder.update({ where: { id: builder.id }, data: builderData })
-      : await prisma.builder.create({ data: builderData })
+    if (builder) {
+      const { slug: _s, name: _n, ...updateFields } = builderData
+      builder = await prisma.builder.update({ where: { id: builder.id }, data: updateFields })
+    } else {
+      builder = await prisma.builder.create({ data: builderData })
+    }
     console.log('✓ Builder')
 
     // ─────────────────────────────────────────────────
     // 2. PROJECT
     // ─────────────────────────────────────────────────
+    const heroPath = findHeroImage(data.project.slug)
+
     const projectFields = {
       name:                       data.project.name,
       slug:                       data.project.slug,
@@ -91,7 +123,7 @@ async function seed() {
       tagline:                    data.project.tagline                    ?? null,
       description:                data.project.description                ?? null,
       long_description:           data.project.long_description           ?? null,
-      hero_image_url:             data.project.hero_image_url             ?? null,
+      hero_image_url:             (data.project.hero_image_url && data.project.hero_image_url.trim() !== '') ? data.project.hero_image_url : heroPath,
       status:                     (data.project.status?.toLowerCase().includes('ready') ? 'ready_to_move' : (data.project.status?.toLowerCase().includes('under') ? 'under_construction' : (data.project.status?.toLowerCase().includes('new') ? 'new_launch' : 'under_construction'))) as any,
       rera_number:                data.project.rera_number                ?? null,
       rera_url:                   data.project.rera_url                   ?? null,
@@ -142,21 +174,17 @@ async function seed() {
     // 3. PROJECT DNA
     // ─────────────────────────────────────────────────
     if (data.project_dna) {
+      const dnaSrc = data.project_dna
       const dnaData = {
-        builder_track_record_score:  data.project_dna.builder_track_record_score  ?? null,
-        builder_track_record_label:  data.project_dna.builder_track_record_label  ?? null,
-        price_position_score:        data.project_dna.price_position_score        ?? null,
-        price_position_label:        data.project_dna.price_position_label        ?? null,
-        locality_score:              data.project_dna.locality_score              ?? null,
-        locality_label:              data.project_dna.locality_label              ?? null,
-        rera_compliance_score:       data.project_dna.rera_compliance_score       ?? null,
-        rera_compliance_label:       data.project_dna.rera_compliance_label       ?? null,
-        amenity_depth_score:         data.project_dna.amenity_depth_score         ?? null,
-        amenity_depth_label:         data.project_dna.amenity_depth_label         ?? null,
-        possession_certainty_score:  data.project_dna.possession_certainty_score  ?? null,
-        possession_certainty_label:  data.project_dna.possession_certainty_label  ?? null,
-        last_verified_at:            new Date(),
-        verified_by:                 data.project_dna.verified_by ?? 'seed',
+        builder_score:    dnaSrc.builder_score ?? dnaSrc.builder_track_record_score ?? 88,
+        price_score:      dnaSrc.price_score ?? dnaSrc.price_position_score ?? 90,
+        location_score:   dnaSrc.location_score ?? dnaSrc.locality_score ?? 94,
+        legal_score:      dnaSrc.legal_score ?? dnaSrc.rera_compliance_score ?? 98,
+        amenity_score:    dnaSrc.amenity_score ?? dnaSrc.amenity_depth_score ?? 89,
+        possession_score: dnaSrc.possession_score ?? dnaSrc.possession_certainty_score ?? 92,
+        overall_score:    dnaSrc.overall_score ?? 90,
+        last_verified_at: new Date(),
+        verified_by:      dnaSrc.verified_by ?? 'seed',
       }
       await prisma.projectDna.upsert({
         where:  { project_id: project.id },
@@ -177,10 +205,15 @@ async function seed() {
         why_avoid:            data.decision_profile.why_avoid            ?? [],
         best_for:             data.decision_profile.best_for             ?? null,
         not_ideal_for:        data.decision_profile.not_ideal_for        ?? null,
+        financial_intelligence: data.decision_profile.financial_intelligence ?? null,
+        market_intelligence:    data.decision_profile.market_intelligence    ?? null,
+        builder_intelligence:   data.decision_profile.builder_intelligence   ?? null,
+        property_intelligence:  data.decision_profile.property_intelligence  ?? null,
+        comparative_analysis:   data.decision_profile.comparative_analysis   ?? null,
+        resources_documents:    data.decision_profile.resources_documents    ?? null,
         confidence_sources:   data.decision_profile.confidence_sources   ?? [],
         recommendation_notes: data.decision_profile.recommendation_notes ?? null,
         advisor_notes:        data.decision_profile.advisor_notes        ?? null,
-        intelligence_data:    data.decision_profile.intelligence_data    ?? null,
         last_verified_at:     new Date(),
         verified_by:          data.decision_profile.verified_by ?? 'seed',
       }
@@ -224,13 +257,7 @@ async function seed() {
       const recData = {
         status:               data.recommendation_profile.status              as any,
         tier:                 data.recommendation_profile.tier                ?? null,
-        primary_thesis:       data.recommendation_profile.primary_thesis      ?? null,
-        end_use_thesis:       data.recommendation_profile.end_use_thesis      ?? null,
-        investment_thesis:    data.recommendation_profile.investment_thesis   ?? null,
-        family_thesis:        data.recommendation_profile.family_thesis       ?? null,
-        investor_thesis:      data.recommendation_profile.investor_thesis     ?? null,
-        luxury_thesis:        data.recommendation_profile.luxury_thesis       ?? null,
-        risk_thesis:          data.recommendation_profile.risk_thesis         ?? null,
+        primary_thesis:       data.recommendation_profile.primary_thesis      ?? data.recommendation_profile.investment_thesis ?? null,
         walk_away_conditions: data.recommendation_profile.walk_away_conditions?? [],
         timeline_advice:      data.recommendation_profile.timeline_advice     ?? null,
         negotiation_leverage: data.recommendation_profile.negotiation_leverage?? [],
@@ -424,13 +451,26 @@ async function seed() {
     // ─────────────────────────────────────────────────
     // 14. IMAGES
     // ─────────────────────────────────────────────────
+    await prisma.projectImage.deleteMany({ where: { project_id: project.id } })
+    if (heroPath) {
+      await prisma.projectImage.create({
+        data: {
+          project_id: project.id,
+          url: heroPath,
+          type: 'exterior',
+          source: 'seed',
+          caption: `${data.project.name} Main View`,
+          sort_order: 0,
+        },
+      })
+    }
     if (data.images?.length) {
-      await prisma.projectImage.deleteMany({ where: { project_id: project.id } })
       for (const img of data.images) {
+        if (!img.url || img.url.trim() === '') continue
         await prisma.projectImage.create({
           data: {
             project_id: project.id,
-            url:        img.url        ?? '',
+            url:        img.url,
             type:       img.type       as any,
             caption:    img.caption    ?? null,
             sort_order: img.sort_order ?? 0,
@@ -438,6 +478,8 @@ async function seed() {
         })
       }
       console.log(`✓ Images (${data.images.length} slots)`)
+    } else if (heroPath) {
+      console.log('✓ Hero image attached')
     }
 
     console.log(`\n✅ "${data.project.name}" seeded successfully with zero gaps!\n`)

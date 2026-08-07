@@ -1,0 +1,102 @@
+[
+  {
+    "name": "VVIP Homes",
+    "slug": "vvip-homes-greater-noida-west",
+    "sector": "Sector 16C",
+    "status": "ready_to_move",
+    "possession_date": "2018-05-01",
+    "rera_number": "RERA Not Applicable",
+    "description": "An established, ready-to-move 2 and 3 BHK project by VVIP Group offering a stable community in Greater Noida West.",
+    "long_description": "VVIP Homes is a prominent, fully delivered residential complex in Greater Noida West. Known for its steady community, 75% open layouts, and functional 2 and 3 BHK designs, the project serves as a highly liquid secondary market asset. It provides immediate occupancy without construction risks, making it highly attractive for end-users.",
+    "tagline": "Comfortable Premium Living",
+    "address": "Sector 16C, Noida Extension, Greater Noida West, Uttar Pradesh",
+    "lat": 28.608,
+    "lng": 77.435,
+    "hero_image_url": "/placeholder.png",
+    "builder": {
+      "name": "VVIP Group",
+      "slug": "vvip-group"
+    },
+    "pricing": {
+      "price_min_cr": 0.85,
+      "price_max_cr": 1.35,
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "milestones": []
+        }
+      ]
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK",
+        "bathrooms": 2,
+        "carpet_area_sqft": 680,
+        "super_area_sqft": 1060,
+        "price_min_cr": 0.85,
+        "price_max_cr": 0.95
+      },
+      {
+        "name": "3 BHK",
+        "bathrooms": 3,
+        "carpet_area_sqft": 1000,
+        "super_area_sqft": 1490,
+        "price_min_cr": 1.2,
+        "price_max_cr": 1.35
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Clubhouse",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Swimming Pool",
+        "category": "sports"
+      },
+      {
+        "name": "Jogging Track",
+        "category": "wellness"
+      }
+    ],
+    "connectivity": [
+      {
+        "distance_km": 1
+      }
+    ],
+    "analysis_intelligence": {
+      "financial_intelligence": {
+        "investmentReport": {
+          "appreciation_annual": "12-15%",
+          "appreciation_desc": "Estimated capital appreciation based on infra growth",
+          "rental_yield": "4.2-4.8%",
+          "rental_desc": "High corporate tenant demand",
+          "market_trend": "Bullish",
+          "market_desc": "Strong buyer absorption",
+          "liquidity_score": "High",
+          "liquidity_desc": "Active resale market"
+        }
+      },
+      "market_intelligence": {
+        "demand_drivers": [
+          "Metro Connectivity",
+          "Expressway Access",
+          "Social Infra"
+        ],
+        "resale_liquidity": "Very High"
+      },
+      "decision_thesis": "A safe, delivered mid-market project offering affordable entry into the bustling Greater Noida West corridor.",
+      "why_buy": [
+        "Ready to move; zero construction risk.",
+        "Established and active community.",
+        "Good rental yields."
+      ],
+      "why_avoid": [
+        "Older architectural layout.",
+        "Basic amenities compared to modern luxury launches."
+      ]
+    },
+    "channel_partners": [],
+    "competitors": []
+  }
+]

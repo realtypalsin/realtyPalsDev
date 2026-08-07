@@ -94,18 +94,27 @@ export interface MissingBySection {
   competitors:  string[]
 }
 
+export interface TabScores {
+  core: number          // 0-100 (Core Info & Units)
+  pricing: number       // 0-100 (Pricing & Location)
+  media: number         // 0-100 (Images & Brochures)
+  intelligence: number  // 0-100 (DNA & Intelligence)
+  updates: number       // 0-100 (Updates & Timeline)
+  partners: number      // 0-100 (Channel Partners)
+}
+
 export interface CompletenessResult {
   foundationalScore: number  // 0-100
   enrichmentScore:   number  // 0-100
   totalScore:        number  // 0-100, weighted average
   canPublish:        boolean // true only if all 8 foundational checks pass
+  tabScores:         TabScores
+  missing:           MissingBySection
 
   foundationalPassed: number // count of passing foundational checks
   foundationalTotal:  number // always 8
   enrichmentPassed:   number // count of passing enrichment checks
   enrichmentTotal:    number // always 18
-
-  missing: MissingBySection
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -289,9 +298,52 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
 
   // ── Score calculation ────────────────────────────────────────────────────
 
+  const coreScore = Math.min(100, Math.round(
+    (hasName ? 15 : 0) +
+    (hasStatus ? 15 : 0) +
+    (hasRera ? 15 : 0) +
+    (hasDescription ? 15 : 0) +
+    (hasHero ? 15 : 0) +
+    (project.unit_types.length >= 1 ? 15 : 0) +
+    (hasAmenities ? 10 : 0)
+  ))
+
+  const pricingScore = Math.min(100, Math.round(
+    (hasPricedUnit ? 30 : 0) +
+    (hasConnectivity ? 30 : 0) +
+    (project.unit_types.length > 0 ? 20 : 0) +
+    (hasRera ? 20 : 0)
+  ))
+
+  const mediaScore = Math.min(100, Math.round(
+    (hasHero ? 30 : 0) +
+    (hasGallery ? 40 : (project.images.length > 0 ? 20 : 0)) +
+    (hasBrochure ? 30 : 0)
+  ))
+
+  const intelligenceScore = Math.min(100, Math.round(
+    (hasDecisionThesis ? 20 : 0) +
+    (hasPersona ? 20 : 0) +
+    (hasRecommendationTier ? 20 : 0) +
+    (hasDna ? 20 : 0) +
+    (hasCompetitors ? 20 : 0)
+  ))
+
+  const updatesScore = 100
+  const partnersScore = 100
+
+  const tabScores: TabScores = {
+    core: coreScore,
+    pricing: pricingScore,
+    media: mediaScore,
+    intelligence: intelligenceScore,
+    updates: updatesScore,
+    partners: partnersScore,
+  }
+
   const foundationalScore = Math.round((foundationalPassed / foundationalTotal) * 100)
   const enrichmentScore   = Math.round((enrichmentPassed   / enrichmentTotal)   * 100)
-  const totalScore        = Math.round(foundationalScore * 0.6 + enrichmentScore * 0.4)
+  const totalScore        = Math.round((coreScore * 0.25) + (pricingScore * 0.20) + (mediaScore * 0.15) + (intelligenceScore * 0.20) + (updatesScore * 0.10) + (partnersScore * 0.10))
   const canPublish        = foundationalPassed === foundationalTotal
 
   return {
@@ -299,6 +351,7 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
     enrichmentScore,
     totalScore,
     canPublish,
+    tabScores,
     foundationalPassed,
     foundationalTotal,
     enrichmentPassed,
@@ -327,8 +380,20 @@ export interface IntelligenceCompletenessReport {
   missing_fields: string[]
 }
 
+interface DecisionProfileData {
+  project_id?: string
+  financial_intelligence?: Record<string, any>
+  market_intelligence?: Record<string, any>
+  builder_intelligence?: Record<string, any>
+  property_intelligence?: Record<string, any>
+  comparative_analysis?: Record<string, any>
+  resources_documents?: Record<string, any>
+  decision_thesis?: string | null
+  why_buy?: string[]
+}
+
 export function checkDecisionProfileCompleteness(
-  profile: Record<string, any>
+  profile: DecisionProfileData
 ): IntelligenceCompletenessReport {
   const checks = {
     financial: !!profile.financial_intelligence,
@@ -356,7 +421,7 @@ export function checkDecisionProfileCompleteness(
 }
 
 export function validateIntelligenceData(
-  data: Record<string, any>
+  data: DecisionProfileData
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = []
 

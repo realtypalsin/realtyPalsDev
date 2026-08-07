@@ -15,6 +15,33 @@ const masterFiles = [
   'realtypals_sector79_master_data.json'
 ]
 
+// Build local property image directory lookup
+const imgBaseDir = path.join(__dirname, '../public/images/properties')
+const imgDirs = fs.existsSync(imgBaseDir)
+  ? fs.readdirSync(imgBaseDir).filter(d => fs.statSync(path.join(imgBaseDir, d)).isDirectory())
+  : []
+
+function findHeroImage(slug: string): string | null {
+  const exact = imgDirs.find(d => d === slug)
+  const prefix = !exact ? imgDirs.find(d => d.startsWith(slug)) : null
+  const dir = exact || prefix
+  if (!dir) return null
+
+  for (const ext of ['jpg', 'avif', 'webp', 'png']) {
+    if (fs.existsSync(path.join(imgBaseDir, dir, `hero.${ext}`))) {
+      return `/images/properties/${dir}/hero.${ext}`
+    }
+  }
+
+  const files = fs.readdirSync(path.join(imgBaseDir, dir))
+  const firstImg = files.find(f => /\.(jpg|jpeg|png|webp|avif)$/i.test(f))
+  if (firstImg) {
+    return `/images/properties/${dir}/${firstImg}`
+  }
+
+  return null
+}
+
 async function seedAll() {
   console.log('\n🚀 Starting Batch Seeding for All 7 Sector Master Datasets (81 Projects)...\n')
 
@@ -85,6 +112,8 @@ async function seedAll() {
             ? 'new_launch'
             : 'under_construction')) as any
 
+        const heroPath = findHeroImage(data.project.slug)
+
         const projectFields = {
           name:                       data.project.name,
           slug:                       data.project.slug,
@@ -95,7 +124,7 @@ async function seedAll() {
           tagline:                    data.project.tagline ?? null,
           description:                data.project.description ?? null,
           long_description:           data.project.long_description ?? data.project.description ?? null,
-          hero_image_url:             data.media?.find((m: any) => m.type === 'hero')?.url ?? null,
+          hero_image_url:             heroPath ?? data.media?.find((m: any) => m.type === 'hero')?.url ?? null,
           status:                     projectStatus,
           rera_number:                data.project.rera_number ?? null,
           rera_url:                   data.project.rera_url ?? null,
@@ -295,12 +324,32 @@ async function seedAll() {
           }
         }
 
+        // 9b. PRICE HISTORY
+        if (data.pricing?.price_history?.length) {
+          await prisma.priceHistory.deleteMany({ where: { project_id: project.id } })
+          for (const ph of data.pricing.price_history) {
+            await prisma.priceHistory.create({
+              data: {
+                project_id:     project.id,
+                recorded_at:    new Date(ph.recorded_at),
+                quarter_label:  ph.quarter_label ?? null,
+                bhk:            ph.bhk ?? null,
+                price_per_sqft: ph.price_per_sqft ?? null,
+                total_price_cr: ph.total_price_cr ?? null,
+                event_note:     ph.event_note ?? null,
+                source:         ph.source ?? 'builder_price_list',
+              }
+            })
+          }
+        }
+
         // 10. CONNECTIVITY
         if (data.location?.connectivity?.length) {
           await prisma.connectivity.deleteMany({ where: { project_id: project.id } })
-          const validTypes = ['metro', 'expressway', 'school', 'hospital', 'mall']
+          const validTypes = ['metro', 'road', 'expressway', 'school', 'hospital', 'mall', 'landmark', 'airport', 'university']
           for (const conn of data.location.connectivity) {
-            const connType = validTypes.includes(conn.type?.toLowerCase()) ? conn.type.toLowerCase() : 'mall'
+            const rawType = conn.type?.toLowerCase()
+            const connType = validTypes.includes(rawType) ? rawType : 'landmark'
             await prisma.connectivity.create({
               data: {
                 project_id: project.id,
@@ -448,6 +497,40 @@ async function seedAll() {
                 project_id: project.id,
                 channel_partner_id: partner.id,
                 is_featured: true,
+              }
+            })
+          }
+        }
+
+        // 15. PROJECT IMAGES
+        await prisma.projectImage.deleteMany({ where: { project_id: project.id } })
+        if (heroPath) {
+          await prisma.projectImage.create({
+            data: {
+              project_id: project.id,
+              url: heroPath,
+              type: 'exterior',
+              source: 'seed',
+              caption: `${data.project.name} Main View`,
+              sort_order: 0,
+            }
+          })
+        }
+        if (data.media?.length) {
+          for (const m of data.media) {
+            if (m.type === 'hero') continue
+            const validTypes = ['exterior', 'interior', 'floor_plan', 'amenity', 'construction_update']
+            const imgType = validTypes.includes(m.type) ? m.type : 'exterior'
+            await prisma.projectImage.create({
+              data: {
+                project_id: project.id,
+                url: m.url ?? (heroPath || ''),
+                type: imgType as any,
+                source: 'seed',
+                caption: m.caption ?? null,
+                bhk: m.bhk ?? null,
+                size_sqft: m.size_sqft ?? null,
+                sort_order: m.sort_order ?? 0,
               }
             })
           }

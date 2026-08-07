@@ -25,8 +25,11 @@ interface Project {
   status: string
   hero_image_url: string | null
   rera_number: string | null
+  description?: string | null
   builder: { name: string }
   unit_types: UnitType[]
+  amenities?: { id: string }[]
+  connectivity?: { id: string }[]
   images?: { url: string; type: string }[]
 }
 
@@ -94,7 +97,7 @@ export default function AdminProjects() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
 
-  async function load(q = '') {
+  const load = useCallback(async (q = '') => {
     setLoading(true)
     try {
       const res = await adminFetch(`/admin/projects?q=${encodeURIComponent(q)}`)
@@ -105,9 +108,9 @@ export default function AdminProjects() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
 
   // Notion-style smart filter parsing
   const smartFilter = useCallback((p: Project) => {
@@ -129,6 +132,32 @@ export default function AdminProjects() {
   }, [query])
 
   const filtered = projects.filter(smartFilter)
+
+  const getProjectImage = useCallback((p: Project): string | null => {
+    return p.images?.find(i => i.type === 'hero')?.url
+      ?? p.images?.[0]?.url
+      ?? p.hero_image_url
+      ?? null
+  }, [])
+
+  const handleDelete = useCallback(async (id: string, name: string) => {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
+    setDeleting(id)
+    const promise = adminFetch(`/admin/projects/${id}`, { method: 'DELETE' })
+
+    toast.promise(promise, {
+      loading: 'Deleting project...',
+      success: () => {
+        setProjects((p) => p.filter((x) => x.id !== id))
+        setDeleting(null)
+        return `Deleted ${name}`
+      },
+      error: () => {
+        setDeleting(null)
+        return 'Failed to delete project'
+      }
+    })
+  }, [])
 
   // Keyboard navigation
   useEffect(() => {
@@ -159,25 +188,6 @@ export default function AdminProjects() {
 
   // Reset selection on filter
   useEffect(() => setSelectedIndex(-1), [query])
-
-  async function handleDelete(id: string, name: string) {
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
-    setDeleting(id)
-    const promise = adminFetch(`/admin/projects/${id}`, { method: 'DELETE' })
-    
-    toast.promise(promise, {
-      loading: 'Deleting project...',
-      success: () => {
-        setProjects((p) => p.filter((x) => x.id !== id))
-        setDeleting(null)
-        return `Deleted ${name}`
-      },
-      error: () => {
-        setDeleting(null)
-        return 'Failed to delete project'
-      }
-    })
-  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -252,9 +262,9 @@ export default function AdminProjects() {
                 >
                   {/* Thumbnail */}
                   <div className="mr-lg">
-                    <ProjectThumbnail 
-                      src={p.images?.find(i => i.type === 'hero')?.url || p.images?.[0]?.url || p.hero_image_url} 
-                      alt={p.name} 
+                    <ProjectThumbnail
+                      src={getProjectImage(p)}
+                      alt={p.name}
                     />
                   </div>
                   

@@ -1,0 +1,173 @@
+[
+  {
+    "name": "Eldeco Ballads of Bliss",
+    "slug": "eldeco-ballads-of-bliss-sector-22d-yamuna-expressway",
+    "sector": "Sector 22D Yamuna Expressway",
+    "status": "under_construction",
+    "possession_date": "2030-04-04",
+    "rera_number": "UPRERAPRJ921261/05/2025",
+    "description": "Exclusive G+32 pre-launch luxury residential development featuring VRF air-conditioning on the booming Yamuna Expressway corridor.",
+    "long_description": "Eldeco Ballads of Bliss is an upcoming flagship luxury residential high-rise project located in the high-growth corridor of Sector 22D, Yamuna Expressway. Spanning a prime 5-acre corner plot, the development comprises only 3 exclusive high-rise towers rising G+32 floors, housing a total of 580 corner-layout units. Structure-designed on a two-side open plot with 120-meter expressway road frontage, every home features spacious 3 BHK and duplex layouts with three open sides for spectacular natural light and cross ventilation. Each apartment is pre-equipped with advanced centralized VRF air conditioning, expansive private balconies connected to every bedroom, and premium wood framing. The central community layout features an elevated luxury clubhouse, adult and kids swimming pools, a jogging path, and 3-tier gated security, positioned just minutes away from the upcoming Noida International Airport.",
+    "tagline": "Poetry of Premium Vertical Living",
+    "address": "Plot No. GH-1A/2, Sector 22D, Yamuna Expressway, Greater Noida, Uttar Pradesh 203207",
+    "lat": 28.391,
+    "lng": 77.5355,
+    "hero_image_url": "/images/properties/eldeco-ballads-of-bliss-sector-22d-yamuna-expressway/hero.jpg",
+    "builder": {
+      "name": "Eldeco Group",
+      "slug": "eldeco-group"
+    },
+    "pricing": {
+      "price_min_cr": 1.11,
+      "price_max_cr": 2.56,
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "milestones": [
+            {
+              "amt": 0,
+              "due": "Immediate",
+              "pct": 10,
+              "done": true,
+              "milestone": "At Booking"
+            },
+            {
+              "amt": 0,
+              "due": "Excavation completion",
+              "pct": 10,
+              "done": false,
+              "milestone": "On Foundation"
+            },
+            {
+              "amt": 0,
+              "due": "Mid-Construction",
+              "pct": 30,
+              "done": false,
+              "milestone": "On Casting of 10th Floor Slab"
+            },
+            {
+              "amt": 0,
+              "due": "April 2030",
+              "pct": 50,
+              "done": false,
+              "milestone": "Offer of Possession & Registry"
+            }
+          ]
+        }
+      ]
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Comfort",
+        "bathrooms": 2,
+        "carpet_area_sqft": 990,
+        "super_area_sqft": 1550,
+        "price_min_cr": 1.11,
+        "price_max_cr": 1.39
+      },
+      {
+        "name": "Duplex Penthouse",
+        "bathrooms": 4,
+        "carpet_area_sqft": 1650,
+        "super_area_sqft": 2550,
+        "price_min_cr": 2.29,
+        "price_max_cr": 2.56
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Adult & Kids Pools with Sundeck",
+        "category": "sports"
+      },
+      {
+        "name": "Modern Gymnasium & Fitness Center",
+        "category": "sports"
+      },
+      {
+        "name": "Central Clubhouse & Community Hall",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Badminton & Tennis Courts",
+        "category": "sports"
+      },
+      {
+        "name": "Thematic Landscaped Gardens",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Rainwater Harvesting & Solar Lighting",
+        "category": "lifestyle"
+      },
+      {
+        "name": "24/7 Gated 3-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Ample Basement Parking",
+        "category": "parking"
+      }
+    ],
+    "connectivity": [
+      {
+        "distance_km": 1.5
+      },
+      {
+        "distance_km": 0.1
+      },
+      {
+        "distance_km": 20
+      },
+      {
+        "distance_km": 8
+      },
+      {
+        "distance_km": 25
+      }
+    ],
+    "analysis_intelligence": {
+      "financial_intelligence": {
+        "investmentReport": {
+          "appreciation_annual": "12-15%",
+          "appreciation_desc": "Estimated capital appreciation based on infra growth",
+          "rental_yield": "4.2-4.8%",
+          "rental_desc": "High corporate tenant demand",
+          "market_trend": "Bullish",
+          "market_desc": "Strong buyer absorption",
+          "liquidity_score": "High",
+          "liquidity_desc": "Active resale market"
+        }
+      },
+      "market_intelligence": {
+        "demand_drivers": [
+          "Metro Connectivity",
+          "Expressway Access",
+          "Social Infra"
+        ],
+        "resale_liquidity": "Very High"
+      },
+      "decision_thesis": "Eldeco Ballads of Bliss is the ultimate premium investment-led wealth creator along the Yamuna Expressway airport corridor.",
+      "why_buy": [
+        "Uncompromising Location: Placed directly on the Yamuna Expressway Sector 22D high-growth corridor.",
+        "Jewar Airport Proximity: A brief, 15-minute signal-free drive to upcoming Asia's largest airport.",
+        "Unbeatable Low Density: Only 3 exclusive high-rise towers spread over 5 acres.",
+        "High-end specifications: Central ducted VRF air conditioning and corner layouts."
+      ],
+      "why_avoid": [
+        "Under construction: Possession scheduled for April 2030, requiring a solid long-term holding horizon.",
+        "Expressway infrastructure is still developing; retail walks require short commutes to central Greater Noida."
+      ]
+    },
+    "channel_partners": [],
+    "competitors": [
+      {
+        "name": "ATS Allure",
+        "slug": "ats-allure-sector-22d",
+        "this_project_advantage": "Neoclassical double-height clubhouse lobby; pre-fitted centralized VRF climate control included in base pricing.",
+        "competitor_advantage": "Slightly cheaper initial pricing.",
+        "verdict": "Choose Eldeco Ballads of Bliss for premium automated luxury and low density; choose ATS Allure for cost-friendly entry.",
+        "price_delta_note": "Eldeco Ballads of Bliss is approx ₹1,000/sqft premium to ATS Allure."
+      }
+    ]
+  }
+]
