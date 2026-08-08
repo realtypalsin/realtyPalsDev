@@ -314,7 +314,9 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
         {/* Builder · Sector · Possession */}
         <div className="flex items-center justify-between text-[12px] text-gray-600 dark:text-gray-300 mb-3 gap-2">
           <div className="flex items-center gap-1.5 truncate flex-1">
-            <span className="font-medium truncate">{project.builder.name}</span>
+            <span className="font-medium truncate">
+              {typeof project.builder === 'object' ? project.builder?.name : project.builder}
+            </span>
             <span className="opacity-40">·</span>
             <span className="truncate opacity-80">{project.sector}</span>
           </div>

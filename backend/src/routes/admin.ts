@@ -163,9 +163,15 @@ router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
   const { limit = '100', offset = '0', q, search } = req.query
   const searchTerm = (q || search) as string | undefined
 
+  // Lightweight health check (layout.tsx calls this on mount; avoid heavy DB joins)
+  if (searchTerm === '_check') {
+    res.json({ projects: [], total: 0, health: 'ok' })
+    return
+  }
+
   try {
     const where: any = {}
-    if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim() !== '_check') {
+    if (searchTerm && typeof searchTerm === 'string') {
       const queryStr = searchTerm.trim()
       where.OR = [
         { name: { contains: queryStr, mode: 'insensitive' } },
