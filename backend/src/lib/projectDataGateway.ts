@@ -643,8 +643,9 @@ export function computeResponseConfidence(facts: Record<string, FactValidation>)
   if (Object.keys(facts).length === 0) return 0
 
   const confidences = Object.values(facts).map((f) => f.confidence)
-  const product = confidences.reduce((a, b) => a * b, 1)
-  let confidence = Math.pow(product, 1 / confidences.length)
+  // Use arithmetic mean instead of geometric: geometric fails if ANY confidence = 0 (0 * anything = 0)
+  const sum = confidences.reduce((a, b) => a + b, 0)
+  let confidence = sum / confidences.length
 
   // Cap if critical fields missing
   const hasCriticalData = Object.values(facts).some(

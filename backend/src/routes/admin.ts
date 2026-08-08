@@ -175,20 +175,38 @@ router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
       ]
     }
 
-    const [projects, total] = await Promise.all([
-      prisma.project.findMany({
-        where,
-        include: {
-          builder: { select: { id: true, name: true, slug: true } },
-          unit_types: true,
-          images: true,
-        },
-        orderBy: { name: 'asc' },
-        take: parseInt(limit as string),
-        skip: parseInt(offset as string),
-      }),
-      prisma.project.count({ where }),
-    ])
+    // Retry logic for cold-start connection errors
+    let projects, total
+    let retries = 0
+    const maxRetries = 2
+    const backoffMs = [10, 100] // ms delays on retry
+
+    while (retries <= maxRetries) {
+      try {
+        [projects, total] = await Promise.all([
+          prisma.project.findMany({
+            where,
+            include: {
+              builder: { select: { id: true, name: true, slug: true } },
+              unit_types: true,
+              images: true,
+            },
+            orderBy: { name: 'asc' },
+            take: parseInt(limit as string),
+            skip: parseInt(offset as string),
+          }),
+          prisma.project.count({ where }),
+        ])
+        break // Success, exit retry loop
+      } catch (err) {
+        if (retries < maxRetries) {
+          await new Promise(r => setTimeout(r, backoffMs[retries]))
+          retries++
+        } else {
+          throw err // Final retry failed, propagate error
+        }
+      }
+    }
 
     // Ensure array fields are non-null for frontend safety
     const safeProjects = projects.map(p => ({
