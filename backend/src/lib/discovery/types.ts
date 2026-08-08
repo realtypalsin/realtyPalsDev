@@ -199,3 +199,68 @@ export interface SectorOverview {
   topAmenities: string[]
   metroStations: string[]
 }
+
+// Database-backed chat responses (Phase 1)
+export type ConversationStage = 'CLARIFYING' | 'SEARCHING' | 'COMPARING' | 'DECIDING'
+
+export interface ConversationMemory {
+  user_budget_min_cr?: number
+  user_budget_max_cr?: number
+  user_timeline?: string
+  user_pain_points: string[]
+  user_priorities: string[]
+  projects_discussed: string[]
+  stage: ConversationStage
+  confident_facts: Record<string, { value: any; source: string; confidence: number }>
+}
+
+export interface ConfidenceScore {
+  payment_plans: number
+  builder_history: number
+  location: number
+  possession: number
+  overall: number
+}
+
+export interface ComparisonDimension {
+  name: string
+  weight: number
+  format: 'currency' | 'percentage' | 'months' | 'text'
+  better_is: 'lower' | 'higher'
+}
+
+export interface ComparisonRow {
+  name: string
+  values: (number | string)[]
+  score?: number
+}
+
+export interface ComparisonMatrix {
+  dimensions: ComparisonDimension[]
+  rows: ComparisonRow[]
+  weighted_rank: number[]
+}
+
+export interface ChatResponse {
+  message: string
+  memory_context: {
+    user_stated_facts: Record<string, { value: any; source: string; confidence: number }>
+    inferred_preferences: string[]
+    open_questions: string[]
+  }
+  comparison?: {
+    matrix: ComparisonMatrix
+    winner: string
+    reason: string
+  }
+  confidence: ConfidenceScore
+  chips: any[]
+  data_freshness: Record<string, string>
+  missing_data: string[]
+}
+
+export interface DataSource {
+  name: 'payment_plans' | 'cost_sheet' | 'builder' | 'location' | 'possession'
+  base_confidence: number
+  freshness_penalty_per_week: number
+}
