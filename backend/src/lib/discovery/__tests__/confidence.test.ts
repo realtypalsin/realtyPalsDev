@@ -1,109 +1,101 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert/strict'
-import { computeConfidence } from '../confidence'
-import type { Intent } from '../types'
+import assert from 'node:assert'
+import { calculateConfidence } from '../dataFetcher'
 
-describe('Confidence: Scoring', () => {
-  it('HIGH confidence (0.95) on specific project name', () => {
-    const intent: Intent = { projectNames: ['ACE Hanei'] }
-    const result = computeConfidence(intent)
-    assert.equal(result.level, 'HIGH')
-    assert.equal(result.score, 0.95)
+describe('Confidence Scoring', () => {
+  it('should apply 5% penalty per week of age', () => {
+    const now = new Date()
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+
+    const data1Week = { verified_at: oneWeekAgo }
+    const data2Weeks = { verified_at: twoWeeksAgo }
+
+    const confidence1Week = calculateConfidence('payment_plans', data1Week)
+    const confidence2Weeks = calculateConfidence('payment_plans', data2Weeks)
+
+    // 95 - (1 * 5) = 90
+    assert.strictEqual(confidence1Week, 90)
+    // 95 - (2 * 5) = 85
+    assert.strictEqual(confidence2Weeks, 85)
   })
 
-  it('HIGH confidence (0.90) on specific builder name', () => {
-    const intent: Intent = { builderName: 'ACE Group' }
-    const result = computeConfidence(intent)
-    assert.equal(result.level, 'HIGH')
-    assert.equal(result.score, 0.90)
+  it('should apply 20% penalty for legal risk flag', () => {
+    const data = { verified_at: new Date() }
+
+    const confidence = calculateConfidence('payment_plans', data, true, 0)
+
+    // 95 - 20 = 75
+    assert.strictEqual(confidence, 75)
   })
 
-  it('HIGH confidence (0.88) on 3 strong signals (sector, BHK, budget)', () => {
-    const intent: Intent = {
-      sector: 'Sector 150',
-      bhk: [3],
-      budgetMax: 2
-    }
-    const result = computeConfidence(intent)
-    assert.equal(result.level, 'HIGH')
-    assert.equal(result.score, 0.88)
+  it('should apply 15% penalty if litigation count > 2', () => {
+    const data = { verified_at: new Date() }
+
+    const confidence = calculateConfidence('payment_plans', data, false, 3)
+
+    // 95 - 15 = 80
+    assert.strictEqual(confidence, 80)
   })
 
-  it('MEDIUM confidence (0.72) on 2 strong signals', () => {
-    const intent: Intent = {
-      sector: 'Sector 150',
-      bhk: [3]
-    }
-    const result = computeConfidence(intent)
-    assert.equal(result.level, 'MEDIUM')
-    assert.equal(result.score, 0.72)
+  it('should combine penalties: freshness + legal + litigation', () => {
+    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    const data = { verified_at: twoWeeksAgo }
+
+    const confidence = calculateConfidence('payment_plans', data, true, 4)
+
+    // 95 - (2 * 5) - 20 - 15 = 95 - 10 - 20 - 15 = 50
+    assert.strictEqual(confidence, 50)
   })
 
-  it('MEDIUM confidence (0.60) on 1 signal + lifestyle', () => {
-    const intent: Intent = {
-      sector: 'Sector 150',
-      lifestyleKeywords: ['metro', 'mall']
-    }
-    const result = computeConfidence(intent)
-    assert.equal(result.level, 'MEDIUM')
-    assert.equal(result.score, 0.60)
+  it('should never go below 0%', () => {
+    const veryOldDate = new Date('2000-01-01')
+    const data = { verified_at: veryOldDate }
+
+    const confidence = calculateConfidence('cost_sheet', data, true, 10)
+
+    assert.ok(confidence >= 0)
+    assert.ok(confidence <= 100)
   })
 
-  it('LOW confidence (0.30) on single signal, no lifestyle', () => {
-    const intent: Intent = {
-      bhk: [3]
-    }
-    const result = computeConfidence(intent)
-    assert.equal(result.level, 'LOW')
-    assert.equal(result.score, 0.30)
+  it('should never exceed 100%', () => {
+    const data = { verified_at: new Date() }
+
+    const confidence = calculateConfidence('payment_plans', data, false, 0)
+
+    assert.ok(confidence <= 100)
   })
 
-  it('LOW confidence (0.30) on empty intent', () => {
-    const intent: Intent = {}
-    const result = computeConfidence(intent)
-    assert.equal(result.level, 'LOW')
+  it('should clamp to [0, 100] on overage', () => {
+    const veryOldDate = new Date('1990-01-01')
+    const data = { verified_at: veryOldDate }
+
+    const confidence = calculateConfidence('payment_plans', data, true, 20)
+
+    assert.ok(confidence >= 0)
+    assert.ok(confidence <= 100)
   })
 
-  it('ignores city-level terms for confidence (city-level not a strong signal)', () => {
-    const intent: Intent = {
-      sector: 'Noida' // city-level, not a real signal
-    }
-    const result = computeConfidence(intent)
-    assert.equal(result.level, 'LOW')
+  it('should use updated_at if verified_at not present', () => {
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    const data = { updated_at: oneWeekAgo }
+
+    const confidence = calculateConfidence('builder', data)
+
+    // builder base: 85 - (1 * 5) = 80
+    assert.strictEqual(confidence, 80)
   })
 
-  it('confidence reason field is non-empty', () => {
-    const intent: Intent = { sector: 'Sector 150', bhk: [3], budgetMax: 2 }
-    const result = computeConfidence(intent)
-    assert(result.reason.length > 0, 'Reason should be provided')
-  })
+  it('should use source-based confidence from BASE_CONFIDENCE', () => {
+    const data = { verified_at: new Date() }
 
-  it('score is between 0.0 and 1.0', () => {
-    const testIntents: Intent[] = [
-      {},
-      { sector: 'Sector 150' },
-      { sector: 'Sector 150', bhk: [3] },
-      { sector: 'Sector 150', bhk: [3], budgetMax: 2 },
-      { projectNames: ['ACE Hanei'] },
-    ]
+    const paymentConfidence = calculateConfidence('payment_plans', data)
+    const costConfidence = calculateConfidence('cost_sheet', data)
+    const builderConfidence = calculateConfidence('builder', data)
 
-    for (const intent of testIntents) {
-      const result = computeConfidence(intent)
-      assert(result.score >= 0.0 && result.score <= 1.0, `Score ${result.score} out of bounds`)
-    }
-  })
-})
-
-describe('Confidence: Reasoning', () => {
-  it('project name returns highest score reason', () => {
-    const intent: Intent = { projectNames: ['ACE Hanei'], sector: 'Sector 150' }
-    const result = computeConfidence(intent)
-    assert(result.reason.includes('project'), 'Should mention project')
-  })
-
-  it('builder name returns high score reason', () => {
-    const intent: Intent = { builderName: 'ACE Group' }
-    const result = computeConfidence(intent)
-    assert(result.reason.includes('builder') || result.reason.includes('Builder'), 'Should mention builder')
+    // Base values from BASE_CONFIDENCE: payment_plans=95, cost_sheet=90, builder=85
+    assert.strictEqual(paymentConfidence, 95)
+    assert.strictEqual(costConfidence, 90)
+    assert.strictEqual(builderConfidence, 85)
   })
 })
