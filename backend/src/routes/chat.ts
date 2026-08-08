@@ -40,7 +40,6 @@ import {
 } from '../lib/projectFacts'
 import { gatePublished } from '../lib/intelligenceGate'
 import { getChipInventory } from '../lib/discovery/chipInventory'
-import { getContextualChips, detectQueryContext } from '../lib/discovery/chipContext'
 import { planProjectDetailQuery, isActionable, getClarificationMessage } from '../lib/discovery/queryPlanner'
 import { getProjectDataForQuery, computeResponseConfidence } from '../lib/projectDataGateway'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
@@ -49,6 +48,11 @@ import { DEFAULT_CITY, PILOT_SCOPE_LABEL } from '../lib/config/cities'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
 import { getBuilderRecord } from '../lib/builders'
+import { buildConversationMemory } from '../lib/discovery/memoryExtractor'
+import { routeQuery } from '../lib/discovery/queryRouter'
+import { fetchWeightedData } from '../lib/discovery/dataFetcher'
+import { formatDatabaseResponse } from '../lib/ai/prompts/responseFormatter'
+import type { ChatResponse } from '../lib/discovery/types'
 import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
 import {
@@ -400,7 +404,7 @@ router.post('/', async (req: Request, res: Response) => {
           guest_token: true,
           summary: true,
           last_projects: true,
-          messages: { orderBy: { created_at: 'desc' }, take: 50, select: { role: true, content: true } },
+          messages: { orderBy: { created_at: 'desc' }, take: 50, select: { id: true, role: true, content: true, created_at: true } },
         },
       }) : null,
     ])
@@ -424,8 +428,18 @@ router.post('/', async (req: Request, res: Response) => {
       timeline: sessionDataTyped?.summary_timeline ?? null,
     } : null
     const chatHistoryRaw = sessionData?.messages ?? []
-    // If it was ordered desc, we must reverse it to ascending for the context window
-    const chatHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [...chatHistoryRaw].reverse().map((m) => ({
+    
+    // Sort ascending by time, with user preceding assistant on ties
+    const sortedRaw = [...chatHistoryRaw].sort((a, b) => {
+      const timeA = new Date(a.created_at).getTime()
+      const timeB = new Date(b.created_at).getTime()
+      if (timeA !== timeB) return timeA - timeB
+      if (a.role === 'user' && b.role === 'assistant') return -1
+      if (a.role === 'assistant' && b.role === 'user') return 1
+      return 0
+    })
+
+    const chatHistory: Array<{ role: 'user' | 'assistant'; content: string }> = sortedRaw.map((m) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
     }))
@@ -1003,34 +1017,8 @@ router.post('/', async (req: Request, res: Response) => {
       postChips = postSearchUiState.chips.filter(c => preChipIds.has(c.id) || filtered.some(f => f.id === c.id))
     }
 
-    // Add context-aware chips based on detected query type
-    if (postChips.length < 8) { // Only add if room available
-      try {
-        const contextChips = await getContextualChips(userMessage, projects.map(p => p.id))
-        for (const contextChip of contextChips) {
-          // Convert contextual chips to chip format
-          const chipData = {
-            id: `ctx_${contextChip.context}_${Date.now()}`,
-            chipId: `CONTEXTUAL:${contextChip.context}`,
-            type: 'SELECTOR',
-            label: contextChip.actionPrefix,
-            payload: {
-              actionPrefix: contextChip.actionPrefix,
-              options: contextChip.options,
-              multiSelect: contextChip.multiSelect,
-              // For PROJECT_SELECT context, include dynamic fetch instruction
-              ...(contextChip.context === 'PROJECT_SELECT' && {
-                onSelect: 'fetch_amenities_for_project',
-              }),
-            },
-          }
-          postChips.push(chipData as any)
-        }
-      } catch (err) {
-        console.error('[CHAT] Failed to generate contextual chips:', err)
-        // Graceful degradation — continue without contextual chips
-      }
-    }
+    // Context-aware chips generation removed — refactor to be progressive + conversational
+    // Chips should build on conversation flow, reference actual response content
 
     postChips.forEach(c => markChipShown(currentSessionId, c.id))
     postSearchUiState.chips = postChips
@@ -1940,7 +1928,15 @@ router.get('/session', asyncHandler(async (req: Request, res: Response) => {
       return
     }
 
-    session.messages.reverse()
+    // Sort ascending by time, with user preceding assistant on ties
+    session.messages.sort((a, b) => {
+      const timeA = new Date(a.created_at).getTime()
+      const timeB = new Date(b.created_at).getTime()
+      if (timeA !== timeB) return timeA - timeB
+      if (a.role === 'user' && b.role === 'assistant') return -1
+      if (a.role === 'assistant' && b.role === 'user') return 1
+      return 0
+    })
 
     const lastIntent = [...session.messages]
       .reverse()
@@ -2092,5 +2088,98 @@ router.delete('/intent', async (req: Request, res: Response) => {
 
   res.json({ ok: true, session_id: newSession.id })
 })
+
+// ─── Database-Backed Response Helper (Phase 1)
+async function enrichResponseWithDatabaseData(
+  userMessage: string,
+  intent: Intent,
+  chatHistory: { role: string; content: string }[],
+  projectId?: string
+): Promise<Partial<ChatResponse> | null> {
+  try {
+    if (!projectId) return null
+
+    // 1. Extract memory from conversation
+    const memory = buildConversationMemory(chatHistory)
+
+    // 2. Route the query based on intent
+    const route = routeQuery(intent.queryKind || 'DISCOVERY', userMessage)
+
+    // 3. If route has weight > 0, fetch database data
+    if (route.weight === 0) return null
+
+    // 4. Fetch weighted data with confidence
+    const weightedData = await fetchWeightedData(projectId, route)
+    const primaryData = weightedData.primary
+
+    if (primaryData.length === 0) return null
+
+    // 5. Calculate average confidence
+    const avgConfidence = Math.round(
+      primaryData.reduce((sum, item) => sum + item.confidence, 0) / primaryData.length
+    )
+
+    // 6. If confidence too low, skip LLM processing
+    if (avgConfidence < 60) {
+      return {
+        message: 'Data confidence too low',
+        confidence: {
+          payment_plans: 0,
+          builder_history: 0,
+          location: 0,
+          possession: 0,
+          overall: avgConfidence
+        },
+        chips: [],
+        data_freshness: {},
+        missing_data: ['Low confidence — recommend sales team consultation']
+      }
+    }
+
+    // 7. Format with LLM
+    let llmClient: any
+    const model = routeToModel(intent)
+    if (model === 'groq') {
+      const { getGroq } = await import('../lib/ai/groq')
+      llmClient = getGroq()
+    } else if (model === 'openai') {
+      const OpenAI = await import('openai')
+      llmClient = new OpenAI.default()
+    } else {
+      const { GoogleGenAI } = await import('@google/genai')
+      llmClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    }
+
+    const formattedMessage = await formatDatabaseResponse(
+      route.primary_table,
+      primaryData.map((p) => p.data),
+      avgConfidence,
+      memory,
+      llmClient
+    )
+
+    return {
+      message: formattedMessage,
+      memory_context: {
+        user_stated_facts: memory.confident_facts,
+        inferred_preferences: memory.user_priorities,
+        open_questions: []
+      },
+      confidence: {
+        payment_plans: route.primary_table === 'PaymentPlan' ? avgConfidence : 0,
+        builder_history: route.primary_table === 'Builder' ? avgConfidence : 0,
+        location: route.primary_table === 'Project' ? avgConfidence : 0,
+        possession: route.primary_table === 'Project' ? avgConfidence : 0,
+        overall: avgConfidence
+      },
+      chips: [],
+      data_freshness: {},
+      missing_data: []
+    }
+  } catch (error) {
+    console.error('[enrichResponseWithDatabaseData] Error:', error)
+    return null
+  }
+}
 
 export default router
