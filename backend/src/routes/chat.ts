@@ -52,6 +52,7 @@ import { buildConversationMemory } from '../lib/discovery/memoryExtractor'
 import { routeQuery } from '../lib/discovery/queryRouter'
 import { fetchWeightedData } from '../lib/discovery/dataFetcher'
 import { formatDatabaseResponse } from '../lib/ai/prompts/responseFormatter'
+import { detectDatabaseIntent } from '../lib/discovery/intentTypeDetector'
 import type { ChatResponse } from '../lib/discovery/types'
 import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
@@ -543,6 +544,27 @@ router.post('/', async (req: Request, res: Response) => {
     preSearchUiState.chips = preChips
 
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
+
+    // ─── DATABASE-BACKED RESPONSE (Phase 1 Integration) ────────────────────────
+    // Try enriching response with database data before running normal pipelines
+    let databaseResponse = null
+    const projectId = intent.projectNames?.[0] || (cachedProjectsFromSession?.[0]?.id)
+    if (projectId && action.type === 'TEXT_MESSAGE') {
+      try {
+        const chatHistoryForEnrichment = chatHistoryRaw.map(m => ({ role: m.role, content: m.content }))
+        databaseResponse = await enrichResponseWithDatabaseData(message, intent, chatHistoryForEnrichment, projectId)
+        if (databaseResponse) {
+          console.log('[CHAT:DATABASE_ENRICHMENT] Success', { projectId, intentType: detectDatabaseIntent(message) })
+          send('token', { token: databaseResponse.message })
+          send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'database', chatResponse: databaseResponse })
+          res.end()
+          return
+        }
+      } catch (err) {
+        console.error('[CHAT:DATABASE_ENRICHMENT] Failed:', err)
+        // Fall through to normal pipeline
+      }
+    }
 
     // ─── PROJECT DETAIL PIPELINE (Phase 5 Integration) ───────────────────────
     // If user is asking about a specific project detail (EMI, investment, location, etc.),
@@ -2102,24 +2124,27 @@ async function enrichResponseWithDatabaseData(
     // 1. Extract memory from conversation
     const memory = buildConversationMemory(chatHistory)
 
-    // 2. Route the query based on intent
-    const route = routeQuery(intent.queryKind || 'DISCOVERY', userMessage)
+    // 2. Detect specific database query intent from message
+    const intentType = detectDatabaseIntent(userMessage)
 
-    // 3. If route has weight > 0, fetch database data
+    // 3. Route the query based on detected intent
+    const route = routeQuery(intentType, userMessage)
+
+    // 4. If route has weight > 0, fetch database data
     if (route.weight === 0) return null
 
-    // 4. Fetch weighted data with confidence
+    // 5. Fetch weighted data with confidence
     const weightedData = await fetchWeightedData(projectId, route)
     const primaryData = weightedData.primary
 
     if (primaryData.length === 0) return null
 
-    // 5. Calculate average confidence
+    // 6. Calculate average confidence
     const avgConfidence = Math.round(
       primaryData.reduce((sum, item) => sum + item.confidence, 0) / primaryData.length
     )
 
-    // 6. If confidence too low, skip LLM processing
+    // 7. If confidence too low, skip LLM processing
     if (avgConfidence < 60) {
       return {
         message: 'Data confidence too low',
@@ -2136,7 +2161,7 @@ async function enrichResponseWithDatabaseData(
       }
     }
 
-    // 7. Format with LLM
+    // 8. Format with LLM
     let llmClient: any
     const model = routeToModel(intent)
     if (model === 'groq') {
