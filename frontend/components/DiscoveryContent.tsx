@@ -710,6 +710,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 ...(isComparison ? {
                   comparisonProjects: localProjects.slice(0, 4),
                 } : {}),
+                ...(responseMode === 'database' && event.chatResponse ? {
+                  chatResponse: event.chatResponse,
+                  chips: event.chatResponse.chips,
+                } : {}),
               }
               : m
           ));
