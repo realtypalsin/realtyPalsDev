@@ -54,6 +54,7 @@ import { fetchWeightedData } from '../lib/discovery/dataFetcher'
 import { formatDatabaseResponse } from '../lib/ai/prompts/responseFormatter'
 import { detectDatabaseIntent } from '../lib/discovery/intentTypeDetector'
 import { rankPaymentPlans } from '../lib/discovery/comparisonMatrix'
+import { generateChips } from '../lib/discovery/chipGenerator'
 import type { ChatResponse } from '../lib/discovery/types'
 import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
@@ -553,7 +554,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (projectId && action.type === 'TEXT_MESSAGE') {
       try {
         const chatHistoryForEnrichment = chatHistoryRaw.map(m => ({ role: m.role, content: m.content }))
-        databaseResponse = await enrichResponseWithDatabaseData(message, intent, chatHistoryForEnrichment, projectId)
+        databaseResponse = await enrichResponseWithDatabaseData(message, intent, chatHistoryForEnrichment, projectId, intentState)
         if (databaseResponse) {
           console.log('[CHAT:DATABASE_ENRICHMENT] Success', { projectId, intentType: detectDatabaseIntent(message) })
           send('token', { token: databaseResponse.message })
@@ -2117,7 +2118,8 @@ async function enrichResponseWithDatabaseData(
   userMessage: string,
   intent: Intent,
   chatHistory: { role: string; content: string }[],
-  projectId?: string
+  projectId?: string,
+  intentState?: string
 ): Promise<Partial<ChatResponse> | null> {
   try {
     if (!projectId) return null
@@ -2128,24 +2130,27 @@ async function enrichResponseWithDatabaseData(
     // 2. Detect specific database query intent from message
     const intentType = detectDatabaseIntent(userMessage)
 
-    // 3. Route the query based on detected intent
+    // 3. Map intent state to chat phase (for chips generation)
+    const chatPhase: 'DISCOVERY' | 'ADVISOR' = (intentState === 'READY_TO_SEARCH' || intentState === 'SHORTLISTED') ? 'ADVISOR' : 'DISCOVERY'
+
+    // 4. Route the query based on detected intent
     const route = routeQuery(intentType, userMessage)
 
-    // 4. If route has weight > 0, fetch database data
+    // 5. If route has weight > 0, fetch database data
     if (route.weight === 0) return null
 
-    // 5. Fetch weighted data with confidence
+    // 6. Fetch weighted data with confidence
     const weightedData = await fetchWeightedData(projectId, route)
     const primaryData = weightedData.primary
 
     if (primaryData.length === 0) return null
 
-    // 6. Calculate average confidence
+    // 7. Calculate average confidence
     const avgConfidence = Math.round(
       primaryData.reduce((sum, item) => sum + item.confidence, 0) / primaryData.length
     )
 
-    // 7. If confidence too low, skip LLM processing
+    // 8. If confidence too low, skip LLM processing
     if (avgConfidence < 60) {
       return {
         message: 'Data confidence too low',
@@ -2162,7 +2167,7 @@ async function enrichResponseWithDatabaseData(
       }
     }
 
-    // 8. Format with LLM
+    // 9. Format with LLM
     let llmClient: any
     const model = routeToModel(intent)
     if (model === 'groq') {
@@ -2194,6 +2199,9 @@ async function enrichResponseWithDatabaseData(
       }
     }
 
+    // Generate progressive chips based on intent and phase
+    const chips = generateChips(intentType, memory, chatPhase)
+
     return {
       message: formattedMessage,
       memory_context: {
@@ -2208,7 +2216,7 @@ async function enrichResponseWithDatabaseData(
         possession: intentType === 'POSSESSION_TIMELINE' ? avgConfidence : 0,
         overall: avgConfidence
       },
-      chips: [],
+      chips,
       data_freshness: {},
       missing_data: [],
       ...(comparison ? { comparison } : {})
