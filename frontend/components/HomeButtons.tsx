@@ -10,7 +10,8 @@ import {
   Trees,
   Shield,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  ListFilter
 } from 'lucide-react';
 import { HOME_BUTTON_GROUPS } from '@/lib/homeButtons';
 
@@ -87,10 +88,10 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                 className="flex items-center gap-2 pl-3 py-1.5 pr-2.5 rounded-l-full cursor-pointer hover:bg-zinc-100/80 dark:hover:bg-zinc-800/70 transition-colors group/main min-w-0"
                 title={`Ask: "${group.primaryPrompt}"`}
               >
-                <span className={`flex-shrink-0 p-1.5 rounded-full transition-all duration-200 group-hover/main:scale-105 ${group.colorClass}`}>
+                <span className={`flex-shrink-0 p-1.5 rounded-full transition-all duration-200 group-hover/main:scale-110 ${group.colorClass}`}>
                   {iconMap[group.icon]}
                 </span>
-                <span className="truncate group-hover/main:text-blue-600 dark:group-hover/main:text-blue-400 transition-colors tracking-tight">
+                <span className="truncate group-hover/main:text-blue-600 dark:group-hover/main:text-blue-400 transition-colors tracking-tight font-bold">
                   {group.title}
                 </span>
               </button>
@@ -118,39 +119,42 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
               </button>
             </m.div>
 
-            {/* Dropdown Menu */}
+            {/* Compact & Refined Expanded Dropdown Menu */}
             <AnimatePresence>
               {isOpen && (
                 <m.div
-                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                  className={`absolute top-full mt-2 z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/98 dark:bg-[#141416]/98 backdrop-blur-2xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.7)] p-2 ${alignClass}`}
+                  exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                  transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                  className={`absolute top-full mt-2 z-50 w-72 max-w-[calc(100vw-2rem)] rounded-xl bg-white dark:bg-[#18181c] border border-zinc-200/90 dark:border-zinc-800 shadow-[0_12px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.7)] p-1.5 ${alignClass}`}
                 >
-                  <div className="px-3 pt-2 pb-1.5 text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase border-b border-zinc-100 dark:border-zinc-800/80 mb-1 flex items-center justify-between">
-                    <span>Select Query</span>
-                    <span className="text-[9px] font-normal text-zinc-400 dark:text-zinc-500 normal-case tracking-normal">3 presets</span>
+                  {/* Clean Compact Header */}
+                  <div className="px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-zinc-400 dark:text-zinc-500 uppercase border-b border-zinc-100 dark:border-zinc-800/80 mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <ListFilter size={11} className="text-zinc-400" />
+                      PRESETS
+                    </span>
+                    <span className="text-[9px] font-medium text-zinc-400 dark:text-zinc-500">
+                      {group.options.length} options
+                    </span>
                   </div>
 
+                  {/* Sleek Compact Option Rows */}
                   <div className="space-y-0.5">
                     {group.options.map((option, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleOptionSelect(option.prompt)}
-                        className="group/item w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 hover:bg-zinc-100/90 dark:hover:bg-zinc-800/80 cursor-pointer"
+                        className="group/item w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left transition-all duration-150 hover:bg-blue-50/80 dark:hover:bg-blue-950/50 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
+                        title={option.prompt}
                       >
-                        <div className="min-w-0 flex-1">
-                          <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-100 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors leading-snug">
-                            {option.label}
-                          </div>
-                          <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-normal leading-snug mt-0.5 line-clamp-2">
-                            {option.prompt}
-                          </div>
-                        </div>
+                        <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors truncate">
+                          {option.label}
+                        </span>
                         <ChevronRight
-                          size={14}
-                          className="text-zinc-400 dark:text-zinc-500 group-hover/item:text-blue-500 dark:group-hover/item:text-blue-400 group-hover/item:translate-x-0.5 transition-all shrink-0 opacity-0 group-hover/item:opacity-100"
+                          size={13}
+                          className="text-zinc-400 dark:text-zinc-500 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 group-hover/item:translate-x-0.5 transition-all shrink-0"
                         />
                       </button>
                     ))}
@@ -164,6 +168,3 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
     </div>
   );
 }
-
-
-

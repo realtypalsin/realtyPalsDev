@@ -132,9 +132,11 @@ export interface ChatMessage {
   userQuery?: string;
   timestamp: string;
   // Response mode — drives which UI components render (mutually exclusive)
-  responseMode?: 'search' | 'comparison' | 'chat' | 'components';
+  responseMode?: 'search' | 'comparison' | 'chat' | 'components' | 'database';
   // Component response — verified data pipeline for project details
   componentResponse?: ComponentResponse;
+  // Database-backed response — 80% DB, 20% LLM formatting
+  chatResponse?: import('./chat').ChatResponse;
   // Inline thinking UI — tracks which phase the streaming message is in
   streamingPhase?: 'extracting' | 'searching' | 'generating' | null;
   streamingIntent?: Record<string, unknown> | null;

@@ -113,6 +113,25 @@ export default function AdminProjectEditPage({
     }
   }, [data?.name])
 
+  // Keyboard shortcuts for tab switching (Alt+1..6)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const isEditable = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      if (isEditable) return
+      if (e.altKey && !e.shiftKey && !e.metaKey) {
+        if (e.key === '1') { e.preventDefault(); setAdminTab('core') }
+        if (e.key === '2') { e.preventDefault(); setAdminTab('pricing') }
+        if (e.key === '3') { e.preventDefault(); setAdminTab('media') }
+        if (e.key === '4') { e.preventDefault(); setAdminTab('intelligence') }
+        if (e.key === '5') { e.preventDefault(); setAdminTab('updates') }
+        if (e.key === '6') { e.preventDefault(); setAdminTab('partners') }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   const handleFormChange = useCallback((formValues: Record<string, any>) => {
     setPreview((prev: any) => {
       if (!prev) return null

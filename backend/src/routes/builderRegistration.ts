@@ -16,25 +16,28 @@ const router = Router()
 const BuilderApplicationSchema = z.object({
   name: z.string().min(1, 'Company name is required'),
   email: z.string().email('Invalid email address'),
-  phone: z.string().min(8, 'Phone number required'),
+  phone: z.string().regex(/^\+91\d{10}$/, 'Phone number must be +91 followed by 10 digits'),
   landline: z.string().optional(),
-  cin: z.string().min(1, 'CIN is required'),
+  cin: z.string().regex(/^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/i, 'Invalid CIN format'),
   website: z.string().optional(),
   headquarters: z.string().optional(),
+  tagline: z.string().optional(),
   description: z.string().optional(),
   logo_url: z.string().optional(), // base64 or URL
   legal_entities: z.array(z.object({
     name: z.string(),
-    registration_number: z.string().optional()
+    registration_number: z.string().optional(),
+    state: z.string().optional(),
   })).optional(),
   executives: z.array(z.object({
     name: z.string(),
     title: z.string().optional(),
-    experience_years: z.coerce.number().optional()
+    experience_years: z.union([z.coerce.number(), z.string()]).optional(),
+    linkedin: z.string().optional(),
   })).optional(),
   projects: z.array(z.string()).optional(),
   delivery_track: z.string().optional(),
-}).passthrough()
+}).strict()
 
 async function uploadLogoToSupabase(
   base64orUrl: string | undefined,

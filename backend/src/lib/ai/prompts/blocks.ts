@@ -6,7 +6,34 @@ import type { Intent, ScoredProject, SectorContext, SectorOverview, NearbyExpans
 // Content is identical to the original base.ts format sections — only the
 // injection point changed (conditional rather than always-on).
 
-export function buildPropertyResultsFormatBlock(): string {
+export function buildPropertyResultsFormatBlock(intentState?: string): string {
+  if (intentState === 'CLARIFYING') {
+    return `
+
+---
+
+## RESPONSE FORMAT — SEARCH RESULTS
+
+HARD LIMIT: 15 words. Target: 5–10 words. Must fit one screen without scrolling.
+
+### EXACT FORMAT
+
+Just provide a very brief conversational question asking the user to clarify their requirements. For example:
+"What configuration and budget are you looking for?" or "To find the best matches, what's your preferred BHK or budget?"
+Do not say "Here are the top matches" or act as if you found results, because the requirements are still unclear.
+Do not include any property names, bullets, or detailed recommendations in your text response.
+
+---
+
+RESPONSE FAILURE — disqualifies the response:
+• Any property name, price, builder name, sector name, sqft, BHK count, possession date, RERA status, or amenity name in AI text
+• Any recommendation text, pros/cons, or "Best For" sections
+• "Quick Picks" section or table
+• Bullets, headers, or per-project sections
+• Internal field names
+• Call-to-action — cards are already visible`
+  }
+
   return `
 
 ---

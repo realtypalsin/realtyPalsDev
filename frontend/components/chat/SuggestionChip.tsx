@@ -73,13 +73,13 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
         onAction(chip)
       }}
       className={`
-        group relative flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-medium
+        group relative flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-semibold
         transition-all duration-200 outline-none max-w-full select-none cursor-pointer
         ${disabled ? 'opacity-50 pointer-events-none' : ''}
         ${
           isActive
-            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-500 shadow-[0_4px_16px_rgba(37,99,235,0.35)] dark:shadow-[0_4px_20px_rgba(59,130,246,0.4)]'
-            : 'bg-white/90 dark:bg-[#18181b]/90 backdrop-blur-md text-zinc-700 dark:text-zinc-200 border border-zinc-200/90 dark:border-zinc-800/90 hover:bg-white dark:hover:bg-[#222226] hover:border-blue-400/60 dark:hover:border-blue-500/50 hover:text-zinc-950 dark:hover:text-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_18px_rgba(59,130,246,0.12)] dark:hover:shadow-[0_4px_20px_rgba(59,130,246,0.22)]'
+            ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-sm'
+            : 'bg-white/95 dark:bg-zinc-800/90 backdrop-blur-md text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/80 hover:bg-white dark:hover:bg-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-950 dark:hover:text-white shadow-2xs hover:shadow-xs'
         }
       `}
       title={chip.label}

@@ -35,8 +35,9 @@ function passwordMatches(input: string, expected: string): boolean {
 router.post('/auth', async (req: Request, res: Response) => {
   const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
 
-  // Rate limit: 5 attempts per 15 minutes per IP
-  const isOverLimit = await checkRateLimit(`admin:login:${ip}`, 5, 900)
+  // Rate limit: 50 attempts in dev, 5 in prod per 15 minutes per IP
+  const maxAttempts = process.env.NODE_ENV === 'development' ? 50 : 5
+  const isOverLimit = await checkRateLimit(`admin:login:${ip}`, maxAttempts, 900)
   if (isOverLimit) {
     res.status(429).json({ error: 'Too many login attempts. Try again later.' })
     return
@@ -1032,20 +1033,29 @@ router.get('/analytics/properties', requireAdmin, async (_req: Request, res: Res
       eventMap[ev.project_id][ev.action] = ev._count.action
     }
 
-    const propertyEngagements = projects.map((p) => {
-      const pEvents = eventMap[p.id] || {}
-      return {
-        projectId: p.id,
-        projectName: p.name,
-        views: pEvents['view'] || 0,
-        saves: pEvents['save'] || 0,
-        comparisons: pEvents['compare'] || 0,
-        shares: pEvents['share'] || 0,
-        whatsappInquiries: pEvents['whatsapp'] || 0,
-        slug: p.slug,
-        sector: p.sector,
-      }
-    })
+    const propertyEngagements = projects
+      .map((p) => {
+        const pEvents = eventMap[p.id] || {}
+        const views = pEvents['view'] || 0
+        const saves = pEvents['save'] || 0
+        const comparisons = pEvents['compare'] || 0
+        const shares = pEvents['share'] || 0
+        const whatsappInquiries = pEvents['whatsapp'] || 0
+        const total = views + saves + comparisons + shares + whatsappInquiries
+        return {
+          projectId: p.id,
+          projectName: p.name,
+          views,
+          saves,
+          comparisons,
+          shares,
+          whatsappInquiries,
+          total,
+          slug: p.slug,
+          sector: p.sector,
+        }
+      })
+      .sort((a, b) => b.total - a.total)
 
     res.json({ properties: propertyEngagements, total: projects.length })
   } catch (err) {

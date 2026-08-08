@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
@@ -13,6 +13,8 @@ import { Bookmark, PanelLeftClose, PanelLeftOpen, Sun, SquarePen, Compass } from
 import Toast from '@/components/Toast';
 import {  m  } from 'framer-motion';
 import dynamic from 'next/dynamic';
+
+import { getSupabaseClient } from '@/lib/supabase';
 
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false });
 // ProjectDetailPanel calls useSearchParams, which cannot be prerendered without a
@@ -33,23 +35,46 @@ export default function SavedPropertiesPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const uid = localStorage.getItem('user_id');
-    if (!uid) { router.replace('/auth'); return; }
-    setUserId(uid);
-    authHeaders()
-      .then((headers) => fetch(`${API_BASE}/saved`, { headers }))
+    let cancelled = false;
+    async function loadSaved() {
+      try {
+        let uid = localStorage.getItem('user_id');
+        let guestToken = localStorage.getItem('guest_token');
 
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((d) => setProjects(d.projects ?? []))
-      .catch((err: unknown) => {
+        if (!uid) {
+          try {
+            const supabase = await getSupabaseClient();
+            const { data } = await supabase.auth.getSession();
+            if (data?.session?.user) {
+              uid = data.session.user.id;
+              localStorage.setItem('user_id', uid);
+            }
+          } catch {}
+        }
+
+        if (cancelled) return;
+        setUserId(uid);
+
+        const headers = await authHeaders();
+        const res = await fetch(`${API_BASE}/saved`, { headers });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setProjects(data.projects ?? []);
+        }
+      } catch (err) {
         console.error('[saved] fetch failed:', err);
-        setError(true);
-      })
-      .finally(() => setLoading(false));
-  }, [router]);
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadSaved();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="flex h-[100dvh] bg-slate-50/50 dark:bg-gray-900 overflow-hidden">
@@ -136,7 +161,9 @@ export default function SavedPropertiesPage() {
               </div>
             )}
           </div>
-          <ProjectDetailPanel project={detailProject} onClose={() => setDetailProject(null)} />
+          <Suspense fallback={null}>
+            <ProjectDetailPanel project={detailProject} onClose={() => setDetailProject(null)} />
+          </Suspense>
         </m.div>
       </main>
       {toast && <Toast message={toast} onClose={() => setToast('')} />}

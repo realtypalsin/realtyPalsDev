@@ -12,10 +12,11 @@ import { track } from '@/lib/analytics';
 import { streamChat as streamChatBackend } from '@/lib/backend-api'
 import { authHeaders } from '@/lib/authedFetch'
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
-import MessageBubble from '@/components/chat/MessageBubble';
+import MessageBubble, { buildPickerMessage } from '@/components/chat/MessageBubble';
+import { CompareSelectorOverlay } from '@/components/chat/CompareSelectorOverlay';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
-import { AlertTriangle, ArrowUp, ChevronDown, Home, Key, MapPin, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet, Train, Trees, Crown, Building2, GraduationCap } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ArrowUp, ChevronDown, Home, Key, MapPin, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet, Train, Trees, Crown, Building2, GraduationCap } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { useSessions } from '@/hooks/useSessions';
 
@@ -88,24 +89,29 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
+  const [compareOverlayProperties, setCompareOverlayProperties] = useState<ProjectCardType[] | null>(null);
   const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null);
   const [conversationState, setConversationState] = useState<import('@/components/chat/types').ConversationState | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   // ChatGPT-style dynamic browser tab title updater
   useEffect(() => {
-    if (sessionTitle && sessionTitle.trim()) {
-      document.title = `${sessionTitle.trim()} | RealtyPals`
-    } else {
+    const newTitle = (() => {
+      if (sessionTitle && sessionTitle.trim()) {
+        return `${sessionTitle.trim()} | RealtyPals`
+      }
       const userMsg = chatHistory.find(m => m.type === 'user')?.content
       if (userMsg && userMsg.trim()) {
         const cleanMsg = userMsg.trim()
         const truncated = cleanMsg.length > 35 ? `${cleanMsg.slice(0, 35)}...` : cleanMsg
-        document.title = `${truncated} | RealtyPals`
-      } else {
-        document.title = `AI Property Advisor | RealtyPals`
+        return `${truncated} | RealtyPals`
       }
+      return `AI Property Advisor | RealtyPals`
+    })()
+    if (document.title !== newTitle) {
+      document.title = newTitle
     }
-  }, [sessionTitle, chatHistory])
+  }, [sessionTitle, chatHistory.length])
 
   const { deleteSession, renameSession } = useSessions(userId, guestToken);
   const [isRenamingHeader, setIsRenamingHeader] = useState(false);
@@ -222,8 +228,44 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       track('property_viewed', { project_slug: project.slug, project_name: project.name });
       recordEngagement(project.id);
     }
-  }, []);
+  }, [recordEngagement]);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
+  const [comparingMessageId, setComparingMessageId] = useState<string | null>(null);
+  const [selectedCompareProjects, setSelectedCompareProjects] = useState<Map<string, ProjectCardType>>(new Map());
+
+  const handleStartCompare = useCallback((messageId: string, properties: ProjectCardType[]) => {
+    setComparingMessageId(messageId);
+    setExpandedShortlists(prev => new Set(prev).add(messageId));
+    const initialMap = new Map<string, ProjectCardType>();
+    properties.slice(0, 2).forEach(p => initialMap.set(p.id, p));
+    setSelectedCompareProjects(initialMap);
+  }, []);
+
+  const handleToggleCompareSelect = useCallback((_messageId: string, property: ProjectCardType) => {
+    setSelectedCompareProjects(prev => {
+      const next = new Map(prev);
+      if (next.has(property.id)) {
+        if (next.size <= 2) {
+          setToast({ message: 'Select at least 2 properties to compare.' });
+          return prev;
+        }
+        next.delete(property.id);
+      } else {
+        if (next.size >= 4) {
+          setToast({ message: 'Maximum 4 properties can be compared at once.' });
+          return prev;
+        }
+        next.set(property.id, property);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleCancelCompare = useCallback(() => {
+    setComparingMessageId(null);
+    setSelectedCompareProjects(new Map());
+  }, []);
+
   const [showMap, setShowMap] = useState(false);
   const [showHeaderDropdown, setShowHeaderDropdown] = useState(false);
   const headerDropdownRef = useRef<HTMLDivElement>(null);
@@ -579,6 +621,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           ));
           setLastShortlist(shortlist);
           setShowRecommendations(shortlist.length > 0);
+          if (shortlist.length > 0) {
+            setExpandedShortlists(prev => new Set(prev).add(streamId));
+          }
           track('recommendation_generated', { count: shortlist.length, session_id: sessionId });
         } else if (event.type === 'token') {
           setChatHistory(prev => prev.map(m =>
@@ -622,6 +667,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             setTimeout(() => {
               cardElement.classList.remove('ring-2', 'ring-amber-400');
             }, 2000);
+          } else {
+            console.warn('[FOCUS] Card element not found:', event.projectId);
           }
         } else if (event.type === 'error') {
           setStatusPhase(null);
@@ -666,7 +713,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               }
               : m
           ));
-          setExpandedShortlists(new Set());
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
               ? { ...m, streamingPhase: null, streamingIntent: null, streamingResultCount: null }
@@ -959,6 +1005,16 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           // [TIMING] store for render-complete detection
           navTimingsRef.current = { restoreStart, authMs, fetchMs, mapperMs, setHistoryAt: performance.now() }
 
+          // Sort restored messages chronologically, guaranteeing user message always precedes assistant message
+          restored.sort((a: any, b: any) => {
+            const timeA = new Date(a.timestamp || 0).getTime()
+            const timeB = new Date(b.timestamp || 0).getTime()
+            if (timeA !== timeB) return timeA - timeB
+            if (a.type === 'user' && b.type === 'ai') return -1
+            if (a.type === 'ai' && b.type === 'user') return 1
+            return 0
+          });
+
           LOCAL_SESSION_CACHE.set(initialSessionId, {
             session_id: data.session_id,
             title: data.title,
@@ -969,9 +1025,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             restored
           });
 
-
+          setIsRestoring(true);
           setChatHistory(restored);
-          setTimeout(() => scrollToBottom('instant'), 50);
+          setTimeout(() => {
+            scrollToBottom('instant');
+            setIsRestoring(false);
+          }, 50);
         } else {
           setChatHistory([{
             id: crypto.randomUUID(),
@@ -1080,6 +1139,31 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     if (userMsg) dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: userMsg } });
   }, [chatHistory, dispatchAction]);
 
+  // ── Edit message: update, delete subsequent, regenerate ──
+  const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
+    try {
+      // Update message
+      const patchRes = await fetch('/api/chat/message/' + messageId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newContent }),
+      })
+      if (!patchRes.ok) throw new Error('Failed to update message')
+
+      // Delete subsequent messages
+      const deleteRes = await fetch('/api/chat/message/' + messageId + '?deleteAfter=true', {
+        method: 'DELETE',
+      })
+      if (!deleteRes.ok) throw new Error('Failed to delete subsequent messages')
+
+      // Re-send edited message
+      dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: newContent } })
+    } catch (error) {
+      console.error('Edit message error:', error)
+      throw error
+    }
+  }, [dispatchAction]);
+
   // ── Unified Chip Action Handler ──
   const handleChipAction = useCallback((action: import('@/components/chat/types').ChipAction) => {
     track('chip_clicked', { chip_id: action.id, action_type: action.actionType, label: action.label });
@@ -1106,13 +1190,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         if (lastShortlist.length < 2) {
           dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: 'Compare projects' } });
         } else {
-          setChipPicker({
-            mode: 'multi',
-            action: 'compare',
-            label: 'Compare',
-            isModal: false,
-            selected: []
-          });
+          setCompareOverlayProperties(lastShortlist);
         }
         return;
       }
@@ -1187,14 +1265,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         });
         return;
       case 'COMPARE_PROPERTIES':
-        // COMPARE_PROPERTIES with <2 resolvable slugs → open compare picker
-        setChipPicker({
-          mode: 'multi',
-          action: 'compare',
-          label: 'Compare Properties',
-          isModal: true,
-          selected: []
-        });
+        // COMPARE_PROPERTIES with <2 resolvable slugs → open compare selector
+        if (lastShortlist.length < 2) {
+          dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: 'Compare projects' } });
+        } else {
+          setCompareOverlayProperties(lastShortlist);
+        }
         return;
       default:
         console.error('[CHIP:EXHAUSTIVE] unhandled action type:', action.actionType);
@@ -1281,7 +1357,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
         )}
 
-        <div className="relative flex items-end bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] rounded-3xl transition-all duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] mx-auto w-full group pr-1.5 py-1.5 min-h-[48px]">
+        <div className="relative flex items-end bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] focus-within:ring-2 focus-within:ring-blue-500/80 focus-within:shadow-[0_4px_30px_rgba(37,99,235,0.15)] rounded-3xl transition-all duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] mx-auto w-full group pr-1.5 py-1.5 min-h-[48px]">
           <div id="chat-input-guide" className="relative flex-1 group">
             <PlaceholdersAndVanishInput
               placeholders={
@@ -1532,37 +1608,46 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
                 {chatHistory.slice(-visibleCount).map((message, index) => {
                   const actualIndex = Math.max(0, chatHistory.length - visibleCount) + index;
+                  const isComparingThis = message.id === comparingMessageId;
                   return (
-                    <MessageBubble
-                      key={message.id}
-                      message={message}
-                      index={actualIndex}
-                      isLast={actualIndex === chatHistory.length - 1}
-                      isSubmitting={isSubmitting}
-                      chatPhase={chatPhase}
-                      isLastProperties={actualIndex === lastPropertiesIndex}
-                      isExpanded={expandedShortlists.has(message.id)}
-                      carouselIndex={carouselIndexes[actualIndex] ?? 0}
-                      lastShortlist={lastShortlist}
-                      showMap={showMap}
-                      userId={userId}
-                      sessionId={sessionId ?? ''}
-                      regeneratingIdx={regeneratingIdx}
-                      chipPicker={chipPicker}
-                      chips={(message.chips as any) ?? (actualIndex === chatHistory.length - 1 ? conversationState?.chips ?? [] : [])}
-                      onCopy={handleCopy}
-                      onDetailOpen={openDetailProject}
-                      onCallback={setCallbackProject}
-                      onRegenerate={handleRegenerate}
-                      onAction={handleChipAction}
-                      onToggleExpanded={handleToggleExpanded}
-                      onSetChipPicker={setChipPicker}
-                      onSetCarouselIndex={handleSetCarouselIndex}
-                      onSetSiteVisit={setSiteVisitProject}
-                      onOpenCalculator={handleOpenCalculator}
-                      onOpenShareSheet={handleOpenShareSheet}
-                      onToast={handleToast}
-                    />
+                    <div key={message.id} className={isComparingThis ? 'relative z-30' : ''}>
+                      <MessageBubble
+                        message={message}
+                        index={actualIndex}
+                        isLast={actualIndex === chatHistory.length - 1}
+                        isSubmitting={isSubmitting}
+                        chatPhase={chatPhase}
+                        isLastProperties={actualIndex === lastPropertiesIndex}
+                        isExpanded={expandedShortlists.has(message.id)}
+                        carouselIndex={carouselIndexes[actualIndex] ?? 0}
+                        lastShortlist={lastShortlist}
+                        showMap={showMap}
+                        userId={userId}
+                        sessionId={sessionId ?? ''}
+                        regeneratingIdx={regeneratingIdx}
+                        chipPicker={chipPicker}
+                        chips={(message.chips as any) ?? (actualIndex === chatHistory.length - 1 ? conversationState?.chips ?? [] : [])}
+                        isRestoring={isRestoring}
+                        onCopy={handleCopy}
+                        onDetailOpen={openDetailProject}
+                        onCallback={setCallbackProject}
+                        onRegenerate={handleRegenerate}
+                        onEditMessage={handleEditMessage}
+                        onAction={handleChipAction}
+                        onToggleExpanded={handleToggleExpanded}
+                        onSetChipPicker={setChipPicker}
+                        onSetCarouselIndex={handleSetCarouselIndex}
+                        onSetSiteVisit={setSiteVisitProject}
+                        onOpenCalculator={handleOpenCalculator}
+                        onOpenShareSheet={handleOpenShareSheet}
+                        onToast={handleToast}
+                        onOpenCompare={setCompareOverlayProperties}
+                        comparingMessageId={comparingMessageId}
+                        selectedCompareIds={isComparingThis ? new Set(selectedCompareProjects.keys()) : undefined}
+                        onToggleCompareSelect={handleToggleCompareSelect}
+                        onStartCompare={handleStartCompare}
+                      />
+                    </div>
                   );
                 })}
 
@@ -1643,6 +1728,86 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
       {/* Project detail slide-over */}
       <ProjectDetailPanel project={detailProject} onClose={() => setDetailProject(null)} />
+
+      {/* Compare property selector */}
+      {compareOverlayProperties && (
+        <CompareSelectorOverlay
+          properties={compareOverlayProperties}
+          onCancel={() => setCompareOverlayProperties(null)}
+          onToast={handleToast}
+          onConfirm={(selected) => {
+            setCompareOverlayProperties(null);
+            dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: buildPickerMessage('compare', selected) } });
+          }}
+        />
+      )}
+
+      {/* Backdrop for inline compare mode */}
+      <AnimatePresence>
+        {comparingMessageId && (
+          <m.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-20 bg-black/40 backdrop-blur-[3px] transition-all duration-300 pointer-events-auto"
+            onClick={handleCancelCompare}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Floating Action Bar for inline compare selection */}
+      <AnimatePresence>
+        {comparingMessageId && (
+          <m.div
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 px-6 py-3.5 bg-zinc-900/95 dark:bg-zinc-900/95 text-white border border-blue-500/30 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl max-w-lg w-[92vw]"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold text-xs">
+                <Scale size={16} />
+              </div>
+              <div>
+                <p className="text-[13px] font-bold tracking-tight text-white">Compare Mode Active</p>
+                <p className="text-[11px] font-medium text-zinc-400">
+                  {selectedCompareProjects.size} of 4 selected (min 2)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCancelCompare}
+                className="px-3.5 py-2 text-xs font-bold text-zinc-400 hover:text-white bg-zinc-800/80 hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const selectedList = Array.from(selectedCompareProjects.values());
+                  if (selectedList.length < 2) {
+                    setToast({ message: 'Select at least 2 properties to compare.' });
+                    return;
+                  }
+                  setComparingMessageId(null);
+                  setSelectedCompareProjects(new Map());
+                  dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: buildPickerMessage('compare', selectedList) } });
+                }}
+                disabled={selectedCompareProjects.size < 2}
+                className={`px-5 py-2 text-xs font-extrabold rounded-xl transition-all shadow-md flex items-center gap-1.5 cursor-pointer ${
+                  selectedCompareProjects.size >= 2
+                    ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30 active:scale-95'
+                    : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                }`}
+              >
+                <span>Compare ({selectedCompareProjects.size})</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
 
       {/* Calculator panel */}
       {showCalculator && (

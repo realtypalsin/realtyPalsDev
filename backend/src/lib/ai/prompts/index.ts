@@ -39,7 +39,8 @@ export function buildAdvisorSystemPrompt(
   notFoundNames?: string[],
   blockedBuilders?: Array<{ name: string; legal_flag?: string }>,
   intentState?: string, // GATHERING, READY_TO_SEARCH, SHORTLISTED, COMPARING, DECIDING
-  city?: SupportedCity
+  city?: SupportedCity,
+  userMessage?: string
 ): string {
   const hasExactResults = exactResults.length > 0
   const hasNearbyResults = (nearbyResults?.length ?? 0) > 0
@@ -51,7 +52,7 @@ export function buildAdvisorSystemPrompt(
   // In SHORTLISTED state, skip sector overview (already have results) to reduce tokens.
   // Saves ~770–1,200 tokens on cold, process, and builder queries.
   const isShortlisted = intentState === 'SHORTLISTED' || intentState === 'COMPARING'
-  const propertyResultsFormat = hasProperties ? buildPropertyResultsFormatBlock() : ''
+  const propertyResultsFormat = hasProperties ? buildPropertyResultsFormatBlock(intentState) : ''
   const sectorAdvisoryFormat  = (hasSectorsOverview && !isShortlisted) ? buildSectorAdvisoryFormatBlock() : ''
   const comparisonFormat      = isComparison ? buildComparisonFormatBlock() : ''
 
@@ -68,7 +69,6 @@ export function buildAdvisorSystemPrompt(
   // Phase 2: Apply tiered truncation if token budget gets tight
   // Step 1: Build base prompt to measure token footprint (with dynamic tools based on queryKind)
   const queryKind = (intent.queryKind ?? 'DISCOVERY') as QueryKind
-  const userMessage = '' // Note: userMessage would come from the chat context in chat.ts
   const basePrompt = getBaseSystemPrompt(intent, blockedBuilders, city ?? DEFAULT_CITY, intentState, queryKind, userMessage)
   const baseTokens = estimateTokens(basePrompt)
   const extraBlocksTokens = estimateTokens(propertyResultsFormat + sectorAdvisoryFormat + comparisonFormat + contextSuffix + sectorBlock + sectorsOverviewBlock + expansionBlock)

@@ -26,6 +26,9 @@ interface Props {
   userId: string | null
   sessionId?: string | null
   index?: number
+  isSelectable?: boolean
+  isSelected?: boolean
+  onToggleSelect?: () => void
   onDetailOpen?: (project: ProjectCardType) => void
   onToast?: (message: string) => void
   onAskAI?: (project: ProjectCardType) => void
@@ -59,11 +62,15 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
   university: BookOpen,
 }
 
-export default function ProjectCard({ project, userId, sessionId, index = 0, onDetailOpen, onToast, onAskAI, onSetSiteVisit, onCall, onShare, quickActions }: Props) {
+export default function ProjectCard({ project, userId, sessionId, index = 0, isSelectable = false, isSelected = false, onToggleSelect, onDetailOpen, onToast, onAskAI, onSetSiteVisit, onCall, onShare, quickActions }: Props) {
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)
   const [askMenuOpen, setAskMenuOpen] = useState(false)
+
+  if (isSelectable && !onToggleSelect) {
+    console.warn(`[ProjectCard] isSelectable=true but onToggleSelect callback is missing for project ${project.id}`)
+  }
   const askMenuRef = useRef<HTMLDivElement>(null)
   const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg } = usePreferredImages(project)
 
@@ -121,7 +128,6 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, onD
         const res = await fetch(`${API_BASE}/saved/${project.id}`, {
           method: 'DELETE',
           headers: await authHeaders(),
-
         })
         if (!res.ok) throw new Error('Delete failed')
         onToast?.('Removed from saved')
@@ -150,13 +156,13 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, onD
   const handleShareProject = async (e: React.MouseEvent) => {
     e.stopPropagation()
     track('share_tapped', { project_slug: project.slug, project_name: project.name })
-    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/property/${project.slug}?ref=share`
+    const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/property/${project.slug}?ref=share`
     const text = `${project.name} · ${project.sector} — ${project.price_range_label}. Reviewed with RealtyPal AI:`
     try {
       if (navigator.share) {
-        await navigator.share({ title: project.name, text, url })
+        await navigator.share({ title: project.name, text, url: shareUrl })
       } else {
-        await navigator.clipboard.writeText(`${text}\n${url}`)
+        await navigator.clipboard.writeText(`${text}\n${shareUrl}`)
         onToast?.('Link copied ✓')
       }
     } catch {
@@ -166,9 +172,12 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, onD
   }
 
   const handleCardClick = () => {
+    if (isSelectable) {
+      onToggleSelect?.()
+      return
+    }
     trackPropertyEvent(project.id, 'card_click', sessionId, userId).catch(() => {})
     onDetailOpen?.(project)
-
   }
 
   return (
@@ -176,13 +185,34 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, onD
       data-project-id={project.id}
       onClick={handleCardClick}
       className={`group relative w-full h-full flex flex-col rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-300 ease-out cursor-pointer ${
-        isTopPick
-          ? 'ring-1 ring-inset ring-amber-500/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.2)]'
-          : 'ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]'
+        isSelected
+          ? 'ring-2 ring-blue-600 dark:ring-blue-500 shadow-[0_8px_30px_rgba(37,99,235,0.25)] scale-[1.01] border-blue-500 z-20'
+          : isTopPick
+            ? 'ring-1 ring-inset ring-amber-500/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.2)]'
+            : 'ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]'
       } md:hover:-translate-y-1 active:scale-[0.98]`}
     >
       {/* ── Hero image ── */}
       <div className="relative h-[220px] overflow-hidden bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+        {isSelectable && (
+          <div className="absolute top-3 right-3 z-30">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onToggleSelect?.() }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-md cursor-pointer backdrop-blur-md ${
+                isSelected
+                  ? 'bg-blue-600 text-white ring-2 ring-white/40 scale-105 shadow-blue-500/30'
+                  : 'bg-black/60 text-white/90 hover:bg-black/80 border border-white/20'
+              }`}
+              aria-label={isSelected ? 'Deselect property' : 'Select property'}
+            >
+              <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isSelected ? 'bg-white text-blue-600 font-extrabold' : 'border border-white/60'}`} aria-hidden="true">
+                {isSelected ? '✓' : ''}
+              </div>
+              <span>{isSelected ? 'Selected' : 'Select'}</span>
+            </button>
+          </div>
+        )}
         {workingImages.length > 0 && !allFailed ? (
           <>
             {workingImages.map((src, i) => (
@@ -408,10 +438,10 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, onD
                 trackPropertyEvent(project.id, 'call', sessionId, userId).catch(() => {})
                 onCall?.(project)
               }}
-              className="w-9 h-9 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-300 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 active:scale-95 group shadow-2xs"
+              className="w-9 h-9 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 text-zinc-900 dark:text-white flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 active:scale-95 group shadow-2xs"
               title="Request a callback"
             >
-              <PhoneCall size={15} weight="bold" className="text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:scale-110 transition-transform duration-200" />
+              <PhoneCall size={15} weight="bold" className="text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:scale-110 transition-transform duration-200" />
             </button>
             <button
               onClick={handleShareProject}

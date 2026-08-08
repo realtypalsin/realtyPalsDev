@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Building2, Users, CheckCircle2, AlertTriangle, ArrowRight, RefreshCw,
-  ImageOff, ShieldOff, Terminal, Plus
+  ImageOff, ShieldOff, Terminal, Plus, Activity, Copy, Check
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import UniversalLoader from '@/components/ui/universal-loader'
-import { API_BASE } from '@/lib/env'
+import AdminInfoTooltip from '@/components/admin/AdminInfoTooltip'
 import { adminFetch } from '@/lib/adminFetch'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -23,194 +23,367 @@ interface Stats {
   no_image: number
   no_rera: number
   builders: number
-  topBuilders: { name: string, projects: number }[]
+  topBuilders: { name: string; projects: number }[]
 }
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const [copiedCmd, setCopiedCmd] = useState<string | null>(null)
 
   useEffect(() => { setMounted(true) }, [])
 
   async function load() {
     setLoading(true)
-    const res = await adminFetch('/admin/projects')
-    const data = await res.json()
-    const projects = data.projects ?? []
+    try {
+      const res = await adminFetch('/admin/projects')
+      const data = await res.json()
+      const projects = data.projects ?? []
 
-    const topBuilders = Object.entries(
-      projects.reduce((acc: Record<string, number>, p: any) => {
-        if (p.builder?.name) acc[p.builder.name] = (acc[p.builder.name] ?? 0) + 1
-        return acc
-      }, {})
-    )
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([name, count]) => ({ name: name.length > 15 ? name.substring(0, 15) + '...' : name, projects: count }))
+      const builderCounts: Record<string, number> = {}
+      projects.forEach((p: any) => {
+        if (p.builder?.name) {
+          builderCounts[p.builder.name] = (builderCounts[p.builder.name] ?? 0) + 1
+        }
+      })
+      const topBuilders = (Object.entries(builderCounts) as [string, number][])
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([name, count]) => ({ name: name.length > 14 ? name.substring(0, 14) + '...' : name, projects: Number(count) }))
 
-    setStats({
-      total:              projects.length,
-      ready:              projects.filter((p: any) => p.status === 'ready_to_move').length,
-      under_construction: projects.filter((p: any) => p.status === 'under_construction').length,
-      new_launch:         projects.filter((p: any) => p.status === 'new_launch').length,
-      no_image:           projects.filter((p: any) => !p.hero_image_url).length,
-      no_rera:            projects.filter((p: any) => !p.rera_number).length,
-      builders:           new Set(projects.map((p: any) => p.builder?.id)).size,
-      topBuilders,
-    })
-    setLoading(false)
+      setStats({
+        total:              projects.length,
+        ready:              projects.filter((p: any) => p.status === 'ready_to_move').length,
+        under_construction: projects.filter((p: any) => p.status === 'under_construction').length,
+        new_launch:         projects.filter((p: any) => p.status === 'new_launch').length,
+        no_image:           projects.filter((p: any) => !p.hero_image_url).length,
+        no_rera:            projects.filter((p: any) => !p.rera_number).length,
+        builders:           new Set(projects.map((p: any) => p.builder?.id)).size,
+        topBuilders,
+      })
+    } catch (err) {
+      console.error('[AdminDashboard] Failed to load stats:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { load() }, [])
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedCmd(text)
+    setTimeout(() => setCopiedCmd(null), 2000)
+  }
+
   const pieData = stats ? [
-    { name: 'Ready', value: stats.ready, color: '#10B981' }, 
-    { name: 'Under Const.', value: stats.under_construction, color: '#F59E0B' }, 
-    { name: 'New Launch', value: stats.new_launch, color: '#3B82F6' }, 
-  ] : []
+    { name: 'Ready to Move', value: stats.ready, color: '#10B981', pct: stats.total ? Math.round((stats.ready / stats.total) * 100) : 0 }, 
+    { name: 'Under Construction', value: stats.under_construction, color: '#F59E0B', pct: stats.total ? Math.round((stats.under_construction / stats.total) * 100) : 0 }, 
+    { name: 'New Launch', value: stats.new_launch, color: '#3B82F6', pct: stats.total ? Math.round((stats.new_launch / stats.total) * 100) : 0 }, 
+  ].filter(d => d.value > 0) : []
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-3xl pb-3xl">
-      {/* Page Header */}
-      <div className="flex items-center justify-between pb-lg border-b border-border">
+    <div className="max-w-[1400px] mx-auto space-y-6 p-4 md:p-8">
+      {/* ── Page Sub-Header ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
         <div>
-          <h1 className="text-3xl font-serif font-black text-text-primary tracking-tight">Dashboard</h1>
-          <p className="text-sm text-text-secondary mt-md">Overview, metrics, and actionable alerts.</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+              Dashboard Overview
+            </h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 rounded-full shadow-2xs">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>System Healthy</span>
+            </span>
+          </div>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+            Real-time catalog metrics, inventory health, and database tasks.
+          </p>
         </div>
-        <button
-          onClick={load}
-          disabled={loading}
-          className="flex items-center gap-2 text-sm font-medium text-text-secondary bg-surface border border-border shadow-xs hover:bg-surface-2 hover:shadow-sm hover:border-border-heavy px-lg py-md rounded-md transition-all duration-fast ease-out active:scale-[0.98] disabled:opacity-50"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin text-text-muted' : 'text-text-secondary'} />
-          Refresh
-        </button>
+
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={load}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 rounded-xl shadow-xs hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin text-blue-500' : 'text-zinc-500'} />
+            <span>Refresh Metrics</span>
+          </button>
+          <Link
+            href="/admin/projects/new"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl shadow-xs transition-all active:scale-[0.98]"
+          >
+            <Plus size={15} />
+            <span>Add Property</span>
+          </Link>
+        </div>
       </div>
 
-      {/* KPI Row */}
+      {/* ── KPI Metric Grid ─────────────────────────────────────────────────── */}
       {loading ? (
-        <UniversalLoader variant="skeleton-list" rows={8} />
+        <UniversalLoader variant="skeleton-list" rows={4} />
       ) : stats ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
-          {/* Total Projects */}
-          <Link href="/admin/projects" className="bg-surface rounded-lg p-lg shadow-xs border border-border hover:border-border-heavy hover:shadow-sm transition-all duration-fast ease-out active:scale-[0.98] group flex flex-col justify-between">
-            <div className="flex justify-between items-start">
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Properties</p>
-              <Building2 size={16} className="text-text-muted group-hover:text-text-primary transition-colors" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Total Properties */}
+          <Link
+            href="/admin/projects"
+            className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs hover:shadow-md hover:border-blue-400/50 dark:hover:border-blue-500/50 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider inline-flex items-center">
+                Total Properties
+                <AdminInfoTooltip
+                  title="Total Properties"
+                  description="Total active property listings in the database catalog."
+                  details={['Covers Ready to Move, Under Construction & New Launch']}
+                  whyItMatters="Defines total inventory available for AI recommendations."
+                />
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Building2 size={18} />
+              </div>
             </div>
-            <div className="mt-lg">
-              <h3 className="text-3xl font-black text-text-primary tracking-tighter leading-none">{stats.total}</h3>
+            <div className="mt-4 flex items-baseline justify-between">
+              <h3 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                {stats.total}
+              </h3>
+              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/60">
+                100% Catalog Live
+              </span>
             </div>
           </Link>
 
-          {/* Total Builders */}
-          <Link href="/admin/builders" className="bg-surface rounded-lg p-lg shadow-xs border border-border hover:border-border-heavy hover:shadow-sm transition-all duration-fast ease-out active:scale-[0.98] group flex flex-col justify-between">
-            <div className="flex justify-between items-start">
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Partner Builders</p>
-              <Users size={16} className="text-accent group-hover:text-primary transition-colors" />
+          {/* Partner Builders */}
+          <Link
+            href="/admin/builders"
+            className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs hover:shadow-md hover:border-violet-400/50 dark:hover:border-violet-500/50 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider inline-flex items-center">
+                Partner Builders
+                <AdminInfoTooltip
+                  title="Partner Builders"
+                  description="Verified real estate developers registered on the platform."
+                  whyItMatters="Tracks builder partnership depth and portfolio coverage."
+                />
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users size={18} />
+              </div>
             </div>
-            <div className="mt-lg">
-              <h3 className="text-3xl font-black text-text-primary tracking-tighter leading-none">{stats.builders}</h3>
+            <div className="mt-4 flex items-baseline justify-between">
+              <h3 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                {stats.builders}
+              </h3>
+              <span className="text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/50 px-2 py-0.5 rounded-md border border-violet-200/60 dark:border-violet-800/60">
+                Verified Partners
+              </span>
             </div>
           </Link>
 
           {/* Ready to Move */}
-          <div className="bg-surface rounded-lg p-lg shadow-xs border border-border flex flex-col justify-between">
-            <div className="flex justify-between items-start">
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Ready to Move</p>
-              <CheckCircle2 size={16} className="text-success" />
+          <div className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider inline-flex items-center">
+                Ready To Move
+                <AdminInfoTooltip
+                  title="Ready To Move"
+                  description="Listings with possession certificates available immediately."
+                  whyItMatters="Measures supply of zero-possession-risk inventory."
+                />
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 size={18} />
+              </div>
             </div>
-            <div className="mt-lg">
-              <h3 className="text-3xl font-black text-text-primary tracking-tighter leading-none">{stats.ready}</h3>
+            <div className="mt-4 flex items-baseline justify-between">
+              <h3 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                {stats.ready}
+              </h3>
+              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/60">
+                {stats.total ? Math.round((stats.ready / stats.total) * 100) : 0}% of Total
+              </span>
             </div>
           </div>
 
           {/* Data Alerts */}
-          <Link href="/admin/projects" className={`bg-surface rounded-lg p-lg shadow-xs border transition-all duration-fast ease-out active:scale-[0.98] group flex flex-col justify-between ${stats.no_image > 0 || stats.no_rera > 0 ? 'border-danger/30 hover:border-danger/50 hover:shadow-sm' : 'border-border hover:border-border-heavy hover:shadow-sm'}`}>
-            <div className="flex justify-between items-start">
-               <p className={`text-xs font-semibold uppercase tracking-wider ${stats.no_image > 0 || stats.no_rera > 0 ? 'text-danger' : 'text-text-muted'}`}>Data Alerts</p>
-               <AlertTriangle size={16} className={stats.no_image > 0 || stats.no_rera > 0 ? 'text-danger' : 'text-text-muted'} />
+          <Link
+            href="/admin/projects"
+            className={`group relative bg-white dark:bg-zinc-900 rounded-2xl p-5 border transition-all duration-200 flex flex-col justify-between ${
+              stats.no_image > 0 || stats.no_rera > 0
+                ? 'border-amber-300 dark:border-amber-700/80 hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 shadow-xs'
+                : 'border-zinc-200/80 dark:border-zinc-800/80 hover:shadow-md hover:-translate-y-0.5 shadow-xs'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className={`text-xs font-bold uppercase tracking-wider inline-flex items-center ${
+                stats.no_image > 0 || stats.no_rera > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-500 dark:text-zinc-400'
+              }`}>
+                Data Alerts
+                <AdminInfoTooltip
+                  title="Data Quality Alerts"
+                  description="Listings needing attention (missing photos or RERA numbers)."
+                  details={['Missing Images: Projects lacking cover photos', 'Missing RERA: Projects awaiting RERA verification']}
+                  whyItMatters="Helps maintain high data quality and buyer trust."
+                />
+              </span>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                stats.no_image > 0 || stats.no_rera > 0
+                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+              }`}>
+                <AlertTriangle size={18} />
+              </div>
             </div>
-            <div className="mt-lg">
-              <h3 className={`text-3xl font-black tracking-tighter leading-none ${stats.no_image > 0 || stats.no_rera > 0 ? 'text-danger' : 'text-text-primary'}`}>
+            <div className="mt-4 flex items-baseline justify-between">
+              <h3 className={`text-3xl font-extrabold tracking-tight ${
+                stats.no_image > 0 || stats.no_rera > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-900 dark:text-zinc-50'
+              }`}>
                 {stats.no_image + stats.no_rera}
               </h3>
+              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${
+                stats.no_image > 0 || stats.no_rera > 0
+                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60'
+                  : 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400'
+              }`}>
+                {stats.no_image > 0 && stats.no_rera > 0 ? 'Image & RERA missing' : stats.no_image > 0 ? 'Images missing' : stats.no_rera > 0 ? 'RERA missing' : 'All verified'}
+              </span>
             </div>
           </Link>
+
         </div>
       ) : null}
 
-      {/* Middle Row: Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+      {/* ── Charts Row ──────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Bar Chart: Top Builders */}
-        <div className="lg:col-span-2 bg-surface rounded-lg p-lg md:p-2xl shadow-xs border border-border relative overflow-hidden">
-          <div className="flex items-center justify-between mb-2xl">
+        <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-text-primary tracking-tight">Top Builders</h2>
-              <p className="text-sm text-text-secondary mt-md">Number of projects per builder in database.</p>
+              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 tracking-tight flex items-center">
+                Top Builders Portfolio
+                <AdminInfoTooltip
+                  title="Top Builders Portfolio"
+                  description="Developers ranked by total active project listings."
+                  whyItMatters="Reveals developer portfolio distribution across the catalog."
+                />
+              </h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
+                Active project distribution across leading developers.
+              </p>
             </div>
+            <span className="text-[11px] font-semibold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">
+              Top 6 Groups
+            </span>
           </div>
-          <div className="h-[280px] w-full">
+
+          <div className="h-[300px] w-full">
             {stats && mounted ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.topBuilders} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={stats.topBuilders} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                  <defs>
+                    <linearGradient id="builderGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#6366f1" stopOpacity={0.85} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f4f4f5" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#71717a', fontSize: 11, fontWeight: 600 }}
+                    allowDecimals={false}
+                  />
                   <RechartsTooltip
-                    cursor={{ fill: 'rgba(59, 130, 246, 0.06)', radius: 6 }}
+                    cursor={{ fill: 'rgba(59, 130, 246, 0.1)', radius: 8 }}
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         return (
-                          <div className="bg-zinc-900 border border-zinc-800 text-white px-3.5 py-2 rounded-xl shadow-xl z-50">
-                            <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">{label}</p>
-                            <p className="text-sm font-black text-white flex items-center gap-1.5 leading-none">
-                              <span>{payload[0].value}</span>
-                              <span className="text-xs font-semibold text-zinc-400">projects</span>
-                            </p>
+                          <div className="bg-zinc-950 border border-zinc-700 text-white px-3.5 py-2.5 rounded-xl shadow-2xl z-50">
+                            <p className="text-[10.5px] font-bold text-zinc-400 uppercase tracking-wider mb-1">{label}</p>
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                              <p className="text-sm font-bold text-white">
+                                {payload[0].value} <span className="text-xs text-zinc-400 font-normal">Active Projects</span>
+                              </p>
+                            </div>
                           </div>
                         )
                       }
                       return null
                     }}
                   />
-                  <Bar dataKey="projects" fill="hsl(220, 78%, 56%)" radius={[4, 4, 4, 4]} maxBarSize={48} />
+                  <Bar
+                    dataKey="projects"
+                    fill="url(#builderGradient)"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={48}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
               <div className="w-full h-full pb-8">
-                <Skeleton className="w-full h-full rounded-xl bg-zinc-100" />
+                <Skeleton className="w-full h-full rounded-xl bg-zinc-100 dark:bg-zinc-800" />
               </div>
             )}
           </div>
         </div>
 
-        {/* Donut Chart: Project Status */}
-        <div className="bg-surface rounded-lg p-lg md:p-2xl shadow-xs border border-border flex flex-col relative">
-          <h2 className="text-lg font-semibold text-text-primary tracking-tight">Inventory Distribution</h2>
-          <p className="text-sm text-text-secondary mt-md mb-2xl">Properties by construction status.</p>
-          
-          <div className="flex-1 min-h-[220px] relative flex flex-col items-center justify-center">
+        {/* Donut Chart: Inventory Distribution */}
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs flex flex-col justify-between">
+          <div>
+            <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 tracking-tight flex items-center">
+              Inventory Distribution
+              <AdminInfoTooltip
+                title="Inventory Distribution"
+                description="Catalog breakdown by project construction stage."
+                details={['Green: Ready to Move', 'Yellow: Under Construction', 'Blue: New Launch']}
+                whyItMatters="Ensures balanced supply across ready vs upcoming properties."
+              />
+            </h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
+              Breakdown by project construction status.
+            </p>
+          </div>
+
+          <div className="relative h-[220px] w-full my-2 flex items-center justify-center">
             {stats && mounted ? (
               <>
-                <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none drop-shadow-sm">
-                  <span className="text-4xl font-black text-text-primary tracking-tighter leading-none">{stats.total}</span>
-                  <span className="text-xs font-bold text-text-muted uppercase tracking-widest mt-md">Total</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                  <span className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight leading-none">
+                    {stats.total}
+                  </span>
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">
+                    Total Units
+                  </span>
                 </div>
+
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={70}
-                      outerRadius={90}
+                      innerRadius={68}
+                      outerRadius={88}
                       paddingAngle={4}
                       dataKey="value"
                       stroke="none"
-                      cornerRadius={4}
+                      cornerRadius={6}
                     >
                       {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -221,11 +394,11 @@ export default function AdminDashboard() {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload
                           return (
-                            <div className="bg-zinc-900 border border-zinc-800 text-white px-3.5 py-2 rounded-xl shadow-xl flex items-center gap-2.5 z-50">
+                            <div className="bg-zinc-900 border border-zinc-800 text-white px-3 py-2 rounded-xl shadow-xl flex items-center gap-2 z-50">
                               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: data.color }} />
                               <div>
-                                <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">{data.name}</p>
-                                <p className="text-sm font-black text-white leading-none mt-0.5">{data.value} <span className="text-xs font-semibold text-zinc-400">properties</span></p>
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{data.name}</p>
+                                <p className="text-xs font-bold text-white">{data.value} projects ({data.pct}%)</p>
                               </div>
                             </div>
                           )
@@ -237,99 +410,157 @@ export default function AdminDashboard() {
                 </ResponsiveContainer>
               </>
             ) : (
-              <Skeleton className="w-48 h-48 rounded-full bg-zinc-100" />
+              <Skeleton className="w-40 h-40 rounded-full bg-zinc-100 dark:bg-zinc-800" />
             )}
           </div>
-          
-          <div className="grid grid-cols-2 gap-3 mt-6">
+
+          <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
             {pieData.map(item => (
-              <div key={item.name} className="flex items-center gap-2 px-1">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-[12px] font-medium text-zinc-600">{item.name}</span>
+              <div key={item.name} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="font-semibold text-zinc-700 dark:text-zinc-300">{item.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100">{item.value}</span>
+                  <span className="text-[11px] text-zinc-400 font-medium">({item.pct}%)</span>
+                </div>
               </div>
             ))}
           </div>
         </div>
+
       </div>
 
-      {/* Bottom Row: Actions & Terminal */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+      {/* ── Bottom Row: Quick Actions & Server Console ─────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Quick Actions */}
-        <div className="bg-surface rounded-lg p-lg md:p-2xl shadow-xs border border-border">
-          <h2 className="text-lg font-semibold text-text-primary mb-lg tracking-tight">Quick Actions</h2>
-          <div className="space-y-md">
-            <Link href="/admin/projects/new" className="flex items-center justify-between p-lg rounded-md border border-border hover:border-border-heavy hover:bg-surface-2 transition-all duration-fast group">
-              <div className="flex items-center gap-lg">
-                <div className="w-9 h-9 rounded-md bg-surface-2 flex items-center justify-center text-text-secondary group-hover:bg-surface-3 group-hover:shadow-xs group-hover:text-text-primary transition-all">
-                  <Plus size={16} />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-text-primary">Add New Project</h4>
-                  <p className="text-xs text-text-secondary mt-0.5">Add a new property to the database</p>
-                </div>
-              </div>
-              <ArrowRight size={16} className="text-text-muted group-hover:translate-x-1 group-hover:text-text-primary transition-all" />
-            </Link>
-            
-            {stats && stats.no_image > 0 && (
-              <div className="flex items-center justify-between p-lg rounded-md bg-danger/5 border border-danger/20">
-                <div className="flex items-center gap-lg">
-                  <div className="w-9 h-9 rounded-md bg-surface shadow-xs flex items-center justify-center text-danger">
-                    <ImageOff size={16} />
+        {/* Quick Actions Card */}
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs flex flex-col justify-between">
+          <div>
+            <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 tracking-tight mb-4">
+              Quick Administrative Tasks
+            </h2>
+
+            <div className="space-y-3">
+              <Link
+                href="/admin/projects/new"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800 hover:border-blue-400/60 dark:hover:border-blue-500/60 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 transition-all group"
+              >
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Plus size={18} />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm text-danger">{stats.no_image} Missing Images</h4>
-                    <p className="text-xs text-danger/80 mt-0.5">Run `npm run db:seed-images`</p>
+                    <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100">Create Project Record</h4>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Add property metadata, pricing & images</p>
                   </div>
                 </div>
-              </div>
-            )}
+                <ArrowRight size={15} className="text-zinc-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+              </Link>
 
-            {stats && stats.no_rera > 0 && (
-              <div className="flex items-center justify-between p-lg rounded-md bg-warning/5 border border-warning/20">
-                <div className="flex items-center gap-lg">
-                  <div className="w-9 h-9 rounded-md bg-surface shadow-xs flex items-center justify-center text-warning">
-                    <ShieldOff size={16} />
+              {stats && stats.no_image > 0 && (
+                <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-white dark:bg-zinc-900 shadow-2xs flex items-center justify-center text-amber-600 dark:text-amber-400">
+                      <ImageOff size={18} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-amber-900 dark:text-amber-200">
+                        {stats.no_image} Projects Missing Images
+                      </h4>
+                      <p className="text-[11px] text-amber-700 dark:text-amber-400 font-mono mt-0.5">
+                        npm run db:seed-images
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-sm text-warning">{stats.no_rera} Missing RERA</h4>
-                    <p className="text-xs text-warning/80 mt-0.5">Run `npm run db:enrich-ai`</p>
-                  </div>
+                  <button
+                    onClick={() => copyToClipboard('npm run db:seed-images')}
+                    className="px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:text-amber-300 bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-700 rounded-lg shadow-2xs hover:bg-amber-100 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedCmd === 'npm run db:seed-images' ? <Check size={12} /> : <Copy size={12} />}
+                    <span>{copiedCmd === 'npm run db:seed-images' ? 'Copied' : 'Copy'}</span>
+                  </button>
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
 
-        {/* Command Reference */}
-        <div className="bg-slate-900 rounded-lg p-lg shadow-sm border border-slate-800 flex flex-col relative overflow-hidden">
-          <div className="flex items-center px-lg py-md border-b border-slate-800/50">
-            <span className="flex items-center gap-md text-xs font-medium text-slate-400 uppercase tracking-widest">
-              <Terminal size={14} /> Server Commands
-            </span>
-          </div>
-
-          <div className="flex-1 p-lg font-mono text-sm leading-relaxed space-y-md bg-slate-900 overflow-x-auto text-slate-300 selection:bg-slate-700 selection:text-slate-100">
-            {[
-              { cmd: 'db:seed-images', desc: 'Upload REimages/ to Supabase' },
-              { cmd: 'db:enrich-ai',   desc: 'AI fills missing data' },
-              { cmd: 'db:fix-statuses',desc: 'Sync construction status' },
-              { cmd: 'db:re-embed',    desc: 'Refresh AI search vectors' },
-              { cmd: 'db:studio',      desc: 'Open Prisma Studio' },
-            ].map(({ cmd, desc }) => (
-              <div key={cmd} className="flex items-baseline gap-3 group whitespace-nowrap">
-                <span className="text-zinc-600">~</span>
-                <span className="text-zinc-100 hover:text-white transition-colors cursor-text">npm run {cmd}</span>
-                <span className="text-zinc-600 hidden md:inline ml-auto text-[12px] opacity-0 hover:opacity-100 md:opacity-100 transition-opacity"># {desc}</span>
-              </div>
-            ))}
-            <div className="flex items-baseline gap-3 mt-5">
-              <span className="text-zinc-600">~</span>
-              <div className="w-2 h-4 bg-zinc-100 animate-pulse translate-y-0.5" />
+              {stats && stats.no_rera > 0 && (
+                <div className="flex items-center justify-between p-3.5 rounded-xl bg-violet-50/60 dark:bg-violet-950/30 border border-violet-200/80 dark:border-violet-800/60">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-white dark:bg-zinc-900 shadow-2xs flex items-center justify-center text-violet-600 dark:text-violet-400">
+                      <ShieldOff size={18} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-violet-900 dark:text-violet-200">
+                        {stats.no_rera} Missing RERA Registrations
+                      </h4>
+                      <p className="text-[11px] text-violet-700 dark:text-violet-400 font-mono mt-0.5">
+                        npm run db:enrich-ai
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard('npm run db:enrich-ai')}
+                    className="px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:text-violet-300 bg-white dark:bg-zinc-800 border border-violet-300 dark:border-violet-700 rounded-lg shadow-2xs hover:bg-violet-100 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedCmd === 'npm run db:enrich-ai' ? <Check size={12} /> : <Copy size={12} />}
+                    <span>{copiedCmd === 'npm run db:enrich-ai' ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Server Command Console */}
+        <div className="bg-zinc-950 rounded-2xl border border-zinc-800 shadow-xl overflow-hidden flex flex-col font-mono">
+          {/* macOS window titlebar */}
+          <div className="flex items-center justify-between px-4 py-3 bg-zinc-900/90 border-b border-zinc-800">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
+              <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
+              <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+              <span className="text-xs font-semibold text-zinc-400 ml-2 font-sans flex items-center gap-1.5">
+                <Terminal size={13} className="text-zinc-500" />
+                <span>bash — realty-pals-server</span>
+              </span>
+            </div>
+            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">CLI Helper</span>
+          </div>
+
+          <div className="p-4 space-y-2.5 text-xs text-zinc-300 overflow-x-auto selection:bg-blue-600 selection:text-white">
+            {[
+              { cmd: 'npm run db:seed-images', desc: 'Upload property hero/gallery assets to Supabase' },
+              { cmd: 'npm run db:enrich-ai',   desc: 'Auto-fill missing decision profiles & completeness' },
+              { cmd: 'npm run db:fix-statuses',desc: 'Sync construction status & delivery timelines' },
+              { cmd: 'npm run db:re-embed',    desc: 'Refresh semantic AI vector search embeddings' },
+              { cmd: 'npm run db:studio',      desc: 'Launch Prisma Studio database GUI' },
+            ].map(({ cmd, desc }) => (
+              <div key={cmd} className="flex items-center justify-between group py-1 border-b border-zinc-900/80 hover:bg-zinc-900/50 px-2 rounded-lg transition-colors">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-emerald-500 font-bold">$</span>
+                  <span className="text-zinc-100 font-semibold">{cmd}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] text-zinc-500 hidden sm:inline"># {desc}</span>
+                  <button
+                    onClick={() => copyToClipboard(cmd)}
+                    className="p-1 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-60 group-hover:opacity-100 cursor-pointer"
+                    title="Copy command"
+                  >
+                    {copiedCmd === cmd ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex items-center gap-2 pt-2 px-2">
+              <span className="text-emerald-500 font-bold">$</span>
+              <div className="w-2 h-4 bg-blue-500 animate-pulse" />
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>

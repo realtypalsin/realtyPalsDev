@@ -241,40 +241,25 @@ async function extractProjectIds(
 
   // Check which projects are mentioned in the message
   for (const project of projects) {
-    const nameRegex = new RegExp(`\\b${project.name.toLowerCase()}\\b`)
-    const slugRegex = new RegExp(`\\b${project.slug.toLowerCase()}\\b`)
+    const pName = project.name.toLowerCase().trim()
+    const pSlug = project.slug.toLowerCase().trim()
 
-    if (nameRegex.test(msg) || slugRegex.test(msg)) {
+    if (msg.includes(pName) || msg.includes(pSlug)) {
       projectIds.push(project.id)
     }
   }
 
   // Pronoun & contextual active project resolution:
-  // If no explicit project name found in user message (e.g. "Can I see the price list?", "What are the payment plans?"),
-  // automatically resolve from active projects in conversation context.
+  // If no explicit project name found in user message, resolve from active projects in conversation context.
   if (!projectIds.length && conversationContext?.activeProjects?.length) {
-    // If only 1 project is active in context, resolve directly to it
-    if (conversationContext.activeProjects.length === 1) {
-      const activeTerm = conversationContext.activeProjects[0]
-      const match = projects.find(
-        p => p.id === activeTerm || p.slug.toLowerCase() === activeTerm.toLowerCase() || p.name.toLowerCase() === activeTerm.toLowerCase()
-      )
-      if (match) {
-        projectIds.push(match.id)
-      } else {
-        projectIds.push(activeTerm)
-      }
-    } else if (/that project|this project|the project|it\b/.test(msg)) {
-      // If multiple projects active, resolve pronoun to the first active project
-      const activeTerm = conversationContext.activeProjects[0]
-      const match = projects.find(
-        p => p.id === activeTerm || p.slug.toLowerCase() === activeTerm.toLowerCase() || p.name.toLowerCase() === activeTerm.toLowerCase()
-      )
-      if (match) {
-        projectIds.push(match.id)
-      } else {
-        projectIds.push(activeTerm)
-      }
+    const activeTerm = conversationContext.activeProjects[0]
+    const match = projects.find(
+      p => p.id === activeTerm || p.slug.toLowerCase() === activeTerm.toLowerCase() || p.name.toLowerCase() === activeTerm.toLowerCase()
+    )
+    if (match) {
+      projectIds.push(match.id)
+    } else {
+      projectIds.push(activeTerm)
     }
   }
 

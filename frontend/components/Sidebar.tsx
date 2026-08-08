@@ -311,15 +311,15 @@ export default function Sidebar({
                     closeMobile();
                     onViewChange?.(item.id as any);
                   }}
-                  className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-2.5 px-3 py-2 rounded-[14px]'} ${
+                  className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-2.5 px-3 py-2 rounded-xl'} ${
                     isActive
-                      ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md'
-                      : 'text-gray-600 dark:text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
+                      ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-semibold shadow-sm'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-white'
                   }`}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  <Icon size={18} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-white' : 'text-gray-700 dark:text-gray-300 group-hover/navitem:text-gray-700 dark:text-gray-600 dark:text-gray-400 dark:group-hover/navitem:text-gray-200'} />
-                  {!isCollapsed && <span className={`text-[14px] font-medium tracking-wide ${isActive ? 'text-white' : ''}`}>{item.label}</span>}
+                  <Icon size={18} strokeWidth={isActive ? 2 : 1.5} className={isActive ? 'text-white dark:text-zinc-900' : 'text-zinc-500 dark:text-zinc-400 group-hover/navitem:text-zinc-900 dark:group-hover/navitem:text-white'} />
+                  {!isCollapsed && <span className={`text-xs font-semibold tracking-tight ${isActive ? 'text-white dark:text-zinc-900' : ''}`}>{item.label}</span>}
                 </Link>
               </div>
               );

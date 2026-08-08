@@ -14,8 +14,18 @@ export interface OpenAIProvider {
   name: string; // 'azure' | 'openai'
 }
 
-// Detect and prefer Azure OpenAI or GitHub Models
-function getOpenAIProvider(): OpenAIProvider {
+// Detect and prefer Azure OpenAI or GitHub Models.
+// apiKeyOverride: used when the caller is rotating through multiple OpenAI
+// fallback keys (OPENAI_API_KEY1/2/3) — bypasses Azure/GitHub detection since
+// those overrides are always plain OpenAI keys.
+function getOpenAIProvider(apiKeyOverride?: string): OpenAIProvider {
+  if (apiKeyOverride) {
+    return {
+      apiKey: apiKeyOverride,
+      baseURL: process.env.OPENAI_BASE_URL,
+      name: 'openai',
+    };
+  }
   // Azure OpenAI as primary
   if (AI_CONFIG.AZURE_OPENAI_API_KEY && AI_CONFIG.AZURE_OPENAI_ENDPOINT) {
     return {
@@ -76,8 +86,9 @@ export async function streamWithOpenAI(
   config: InferenceConfig = INFERENCE_DEFAULTS,
   userId?: string | null,
   sessionId?: string | null,
+  apiKeyOverride?: string,
 ): Promise<string> {
-  const provider = getOpenAIProvider();
+  const provider = getOpenAIProvider(apiKeyOverride);
 
   if (!provider.apiKey) {
     throw new Error('No OpenAI API key configured (AZURE_OPENAI_API_KEY, OPENAI_API_KEY, or github_pat)');

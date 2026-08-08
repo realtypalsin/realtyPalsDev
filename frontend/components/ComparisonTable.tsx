@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
-import {  m  } from 'framer-motion'
-import { Trophy, TrendingUp, ShieldCheck, Users, Zap, ChevronDown, IndianRupee, Trees, HeartHandshake } from 'lucide-react'
+import { m } from 'framer-motion'
+import { Trophy, TrendingUp, ShieldCheck, Users, Zap, ChevronDown, IndianRupee, Trees, HeartHandshake, Star } from 'lucide-react'
 import { Building2, BadgeCheck } from 'lucide-react'
 import type { ProjectCard, ProjectDetail } from '@/types/project'
 import { API_BASE } from '@/lib/env'
@@ -54,15 +54,28 @@ const TIER_CFG: Record<string, {
 }
 
 const PERSONA_LABEL: Record<string, string> = {
-  FAMILY:       '👨‍👩‍👧 Family',
+  FAMILY: '👨‍👩‍👧 Family',
   PROFESSIONAL: '💼 Professional',
-  INVESTOR:     '📈 Investor',
-  NRI:          '✈️ NRI',
-  UPGRADER:     '🔝 Upgrader',
-  RETIREE:      '🏡 Retiree',
+  INVESTOR: '📈 Investor',
+  NRI: '✈️ NRI',
+  UPGRADER: '🔝 Upgrader',
+  RETIREE: '🏡 Retiree',
 }
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
+
+interface IntelligenceData {
+  investment_insights?: {
+    appreciation_1yr?: string | null
+    rental_yield?: string | null
+    liquidity_score?: string | null
+  }
+  social_proof?: {
+    overall_rating?: number | null
+    demographic_tags?: string[]
+    sentiment_summary?: string | null
+  }
+}
 
 function starsCount(label: string | null | undefined): number {
   if (!label) return 0
@@ -92,10 +105,16 @@ function starsCount(label: string | null | undefined): number {
 
 function StarRow({ count, size = 'md' }: { count: number; size?: 'sm' | 'md' }) {
   const full = Math.max(0, Math.min(5, count))
+  const iconSize = size === 'sm' ? 12 : 14
   return (
-    <span className={`${size === 'sm' ? 'text-[12px]' : 'text-[15px]'} tracking-tight`}>
-      <span className="text-amber-400">{'★'.repeat(full)}</span>
-      <span className="text-gray-200 dark:text-gray-700">{'★'.repeat(5 - full)}</span>
+    <span className="inline-flex items-center gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          size={iconSize}
+          className={i < full ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200 dark:fill-zinc-800 dark:text-zinc-800'}
+        />
+      ))}
     </span>
   )
 }
@@ -114,7 +133,96 @@ function deriveRisk(d: ProjectDetail | null): 'Low' | 'Medium' | 'High' {
   return 'Medium'
 }
 
+// ── Render helpers ────────────────────────────────────────────────────────────
+
+function formatArea(d: ProjectDetail | null): React.ReactNode {
+  const u = d?.unit_types?.[0]
+  if (!u) return <span className="text-gray-400 text-[11px]">—</span>
+
+  const superVal = typeof u.super_area_sqft === 'number' ? u.super_area_sqft : (u.super_area_sqft ? parseInt(String(u.super_area_sqft), 10) : 0)
+  const carpetVal = typeof u.carpet_area_sqft === 'number' ? u.carpet_area_sqft : (u.carpet_area_sqft ? parseInt(String(u.carpet_area_sqft), 10) : 0)
+
+  let effPct: number | null = null
+  if (superVal > 0 && carpetVal > 0) {
+    effPct = Math.round((carpetVal / superVal) * 100)
+  }
+
+  return (
+    <div className="inline-flex flex-col items-center gap-0.5 text-[11px]">
+      <span className="font-bold text-slate-800 dark:text-slate-200">
+        {carpetVal ? `${carpetVal.toLocaleString('en-IN')} sqft` : (superVal ? `${superVal.toLocaleString('en-IN')} sqft` : '—')}
+      </span>
+      {superVal > 0 && (
+        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">
+          Super: {superVal.toLocaleString('en-IN')} sqft
+        </span>
+      )}
+      {effPct !== null && (
+        <span className={`inline-flex items-center gap-0.5 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full mt-0.5 ${effPct >= 68
+            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60'
+            : effPct >= 60
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-300/60 dark:border-blue-800/60'
+              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+          }`}>
+          ⚡ {effPct}% Space Efficiency
+        </span>
+      )}
+    </div>
+  )
+}
+
+function renderAdvantages(d: ProjectDetail | null): React.ReactNode {
+  const builder = d?.dna?.builder_track_record_label
+  const rera = d?.dna?.rera_compliance_label
+  const risk = deriveRisk(d)
+  const chips: React.ReactNode[] = []
+  if (builder) {
+    chips.push(
+      <span key="builder" className="inline-flex items-center gap-1 text-emerald-600">
+        <Trophy size={12} /> {builder}
+      </span>,
+    )
+  }
+  if (rera) {
+    chips.push(
+      <span key="rera" className="inline-flex items-center gap-1 text-amber-600">
+        <ShieldCheck size={12} /> {rera}
+      </span>,
+    )
+  }
+  if (risk === 'Low') {
+    chips.push(
+      <span key="risk" className="inline-flex items-center gap-1 text-emerald-600">
+        <Zap size={12} /> Low Risk
+      </span>,
+    )
+  }
+  return <div className="flex flex-col gap-1">{chips}</div>
+}
+
+function renderCons(d: ProjectDetail | null): string {
+  const reasons = d?.decision_profile?.why_avoid ?? []
+  if (reasons.length === 0) return '—'
+  return reasons.slice(0, 2).join(', ')
+}
+
+// Original risk order
 const RISK_ORDER: Record<string, number> = { Low: 3, Medium: 2, High: 1 }
+
+const MATRIX_WHITELIST = [
+  'Advisor Rating',
+  'Builder',
+  'Delivery Risk',
+  'RERA Standing',
+  'Value',
+  'Location',
+  'Lifestyle',
+  'Entry Price',
+  'Possession',
+  'Area',
+  'Advantages',
+  'Cons',
+];
 
 function winnerIdx(scores: number[]): number[] {
   const max = Math.max(...scores)
@@ -205,6 +313,25 @@ interface MatrixRow {
   winnerLabel: string
 }
 
+function starRatingRow(
+  label: string,
+  values: (string | null | undefined)[],
+  winnerLabel: string,
+): MatrixRow {
+  const scores = values.map(l => starsCount(l))
+  return {
+    label,
+    values: values.map((l, i) => (
+      <span key={i} className="inline-flex flex-col gap-0.5">
+        <StarRow count={scores[i]} size="sm" />
+        {l && <span className="text-[9px] text-gray-500 dark:text-gray-400">{l}</span>}
+      </span>
+    )),
+    winners: winnerIdx(scores),
+    winnerLabel,
+  }
+}
+
 function buildMatrix(details: (ProjectDetail | null)[], projects: ProjectCard[]): MatrixRow[] {
   const rows: MatrixRow[] = []
 
@@ -228,18 +355,7 @@ function buildMatrix(details: (ProjectDetail | null)[], projects: ProjectCard[])
 
   // Builder Standing
   const builderLabels = details.map(d => d?.dna?.builder_track_record_label)
-  const builderScores = builderLabels.map(l => starsCount(l))
-  rows.push({
-    label: 'Builder',
-    values: builderLabels.map((l, i) => (
-      <span key={i} className="inline-flex flex-col gap-0.5">
-        <StarRow count={builderScores[i]} size="sm" />
-        {l && <span className="text-[9px] text-gray-500 dark:text-gray-400">{l}</span>}
-      </span>
-    )),
-    winners: winnerIdx(builderScores),
-    winnerLabel: 'Best Builder',
-  })
+  rows.push(starRatingRow('Builder', builderLabels, 'Best Builder'))
 
   // Delivery Risk
   const risks = details.map(d => deriveRisk(d))
@@ -248,8 +364,8 @@ function buildMatrix(details: (ProjectDetail | null)[], projects: ProjectCard[])
     values: risks.map((r, i) => {
       const cls =
         r === 'Low' ? 'text-emerald-600 dark:text-emerald-400' :
-        r === 'High' ? 'text-red-500 dark:text-red-400' :
-        'text-amber-500'
+          r === 'High' ? 'text-red-500 dark:text-red-400' :
+            'text-amber-500'
       const dot = r === 'Low' ? '🟢' : r === 'High' ? '🔴' : '🟡'
       return (
         <span key={i} className={`text-[11px] font-bold ${cls}`}>{dot} {r}</span>
@@ -263,68 +379,28 @@ function buildMatrix(details: (ProjectDetail | null)[], projects: ProjectCard[])
   const reraLabels = details.map(d => d?.dna?.rera_compliance_label)
   const reraScores = reraLabels.map(l => starsCount(l))
   if (reraScores.some(s => s > 0)) {
-    rows.push({
-      label: 'RERA Standing',
-      values: reraLabels.map((l, i) => (
-        <span key={i} className="inline-flex flex-col gap-0.5">
-          <StarRow count={reraScores[i]} size="sm" />
-          {l && <span className="text-[9px] text-gray-500 dark:text-gray-400">{l}</span>}
-        </span>
-      )),
-      winners: winnerIdx(reraScores),
-      winnerLabel: 'Best Compliance',
-    })
+    rows.push(starRatingRow('RERA Standing', reraLabels, 'Best Compliance'))
   }
 
   // Value Position
   const valueLabels = details.map(d => d?.dna?.price_position_label)
   const valueScores = valueLabels.map(l => starsCount(l))
   if (valueScores.some(s => s > 0)) {
-    rows.push({
-      label: 'Value',
-      values: valueLabels.map((l, i) => (
-        <span key={i} className="inline-flex flex-col gap-0.5">
-          <StarRow count={valueScores[i]} size="sm" />
-          {l && <span className="text-[9px] text-gray-500 dark:text-gray-400">{l}</span>}
-        </span>
-      )),
-      winners: winnerIdx(valueScores),
-      winnerLabel: 'Best Value',
-    })
+    rows.push(starRatingRow('Value', valueLabels, 'Best Value'))
   }
 
   // Location Quality
   const locLabels = details.map(d => d?.dna?.locality_label)
   const locScores = locLabels.map(l => starsCount(l))
   if (locScores.some(s => s > 0)) {
-    rows.push({
-      label: 'Location',
-      values: locLabels.map((l, i) => (
-        <span key={i} className="inline-flex flex-col gap-0.5">
-          <StarRow count={locScores[i]} size="sm" />
-          {l && <span className="text-[9px] text-gray-500 dark:text-gray-400">{l}</span>}
-        </span>
-      )),
-      winners: winnerIdx(locScores),
-      winnerLabel: 'Best Location',
-    })
+    rows.push(starRatingRow('Location', locLabels, 'Best Location'))
   }
 
   // Amenity Depth
   const amenityLabels = details.map(d => d?.dna?.amenity_depth_label)
   const amenityScores = amenityLabels.map(l => starsCount(l))
   if (amenityScores.some(s => s > 0)) {
-    rows.push({
-      label: 'Lifestyle',
-      values: amenityLabels.map((l, i) => (
-        <span key={i} className="inline-flex flex-col gap-0.5">
-          <StarRow count={amenityScores[i]} size="sm" />
-          {l && <span className="text-[9px] text-gray-500 dark:text-gray-400">{l}</span>}
-        </span>
-      )),
-      winners: winnerIdx(amenityScores),
-      winnerLabel: 'Best Amenities',
-    })
+    rows.push(starRatingRow('Lifestyle', amenityLabels, 'Best Amenities'))
   }
 
   // Entry Price (lowest wins)
@@ -359,7 +435,41 @@ function buildMatrix(details: (ProjectDetail | null)[], projects: ProjectCard[])
     winnerLabel: 'Ready to Move',
   })
 
-  return rows
+  // Area — only show if at least one project has area data
+  if (details.some(d => d?.unit_types?.[0]?.super_area_sqft || d?.unit_types?.[0]?.carpet_area_sqft)) {
+    rows.push({
+      label: 'Area',
+      values: details.map(d => formatArea(d)),
+      winners: [],
+      winnerLabel: '',
+    });
+  }
+
+  // Advantages — only show if at least one project has a builder/RERA/risk signal
+  if (details.some(d => d?.dna?.builder_track_record_label || d?.dna?.rera_compliance_label || deriveRisk(d) === 'Low')) {
+    rows.push({
+      label: 'Advantages',
+      values: details.map(d => renderAdvantages(d)),
+      winners: [],
+      winnerLabel: '',
+    });
+  }
+
+  // Cons — only show if at least one project has a recorded reason to avoid
+  if (details.some(d => (d?.decision_profile?.why_avoid?.length ?? 0) > 0)) {
+    rows.push({
+      label: 'Cons',
+      values: details.map(d => renderCons(d)),
+      winners: [],
+      winnerLabel: '',
+    });
+  }
+
+  // Reorder rows according to whitelist
+  const orderedRows: MatrixRow[] = MATRIX_WHITELIST
+    .map(label => rows.find(r => r.label === label))
+    .filter((r): r is MatrixRow => !!r);
+  return orderedRows
 }
 
 // ── Section wrapper ───────────────────────────────────────────────────────────
@@ -403,11 +513,10 @@ function ProjectMiniCard({
   const isRTM = project.status === 'ready_to_move'
 
   return (
-    <div className={`flex-1 rounded-2xl overflow-hidden border transition-all duration-300 ${
-      isWinner
+    <div className={`flex-1 rounded-2xl overflow-hidden border transition-all duration-300 ${isWinner
         ? 'border-blue-500/30 dark:border-blue-400/30 ring-2 ring-blue-500/10 shadow-[0_4px_20px_rgba(59,130,246,0.1)]'
         : 'border-black/[0.04] dark:border-white/[0.05] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)]'
-    } bg-white dark:bg-[#111]`}>
+      } bg-white dark:bg-[#111]`}>
       {/* Image */}
       <div className="relative h-[110px] bg-zinc-50 dark:bg-zinc-900">
         {activeUrl && !allFailed ? (
@@ -448,10 +557,9 @@ function ProjectMiniCard({
         )}
 
         {/* Status */}
-        <div className={`absolute bottom-2 left-2 text-[9px] font-medium px-1.5 py-0.5 rounded-full shadow-sm backdrop-blur-md ${
-          isRTM ? 'bg-emerald-500/90 text-white' : 'bg-zinc-800/80 text-zinc-100'
+        <div className={`absolute bottom-2 left-2 text-[9px] font-medium px-1.5 py-0.5 rounded-full shadow-sm backdrop-blur-md ${isRTM ? 'bg-emerald-500/90 text-white' : 'bg-zinc-800/80 text-white'
 
-        }`}>
+          }`}>
           {isRTM ? '✓ Ready' : (project.possession_label ?? 'UC')}
         </div>
       </div>
@@ -479,8 +587,8 @@ function Accordion({ title, icon: Icon, children, defaultOpen = false }: { title
   const [isOpen, setIsOpen] = useState(defaultOpen)
   return (
     <div className="border border-gray-100 dark:border-gray-700/60 rounded-xl overflow-hidden mb-3 bg-white dark:bg-gray-800/40 shadow-sm">
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
+      <button
+        onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/60 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
         <div className="flex items-center gap-2">
@@ -526,6 +634,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
     projects.map(() => null)
   )
   const [loading, setLoading] = useState(true)
+  const [onlyDifferences, setOnlyDifferences] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -567,13 +676,26 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
     [details]
   )
 
+  const visibleMatrixRows = useMemo(() => {
+    if (!onlyDifferences) return matrixRows
+    return matrixRows.filter(row => {
+      if (row.winners.length > 0 && row.winners.length < projects.length) return true
+      const firstVal = typeof row.values[0] === 'string' ? row.values[0] : (row.values[0] ? String(row.values[0]) : '')
+      const hasDifference = row.values.some(v => {
+        const strVal = typeof v === 'string' ? v : (v ? String(v) : '')
+        return strVal !== firstVal
+      })
+      return hasDifference
+    })
+  }, [matrixRows, onlyDifferences, projects.length])
+
   const EXEC_CATS = [
-    { key: 'overall',  label: 'Best Overall',  icon: '🏆' },
-    { key: 'value',    label: 'Best Value',     icon: '💰' },
-    { key: 'risk',     label: 'Lowest Risk',    icon: '🛡️' },
-    { key: 'family',   label: 'Best Family',    icon: '👨‍👩‍👧' },
-    { key: 'investor', label: 'Best Investor',  icon: '📈' },
-    { key: 'luxury',   label: 'Best Luxury',    icon: '✨' },
+    { key: 'overall', label: 'Best Overall', icon: '🏆' },
+    { key: 'value', label: 'Best Value', icon: '💰' },
+    { key: 'risk', label: 'Lowest Risk', icon: '🛡️' },
+    { key: 'family', label: 'Best Family', icon: '👨‍👩‍👧' },
+    { key: 'investor', label: 'Best Investor', icon: '📈' },
+    { key: 'luxury', label: 'Best Luxury', icon: '✨' },
   ] as const
 
 
@@ -662,11 +784,10 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                   return (
                     <div
                       key={cat.key}
-                      className={`rounded-xl px-3 py-2.5 border transition-colors ${
-                        w
+                      className={`rounded-xl px-3 py-2.5 border transition-colors ${w
                           ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                           : 'bg-gray-50/60 dark:bg-gray-800/30 border-gray-100 dark:border-gray-700/40 opacity-60'
-                      }`}
+                        }`}
                     >
                       <span className="text-[15px] leading-none block mb-1">{cat.icon}</span>
                       <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide block">
@@ -683,7 +804,25 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
           )}
 
           {/* ── Decision Matrix ──────────────────────────────────────────── */}
-          <Section title="Decision Matrix" icon={TrendingUp}>
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp size={12} className="text-gray-400 flex-shrink-0" />
+                <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.12em]">
+                  Decision Matrix
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOnlyDifferences(!onlyDifferences)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer border ${onlyDifferences
+                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800 shadow-2xs'
+                    : 'bg-slate-100/80 text-slate-600 border-slate-200/80 dark:bg-slate-800/80 dark:text-slate-400 dark:border-slate-700 hover:bg-slate-200'
+                  }`}
+              >
+                <span>{onlyDifferences ? '✓ Differences Only' : 'Show Differences Only'}</span>
+              </button>
+            </div>
             {isMulti ? (
               <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative scrollbar-hide">
                 <table className="w-full text-left border-collapse min-w-max">
@@ -695,11 +834,10 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                       {projects.map((p, i) => (
                         <th
                           key={p.id}
-                          className={`px-4 py-3 text-[11px] font-bold tracking-wide text-center w-[160px] ${
-                            overallWinnerIdx === i
+                          className={`px-4 py-3 text-[11px] font-bold tracking-wide text-center w-[160px] ${overallWinnerIdx === i
                               ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20'
                               : 'text-slate-700 dark:text-slate-300'
-                          }`}
+                            }`}
                         >
                           {overallWinnerIdx === i && <span className="text-blue-500 mr-1">🏆</span>}
                           {p.name.split(' ').slice(0, 2).join(' ')}
@@ -711,7 +849,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#111]">
-                    {matrixRows.map((row, ri) => (
+                    {visibleMatrixRows.map((row) => (
                       <tr key={row.label} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="px-4 py-3.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                           {row.label}
@@ -719,18 +857,16 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                         {row.values.map((val, i) => (
                           <td
                             key={i}
-                            className={`px-4 py-3.5 text-center transition-colors ${
-                              row.winners.includes(i)
+                            className={`px-4 py-3.5 text-center transition-colors ${row.winners.includes(i)
                                 ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
                                 : ''
-                            }`}
+                              }`}
                           >
                             {typeof val === 'string' ? (
-                              <span className={`text-[12px] ${
-                                row.winners.includes(i)
+                              <span className={`text-[12px] ${row.winners.includes(i)
                                   ? 'font-semibold text-emerald-700 dark:text-emerald-400'
                                   : 'text-slate-700 dark:text-slate-300'
-                              }`}>
+                                }`}>
                                 {val}
                               </span>
                             ) : val}
@@ -755,7 +891,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
             ) : (
               // 2 projects: center-label layout
               <div className="space-y-2">
-                {matrixRows.map(row => {
+                {visibleMatrixRows.map(row => {
                   const leftWins = row.winners.includes(0)
                   const rightWins = row.winners.includes(1)
                   const tied = leftWins && rightWins
@@ -765,21 +901,19 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                       className="flex items-stretch rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm"
                     >
                       {/* Left cell */}
-                      <div className={`flex-1 px-4 py-3.5 flex items-center gap-2 min-w-0 ${
-                        leftWins && !tied
+                      <div className={`flex-1 px-4 py-3.5 flex items-center gap-2 min-w-0 ${leftWins && !tied
                           ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
                           : 'bg-white dark:bg-[#111]'
-                      }`}>
+                        }`}>
                         {leftWins && !tied && (
                           <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-900/40 px-2 py-1 rounded-md flex-shrink-0 whitespace-nowrap">
                             {row.winnerLabel}
                           </span>
                         )}
-                        <div className={`min-w-0 ${
-                          leftWins && !tied
+                        <div className={`min-w-0 ${leftWins && !tied
                             ? 'text-emerald-700 dark:text-emerald-400 font-medium'
                             : 'text-slate-700 dark:text-slate-300'
-                        }`}>
+                          }`}>
                           {typeof row.values[0] === 'string' ? (
                             <span className="text-[12px] truncate block">{row.values[0]}</span>
                           ) : row.values[0]}
@@ -794,16 +928,14 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                       </div>
 
                       {/* Right cell */}
-                      <div className={`flex-1 px-4 py-3.5 flex items-center justify-end gap-2 min-w-0 ${
-                        rightWins && !tied
+                      <div className={`flex-1 px-4 py-3.5 flex items-center justify-end gap-2 min-w-0 ${rightWins && !tied
                           ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
                           : 'bg-white dark:bg-[#111]'
-                      }`}>
-                        <div className={`min-w-0 text-right ${
-                          rightWins && !tied
+                        }`}>
+                        <div className={`min-w-0 text-right ${rightWins && !tied
                             ? 'text-emerald-700 dark:text-emerald-400 font-medium'
                             : 'text-slate-700 dark:text-slate-300'
-                        }`}>
+                          }`}>
                           {typeof row.values[1] === 'string' ? (
                             <span className="text-[12px] truncate block">{row.values[1]}</span>
                           ) : row.values[1]}
@@ -819,7 +951,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                 })}
               </div>
             )}
-          </Section>
+          </div>
 
           {/* ── Detailed Comparison Accordions ────────────────────────────── */}
           <Section title="Detailed Breakdown" icon={HeartHandshake}>
@@ -844,12 +976,16 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                 ))}
               </div>
             </Accordion>
-            
+
             <Accordion title="Price & Cost" icon={IndianRupee}>
               <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
                 {projects.map((p, i) => {
-                  const minCr = Math.min(...(details[i]?.unit_types || []).map((u: any) => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter((v: number) => v !== Infinity))
-                  const psf = minCr !== Infinity && minCr !== -Infinity ? `₹${minCr.toLocaleString('en-IN')}/sqft` : '--'
+                  const units = details[i]?.unit_types;
+                  const psfValues = (units && units.length > 0)
+                    ? units.map((u) => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : null).filter((v): v is number => v !== null)
+                    : [];
+                  const minCr = psfValues.length > 0 ? Math.min(...psfValues) : null;
+                  const psf = minCr !== null ? `₹${minCr.toLocaleString('en-IN')}/sqft` : '--'
                   return (
                     <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
                       <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
@@ -866,11 +1002,11 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                 })}
               </div>
             </Accordion>
-            
+
             <Accordion title="Investment Potential" icon={TrendingUp}>
               <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
                 {projects.map((p, i) => {
-                  const intel = (details[i] as any)?.decision_profile?.intelligence_data?.investment_insights
+                  const intel = (details[i]?.decision_profile?.intelligence_data as IntelligenceData | undefined)?.investment_insights
                   return (
                     <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
                       <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
@@ -890,7 +1026,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                 })}
               </div>
             </Accordion>
-            
+
             <Accordion title="Lifestyle & Build" icon={Trees}>
               <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
                 {projects.map((p, i) => (
@@ -904,11 +1040,11 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                 ))}
               </div>
             </Accordion>
-            
+
             <Accordion title="Social Proof" icon={Users}>
               <div className="flex divide-x divide-gray-100 dark:divide-gray-700/60">
                 {projects.map((p, i) => {
-                  const sp = (details[i] as any)?.decision_profile?.intelligence_data?.social_proof
+                  const sp = (details[i]?.decision_profile?.intelligence_data as IntelligenceData | undefined)?.social_proof
                   return (
                     <div key={p.id} className="flex-1 p-3 space-y-2 text-[11px]">
                       <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
@@ -944,11 +1080,10 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                   return (
                     <div
                       key={p.id}
-                      className={`${isMulti ? 'flex-none w-[180px]' : ''} rounded-xl border p-3 ${
-                        isW
+                      className={`${isMulti ? 'flex-none w-[180px]' : ''} rounded-xl border p-3 ${isW
                           ? 'border-[#0064E5]/30 dark:border-[#0064E5]/40 bg-blue-50/40 dark:bg-blue-900/15'
                           : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800'
-                      }`}
+                        }`}
                     >
                       <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1.5 truncate">
                         {p.builder.name}
@@ -1021,11 +1156,10 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                         {personas.slice(0, 3).map(persona => (
                           <span
                             key={persona}
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              persona === profile.primary_persona
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${persona === profile.primary_persona
                                 ? 'bg-[#0064E5]/10 text-[#0064E5] dark:text-blue-400 dark:bg-blue-900/30'
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                            }`}
+                              }`}
                           >
                             {PERSONA_LABEL[persona ?? ''] ?? persona}
                           </span>
@@ -1049,43 +1183,43 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
               (d?.decision_profile?.why_buy?.length ?? 0) > 0 ||
               (d?.decision_profile?.why_avoid?.length ?? 0) > 0
           ) && (
-            <Section title="Strengths & Concerns">
-              <div className={`${isMulti ? 'flex gap-2.5 overflow-x-auto' : 'grid grid-cols-2 gap-2.5'}`}>
-                {projects.map((p, i) => {
-                  const dp = details[i]?.decision_profile
-                  return (
-                    <div
-                      key={p.id}
-                      className={`${isMulti ? 'flex-none w-[200px]' : ''} rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden`}
-                    >
-                      <div className="px-3 py-2 bg-gray-50/80 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wide line-clamp-1">
-                          {p.name}
-                        </span>
+              <Section title="Strengths & Concerns">
+                <div className={`${isMulti ? 'flex gap-2.5 overflow-x-auto' : 'grid grid-cols-2 gap-2.5'}`}>
+                  {projects.map((p, i) => {
+                    const dp = details[i]?.decision_profile
+                    return (
+                      <div
+                        key={p.id}
+                        className={`${isMulti ? 'flex-none w-[200px]' : ''} rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden`}
+                      >
+                        <div className="px-3 py-2 bg-gray-50/80 dark:bg-gray-900/60 border-b border-gray-100 dark:border-gray-700">
+                          <span className="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wide line-clamp-1">
+                            {p.name}
+                          </span>
+                        </div>
+                        <div className="p-3 space-y-1.5">
+                          {dp?.why_buy?.slice(0, 3).map((w, wi) => (
+                            <div key={wi} className="flex items-start gap-1.5">
+                              <span className="text-emerald-500 text-[11px] flex-shrink-0 leading-relaxed">✓</span>
+                              <span className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">{w}</span>
+                            </div>
+                          ))}
+                          {dp?.why_avoid?.slice(0, 2).map((w, wi) => (
+                            <div key={wi} className="flex items-start gap-1.5">
+                              <span className="text-red-400 text-[11px] flex-shrink-0 leading-relaxed">✗</span>
+                              <span className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">{w}</span>
+                            </div>
+                          ))}
+                          {!dp && (
+                            <p className="text-[11px] text-gray-400 italic">No analysis available yet.</p>
+                          )}
+                        </div>
                       </div>
-                      <div className="p-3 space-y-1.5">
-                        {dp?.why_buy?.slice(0, 3).map((w, wi) => (
-                          <div key={wi} className="flex items-start gap-1.5">
-                            <span className="text-emerald-500 text-[11px] flex-shrink-0 leading-relaxed">✓</span>
-                            <span className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">{w}</span>
-                          </div>
-                        ))}
-                        {dp?.why_avoid?.slice(0, 2).map((w, wi) => (
-                          <div key={wi} className="flex items-start gap-1.5">
-                            <span className="text-red-400 text-[11px] flex-shrink-0 leading-relaxed">✗</span>
-                            <span className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">{w}</span>
-                          </div>
-                        ))}
-                        {!dp && (
-                          <p className="text-[11px] text-gray-400 italic">No analysis available yet.</p>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </Section>
-          )}
+                    )
+                  })}
+                </div>
+              </Section>
+            )}
 
           {/* ── Advisor Take (per-project decision_thesis) ────────────────────── */}
           {details.some(d => d?.decision_profile?.decision_thesis) && (

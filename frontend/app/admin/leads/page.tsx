@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { 
   Phone, 
   Search, 
@@ -12,21 +12,23 @@ import {
   Copy, 
   MessageSquare, 
   Filter, 
-  Sparkles, 
   BarChart3, 
   ChevronRight, 
+  ChevronDown,
   X,
   CheckCircle2,
   AlertCircle,
   Eye,
   Bookmark,
-  ChevronDown,
   Calendar,
   Wallet,
   ShieldCheck,
-  Check
+  Check,
+  RotateCcw,
+  ExternalLink,
+  Users
 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import { AnimatePresence, m } from 'framer-motion'
 import { adminFetch } from '@/lib/adminFetch'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -61,34 +63,37 @@ const STATUS_CONFIG: Record<StatusType, { label: string; bg: string; text: strin
     bg: 'bg-blue-50/80 dark:bg-blue-950/40 hover:bg-blue-100/80 dark:hover:bg-blue-900/60',
     text: 'text-blue-700 dark:text-blue-300',
     border: 'border-blue-200/80 dark:border-blue-800/80',
-    dot: 'bg-blue-500 shadow-xs shadow-blue-500/50',
+    dot: 'bg-blue-500 shadow-2xs shadow-blue-500/50',
   },
   contacted: {
     label: 'Contacted',
     bg: 'bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100/80 dark:hover:bg-amber-900/60',
     text: 'text-amber-700 dark:text-amber-300',
     border: 'border-amber-200/80 dark:border-amber-800/80',
-    dot: 'bg-amber-500 shadow-xs shadow-amber-500/50',
+    dot: 'bg-amber-500 shadow-2xs shadow-amber-500/50',
   },
   qualified: {
     label: 'Qualified',
     bg: 'bg-emerald-50/80 dark:bg-emerald-950/40 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60',
     text: 'text-emerald-700 dark:text-emerald-300',
     border: 'border-emerald-200/80 dark:border-emerald-800/80',
-    dot: 'bg-emerald-500 shadow-xs shadow-emerald-500/50',
+    dot: 'bg-emerald-500 shadow-2xs shadow-emerald-500/50',
   },
   lost: {
     label: 'Lost',
     bg: 'bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100/80 dark:hover:bg-rose-900/60',
     text: 'text-rose-700 dark:text-rose-300',
     border: 'border-rose-200/80 dark:border-rose-800/80',
-    dot: 'bg-rose-500 shadow-xs shadow-rose-500/50',
+    dot: 'bg-rose-500 shadow-2xs shadow-rose-500/50',
   },
 }
 
 export default function BuilderLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date())
+
   const [statusFilter, setStatusFilter] = useState<'all' | StatusType>('all')
   const [tierFilter, setTierFilter] = useState<'all' | 'HOT' | 'WARM' | 'COLD'>('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -99,10 +104,56 @@ export default function BuilderLeadsPage() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [menuCoords, setMenuCoords] = useState<{ top: number; left: number } | null>(null)
 
+  const isFetchingRef = useRef(false)
+
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    setToast({ message, type })
+    toastTimerRef.current = setTimeout(() => setToast(null), 3000)
+  }, [])
+
+  const fetchLeads = useCallback(async (isManualRefresh = false) => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+
+    if (isManualRefresh) setIsRefreshing(true)
+
+    const fetchWithRetry = async (attempt = 1): Promise<Lead[]> => {
+      try {
+        const res = await adminFetch(`/admin/leads?status=${statusFilter}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        return data.leads || []
+      } catch (err) {
+        if (attempt < 2) {
+          await new Promise(r => setTimeout(r, 350))
+          return fetchWithRetry(attempt + 1)
+        }
+        throw err
+      }
+    }
+
+    try {
+      const fetched = await fetchWithRetry()
+      setLeads(fetched)
+      setLastRefreshedAt(new Date())
+
+      if (isManualRefresh) {
+        showToast('Leads pipeline refreshed', 'success')
+      }
+    } catch {
+      showToast('Failed to fetch lead pipeline', 'error')
+    } finally {
+      setLoading(false)
+      setIsRefreshing(false)
+      isFetchingRef.current = false
+    }
+  }, [statusFilter, showToast])
+
   useEffect(() => {
     fetchLeads()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter])
+  }, [fetchLeads])
 
   // Global Escape Key Listener to close dialogs & popovers
   useEffect(() => {
@@ -150,21 +201,6 @@ export default function BuilderLeadsPage() {
     }
   }
 
-  const fetchLeads = async () => {
-    try {
-      setLoading(true)
-      const res = await adminFetch(`/admin/leads?status=${statusFilter}`)
-      if (res.ok) {
-        const data = await res.json()
-        setLeads(data.leads || [])
-      }
-    } catch {
-      console.error('Failed to fetch leads')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const updateLeadStatus = async (leadId: string, newStatus: StatusType) => {
     try {
       setActiveMenu(null)
@@ -179,24 +215,18 @@ export default function BuilderLeadsPage() {
         if (selectedLead?.id === leadId) {
           setSelectedLead(prev => prev ? { ...prev, status: newStatus } : null)
         }
-        showToast(`Status updated to ${STATUS_CONFIG[newStatus].label}`, 'success')
+        showToast(`Lead marked as ${STATUS_CONFIG[newStatus].label}`, 'success')
       } else {
         showToast(`Failed to update lead status`, 'error')
       }
-    } catch (err) {
-      console.error('Update failed:', err)
+    } catch {
       showToast('Error updating lead status', 'error')
     }
   }
 
-  const showToast = (message: string, type: 'success' | 'error') => {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
-
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, label = 'Phone') => {
     navigator.clipboard.writeText(text)
-    showToast(`Copied +91 ${text}`, 'success')
+    showToast(`Copied ${label}`, 'success')
   }
 
   // Filtered leads
@@ -233,15 +263,15 @@ export default function BuilderLeadsPage() {
     switch (tier) {
       case 'HOT':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-            <Flame className="w-3.5 h-3.5 fill-rose-500 text-rose-500 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80">
+            <Flame className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
             <span>HOT</span>
             {score !== null && <span className="font-mono text-[11px] opacity-75">· {score}</span>}
           </span>
         )
       case 'WARM':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/80">
             <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
             <span>WARM</span>
             {score !== null && <span className="font-mono text-[11px] opacity-75">· {score}</span>}
@@ -249,7 +279,7 @@ export default function BuilderLeadsPage() {
         )
       case 'COLD':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/80">
             <Snowflake className="w-3.5 h-3.5 text-sky-500" />
             <span>COLD</span>
             {score !== null && <span className="font-mono text-[11px] opacity-75">· {score}</span>}
@@ -257,7 +287,7 @@ export default function BuilderLeadsPage() {
         )
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-400">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
             Unscored
           </span>
         )
@@ -274,104 +304,121 @@ export default function BuilderLeadsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-16 font-sans select-none">
+    <div className="space-y-6 pb-16 font-sans select-none max-w-6xl mx-auto py-8">
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
               Lead Intelligence & Pipeline
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/80">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live Sync
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400">
             Real-time buyer inquiries, qualification scores, and automated CRM webhooks
           </p>
         </div>
+
+        {/* Refresh Action Button & Live Status */}
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 hidden sm:inline-block">
+            Updated {formatDistanceToNow(lastRefreshedAt, { addSuffix: true })}
+          </span>
+
+          <button
+            onClick={() => fetchLeads(true)}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-800 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-[0.98] cursor-pointer disabled:opacity-60"
+            title="Refresh lead pipeline"
+          >
+            <RotateCcw size={14} className={isRefreshing ? 'animate-spin text-blue-600' : 'text-zinc-500'} />
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* KPI Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* KPI Metric Cards — High Taste Zinc Tokens */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Inquiries */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Total Inquiries
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center">
               <UserCheck className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.total}
             </span>
-            <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
               {stats.newLeads} uncontacted
             </span>
           </div>
         </div>
 
         {/* Hot Leads */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Hot Leads
             </span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-              <Flame className="w-4 h-4 fill-rose-500" />
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center">
+              <Flame className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.hot}
             </span>
-            <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
               {stats.total > 0 ? `${Math.round((stats.hot / stats.total) * 100)}% of total` : '0%'}
             </span>
           </div>
         </div>
 
         {/* Qualified */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Qualified Leads
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.qualified}
             </span>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               {stats.warm} warm
             </span>
           </div>
         </div>
 
         {/* Avg Score */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Avg Qualification
             </span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center">
               <BarChart3 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
               {loading ? <Skeleton className="h-8 w-16" /> : `${stats.avgScore}/100`}
             </span>
-            <div className="w-16 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden self-center">
+            <div className="w-16 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden self-center border border-zinc-200/60 dark:border-zinc-700">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 via-amber-500 to-rose-500 rounded-full" 
+                className="h-full bg-zinc-900 dark:bg-white rounded-full transition-all duration-300" 
                 style={{ width: `${Math.min(100, stats.avgScore)}%` }} 
               />
             </div>
@@ -379,83 +426,69 @@ export default function BuilderLeadsPage() {
         </div>
       </div>
 
-      {/* Control Toolbar: Filters, Search & Dropdown Popovers */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Status Filters Pill Group */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
-          {(['all', 'new', 'contacted', 'qualified', 'lost'] as const).map(status => (
-            <button
-              key={status}
-              onClick={() => {
-                setActiveMenu(null)
-                setMenuCoords(null)
-                setStatusFilter(status)
-              }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap capitalize border ${
-                statusFilter === status
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs'
-                  : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              {status === 'all' ? 'All Leads' : status}
+      {/* Control Toolbar: Filter Pills & Search */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Search Input */}
+        <div className="group flex-1 w-full flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-2xs focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+          <Search size={15} className="text-zinc-400 group-focus-within:text-blue-500 transition-colors" />
+          <input
+            type="text"
+            placeholder="Search buyer name, phone, project..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="flex-1 bg-transparent border-none outline-none text-xs font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
+              <X className="w-3.5 h-3.5" />
             </button>
-          ))}
+          )}
         </div>
 
-        {/* Right side controls: Search + Premium Tier Filter Popover */}
-        <div className="flex items-center gap-3">
-          {/* Custom Tier Filter Button */}
-          <div className="relative">
+        {/* Tier Selector & Segmented Filter Pills */}
+        <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto overflow-x-auto">
+          {/* Custom Tier Popover Trigger */}
+          <div className="relative shrink-0">
             <button
               onClick={(e) => togglePopover('tier', e)}
-              className={`px-3.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all shadow-2xs ${
-                tierFilter === 'HOT'
-                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
-                  : tierFilter === 'WARM'
-                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
-                  : tierFilter === 'COLD'
-                  ? 'bg-sky-500/10 border-sky-500/30 text-sky-600 dark:text-sky-400'
-                  : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
+              className="px-3.5 py-2 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold flex items-center gap-2 transition-all shadow-2xs hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
             >
-              {tierFilter === 'HOT' && <Flame className="w-3.5 h-3.5 fill-rose-500 text-rose-500 animate-pulse" />}
-              {tierFilter === 'WARM' && <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />}
-              {tierFilter === 'COLD' && <Snowflake className="w-3.5 h-3.5 text-sky-500" />}
-              {tierFilter === 'all' && <Filter className="w-3.5 h-3.5 text-slate-400" />}
+              <Filter className="w-3.5 h-3.5 text-zinc-400" />
               <span>{tierFilter === 'all' ? 'All Tiers' : `${tierFilter} Tier`}</span>
               <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 ${activeMenu === 'tier' ? 'rotate-180' : ''}`} />
             </button>
           </div>
 
-          {/* Search Input */}
-          <div className="relative flex-1 md:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search name, phone, project..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs font-medium text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          {/* Segmented Filter Pills */}
+          <div className="flex items-center p-1 bg-zinc-100 dark:bg-zinc-800/60 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 shrink-0 overflow-x-auto">
+            {(['all', 'new', 'contacted', 'qualified', 'lost'] as const).map(st => (
+              <button
+                key={st}
+                onClick={() => {
+                  setActiveMenu(null)
+                  setMenuCoords(null)
+                  setStatusFilter(st)
+                }}
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap capitalize ${
+                  statusFilter === st
+                    ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-2xs font-bold'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                }`}
               >
-                <X className="w-3.5 h-3.5" />
+                {st === 'all' ? 'All Leads' : st}
               </button>
-            )}
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Main Leads Data Table Card */}
+      {/* Main Data Table Card */}
       {loading ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-2xs">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
           <div className="p-6 space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center justify-between gap-4">
-                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-10 w-10 rounded-xl" />
                 <Skeleton className="h-4 w-32 flex-1" />
                 <Skeleton className="h-4 w-28" />
                 <Skeleton className="h-6 w-20 rounded-full" />
@@ -465,97 +498,72 @@ export default function BuilderLeadsPage() {
           </div>
         </div>
       ) : filteredLeads.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3">
-            <Search className="w-6 h-6" />
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-12 text-center shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mx-auto mb-3">
+            <Users className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">No leads match your search</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">No leads match your search</h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
             Try adjusting your search query or filters to discover matching inquiries.
           </p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-2xs">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  <th className="px-6 py-4">Buyer Name</th>
-                  <th className="px-6 py-4">Contact Info</th>
-                  <th className="px-6 py-4">Target Property</th>
-                  <th className="px-6 py-4">Qualification</th>
+                <tr className="bg-zinc-50/70 dark:bg-zinc-800/40 border-b border-zinc-200/80 dark:border-zinc-800 text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                  <th className="px-6 py-4">Buyer Lead</th>
+                  <th className="px-6 py-4">Target Project</th>
+                  <th className="px-6 py-4">Qualification Tier</th>
+                  <th className="px-6 py-4">Inquiry Date</th>
                   <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Submitted</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-xs">
                 {filteredLeads.map(lead => {
-                  const currentStatusCfg = STATUS_CONFIG[lead.status] || STATUS_CONFIG.new
+                  const cfg = STATUS_CONFIG[lead.status] || STATUS_CONFIG.new
                   const menuKey = `status-${lead.id}`
                   const isMenuOpen = activeMenu === menuKey
 
                   return (
-                    <tr 
-                      key={lead.id} 
-                      className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                    <tr
+                      key={lead.id}
                       onClick={() => {
                         setActiveMenu(null)
                         setMenuCoords(null)
                         setSelectedLead(lead)
                       }}
+                      className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition-colors group cursor-pointer"
                     >
-                      {/* Buyer Name & Avatar */}
+                      {/* Buyer Lead Info */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-xs flex items-center justify-center shadow-xs shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-xs flex items-center justify-center shadow-2xs shrink-0">
                             {getInitials(lead.name)}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <p className="font-bold text-zinc-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                               {lead.name}
                             </p>
-                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
-                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              <span>{lead.user_id ? 'Registered Buyer' : 'Guest Visitor'}</span>
-                            </div>
+                            <p className="text-[11px] font-mono text-zinc-500 font-semibold mt-0.5">
+                              {lead.phone}
+                            </p>
                           </div>
                         </div>
                       </td>
 
-                      {/* Contact Info */}
-                      <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">
-                            +91 {lead.phone}
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(lead.phone)}
-                            title="Copy phone number"
-                            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                          </button>
-                          <a
-                            href={`https://wa.me/91${lead.phone}?text=${encodeURIComponent(`Hi ${lead.name}, thank you for reaching out regarding ${lead.project_name || 'properties'} on RealtyPals.`)}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="Open WhatsApp chat"
-                            className="p-1 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </td>
-
-                      {/* Target Property */}
+                      {/* Target Project */}
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[180px]">
-                            {lead.project_name || 'General Inquiry'}
-                          </span>
-                        </div>
+                        {lead.project_name ? (
+                          <div className="flex items-center gap-1.5 font-semibold text-zinc-800 dark:text-zinc-200">
+                            <Building2 className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                            <span className="truncate max-w-[180px]">{lead.project_name}</span>
+                          </div>
+                        ) : (
+                          <span className="text-zinc-400 text-xs italic">General Inquiry</span>
+                        )}
                       </td>
 
                       {/* Qualification Tier */}
@@ -563,28 +571,28 @@ export default function BuilderLeadsPage() {
                         {getTierBadge(lead.lead_tier, lead.lead_score)}
                       </td>
 
+                      {/* Submitted Date */}
+                      <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+                        <span title={format(new Date(lead.created_at), 'PPP p')}>
+                          {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
+                        </span>
+                      </td>
+
                       {/* Interactive Status Button */}
                       <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={(e) => togglePopover(menuKey, e)}
-                          className={`px-3 py-1.5 rounded-xl font-bold border text-xs flex items-center justify-between gap-2 transition-all shadow-2xs ${currentStatusCfg.bg} ${currentStatusCfg.text} ${currentStatusCfg.border}`}
+                          className={`px-3 py-1.5 rounded-xl font-bold border text-xs flex items-center justify-between gap-2 transition-all shadow-2xs cursor-pointer ${cfg.bg} ${cfg.text} ${cfg.border}`}
                         >
                           <span className="flex items-center gap-1.5">
-                            <span className={`w-2 h-2 rounded-full ${currentStatusCfg.dot}`} />
-                            <span>{currentStatusCfg.label}</span>
+                            <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                            <span>{cfg.label}</span>
                           </span>
                           <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} />
                         </button>
                       </td>
 
-                      {/* Submitted Date */}
-                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                        <span title={formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}>
-                          {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
-                        </span>
-                      </td>
-
-                      {/* Details Action Button */}
+                      {/* Actions */}
                       <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => {
@@ -592,10 +600,10 @@ export default function BuilderLeadsPage() {
                             setMenuCoords(null)
                             setSelectedLead(lead)
                           }}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-bold transition-all shadow-2xs"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/80 text-zinc-700 dark:text-zinc-200 font-semibold transition-all shadow-2xs cursor-pointer"
                         >
-                          <span>Details</span>
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Review</span>
+                          <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
                         </button>
                       </td>
                     </tr>
@@ -607,7 +615,7 @@ export default function BuilderLeadsPage() {
         </div>
       )}
 
-      {/* FIXED TOPMOST POPOVERS FOR LEADS PAGE */}
+      {/* FIXED POPOVER MENU FOR TIER FILTER & TABLE STATUS DROPDOWN */}
       <AnimatePresence>
         {activeMenu === 'tier' && menuCoords && (
           <m.div
@@ -616,36 +624,27 @@ export default function BuilderLeadsPage() {
             exit={{ opacity: 0, scale: 0.96, y: -4 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             style={{ top: `${menuCoords.top}px`, left: `${menuCoords.left}px` }}
-            className="fixed w-48 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xl p-1.5 z-[9999] font-sans overflow-hidden"
+            className="fixed w-40 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/90 dark:border-zinc-800 shadow-2xl py-1.5 z-[9999] font-sans overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            {(['all', 'HOT', 'WARM', 'COLD'] as const).map(tier => {
-              const isSelected = tierFilter === tier
-              return (
-                <button
-                  key={tier}
-                  onClick={() => {
-                    setTierFilter(tier)
-                    setActiveMenu(null)
-                    setMenuCoords(null)
-                  }}
-                  className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
-                    isSelected
-                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                  }`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    {tier === 'all' && <Filter className="w-3.5 h-3.5 text-slate-400" />}
-                    {tier === 'HOT' && <Flame className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
-                    {tier === 'WARM' && <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
-                    {tier === 'COLD' && <Snowflake className="w-3.5 h-3.5 text-sky-500" />}
-                    <span>{tier === 'all' ? 'All Tiers' : `${tier} Tier`}</span>
-                  </span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-slate-900 dark:text-white" />}
-                </button>
-              )
-            })}
+            {(['all', 'HOT', 'WARM', 'COLD'] as const).map(tier => (
+              <button
+                key={tier}
+                onClick={() => {
+                  setTierFilter(tier)
+                  setActiveMenu(null)
+                  setMenuCoords(null)
+                }}
+                className={`w-full px-3.5 py-2 text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                  tierFilter === tier 
+                    ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold' 
+                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
+                }`}
+              >
+                <span>{tier === 'all' ? 'All Tiers' : `${tier} Tier`}</span>
+                {tierFilter === tier && <Check className="w-3.5 h-3.5 text-zinc-900 dark:text-white" />}
+              </button>
+            ))}
           </m.div>
         )}
 
@@ -653,32 +652,32 @@ export default function BuilderLeadsPage() {
           <m.div
             initial={{ opacity: 0, scale: 0.96, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             style={{ top: `${menuCoords.top}px`, left: `${menuCoords.left}px` }}
-            className="fixed w-36 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-2xl py-1.5 z-[9999] font-sans overflow-hidden"
+            className="fixed w-36 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/90 dark:border-zinc-800 shadow-2xl py-1.5 z-[9999] font-sans overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {(['new', 'contacted', 'qualified', 'lost'] as const).map(st => {
               const lead = leads.find(l => `status-${l.id}` === activeMenu)
               if (!lead) return null
-              const cfg = STATUS_CONFIG[st]
+              const stCfg = STATUS_CONFIG[st]
               const isSelected = lead.status === st
               return (
                 <button
                   key={st}
                   onClick={() => updateLeadStatus(lead.id, st)}
-                  className={`w-full px-3 py-1.5 text-xs font-bold flex items-center justify-between transition-colors ${
+                  className={`w-full px-3 py-1.5 text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
                     isSelected 
-                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                      ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold' 
+                      : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                    <span>{cfg.label}</span>
+                    <span className={`w-2 h-2 rounded-full ${stCfg.dot}`} />
+                    <span>{stCfg.label}</span>
                   </span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-slate-900 dark:text-white" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 dark:text-white" />}
                 </button>
               )
             })}
@@ -686,44 +685,44 @@ export default function BuilderLeadsPage() {
         )}
       </AnimatePresence>
 
-      {/* CENTERED DIALOG MODAL FOR LEAD DETAILS */}
+      {/* CENTERED LEAD DETAIL REVIEW DIALOG */}
       <AnimatePresence>
         {selectedLead && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-            {/* Backdrop: clicking outside closes modal */}
-            <m.div 
+            {/* Backdrop */}
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-zinc-950/60 backdrop-blur-xs"
               onClick={() => setSelectedLead(null)}
             />
 
-            {/* Modal Dialog Card */}
-            <m.div 
-              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            {/* Modal Card */}
+            <m.div
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-              className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden font-sans z-10 my-auto"
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 340 }}
+              className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden font-sans z-10 my-auto"
               onClick={e => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800/80 flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-lg flex items-center justify-center shadow-md shrink-0">
+              <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/80 flex items-start justify-between gap-4 bg-zinc-50/50 dark:bg-zinc-900/50">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-base flex items-center justify-center shadow-xs shrink-0">
                     {getInitials(selectedLead.name)}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white truncate">
+                    <h3 className="text-xl font-extrabold text-zinc-900 dark:text-white truncate tracking-tight">
                       {selectedLead.name}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap text-xs">
                       {getTierBadge(selectedLead.lead_tier, selectedLead.lead_score)}
-                      <span className="text-slate-300 dark:text-slate-700">·</span>
-                      <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">
-                        +91 {selectedLead.phone}
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${STATUS_CONFIG[selectedLead.status].bg} ${STATUS_CONFIG[selectedLead.status].text} ${STATUS_CONFIG[selectedLead.status].border}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${STATUS_CONFIG[selectedLead.status].dot}`} />
+                        <span>{STATUS_CONFIG[selectedLead.status].label}</span>
                       </span>
                     </div>
                   </div>
@@ -731,158 +730,68 @@ export default function BuilderLeadsPage() {
 
                 <button
                   onClick={() => setSelectedLead(null)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-                {/* Target Property Card */}
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                      Property Interest
-                    </span>
-                    {selectedLead.consent_given && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        <ShieldCheck className="w-3 h-3" /> Consent Verified
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-2.5 pt-1">
-                    <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 font-bold">
-                      <Building2 className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                        {selectedLead.project_name || 'General Inquiry'}
-                      </h4>
-                      {selectedLead.project_slug && (
-                        <p className="text-[11px] font-mono text-slate-500">
-                          {selectedLead.project_slug}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Qualification Metrics Grid */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Qualification Intelligence
-                  </h4>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Buying Timeline */}
-                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 space-y-1">
-                      <div className="flex items-center gap-1.5 text-slate-400 text-xs">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>Timeline</span>
+              <div className="p-6 max-h-[65vh] overflow-y-auto space-y-4 text-xs">
+                {/* Contact & Inquiry Info */}
+                <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+                    Contact Channels
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Phone className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span className="font-mono font-bold text-zinc-900 dark:text-white">{selectedLead.phone}</span>
                       </div>
-                      <p className="font-bold text-slate-900 dark:text-white text-xs capitalize">
-                        {selectedLead.intent_tier?.replace('-', ' ') || 'Not specified'}
-                      </p>
-                    </div>
-
-                    {/* Home Loan Status */}
-                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 space-y-1">
-                      <div className="flex items-center gap-1.5 text-slate-400 text-xs">
-                        <Wallet className="w-3.5 h-3.5" />
-                        <span>Home Loan</span>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => copyToClipboard(selectedLead.phone)} className="text-zinc-400 hover:text-zinc-600 p-1 cursor-pointer">
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                        <a
+                          href={`https://wa.me/91${selectedLead.phone.replace(/^\+91/, '')}?text=${encodeURIComponent(`Hi ${selectedLead.name}, reaching out regarding your inquiry on RealtyPals.`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-emerald-600 hover:bg-emerald-50 p-1 rounded-md"
+                          title="Open WhatsApp"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
                       </div>
-                      <p className="font-bold text-slate-900 dark:text-white text-xs">
-                        {selectedLead.loan_pre_approved ? 'Pre-Approved ✅' : 'Self-Financed / Help Needed'}
-                      </p>
                     </div>
 
-                    {/* Budget */}
-                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 space-y-1">
-                      <div className="flex items-center gap-1.5 text-slate-400 text-xs">
-                        <BarChart3 className="w-3.5 h-3.5" />
-                        <span>Budget Range</span>
-                      </div>
-                      <p className="font-bold text-slate-900 dark:text-white text-xs">
-                        {selectedLead.budget_min_cr && selectedLead.budget_max_cr 
-                          ? `₹${selectedLead.budget_min_cr} - ₹${selectedLead.budget_max_cr} Cr` 
-                          : 'Flexible'}
-                      </p>
-                    </div>
-
-                    {/* Lead Score */}
-                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 space-y-1">
-                      <div className="flex items-center justify-between text-xs text-slate-400">
-                        <span className="flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                          <span>Lead Score</span>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 className="w-4 h-4 text-blue-500 shrink-0" />
+                        <span className="font-bold text-zinc-900 dark:text-white truncate">
+                          {selectedLead.project_name || 'General Inquiry'}
                         </span>
-                        <span className="font-bold text-slate-900 dark:text-white font-mono">
-                          {selectedLead.lead_score ?? 0}/100
-                        </span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mt-2">
-                        <div 
-                          className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full" 
-                          style={{ width: `${Math.min(100, selectedLead.lead_score || 0)}%` }} 
-                        />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Platform Engagement Activity */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Buyer Platform Activity
-                  </h4>
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center justify-around text-xs">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                        <Eye className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="font-black text-slate-900 dark:text-white text-sm block">
-                          {selectedLead.projects_viewed ?? 0}
-                        </span>
-                        <span className="text-slate-400 text-[11px]">Projects Viewed</span>
-                      </div>
-                    </div>
-
-                    <div className="h-8 w-px bg-slate-200 dark:bg-slate-700" />
-
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-                        <Bookmark className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="font-black text-slate-900 dark:text-white text-sm block">
-                          {selectedLead.projects_saved ?? 0}
-                        </span>
-                        <span className="text-slate-400 text-[11px]">Projects Saved</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* AI Assistant Notes */}
+                {/* AI Summary / Intent */}
                 {selectedLead.ai_summary && (
-                  <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs space-y-1">
-                    <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-300 font-bold uppercase tracking-wider">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>AI Assistant Summary</span>
-                    </div>
-                    <p className="text-purple-950 dark:text-purple-200 leading-relaxed pt-1 font-medium">
+                  <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-2">
+                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+                      AI Lead Intelligence Summary
+                    </span>
+                    <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
                       {selectedLead.ai_summary}
                     </p>
                   </div>
                 )}
 
-                {/* Status Switcher in Modal */}
-                <div className="pt-2 space-y-3">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                    Update Lead Status
+                {/* Status Switcher Section inside Modal */}
+                <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
+                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+                    Update Pipeline Status
                   </label>
                   <div className="grid grid-cols-4 gap-2">
                     {(['new', 'contacted', 'qualified', 'lost'] as const).map(st => {
@@ -892,10 +801,10 @@ export default function BuilderLeadsPage() {
                         <button
                           key={st}
                           onClick={() => updateLeadStatus(selectedLead.id, st)}
-                          className={`py-2.5 rounded-xl text-xs font-bold capitalize transition-all border flex flex-col items-center gap-1 ${
+                          className={`py-2.5 rounded-xl text-xs font-bold capitalize transition-all border flex flex-col items-center gap-1 cursor-pointer ${
                             isActive
-                              ? `${cfg.bg} ${cfg.text} ${cfg.border} ring-2 ring-blue-500/20 shadow-xs`
-                              : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                              ? `${cfg.bg} ${cfg.text} ${cfg.border} ring-2 ring-blue-500/20 shadow-2xs`
+                              : 'bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                           }`}
                         >
                           <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
@@ -907,33 +816,26 @@ export default function BuilderLeadsPage() {
                 </div>
               </div>
 
-              {/* Modal Footer Actions */}
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-end gap-3">
-                <a
-                  href={`tel:${selectedLead.phone}`}
-                  className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 shadow-xs transition-all active:scale-[0.98]"
+              {/* Modal Footer */}
+              <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between gap-4">
+                <span className="text-xs font-semibold text-zinc-500">
+                  Inquiry logged {format(new Date(selectedLead.created_at), 'PPP')}
+                </span>
+                <button
+                  onClick={() => setSelectedLead(null)}
+                  className="py-2 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold text-xs shadow-2xs hover:bg-black cursor-pointer"
                 >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>Call Buyer</span>
-                </a>
-                <a
-                  href={`https://wa.me/91${selectedLead.phone}?text=${encodeURIComponent(`Hi ${selectedLead.name}, following up on your callback request for ${selectedLead.project_name || 'RealtyPals'}.`)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-xs transition-all active:scale-[0.98]"
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  <span>WhatsApp</span>
-                </a>
+                  Close
+                </button>
               </div>
             </m.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* Toast Notification */}
+      {/* Floating Toast Banner */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 px-4 py-3 rounded-2xl text-white text-xs font-bold shadow-2xl transition-all flex items-center gap-2 z-50 ${
+        <div className={`fixed bottom-6 right-6 px-4 py-3 rounded-2xl text-white text-xs font-bold shadow-2xl transition-all flex items-center gap-3 z-50 ${
           toast.type === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
         }`}>
           {toast.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}

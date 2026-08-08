@@ -11,9 +11,22 @@ const SaveBodySchema = z.object({
   project_id: z.string().min(1),
 })
 
+async function getEffectiveUserId(req: Request): Promise<string | null> {
+  const verifiedUserId = await verifyUser(req)
+  if (verifiedUserId) return verifiedUserId
+  const guestHeader = req.headers['x-guest-token']
+  if (typeof guestHeader === 'string' && guestHeader.trim().length > 0) {
+    return `guest_${guestHeader.trim()}`
+  }
+  return null
+}
+
 router.get('/', async (req: Request, res: Response) => {
-  const userId = await verifyUser(req)
-  if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
+  const userId = await getEffectiveUserId(req)
+  if (!userId) {
+    res.status(401).json({ error: 'Auth or guest token required' })
+    return
+  }
 
   try {
     const saved = await prisma.savedProperty.findMany({
@@ -42,8 +55,8 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 router.post('/', async (req: Request, res: Response) => {
-  const userId = await verifyUser(req)
-  if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
+  const userId = await getEffectiveUserId(req)
+  if (!userId) { res.status(401).json({ error: 'Auth or guest token required' }); return }
 
   const parsed = SaveBodySchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: 'project_id required' }); return }
@@ -75,8 +88,8 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 router.get('/:id/check', async (req: Request, res: Response) => {
-  const userId = await verifyUser(req)
-  if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
+  const userId = await getEffectiveUserId(req)
+  if (!userId) { res.json({ is_saved: false }); return }
 
   try {
     const saved = await prisma.savedProperty.findUnique({
@@ -91,8 +104,8 @@ router.get('/:id/check', async (req: Request, res: Response) => {
 
 // :id param represents project_id (the foreign key), NOT the saved record's internal id.
 router.delete('/:id', async (req: Request, res: Response) => {
-  const userId = await verifyUser(req)
-  if (!userId) { res.status(401).json({ error: 'Auth required' }); return }
+  const userId = await getEffectiveUserId(req)
+  if (!userId) { res.status(401).json({ error: 'Auth or guest token required' }); return }
 
   await prisma.savedProperty.deleteMany({
     where: { user_id: userId, project_id: req.params.id },

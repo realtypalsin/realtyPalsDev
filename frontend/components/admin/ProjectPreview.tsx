@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -64,46 +65,75 @@ interface Props {
 }
 
 export default function ProjectPreview({ project, onRefresh, refreshing }: Props) {
+  const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('light')
   const status = STATUS_CFG[project.status] ?? STATUS_CFG.ready_to_move
   const units  = project.unit_types ?? []
   const displayImageUrl = project.images?.find(i => i.type === 'hero')?.url || 
     project.images?.[0]?.url || 
     project.hero_image_url
 
+  const isDark = previewTheme === 'dark'
 
   return (
     <div className="sticky top-20 space-y-4">
       {/* Preview header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+        <div className="flex items-center gap-2 text-xs text-zinc-500 font-semibold">
           <Eye size={13} />
-          Live Preview
+          <span>Live Preview</span>
         </div>
         <div className="flex items-center gap-2">
+          {/* Theme switcher */}
+          <div className="flex items-center p-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <button
+              type="button"
+              onClick={() => setPreviewTheme('light')}
+              className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer ${
+                !isDark ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Light
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewTheme('dark')}
+              className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer ${
+                isDark ? 'bg-zinc-900 text-white shadow-2xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Dark
+            </button>
+          </div>
+
           {onRefresh && (
             <button
               onClick={onRefresh}
               disabled={refreshing}
-              className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600 border border-gray-200 px-2 py-1 rounded-lg bg-white transition-colors disabled:opacity-40"
+              className="flex items-center gap-1 text-[11px] text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 border border-zinc-200 dark:border-zinc-700 px-2 py-1 rounded-lg bg-white dark:bg-zinc-800 transition-colors disabled:opacity-40"
             >
               <RefreshCw size={10} className={refreshing ? 'animate-spin' : ''} />
-              Refresh
+              <span>Refresh</span>
             </button>
           )}
           {project.slug && (
             <Link
               href={`/discover?project=${project.slug}`}
               target="_blank"
-              className="flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 border border-blue-200 px-2 py-1 rounded-lg bg-white transition-colors"
+              className="flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 hover:text-blue-700 border border-blue-200/80 dark:border-blue-800/80 px-2 py-1 rounded-lg bg-blue-50/50 dark:bg-blue-950/40 transition-colors font-medium"
             >
-              <ExternalLink size={10} /> Open on site
+              <ExternalLink size={10} />
+              <span>Open on site</span>
             </Link>
           )}
         </div>
       </div>
 
-      {/* Card preview */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Card preview — `dark` class scopes Tailwind's dark: variants to this
+          preview regardless of the app's real theme, so inner content actually
+          re-themes instead of just the outer wrapper. */}
+      <div className={`${isDark ? 'dark' : ''} rounded-2xl border shadow-sm overflow-hidden transition-colors ${
+        isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-zinc-200/80 text-zinc-900'
+      }`}>
         {/* Hero image */}
         <div className="relative w-full bg-gray-100" style={{ height: 160 }}>
           {displayImageUrl ? (

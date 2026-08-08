@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { 
   CheckCircle2, 
   Clock, 
@@ -10,22 +10,23 @@ import {
   Phone, 
   Mail, 
   MapPin, 
-  Calendar, 
   ExternalLink, 
-  Users,
   ShieldCheck,
   FileText,
-  Award,
-  Sparkles,
   ChevronRight,
   ChevronDown,
   X,
   Copy,
   Check,
   AlertCircle,
-  Filter,
   Globe,
-  Briefcase
+  RotateCcw,
+  Bell,
+  PhoneCall,
+  Award,
+  Users,
+  Linkedin,
+  Server
 } from 'lucide-react'
 import { AnimatePresence, m } from 'framer-motion'
 import { adminFetch } from '@/lib/adminFetch'
@@ -45,10 +46,15 @@ interface BuilderApplication {
   website?: string | null
   description?: string | null
   logo_url?: string | null
+  tagline?: string | null
+  completed_projects_count?: string | null
+  sqft_delivered?: string | null
   delivery_track?: string | null
-  executives?: Array<{ name: string; title: string; experience_years?: number; linkedin?: string }>
+  executives?: Array<{ name: string; title: string; experience_years?: number | string; linkedin?: string }>
   legal_entities?: Array<{ name: string; registration_number: string; state?: string }>
   projects?: string[]
+  ip_address?: string | null
+  user_agent?: string | null
 }
 
 type StatusFilter = 'all' | 'new' | 'reviewing' | 'approved' | 'rejected'
@@ -59,46 +65,139 @@ const STATUS_CONFIG: Record<BuilderApplication['status'], { label: string; bg: s
     bg: 'bg-blue-50/80 dark:bg-blue-950/40 hover:bg-blue-100/80 dark:hover:bg-blue-900/60',
     text: 'text-blue-700 dark:text-blue-300',
     border: 'border-blue-200/80 dark:border-blue-800/80',
-    dot: 'bg-blue-500 shadow-xs shadow-blue-500/50',
+    dot: 'bg-blue-500 shadow-2xs shadow-blue-500/50',
   },
   reviewing: {
     label: 'Reviewing',
     bg: 'bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100/80 dark:hover:bg-amber-900/60',
     text: 'text-amber-700 dark:text-amber-300',
     border: 'border-amber-200/80 dark:border-amber-800/80',
-    dot: 'bg-amber-500 shadow-xs shadow-amber-500/50',
+    dot: 'bg-amber-500 shadow-2xs shadow-amber-500/50',
   },
   approved: {
     label: 'Approved',
     bg: 'bg-emerald-50/80 dark:bg-emerald-950/40 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60',
     text: 'text-emerald-700 dark:text-emerald-300',
     border: 'border-emerald-200/80 dark:border-emerald-800/80',
-    dot: 'bg-emerald-500 shadow-xs shadow-emerald-500/50',
+    dot: 'bg-emerald-500 shadow-2xs shadow-emerald-500/50',
   },
   rejected: {
     label: 'Rejected',
     bg: 'bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100/80 dark:hover:bg-rose-900/60',
     text: 'text-rose-700 dark:text-rose-300',
     border: 'border-rose-200/80 dark:border-rose-800/80',
-    dot: 'bg-rose-500 shadow-xs shadow-rose-500/50',
+    dot: 'bg-rose-500 shadow-2xs shadow-rose-500/50',
   },
 }
 
 export default function BuilderApplicationsPage() {
   const [applications, setApplications] = useState<BuilderApplication[]>([])
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date())
+  const [hasNewApplications, setHasNewApplications] = useState(false)
+  const [newCountDifference, setNewCountDifference] = useState(0)
+
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<StatusFilter>('all')
   const [selectedApp, setSelectedApp] = useState<BuilderApplication | null>(null)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; actionLabel?: string; onAction?: () => void } | null>(null)
   
   // Single active popover menu state & fixed coordinates
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [menuCoords, setMenuCoords] = useState<{ top: number; left: number } | null>(null)
 
+  const applicationsCountRef = useRef(0)
+  applicationsCountRef.current = applications.length
+
+  const isFetchingRef = useRef(false)
+
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success', actionLabel?: string, onAction?: () => void) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    setToast({ message, type, actionLabel, onAction })
+    toastTimerRef.current = setTimeout(() => setToast(null), 5000)
+  }, [])
+
+  // Robust Core Data Loading Function with Lock Guard & 1-Step Auto Retry
+  const loadApplications = useCallback(async (isManualRefresh = false) => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+
+    if (isManualRefresh) {
+      setIsRefreshing(true)
+      setHasNewApplications(false)
+    }
+
+    const fetchWithRetry = async (attempt = 1): Promise<BuilderApplication[]> => {
+      try {
+        const res = await adminFetch('/builder-applications')
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        return data.applications || []
+      } catch (err) {
+        if (attempt < 2) {
+          await new Promise(r => setTimeout(r, 350))
+          return fetchWithRetry(attempt + 1)
+        }
+        throw err
+      }
+    }
+
+    try {
+      const fetched = await fetchWithRetry()
+      setApplications(fetched)
+      setLastRefreshedAt(new Date())
+      setHasNewApplications(false)
+      setNewCountDifference(0)
+
+      if (isManualRefresh) {
+        showToast('Applications list refreshed', 'success')
+      }
+    } catch {
+      showToast('Failed to load builder applications', 'error')
+    } finally {
+      setLoading(false)
+      setIsRefreshing(false)
+      isFetchingRef.current = false
+    }
+  }, [showToast])
+
+  // Initial Load
   useEffect(() => {
     loadApplications()
-  }, [])
+  }, [loadApplications])
+
+  // Background Polling Every 15 Seconds with Collision Protection
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (isFetchingRef.current) return
+      try {
+        const res = await adminFetch('/builder-applications')
+        if (!res.ok) return
+        const data = await res.json()
+        const fetched: BuilderApplication[] = data.applications || []
+        
+        const prevCount = applicationsCountRef.current
+        if (fetched.length > prevCount && prevCount > 0) {
+          const diff = fetched.length - prevCount
+          setHasNewApplications(true)
+          setNewCountDifference(diff)
+
+          showToast(
+            `${diff} new builder registration application received!`,
+            'info',
+            'Refresh Now',
+            () => loadApplications(true)
+          )
+        }
+      } catch {
+        // Silent polling error handling
+      }
+    }, 15000)
+
+    return () => clearInterval(interval)
+  }, [loadApplications, showToast])
 
   // Global Escape Key Listener to close dialogs
   useEffect(() => {
@@ -146,20 +245,6 @@ export default function BuilderApplicationsPage() {
     }
   }
 
-  const loadApplications = async () => {
-    setLoading(true)
-    try {
-      const res = await adminFetch('/builder-applications')
-      if (!res.ok) throw new Error('Failed to fetch applications')
-      const data = await res.json()
-      setApplications(data.applications || [])
-    } catch {
-      showToast('Failed to load builder applications', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleUpdateStatus = async (id: string, newStatus: BuilderApplication['status']) => {
     try {
       setActiveMenu(null)
@@ -179,11 +264,6 @@ export default function BuilderApplicationsPage() {
     } catch {
       showToast('Failed to update application status', 'error')
     }
-  }
-
-  const showToast = (message: string, type: 'success' | 'error') => {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
   }
 
   const copyToClipboard = (text: string, label: string) => {
@@ -225,102 +305,154 @@ export default function BuilderApplicationsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-16 font-sans select-none">
+    <div className="space-y-6 pb-16 font-sans select-none max-w-6xl mx-auto py-8">
+      
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
               Builder Registrations
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/80">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
               Developer Onboarding
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400">
             Review, verify RERA compliance, and approve developer onboarding requests
           </p>
         </div>
+
+        {/* Refresh Action Button & Live Status */}
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 hidden sm:inline-block">
+            Updated {formatDistanceToNow(lastRefreshedAt, { addSuffix: true })}
+          </span>
+
+          <button
+            onClick={() => loadApplications(true)}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-800 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-[0.98] cursor-pointer disabled:opacity-60"
+            title="Refresh applications list"
+          >
+            <RotateCcw size={14} className={isRefreshing ? 'animate-spin text-blue-600' : 'text-zinc-500'} />
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* KPI Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* New Application Notification Banner */}
+      <AnimatePresence>
+        {hasNewApplications && (
+          <m.div
+            initial={{ opacity: 0, y: -8, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 flex items-center justify-between gap-4 shadow-2xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                <Bell size={16} className="animate-bounce" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-blue-900 dark:text-blue-100">
+                  New Builder Application Received!
+                </h4>
+                <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-0.5">
+                  {newCountDifference} new registration request is ready for review.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => loadApplications(true)}
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-2xs transition-all cursor-pointer shrink-0 flex items-center gap-1.5 active:scale-[0.98]"
+            >
+              <RotateCcw size={13} className={isRefreshing ? 'animate-spin' : ''} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Now'}</span>
+            </button>
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* KPI Metric Cards — Impeccable Zinc Design */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Registrations */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Total Requests
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.total}
             </span>
-            <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
               {stats.newCount} pending
             </span>
           </div>
         </div>
 
         {/* Pending Review */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Under Review
             </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.reviewing}
             </span>
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
               In verification
             </span>
           </div>
         </div>
 
         {/* Approved Builders */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Approved Builders
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.approved}
             </span>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               Active partners
             </span>
           </div>
         </div>
 
         {/* Rejected Requests */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Declined
             </span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center">
               <XCircle className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <span className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.rejected}
             </span>
-            <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
               Unverified
             </span>
           </div>
@@ -328,9 +460,26 @@ export default function BuilderApplicationsPage() {
       </div>
 
       {/* Control Toolbar: Filter Pills & Search */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Search Input */}
+        <div className="group flex-1 w-full flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-2xs focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+          <Search size={15} className="text-zinc-400 group-focus-within:text-blue-500 transition-colors" />
+          <input
+            type="text"
+            placeholder="Search builder name, email, CIN..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="flex-1 bg-transparent border-none outline-none text-xs font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Segmented Filter Pills */}
+        <div className="flex items-center p-1 bg-zinc-100 dark:bg-zinc-800/60 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 shrink-0 overflow-x-auto">
           {(['all', 'new', 'reviewing', 'approved', 'rejected'] as const).map(st => (
             <button
               key={st}
@@ -339,41 +488,21 @@ export default function BuilderApplicationsPage() {
                 setMenuCoords(null)
                 setFilter(st)
               }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap capitalize border ${
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap capitalize ${
                 filter === st
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs'
-                  : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-2xs font-bold'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               {st === 'all' ? 'All Registrations' : st}
             </button>
           ))}
         </div>
-
-        {/* Search Input */}
-        <div className="relative flex-1 md:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search builder name, email, CIN..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs font-medium text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Main Data Table Card */}
       {loading ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-2xs">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
           <div className="p-6 space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center justify-between gap-4">
@@ -387,21 +516,21 @@ export default function BuilderApplicationsPage() {
           </div>
         </div>
       ) : filteredApplications.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-12 text-center shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mx-auto mb-3">
             <Building2 className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">No registrations found</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">No registrations found</h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
             Try adjusting your search query or status filter.
           </p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-2xs">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <tr className="bg-zinc-50/70 dark:bg-zinc-800/40 border-b border-zinc-200/80 dark:border-zinc-800 text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   <th className="px-6 py-4">Company Info</th>
                   <th className="px-6 py-4">Contact</th>
                   <th className="px-6 py-4">Submitted Date</th>
@@ -409,7 +538,7 @@ export default function BuilderApplicationsPage() {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-xs">
                 {filteredApplications.map(app => {
                   const cfg = STATUS_CONFIG[app.status] || STATUS_CONFIG.new
                   const menuKey = `status-${app.id}`
@@ -423,12 +552,12 @@ export default function BuilderApplicationsPage() {
                         setMenuCoords(null)
                         setSelectedApp(app)
                       }}
-                      className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                      className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition-colors group cursor-pointer"
                     >
                       {/* Company Info */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-xs flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
+                          <div className="w-10 h-10 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-xs flex items-center justify-center shadow-2xs shrink-0 overflow-hidden">
                             {app.logo_url && (app.logo_url.startsWith('data:') || app.logo_url.startsWith('http')) ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={app.logo_url} alt={app.name} className="w-full h-full object-contain bg-white p-1" />
@@ -437,11 +566,11 @@ export default function BuilderApplicationsPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <p className="font-bold text-zinc-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                               {app.name}
                             </p>
-                            <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 truncate">
-                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                            <p className="text-[11px] text-zinc-400 flex items-center gap-1 mt-0.5 truncate">
+                              <MapPin className="w-3 h-3 text-zinc-400 shrink-0" />
                               <span>{app.headquarters || 'No HQ specified'}</span>
                             </p>
                           </div>
@@ -451,17 +580,17 @@ export default function BuilderApplicationsPage() {
                       {/* Contact */}
                       <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                         <div className="space-y-0.5">
-                          <p className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
+                          <p className="font-medium text-zinc-800 dark:text-zinc-200 truncate max-w-[200px]">
                             {app.email}
                           </p>
-                          <p className="font-mono text-[11px] text-slate-500 font-semibold">
+                          <p className="font-mono text-[11px] text-zinc-500 font-semibold">
                             {app.phone}
                           </p>
                         </div>
                       </td>
 
                       {/* Submitted Date */}
-                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                         <span title={format(new Date(app.submitted_at), 'PPP p')}>
                           {formatDistanceToNow(new Date(app.submitted_at), { addSuffix: true })}
                         </span>
@@ -471,7 +600,7 @@ export default function BuilderApplicationsPage() {
                       <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={(e) => togglePopover(menuKey, e)}
-                          className={`px-3 py-1.5 rounded-xl font-bold border text-xs flex items-center justify-between gap-2 transition-all shadow-2xs ${cfg.bg} ${cfg.text} ${cfg.border}`}
+                          className={`px-3 py-1.5 rounded-xl font-bold border text-xs flex items-center justify-between gap-2 transition-all shadow-2xs cursor-pointer ${cfg.bg} ${cfg.text} ${cfg.border}`}
                         >
                           <span className="flex items-center gap-1.5">
                             <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
@@ -489,10 +618,10 @@ export default function BuilderApplicationsPage() {
                             setMenuCoords(null)
                             setSelectedApp(app)
                           }}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-bold transition-all shadow-2xs"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/80 text-zinc-700 dark:text-zinc-200 font-semibold transition-all shadow-2xs cursor-pointer"
                         >
                           <span>Review</span>
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                          <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
                         </button>
                       </td>
                     </tr>
@@ -513,7 +642,7 @@ export default function BuilderApplicationsPage() {
             exit={{ opacity: 0, scale: 0.96, y: -4 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             style={{ top: `${menuCoords.top}px`, left: `${menuCoords.left}px` }}
-            className="fixed w-36 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-2xl py-1.5 z-[9999] font-sans overflow-hidden"
+            className="fixed w-36 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/90 dark:border-zinc-800 shadow-2xl py-1.5 z-[9999] font-sans overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {(['new', 'reviewing', 'approved', 'rejected'] as const).map(st => {
@@ -527,17 +656,17 @@ export default function BuilderApplicationsPage() {
                   onClick={() => {
                     handleUpdateStatus(app.id, st)
                   }}
-                  className={`w-full px-3 py-1.5 text-xs font-bold flex items-center justify-between transition-colors ${
+                  className={`w-full px-3 py-1.5 text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
                     isSelected 
-                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                      ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold' 
+                      : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                   }`}
                 >
                   <span className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${stCfg.dot}`} />
                     <span>{stCfg.label}</span>
                   </span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-slate-900 dark:text-white" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 dark:text-white" />}
                 </button>
               )
             })}
@@ -545,7 +674,7 @@ export default function BuilderApplicationsPage() {
         )}
       </AnimatePresence>
 
-      {/* EMIL KOWALSKI / LINEAR / VERCEL STYLE CENTERED APPLICATION REVIEW DIALOG */}
+      {/* COMPREHENSIVE CENTERED APPLICATION REVIEW DIALOG */}
       <AnimatePresence>
         {selectedApp && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
@@ -555,41 +684,39 @@ export default function BuilderApplicationsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-zinc-950/60 backdrop-blur-xs"
               onClick={() => setSelectedApp(null)}
             />
 
             {/* Modal Dialog Card */}
             <m.div
-              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-              className="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden font-sans z-10 my-auto"
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 340 }}
+              className="relative w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden font-sans z-10 my-auto"
               onClick={e => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800/80 flex items-start justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/80 flex items-start justify-between gap-4 bg-zinc-50/50 dark:bg-zinc-900/50">
                 <div className="flex items-center gap-4 min-w-0">
                   {/* Logo / Avatar container */}
-                  <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center shadow-md shrink-0 overflow-hidden p-1.5">
+                  <div className="w-14 h-14 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-lg flex items-center justify-center shadow-xs shrink-0 overflow-hidden p-1">
                     {selectedApp.logo_url && (selectedApp.logo_url.startsWith('data:') || selectedApp.logo_url.startsWith('http')) ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={selectedApp.logo_url} alt={selectedApp.name} className="w-full h-full object-contain" />
+                      <img src={selectedApp.logo_url} alt={selectedApp.name} className="w-full h-full object-contain bg-white rounded-xl p-1" />
                     ) : (
-                      <div className="w-full h-full rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-lg flex items-center justify-center">
-                        {getInitials(selectedApp.name)}
-                      </div>
+                      getInitials(selectedApp.name)
                     )}
                   </div>
 
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-2xl font-black text-slate-900 dark:text-white truncate tracking-tight">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-xl font-extrabold text-zinc-900 dark:text-white truncate tracking-tight">
                         {selectedApp.name}
                       </h3>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                        <ShieldCheck className="w-3 h-3" /> RERA Standard
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700">
+                        <ShieldCheck className="w-3 h-3 text-emerald-500" /> RERA Standard
                       </span>
                     </div>
 
@@ -600,16 +727,21 @@ export default function BuilderApplicationsPage() {
                       </span>
 
                       {selectedApp.headquarters && (
-                        <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-zinc-400" />
                           <span>{selectedApp.headquarters}</span>
                         </span>
                       )}
 
                       {selectedApp.cin && (
-                        <span className="font-mono text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                          CIN: {selectedApp.cin}
-                        </span>
+                        <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700">
+                          <span className="font-mono text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
+                            CIN: {selectedApp.cin}
+                          </span>
+                          <button onClick={() => copyToClipboard(selectedApp.cin!, 'CIN')} className="text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer">
+                            <Copy size={11} />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -617,47 +749,50 @@ export default function BuilderApplicationsPage() {
 
                 <button
                   onClick={() => setSelectedApp(null)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Modal Body: Crisp 2-Column Grid */}
-              <div className="p-6 max-h-[70vh] overflow-y-auto space-y-5">
+              {/* Modal Body: Comprehensive Structured Grid */}
+              <div className="p-6 max-h-[68vh] overflow-y-auto space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   
-                  {/* Left Column: Contact & Legal & Brand */}
+                  {/* Left Column: Communication & Legal & Brand */}
                   <div className="space-y-4">
-                    {/* Card 1: Contact Information */}
-                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                    {/* Card 1: Primary Contact Channels */}
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                          Contact Details
+                        <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5 text-zinc-400" />
+                          <span>Contact Channels</span>
                         </span>
-                        <span className="text-[10px] text-slate-400 font-semibold">
+                        <span className="text-[10px] text-zinc-400 font-medium">
                           Submitted {format(new Date(selectedApp.submitted_at), 'PPP')}
                         </span>
                       </div>
 
                       <div className="space-y-2 text-xs">
-                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
+                        {/* Official Email */}
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
                           <div className="flex items-center gap-2 min-w-0">
                             <Mail className="w-4 h-4 text-blue-500 shrink-0" />
-                            <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">{selectedApp.email}</span>
+                            <span className="font-semibold text-zinc-800 dark:text-zinc-200 truncate">{selectedApp.email}</span>
                           </div>
-                          <button onClick={() => copyToClipboard(selectedApp.email, 'Email')} className="text-slate-400 hover:text-slate-600 p-1">
+                          <button onClick={() => copyToClipboard(selectedApp.email, 'Email')} className="text-zinc-400 hover:text-zinc-600 p-1 cursor-pointer">
                             <Copy className="w-3.5 h-3.5" />
                           </button>
                         </div>
 
-                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
+                        {/* Mobile Phone */}
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
                           <div className="flex items-center gap-2 min-w-0">
                             <Phone className="w-4 h-4 text-emerald-500 shrink-0" />
-                            <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">{selectedApp.phone}</span>
+                            <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">{selectedApp.phone}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <button onClick={() => copyToClipboard(selectedApp.phone, 'Phone')} className="text-slate-400 hover:text-slate-600 p-1">
+                            <button onClick={() => copyToClipboard(selectedApp.phone, 'Phone')} className="text-zinc-400 hover:text-zinc-600 p-1 cursor-pointer">
                               <Copy className="w-3.5 h-3.5" />
                             </button>
                             <a
@@ -665,147 +800,273 @@ export default function BuilderApplicationsPage() {
                               target="_blank"
                               rel="noreferrer"
                               className="text-emerald-600 hover:bg-emerald-50 p-1 rounded-md"
-                              title="Open WhatsApp"
+                              title="Open WhatsApp Chat"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
+                          </div>
+                        </div>
+
+                        {/* Landline */}
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <PhoneCall className="w-4 h-4 text-purple-500 shrink-0" />
+                            <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">
+                              {selectedApp.landline ? selectedApp.landline : 'Landline: Not provided'}
+                            </span>
+                          </div>
+                          {selectedApp.landline && (
+                            <button onClick={() => copyToClipboard(selectedApp.landline!, 'Landline')} className="text-zinc-400 hover:text-zinc-600 p-1 cursor-pointer">
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Official Website */}
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Globe className="w-4 h-4 text-blue-500 shrink-0" />
+                            {selectedApp.website ? (
+                              <a 
+                                href={selectedApp.website.startsWith('http') ? selectedApp.website : `https://${selectedApp.website}`} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 truncate"
+                              >
+                                {selectedApp.website} <ExternalLink className="w-3 h-3 shrink-0" />
+                              </a>
+                            ) : (
+                              <span className="font-medium text-zinc-400">Website: Not provided</span>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Card 2: Registered Legal Entities & RERA */}
-                    {selectedApp.legal_entities && selectedApp.legal_entities.length > 0 && (
-                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
-                        <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                          Legal Entities & RERA
-                        </span>
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
+                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>Legal Entities & RERA Registration</span>
+                      </span>
+                      
+                      {selectedApp.legal_entities && selectedApp.legal_entities.length > 0 ? (
                         <div className="space-y-2">
                           {selectedApp.legal_entities.map((e, idx) => (
-                            <div key={idx} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <FileText className="w-4 h-4 text-amber-500 shrink-0" />
-                                <span className="font-bold text-slate-900 dark:text-white truncate">{e.name}</span>
+                            <div key={idx} className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 flex items-center justify-between text-xs">
+                              <div className="min-w-0 pr-2">
+                                <span className="font-bold text-zinc-900 dark:text-white block truncate">{e.name}</span>
+                                {e.state && <span className="text-[10px] text-zinc-400 block">{e.state}</span>}
                               </div>
-                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 text-[11px] shrink-0 ml-2">
-                                {e.registration_number}
+                              <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 text-[11px] shrink-0">
+                                {e.registration_number || 'N/A'}
                               </span>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <p className="text-xs text-zinc-400 italic">No legal entities listed.</p>
+                      )}
+                    </div>
 
-                    {/* Card 3: Brand & Web Presence */}
-                    {(selectedApp.website || selectedApp.description) && (
-                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
-                        <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                          Brand Presence
-                        </span>
-                        {selectedApp.website && (
-                          <div className="flex items-center gap-2 text-xs">
-                            <Globe className="w-4 h-4 text-blue-500 shrink-0" />
-                            <a 
-                              href={selectedApp.website.startsWith('http') ? selectedApp.website : `https://${selectedApp.website}`} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              className="font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 truncate"
-                            >
-                              {selectedApp.website} <ExternalLink className="w-3 h-3 shrink-0" />
-                            </a>
-                          </div>
-                        )}
-                        {selectedApp.description && (
-                          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                            {selectedApp.description}
-                          </p>
-                        )}
+                    {/* Card 3: Brand Identity & Overview */}
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
+                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>Company Bio & Overview</span>
+                      </span>
+
+                      {selectedApp.tagline && (
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-0.5">Corporate Tagline</span>
+                          <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 italic">&ldquo;{selectedApp.tagline}&rdquo;</p>
+                        </div>
+                      )}
+
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 space-y-1">
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Description</span>
+                        <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed font-medium">
+                          {selectedApp.description || 'No detailed company description provided during registration.'}
+                        </p>
                       </div>
-                    )}
+                    </div>
                   </div>
 
-                  {/* Right Column: Executives & Track Record */}
+                  {/* Right Column: Leadership & Track Record & Metadata */}
                   <div className="space-y-4">
                     {/* Card 4: Executive Leadership */}
-                    {selectedApp.executives && selectedApp.executives.length > 0 && (
-                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
-                        <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                          Executive Leadership
-                        </span>
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
+                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>Executive Leadership Team</span>
+                      </span>
+                      {selectedApp.executives && selectedApp.executives.length > 0 ? (
                         <div className="space-y-2">
                           {selectedApp.executives.map((exec, idx) => (
-                            <div key={idx} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 font-bold text-xs flex items-center justify-center shrink-0">
-                                {getInitials(exec.name)}
+                            <div key={idx} className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-8 h-8 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-xs flex items-center justify-center shrink-0">
+                                  {getInitials(exec.name)}
+                                </div>
+                                <div className="min-w-0">
+                                  <h5 className="font-bold text-zinc-900 dark:text-white text-xs truncate">{exec.name}</h5>
+                                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">{exec.title || 'Executive Member'}</p>
+                                </div>
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <h5 className="font-bold text-slate-900 dark:text-white text-xs truncate">{exec.name}</h5>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{exec.title || 'Executive Member'}</p>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                {exec.experience_years && (
+                                  <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
+                                    {exec.experience_years} yrs exp.
+                                  </span>
+                                )}
+                                {exec.linkedin && (
+                                  <a
+                                    href={exec.linkedin.startsWith('http') ? exec.linkedin : `https://${exec.linkedin}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="p-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-md transition-colors"
+                                    title="View LinkedIn Profile"
+                                  >
+                                    <Linkedin size={14} />
+                                  </a>
+                                )}
                               </div>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <p className="text-xs text-zinc-400 italic">No executive team members listed.</p>
+                      )}
+                    </div>
 
-                    {/* Card 5: Track Record & Flagship Projects */}
-                    {(selectedApp.delivery_track || (selectedApp.projects && selectedApp.projects.length > 0)) && (
-                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
-                        <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                          Track Record & Scale
+                    {/* Card 5: Track Record & Flagship Scale */}
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
+                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Award className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>Track Record & Scale</span>
+                      </span>
+
+                      {/* Metric stats row */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Completed</span>
+                          <span className="text-xs font-bold text-zinc-900 dark:text-white block mt-0.5">
+                            {selectedApp.completed_projects_count || 'Not specified'}
+                          </span>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Sq.Ft Delivered</span>
+                          <span className="text-xs font-bold text-zinc-900 dark:text-white block mt-0.5">
+                            {selectedApp.sqft_delivered || 'Not specified'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                          Notable Flagship Projects
                         </span>
-                        
-                        {selectedApp.projects && selectedApp.projects.length > 0 && (
-                          <div className="space-y-1.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                              Notable Projects
-                            </span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {selectedApp.projects.map((p, i) => (
-                                <span key={i} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 font-bold text-slate-800 dark:text-slate-200 text-[11px]">
-                                  {p}
-                                </span>
-                              ))}
-                            </div>
+                        {selectedApp.projects && selectedApp.projects.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedApp.projects.map((p, i) => (
+                              <span key={i} className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 font-semibold text-zinc-800 dark:text-zinc-200 text-[11px]">
+                                {p}
+                              </span>
+                            ))}
                           </div>
-                        )}
-
-                        {selectedApp.delivery_track && (
-                          <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                              Delivery Performance
-                            </span>
-                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                              {selectedApp.delivery_track}
-                            </p>
-                          </div>
+                        ) : (
+                          <p className="text-xs text-zinc-400 italic">No notable projects specified.</p>
                         )}
                       </div>
-                    )}
+
+                      <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800">
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">
+                          Delivery Performance Summary
+                        </span>
+                        <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed font-medium">
+                          {selectedApp.delivery_track || 'No delivery record summary provided.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Card 6: Audit & Submission Metadata */}
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-2.5">
+                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Server className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>Security & Audit Metadata</span>
+                      </span>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Application ID</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <code className="font-mono text-[10px] font-bold text-blue-600 dark:text-blue-400 truncate">{selectedApp.id}</code>
+                            <button onClick={() => copyToClipboard(selectedApp.id, 'Application ID')} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
+                              <Copy size={11} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800">
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Origin IP Address</span>
+                          <code className="font-mono text-[10px] font-bold text-zinc-700 dark:text-zinc-300 block mt-0.5">
+                            {selectedApp.ip_address || '127.0.0.1'}
+                          </code>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Status Switcher Section inside Modal */}
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                    Update Registration Status
-                  </label>
-                  <div className="grid grid-cols-4 gap-2">
+                <div className="p-5 rounded-2xl bg-gradient-to-b from-zinc-50/90 to-zinc-100/40 dark:from-zinc-900/90 dark:to-zinc-900/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold text-zinc-400 uppercase tracking-wider block">
+                      Update Registration Status
+                    </span>
+                    <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${STATUS_CONFIG[selectedApp.status].dot} animate-pulse`} />
+                      <span>
+                        {selectedApp.status === 'new' && 'Awaiting initial compliance check'}
+                        {selectedApp.status === 'reviewing' && 'Under active admin verification'}
+                        {selectedApp.status === 'approved' && 'Verified partner active on RealtyPals'}
+                        {selectedApp.status === 'rejected' && 'Application declined'}
+                      </span>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     {(['new', 'reviewing', 'approved', 'rejected'] as const).map(st => {
                       const cfg = STATUS_CONFIG[st]
                       const isActive = selectedApp.status === st
+
+                      const Icon = st === 'new' ? Clock 
+                        : st === 'reviewing' ? Search 
+                        : st === 'approved' ? CheckCircle2 
+                        : XCircle
+
                       return (
                         <button
                           key={st}
                           onClick={() => handleUpdateStatus(selectedApp.id, st)}
-                          className={`py-2.5 rounded-xl text-xs font-bold capitalize transition-all border flex flex-col items-center gap-1 ${
+                          className={`py-3 px-3 rounded-2xl text-xs font-extrabold transition-all border flex flex-col items-center justify-center gap-1.5 cursor-pointer relative overflow-hidden group ${
                             isActive
-                              ? `${cfg.bg} ${cfg.text} ${cfg.border} ring-2 ring-blue-500/20 shadow-xs`
-                              : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                              ? `bg-white dark:bg-zinc-900 ${cfg.text} ${cfg.border} ring-2 ring-blue-500/20 shadow-md`
+                              : 'bg-white/80 dark:bg-zinc-900/80 border-zinc-200/80 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white shadow-2xs'
                           }`}
                         >
-                          <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                          <span>{cfg.label}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Icon size={14} className={isActive ? cfg.text : 'text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300'} />
+                            <span>{cfg.label}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                            <span className="text-[10px] font-medium opacity-70 capitalize">
+                              {st === 'new' ? 'Pending' : st === 'reviewing' ? 'In Audit' : st === 'approved' ? 'Active' : 'Declined'}
+                            </span>
+                          </div>
                         </button>
                       )
                     })}
@@ -814,12 +1075,12 @@ export default function BuilderApplicationsPage() {
               </div>
 
               {/* Modal Footer Decision Actions */}
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between gap-4">
+              <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white block">
                     Registration Decision
                   </span>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate">
+                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400 block truncate">
                     Currently set to <strong className="capitalize">{STATUS_CONFIG[selectedApp.status].label}</strong>
                   </span>
                 </div>
@@ -827,15 +1088,15 @@ export default function BuilderApplicationsPage() {
                 <div className="flex items-center gap-2.5 shrink-0">
                   <button
                     onClick={() => handleUpdateStatus(selectedApp.id, 'rejected')}
-                    className="py-2.5 px-4 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 font-bold text-xs transition-all active:scale-[0.98]"
+                    className="py-2.5 px-4 rounded-xl border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold text-xs transition-all active:scale-[0.98] cursor-pointer"
                   >
                     Decline
                   </button>
                   <button
                     onClick={() => handleUpdateStatus(selectedApp.id, 'approved')}
-                    className="py-2.5 px-5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-black dark:hover:bg-slate-100 font-bold text-xs flex items-center gap-2 shadow-md transition-all active:scale-[0.98]"
+                    className="py-2.5 px-5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-zinc-100 font-bold text-xs flex items-center gap-2 shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     <span>Approve Builder</span>
                   </button>
                 </div>
@@ -845,13 +1106,35 @@ export default function BuilderApplicationsPage() {
         )}
       </AnimatePresence>
 
-      {/* Toast Notification */}
+      {/* Floating Toast Notification Banner */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 px-4 py-3 rounded-2xl text-white text-xs font-bold shadow-2xl transition-all flex items-center gap-2 z-50 ${
-          toast.type === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
+        <div className={`fixed bottom-6 right-6 px-4 py-3 rounded-2xl text-white text-xs font-bold shadow-2xl transition-all flex items-center gap-3 z-50 ${
+          toast.type === 'error' 
+            ? 'bg-rose-600' 
+            : toast.type === 'info'
+            ? 'bg-blue-600'
+            : 'bg-emerald-600'
         }`}>
-          {toast.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+          {toast.type === 'error' ? (
+            <AlertCircle className="w-4 h-4" />
+          ) : toast.type === 'info' ? (
+            <Bell className="w-4 h-4 animate-bounce" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4" />
+          )}
           <span>{toast.message}</span>
+
+          {toast.actionLabel && toast.onAction && (
+            <button
+              onClick={() => {
+                toast.onAction?.()
+                setToast(null)
+              }}
+              className="ml-2 px-2.5 py-1 bg-white text-blue-700 rounded-lg text-[11px] font-extrabold hover:bg-blue-50 transition-colors shadow-2xs cursor-pointer"
+            >
+              {toast.actionLabel}
+            </button>
+          )}
         </div>
       )}
     </div>

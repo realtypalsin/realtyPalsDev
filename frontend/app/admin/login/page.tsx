@@ -29,7 +29,8 @@ export default function AdminLogin() {
         router.push('/admin')
       }
     } else {
-      setError('Wrong password.')
+      const errData = await res.json().catch(() => ({}))
+      setError(errData.error || 'Wrong password.')
     }
   }
 

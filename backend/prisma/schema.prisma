@@ -641,15 +641,16 @@ model ChatSession {
 }
 
 model ChatMessage {
-  id              String      @id @default(uuid())
-  session_id      String
-  role            MessageRole
-  content         String
-  intent_snapshot Json?
-  created_at      DateTime    @default(now())
-  artifacts       Json?
-  chips           Json?       @default("[]")
-  session         ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  id                    String      @id @default(uuid())
+  session_id            String
+  role                  MessageRole
+  content               String
+  intent_snapshot       Json?
+  created_at            DateTime    @default(now())
+  edited_at             DateTime?
+  artifacts             Json?
+  chips                 Json?       @default("[]")
+  session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
   @@index([session_id, created_at])
   @@map("chat_messages")

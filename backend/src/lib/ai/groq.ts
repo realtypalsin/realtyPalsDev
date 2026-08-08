@@ -49,10 +49,11 @@ export async function streamWithGroq(
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   send: SendFn,
   userId?: string | null,
-  sessionId?: string | null
+  sessionId?: string | null,
+  apiKeyOverride?: string,
 ): Promise<string> {
   const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY!,
+    apiKey: apiKeyOverride ?? process.env.GROQ_API_KEY!,
     // No retries — inactivity timer owns all phases. A retry on a stalled
     // stream would only extend the hang before the timer fires.
     maxRetries: 0,

@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { 
   Plus, 
   Building2, 
   Globe, 
   CheckCircle2, 
-  Pencil, 
   X, 
   Save, 
   Loader2, 
@@ -14,19 +13,20 @@ import {
   Calendar,
   MapPin,
   FileText,
-  Award,
   Link as LinkIcon,
   ShieldCheck,
   ChevronRight,
-  Sparkles,
   ExternalLink,
-  Layers
+  Layers,
+  ArrowUpDown,
+  Trash2,
+  Award
 } from 'lucide-react'
 import { AnimatePresence, m } from 'framer-motion'
-import { Skeleton } from '@/components/ui/skeleton'
 import UniversalLoader from '@/components/ui/universal-loader'
 import { toast } from 'sonner'
 import { adminFetch } from '@/lib/adminFetch'
+import Link from 'next/link'
 
 interface LinkedProject {
   id: string
@@ -68,9 +68,12 @@ type FormState = {
   logo_url: string
 }
 
+type FilterTag = 'all' | 'credai' | 'iso' | 'active_projects'
+type SortField = 'name' | 'founded' | 'hq' | 'projects'
+
 const EMPTY_FORM: FormState = {
   name: '', slug: '', founded_year: '', headquarters: '', website: '', credai_member: false,
-  company_overview: '', delivered_units: '', rera_compliance_score: '', iso_certified: false, logo_url: ''
+  company_overview: '', delivered_units: '', rera_compliance_score: '90', iso_certified: false, logo_url: ''
 }
 
 function toSlug(name: string) {
@@ -94,8 +97,8 @@ function BuilderFormFields({
       <div className="grid sm:grid-cols-2 gap-4">
         {/* Name */}
         <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-            <Building2 className="w-3.5 h-3.5 text-slate-400" />
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-zinc-400" />
             <span>Company Name *</span>
           </label>
           <input
@@ -105,15 +108,15 @@ function BuilderFormFields({
               const v = e.target.value
               onChange({ ...form, name: v, slug: toSlug(v) })
             }}
-            placeholder="ATS Infrastructure"
-            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            placeholder="e.g. ATS Infrastructure"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
         </div>
 
         {/* Slug */}
         <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-            <LinkIcon className="w-3.5 h-3.5 text-slate-400" />
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <LinkIcon className="w-3.5 h-3.5 text-zinc-400" />
             <span>URL Slug</span>
           </label>
           <input
@@ -121,14 +124,14 @@ function BuilderFormFields({
             value={form.slug}
             onChange={(e) => set('slug')(e.target.value)}
             placeholder="ats-infrastructure"
-            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
         </div>
 
         {/* Founded Year */}
         <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-zinc-400" />
             <span>Founded Year</span>
           </label>
           <input
@@ -136,14 +139,14 @@ function BuilderFormFields({
             value={form.founded_year}
             onChange={(e) => set('founded_year')(e.target.value)}
             placeholder="1998"
-            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
         </div>
 
         {/* Headquarters */}
         <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-zinc-400" />
             <span>Headquarters</span>
           </label>
           <input
@@ -151,14 +154,14 @@ function BuilderFormFields({
             value={form.headquarters}
             onChange={(e) => set('headquarters')(e.target.value)}
             placeholder="Noida, UP"
-            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
         </div>
 
         {/* Website */}
         <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-            <Globe className="w-3.5 h-3.5 text-slate-400" />
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <Globe className="w-3.5 h-3.5 text-zinc-400" />
             <span>Website URL</span>
           </label>
           <input
@@ -166,14 +169,14 @@ function BuilderFormFields({
             value={form.website}
             onChange={(e) => set('website')(e.target.value)}
             placeholder="https://ats.co.in"
-            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
         </div>
 
         {/* Delivered Units */}
         <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-            <Building2 className="w-3.5 h-3.5 text-slate-400" />
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-zinc-400" />
             <span>Delivered Units</span>
           </label>
           <input
@@ -181,81 +184,97 @@ function BuilderFormFields({
             value={form.delivered_units}
             onChange={(e) => set('delivered_units')(e.target.value)}
             placeholder="6500"
-            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
         </div>
+      </div>
 
-        {/* RERA Score */}
-        <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>RERA Compliance Score (0-100)</span>
+      {/* RERA Compliance Score Input */}
+      <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-zinc-500" />
+            <span>RERA Compliance Score</span>
           </label>
+          <span className="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-2.5 py-0.5 rounded-lg shadow-2xs">
+            {form.rera_compliance_score || '0'} / 100
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
           <input
-            type="number"
-            value={form.rera_compliance_score}
+            type="range"
+            min="0"
+            max="100"
+            value={form.rera_compliance_score || '0'}
             onChange={(e) => set('rera_compliance_score')(e.target.value)}
-            placeholder="95"
-            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="flex-1 accent-zinc-800 dark:accent-zinc-200 cursor-pointer h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-lg"
           />
         </div>
+      </div>
 
-        {/* Logo URL */}
-        <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-            <span>Logo URL</span>
-          </label>
+      {/* Logo URL */}
+      <div>
+        <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+          <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+          <span>Logo URL</span>
+        </label>
+        <div className="flex items-center gap-2">
           <input
             type="url"
             value={form.logo_url}
             onChange={(e) => set('logo_url')(e.target.value)}
             placeholder="https://..."
-            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="flex-1 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
+          {form.logo_url && (
+            <div className="w-9 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={form.logo_url} alt="Preview" className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Overview */}
+      {/* Company Overview */}
       <div>
-        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
-          <FileText className="w-3.5 h-3.5 text-slate-400" />
+        <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-zinc-400" />
           <span>Company Overview</span>
         </label>
         <textarea
           rows={3}
           value={form.company_overview}
           onChange={(e) => set('company_overview')(e.target.value)}
-          placeholder="Leading multi-award winning real estate developer established in..."
-          className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+          placeholder="Leading real estate developer established in..."
+          className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none placeholder:text-zinc-400"
         />
       </div>
 
       {/* Certifications & Badges */}
       <div className="flex items-center gap-4 pt-1">
-        <label className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex-1">
+        <label className="p-3.5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center gap-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex-1 shadow-2xs">
           <input
             type="checkbox"
             checked={form.credai_member}
             onChange={(e) => set('credai_member')(e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
+            className="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
           />
           <div>
-            <span className="text-xs font-bold text-slate-900 dark:text-white block">CREDAI Member</span>
-            <span className="text-[10px] text-slate-400 block">Verified Real Estate Industry Association</span>
+            <span className="text-xs font-bold text-zinc-900 dark:text-white block">CREDAI Member</span>
+            <span className="text-[10px] text-zinc-400 block mt-0.5">Verified Industry Association</span>
           </div>
         </label>
 
-        <label className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex-1">
+        <label className="p-3.5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center gap-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex-1 shadow-2xs">
           <input
             type="checkbox"
             checked={form.iso_certified}
             onChange={(e) => set('iso_certified')(e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
+            className="w-4 h-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
           />
           <div>
-            <span className="text-xs font-bold text-slate-900 dark:text-white block">ISO Certified</span>
-            <span className="text-[10px] text-slate-400 block">Quality Management Compliant</span>
+            <span className="text-xs font-bold text-zinc-900 dark:text-white block">ISO Certified</span>
+            <span className="text-[10px] text-zinc-400 block mt-0.5">Quality Management Compliant</span>
           </div>
         </label>
       </div>
@@ -267,6 +286,9 @@ export default function AdminBuilders() {
   const [builders, setBuilders]     = useState<Builder[]>([])
   const [loading, setLoading]       = useState(true)
   const [query, setQuery]           = useState('')
+  const [filterTag, setFilterTag]   = useState<FilterTag>('all')
+  const [sortField, setSortField]   = useState<SortField>('name')
+  const [sortOrder, setSortOrder]   = useState<'asc' | 'desc'>('asc')
   
   const [showAdd, setShowAdd]       = useState(false)
   const [addForm, setAddForm]       = useState<FormState>(EMPTY_FORM)
@@ -275,8 +297,8 @@ export default function AdminBuilders() {
   const [selectedBuilder, setSelectedBuilder] = useState<Builder | null>(null)
   const [editForm, setEditForm]     = useState<FormState>(EMPTY_FORM)
   const [editSaving, setEditSaving] = useState(false)
+  const [deleteConfirming, setDeleteConfirming] = useState(false)
 
-  // Keyboard nav
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -305,23 +327,59 @@ export default function AdminBuilders() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedBuilder, showAdd])
 
-  const smartFilter = useCallback((b: Builder) => {
-    if (!query) return true
-    const q = query.toLowerCase()
-    
-    // Check for specific tags
-    if (q.includes('is:credai') && !b.credai_member) return false
-    
-    // Clean string search
-    const cleanQ = q.replace(/is:\w+/g, '').trim()
-    if (!cleanQ) return true
-    
-    return b.name.toLowerCase().includes(cleanQ) || 
-           b.slug.toLowerCase().includes(cleanQ) || 
-           (b.headquarters && b.headquarters.toLowerCase().includes(cleanQ))
-  }, [query])
+  // Summary Metrics Computation
+  const metrics = useMemo(() => {
+    const total = builders.length
+    const credaiCount = builders.filter(b => b.credai_member).length
+    const isoCount = builders.filter(b => b.iso_certified).length
+    const totalUnits = builders.reduce((acc, b) => acc + (b.delivered_units || 0), 0)
+    const validReraScores = builders.map(b => b.rera_compliance_score).filter((s): s is number => s !== null)
+    const avgRera = validReraScores.length > 0 ? Math.round(validReraScores.reduce((a, b) => a + b, 0) / validReraScores.length) : 92
+    return { total, credaiCount, isoCount, totalUnits, avgRera }
+  }, [builders])
 
-  const filtered = builders.filter(smartFilter)
+  // Filtered Builders
+  const filtered = useMemo(() => {
+    return builders.filter((b) => {
+      if (filterTag === 'credai' && !b.credai_member) return false
+      if (filterTag === 'iso' && !b.iso_certified) return false
+      if (filterTag === 'active_projects' && ((b._count?.projects ?? b.projects?.length ?? 0) === 0)) return false
+
+      if (query.trim()) {
+        const q = query.toLowerCase().trim()
+        return b.name.toLowerCase().includes(q) ||
+               b.slug.toLowerCase().includes(q) ||
+               (b.headquarters && b.headquarters.toLowerCase().includes(q))
+      }
+      return true
+    })
+  }, [builders, filterTag, query])
+
+  // Sorted Builders
+  const sortedAndFiltered = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      let cmp = 0
+      if (sortField === 'name') {
+        cmp = a.name.localeCompare(b.name)
+      } else if (sortField === 'founded') {
+        cmp = (a.founded_year || 0) - (b.founded_year || 0)
+      } else if (sortField === 'hq') {
+        cmp = (a.headquarters || '').localeCompare(b.headquarters || '')
+      } else if (sortField === 'projects') {
+        cmp = (a._count?.projects ?? a.projects?.length ?? 0) - (b._count?.projects ?? b.projects?.length ?? 0)
+      }
+      return sortOrder === 'asc' ? cmp : -cmp
+    })
+  }, [filtered, sortField, sortOrder])
+
+  const toggleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortOrder('asc')
+    }
+  }
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -352,7 +410,7 @@ export default function AdminBuilders() {
       setBuilders((prev) => [created.builder, ...prev])
       setShowAdd(false)
       setAddForm(EMPTY_FORM)
-      toast.success('Builder created successfully')
+      toast.success('Builder profile created')
     } catch (err: any) {
       console.error('[builders] create error:', err)
       toast.error(err.message || 'Error creating builder')
@@ -363,6 +421,7 @@ export default function AdminBuilders() {
 
   function openBuilderModal(b: Builder) {
     setSelectedBuilder(b)
+    setDeleteConfirming(false)
     setEditForm({
       name: b.name,
       slug: b.slug,
@@ -372,7 +431,7 @@ export default function AdminBuilders() {
       credai_member: b.credai_member,
       company_overview: b.description || '',
       delivered_units: b.delivered_units ? String(b.delivered_units) : '',
-      rera_compliance_score: b.rera_compliance_score ? String(b.rera_compliance_score) : '',
+      rera_compliance_score: b.rera_compliance_score ? String(b.rera_compliance_score) : '90',
       iso_certified: b.iso_certified || false,
       logo_url: b.logo_url || '',
     })
@@ -414,6 +473,18 @@ export default function AdminBuilders() {
     }
   }, [editForm])
 
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await adminFetch(`/admin/builders/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Delete failed')
+      setBuilders((prev) => prev.filter((b) => b.id !== id))
+      setSelectedBuilder(null)
+      toast.success('Builder profile deleted')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete builder')
+    }
+  }
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -424,25 +495,68 @@ export default function AdminBuilders() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-8 font-sans select-none">
+    <div className="max-w-6xl mx-auto py-8 font-sans select-none space-y-6">
       
       {/* Header Banner */}
-      <div className="flex items-center justify-between mb-8 pt-2">
+      <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
             Builders
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1">
             {builders.length} registered partner developers
           </p>
         </div>
         <button
           onClick={() => { setShowAdd(!showAdd); setSelectedBuilder(null) }}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md active:scale-[0.98]"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
         >
           {showAdd ? <X size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
-          {showAdd ? 'Cancel' : 'New Builder'}
+          <span>{showAdd ? 'Cancel' : 'New Builder'}</span>
         </button>
+      </div>
+
+      {/* Metric Summary Cards — Clean, High-Contrast Zinc Aesthetic */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Total Builders</p>
+            <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{metrics.total}</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center shrink-0">
+            <Building2 size={18} />
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">CREDAI Members</p>
+            <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{metrics.credaiCount}</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center shrink-0">
+            <ShieldCheck size={18} />
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Delivered Units</p>
+            <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{metrics.totalUnits.toLocaleString()}</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center shrink-0">
+            <Award size={18} />
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Avg RERA Score</p>
+            <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{metrics.avgRera} <span className="text-xs text-zinc-400 font-semibold">/ 100</span></p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center shrink-0">
+            <ShieldCheck size={18} />
+          </div>
+        </div>
       </div>
 
       {/* Add form */}
@@ -454,76 +568,132 @@ export default function AdminBuilders() {
             exit={{ opacity: 0, height: 0, y: -8 }}
             transition={{ duration: 0.2 }}
             onSubmit={handleAdd}
-            className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 mb-6 shadow-sm overflow-hidden"
+            className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-sm overflow-hidden"
           >
-            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3.5 mb-5">
-              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-blue-500" />
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3.5 mb-5">
+              <h3 className="text-sm font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-zinc-500" />
                 <span>New Builder Profile</span>
               </h3>
             </div>
             <BuilderFormFields form={addForm} onChange={setAddForm} />
-            <div className="flex justify-end gap-3 pt-5 mt-4 border-t border-slate-200/80 dark:border-slate-800">
+            <div className="flex justify-end gap-3 pt-5 mt-4 border-t border-zinc-100 dark:border-zinc-800">
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold disabled:opacity-40 transition-all shadow-sm active:scale-[0.98]"
+                className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-bold disabled:opacity-40 transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                {saving ? 'Saving...' : 'Save Profile'}
+                <span>{saving ? 'Saving...' : 'Save Profile'}</span>
               </button>
             </div>
           </m.form>
         )}
       </AnimatePresence>
 
-      {/* Command Search Bar */}
-      <div className="group flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xs mb-6 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
-        <Search size={16} className="text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-        <input
-          ref={searchInputRef}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Filter builders or use tags like is:credai..."
-          className="flex-1 bg-transparent border-none outline-none text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
-        />
-        <div className="hidden sm:flex items-center gap-1.5 opacity-50">
-          <kbd className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[10px] font-medium font-sans">⌘F</kbd>
+      {/* Command Search & Segmented Micro-Filters Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Search Input */}
+        <div className="group flex-1 w-full flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-2xs focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+          <Search size={15} className="text-zinc-400 group-focus-within:text-blue-500 transition-colors" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search builders by name, slug, or headquarters..."
+            className="flex-1 bg-transparent border-none outline-none text-xs font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400"
+          />
+          {query && (
+            <button onClick={() => setQuery('')} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
+              <X size={13} />
+            </button>
+          )}
+        </div>
+
+        {/* Micro-Filter Segmented Bar */}
+        <div className="flex items-center p-1 bg-zinc-100 dark:bg-zinc-800/60 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 shrink-0">
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'credai', label: 'CREDAI' },
+            { id: 'iso', label: 'ISO Certified' },
+            { id: 'active_projects', label: 'With Projects' },
+          ].map((tag) => (
+            <button
+              key={tag.id}
+              onClick={() => setFilterTag(tag.id as FilterTag)}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                filterTag === tag.id
+                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-2xs font-bold'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+              }`}
+            >
+              {tag.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Data Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
-        {/* Table Header */}
-        <div className="flex items-center px-6 py-4 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
+        {/* Table Header with Column Sorting */}
+        <div className="flex items-center px-6 py-3.5 bg-zinc-50/70 dark:bg-zinc-800/40 border-b border-zinc-200/80 dark:border-zinc-800 text-[11px] font-bold text-zinc-400 uppercase tracking-wider select-none">
           <div className="w-10 mr-4" />
-          <div className="flex-1">Builder Name</div>
-          <div className="w-[100px] hidden sm:block text-right pr-4">Founded</div>
-          <div className="w-[180px] hidden md:block pr-4">Headquarters</div>
-          <div className="w-[100px] hidden sm:block text-right pr-4">Projects</div>
+          
+          <button
+            onClick={() => toggleSort('name')}
+            className="flex-1 flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer text-left"
+          >
+            <span>Builder Name</span>
+            <ArrowUpDown size={12} className={sortField === 'name' ? 'text-blue-500' : 'text-zinc-400'} />
+          </button>
+
+          <button
+            onClick={() => toggleSort('founded')}
+            className="w-[100px] hidden sm:flex items-center justify-end gap-1.5 pr-4 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            <span>Founded</span>
+            <ArrowUpDown size={12} className={sortField === 'founded' ? 'text-blue-500' : 'text-zinc-400'} />
+          </button>
+
+          <button
+            onClick={() => toggleSort('hq')}
+            className="w-[160px] hidden md:flex items-center gap-1.5 pr-4 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            <span>Headquarters</span>
+            <ArrowUpDown size={12} className={sortField === 'hq' ? 'text-blue-500' : 'text-zinc-400'} />
+          </button>
+
+          <button
+            onClick={() => toggleSort('projects')}
+            className="w-[100px] hidden sm:flex items-center justify-end gap-1.5 pr-4 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            <span>Projects</span>
+            <ArrowUpDown size={12} className={sortField === 'projects' ? 'text-blue-500' : 'text-zinc-400'} />
+          </button>
+
           <div className="w-[40px] text-right" />
         </div>
 
         {/* Table Body */}
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
           {loading ? (
             <div className="p-4"><UniversalLoader variant="skeleton-list" rows={8} /></div>
-          ) : filtered.length === 0 ? (
+          ) : sortedAndFiltered.length === 0 ? (
             <div className="py-16 flex flex-col items-center justify-center text-center">
-              <Building2 size={32} className="text-slate-300 dark:text-slate-700 mb-3" />
-              <p className="text-sm font-bold text-slate-900 dark:text-white">No builders found</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Try adjusting your filter parameters.</p>
+              <Building2 size={32} className="text-zinc-300 dark:text-zinc-700 mb-3" />
+              <p className="text-sm font-bold text-zinc-900 dark:text-white">No builders found</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Try adjusting your search query or filters.</p>
             </div>
           ) : (
-            filtered.map((b) => (
+            sortedAndFiltered.map((b) => (
               <div 
                 key={b.id} 
                 onClick={() => openBuilderModal(b)}
-                className="group flex items-center px-6 py-4 transition-all cursor-pointer hover:bg-slate-50/70 dark:hover:bg-slate-800/40"
+                className="group flex items-center px-6 py-4 transition-all cursor-pointer hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40"
               >
-                {/* Icon / Logo */}
-                <div className="w-10 h-10 mr-4 bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-xs rounded-2xl shadow-xs flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {/* Icon / Logo Avatar */}
+                <div className="w-10 h-10 mr-4 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center shrink-0 overflow-hidden">
                   {b.logo_url && (b.logo_url.startsWith('data:') || b.logo_url.startsWith('http')) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={b.logo_url} alt={b.name} className="w-full h-full object-contain bg-white p-1" onError={(e) => { e.currentTarget.style.display = 'none' }} />
@@ -532,18 +702,23 @@ export default function AdminBuilders() {
                   )}
                 </div>
                 
-                {/* Title & Badge */}
+                {/* Title & Badges */}
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <p className="text-sm font-bold text-zinc-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {b.name}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[11px] text-slate-400 font-mono tracking-tight">{b.slug}</span>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="text-[11px] text-zinc-400 font-mono tracking-tight">{b.slug}</span>
                     {b.credai_member && (
-                      <span className="flex items-center gap-1 text-[9px] text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider uppercase bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full">
-                        <CheckCircle2 size={10} /> CREDAI
+                      <span className="flex items-center gap-1 text-[10px] text-zinc-700 dark:text-zinc-300 font-medium bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded-md">
+                        <CheckCircle2 size={10} className="text-emerald-500" /> CREDAI
+                      </span>
+                    )}
+                    {b.rera_compliance_score && (
+                      <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+                        RERA {b.rera_compliance_score}/100
                       </span>
                     )}
                   </div>
@@ -551,28 +726,28 @@ export default function AdminBuilders() {
 
                 {/* Founded */}
                 <div className="w-[100px] hidden sm:block text-right pr-4">
-                  <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                  <span className="text-xs font-mono font-semibold text-zinc-500 dark:text-zinc-400">
                     {b.founded_year ?? '—'}
                   </span>
                 </div>
 
                 {/* HQ */}
-                <div className="w-[180px] hidden md:flex items-center pr-4">
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
+                <div className="w-[160px] hidden md:flex items-center pr-4">
+                  <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
                     {b.headquarters ?? '—'}
                   </span>
                 </div>
 
                 {/* Projects count */}
                 <div className="w-[100px] hidden sm:flex justify-end pr-4">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">
-                    {b._count?.projects ?? b.projects?.length ?? 0} <span className="font-normal text-slate-400 text-[11px]">proj</span>
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                    {b._count?.projects ?? b.projects?.length ?? 0} <span className="font-normal text-zinc-400 text-[11px]">proj</span>
                   </span>
                 </div>
 
                 {/* Chevron Indicator */}
                 <div className="w-[40px] flex items-center justify-end">
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 group-hover:translate-x-0.5 transition-all" />
+                  <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 group-hover:translate-x-0.5 transition-all" />
                 </div>
               </div>
             ))
@@ -584,30 +759,30 @@ export default function AdminBuilders() {
       <AnimatePresence>
         {selectedBuilder && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-            {/* Backdrop: click outside closes dialog */}
+            {/* Backdrop */}
             <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-zinc-950/60 backdrop-blur-xs"
               onClick={() => setSelectedBuilder(null)}
             />
 
             {/* Modal Dialog Card */}
             <m.div
-              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-              className="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden font-sans z-10 my-auto"
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 340 }}
+              className="relative w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden font-sans z-10 my-auto"
               onClick={e => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800/80 flex items-start justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/80 flex items-start justify-between gap-4 bg-zinc-50/50 dark:bg-zinc-900/50">
                 <div className="flex items-center gap-4 min-w-0">
                   {/* Logo / Avatar container */}
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-lg flex items-center justify-center shadow-md shrink-0 overflow-hidden p-1">
+                  <div className="w-13 h-13 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-base flex items-center justify-center shadow-xs shrink-0 overflow-hidden p-1">
                     {selectedBuilder.logo_url && (selectedBuilder.logo_url.startsWith('data:') || selectedBuilder.logo_url.startsWith('http')) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={selectedBuilder.logo_url} alt={selectedBuilder.name} className="w-full h-full object-contain bg-white rounded-xl p-1" onError={(e) => { e.currentTarget.style.display = 'none' }} />
@@ -618,23 +793,23 @@ export default function AdminBuilders() {
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-2xl font-black text-slate-900 dark:text-white truncate tracking-tight">
+                      <h3 className="text-xl font-extrabold text-zinc-900 dark:text-white truncate tracking-tight">
                         {selectedBuilder.name}
                       </h3>
                       {selectedBuilder.credai_member && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                          <CheckCircle2 className="w-3 h-3" /> CREDAI Member
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500" /> CREDAI Member
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 mt-1.5 flex-wrap text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      <span className="font-mono text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-3 mt-1 flex-wrap text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                      <span className="font-mono text-zinc-600 dark:text-zinc-300">
                         slug: {selectedBuilder.slug}
                       </span>
                       {selectedBuilder.headquarters && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                          <MapPin className="w-3.5 h-3.5 text-zinc-400" />
                           <span>{selectedBuilder.headquarters}</span>
                         </span>
                       )}
@@ -643,7 +818,7 @@ export default function AdminBuilders() {
                           href={selectedBuilder.website.startsWith('http') ? selectedBuilder.website : `https://${selectedBuilder.website}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-bold"
+                          className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-semibold"
                         >
                           <span>Website</span>
                           <ExternalLink className="w-3 h-3" />
@@ -655,28 +830,28 @@ export default function AdminBuilders() {
 
                 <button
                   onClick={() => setSelectedBuilder(null)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Modal Body: Profile Form + Linked Projects Section */}
-              <div className="p-6 max-h-[70vh] overflow-y-auto space-y-6">
+              <div className="p-6 max-h-[65vh] overflow-y-auto space-y-6">
                 
                 {/* Section 1: Partner Information Form */}
                 <div className="space-y-3">
-                  <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
                     Partner Specifications & Metadata
                   </span>
                   <BuilderFormFields form={editForm} onChange={setEditForm} />
                 </div>
 
                 {/* Section 2: Linked Projects */}
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-blue-500" />
+                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-zinc-500" />
                       <span>Linked Real Estate Projects ({selectedBuilder.projects?.length ?? selectedBuilder._count?.projects ?? 0})</span>
                     </span>
                   </div>
@@ -684,29 +859,31 @@ export default function AdminBuilders() {
                   {selectedBuilder.projects && selectedBuilder.projects.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {selectedBuilder.projects.map((proj) => (
-                        <div
+                        <Link
                           key={proj.id}
-                          className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3 group hover:border-blue-500/40 transition-all"
+                          href={`/admin/projects/${proj.id}`}
+                          className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between gap-3 group hover:border-zinc-300 dark:hover:border-zinc-700 transition-all cursor-pointer"
                         >
                           <div className="min-w-0">
-                            <h5 className="font-bold text-slate-900 dark:text-white text-xs truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <h5 className="font-bold text-zinc-900 dark:text-white text-xs truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                               {proj.name}
                             </h5>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5 truncate">
-                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-0.5 truncate">
+                              <MapPin className="w-3 h-3 text-zinc-400 shrink-0" />
                               <span>{proj.sector ? `${proj.sector}, ${proj.city || 'Noida'}` : proj.city || 'Noida'}</span>
                             </p>
                           </div>
 
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 capitalize shrink-0">
-                            {proj.status || 'Active'}
+                          <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 capitalize shrink-0 flex items-center gap-1">
+                            <span>{proj.status || 'Active'}</span>
+                            <ExternalLink size={10} />
                           </span>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   ) : (
-                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 text-center">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 text-center">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                         No projects currently linked to this builder profile.
                       </p>
                     </div>
@@ -715,16 +892,39 @@ export default function AdminBuilders() {
               </div>
 
               {/* Modal Footer Actions */}
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between gap-4">
-                <span className="text-xs font-semibold text-slate-400 font-mono">
-                  ID: {selectedBuilder.id}
-                </span>
+              <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between gap-4">
+                {deleteConfirming ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-rose-600 dark:text-rose-400">Delete profile?</span>
+                    <button
+                      onClick={() => handleDelete(selectedBuilder.id)}
+                      className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors"
+                    >
+                      Confirm Delete
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirming(false)}
+                      className="px-3 py-1.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold cursor-pointer transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirming(true)}
+                    className="px-3 py-2 rounded-xl text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete</span>
+                  </button>
+                )}
 
                 <div className="flex items-center gap-2.5 shrink-0">
                   <button
                     type="button"
                     onClick={() => setSelectedBuilder(null)}
-                    className="py-2.5 px-4 rounded-xl border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs transition-all active:scale-[0.98]"
+                    className="py-2.5 px-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold text-xs transition-all active:scale-[0.98] cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -732,7 +932,7 @@ export default function AdminBuilders() {
                     type="button"
                     onClick={() => saveEdit(selectedBuilder.id)}
                     disabled={editSaving}
-                    className="py-2.5 px-5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-black dark:hover:bg-slate-100 font-bold text-xs flex items-center gap-2 shadow-md transition-all active:scale-[0.98]"
+                    className="py-2.5 px-5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-zinc-100 font-bold text-xs flex items-center gap-2 shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
                   >
                     {editSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                     <span>{editSaving ? 'Saving...' : 'Save Changes'}</span>
