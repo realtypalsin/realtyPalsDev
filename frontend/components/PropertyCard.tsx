@@ -93,7 +93,8 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
     setImgLoaded(false);
   }, [images.length]);
 
-  const displayName = property.project_name || property.builder;
+  const builderName = typeof property.builder === 'object' ? (property.builder as any)?.name : property.builder;
+  const displayName = property.project_name || builderName;
   const isLiveResult = String(property.id).startsWith('google-place-');
   const tier = (property as any).tier as string | undefined;
   const address = (property as any).address as string | undefined;
@@ -272,10 +273,10 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
             <h3 className="text-[15px] font-bold text-gray-900 dark:text-white leading-snug truncate">
               {displayName}
             </h3>
-            {(property.builder || possessionDisplay) && (
+            {(builderName || possessionDisplay) && (
               <div className="flex items-center justify-between mt-0.5">
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-medium flex-1">
-                  {property.builder && property.builder !== displayName ? property.builder : ''}
+                  {builderName && builderName !== displayName ? builderName : ''}
                 </p>
                 {possessionDisplay && (
                   <p className="text-[11px] text-gray-400 dark:text-gray-500 ml-2 whitespace-nowrap">
