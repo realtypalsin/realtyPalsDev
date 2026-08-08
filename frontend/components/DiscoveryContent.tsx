@@ -13,7 +13,7 @@ import { streamChat as streamChatBackend } from '@/lib/backend-api'
 import { authHeaders } from '@/lib/authedFetch'
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import MessageBubble, { buildPickerMessage } from '@/components/chat/MessageBubble';
-import { CompareSelectorOverlay } from '@/components/chat/CompareSelectorOverlay';
+import CompareSelectorOverlay from '@/components/chat/CompareSelectorOverlay';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
 import { AlertTriangle, ArrowRight, ArrowUp, ChevronDown, Home, Key, MapPin, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet, Train, Trees, Crown, Building2, GraduationCap } from 'lucide-react';
@@ -696,8 +696,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           }
           // Backend owns responseMode — no inference on the frontend.
           // Falls back to derived value only for old sessions that predate this change.
-          const responseMode: 'search' | 'comparison' | 'chat' =
-            event.responseMode ??
+          const responseMode: 'search' | 'comparison' | 'chat' | 'database' =
+            (event as any).responseMode ??
             (localProjects.length > 0 ? 'search' : 'chat')
           const isComparison = responseMode === 'comparison'
           setChatHistory(prev => prev.map(m =>
@@ -710,9 +710,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 ...(isComparison ? {
                   comparisonProjects: localProjects.slice(0, 4),
                 } : {}),
-                ...(responseMode === 'database' && event.chatResponse ? {
-                  chatResponse: event.chatResponse,
-                  chips: event.chatResponse.chips,
+                ...(responseMode === 'database' && (event as any).chatResponse ? {
+                  chatResponse: (event as any).chatResponse,
+                  chips: (event as any).chatResponse.chips,
                 } : {}),
               }
               : m
@@ -1739,7 +1739,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           properties={compareOverlayProperties}
           onCancel={() => setCompareOverlayProperties(null)}
           onToast={handleToast}
-          onConfirm={(selected) => {
+          onConfirm={(selected: ProjectCardType[]) => {
             setCompareOverlayProperties(null);
             dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: buildPickerMessage('compare', selected) } });
           }}
