@@ -53,6 +53,7 @@ import { routeQuery } from '../lib/discovery/queryRouter'
 import { fetchWeightedData } from '../lib/discovery/dataFetcher'
 import { formatDatabaseResponse } from '../lib/ai/prompts/responseFormatter'
 import { detectDatabaseIntent } from '../lib/discovery/intentTypeDetector'
+import { rankPaymentPlans } from '../lib/discovery/comparisonMatrix'
 import type { ChatResponse } from '../lib/discovery/types'
 import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
@@ -2176,12 +2177,22 @@ async function enrichResponseWithDatabaseData(
     }
 
     const formattedMessage = await formatDatabaseResponse(
-      route.primary_table,
+      intentType,
       primaryData.map((p) => p.data),
       avgConfidence,
       memory,
       llmClient
     )
+
+    // Generate comparison matrix for payment plans
+    let comparison = null
+    if (intentType === 'PAYMENT_PLANS' && primaryData.length > 1) {
+      try {
+        comparison = rankPaymentPlans(primaryData.map((p) => p.data), memory)
+      } catch (err) {
+        console.error('[enrichResponseWithDatabaseData] Comparison ranking failed:', err)
+      }
+    }
 
     return {
       message: formattedMessage,
@@ -2191,15 +2202,16 @@ async function enrichResponseWithDatabaseData(
         open_questions: []
       },
       confidence: {
-        payment_plans: route.primary_table === 'PaymentPlan' ? avgConfidence : 0,
-        builder_history: route.primary_table === 'Builder' ? avgConfidence : 0,
-        location: route.primary_table === 'Project' ? avgConfidence : 0,
-        possession: route.primary_table === 'Project' ? avgConfidence : 0,
+        payment_plans: intentType === 'PAYMENT_PLANS' ? avgConfidence : 0,
+        builder_history: intentType === 'BUILDER_HISTORY' ? avgConfidence : 0,
+        location: intentType === 'LOCATION' ? avgConfidence : 0,
+        possession: intentType === 'POSSESSION_TIMELINE' ? avgConfidence : 0,
         overall: avgConfidence
       },
       chips: [],
       data_freshness: {},
-      missing_data: []
+      missing_data: [],
+      ...(comparison ? { comparison } : {})
     }
   } catch (error) {
     console.error('[enrichResponseWithDatabaseData] Error:', error)
