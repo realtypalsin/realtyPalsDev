@@ -25,6 +25,7 @@ import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
 import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
 import { streamWithGemini, GeminiStreamStallError } from '../lib/ai/gemini'
+import { executeWithFallbackChain } from '../lib/ai/fallbackChain'
 import { classifyIntent, routeToModel } from '../lib/ai/intentClassifier'
 import { trimPropertiesForPrompt } from '../lib/ai/propertyTrim'
 import {
@@ -303,8 +304,9 @@ router.post('/', async (req: Request, res: Response) => {
     return
   }
 
-  const { action, sessionId, offset } = parsed.data
+  const { action, offset } = parsed.data
   let { guestToken } = parsed.data
+  let sessionId = parsed.data.sessionId
   const prevIntent = (parsed.data.intent ?? {}) as Record<string, unknown>
   let message = action.type === 'TEXT_MESSAGE' ? (action.payload.text as string) : ''
   if (action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
@@ -327,6 +329,23 @@ router.post('/', async (req: Request, res: Response) => {
   // Ensure anonymous users get a server-generated guestToken
   if (!userId && !guestToken) {
     guestToken = `guest_${Math.random().toString(36).substring(2, 15)}_${Date.now()}`
+  }
+
+  // Create session for new guest users (no sessionId + guest token)
+  if (!sessionId && !userId && guestToken) {
+    try {
+      const newSession = await prisma.chatSession.create({
+        data: {
+          guest_token: guestToken,
+          title: 'Chat',
+          chat_phase: 'GATHERING',
+        },
+      })
+      sessionId = newSession.id
+      console.log('[CHAT] Created guest session', { sessionId, guestToken })
+    } catch (err) {
+      console.warn('[CHAT] Guest session creation failed:', err)
+    }
   }
 
   // ─── ANALYTICS: Initialize chat tracking
@@ -406,7 +425,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Phase 0: Hydrate intent from prior conversation
     const baseIntent = rawIntentResult.intent
-    const hydratedIntent = sessionId ? await hydrateIntentFromMemory(sessionId, baseIntent) : baseIntent
+    hydratedIntent = sessionId ? await hydrateIntentFromMemory(sessionId, baseIntent) : baseIntent
 
     const [memory, sessionData] = await Promise.all([
       getMemory(userId, guestToken),
@@ -1530,93 +1549,18 @@ router.post('/', async (req: Request, res: Response) => {
         }
     };
 
-    // Using Gemini as Primary
-    try {
-      if (!process.env.GEMINI_API_KEY) throw new Error('No GEMINI_API_KEY configured');
-      console.log('[CHAT] START streamWithGemini', Date.now())
-      fullText = await streamWithGemini(systemPrompt, messages, send, handleToolCall);
-      console.log('[CHAT] END streamWithGemini', Date.now(), { fullTextLen: fullText.length })
-    } catch (err) {
-      console.warn('[chat] Gemini stream failed:', (err as Error).message);
-
-      // Mid-stream stall: tokens were already sent to the SSE client.
-      // A fallback would append a second response to the same partial stream —
-      // corrupting the UI. Persist the partial message instead (matches the
-      // existing OpenAI-tier stall behavior below).
-      if (err instanceof GeminiStreamStallError && err.tokensSent) {
-        console.error('[chat] mid-stream stall after tokens sent — cannot fall back cleanly');
-        send('token', { token: '\n\n[Response truncated due to timeout. Please ask me to continue.]' });
-        fullText += '\n\n[Response truncated due to timeout. Please ask me to continue.]';
-      } else {
-
-      // Using GitHub Models API (via Azure OpenAI) as first fallback
-      try {
-        if (!process.env.OPENAI_API_KEY) throw new Error('No OPENAI_API_KEY configured');
-        console.log('[CHAT] START streamWithOpenAI (fallback)', Date.now())
-        fullText = await streamWithOpenAI(systemPrompt, messages, send, handleToolCall, undefined, userId, currentSessionId);
-        console.log('[CHAT] END streamWithOpenAI', Date.now(), { fullTextLen: fullText.length })
-      } catch (err2) {
-        console.warn('[chat] OpenAI stream failed:', (err2 as Error).message);
-
-        // Mid-stream stall: tokens were already sent to the SSE client.
-        // A Groq fallback would append a second response to the same partial stream —
-        // corrupting the UI. Re-throw so the outer catch sends a clean error event
-        // and res.end() closes the connection. No session is persisted (correct —
-        // the user retries with a clean slate).
-        if (err2 instanceof StreamStallError && err2.tokensSent) {
-          console.error('[chat] mid-stream stall after tokens sent — cannot fall back cleanly');
-          send('token', { token: '\n\n[Response truncated due to timeout. Please ask me to continue.]' });
-          // Close cleanly so the user's session is persisted and they can just say 'continue'
-          fullText += '\n\n[Response truncated due to timeout. Please ask me to continue.]';
-          // We do NOT throw here, we let the normal flow persist the partial message.
-        } else {
-
-        // Pre-first-chunk stall OR any other OpenAI error: no tokens sent yet.
-        // Groq fallback is clean — client sees a seamless response from Groq.
-        // IMPORTANT: Groq runs without tool support (no builder_lookup, web_search,
-        // rera_check, etc.). Append FALLBACK_MODE suffix so the model knows it cannot
-        // call tools and must redirect tool-dependent queries instead of answering
-        // from training memory. This preserves Hard Rules 13, 16, 17, 18.
-        if (process.env.GROQ_API_KEY) {
-          const fallbackSystemPrompt = systemPrompt + GROQ_FALLBACK_SUFFIX
-          console.log('[CHAT] START streamWithGroq (fallback)', Date.now(), {
-            reason: 'Gemini and OpenAI both failed',
-            originalErrorMessage: (err2 as Error).message
-          })
-          try {
-            fullText = await streamWithGroq(fallbackSystemPrompt, messages, send, userId, currentSessionId);
-            console.log('[CHAT] END streamWithGroq', Date.now(), { fullTextLen: fullText.length })
-          } catch (groqErr) {
-            console.error('[chat] Groq fallback error:', (groqErr as Error).message);
-            if (projects.length > 0) {
-              const p = projects[0];
-              if (message.toLowerCase().includes('payment') || message.toLowerCase().includes('plan')) {
-                fullText = `Payment plan details for **${p.name}** are available on request. Flexible payment structures (including Construction-Linked (CLP), Down Payment, and Subvention options) can be configured with our team. Please click the **Book Site Visit** or **Callback** button for custom payment slabs.`;
-              } else if (projects.length > 1) {
-                const names = projects.slice(0, 3).map(p => `**${p.name}**`).join(', ');
-                fullText = `Here are the verified details for ${names} and others in ${p.sector}. Please review the property cards below. Connect with our RealtyPals team via **Book Site Visit** for direct assistance.`;
-              } else {
-                fullText = `Here are the verified details for **${p.name}** in ${p.sector}: Price range is ${p.price_range_label || 'available on request'}. Connect with our RealtyPals team via **Book Site Visit** for direct assistance.`;
-              }
-            } else {
-              fullText = "I apologize, but my AI services are currently experiencing high load. Please try your request again in a few moments or connect with our team directly.";
-            }
-            send('token', { token: fullText });
-          }
-        } else {
-          console.error('Gemini and OpenAI failed and no GROQ_API_KEY fallback configured');
-          if (projects.length > 0) {
-            const p = projects[0];
-            fullText = `Payment plan details for **${p.name}** in ${p.sector} are available on request. Connect with our RealtyPals team via **Book Site Visit** for custom options.`;
-          } else {
-            fullText = "I apologize, but my AI services are currently unavailable. Please try your request again in a few minutes.";
-          }
-          send('token', { token: fullText });
-        }
-        }
-      }
-      }
-    }
+    // Stream generation with 9-key Multi-Provider Fallback Chain
+    fullText = await executeWithFallbackChain({
+      systemPrompt,
+      messages,
+      send,
+      onToolCall: handleToolCall,
+      groqFallbackSuffix: GROQ_FALLBACK_SUFFIX,
+      projects,
+      userMessage: message,
+      userId,
+      sessionId: currentSessionId,
+    })
     } // end: !needsClarification && disambiguationText === null
 
     // ─── ENHANCE RESPONSE WITH MULTI-DIMENSIONAL RECOMMENDATIONS ──────────────
@@ -2010,7 +1954,8 @@ async function buildRestoreUiState(
 // GET /chat/session/list — must come before GET /chat/session (order matters in Express)
 router.get('/session/list', async (req: Request, res: Response) => {
   const userId = (await verifyUser(req)) ?? undefined
-  const guestToken = req.query.guestToken as string | undefined
+  const guestToken = (req.query.guestToken as string | undefined) ||
+                     (req.headers['x-guest-token'] as string | undefined)
 
   if (!userId && !guestToken) {
     res.status(401).json({ error: 'Auth required' })
@@ -2075,7 +2020,8 @@ router.get('/session/list', async (req: Request, res: Response) => {
 // GET /chat/session?id= — restore or find/create latest session
 router.get('/session', asyncHandler(async (req: Request, res: Response) => {
   const userId = await verifyUser(req)
-  const guestToken = req.query.guestToken as string | undefined
+  const guestToken = (req.query.guestToken as string | undefined) ||
+                     (req.headers['x-guest-token'] as string | undefined)
 
   if (!userId && !guestToken) {
     res.status(401).json({ error: 'Auth required' })

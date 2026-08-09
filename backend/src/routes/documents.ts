@@ -8,7 +8,7 @@ import multer from 'multer'
 import type { ChatCompletionContentPart } from 'groq-sdk/resources/chat/completions'
 import { prisma } from '../lib/db'
 import { supabaseAdmin } from '../lib/supabase'
-import { groq } from '../lib/ai/groq'
+import { getGroq } from '../lib/ai/groq'
 import { MODELS } from '../lib/config'
 import { requireAdmin } from '../lib/adminAuth'
 import { checkRateLimit } from '../lib/cache'
@@ -63,7 +63,7 @@ router.post('/ask', async (req: Request, res: Response) => {
 
   let answer: string
   try {
-    const resp = await groq.chat.completions.create({
+    const resp = await getGroq().chat.completions.create({
       model: MODELS.GROQ_SMART,
       messages: [
         {
@@ -161,7 +161,7 @@ router.post('/', requireAdmin, upload.single('file'), async (req: Request, res: 
   if (file.mimetype.startsWith('image/')) {
     try {
       const base64 = file.buffer.toString('base64')
-      const resp = await groq.chat.completions.create({
+      const resp = await getGroq().chat.completions.create({
         model: 'llama-3.2-11b-vision-preview',
         messages: [
           {

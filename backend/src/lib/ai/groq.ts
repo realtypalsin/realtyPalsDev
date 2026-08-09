@@ -3,8 +3,8 @@ import Groq from 'groq-sdk'
 import { MODELS } from '../config'
 import { recordUsage } from './cost'
 
-// ── Singleton (shared across routes) ──────────────────────────────────────────
-
+// Singleton for non-streaming routes (documents, transcribe).
+// Streaming routes create fresh instances per fallback key.
 let _groq: Groq | null = null
 
 export function getGroq(): Groq {
@@ -14,14 +14,6 @@ export function getGroq(): Groq {
   }
   return _groq
 }
-
-// Proxy-based named export for callers that destructure `groq.chat.completions…`
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const groq: Groq = new Proxy({} as Groq, {
-  get(_target, prop) {
-    return (getGroq() as any)[prop]
-  },
-})
 
 type Message = { role: 'system' | 'user' | 'assistant'; content: string }
 type SendFn = (event: string, data: Record<string, unknown>) => void

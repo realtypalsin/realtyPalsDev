@@ -35,3 +35,26 @@ export const DISCOVERY = {
 export const VALIDATION = {
   MIN_DISCOVERY_SCORE: 10, // Minimum score threshold for fallback results
 }
+
+export type ProviderType = 'gemini' | 'openai' | 'groq'
+
+export interface FallbackKeyConfig {
+  provider: ProviderType
+  envKey: string
+  model: string
+  supportsTools: boolean
+  label: string
+}
+
+export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
+  // { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: true, label: 'Gemini (Primary)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Primary)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq (Primary)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 1)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq (Key 1)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY2', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 2)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY2', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq (Key 2)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY3', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 3)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY3', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq (Key 3)' },
+]
+
