@@ -472,6 +472,25 @@ router.post('/', async (req: Request, res: Response) => {
     ) ? { ...rawIntent, purpose: 'endUse' } : rawIntent
     console.log('[CHAT] END extractIntent', Date.now(), { intent })
 
+    // Exact project name detection & boost
+    try {
+      const dbProjects = await prisma.project.findMany({
+        select: { id: true, name: true, slug: true },
+      });
+      const lowerMsg = message.toLowerCase();
+      const matched = dbProjects.find(p => {
+        const lowerName = p.name.toLowerCase();
+        return lowerMsg.includes(lowerName) || (lowerName.length > 3 && lowerName.split(' ').every(part => part.length > 2 && lowerMsg.includes(part)));
+      });
+      if (matched) {
+        console.log('[CHAT] Exact project match detected in query:', matched.name);
+        intent.projectNames = [matched.name];
+        (intent as any).targetProjectId = matched.id;
+      }
+    } catch (e) {
+      console.warn('[CHAT] Project name detection fallback error:', e);
+    }
+
     // ─── Phase 0: Query Classification (deterministic + LLM fallback)
     const queryClassification = classifyQuery(message, intent as Record<string, unknown>)
     intent.queryKind = queryClassification.queryKind
@@ -949,6 +968,23 @@ router.post('/', async (req: Request, res: Response) => {
       nearbyProjects = discoveryResult.nearbyResults
       discoveryExpansion = discoveryResult.expansion
       notFoundNames = discoveryResult.notFoundNames
+
+      if (intent.projectNames?.length) {
+        const targetLower = intent.projectNames[0].toLowerCase();
+        const matchedIdx = projects.findIndex(p => p.name.toLowerCase().includes(targetLower) || targetLower.includes(p.name.toLowerCase()));
+        if (matchedIdx > 0) {
+          console.log('[CHAT] Boosting exact requested project to #1 spot:', projects[matchedIdx].name);
+          const [matchedProj] = projects.splice(matchedIdx, 1);
+          projects.unshift(matchedProj);
+        } else if (matchedIdx === -1) {
+          const nearbyIdx = nearbyProjects.findIndex(p => p.name.toLowerCase().includes(targetLower) || targetLower.includes(p.name.toLowerCase()));
+          if (nearbyIdx !== -1) {
+            console.log('[CHAT] Promoting exact requested project from nearby to #1 spot:', nearbyProjects[nearbyIdx].name);
+            const [matchedProj] = nearbyProjects.splice(nearbyIdx, 1);
+            projects.unshift(matchedProj);
+          }
+        }
+      }
 
       // ─── Phase 0: Anchor Resolution
       // NOTE: Anchor resolution commented out pending schema update for focus_project_id and focus_set_at fields.
@@ -2169,11 +2205,11 @@ async function enrichResponseWithDatabaseData(
 
     // 9. Format with LLM
     let llmClient: any
-    const model = routeToModel(intent)
-    if (model === 'groq') {
+    const model = routeToModel({ category: 'project_detail', confidence: 1 } as any)
+    if ((model as string) === 'groq') {
       const { getGroq } = await import('../lib/ai/groq')
       llmClient = getGroq()
-    } else if (model === 'openai') {
+    } else if ((model as string) === 'openai') {
       const OpenAI = await import('openai')
       llmClient = new OpenAI.default()
     } else {
@@ -2193,7 +2229,7 @@ async function enrichResponseWithDatabaseData(
     let comparison = null
     if (intentType === 'PAYMENT_PLANS' && primaryData.length > 1) {
       try {
-        comparison = rankPaymentPlans(primaryData.map((p) => p.data), memory)
+        comparison = rankPaymentPlans(primaryData.map((p) => p.data) as any, memory)
       } catch (err) {
         console.error('[enrichResponseWithDatabaseData] Comparison ranking failed:', err)
       }

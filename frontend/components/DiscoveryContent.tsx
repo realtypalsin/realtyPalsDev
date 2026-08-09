@@ -233,29 +233,24 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [comparingMessageId, setComparingMessageId] = useState<string | null>(null);
   const [selectedCompareProjects, setSelectedCompareProjects] = useState<Map<string, ProjectCardType>>(new Map());
 
-  const handleStartCompare = useCallback((messageId: string, properties: ProjectCardType[]) => {
+  const handleStartCompare = useCallback((messageId: string, _properties: ProjectCardType[]) => {
     setComparingMessageId(messageId);
     setExpandedShortlists(prev => new Set(prev).add(messageId));
-    const initialMap = new Map<string, ProjectCardType>();
-    properties.slice(0, 2).forEach(p => initialMap.set(p.id, p));
-    setSelectedCompareProjects(initialMap);
+    setSelectedCompareProjects(new Map());
   }, []);
 
   const handleToggleCompareSelect = useCallback((_messageId: string, property: ProjectCardType) => {
     setSelectedCompareProjects(prev => {
       const next = new Map(prev);
-      if (next.has(property.id)) {
-        if (next.size <= 2) {
-          setToast({ message: 'Select at least 2 properties to compare.' });
-          return prev;
-        }
-        next.delete(property.id);
+      const key = String(property.id || property.slug);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
         if (next.size >= 4) {
           setToast({ message: 'Maximum 4 properties can be compared at once.' });
           return prev;
         }
-        next.set(property.id, property);
+        next.set(key, property);
       }
       return next;
     });
@@ -619,11 +614,17 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               }
               : m
           ));
-          setLastShortlist(shortlist);
+          setLastShortlist(prev => {
+            const prevIds = (prev || []).map(p => String(p.id || p.slug)).sort().join(',');
+            const newIds = shortlist.map(p => String(p.id || p.slug)).sort().join(',');
+            const isChanged = !prevIds || prevIds !== newIds;
+
+            if (shortlist.length > 0 && isChanged) {
+              setExpandedShortlists(ePrev => new Set(ePrev).add(streamId));
+            }
+            return shortlist;
+          });
           setShowRecommendations(shortlist.length > 0);
-          if (shortlist.length > 0) {
-            setExpandedShortlists(prev => new Set(prev).add(streamId));
-          }
           track('recommendation_generated', { count: shortlist.length, session_id: sessionId });
         } else if (event.type === 'token') {
           setChatHistory(prev => prev.map(m =>
@@ -919,7 +920,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             setLastShortlist(cached.last_projects as any);
             setShowRecommendations(true);
           }
-          setChatHistory((cached.restored ?? []) as any);
+          const restoredHistory = (cached.restored ?? []) as ChatMessage[];
+          setChatHistory(restoredHistory);
+          const lastMsgWithResults = [...restoredHistory].reverse().find(m => ((m.exactResults?.length ?? 0) > 0 || (m.nearbyResults?.length ?? 0) > 0));
+          if (lastMsgWithResults) {
+            setExpandedShortlists(new Set([lastMsgWithResults.id]));
+          }
           setIsInitialized(true);
           setTimeout(() => scrollToBottom('instant'), 50);
           return;
@@ -1031,6 +1037,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
           setIsRestoring(true);
           setChatHistory(restored);
+          const lastMsgWithResults = [...restored].reverse().find(m => ((m.exactResults?.length ?? 0) > 0 || (m.nearbyResults?.length ?? 0) > 0));
+          if (lastMsgWithResults) {
+            setExpandedShortlists(new Set([lastMsgWithResults.id]));
+          }
           setTimeout(() => {
             scrollToBottom('instant');
             setIsRestoring(false);
@@ -1143,29 +1153,18 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     if (userMsg) dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: userMsg } });
   }, [chatHistory, dispatchAction]);
 
-  // ── Edit message: update, delete subsequent, regenerate ──
+  // ── Edit message: update content, truncate subsequent, regenerate ──
   const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
-    try {
-      // Update message
-      const patchRes = await fetch('/api/chat/message/' + messageId, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newContent }),
-      })
-      if (!patchRes.ok) throw new Error('Failed to update message')
+    const trimmed = newContent.trim();
+    if (!trimmed) return;
 
-      // Delete subsequent messages
-      const deleteRes = await fetch('/api/chat/message/' + messageId + '?deleteAfter=true', {
-        method: 'DELETE',
-      })
-      if (!deleteRes.ok) throw new Error('Failed to delete subsequent messages')
+    setChatHistory(prev => {
+      const idx = prev.findIndex(m => m.id === messageId);
+      if (idx === -1) return prev;
+      return prev.slice(0, idx);
+    });
 
-      // Re-send edited message
-      dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: newContent } })
-    } catch (error) {
-      console.error('Edit message error:', error)
-      throw error
-    }
+    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: trimmed } });
   }, [dispatchAction]);
 
   // ── Unified Chip Action Handler ──
@@ -1647,7 +1646,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                         onToast={handleToast}
                         onOpenCompare={setCompareOverlayProperties}
                         comparingMessageId={comparingMessageId}
-                        selectedCompareIds={isComparingThis ? new Set(selectedCompareProjects.keys()) : undefined}
+                        selectedCompareIds={isComparingThis ? new Set(Array.from(selectedCompareProjects.keys()).flatMap(k => [String(k), k])) : undefined}
                         onToggleCompareSelect={handleToggleCompareSelect}
                         onStartCompare={handleStartCompare}
                       />
@@ -1745,19 +1744,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           }}
         />
       )}
-
-      {/* Backdrop for inline compare mode */}
-      <AnimatePresence>
-        {comparingMessageId && (
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-20 bg-black/40 backdrop-blur-[3px] transition-all duration-300 pointer-events-auto"
-            onClick={handleCancelCompare}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Floating Action Bar for inline compare selection */}
       <AnimatePresence>

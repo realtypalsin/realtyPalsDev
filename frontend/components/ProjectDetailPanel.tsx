@@ -428,24 +428,24 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   }
 
   const stickyHeader = (
-    <div className="sticky top-0 z-40 w-full bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 shadow-sm transition-all duration-300">
-      <div className="flex items-center justify-between px-4 md:px-8 h-[60px] max-w-7xl mx-auto">
+    <div className="sticky top-0 z-40 w-full bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 shadow-xs transition-all duration-300">
+      <div className="flex items-center justify-between px-3 md:px-6 h-[58px] max-w-7xl mx-auto gap-2">
         
         {/* Left: Identity & Interactive RERA Badge */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="flex items-center gap-2 max-w-[140px] md:max-w-[200px]">
+        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
+          <div className="flex items-center gap-2 max-w-[120px] sm:max-w-[160px] md:max-w-[200px]">
             <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-            <span className="font-bold text-gray-900 dark:text-gray-100 text-[14px] truncate">{d?.name}</span>
+            <span className="font-extrabold text-gray-900 dark:text-gray-100 text-[13.5px] truncate leading-tight">{d?.name}</span>
           </div>
 
           {d?.rera_number && (
-            <div className="relative group hidden sm:inline-block">
+            <div className="relative group hidden md:inline-block">
               <button
                 onClick={() => handleReraClick(d.rera_number!, d.rera_url)}
                 title="Click to copy RERA No & Verify"
-                className="p-1.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-full text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all flex items-center justify-center cursor-pointer shadow-sm"
+                className="p-1 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-full text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
               >
-                <ShieldCheck size={16} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                <ShieldCheck size={15} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
               </button>
               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-50 w-56 bg-gray-900 text-white p-2.5 rounded-xl shadow-xl text-[11px] space-y-1 pointer-events-none transition-all">
                 <p className="font-bold text-blue-400 flex items-center gap-1">
@@ -460,31 +460,31 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0 hidden md:block" />
         </div>
 
-        {/* Center: Fixed Non-Scrolling Desktop Tab Strip */}
-        <div className="flex items-center gap-xs flex-1 justify-center px-md overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {/* Center: Flexible Non-Overlapping Tab Strip */}
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0 justify-start sm:justify-center px-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {SECTION_TABS.map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-lg py-md flex items-center gap-md text-xs md:text-sm font-bold rounded-md transition-all duration-fast whitespace-nowrap border-0 ${
+                className={`px-3 py-1.5 flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold rounded-xl transition-all whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-text-primary text-surface shadow-sm dark:bg-text-primary dark:text-surface'
-                    : 'bg-surface-2 text-text-secondary border border-border hover:bg-surface-3 hover:text-text-primary dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700'
+                    ? 'bg-gray-900 text-white shadow-xs dark:bg-white dark:text-gray-900 font-extrabold'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/60 font-medium'
                 }`}
               >
                 {tabIcons[tab]}
-                <span className="hidden sm:inline">{tab}</span>
+                <span>{tab}</span>
               </button>
             )
           })}
         </div>
 
         {/* Right: Price & CTA */}
-        <div className="flex items-center justify-end gap-3 flex-shrink-0">
-          <p className="text-[12px] font-bold text-gray-900 dark:text-white hidden lg:block whitespace-nowrap">{d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr+` : '')}</p>
-          <button onClick={() => handleOpenSiteVisit()} className="px-4 py-1.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-bold rounded-full text-[12px] transition-all whitespace-nowrap shadow-sm">
+        <div className="flex items-center justify-end gap-2.5 flex-shrink-0 ml-1">
+          <p className="text-[12px] font-bold text-gray-900 dark:text-white hidden xl:block whitespace-nowrap">{d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr+` : '')}</p>
+          <button onClick={() => handleOpenSiteVisit()} className="px-3.5 py-1.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-bold rounded-full text-[12px] transition-all whitespace-nowrap shadow-2xs cursor-pointer">
             Book Site Visit
           </button>
         </div>
@@ -512,7 +512,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
     const displayPossession = d?.possession_label || 'Dec 2028 (~3.3 Yrs)'
     const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 86
-    const builderName = d?.builder?.name || 'Elite Group'
+    const builderName = typeof d?.builder === 'object' ? (d.builder as any)?.name : (d?.builder || 'Elite Group')
 
     return (
       <div className="relative w-full bg-white dark:bg-[#120f0d] border-b border-gray-100 dark:border-gray-800/40 overflow-hidden flex-shrink-0">

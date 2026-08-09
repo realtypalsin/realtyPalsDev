@@ -3,9 +3,8 @@
 import { memo, useState, useEffect, useRef } from 'react'
 import {  m, AnimatePresence  } from 'framer-motion'
 import dynamic from 'next/dynamic'
-import Image from 'next/image'
+import NextImage from 'next/image'
 import { RotateCcw, Copy, ChevronDown, MapPin, ThumbsUp, ThumbsDown, Scale, Sparkles, Edit2 } from 'lucide-react'
-import { EditMessageModal } from './EditMessageModal'
 import { ResponseFormatter } from './ResponseFormatter'
 import remarkGfm from 'remark-gfm'
 import { track, trackPropertyEvent } from '@/lib/analytics'
@@ -309,10 +308,29 @@ function MessageBubbleInner({
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
   const [showAllProperties, setShowAllProperties] = useState(false)
-  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [isInlineEditing, setIsInlineEditing] = useState(false)
+  const [inlineText, setInlineText] = useState(message.content || '')
   const [editLoading, setEditLoading] = useState(false)
 
   const displayContent = message.content || ''
+
+  const handleInlineSave = async () => {
+    const trimmed = inlineText.trim()
+    if (!trimmed || trimmed === displayContent) {
+      setIsInlineEditing(false)
+      return
+    }
+    setEditLoading(true)
+    try {
+      await onEditMessage(message.id, trimmed)
+      setIsInlineEditing(false)
+    } catch (error) {
+      console.error('Failed to edit message:', error)
+      onToast('Failed to save changes')
+    } finally {
+      setEditLoading(false)
+    }
+  }
   const combinedChips = [...chips]
 
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
@@ -586,9 +604,47 @@ function MessageBubbleInner({
                 return null
               })()}
             </div>
+          ) : isUser && isInlineEditing ? (
+            <div className="w-full space-y-2 relative z-10 min-w-[260px] sm:min-w-[320px]">
+              <textarea
+                autoFocus
+                value={inlineText}
+                onChange={(e) => setInlineText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault()
+                    handleInlineSave()
+                  }
+                  if (e.key === 'Escape') {
+                    setIsInlineEditing(false)
+                    setInlineText(displayContent)
+                  }
+                }}
+                className="w-full min-h-[70px] p-3 text-[15px] font-medium text-gray-900 dark:text-white bg-white dark:bg-zinc-800 border border-blue-500/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
+              />
+              <div className="flex items-center justify-end gap-2 pt-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsInlineEditing(false)
+                    setInlineText(displayContent)
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-zinc-700/60 rounded-lg transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleInlineSave}
+                  disabled={!inlineText.trim() || editLoading}
+                  className="px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                >
+                  {editLoading ? 'Saving...' : 'Save & Submit'}
+                </button>
+              </div>
+            </div>
           ) : (
             <p className="whitespace-pre-wrap text-[16px] font-medium leading-relaxed relative z-10">{displayContent}</p>
-
           )}
         </div>
       </div>
@@ -599,9 +655,12 @@ function MessageBubbleInner({
             {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
           </span>
         )}
-        {isUser && displayContent && (
+        {isUser && displayContent && !isInlineEditing && (
           <button
-            onClick={() => setEditModalOpen(true)}
+            onClick={() => {
+              setIsInlineEditing(true)
+              setInlineText(displayContent)
+            }}
             title="Edit message"
             className="text-gray-400 hover:text-blue-500 transition-colors opacity-0 group-hover/msg:opacity-100"
             disabled={editLoading}
@@ -636,25 +695,6 @@ function MessageBubbleInner({
         )}
       </div>
 
-      <EditMessageModal
-        isOpen={editModalOpen}
-        initialText={displayContent}
-        isLoading={editLoading}
-        onClose={() => setEditModalOpen(false)}
-        onSave={async (newText) => {
-          setEditLoading(true)
-          try {
-            await onEditMessage(message.id, newText)
-            setEditModalOpen(false)
-          } catch (error) {
-            console.error('Failed to edit message:', error)
-            onToast('Failed to save changes')
-          } finally {
-            setEditLoading(false)
-          }
-        }}
-      />
-
       {/* In-chat image gallery */}
       {message.images && message.images.length > 0 && (
         <div className="mt-3 w-full max-w-[90%] md:max-w-[80%]">
@@ -670,7 +710,7 @@ function MessageBubbleInner({
             {(() => {
               const src = message.images[carouselIndex]?.url ?? message.images[0]?.url;
               return src ? (
-                <Image
+                <NextImage
                   src={src}
                   alt={message.images[carouselIndex]?.caption ?? 'Property image'}
                   width={680}
@@ -761,7 +801,7 @@ function MessageBubbleInner({
         if (useNewFormat && !hasExact && !hasNearby) return null
         if (!useNewFormat && !hasLegacy) return null
 
-        const isOpen = isLastProperties ? !isExpanded : isExpanded
+        const isOpen = isExpanded
 
         const primaryCards = useNewFormat ? (hasExact ? exactList : nearbyList) : legacyList
         const fullCardsForCompare = useNewFormat ? (hasExact ? rawExactList : rawNearbyList) : rawLegacyList
@@ -883,7 +923,7 @@ function MessageBubbleInner({
                             sessionId={sessionId}
                             index={pi}
                             isSelectable={comparingMessageId === message.id}
-                            isSelected={selectedCompareIds?.has(property.id) ?? false}
+                            isSelected={Boolean(selectedCompareIds && (selectedCompareIds.has(String(property.id)) || (property.slug && selectedCompareIds.has(property.slug)) || selectedCompareIds.has(property.id as any)))}
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
@@ -922,7 +962,7 @@ function MessageBubbleInner({
                             sessionId={sessionId}
                             index={pi}
                             isSelectable={comparingMessageId === message.id}
-                            isSelected={selectedCompareIds?.has(property.id) ?? false}
+                            isSelected={Boolean(selectedCompareIds && (selectedCompareIds.has(String(property.id)) || (property.slug && selectedCompareIds.has(property.slug)) || selectedCompareIds.has(property.id as any)))}
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}

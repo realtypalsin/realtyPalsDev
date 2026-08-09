@@ -300,8 +300,21 @@ function getSearchRefinementChips(
   }
 
   // If sector and BHK specified but budget missing, offer budget refinement
-  if (intent.sector && intent.bhk?.length && !intent.budgetMax && !intent.budgetMin && inventory?.budgetBuckets) {
-    for (const bucket of inventory.budgetBuckets.slice(0, 3)) {
+  if (intent.sector && intent.bhk?.length && !intent.budgetMax && !intent.budgetMin) {
+    const resultPrices = results.map(r => r.price_min_cr).filter((p): p is number => typeof p === 'number' && p > 0)
+    let dynamicBuckets = inventory?.budgetBuckets.slice(0, 3) ?? []
+    if (resultPrices.length > 0) {
+      const minP = Math.min(...resultPrices)
+      const maxP = Math.max(...resultPrices)
+      const midP = Number(((minP + maxP) / 2).toFixed(2))
+      dynamicBuckets = [
+        { label: `Under ₹${midP < 1 ? Math.round(midP * 100) + 'L' : midP + ' Cr'}`, min: 0, max: midP },
+        { label: `₹${minP < 1 ? Math.round(minP * 100) + 'L' : minP + ' Cr'}–${maxP < 1 ? Math.round(maxP * 100) + 'L' : maxP + ' Cr'}`, min: minP, max: maxP },
+        { label: `Up to ₹${Number((maxP * 1.25).toFixed(2))} Cr`, min: 0, max: Number((maxP * 1.25).toFixed(2)) }
+      ]
+    }
+
+    for (const bucket of dynamicBuckets) {
       chips.push(chip(
         `INTENT_PATCH:refine_budget:${bucket.label.replace(/[₹\s,–-]/g, '_')}`,
         'INTENT_PATCH', bucket.label, '💰',

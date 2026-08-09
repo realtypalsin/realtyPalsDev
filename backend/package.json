@@ -17,6 +17,7 @@
     "db:generate": "prisma generate --schema=../frontend/prisma/schema.prisma",
     "postinstall": "prisma generate --schema=../frontend/prisma/schema.prisma",
     "typecheck": "tsc --noEmit",
+    "swagger:generate": "tsx scripts/generate-swagger.ts",
     "check-all": "npm run lint && npm run typecheck"
   },
   "prisma": {

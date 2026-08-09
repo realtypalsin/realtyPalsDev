@@ -71,6 +71,13 @@ export default function OverviewTab({
   const unitTypes = d?.unit_types ?? []
   const connections = detail?.all_connectivity ?? d?.top_connectivity ?? []
 
+  const builderName = typeof d?.builder === 'object'
+    ? (d.builder as any)?.name
+    : typeof d?.builder === 'string'
+      ? d.builder
+      : null
+  const devName = builderName || (d as any)?.builder_name || 'Developer'
+
   // Function to open specific floor plan for a BHK unit card
   const handleUnitClick = (bhk: number) => {
     const matchedPlans = floorPlanImages.filter(img => img.bhk === bhk || img.caption?.toLowerCase().includes(`${bhk}bhk`) || img.caption?.toLowerCase().includes(`${bhk} bhk`))
@@ -406,9 +413,8 @@ export default function OverviewTab({
               </div>
             ))}
           </div>
-
           <p className="text-[11px] text-gray-400 font-semibold pt-1">
-            All channel partners are RERA registered & verified by {(d as any)?.builder_name ?? (d as any)?.builder ?? 'Developer'}.
+            All channel partners are RERA registered & verified by {devName}.
           </p>
         </div>
       )}
@@ -474,7 +480,7 @@ export default function OverviewTab({
             { label: 'POSSESSION', val: d?.possession_label ?? 'Dec 2028', icon: CalendarDays },
             ...(showAllDetails ? [
               { label: 'RERA NO.', val: d?.rera_number || 'UPRERAPRJ12345', icon: FileText },
-              { label: 'DEVELOPER', val: (d as any)?.builder_name || (d as any)?.builder || 'Elite Group', icon: Building2 },
+              { label: 'DEVELOPER', val: devName, icon: Building2 },
               { label: 'PROJECT TYPE', val: (d as any)?.property_type || 'Residential Apartment', icon: Building2 },
               { label: 'GREEN RATING', val: d?.green_rating || 'IGBC Certified', icon: Leaf },
             ] : [])
