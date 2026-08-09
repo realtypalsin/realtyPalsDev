@@ -6,6 +6,8 @@ import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { checkRateLimit, invalidateSessionList, getCached, setCached } from '../lib/cache'
 import { extractIntent } from '../lib/ai/intent'
+import { hydrateIntentFromMemory, persistIntentToMemory, trackPropertyReaction } from '../lib/ai/sessionMemory'
+import { gradeResponseAsync } from '../lib/ai/responseGrader'
 import { IntentSchema, getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel, matchesProjectName } from '../lib/discovery'
 import type { Intent, ScoredProject } from '../lib/discovery'
 import { classifyQuery } from '../lib/discovery/queryClassifier'
@@ -377,6 +379,9 @@ router.post('/', async (req: Request, res: Response) => {
   let projectDisambiguation: Awaited<ReturnType<typeof discoverProjects>>['disambiguation'] | undefined
   let sectorDisambiguation: { query: string; candidates: string[] } | undefined
   let renderTarget: 'cards' | 'text' | 'both' = 'text' // Phase 0: Default to text, updated by classifier
+  let hydratedIntent: Intent = prevIntent as Intent // Phase 0: Persisted in finally
+  let messageId: string | undefined // Phase 1: For grading
+  let responseText: string = '' // Phase 1: Full response for grading
 
   try {
     console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
@@ -398,6 +403,10 @@ router.post('/', async (req: Request, res: Response) => {
       console.log('[CHAT] TEXT_MESSAGE — running LLM extraction')
       rawIntentResult = await extractIntent(message, prevIntent)
     }
+
+    // Phase 0: Hydrate intent from prior conversation
+    const baseIntent = rawIntentResult.intent
+    const hydratedIntent = sessionId ? await hydrateIntentFromMemory(sessionId, baseIntent) : baseIntent
 
     const [memory, sessionData] = await Promise.all([
       getMemory(userId, guestToken),
@@ -1719,6 +1728,9 @@ router.post('/', async (req: Request, res: Response) => {
       }
     }
 
+    // Phase 1: Capture response for grading
+    responseText = fullText
+
     const persistPromises: Promise<unknown>[] = []
 
     if (isNewSession) {
@@ -1865,6 +1877,16 @@ router.post('/', async (req: Request, res: Response) => {
     await Promise.all(persistPromises).catch((e) => console.error('[chat] persist error:', e))
     console.log('[CHAT] AFTER persist', Date.now())
 
+    // Phase 1: Capture latest assistant message ID for grading
+    if (currentSessionId) {
+      const latestMessage = await prisma.chatMessage.findFirst({
+        where: { session_id: currentSessionId, role: 'assistant' },
+        orderBy: { created_at: 'desc' },
+        select: { id: true },
+      })
+      if (latestMessage) messageId = latestMessage.id
+    }
+
     console.log('[CHAT] BEFORE send(done)', Date.now())
     send('done', { sessionId: currentSessionId, intentState, intent, responseMode })
     console.log('[CHAT] AFTER send(done)', Date.now())
@@ -1888,6 +1910,29 @@ router.post('/', async (req: Request, res: Response) => {
       send('error', { message: "I'm having trouble right now. Please try again in a moment." })
     }
   } finally {
+    // Phase 0: Persist intent to session memory (async, fire-and-forget)
+    if (sessionId && hydratedIntent) {
+      persistIntentToMemory(sessionId, userId, hydratedIntent).catch((err) => {
+        console.error('[PHASE0:PERSIST] Error persisting intent:', err.message)
+      })
+    }
+
+    // Phase 1: Grade response async (fire-and-forget, don't block)
+    if (sessionId && messageId && responseText) {
+      gradeResponseAsync(
+        sessionId,
+        messageId,
+        message || '',
+        responseText,
+        {
+          propertiesShown: projects?.length ?? 0,
+          propertyNames: projects?.map((p) => p.name) ?? [],
+        }
+      ).catch((err) => {
+        console.error('[PHASE1:GRADE] Error grading response:', err.message)
+      })
+    }
+
     res.end()
   }
 })

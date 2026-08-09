@@ -19,7 +19,7 @@ export function calculateConfidence(
 
   // Freshness penalty: -5% per week old
   if (data.verified_at || data.updated_at) {
-    const verifiedDate = new Date(data.verified_at || data.updated_at)
+    const verifiedDate = new Date((data.verified_at || data.updated_at) as string | number)
     const now = new Date()
     const daysOld = (now.getTime() - verifiedDate.getTime()) / (1000 * 60 * 60 * 24)
     const weeksOld = Math.floor(daysOld / 7)

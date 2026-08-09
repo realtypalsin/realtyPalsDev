@@ -8,7 +8,7 @@
 
 import { extractExtendedIntent, ExtendedIntent, mapExtendedIntentToLegacy } from '../ai/extendedIntent'
 import { rankProject, rankProjects } from './scoringEngine'
-import { queryAndScoreProjects } from './multiDimQuery'
+import { queryAndScoreProjects, type RankedProject } from './multiDimQuery'
 import { formatRankedResults, generateRecommendationSummary } from './rankingFormatter'
 import type { Intent } from './types'
 import type { FormattedRecommendation } from './rankingFormatter'
@@ -110,19 +110,24 @@ export async function getMultiDimensionalRecommendations(
   const legacyIntent = mapExtendedIntentToLegacy(extendedIntent)
 
   // Convert RankedProject[] to RankingResult[] format for formatRankedResults
-  const rankingResults = rankedProjects.map(rp => ({
-    finalScore: rp.finalScore,
-    dimensionScores: rp.dimensionScores.reduce((acc, ds) => {
+  const rankingResults = rankedProjects.map(rp => {
+    const dimensionScoresMap = rp.dimensionScores.reduce((acc, ds) => {
       const dimKey = ds.dimension as keyof typeof acc
       return { ...acc, [dimKey]: ds }
-    }, {} as Record<string, any>),
-    projectId: rp.projectId,
-    projectName: rp.projectName
-  }))
+    }, {} as Record<string, any>)
+
+    return {
+      finalScore: rp.finalScore,
+      dimensionScores: dimensionScoresMap,
+      dealBreakers: rp.dimensionScores.filter((ds: any) => ds.dealBreaker === true),
+      projectId: rp.projectId,
+      projectName: rp.projectName
+    }
+  })
 
   const recommendations = formatRankedResults(
-    rankingResults,
-    rankedProjects.map(r => r.metadata),
+    rankingResults as any,
+    rankedProjects.map(r => r.metadata) as any,
     legacyIntent,
     Math.min(options?.limit ?? 3, 10)
   )
@@ -170,7 +175,7 @@ export async function getMultiDimensionalRecommendations(
  * Calculate ranking confidence based on data quality signals
  */
 function calculateRankingConfidence(
-  rankedProjects: typeof import('./multiDimQuery').RankedProject[],
+  rankedProjects: RankedProject[],
   recommendations: FormattedRecommendation[]
 ): number {
   if (recommendations.length === 0) return 0

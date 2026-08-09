@@ -24,7 +24,7 @@
     "schema": "../frontend/prisma/schema.prisma"
   },
   "dependencies": {
-    "@google/genai": "^2.15.0",
+    "@google/genai": "^2.16.0",
     "@prisma/client": "^5.20.0",
     "@sentry/node": "^8.0.0",
     "@supabase/supabase-js": "^2.49.8",
@@ -32,7 +32,7 @@
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.21.1",
     "express-async-errors": "^3.1.1",
     "file-type": "^16.5.4",

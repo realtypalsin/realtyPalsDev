@@ -708,6 +708,10 @@ model ChatSession {
   query_metrics    QueryMetrics[]
   property_events  PropertyEvent[]
 
+  // Phase 0/1: Memory + Grading
+  memory           SessionMemory?
+  response_grades  ResponseGrade[]
+
   @@index([user_id])
   @@index([guest_token])
   @@map("chat_sessions")
@@ -1555,4 +1559,65 @@ model ProjectChannelPartner {
   @@index([project_id])
   @@index([is_featured])
   @@map("project_channel_partners")
+}
+
+// ──────────────────────────────────────────────────────────────
+// PHASE 0: CONVERSATION MEMORY (Session-scoped intent + reactions)
+// ──────────────────────────────────────────────────────────────
+
+model SessionMemory {
+  id                    String    @id @default(cuid())
+  session_id            String    @unique
+  user_id               String?
+
+  // Extracted intent snapshot for hydration across turns
+  extracted_intent      Json?     // {bhk?, budget?, sector?, ...}
+
+  // Property reactions tracking
+  property_reactions    Json      @default("[]") // [{projectId, sentiment, signals}]
+
+  // Saved property IDs in this session
+  saved_property_ids    String[]  @default([])
+
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([user_id])
+  @@map("session_memory")
+}
+
+// ──────────────────────────────────────────────────────────────
+// PHASE 1: RESPONSE GRADING (Outcome-based iteration)
+// ──────────────────────────────────────────────────────────────
+
+model ResponseGrade {
+  id                    String    @id @default(cuid())
+  session_id            String
+  message_id            String?
+
+  // Outcome evaluation
+  outcome_achieved      Boolean?
+  grade_score           Int?      // 0-100 score
+  grading_reason        String?
+
+  // What outcomes were achieved?
+  outcomes              String[]  @default([]) // ["saved", "callback_clicked", "question_asked"]
+
+  // Retry control
+  should_retry          Boolean   @default(false)
+  retry_count           Int       @default(0)
+  max_retries           Int       @default(1)
+
+  graded_at             DateTime?
+  created_at            DateTime  @default(now())
+
+  session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([outcome_achieved])
+  @@index([grade_score])
+  @@map("response_grades")
 }
