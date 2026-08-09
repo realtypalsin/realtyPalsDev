@@ -182,7 +182,8 @@ router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
     }
 
     // Retry logic for cold-start connection errors
-    let projects, total
+    let projects: any[] = []
+    let total = 0
     let retries = 0
     const maxRetries = 2
     const backoffMs = [10, 100] // ms delays on retry

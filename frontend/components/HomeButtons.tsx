@@ -9,6 +9,8 @@ import {
   Crown,
   Trees,
   Shield,
+  Sparkles,
+  Layers,
   ChevronDown,
   ChevronRight,
   ListFilter
@@ -21,7 +23,9 @@ const iconMap: Record<string, React.ReactNode> = {
   Key: <Key size={13} />,
   Crown: <Crown size={13} />,
   Trees: <Trees size={13} />,
-  Shield: <Shield size={13} />
+  Shield: <Shield size={13} />,
+  Sparkles: <Sparkles size={13} />,
+  Layers: <Layers size={13} />
 };
 
 interface HomeButtonsProps {
@@ -60,7 +64,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
 
   return (
     <div ref={containerRef} className="w-full flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto px-2">
-      {HOME_BUTTON_GROUPS.map((group, index) => {
+      {HOME_BUTTON_GROUPS.filter(group => group.options && group.options.length > 0).map((group, index) => {
         const isOpen = openDropdownId === group.id;
         const alignClass =
           index % 3 === 0

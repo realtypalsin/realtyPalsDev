@@ -198,6 +198,8 @@ export interface ExtendedIntentWithConfidence extends ExtendedIntentType {
   }
 }
 
+export type ExtendedIntent = ExtendedIntentWithConfidence;
+
 // ============================================================================
 // PROMPT TEMPLATE
 // ============================================================================

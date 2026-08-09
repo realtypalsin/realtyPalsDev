@@ -127,8 +127,10 @@ function haversineDistance(
 // Phase 1: Hard Constraint Filtering
 // ─────────────────────────────────────────────────────────────────────────────
 
-function buildHardConstraintFilters(intent: ExtendedIntentWithConfidence): Record<string, any> {
-  const filters: Record<string, any> = {}
+function buildHardConstraintFilters(
+  intent: ExtendedIntentWithConfidence
+): Record<string, unknown> {
+  const filters: Record<string, unknown> = {}
 
   // Budget constraint: projects with overlapping price range
   if (intent.budgetMin !== undefined || intent.budgetMax !== undefined) {
@@ -195,7 +197,7 @@ function buildHardConstraintFilters(intent: ExtendedIntentWithConfidence): Recor
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function fetchProjectsWithMetadata(
-  filters: Record<string, any>,
+  filters: Record<string, unknown>,
   limit: number = 20,
   offset: number = 0
 ): Promise<
@@ -445,7 +447,7 @@ async function getSectorStats(sector: string): Promise<{
         priceCount++
       }
     }
-    if (proj.cost_sheet?.maintenance_psf_monthly !== null) {
+    if (proj.cost_sheet?.maintenance_psf_monthly != null) {
       totalMaintenance += proj.cost_sheet.maintenance_psf_monthly
       maintenanceCount++
     }

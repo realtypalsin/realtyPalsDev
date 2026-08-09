@@ -11,7 +11,7 @@ const BASE_CONFIDENCE: Record<string, number> = {
 
 export function calculateConfidence(
   source: string,
-  data: any,
+  data: Record<string, unknown>,
   legal_risk: boolean = false,
   litigation_count: number = 0
 ): number {
@@ -76,7 +76,7 @@ export async function fetchProjectData(
 export async function fetchWeightedData(projectId: string, route: RouteDecision) {
   const primaryData = await fetchProjectData(projectId, route.primary_table)
 
-  let secondaryData: any[] = []
+  let secondaryData: Record<string, unknown>[] = []
   if (route.secondary_tables.length > 0) {
     for (const table of route.secondary_tables) {
       const data = await fetchProjectData(projectId, table)
@@ -90,8 +90,8 @@ export async function fetchWeightedData(projectId: string, route: RouteDecision)
       confidence: calculateConfidence(
         route.primary_table.toLowerCase(),
         item,
-        item.legal_flag !== 'none',
-        item.litigation_count || 0
+        (item as Record<string, unknown>).legal_flag !== 'none',
+        Number((item as Record<string, unknown>).litigation_count) || 0
       )
     })),
     secondary: secondaryData.map((item) => ({
@@ -99,8 +99,8 @@ export async function fetchWeightedData(projectId: string, route: RouteDecision)
       confidence: calculateConfidence(
         route.primary_table.toLowerCase(),
         item,
-        item.legal_flag !== 'none',
-        item.litigation_count || 0
+        (item as Record<string, unknown>).legal_flag !== 'none',
+        Number((item as Record<string, unknown>).litigation_count) || 0
       )
     }))
   }

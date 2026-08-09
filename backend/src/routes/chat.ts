@@ -1611,7 +1611,7 @@ router.post('/', async (req: Request, res: Response) => {
     } // end: !needsClarification && disambiguationText === null
 
     // ─── ENHANCE RESPONSE WITH MULTI-DIMENSIONAL RECOMMENDATIONS ──────────────
-    if (fullText && projects.length > 0 && responseMode === 'search') {
+    if (fullText && projects.length > 0) {
       try {
         console.log('[MULTI_DIM:RESPONSE] Attaching dimension explanations and comparisons')
         fullText = attachMultiDimensionalRecommendations(fullText, projects)

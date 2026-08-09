@@ -18,6 +18,11 @@ export function rankPaymentPlans(
   plans: PaymentPlanData[],
   memory: Partial<ConversationMemory>
 ): RankingResult {
+  // Validate input
+  if (!plans || plans.length === 0) {
+    throw new Error('rankPaymentPlans requires at least one payment plan')
+  }
+
   // Infer priority from memory
   const hasBudgetConstraint = memory.user_budget_min_cr && memory.user_budget_max_cr
   const hasTimelineConcern = memory.user_pain_points?.some(p =>
@@ -39,7 +44,7 @@ export function rankPaymentPlans(
 
     // Flexibility-first: flexible (null duration) > fixed duration
     if (hasTimelineConcern) {
-      if (plan.duration_months === null) {
+      if (plan.duration_months === null || plan.duration_months === undefined) {
         score += 75 // Flexible plans score high
       } else if (plan.duration_months > 60) {
         score += 25 // Long duration = less flexible
@@ -80,9 +85,9 @@ export function rankPaymentPlans(
   // Build matrix
   const matrix: ComparisonMatrix = {
     dimensions: [
-      { name: 'Down Payment', format: 'percentage' },
-      { name: 'Duration (months)', format: 'number' },
-      { name: 'Monthly EMI', format: 'currency' }
+      { name: 'Down Payment', weight: 0.4, format: 'percentage', better_is: 'lower' },
+      { name: 'Duration (months)', weight: 0.3, format: 'months', better_is: 'lower' },
+      { name: 'Monthly EMI', weight: 0.3, format: 'currency', better_is: 'lower' }
     ],
     rows: sorted.slice(0, 3).map((plan) => ({
       name: plan._displayName,
@@ -91,7 +96,8 @@ export function rankPaymentPlans(
         plan.duration_months ?? 0,
         plan.monthly_emi ?? 0
       ]
-    }))
+    })),
+    weighted_rank: sorted.slice(0, 3).map((_, i) => i + 1)
   }
 
   return { matrix, winner, reason }

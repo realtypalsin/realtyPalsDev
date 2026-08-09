@@ -59,26 +59,23 @@ export async function getMultiDimensionalRecommendations(
 
   console.log('[MULTI_DIM:PHASE1] Intent extraction complete', {
     degraded: intentDegraded,
-    budget: extendedIntent.financial?.budgetMin && extendedIntent.financial?.budgetMax
-      ? `${extendedIntent.financial.budgetMin}-${extendedIntent.financial.budgetMax}`
-      : 'not specified',
-    sector: extendedIntent.location?.sectorPreference,
-    timeline: extendedIntent.timeline?.possessionUrgency
+    sector: extendedIntent.sectorPreference
   })
 
   // Calculate intent confidence (avg confidence across all extracted dimensions)
+  const meta = extendedIntent._meta || {}
   const dimensionConfidences = [
-    extendedIntent.financial?.confidence ?? 0,
-    extendedIntent.location?.confidence ?? 0,
-    extendedIntent.timeline?.confidence ?? 0,
-    extendedIntent.specs?.confidence ?? 0,
-    extendedIntent.builder?.confidence ?? 0,
-    extendedIntent.legal?.confidence ?? 0,
-    extendedIntent.amenities?.confidence ?? 0,
-    extendedIntent.pricing?.confidence ?? 0,
-    extendedIntent.personal?.confidence ?? 0,
-    extendedIntent.decision?.confidence ?? 0,
-    extendedIntent.gaps?.confidence ?? 0
+    meta.budgetConfidence ?? 50,
+    meta.locationConfidence ?? 50,
+    meta.timelineConfidence ?? 50,
+    meta.specsConfidence ?? 50,
+    meta.builderConfidence ?? 50,
+    meta.legalConfidence ?? 50,
+    meta.amenitiesConfidence ?? 50,
+    meta.pricingConfidence ?? 50,
+    meta.personalConfidence ?? 50,
+    meta.decisionConfidence ?? 50,
+    meta.gapConfidence ?? 50
   ]
   const intentConfidence = Math.round(dimensionConfidences.reduce((a, b) => a + b, 0) / dimensionConfidences.length)
 
@@ -110,9 +107,23 @@ export async function getMultiDimensionalRecommendations(
 
   // Phase 4: Format results with human-readable explanations
   console.log('[MULTI_DIM:PHASE4] Starting ranking formatter')
-  const recommendations = await formatRankedResults(
-    rankedProjects,
-    extendedIntent,
+  const legacyIntent = mapExtendedIntentToLegacy(extendedIntent)
+
+  // Convert RankedProject[] to RankingResult[] format for formatRankedResults
+  const rankingResults = rankedProjects.map(rp => ({
+    finalScore: rp.finalScore,
+    dimensionScores: rp.dimensionScores.reduce((acc, ds) => {
+      const dimKey = ds.dimension as keyof typeof acc
+      return { ...acc, [dimKey]: ds }
+    }, {} as Record<string, any>),
+    projectId: rp.projectId,
+    projectName: rp.projectName
+  }))
+
+  const recommendations = formatRankedResults(
+    rankingResults,
+    rankedProjects.map(r => r.metadata),
+    legacyIntent,
     Math.min(options?.limit ?? 3, 10)
   )
 
@@ -129,7 +140,7 @@ export async function getMultiDimensionalRecommendations(
 
   // Generate concise summary for chat display
   const summaryForChat = topRecommendation
-    ? generateRecommendationSummary(topRecommendation)
+    ? generateRecommendationSummary([topRecommendation])
     : 'I found some projects that match your criteria, but they have trade-offs. Would you like me to explain them?'
 
   const result: MultiDimensionalResult = {
@@ -159,7 +170,7 @@ export async function getMultiDimensionalRecommendations(
  * Calculate ranking confidence based on data quality signals
  */
 function calculateRankingConfidence(
-  rankedProjects: any[],
+  rankedProjects: typeof import('./multiDimQuery').RankedProject[],
   recommendations: FormattedRecommendation[]
 ): number {
   if (recommendations.length === 0) return 0

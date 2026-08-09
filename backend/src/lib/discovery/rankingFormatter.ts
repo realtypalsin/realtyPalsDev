@@ -46,7 +46,7 @@ export interface DealBreakerInfo {
 /**
  * Comparison row for multi-project matrix view.
  */
-export interface ComparisonRow {
+export interface FormattedComparisonRow {
   dimensionName: string
   dimensionLabel: string
   weight: number // e.g., 0.15 for 15%
@@ -81,7 +81,7 @@ export interface FormattedRecommendation {
   nextSteps: string[] // Suggested follow-up actions
 
   // Multi-project view
-  comparisonMatrix?: ComparisonRow[]
+  comparisonMatrix?: FormattedComparisonRow[]
 }
 
 // ============================================================================
@@ -375,7 +375,7 @@ function generateComparisonMatrix(
     projectName: string
     dimensionExplanations: DimensionExplanation[]
   }>
-): ComparisonRow[] {
+): FormattedComparisonRow[] {
   if (recommendations.length < 2) return []
 
   const dimensionLabels = [
