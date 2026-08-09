@@ -57,6 +57,71 @@ export interface Property {
   property_index?: number;
   property_reference?: string;
   validation?: PropertyValidation | null;
+
+  // Phase 5: Comprehensive Property Decision Factors
+  // 1. Resale & Investment Terms
+  resale_lock_in_months?: number | null;
+  rental_income_allowed?: boolean | null;
+  occupancy_restriction_months?: number | null;
+
+  // 2. NRI & Eligibility
+  nri_eligible?: boolean | null;
+  nri_approval_months?: number | null;
+  foreign_currency_payment_allowed?: boolean | null;
+
+  // 3. Legal & Compliance Additions
+  occupancy_certificate_status?: string | null;
+  occupancy_expected_date?: string | null;
+  ongoing_litigation_count?: number | null;
+  litigation_types?: string[];
+  nclt_status?: string | null;
+
+  // 4. Quality & Reputation
+  construction_quality_rating?: number | null;
+  buyer_satisfaction_rating?: number | null;
+  handover_defect_rate?: number | null;
+
+  // 5. Lifestyle & Safety
+  women_safety_score?: number | null;
+  has_security_24x7?: boolean | null;
+  has_cctv?: boolean | null;
+  police_station_distance_km?: number | null;
+  street_lights?: boolean | null;
+
+  // 6. Vastu & Preferences
+  vastu_compliant?: boolean | null;
+  north_facing_units?: boolean | null;
+  east_facing_preferred?: boolean | null;
+
+  // 7. Environmental & Area Quality
+  air_quality_index_avg?: number | null;
+  noise_level_db?: number | null;
+  flood_zone?: string | null;
+  proximity_to_industrial?: string | null;
+  green_cover_percent?: number | null;
+
+  // 8. Education & Connectivity
+  top_school_distance_km?: number | null;
+  college_distance_km?: number | null;
+  hospital_distance_km?: number | null;
+  airport_distance_km?: number | null;
+
+  // 9. Market & Pricing
+  market_demand_score?: number | null;
+  appreciation_potential_5yr?: number | null;
+  rental_yield_annual_percent?: number | null;
+  competing_projects_nearby?: number | null;
+
+  // 10. Possession & Timeline
+  foundation_stone_date?: string | null;
+  expected_handover_quarter?: string | null;
+  average_builder_delay_months?: number | null;
+
+  // 11. Regulatory & Compliance
+  gst_pass_through?: boolean | null;
+  land_title_clear?: boolean | null;
+  fir_against_project?: boolean | null;
+  approvals_status?: string | null;
 }
 
 export interface PropertyDetail {

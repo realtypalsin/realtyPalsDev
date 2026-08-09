@@ -15,6 +15,7 @@ import { findProjectsMentioned, buildProseChips } from '../lib/discovery/proseEn
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
+import { getMultiDimensionalRecommendations } from '../lib/discovery/multiDimensionalIntegration'
 import { maybeCompressTopical, TopicSummaries } from '../lib/chat/summaryCompression'
 import { scorePropertyEngagement } from '../lib/chat/propertyEngagement'
 import { detectPropertyReactions, PropertyReaction } from '../lib/chat/reactionDetector'
@@ -43,6 +44,7 @@ import { getChipInventory } from '../lib/discovery/chipInventory'
 import { planProjectDetailQuery, isActionable, getClarificationMessage } from '../lib/discovery/queryPlanner'
 import { getProjectDataForQuery, computeResponseConfidence } from '../lib/projectDataGateway'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
+import { generateMultiDimensionalContext, attachMultiDimensionalRecommendations } from '../lib/discovery/multidimensionalPromptEnricher'
 import { FINANCIAL } from '../lib/config'
 import { DEFAULT_CITY, PILOT_SCOPE_LABEL } from '../lib/config/cities'
 import { verifyUser } from '../lib/auth'
@@ -969,6 +971,60 @@ router.post('/', async (req: Request, res: Response) => {
       discoveryExpansion = discoveryResult.expansion
       notFoundNames = discoveryResult.notFoundNames
 
+      // ─── MULTI-DIMENSIONAL RANKING ENHANCEMENT ────────────────────────────────
+      // If we have projects, enhance with comprehensive multi-dimensional scoring
+      // This enriches the basic discovery results with detailed explanations
+      if ((projects.length > 0 || nearbyProjects.length > 0) && action.type === 'TEXT_MESSAGE') {
+        try {
+          console.log('[MULTI_DIM:ENHANCEMENT] Starting multi-dimensional ranking enhancement')
+          const multiDimResult = await getMultiDimensionalRecommendations(
+            message,
+            chatHistory,
+            undefined,
+            { limit: Math.min(5, projects.length + nearbyProjects.length) }
+          )
+
+          if (multiDimResult.recommendations.length > 0 && multiDimResult.topRecommendation) {
+            console.log('[MULTI_DIM:ENHANCEMENT] Success', {
+              recommendationCount: multiDimResult.recommendations.length,
+              topScore: multiDimResult.topRecommendation.finalScore,
+              overallConfidence: multiDimResult.confidence.overallConfidence,
+              dealBreakers: multiDimResult.dealBreakersDetected
+            })
+
+            // Enhance the discovered projects with multi-dimensional data
+            // Map recommendations back to discovered projects for enrichment
+            const recommendationMap = new Map(
+              multiDimResult.recommendations.map(r => [r.projectId, r])
+            )
+
+            // Enhance exact results with multi-dimensional data
+            projects = projects.map(p => ({
+              ...p,
+              // Store multi-dimensional data for use in response generation
+              _multidimensional_rank: recommendationMap.get(p.id),
+              _multidimensional_explanation: recommendationMap.get(p.id)?.dimensionExplanations,
+              _multidimensional_tradeoffs: recommendationMap.get(p.id)?.tradeOffs,
+              _multidimensional_score: recommendationMap.get(p.id)?.finalScore,
+              _recommendation_summary: recommendationMap.get(p.id)?.summary
+            })) as any
+
+            // Store in session for later use
+            if (sessionId) {
+              await prisma.chatSession.update({
+                where: { id: sessionId },
+                data: {
+                  last_projects: projects.slice(0, 5) as any,
+                }
+              }).catch(e => console.warn('[SESSION:UPDATE] Failed:', e))
+            }
+          }
+        } catch (err) {
+          console.error('[MULTI_DIM:ENHANCEMENT] Failed:', err)
+          // Fall through — discovery results still available
+        }
+      }
+
       if (intent.projectNames?.length) {
         const targetLower = intent.projectNames[0].toLowerCase();
         const matchedIdx = projects.findIndex(p => p.name.toLowerCase().includes(targetLower) || targetLower.includes(p.name.toLowerCase()));
@@ -1133,7 +1189,15 @@ router.post('/', async (req: Request, res: Response) => {
     const trimmedProjects = trimPropertiesForPrompt(projects.slice(0, 3))
     const trimmedNearby = nearbyProjects.length > 0 ? trimPropertiesForPrompt(nearbyProjects.slice(0, 3)) : undefined
 
-    const systemPrompt = buildAdvisorSystemPrompt(intent, trimmedProjects as any, memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, trimmedNearby as any, notFoundNames, blockedBuilders, intentState, DEFAULT_CITY) + systemSuffix
+    let systemPrompt = buildAdvisorSystemPrompt(intent, trimmedProjects as any, memory, sectorCtx ?? undefined, sectorsOverview ?? undefined, discoveryExpansion ?? undefined, trimmedNearby as any, notFoundNames, blockedBuilders, intentState, DEFAULT_CITY) + systemSuffix
+
+    // ─── INJECT MULTI-DIMENSIONAL CONTEXT ─────────────────────────────────────
+    // Append dimension scores, explanations, and trade-offs to system prompt
+    // This gives the AI rich context about why each project was recommended
+    const multiDimContext = generateMultiDimensionalContext(projects)
+    if (multiDimContext) {
+      systemPrompt += multiDimContext
+    }
 
     // Issue 4: trim message history if total token estimate exceeds safe ceiling
     const messages = trimMessagesToBudget(systemPrompt, rawMessages)
@@ -1545,6 +1609,17 @@ router.post('/', async (req: Request, res: Response) => {
       }
     }
     } // end: !needsClarification && disambiguationText === null
+
+    // ─── ENHANCE RESPONSE WITH MULTI-DIMENSIONAL RECOMMENDATIONS ──────────────
+    if (fullText && projects.length > 0 && responseMode === 'search') {
+      try {
+        console.log('[MULTI_DIM:RESPONSE] Attaching dimension explanations and comparisons')
+        fullText = attachMultiDimensionalRecommendations(fullText, projects)
+      } catch (err) {
+        console.warn('[MULTI_DIM:RESPONSE] Enhancement failed (non-fatal):', err)
+        // Continue with unenhanced fullText
+      }
+    }
 
     if (fullText) {
       try {

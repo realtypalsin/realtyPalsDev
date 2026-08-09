@@ -169,6 +169,76 @@ model Project {
   registry_status          String?
   registry_embargo_reasons String[]
   nclt_moratorium_active   Boolean?
+
+  // ──────────────────────────────────────────────────────────────
+  // Phase 5: COMPREHENSIVE PROPERTY DECISION FACTORS
+  // ──────────────────────────────────────────────────────────────
+
+  // 1. Resale & Investment Terms
+  resale_lock_in_months           Int?
+  rental_income_allowed           Boolean?
+  occupancy_restriction_months    Int?
+
+  // 2. NRI & Eligibility
+  nri_eligible                    Boolean?
+  nri_approval_months             Int?
+  foreign_currency_payment_allowed Boolean?
+
+  // 3. Legal & Compliance Additions
+  occupancy_certificate_status    String?
+  occupancy_expected_date         DateTime?
+  ongoing_litigation_count        Int?
+  litigation_types                String[]
+  nclt_status                     String?
+
+  // 4. Quality & Reputation
+  construction_quality_rating     Float?
+  buyer_satisfaction_rating       Float?
+  handover_defect_rate            Float?
+
+  // 5. Lifestyle & Safety
+  women_safety_score              Int?
+  has_security_24x7               Boolean?
+  has_cctv                        Boolean?
+  police_station_distance_km      Float?
+  street_lights                   Boolean?
+
+  // 6. Vastu & Preferences
+  vastu_compliant                 Boolean?
+  north_facing_units              Boolean?
+  east_facing_preferred           Boolean?
+
+  // 7. Environmental & Area Quality
+  air_quality_index_avg           Int?
+  noise_level_db                  Int?
+  flood_zone                      String?
+  proximity_to_industrial         String?
+  green_cover_percent             Int?
+
+  // 8. Education & Connectivity
+  top_school_distance_km          Float?
+  college_distance_km             Float?
+  hospital_distance_km            Float?
+  airport_distance_km             Float?
+
+  // 9. Market & Pricing
+  market_demand_score             Int?
+  appreciation_potential_5yr      Float?
+  rental_yield_annual_percent     Float?
+  competing_projects_nearby       Int?
+
+  // 10. Possession & Timeline
+  foundation_stone_date           DateTime?
+  expected_handover_quarter       String?
+  average_builder_delay_months    Int?
+
+  // 11. Regulatory & Compliance
+  gst_pass_through                Boolean?
+  land_title_clear                Boolean?
+  fir_against_project             Boolean?
+  approvals_status                String?
+
+  // Relations
   amenities                Amenity[]
   connectivity             Connectivity[]
   decision_profile         DecisionProfile?
@@ -195,6 +265,9 @@ model Project {
   @@index([status])
   @@index([possession_date])
   @@index([builder_id])
+  @@index([nri_eligible])
+  @@index([women_safety_score])
+  @@index([air_quality_index_avg])
   @@map("projects")
 }
 
