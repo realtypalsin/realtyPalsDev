@@ -16,38 +16,24 @@ export interface OpenAIProvider {
 
 // Detect and prefer Azure OpenAI or GitHub Models.
 // apiKeyOverride: used when the caller is rotating through multiple OpenAI
-// fallback keys (OPENAI_API_KEY1/2/3) — bypasses Azure/GitHub detection since
-// those overrides are always plain OpenAI keys.
+// fallback keys (OPENAI_API_KEY1/2/3) — all use GitHub Models endpoint.
 function getOpenAIProvider(apiKeyOverride?: string): OpenAIProvider {
-  if (apiKeyOverride) {
-    return {
-      apiKey: apiKeyOverride,
-      baseURL: process.env.OPENAI_BASE_URL,
-      name: 'openai',
-    };
+  const key = apiKeyOverride || process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY || ''
+  const baseURL = process.env.AZURE_OPENAI_ENDPOINT || process.env.OPENAI_BASE_URL || 'https://models.inference.ai.azure.com'
+
+  // Determine provider name based on key source
+  let name: 'azure' | 'openai' = 'openai'
+  if (process.env.AZURE_OPENAI_API_KEY && !apiKeyOverride) {
+    name = 'azure'
+  } else if (apiKeyOverride || process.env.OPENAI_API_KEY || baseURL.includes('github')) {
+    name = 'openai'
   }
-  // Azure OpenAI as primary
-  if (AI_CONFIG.AZURE_OPENAI_API_KEY && AI_CONFIG.AZURE_OPENAI_ENDPOINT) {
-    return {
-      apiKey: AI_CONFIG.AZURE_OPENAI_API_KEY,
-      baseURL: AI_CONFIG.AZURE_OPENAI_ENDPOINT,
-      name: 'azure',
-    };
-  }
-  // GitHub Models API via Azure endpoint (GitHub PAT)
-  if (process.env.OPENAI_API_KEY?.startsWith('github_pat_')) {
-    return {
-      apiKey: process.env.OPENAI_API_KEY,
-      baseURL: 'https://models.inference.ai.azure.com',
-      name: 'github',
-    };
-  }
-  // Fallback to standard OpenAI API
+
   return {
-    apiKey: process.env.OPENAI_API_KEY || '',
-    baseURL: process.env.OPENAI_BASE_URL,
-    name: 'openai',
-  };
+    apiKey: key,
+    baseURL,
+    name,
+  }
 }
 
 // ── Inference configuration ───────────────────────────────────────────────────
