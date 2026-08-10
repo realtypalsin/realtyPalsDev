@@ -153,18 +153,18 @@ export function inferRankingProfile(userMessage: string): RankingProfile | null 
 export function getRankingBasis(profile: RankingProfile): string {
   switch (profile) {
     case 'overall':
-      return 'Ranked by our verified project score (builder track record, location, construction quality, legal standing, amenities, possession timeline)'
+      return '⭐ Top verified matches ranked by RealtyScore™ (builder track record, location & construction quality)'
     case 'value':
-      return 'Ranked by value — price position relative to location weighted by amenities'
+      return '💰 Best value projects ranked by entry price & amenity weighting'
     case 'trust':
-      return 'Ranked by builder reputation and legal standing'
+      return '🛡️ Top trusted developers with proven track records & clean legal standing'
     case 'speed':
-      return 'Ranked by possession timeline — fastest first'
+      return '🔑 Ready to move & fastest possession projects'
     case 'premium':
-      return 'Ranked by price — highest first'
+      return '✨ Premium luxury residences'
     case 'family':
-      return 'Ranked for families — amenities and school/infrastructure proximity'
+      return '🏡 Top family-friendly communities near schools & parks'
     default:
-      return 'Ranked by relevance to your search'
+      return 'Top verified matches ranked by fit'
   }
 }

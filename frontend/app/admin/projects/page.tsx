@@ -335,18 +335,26 @@ export default function AdminProjects() {
   const handleDelete = useCallback(async (id: string, name: string) => {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
     setDeleting(id)
-    const promise = adminFetch(`/admin/projects/${id}`, { method: 'DELETE' })
 
-    toast.promise(promise, {
+    const deletePromise = async () => {
+      const res = await adminFetch(`/admin/projects/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to delete project')
+      }
+      setProjects((p) => p.filter((x) => x.id !== id))
+      return `Deleted ${name}`
+    }
+
+    toast.promise(deletePromise(), {
       loading: 'Deleting project...',
-      success: () => {
-        setProjects((p) => p.filter((x) => x.id !== id))
+      success: (msg) => {
         setDeleting(null)
-        return `Deleted ${name}`
+        return msg
       },
-      error: () => {
+      error: (err: any) => {
         setDeleting(null)
-        return 'Failed to delete project'
+        return err?.message || 'Failed to delete project'
       }
     })
   }, [])

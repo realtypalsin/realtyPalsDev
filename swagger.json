@@ -4898,6 +4898,88 @@
           }
         }
       }
+    },
+    "/api/v1/admin": {
+      "get": {
+        "summary": "Auto-generated endpoint for GET /api/v1/admin/",
+        "tags": [
+          "Admin"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/{id}": {
+      "get": {
+        "summary": "Auto-generated endpoint for GET /api/v1/admin/:id",
+        "tags": [
+          "Admin"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Auto-generated endpoint for PATCH /api/v1/admin/:id",
+        "tags": [
+          "Admin"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8122,6 +8204,86 @@
           "channel_partner_id",
           "project",
           "channel_partner"
+        ]
+      },
+      "SessionMemory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "extracted_intent": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "session_id"
+        ]
+      },
+      "ResponseGrade": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outcome_achieved": {
+            "type": "boolean"
+          },
+          "grade_score": {
+            "type": "integer"
+          },
+          "grading_reason": {
+            "type": "string"
+          },
+          "outcomes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "should_retry": {
+            "type": "boolean"
+          },
+          "retry_count": {
+            "type": "integer"
+          },
+          "max_retries": {
+            "type": "integer"
+          },
+          "graded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "session": {
+            "$ref": "#/components/schemas/ChatSession"
+          }
+        },
+        "required": [
+          "session_id",
+          "session"
         ]
       }
     },

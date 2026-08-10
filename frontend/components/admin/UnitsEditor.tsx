@@ -12,12 +12,15 @@ interface UnitRow {
   name: string
   super_area_sqft: number | null
   carpet_area_sqft: number | null
+  balconies: number | null
   balcony_area_sqft: number | null
   bathrooms: number | null
   price_min_cr: number | null
   price_max_cr: number | null
   price_label: string | null
   price_is_estimated: boolean
+  layout_variant_name?: string | null
+  towers?: string[]
   views?: any
 }
 
@@ -25,11 +28,14 @@ interface LocalRow extends UnitRow {
   _bhk: string
   _super: string
   _carpet: string
+  _balconies_count: string
   _balcony: string
   _baths: string
   _min: string
   _max: string
   _label: string
+  _variant: string
+  _towers_str: string
   _views: any[]
 }
 
@@ -39,11 +45,14 @@ function toLocal(u: UnitRow): LocalRow {
     _bhk:    u.bhk?.toString() ?? '',
     _super:  u.super_area_sqft?.toString() ?? '',
     _carpet: u.carpet_area_sqft?.toString() ?? '',
+    _balconies_count: u.balconies?.toString() ?? '',
     _balcony: u.balcony_area_sqft?.toString() ?? '',
     _baths:  u.bathrooms?.toString() ?? '',
     _min:    u.price_min_cr?.toString() ?? '',
     _max:    u.price_max_cr?.toString() ?? '',
     _label:  u.price_label ?? '',
+    _variant: u.layout_variant_name ?? 'Type A',
+    _towers_str: Array.isArray(u.towers) ? u.towers.join(', ') : '',
     _views:  u.views || [],
   }
 }
@@ -54,7 +63,7 @@ function inp(cls?: string) {
 
 const EMPTY_ADD = {
   name: '', bhk: '', super_area_sqft: '', carpet_area_sqft: '',
-  balcony_area_sqft: '', bathrooms: '', price_min_cr: '', price_max_cr: '',
+  balconies: '', balcony_area_sqft: '', bathrooms: '', price_min_cr: '', price_max_cr: '',
   price_label: '', price_is_estimated: true,
 }
 
@@ -92,12 +101,15 @@ export default function UnitsEditor({
       bhk:                row._bhk  ? parseInt(row._bhk, 10) : row.bhk,
       super_area_sqft:    row._super  ? parseInt(row._super, 10)  : null,
       carpet_area_sqft:   row._carpet ? parseInt(row._carpet, 10) : null,
+      balconies:          row._balconies_count ? parseInt(row._balconies_count, 10) : null,
       balcony_area_sqft:  row._balcony ? parseInt(row._balcony, 10) : null,
       bathrooms:          row._baths  ? parseInt(row._baths, 10)  : null,
       price_min_cr:       row._min  ? parseFloat(row._min)  : null,
       price_max_cr:       row._max  ? parseFloat(row._max)  : null,
       price_label:        row._label || null,
       price_is_estimated: row.price_is_estimated,
+      layout_variant_name: row._variant || 'Type A',
+      towers:             row._towers_str ? row._towers_str.split(',').map(s => s.trim()).filter(Boolean) : [],
       views:              row._views,
     }
     const res = await fetch(`${API_BASE}/admin/units/${row.id}`, {
@@ -229,7 +241,7 @@ export default function UnitsEditor({
           <div key={row.id} className="border border-zinc-200/80 rounded-xl p-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 mb-1">BHK</label>
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-200 mb-1">BHK</label>
                 <input
                   type="number" min="0" step="1"
                   value={row._bhk}
@@ -239,7 +251,7 @@ export default function UnitsEditor({
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 mb-1">Name</label>
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-200 mb-1">Name</label>
                 <input
                   type="text"
                   value={row.name}
@@ -249,7 +261,27 @@ export default function UnitsEditor({
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 mb-1">Super Area (sqft)</label>
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-200 mb-1">Variant / Layout Code</label>
+                <input
+                  type="text"
+                  value={row._variant}
+                  onChange={e => patchRow(row.id, '_variant', e.target.value)}
+                  className={inp()}
+                  placeholder="e.g. Type A (1300 sqft)"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-200 mb-1">Towers Association</label>
+                <input
+                  type="text"
+                  value={row._towers_str}
+                  onChange={e => patchRow(row.id, '_towers_str', e.target.value)}
+                  className={inp()}
+                  placeholder="e.g. Tower A, Tower B"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-200 mb-1">Super Area (sqft)</label>
                 <input
                   type="number" min="0" step="1"
                   value={row._super}
@@ -259,13 +291,23 @@ export default function UnitsEditor({
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 mb-1">Carpet Area (sqft)</label>
+                <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-200 mb-1">Carpet Area (sqft)</label>
                 <input
                   type="number" min="0" step="1"
                   value={row._carpet}
                   onChange={e => patchRow(row.id, '_carpet', e.target.value)}
                   className={inp()}
                   placeholder="e.g. 1350"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-500 mb-1">Balconies Count</label>
+                <input
+                  type="number" min="0" step="1"
+                  value={row._balconies_count}
+                  onChange={e => patchRow(row.id, '_balconies_count', e.target.value)}
+                  className={inp()}
+                  placeholder="e.g. 3"
                 />
               </div>
               <div>

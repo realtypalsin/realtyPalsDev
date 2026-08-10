@@ -441,7 +441,8 @@ export async function computeConversationState(
   sectorDisambiguation?: { query: string; candidates: string[] },
   cityDisambiguation?: { query: string; candidates: Array<{ city: string; label: string }> },
   chipInventory: ChipInventory | null = null,
-  isUserMessage: boolean = false
+  isUserMessage: boolean = false,
+  usedProvider?: { provider: string; envKey: string }
 ): Promise<ConversationState> {
   const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0, isUserMessage)
   const missingFields = getMissingFields(intent, intentState)
@@ -496,13 +497,13 @@ export async function computeConversationState(
         chips = getSearchRefinementChips(intent, results, chatHistory, chipInventory)
         break
       case 'RESEARCH':
-        chips = await generateDynamicChips('research', results, chatHistory)
+        chips = await generateDynamicChips('research', results, chatHistory, usedProvider)
         break
       case 'COMPARING':
-        chips = await generateDynamicChips('compare', results, chatHistory)
+        chips = await generateDynamicChips('compare', results, chatHistory, usedProvider)
         break
       case 'DECIDING':
-        chips = await generateDynamicChips('decide', results, chatHistory)
+        chips = await generateDynamicChips('decide', results, chatHistory, usedProvider)
         break
       case 'CONVERTING':
         chips = []

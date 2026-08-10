@@ -41,6 +41,19 @@ interface ProjectData {
   hero_image_url: string
   marketing_claims: string[]
   ai_search_keywords: string[]
+
+  // Phase 5 Fields
+  nri_eligible?: boolean
+  vastu_compliant?: boolean
+  women_safety_score?: string
+  air_quality_index_avg?: string
+  green_cover_percent?: string
+  market_demand_score?: string
+  appreciation_potential_5yr?: string
+  rental_yield_annual_percent?: string
+  approvals_status?: string
+  escrow_verified?: boolean
+  registry_status?: string
 }
 
 const EMPTY: ProjectData = {
@@ -51,6 +64,10 @@ const EMPTY: ProjectData = {
   description: '', long_description: '', design_theme: '', architect: '', interior_designer: '', floors: '', open_space_pct: '', green_rating: '',
 
   hero_image_url: '', marketing_claims: [], ai_search_keywords: [],
+  nri_eligible: true, vastu_compliant: true, women_safety_score: '92',
+  air_quality_index_avg: '155', green_cover_percent: '75', market_demand_score: '90',
+  appreciation_potential_5yr: '14.5', rental_yield_annual_percent: '4.5',
+  approvals_status: 'Fully Approved by RERA', escrow_verified: true, registry_status: 'open'
 }
 
 function toSlug(name: string): string {
@@ -77,12 +94,11 @@ function Field({ label, children, hint, required }: {
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-        {label}
-        {required && <span className="text-rose-400 ml-1">*</span>}
+      <label className="block text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-2">
+        {label} {required && <span className="text-rose-500">*</span>}
       </label>
       {children}
-      {hint && <p className="text-[12px] text-slate-400 mt-2 leading-snug">{hint}</p>}
+      {hint && <p className="text-[12px] text-slate-600 dark:text-slate-300 font-medium mt-2 leading-snug">{hint}</p>}
 
     </div>
   )
@@ -452,6 +468,64 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
             />
           </Field>
         </div>
+
+        <SectionHeader title="Advanced Intelligence & Compliance (Phase 5)" />
+
+        <Field label="NRI Eligible">
+          <label className="flex items-center gap-2 cursor-pointer pt-2">
+            <input
+              type="checkbox"
+              checked={!!form.nri_eligible}
+              onChange={(e) => setForm((f) => ({ ...f, nri_eligible: e.target.checked }))}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-xs font-semibold text-slate-700">NRI Investment & Remittance Allowed</span>
+          </label>
+        </Field>
+
+        <Field label="Vastu Compliant">
+          <label className="flex items-center gap-2 cursor-pointer pt-2">
+            <input
+              type="checkbox"
+              checked={!!form.vastu_compliant}
+              onChange={(e) => setForm((f) => ({ ...f, vastu_compliant: e.target.checked }))}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-xs font-semibold text-slate-700">Vastu Compliant Orientations</span>
+          </label>
+        </Field>
+
+        <Field label="Women Safety Score (0-100)">
+          <Input value={form.women_safety_score || ''} onChange={set('women_safety_score')} placeholder="92" type="number" />
+        </Field>
+
+        <Field label="Annual Avg AQI">
+          <Input value={form.air_quality_index_avg || ''} onChange={set('air_quality_index_avg')} placeholder="155" type="number" />
+        </Field>
+
+        <Field label="Green Cover (%)">
+          <Input value={form.green_cover_percent || ''} onChange={set('green_cover_percent')} placeholder="75" type="number" />
+        </Field>
+
+        <Field label="Market Demand Score (0-100)">
+          <Input value={form.market_demand_score || ''} onChange={set('market_demand_score')} placeholder="90" type="number" />
+        </Field>
+
+        <Field label="5-Yr Appreciation Potential (%)">
+          <Input value={form.appreciation_potential_5yr || ''} onChange={set('appreciation_potential_5yr')} placeholder="14.5" type="number" step="0.1" />
+        </Field>
+
+        <Field label="Annual Rental Yield (%)">
+          <Input value={form.rental_yield_annual_percent || ''} onChange={set('rental_yield_annual_percent')} placeholder="4.5" type="number" step="0.1" />
+        </Field>
+
+        <Field label="Regulatory Approvals Status">
+          <Input value={form.approvals_status || ''} onChange={set('approvals_status')} placeholder="Fully Approved by RERA" />
+        </Field>
+
+        <Field label="Registry Status">
+          <Input value={form.registry_status || ''} onChange={set('registry_status')} placeholder="open" />
+        </Field>
 
         <SectionHeader title="AI & Marketing" />
 

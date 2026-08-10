@@ -9,7 +9,8 @@ import { ChipAction, chip } from '../discovery/conversationEngine'
 export async function generateDynamicChips(
   mode: 'research' | 'compare' | 'decide',
   results: ScoredProject[],
-  chatHistory: any[]
+  chatHistory: any[],
+  usedProvider?: { provider: string; envKey: string }
 ): Promise<ChipAction[]> {
   const coreChips: ChipAction[] = []
   
@@ -111,16 +112,35 @@ export async function generateDynamicChips(
     coreChips.push(chip(`TEXT_MESSAGE:tell_more:${pIds}`, 'TEXT_MESSAGE', 'Tell me more', '', { actionPrefix: 'Tell me more about', projects: projectsList }, 1))
   }
 
-  // Filter out any chips that were already discussed (user messages only)
-  const historyText = chatHistory
+  // Filter out any chips that were already discussed OR match topics recently discussed
+  const userMessages = chatHistory
     .filter((m: any) => m?.role === 'user')
     .map((m: any) => String(m.content ?? '').toLowerCase())
-    .join(' ')
+  const historyText = userMessages.join(' ')
+
+  const recentlyAskedPayment = userMessages.some(msg => /payment|cost|pricing|emi|loan|plan|financial/.test(msg))
+  const recentlyAskedAmenities = userMessages.some(msg => /amenit|facility|clubhouse|gym|pool/.test(msg))
+  const recentlyAskedLegal = userMessages.some(msg => /rera|legal|clearance|approval/.test(msg))
+
   const filteredCoreChips = coreChips.filter(c => {
     const labelLower = c.label.toLowerCase()
-    const prefixLower = (c.payload as any)?.actionPrefix?.toLowerCase()
-    const isDiscussed = historyText.includes(labelLower) || (prefixLower && historyText.includes(prefixLower))
-    return !isDiscussed
+    const prefixLower = ((c.payload as any)?.actionPrefix ?? '').toLowerCase()
+    const textLower = ((c.payload as any)?.text ?? '').toLowerCase()
+
+    if (historyText.includes(labelLower) || (prefixLower && historyText.includes(prefixLower))) return false
+
+    // Progressive topic filtering: do not suggest the same topic that was just discussed
+    if (recentlyAskedPayment && /payment|cost|price|emi|financial/i.test(labelLower + ' ' + prefixLower + ' ' + textLower)) {
+      return false
+    }
+    if (recentlyAskedAmenities && /amenit|facility|clubhouse/i.test(labelLower + ' ' + prefixLower + ' ' + textLower)) {
+      return false
+    }
+    if (recentlyAskedLegal && /rera|legal|clearance/i.test(labelLower + ' ' + prefixLower + ' ' + textLower)) {
+      return false
+    }
+
+    return true
   })
 
   // Optionally fetch LLM chips if there is a conversation history
@@ -128,16 +148,18 @@ export async function generateDynamicChips(
   if (chatHistory.length > 0) {
     try {
       const { generateContextualLLMChips } = await import('../ai/prompts/chips')
-      const llmChips = await generateContextualLLMChips(chatHistory, 0)
+      const llmChips = await generateContextualLLMChips(chatHistory, 0, usedProvider)
 
       // Filter LLM chips to guarantee no repetition AND ground against available data
       const filteredLlmChips = llmChips.filter(c => {
         const labelLower = c.label.toLowerCase()
         const isDiscussed = historyText.includes(labelLower)
+        const isPaymentRepeat = recentlyAskedPayment && /payment|cost|price|emi|financial/i.test(labelLower)
+        const isAmenitiesRepeat = recentlyAskedAmenities && /amenit|facility|clubhouse/i.test(labelLower)
         // Ground: drop comparison suggestions if <2 results
         const isCompareSuggestion = ['compare', 'versus', 'vs ', 'difference'].some(word => labelLower.includes(word))
         const cannotCompare = isCompareSuggestion && results.length < 2
-        return !isDiscussed && !cannotCompare
+        return !isDiscussed && !isPaymentRepeat && !isAmenitiesRepeat && !cannotCompare
       })
       finalChips.push(...filteredLlmChips)
     } catch (err) {

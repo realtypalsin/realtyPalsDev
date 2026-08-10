@@ -45,8 +45,11 @@ export async function streamWithGemini(
   send: SendFn,
   onToolCall: ToolCallFn,
   config: InferenceConfig = INFERENCE_DEFAULTS,
+  apiKeyOverride?: string,
 ): Promise<string> {
-  const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY!, httpOptions: { timeout: INACTIVITY_MS } })
+  const apiKey = apiKeyOverride ?? process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('No GEMINI_API_KEY configured')
+  const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: INACTIVITY_MS } })
   const contents: any[] = toGeminiContents(messages)
   let fullText = ''
 

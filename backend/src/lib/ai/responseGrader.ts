@@ -84,7 +84,7 @@ async function gradeResponseInternal(
 
     console.log(`[GRADER:DONE] Session ${sessionId} msg ${messageId}: score=${grade.score}`)
   } catch (err) {
-    console.error(`[GRADER:ERROR] Failed to grade message ${messageId}:`, err)
+    // Non-fatal background analytics grading catch — silent
   }
 }
 

@@ -50,6 +50,7 @@ const INTENT_FIELD_MAP: Record<QueryIntent, { critical: string[]; optional: stri
       'floor_plan_count',
       'project_status',
       'amenity_count',
+      'amenities_list',
       'possession_date',
       'price_min_cr',
     ],
@@ -57,7 +58,7 @@ const INTENT_FIELD_MAP: Record<QueryIntent, { critical: string[]; optional: stri
   },
 
   payment: {
-    critical: ['price_min_cr', 'base_price_per_sqft', 'gst_rate_pct', 'stamp_duty_pct'],
+    critical: ['price_min_cr', 'base_price_per_sqft', 'gst_rate_pct', 'stamp_duty_pct', 'payment_plans'],
     optional: ['parking_cost_lakh', 'ifms_lakh', 'registration_pct'],
   },
 
@@ -67,7 +68,7 @@ const INTENT_FIELD_MAP: Record<QueryIntent, { critical: string[]; optional: stri
   },
 
   location: {
-    critical: ['connectivity_count', 'amenity_count'],
+    critical: ['connectivity_count', 'amenity_count', 'amenities_list'],
     optional: ['coordinates', 'aqi_data', 'commute_data'],
   },
 
@@ -87,6 +88,7 @@ const INTENT_FIELD_MAP: Record<QueryIntent, { critical: string[]; optional: stri
       'price_min_cr',
       'construction_progress_pct',
       'amenity_count',
+      'amenities_list',
       'possession_date',
     ],
     optional: ['price_cagr_pct', 'builder_delivery_score'],
@@ -98,6 +100,7 @@ const INTENT_FIELD_MAP: Record<QueryIntent, { critical: string[]; optional: stri
       'project_status',
       'price_min_cr',
       'amenity_count',
+      'amenities_list',
       'possession_date',
       'construction_progress_pct',
     ],
@@ -130,14 +133,14 @@ function recognizePattern(message: string): PatternMatch {
 
   // Payment intent keywords
   if (
-    /\b(emi|loan|cost|price breakdown|charge|fee|stamp duty|gst|parking|ifms)\b/.test(msg) ||
-    /how much|what.*cost|break down|how.*afford/i.test(msg)
+    /\b(payment|payments|payment-plan|payment-plans|plan|plans|emi|loan|cost|price|pricing|price breakdown|charge|fee|stamp duty|gst|parking|ifms|down payment|subvention)\b/i.test(msg) ||
+    /how much|what.*cost|break down|how.*afford|payment.*option/i.test(msg)
   ) {
     return {
       intent: 'payment',
-      confidence: 0.95,
+      confidence: 0.96,
       projectIds: [],
-      reason: 'Keywords: EMI, cost, charges, affordability',
+      reason: 'Keywords: payment, payment plans, EMI, cost, pricing',
     }
   }
 
@@ -158,16 +161,16 @@ function recognizePattern(message: string): PatternMatch {
 
   // Location intent keywords
   if (
-    /\b(metro|school|hospital|mall|airport|nearby|distance|commute|travel|connectivity)\b/i.test(
+    /\b(metro|station|stations|school|hospital|mall|airport|nearby|distance|commute|travel|connectivity|location)\b/i.test(
       msg
     ) ||
     /how far|how long|close to|near/i.test(msg)
   ) {
     return {
       intent: 'location',
-      confidence: 0.93,
+      confidence: 0.95,
       projectIds: [],
-      reason: 'Keywords: location, distance, connectivity, nearby',
+      reason: 'Keywords: location, metro, distance, connectivity, nearby',
     }
   }
 
@@ -367,7 +370,7 @@ async function checkDataAvailability(
     for (const proj of projects) {
       // Map fields to project attributes via existence check
       // Actual data validation happens in projectDataGateway
-      if (proj.id && proj.status) {
+      if (proj.id) {
         foundInAnyProject = true
       }
     }
@@ -487,7 +490,8 @@ export function getClarificationMessage(plan: QueryPlan): string {
     messages.push(...plan.clarificationOptions)
   }
 
-  return messages.join('\n')
+  const result = messages.join('\n').trim()
+  return result || 'Could you specify which project or details you would like to explore?'
 }
 
 /**

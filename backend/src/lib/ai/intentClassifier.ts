@@ -68,14 +68,14 @@ function detectProjectDetail(userMessage: string): ProjectDetailIntent | null {
 
   // Keyword patterns for different detail types
   const paymentKeywords = /\b(emi|loan|cost|price|payment|charge|fee|stamp duty|gst|affordability|mortgage|down payment)\b/i
-  const investmentKeywords = /\b(invest|return|yield|appreciation|cagr|roi|bullish|bearish|buy|hold|strong buy)\b/i
+  const investmentKeywords = /\b(invest|return|yield|appreciation|cagr|roi|bullish|bearish|buy|hold|strong buy|exit|sell|liquidity|resale)\b/i
   const locationKeywords = /\b(metro|school|hospital|mall|nearby|distance|commute|connectivity|how far|how long)\b/i
   const timelineKeywords = /\b(possession|ready|completion|delivery|delay|when|timeline|move in)\b/i
   const builderKeywords = /\b(builder|developer|track|reputation|credibility|delivery|rera|complaint)\b/i
   const overviewKeywords = /\b(tell me|about|details|configuration|layout|amenities|features|highlights)\b/i
 
   // Check for project mention (words after "for", "about", "in", "at")
-  const projectMention = msg.match(/(?:for|about|in|at)\s+([a-z\s]+?)(?:\?|$)/i)
+  const projectMention = msg.match(/\b(?:for|about|in|at)\s+([a-z0-9\s]+?)(?:\?|$)/i)
   const projectIdentifier = projectMention ? projectMention[1].trim() : undefined
 
   // Detect detail type

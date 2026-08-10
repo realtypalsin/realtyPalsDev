@@ -349,6 +349,13 @@ router.get('/projects/:id/completeness', requireAdmin, async (req: Request, res:
         persona_profile: true,
         recommendation_profile: true,
         competitors: true,
+        cost_sheet: true,
+        payment_plans: true,
+        construction_milestones: true,
+        construction_updates: true,
+        lifecycle_updates: true,
+        price_history: true,
+        channel_partners: true,
       },
     })
 
@@ -406,15 +413,60 @@ router.patch('/projects/:id', requireAdmin, async (req: Request, res: Response) 
   }
 })
 
-// DELETE /api/v1/admin/projects/:id — delete project
+// DELETE /api/v1/admin/projects/:id — delete project with cascading cleanup
 router.delete('/projects/:id', requireAdmin, async (req: Request, res: Response) => {
   const { id } = req.params
   try {
-    await prisma.project.delete({ where: { id } })
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    const targetId = project.id
+
+    await prisma.$transaction(async (tx) => {
+      // Clean up all related records to prevent foreign key constraint violations
+      await tx.amenity.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.connectivity.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.projectImage.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.unitType.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.paymentPlan.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.costSheet.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.priceHistory.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.constructionMilestone.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.constructionUpdate.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.projectLifecycleUpdate.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.unitInventory.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.projectChannelPartner.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.projectCompetitor.deleteMany({
+        where: { OR: [{ project_id: targetId }, { competitor_project_id: targetId }] }
+      }).catch(() => {})
+      await tx.savedProperty.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.priceAlert.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.builderLead.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.projectDna.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.decisionProfile.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.personaProfile.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.recommendationProfile.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+
+      // Unlink focused project from chat sessions
+      await tx.chatSession.updateMany({
+        where: { focus_project_id: targetId },
+        data: { focus_project_id: null }
+      }).catch(() => {})
+
+      // Finally delete the project record
+      await tx.project.delete({ where: { id: targetId } })
+    })
+
     res.json({ success: true, message: 'Project deleted successfully' })
-  } catch (err) {
+  } catch (err: any) {
     console.error('[admin] project delete failed:', err)
-    res.status(500).json({ error: 'Failed to delete project' })
+    res.status(500).json({ error: err?.message || 'Failed to delete project' })
   }
 })
 
@@ -1327,6 +1379,284 @@ router.patch('/projects/:id/recommendation-profile', requireAdmin, async (req: R
   } catch (err) {
     console.error('[admin] save recommendation profile failed:', err)
     res.status(500).json({ error: 'Failed to save recommendation profile' })
+  }
+})
+
+// PUT /api/v1/admin/projects/:id/cost-sheet — Upsert full cost sheet
+router.put('/projects/:id/cost-sheet', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const data = req.body
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    const updated = await (prisma as any).costSheet.upsert({
+      where: { project_id: project.id },
+      update: { ...data, updated_at: new Date() },
+      create: { project_id: project.id, ...data }
+    })
+    res.json({ success: true, data: updated })
+  } catch (err) {
+    console.error('[admin] save cost sheet failed:', err)
+    res.status(500).json({ error: 'Failed to save cost sheet' })
+  }
+})
+
+// GET & PUT /api/v1/admin/projects/:id/payment-plans — Multi payment plan management
+router.get('/projects/:id/payment-plans', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    const plans = await (prisma as any).paymentPlan.findMany({
+      where: { project_id: project.id },
+      orderBy: { created_at: 'asc' }
+    })
+    res.json({ payment_plans: plans })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch payment plans' })
+  }
+})
+
+router.put('/projects/:id/payment-plans', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { payment_plans } = req.body
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    if (Array.isArray(payment_plans)) {
+      for (const p of payment_plans) {
+        if (!p.plan_type) continue
+        await (prisma as any).paymentPlan.upsert({
+          where: { project_id_plan_type: { project_id: project.id, plan_type: p.plan_type } },
+          update: { ...p, updated_at: new Date() },
+          create: { project_id: project.id, ...p }
+        })
+      }
+    }
+    const updated = await (prisma as any).paymentPlan.findMany({ where: { project_id: project.id } })
+    res.json({ success: true, payment_plans: updated })
+  } catch (err) {
+    console.error('[admin] save payment plans failed:', err)
+    res.status(500).json({ error: 'Failed to save payment plans' })
+  }
+})
+
+// Legacy single-plan PUT route compatibility
+router.put('/projects/:id/payment-plan', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const data = req.body
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    const planType = data.plan_type || 'construction_linked'
+    const updated = await (prisma as any).paymentPlan.upsert({
+      where: { project_id_plan_type: { project_id: project.id, plan_type: planType } },
+      update: { ...data, updated_at: new Date() },
+      create: { project_id: project.id, plan_type: planType, ...data }
+    })
+    res.json({ success: true, payment_plan: updated })
+  } catch (err) {
+    console.error('[admin] save payment plan failed:', err)
+    res.status(500).json({ error: 'Failed to save payment plan' })
+  }
+})
+
+// GET & PUT /api/v1/admin/projects/:id/lifecycle-updates — Delivered project updates
+router.get('/projects/:id/lifecycle-updates', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    const updates = await (prisma as any).projectLifecycleUpdate.findMany({
+      where: { project_id: project.id },
+      orderBy: { update_date: 'desc' }
+    })
+    res.json({ updates })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch lifecycle updates' })
+  }
+})
+
+router.put('/projects/:id/lifecycle-updates', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { updates } = req.body
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    await (prisma as any).projectLifecycleUpdate.deleteMany({ where: { project_id: project.id } })
+    if (Array.isArray(updates) && updates.length > 0) {
+      await (prisma as any).projectLifecycleUpdate.createMany({
+        data: updates.map((u: any) => ({
+          project_id: project.id,
+          update_type: u.update_type || 'possession_status_change',
+          title: u.title || 'Society Update',
+          description: u.description || '',
+          update_date: u.update_date ? new Date(u.update_date) : new Date(),
+          impact: u.impact || null,
+          source: u.source || 'Admin Verification',
+          verified_by: u.verified_by || 'RealtyPals Data Desk',
+          maintenance_fee_monthly_psf: u.maintenance_fee_monthly_psf ? parseFloat(u.maintenance_fee_monthly_psf) : null,
+          note: u.note || null
+        }))
+      })
+    }
+    const fresh = await (prisma as any).projectLifecycleUpdate.findMany({ where: { project_id: project.id } })
+    res.json({ success: true, updates: fresh })
+  } catch (err) {
+    console.error('[admin] save lifecycle updates failed:', err)
+    res.status(500).json({ error: 'Failed to save lifecycle updates' })
+  }
+})
+
+// GET & PUT /api/v1/admin/projects/:id/price-history — Price history snapshots
+router.get('/projects/:id/price-history', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    const history = await (prisma as any).priceHistory.findMany({
+      where: { project_id: project.id },
+      orderBy: { recorded_at: 'asc' }
+    })
+    res.json({ price_history: history })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch price history' })
+  }
+})
+
+router.put('/projects/:id/price-history', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { price_history } = req.body
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    await (prisma as any).priceHistory.deleteMany({ where: { project_id: project.id } })
+    if (Array.isArray(price_history) && price_history.length > 0) {
+      await (prisma as any).priceHistory.createMany({
+        data: price_history.map((ph: any) => ({
+          project_id: project.id,
+          quarter_label: ph.quarter_label || 'Q1 2025',
+          price_per_sqft: ph.price_per_sqft ? parseFloat(ph.price_per_sqft) : null,
+          total_price_cr: ph.total_price_cr ? parseFloat(ph.total_price_cr) : null,
+          event_note: ph.event_note || null,
+          source: 'admin_update'
+        }))
+      })
+    }
+    const fresh = await (prisma as any).priceHistory.findMany({ where: { project_id: project.id } })
+    res.json({ success: true, price_history: fresh })
+  } catch (err) {
+    console.error('[admin] save price history failed:', err)
+    res.status(500).json({ error: 'Failed to save price history' })
+  }
+})
+
+// POST /api/v1/admin/projects/:id/units — Add unit type
+router.post('/projects/:id/units', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const data = req.body
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) return res.status(404).json({ error: 'Project not found' })
+
+    const unit = await (prisma as any).unitType.create({
+      data: {
+        project_id: project.id,
+        name: data.name || `${data.bhk || 2} BHK Unit`,
+        bhk: data.bhk ? parseInt(data.bhk) : 2,
+        super_area_sqft: data.super_area_sqft ? parseInt(data.super_area_sqft) : null,
+        carpet_area_sqft: data.carpet_area_sqft ? parseInt(data.carpet_area_sqft) : null,
+        balconies: data.balconies ? parseInt(data.balconies) : null,
+        balcony_area_sqft: data.balcony_area_sqft ? parseInt(data.balcony_area_sqft) : null,
+        bathrooms: data.bathrooms ? parseInt(data.bathrooms) : null,
+        price_min_cr: data.price_min_cr ? parseFloat(data.price_min_cr) : null,
+        price_max_cr: data.price_max_cr ? parseFloat(data.price_max_cr) : null,
+        price_label: data.price_label || null,
+        price_is_estimated: data.price_is_estimated ?? true,
+        views: data.views || []
+      }
+    })
+    res.json({ success: true, unit })
+  } catch (err) {
+    console.error('[admin] add unit failed:', err)
+    res.status(500).json({ error: 'Failed to add unit type' })
+  }
+})
+
+// PATCH /api/v1/admin/units/:id — Update unit type
+router.patch('/units/:id', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const data = req.body
+  try {
+    const unit = await (prisma as any).unitType.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.bhk !== undefined && { bhk: parseInt(data.bhk) }),
+        ...(data.super_area_sqft !== undefined && { super_area_sqft: data.super_area_sqft ? parseInt(data.super_area_sqft) : null }),
+        ...(data.carpet_area_sqft !== undefined && { carpet_area_sqft: data.carpet_area_sqft ? parseInt(data.carpet_area_sqft) : null }),
+        ...(data.balconies !== undefined && { balconies: data.balconies ? parseInt(data.balconies) : null }),
+        ...(data.balcony_area_sqft !== undefined && { balcony_area_sqft: data.balcony_area_sqft ? parseInt(data.balcony_area_sqft) : null }),
+        ...(data.bathrooms !== undefined && { bathrooms: data.bathrooms ? parseInt(data.bathrooms) : null }),
+        ...(data.price_min_cr !== undefined && { price_min_cr: data.price_min_cr ? parseFloat(data.price_min_cr) : null }),
+        ...(data.price_max_cr !== undefined && { price_max_cr: data.price_max_cr ? parseFloat(data.price_max_cr) : null }),
+        ...(data.price_label !== undefined && { price_label: data.price_label }),
+        ...(data.layout_variant_name !== undefined && { layout_variant_name: data.layout_variant_name }),
+        ...(data.towers !== undefined && { towers: data.towers, tower_association: data.towers }),
+        ...(data.views !== undefined && { views: data.views })
+      }
+    })
+    res.json({ success: true, unit })
+  } catch (err) {
+    console.error('[admin] update unit failed:', err)
+    res.status(500).json({ error: 'Failed to update unit type' })
+  }
+})
+
+// DELETE /api/v1/admin/units/:id — Delete unit type
+router.delete('/units/:id', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    await (prisma as any).unitType.delete({ where: { id } })
+    res.json({ success: true })
+  } catch (err) {
+    console.error('[admin] delete unit failed:', err)
+    res.status(500).json({ error: 'Failed to delete unit type' })
   }
 })
 

@@ -27,18 +27,16 @@ export function canonicalSector(raw: string | null | undefined): string | null {
     return `Sector ${trimmed.toUpperCase()}`
   }
 
-  // If it starts with sec or sector, normalize the prefix
-  const sectorMatch = trimmed.match(/^(?:sec|sector)\s*-?\s*(\d+[a-z]?)\b\s*(.*)$/i)
+  // Extract core sector number (e.g. "Sector 10" from "Sector 10 Greater Noida West" or "Sector 10 GN")
+  const sectorMatch = trimmed.match(/^(?:sec|sector)\s*-?\s*(\d+[a-z]?)\b/i)
   if (sectorMatch) {
     const num = sectorMatch[1].toUpperCase()
-    const suffix = sectorMatch[2].trim()
-    // We intentionally do NOT strip city terms anymore so "Sector 10 Greater Noida West" remains intact
-    return suffix ? `Sector ${num} ${suffix}` : `Sector ${num}`
+    return `Sector ${num}`
   }
 
-  // If it's something else like "Techzone 4" or "Knowledge Park 5", just return it as is but properly formatted
-  // Let's capitalize the first letter of each word
-  return trimmed.replace(/\b\w/g, l => l.toUpperCase())
+  // For non-numeric sectors like "Techzone 4" or "Knowledge Park 5", strip trailing city names
+  const cleaned = trimmed.replace(CITY_LEVEL_TERMS, '').trim()
+  return cleaned.replace(/\b\w/g, l => l.toUpperCase())
 }
 
 /**

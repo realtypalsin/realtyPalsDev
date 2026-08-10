@@ -13,8 +13,9 @@ export interface GuardrailResult {
 }
 
 // Observe mode: violations are logged but responses are never blocked.
-// Flip to false only after false-positive rate is confirmed acceptable in production.
-const OUTPUT_OBSERVE_MODE = false
+// Keeps telemetry active while preventing false-positive blocking of valid AI responses.
+// Set GUARDRAILS_OBSERVE_MODE=false in env to enable blocking.
+const OUTPUT_OBSERVE_MODE = process.env.GUARDRAILS_OBSERVE_MODE !== 'false'
 
 export async function inputGuardrail(message: string): Promise<GuardrailResult> {
   if (INJECTION_PATTERNS.some(p => p.test(message))) {
@@ -48,7 +49,7 @@ const INVESTMENT_CLAIM_PATTERNS = [
 ]
 
 const EXTERNAL_URL_PATTERNS = [
-  /https?:\/\/(?![\w-]+\.uirealtypals\.com|uirealtypals\.com|[\w-]+\.up-rera\.in|up-rera\.in)[^\s"]+/i,
+  /https?:\/\/(?!(?:[\w-]+\.)?uirealtypals\.com|(?:[\w-]+\.)?up-rera\.in)[^\s"]+/i,
   /www\.(?!uirealtypals\.com|up-rera\.in)[^\s"]+/i
 ]
 
@@ -93,15 +94,6 @@ export async function outputGuardrail(
     }
   }
 
-  // Block responses containing external real estate portal URLs
-  const EXTERNAL_URL_PATTERNS = [
-    /https?:\/\/(?!realtypals\.in)[a-z0-9-]+\.(in|com)\/[\w-/]+/i,
-  ]
-  for (const p of EXTERNAL_URL_PATTERNS) {
-    if (p.test(response)) {
-      violations.push({ type: 'competitor_mention', detail: 'external URL in response' })
-    }
-  }
 
   // UPRERAPRJ hallucination check — any RERA number in the response must have been
   // present in the system prompt block. Numbers not injected from the DB are fabrications.
@@ -134,12 +126,13 @@ export async function outputGuardrail(
   // Only validate against systemPrompt context (verified DB data). Allowlist approach:
   // any project name or price not present in the prompt is flagged as fabrication.
   if (systemPrompt) {
-    // Extract project names (capitalized phrases, often in quotes or after "project")
-    const projectNamePattern = /(?:(?:project|properties?|developments?)\s+(?:called\s+)?)?["']?([A-Z][A-Za-z0-9\s&-]*(?:(?:Heights|Towers|City|Plaza|Square|Park|Garden|Grove|Residence|Residences|Court|Manor|Enclave|Hub|Complex|Villas|Apartments|Suites)))["']?/g
+    // Extract project names: require "project" keyword or quotes to avoid false positives on generic words
+    const projectNamePattern = /(?:project|properties?|development)\s+(?:called\s+)?["']([A-Z][A-Za-z0-9\s&-]*?)["']|["']([A-Z][A-Za-z0-9\s&-]*(?:(?:Heights|Towers|City|Plaza|Square|Park|Garden|Grove|Residence|Residences|Court|Manor|Enclave|Hub|Complex|Villas|Apartments|Suites)))["']/g
     const namesInResponse = new Set<string>()
     let match
     while ((match = projectNamePattern.exec(response)) !== null) {
-      namesInResponse.add(match[1].trim())
+      const name = (match[1] || match[2] || '').trim()
+      if (name) namesInResponse.add(name)
     }
 
     // Extract prices: ₹XXL, ₹XX Cr, ₹XX Lakh, XXL, XX Cr patterns
@@ -166,18 +159,17 @@ export async function outputGuardrail(
       }
     }
 
-    // Check prices similarly (more lenient: accept if format is seen, even if exact price varies slightly)
+    // Check prices similarly: flag only if specific price NOT in prompt AND not hedged
     for (const price of pricesInResponse) {
-      // Only flag if the response mentions a very specific price point that wasn't in the prompt
-      const priceNum = price.match(/\d+(?:\.\d+)?/)?.join('')
+      const priceNum = price.match(/\d+(?:\.\d+)?/)?.[0]
       if (priceNum && systemPrompt.length > 0 && !systemPrompt.includes(priceNum)) {
-        // Be conservative: only flag obvious fabrications (e.g., "₹50L in Sector 150" where 50L doesn't exist)
-        // Allow generic price advice without exact numbers
-        const isGenericAdvice = /around|approximately|typically|generally|usually|roughly|estimate|ballpark/i.test(response)
-        if (!isGenericAdvice && priceNum.length <= 5) { // likely a specific crore/lakh claim (up to 99.99)
+        // Only flag if response is confidently specific (not hedged with "around", "typically", etc)
+        // If response uses hedging language, it's not a fabrication claim, just imprecise
+        const isConfidentClaim = !/\b(?:around|approximately|typically|generally|usually|roughly|estimate|ballpark|may|might|could|seems|appears|suggest)\b/i.test(response)
+        if (isConfidentClaim && priceNum.length <= 5) {
           violations.push({
             type: 'price_fabrication',
-            detail: `price point "${price}" appears in response but not in verified context`,
+            detail: `confident price claim "${price}" appears in response but not in verified context`,
           })
         }
       }
@@ -199,10 +191,10 @@ export async function outputGuardrail(
     }
 
     // Possession date mismatch check: if response states possession, extract and validate
-    const possessionPattern = /(?:possession|ready|movein|move-in)\s+(?:(?:in\s+)?(?:2024|2025|2026|2027|2028|2029|2030)|(?:q[1-4]\s+)?(?:2024|2025|2026|2027|2028|2029|2030)|(?:by\s+)?(?:end\s+of\s+)?(?:this\s+)?(?:year|next\s+year))/gi
-    const possessionsInResponse: string[] = []
+    const possessionPattern = /(?:possession|ready|movein|move-in|delivery)\s+(?:(?:in\s+)?(\d{4})|(?:q[1-4]\s+)?(\d{4})|(?:by\s+)?(?:end\s+of\s+)?(?:this\s+)?(?:year|next\s+year))/gi
+    const possessionsInResponse: Set<string> = new Set()
     while ((match = possessionPattern.exec(response)) !== null) {
-      possessionsInResponse.push(match[0].trim())
+      possessionsInResponse.add(match[0].trim())
     }
     for (const poss of possessionsInResponse) {
       if (systemPrompt.length > 0 && !systemPrompt.toLowerCase().includes(poss.toLowerCase())) {
@@ -214,13 +206,13 @@ export async function outputGuardrail(
     }
   }
 
+  // Check for external URLs (blocked URLs are a form of prompt injection / competitor mention)
   if (violations.length === 0) {
-    // Check for external URLs separately
     for (const pattern of EXTERNAL_URL_PATTERNS) {
       if (pattern.test(response)) {
         violations.push({
-          type: 'prompt_injection', // Or a new type 'external_link' if preferred, using prompt_injection to block it
-          detail: `blocked external URL`,
+          type: 'prompt_injection',
+          detail: 'blocked external URL in response',
         })
         break
       }

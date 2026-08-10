@@ -24,7 +24,7 @@ async function resolveProject(nameOrId: string) {
   const term = (nameOrId ?? '').trim()
   if (!term) return null
 
-  return prisma.project.findFirst({
+  const project = await prisma.project.findFirst({
     where: {
       OR: [
         { id: term },
@@ -37,6 +37,26 @@ async function resolveProject(nameOrId: string) {
     // Prefer an exact-ish match: shorter names rank first for a `contains` hit.
     orderBy: { name: 'asc' },
   })
+
+  if (project) return project
+
+  // Multi-word token match: split by spaces and match when all significant words exist in name or slug
+  const words = term.split(/\s+/).filter(w => w.length > 2)
+  if (words.length > 1) {
+    return prisma.project.findFirst({
+      where: {
+        AND: words.map(w => ({
+          OR: [
+            { name: { contains: w, mode: 'insensitive' } },
+            { slug: { contains: w, mode: 'insensitive' } },
+          ],
+        })),
+      },
+      select: { id: true, name: true, sector: true, city: true, status: true, price_range_label: true },
+    })
+  }
+
+  return null
 }
 
 const NOT_FOUND = (nameOrId: string): FactEnvelope => ({
@@ -403,6 +423,7 @@ export async function getAmenitiesAndConnectivity(nameOrId: string): Promise<Rec
     found: true,
     project_name: project.name,
     amenity_count: amenities.length,
+    amenities: amenities.map(a => a.name),
     amenities_by_category: byCategory,
     connectivity_count: connectivity.length,
     connectivity: connectivity.map(c => ({
@@ -869,5 +890,75 @@ export async function getProjectFinancialDetails(nameOrId: string): Promise<Reco
     payment_plans: paymentPlansData,
     price_history: priceHistoryData,
     note: 'Comprehensive financial data. Each section carries its own data_gaps list. Quote exactly what is marked as verified.',
+  }
+}
+
+/** Standalone lookup for all payment plans & schedules for a project */
+export async function getPaymentPlans(nameOrId: string): Promise<Record<string, unknown>> {
+  const project = await resolveProject(nameOrId)
+  if (!project) return NOT_FOUND(nameOrId) as Record<string, unknown>
+
+  const plans = await prisma.paymentPlan.findMany({
+    where: { project_id: project.id },
+    orderBy: { created_at: 'asc' }
+  })
+
+  if (!plans.length) {
+    return {
+      found: false,
+      project_name: project.name,
+      message: `No payment plans recorded for ${project.name}.`
+    }
+  }
+
+  return {
+    found: true,
+    project_name: project.name,
+    plan_count: plans.length,
+    payment_plans: plans.map(p => ({
+      plan_type: p.plan_type,
+      plan_name: p.plan_name,
+      description: p.description,
+      milestones: p.milestones,
+      down_payment_pct: p.down_payment_pct,
+      booking_amount_lakh: p.booking_amount_lakh,
+      discount_offered_pct: p.discount_offered_pct,
+      best_for: p.best_for,
+      watch_out: p.watch_out
+    }))
+  }
+}
+
+/** Standalone lookup for channel partners for a project */
+export async function getChannelPartners(nameOrId: string): Promise<Record<string, unknown>> {
+  const project = await resolveProject(nameOrId)
+  if (!project) return NOT_FOUND(nameOrId) as Record<string, unknown>
+
+  const linkages = await prisma.projectChannelPartner.findMany({
+    where: { project_id: project.id },
+    include: { channel_partner: true }
+  })
+
+  if (!linkages.length) {
+    return {
+      found: false,
+      project_name: project.name,
+      message: `No channel partners linked for ${project.name}.`
+    }
+  }
+
+  return {
+    found: true,
+    project_name: project.name,
+    partner_count: linkages.length,
+    channel_partners: linkages.map(l => ({
+      name: l.channel_partner.name,
+      slug: l.channel_partner.slug,
+      type: l.channel_partner.type,
+      contact_person: l.channel_partner.primary_contact || 'Sales Advisory',
+      phone: l.channel_partner.contact_phone || l.channel_partner.phone || null,
+      email: l.channel_partner.contact_email || l.channel_partner.email || null,
+      website: l.channel_partner.website
+    }))
   }
 }

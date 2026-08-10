@@ -171,6 +171,11 @@ export interface DiscoveryResult {
     query: string
     candidates: string[]
   }
+  /** Sector-only query matches same sector in multiple cities — ask which city. */
+  cityDisambiguation?: {
+    query: string
+    candidates: Array<{ city: string; label: string }>
+  }
   /** Pagination info for exactResults + nearbyResults combined */
   pageIndex?: number
   totalCount?: number

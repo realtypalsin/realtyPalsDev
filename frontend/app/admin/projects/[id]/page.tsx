@@ -20,6 +20,8 @@ import LocationIntelligenceEditor from '@/components/admin/LocationIntelligenceE
 import IntelligenceWorkspace from '@/components/admin/IntelligenceWorkspace'
 import ConstructionMilestonesEditor from '@/components/admin/ConstructionMilestonesEditor'
 import ProjectUpdatesEditor from '@/components/admin/ProjectUpdatesEditor'
+import PriceHistoryEditor from '@/components/admin/PriceHistoryEditor'
+import LifecycleUpdatesEditor from '@/components/admin/LifecycleUpdatesEditor'
 import ChannelPartnersEditor from '@/components/admin/ChannelPartnersEditor'
 import CompletenessBar from '@/components/admin/CompletenessBar'
 import ProjectPreview from '@/components/admin/ProjectPreview'
@@ -410,6 +412,7 @@ export default function AdminProjectEditPage({
           <div className="max-w-4xl space-y-6">
             <PaymentPlanEditor projectId={id} initialData={data.payment_plan} />
             <CostSheetEditor projectId={id} initialData={data.cost_sheet} />
+            <PriceHistoryEditor projectId={id} />
             <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile} />
             <ConnectivityEditor
               connectivity={data.connectivity ?? []}
@@ -459,6 +462,9 @@ export default function AdminProjectEditPage({
               projectId={id}
               projectStatus={data.status}
             />
+            {data.status === 'ready_to_move' && (
+              <LifecycleUpdatesEditor projectId={id} />
+            )}
           </div>
         )}
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Save, RefreshCw, CheckCircle2, Clock, Calendar } from 'lucide-react'
+import { Plus, Trash2, Save, RefreshCw, CheckCircle2, Clock, Calendar, Rss } from 'lucide-react'
 import { toast } from 'sonner'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import { API_BASE } from '@/lib/env'
@@ -20,21 +20,20 @@ interface Props {
 }
 
 const DEFAULT_UNDER_CONSTRUCTION = [
-  { name: 'Excavation & Substructure', status: 'completed' as const, date_label: 'Q1 2024', sort_order: 1 },
-  { name: 'Tower Structure (RCC Frame)', status: 'completed' as const, date_label: 'Q4 2024', sort_order: 2 },
-  { name: 'Brickwork & Internal Plaster', status: 'in_progress' as const, date_label: 'Q2 2025', sort_order: 3 },
-  { name: 'MEP, Plumbing & Electrical', status: 'in_progress' as const, date_label: 'Q4 2025', sort_order: 4 },
-  { name: 'Facade, Windows & Painting', status: 'upcoming' as const, date_label: 'Q2 2026', sort_order: 5 },
-  { name: 'Finishing, Lift & Handover', status: 'upcoming' as const, date_label: 'Q4 2026', sort_order: 6 },
+  { name: 'RERA Registration & Site Clearing', status: 'completed' as const, date_label: 'Q1 2024', sort_order: 1 },
+  { name: 'Tower Raft & Basement Slab Casting', status: 'completed' as const, date_label: 'Q4 2024', sort_order: 2 },
+  { name: 'Superstructure Slab Casting (20th Floor)', status: 'in_progress' as const, date_label: 'Q2 2025', sort_order: 3 },
+  { name: 'Internal Brickwork & Plastering', status: 'in_progress' as const, date_label: 'Q4 2025', sort_order: 4 },
+  { name: 'MEP, Plumbing & Elevator Installation', status: 'upcoming' as const, date_label: 'Q2 2026', sort_order: 5 },
+  { name: 'Occupancy Certificate Inspection & Keys Handover', status: 'upcoming' as const, date_label: 'Q4 2026', sort_order: 6 },
 ]
 
 const DEFAULT_READY_TO_MOVE = [
-  { name: 'RERA Approval & Registration', status: 'completed' as const, date_label: 'Granted', sort_order: 1 },
-  { name: 'Occupancy Certificate (OC)', status: 'completed' as const, date_label: 'Issued', sort_order: 2 },
-  { name: 'Possession Handover', status: 'completed' as const, date_label: 'Active', sort_order: 3 },
-  { name: 'Maintenance & Warranty Support', status: 'in_progress' as const, date_label: 'Ongoing', sort_order: 4 },
-  { name: 'Community Features Activation', status: 'in_progress' as const, date_label: 'Q3 2025', sort_order: 5 },
-  { name: 'Annual Maintenance News', status: 'upcoming' as const, date_label: 'Quarterly', sort_order: 6 },
+  { name: 'Occupancy Certificate (OC) Verified', status: 'completed' as const, date_label: 'Granted', sort_order: 1 },
+  { name: 'Resident Flat Possession & Key Handover', status: 'completed' as const, date_label: 'Active', sort_order: 2 },
+  { name: 'Grand Clubhouse & Swimming Pool Launch', status: 'completed' as const, date_label: 'Operational', sort_order: 3 },
+  { name: 'Annual Society Maintenance & Security Audit', status: 'in_progress' as const, date_label: 'Ongoing', sort_order: 4 },
+  { name: 'EV Charging Basement Station Installation', status: 'upcoming' as const, date_label: 'Q3 2025', sort_order: 5 },
 ]
 
 export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under_construction' }: Props) {
@@ -44,10 +43,10 @@ export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under
 
   const isUnderConstruction = projectStatus === 'under_construction'
   const defaults = isUnderConstruction ? DEFAULT_UNDER_CONSTRUCTION : DEFAULT_READY_TO_MOVE
-  const sectionTitle = isUnderConstruction ? 'Construction Milestones' : 'Project Updates & Maintenance'
+  const sectionTitle = isUnderConstruction ? 'Construction Site Log & Media Feed' : 'Society Lifecycle & Resident Feed'
   const sectionDescription = isUnderConstruction
-    ? 'Track project construction progress and key milestones'
-    : 'Track handover, possession, maintenance, and community updates'
+    ? 'Public site progress feed broadcasted to buyers'
+    : 'Resident announcements, AOA updates, and society highlights'
 
   const fetchUpdates = async () => {
     setLoading(true)
@@ -90,10 +89,10 @@ export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under
       })
 
       if (!res.ok) throw new Error('Failed to save')
-      toast.success(`${sectionTitle} saved`)
+      toast.success(`${sectionTitle} saved successfully`)
       await fetchUpdates()
     } catch (err: any) {
-      toast.error(err.message)
+      toast.error(err.message || 'Error saving updates')
     } finally {
       setSaving(false)
     }
@@ -105,19 +104,43 @@ export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under
   }
 
   if (loading) {
-    return <div className="h-48 bg-gray-100 rounded-2xl animate-pulse" />
+    return <div className="h-48 bg-slate-100 rounded-2xl animate-pulse" />
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
-      <div>
-        <h3 className="text-lg font-bold text-gray-900">{sectionTitle}</h3>
-        <p className="text-sm text-gray-500 mt-1">{sectionDescription}</p>
+    <div className="bg-white rounded-2xl border border-slate-200/80 p-6 space-y-5 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center font-bold">
+            <Rss size={18} />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900">{sectionTitle}</h3>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">{sectionDescription}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={addUpdate}
+            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <Plus size={14} /> Add Log Entry
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-5 py-2 bg-slate-900 hover:bg-black text-white rounded-full text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-50"
+          >
+            {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+            <span>{saving ? 'Saving...' : 'Save Feed'}</span>
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {updates.map((update, i) => (
-          <div key={i} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+          <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3 bg-slate-50/70 rounded-xl border border-slate-200/60 hover:bg-slate-50 transition-all">
             <select
               value={update.status}
               onChange={(e) => {
@@ -125,7 +148,7 @@ export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under
                 newUpdates[i].status = e.target.value as any
                 setUpdates(newUpdates)
               }}
-              className="px-3 py-2 text-xs border rounded bg-white"
+              className="px-3 py-1.5 text-xs font-bold border border-slate-200 rounded-lg bg-white text-slate-900"
             >
               <option value="completed">✓ Completed</option>
               <option value="in_progress">⚙ In Progress</option>
@@ -134,53 +157,36 @@ export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under
 
             <input
               type="text"
-              placeholder="Update name"
+              placeholder="Update headline / milestone entry..."
               value={update.name}
               onChange={(e) => {
                 const newUpdates = [...updates]
                 newUpdates[i].name = e.target.value
                 setUpdates(newUpdates)
               }}
-              className="flex-1 px-3 py-2 text-sm border rounded bg-white"
+              className="flex-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg bg-white text-slate-900"
             />
 
             <input
               type="text"
-              placeholder="Date label (Q1 2024, etc.)"
+              placeholder="Quarter (Q1 2025)"
               value={update.date_label}
               onChange={(e) => {
                 const newUpdates = [...updates]
                 newUpdates[i].date_label = e.target.value
                 setUpdates(newUpdates)
               }}
-              className="w-32 px-3 py-2 text-sm border rounded bg-white"
+              className="w-32 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg bg-white text-slate-900"
             />
 
             <button
               onClick={() => setUpdates(updates.filter((_, idx) => idx !== i))}
-              className="p-2 text-red-600 hover:bg-red-50 rounded"
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors self-end sm:self-center"
             >
-              <Trash2 size={16} />
+              <Trash2 size={15} />
             </button>
           </div>
         ))}
-      </div>
-
-      <div className="flex gap-2">
-        <button
-          onClick={addUpdate}
-          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold rounded-lg text-sm flex items-center gap-2"
-        >
-          <Plus size={16} /> Add Update
-        </button>
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="ml-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm disabled:opacity-50 flex items-center gap-2"
-        >
-          <Save size={16} /> Save
-        </button>
       </div>
     </div>
   )

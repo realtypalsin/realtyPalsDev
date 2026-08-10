@@ -84,35 +84,66 @@ export function parseIntentJson(raw: string, previous: Intent): Intent {
   }
 }
 
-async function extractWithGroq(msg: string, prev: Intent): Promise<Intent> {
-  console.log('[INTENT] START extractWithGroq', Date.now())
-  // 15s timeout — Groq is fast; this guards against unexpected Groq slowdowns.
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY!, timeout: 15000 })
-  const completion = await groq.chat.completions.create({
-    model: MODELS.GROQ_SMART,
-    messages: [
-      { role: 'system', content: INTENT_EXTRACTION_PROMPT },
-      { role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` },
-    ],
-    response_format: { type: 'json_object' },
-    max_tokens: 256,
-    temperature: 0.1,
-  })
-  console.log('[INTENT] END extractWithGroq', Date.now())
-  const raw = completion.choices[0]?.message?.content ?? '{}'
+async function extractWithCerebras(msg: string, prev: Intent, apiKey: string): Promise<Intent> {
+  const { completeWithCerebras } = await import('./cerebras')
+  const raw = await completeWithCerebras(
+    INTENT_EXTRACTION_PROMPT,
+    `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}`,
+    apiKey
+  )
   return parseIntentJson(raw, prev)
 }
 
-// signal is the AbortSignal from the 8-second wall-clock in extractIntent.
-// Passing it per-request wires it to the underlying fetch — including the body
-// read — so aborting it terminates both header and body phases cleanly.
-async function extractWithOpenAI(msg: string, prev: Intent, signal: AbortSignal): Promise<Intent> {
-  console.log('[INTENT] START extractWithOpenAI', Date.now())
+async function extractWithMistral(msg: string, prev: Intent, apiKey: string): Promise<Intent> {
+  const { completeWithMistral } = await import('./mistral')
+  const raw = await completeWithMistral(
+    INTENT_EXTRACTION_PROMPT,
+    `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}`,
+    apiKey
+  )
+  return parseIntentJson(raw, prev)
+}
+
+async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string): Promise<Intent> {
+  const groq = new Groq({ apiKey, timeout: 8000 })
+  let raw = '{}'
+  try {
+    const completion = await groq.chat.completions.create({
+      model: MODELS.GROQ_SMART,
+      messages: [
+        { role: 'system', content: INTENT_EXTRACTION_PROMPT },
+        { role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` },
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 256,
+      temperature: 0.1,
+    })
+    raw = completion.choices[0]?.message?.content ?? '{}'
+  } catch (err: any) {
+    if (err?.status === 429 || err?.message?.includes('rate_limit_exceeded') || err?.message?.includes('Rate limit reached')) {
+      console.warn('[INTENT:GROQ] 70B rate limited, retrying intent with 8B instant model')
+      const completion = await groq.chat.completions.create({
+        model: MODELS.GROQ_FAST,
+        messages: [
+          { role: 'system', content: INTENT_EXTRACTION_PROMPT },
+          { role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` },
+        ],
+        response_format: { type: 'json_object' },
+        max_tokens: 256,
+        temperature: 0.1,
+      })
+      raw = completion.choices[0]?.message?.content ?? '{}'
+    } else {
+      throw err
+    }
+  }
+  return parseIntentJson(raw, prev)
+}
+
+async function extractWithOpenAIKey(msg: string, prev: Intent, apiKey: string, signal: AbortSignal): Promise<Intent> {
   const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey,
     baseURL: 'https://models.inference.ai.azure.com',
-    // No SDK-level timeout — the external AbortSignal owns the wall-clock.
-    // No retries — a retry would extend past our 8s budget; let Groq handle failures.
     maxRetries: 0,
   })
   const completion = await client.chat.completions.create(
@@ -126,28 +157,11 @@ async function extractWithOpenAI(msg: string, prev: Intent, signal: AbortSignal)
       max_tokens: 256,
       temperature: 0.1,
     },
-    // Per-request signal: threads through fetchWithTimeout AND response body read.
-    // When the signal fires, both the fetch and any in-progress response.json() abort.
     { signal },
   )
-  console.log('[INTENT] END extractWithOpenAI', Date.now())
   const raw = completion.choices[0]?.message?.content ?? '{}'
   return parseIntentJson(raw, prev)
 }
-
-/*
-async function extractWithClaude(msg: string, prev: Intent): Promise<Intent> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 256,
-    system: INTENT_EXTRACTION_PROMPT,
-    messages: [{ role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` }],
-  })
-  const text = response.content[0]?.type === 'text' ? response.content[0].text : '{}'
-  return parseJson(text, prev)
-}
-*/
 
 export interface IntentResult {
   intent: Intent
@@ -155,45 +169,50 @@ export interface IntentResult {
   degraded: boolean
 }
 
+import { FALLBACK_CHAIN } from '../config'
+
 export async function extractIntent(message: string, previousIntent: Intent): Promise<IntentResult> {
-  if (process.env.OPENAI_API_KEY) {
-    // Hard wall-clock: 8 seconds from call to result, covering headers + body.
-    // When the timer fires, the AbortController cancels the in-flight request
-    // including any stalled body read. The catch block is guaranteed to execute.
-    const controller = new AbortController()
-    const timer = setTimeout(() => {
-      console.warn('[intent] 8s wall-clock expired — aborting OpenAI, switching to Groq')
-      controller.abort()
-    }, 8000)
+  for (const item of FALLBACK_CHAIN) {
+    const apiKey = process.env[item.envKey]
+    if (!apiKey) continue
 
     try {
-      console.log('[INTENT] trying OpenAI path', Date.now())
-      const result = await extractWithOpenAI(message, previousIntent, controller.signal)
-      console.log('[INTENT] OpenAI path succeeded', Date.now(), { result })
-      clearTimeout(timer)
-      return { intent: result, degraded: false }
-    } catch (err) {
-      clearTimeout(timer)
-      console.warn('[intent] OpenAI failed, trying Groq:', (err as Error).message)
-    }
-  }
-
-  if (process.env.GROQ_API_KEY) {
-    try {
-      console.log('[INTENT] trying Groq path', Date.now())
-      const result = await extractWithGroq(message, previousIntent)
-      console.log('[INTENT] Groq path succeeded', Date.now(), { result })
-      return { intent: result, degraded: false }
-    } catch (err) {
-      console.warn('[intent] Groq failed:', (err as Error).message)
+      if (item.provider === 'cerebras') {
+        console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
+        const result = await extractWithCerebras(message, previousIntent, apiKey)
+        if (result) return { intent: result, degraded: false }
+      }
+      if (item.provider === 'groq') {
+        console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
+        const result = await extractWithGroqKey(message, previousIntent, apiKey)
+        if (result) return { intent: result, degraded: false }
+      }
+      if (item.provider === 'mistral') {
+        console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
+        const result = await extractWithMistral(message, previousIntent, apiKey)
+        if (result) return { intent: result, degraded: false }
+      }
+      if (item.provider === 'openai') {
+        console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), 6000)
+        try {
+          const result = await extractWithOpenAIKey(message, previousIntent, apiKey, controller.signal)
+          clearTimeout(timer)
+          if (result) return { intent: result, degraded: false }
+        } catch (err) {
+          clearTimeout(timer)
+          throw err
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[INTENT] ${item.label} (${item.envKey}) failed:`, err?.message || String(err))
     }
   }
 
   // All providers failed. Use heuristic pattern matching as last resort
-  console.warn('[intent] all providers failed, trying heuristic fallback')
+  console.warn('[INTENT] All LLM providers failed or unconfigured — executing heuristic fallback')
   const heuristicIntent = extractIntentHeuristic(message, previousIntent)
-
-  console.error('[intent] returning fallback intent (degraded)')
   return { intent: heuristicIntent, degraded: true }
 }
 

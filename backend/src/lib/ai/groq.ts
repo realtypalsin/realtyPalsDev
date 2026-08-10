@@ -84,7 +84,6 @@ export async function streamWithGroq(
 
   let stream: Awaited<ReturnType<typeof groq.chat.completions.create>>
   try {
-    // Note: Groq SDK doesn't support stream_options yet, so we can't get token counts
     stream = await groq.chat.completions.create(
       {
         model: MODELS.GROQ_SMART,
@@ -93,16 +92,37 @@ export async function streamWithGroq(
         max_tokens: 1024,
         temperature: 0.7,
       },
-      // signal threads through the Groq SDK fetch — terminates connection AND
-      // body reads when the inactivity timer fires.
       { signal: inactivityController.signal },
     )
-  } catch (err) {
-    clearInactivity()
-    if (inactivityFired || inactivityController.signal.aborted) {
-      throw new GroqStreamStallError(anyTokenSent)
+  } catch (err: any) {
+    const isRateLimit = err?.status === 429 || err?.message?.includes('rate_limit_exceeded') || err?.message?.includes('Rate limit reached')
+    if (isRateLimit) {
+      console.warn('[GROQ] Rate limit on GROQ_SMART — falling back to GROQ_FAST model (llama-3.1-8b-instant)')
+      try {
+        stream = await groq.chat.completions.create(
+          {
+            model: MODELS.GROQ_FAST,
+            messages: msgs,
+            stream: true,
+            max_tokens: 1024,
+            temperature: 0.7,
+          },
+          { signal: inactivityController.signal },
+        )
+      } catch (fallbackErr) {
+        clearInactivity()
+        if (inactivityFired || inactivityController.signal.aborted) {
+          throw new GroqStreamStallError(anyTokenSent)
+        }
+        throw fallbackErr
+      }
+    } else {
+      clearInactivity()
+      if (inactivityFired || inactivityController.signal.aborted) {
+        throw new GroqStreamStallError(anyTokenSent)
+      }
+      throw err
     }
-    throw err
   }
 
   console.log('[GROQ] END create() — stream object received', Date.now())

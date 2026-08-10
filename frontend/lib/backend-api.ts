@@ -131,7 +131,7 @@ export function streamChat(
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
-    const STALL_MS = 20000
+    const STALL_MS = 60000
 
     while (true) {
       let readResult: ReadableStreamReadResult<Uint8Array>

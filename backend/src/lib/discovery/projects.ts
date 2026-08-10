@@ -733,13 +733,45 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
 
   if (rawProjects.length > 0) {
     if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)) {
+      // ── Check for CITY-LEVEL disambiguation first ──
+      // If user provided only a sector (no BHK/budget/etc) and it exists in multiple cities, ask which city
+      const isSectorOnly = !effectiveIntent.bhk?.length && !effectiveIntent.budgetMax && !effectiveIntent.builderName && !effectiveIntent.lifestyleKeywords?.length && !effectiveIntent.projectNames?.length
+
+      if (isSectorOnly) {
+        const projectsByCity = new Map<string, typeof rawProjects[0][]>()
+        for (const p of rawProjects) {
+          if (!projectsByCity.has(p.city)) {
+            projectsByCity.set(p.city, [])
+          }
+          projectsByCity.get(p.city)!.push(p)
+        }
+
+        if (projectsByCity.size > 1) {
+          console.log(`[DISCOVERY:B2] CITY MULTI-MATCH: "${effectiveIntent.sector}" exists in ${projectsByCity.size} cities:`, Array.from(projectsByCity.keys()))
+          const res: DiscoveryResult = {
+            exactResults: [],
+            nearbyResults: [],
+            cityDisambiguation: {
+              query: effectiveIntent.sector,
+              candidates: Array.from(projectsByCity.keys()).map(city => ({
+                city,
+                label: city
+              }))
+            }
+          }
+          await setCached(cacheKey, res, 300)
+          return res
+        }
+      }
+
+      // ── Check for SECTOR-LEVEL disambiguation ──
       let distinctSectors = [...new Set(rawProjects.map((p) => p.sector))]
-      
+
       // Auto-resolve ambiguity if user's intent exactly matches one of the distinct sectors (ignoring punctuation/case)
-      const exactMatch = distinctSectors.find(s => 
+      const exactMatch = distinctSectors.find(s =>
         s.replace(/[,.-]/g, '').toLowerCase().trim() === effectiveIntent.sector!.replace(/[,.-]/g, '').toLowerCase().trim()
       )
-      
+
       if (exactMatch) {
         distinctSectors = [exactMatch]
         rawProjects = rawProjects.filter(p => p.sector === exactMatch)
@@ -758,9 +790,6 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
         await setCached(cacheKey, res, 300)
         return res
       }
-
-      // Note: City disambiguation skipped — we operate in single-city context (Noida/Greater Noida).
-      // Intent type does not include a city field; all queries search within supported cities.
     }
 
     // Builder-only queries (no BHK/budget/sector) bypass score threshold

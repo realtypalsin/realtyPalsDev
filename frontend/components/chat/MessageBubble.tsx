@@ -198,6 +198,15 @@ export function SuggestionChipGroups({
 
     // Validate chip has projects array
     if (!projects || projects.length === 0) {
+      const fallbackText = payload.text || chip.label
+      if (fallbackText) {
+        onAction({
+          ...chip,
+          actionType: 'TEXT_MESSAGE' as const,
+          payload: { text: String(fallbackText).trim() }
+        })
+        return
+      }
       console.error('[CHIP] No projects in chip payload:', { chipId: chip.id, chipLabel: chip.label, payload })
       return
     }
@@ -331,7 +340,8 @@ function MessageBubbleInner({
       setEditLoading(false)
     }
   }
-  const combinedChips = [...chips]
+  const rawChips: import('./types').ChipAction[] = [...((message.chips as import('./types').ChipAction[]) || []), ...(isLast ? chips : [])]
+  const combinedChips: import('./types').ChipAction[] = Array.from(new Map(rawChips.map((c) => [c.id || c.label, c])).values())
 
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
   const touchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -1042,9 +1052,8 @@ function MessageBubbleInner({
 
       {/* Progressive chips from Conversation Engine */}
       {(() => {
-        const hasOwnChips = Array.isArray(message.chips) && message.chips.length > 0;
-        const shouldShow = message.type === 'ai' && displayContent && combinedChips.length > 0
-          && (isLast ? !isSubmitting : hasOwnChips);
+        const shouldShow = message.type === 'ai' && Boolean(displayContent) && combinedChips.length > 0
+          && (!isLast || !isSubmitting);
         return shouldShow;
       })() && (
 

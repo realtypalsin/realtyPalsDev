@@ -416,6 +416,8 @@ export function buildComponentProps(params: {
       return {
         projectId,
         count: facts['amenity_count']?.value,
+        amenities: facts['amenities_list']?.value,
+        categories: facts['amenities_by_category']?.value,
       }
 
     case 'floor-plan-gallery':

@@ -112,9 +112,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     if (currentTab !== activeTab) {
       const params = new URLSearchParams(searchParams.toString())
       params.set('tab', activeTab)
-      router.replace(`?${params.toString()}`, { scroll: false })
+      const newUrl = `${window.location.pathname}?${params.toString()}`
+      window.history.replaceState({}, '', newUrl)
     }
-  }, [activeTab, router, searchParams])
+  }, [activeTab, searchParams])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)')

@@ -9,6 +9,12 @@ const EnvSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
+  OPENAI_API_KEY1: z.string().optional(),
+  GROQ_API_KEY1: z.string().optional(),
+  OPENAI_API_KEY2: z.string().optional(),
+  GROQ_API_KEY2: z.string().optional(),
+  OPENAI_API_KEY3: z.string().optional(),
+  GROQ_API_KEY3: z.string().optional(),
 
   // Admin & Database secrets — required in production
   ADMIN_PASSWORD: z.string().optional(),
