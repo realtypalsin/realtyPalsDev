@@ -78,6 +78,7 @@ export function sanitizeMessage(message: string): string {
   return message
     .trim()
     .replace(/\s+/g, ' ') // Normalize whitespace
+    // eslint-disable-next-line no-useless-escape
     .replace(/[^\w\s?'.\-]/g, '') // Remove special chars except basic punctuation
     .substring(0, 2000) // Cap length
 }

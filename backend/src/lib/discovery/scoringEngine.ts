@@ -339,7 +339,7 @@ function specsScore(
   project: ProjectWithMetadata,
   _metadata: ScoringMetadata
 ): DimensionScore {
-  let score = 50 // Neutral baseline
+  const score = 50 // Neutral baseline
 
   if (!intent.bhk || intent.bhk.length === 0) {
     return { score: 75, explanation: 'No specific BHK requirement' }

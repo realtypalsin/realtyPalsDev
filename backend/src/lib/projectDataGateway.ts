@@ -485,7 +485,9 @@ async function getCostSheetWithValidation(
         validated: true,
       }
     }
-  } catch (err) {}
+  } catch (err) {
+    // Ignore database fallback error and return default facts
+  }
 
   return facts
 }

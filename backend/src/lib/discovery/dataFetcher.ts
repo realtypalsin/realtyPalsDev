@@ -45,24 +45,27 @@ export async function fetchProjectData(
           orderBy: { sort_order: 'asc' }
         })
 
-      case 'CostSheet':
+      case 'CostSheet': {
         const costSheet = await prisma.costSheet.findUnique({
           where: { project_id: projectId }
         })
         return costSheet ? [costSheet] : []
+      }
 
-      case 'Builder':
+      case 'Builder': {
         const project = await prisma.project.findUnique({
           where: { id: projectId },
           include: { builder: true }
         })
         return project ? [project.builder] : []
+      }
 
-      case 'Project':
+      case 'Project': {
         const proj = await prisma.project.findUnique({
           where: { id: projectId }
         })
         return proj ? [proj] : []
+      }
 
       default:
         return []

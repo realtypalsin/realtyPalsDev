@@ -5,8 +5,8 @@ import type { FallbackKeyConfig } from '../../config'
 
 describe('Multi-Provider Fallback Chain Engine', () => {
   it('falls back to second key when first key throws pre-token error', async () => {
-    let key1Tried = false
-    let key2Tried = false
+    const key1Tried = false
+    const key2Tried = false
 
     // Save original env
     const origEnv = process.env.TEST_KEY_1

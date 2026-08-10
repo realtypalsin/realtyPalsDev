@@ -119,7 +119,9 @@ async function generateDatabaseFallbackResponse(userMsg: string, projects: any[]
         include: { unit_types: true, payment_plans: true, amenities: true, cost_sheet: true },
       })
       if (dbMatch) p = dbMatch
-    } catch {}
+    } catch {
+      // Ignore fallback DB search errors
+    }
   }
 
   if (p) {

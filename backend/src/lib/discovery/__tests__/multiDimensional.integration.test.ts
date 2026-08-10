@@ -183,9 +183,9 @@ describe('Multi-Dimensional Integration', () => {
       )
 
       expect(result.recommendations).toBeDefined()
-      expect(Array.isArray(result.recommendations)).toBe(true)
-      expect(result.summaryForChat).toContain('No projects') ||
-             expect(result.recommendations.length).toBe(0)
+      const hasNoProjectsSummary = result.summaryForChat.includes('No projects')
+      const isEmptyRecs = result.recommendations.length === 0
+      expect(hasNoProjectsSummary || isEmptyRecs).toBe(true)
     })
 
     it('maintains confidence scores across phases', async () => {

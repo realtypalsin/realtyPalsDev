@@ -99,13 +99,13 @@ describe('Integration Tests: Database-Backed Chat Chips', () => {
         confidence: { location: 90, overall: 90 }
       }
 
-      assert.ok(response.chips?.length! >= 2, 'Should have multiple chips')
+      assert.ok((response.chips?.length ?? 0) >= 2, 'Should have multiple chips')
     })
   })
 
   describe('Multi-Intent Conversation Flow', () => {
     it('Turn 1: PAYMENT_PLANS → Turn 2: LOCATION → Memory persists', () => {
-      let memory: Partial<ConversationMemory> = {}
+      const memory: Partial<ConversationMemory> = {}
 
       // Turn 1: User asks about payment plans
       const chips1 = generateChips('PAYMENT_PLANS', memory, 'ADVISOR')
@@ -239,8 +239,8 @@ describe('Integration Tests: Database-Backed Chat Chips', () => {
         missing_data: ['Database temporarily unavailable']
       }
 
-      assert.ok(fallbackResponse.chips?.length! > 0, 'Should have action chips even on error')
-      assert.ok(fallbackResponse.missing_data?.length! > 0)
+      assert.ok((fallbackResponse.chips?.length ?? 0) > 0, 'Should have action chips even on error')
+      assert.ok((fallbackResponse.missing_data?.length ?? 0) > 0)
     })
 
     it('Memory extraction error: continue with empty memory', () => {
@@ -354,8 +354,8 @@ describe('Integration Tests: Database-Backed Chat Chips', () => {
   describe('Real-World Scenarios', () => {
     it('Scenario: First-time buyer journey', () => {
       // Turn 1: General inquiry
-      let memory: Partial<ConversationMemory> = {}
-      let response1 = generateChips('PAYMENT_PLANS', memory, 'ADVISOR')
+      const memory: Partial<ConversationMemory> = {}
+      const response1 = generateChips('PAYMENT_PLANS', memory, 'ADVISOR')
       assert.ok(response1.length > 0)
 
       // Turn 2: States budget

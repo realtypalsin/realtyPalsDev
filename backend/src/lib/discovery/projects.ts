@@ -347,7 +347,9 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
 
   // Phase 5: Compute sector tier for boost
   // Import here to avoid circular dependency
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { computeSectorTier } = require('./sectorTiers')
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { getMarketTier } = require('./marketTiers')
 
   const sectorIntelligence = (p as any).sector_intelligence // populated via dynamic SQL join if available

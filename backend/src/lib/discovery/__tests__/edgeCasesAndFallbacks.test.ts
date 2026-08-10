@@ -278,7 +278,7 @@ describe('Edge Cases & Fallbacks', () => {
     })
 
     it('memory persists across intent switches', () => {
-      let memory: Partial<ConversationMemory> = {}
+      const memory: Partial<ConversationMemory> = {}
 
       // Turn 1: User states budget
       memory.user_budget_min_cr = 50

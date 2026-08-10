@@ -358,20 +358,20 @@ describe('End-to-End Intent Flow', () => {
     })
 
     it('accumulates memory across intents', () => {
-      let memory: Partial<ConversationMemory> = {}
+      const memory: Partial<ConversationMemory> = {}
 
       // Turn 1: Payment plans
       memory.user_budget_min_cr = 50
       memory.user_budget_max_cr = 75
-      let chips1 = generateChips('PAYMENT_PLANS', memory, 'ADVISOR')
+      const chips1 = generateChips('PAYMENT_PLANS', memory, 'ADVISOR')
       assert.ok(chips1.find(c => c.analyticsId.includes('site_visit')))
 
       // Turn 2: Builder (memory persists)
-      let chips2 = generateChips('BUILDER_HISTORY', memory, 'ADVISOR')
+      const chips2 = generateChips('BUILDER_HISTORY', memory, 'ADVISOR')
       assert.ok(chips2.find(c => c.analyticsId.includes('rera')))
 
       // Turn 3: Location (memory still intact)
-      let chips3 = generateChips('LOCATION', memory, 'ADVISOR')
+      const chips3 = generateChips('LOCATION', memory, 'ADVISOR')
       assert.ok(chips3.find(c => c.analyticsId.includes('site_visit')))
     })
 
