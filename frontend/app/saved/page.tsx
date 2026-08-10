@@ -39,7 +39,8 @@ export default function SavedPropertiesPage() {
     async function loadSaved() {
       try {
         let uid = localStorage.getItem('user_id');
-        let guestToken = localStorage.getItem('guest_token');
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const guestToken = localStorage.getItem('guest_token');
 
         if (!uid) {
           try {
