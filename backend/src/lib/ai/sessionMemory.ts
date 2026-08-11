@@ -56,6 +56,12 @@ export async function persistIntentToMemory(
   intent: Intent
 ) {
   try {
+    const session = await prisma.chatSession.findUnique({
+      where: { id: sessionId },
+      select: { id: true },
+    })
+    if (!session) return
+
     await prisma.sessionMemory.upsert({
       where: { session_id: sessionId },
       create: {

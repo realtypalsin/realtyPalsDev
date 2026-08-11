@@ -60,6 +60,12 @@ export async function hydrateFromDb(sessionId: string): Promise<void> {
 export async function persistToDb(sessionId: string): Promise<void> {
   try {
     const shown = Array.from(getShownChips(sessionId))
+    const session = await prisma.chatSession.findUnique({
+      where: { id: sessionId },
+      select: { id: true },
+    })
+    if (!session) return
+
     await prisma.chatSession.update({
       where: { id: sessionId },
       data: { shown_chip_ids: shown }
