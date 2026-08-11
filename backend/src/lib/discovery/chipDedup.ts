@@ -1,4 +1,4 @@
-// Session-scoped chip deduplication.
+;// Session-scoped chip deduplication.
 // Keeps an in-memory Set per sessionId of chip IDs already emitted.
 // LRU eviction after 500 sessions (prevents unbounded memory growth).
 
