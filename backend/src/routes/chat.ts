@@ -74,6 +74,7 @@ import {
 } from '../lib/analytics/tracking'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
 import { filterNewChips, filterNewChipsWithFloor, markChipShown, hydrateFromDb, persistToDb } from '../lib/discovery/chipDedup'
+import { estimateTokensReal } from '../lib/ai/tokenizer'
 import { isOverDailyBudget } from '../lib/ai/cost'
 import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monitoring/posthog'
 import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
@@ -464,7 +465,6 @@ const BodySchema = z.object({
 
 import { inputGuardrail, outputGuardrail } from '../lib/ai/guardrails'
 import { validateAgainstFacts } from '../lib/ai/guardrails-v2'
-import { estimateTokensReal } from '../lib/ai/tokenizer'
 
 function sseWrite(res: Response, event: string, data: Record<string, unknown>): void {
   res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
@@ -1002,34 +1002,12 @@ router.post('/', async (req: Request, res: Response) => {
       let componentSummary = ''
       try {
         const systemMsg = `You are RealtyPal — an expert real estate advisor analyzing verified project data.
-EXECUTIVE FINANCIAL TABLE FORMATTING INSTRUCTIONS:
-1. Directly answer the user's question using ONLY the provided verified facts.
-2. Stay strictly focused on the requested topic (e.g. if asked about payment plans or pricing, analyze payment plans and cost sheet; do NOT list amenities unless asked).
-3. Do NOT use emojis like 📌 or pushpins. Do NOT output raw HTML tags (e.g. do NOT write <realty-box>).
-4. Format each payment plan cleanly using a Markdown header (###) followed by two professional GFM Markdown tables:
-   - Table 1: Plan Summary (Down Payment, Booking Token, Discount, Best For, Watch Out)
-   - Table 2: Milestones Schedule (Stage, Amount, Due / Timeline, Status)
-
-Format each plan like this exact structure:
-
-### 💳 Construction Linked Plan (10:90 CLP)
-
-| Plan Overview | Details |
-| :--- | :--- |
-| **Down Payment** | 10% |
-| **Booking Token** | ₹10.1 Lakh |
-| **Discount** | None |
-| **Best For** | End users seeking stage-linked payments |
-| **Watch Out** | Late payment charges apply if stage notes are missed |
-
-**Milestones Schedule:**
-| Stage / Milestone | Amount | Due / Timeline | Status |
-| :--- | :--- | :--- | :--- |
-| At the time of Booking | ₹0.10 Cr (10%) | Immediate | Completed |
-| On Commencement of Excavation | ₹0.10 Cr (10%) | Within 30 Days | Completed |
-| On Laying of Raft / Foundation | ₹0.10 Cr (10%) | Milestone 1 | Pending |
-
-5. Never claim payment plans or data are missing if they are present in the provided facts.`
+EXECUTIVE RESPONSE INSTRUCTIONS:
+1. Directly and concisely answer the user's exact question using ONLY the provided verified facts.
+2. Stay strictly focused on the requested topic (e.g. if asked about amenities, present the amenities clearly; if asked about metro/location, answer the metro/location query).
+3. Do NOT add meta-disclaimers or negative statements about unrequested topics (e.g. NEVER write "Please note that the provided information does not include details on payment plans or connectivity"). Simply answer what was asked and stop.
+4. Do NOT use emojis like 📌 or pushpins. Do NOT output raw HTML tags.
+5. Present tables and bullet points cleanly using GitHub Flavored Markdown.`
         const fallbackResult = await executeWithFallbackChain({
           systemPrompt: systemMsg,
           messages: [{ role: 'user', content: projectDataMsg }],
