@@ -109,8 +109,9 @@ function detectProjectDetail(userMessage: string): ProjectDetailIntent | null {
     reason = 'Keywords: tell me, details, features, amenities'
   }
 
-  // Only return if we detected a detail type
-  if (!detailType) return null
+  // Only return if we detected a detail type AND have a project mention
+  // Generic factual/advisory queries without a specific project should not be project_detail
+  if (!detailType || !projectIdentifier) return null
 
   return {
     type: 'project_detail',
