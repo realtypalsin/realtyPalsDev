@@ -146,7 +146,7 @@ export async function getMultiDimensionalRecommendations(
   // Generate concise summary for chat display
   const summaryForChat = topRecommendation
     ? generateRecommendationSummary([topRecommendation])
-    : 'I found some projects that match your criteria, but they have trade-offs. Would you like me to explain them?'
+    : 'No projects match your exact criteria. Try adjusting your budget or preferred location.'
 
   const result: MultiDimensionalResult = {
     intent: extendedIntent,

@@ -885,9 +885,9 @@ export function rankProject(
   // Compute dynamic weights
   const weights = computeWeights(intent)
 
-  // Calculate final score using geometric mean
+  // Calculate final score using geometric mean (0 if any dealBreaker present)
   const dimensionArray = Object.values(dimensionScores).map((s) => s.score)
-  const finalScore = geometricMean(dimensionArray, weights)
+  const finalScore = dealBreakers.length > 0 ? 0 : geometricMean(dimensionArray, weights)
 
   return {
     finalScore,

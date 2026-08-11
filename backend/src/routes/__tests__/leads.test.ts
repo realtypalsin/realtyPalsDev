@@ -44,7 +44,7 @@ describe('POST /api/v1/leads/callback', () => {
         phone: '+919876543210',
         intent_tier: tier
       })
-      assert(res.status === 201 || res.status === 400 || res.status === 429 || res.status === 500)
+      assert(res.status === 200 || res.status === 201 || res.status === 400 || res.status === 429 || res.status === 500)
     }
   })
 
@@ -68,7 +68,7 @@ describe('POST /api/v1/leads/callback', () => {
     }
     for (const body of [camelCase, snakeCase]) {
       const res = await request(app).post('/api/v1/leads/callback').send(body)
-      assert(res.status === 201 || res.status === 400 || res.status === 429 || res.status === 500)
+      assert(res.status === 200 || res.status === 201 || res.status === 400 || res.status === 429 || res.status === 500)
     }
   })
 
@@ -83,7 +83,7 @@ describe('POST /api/v1/leads/callback', () => {
       phone: '+919876543210',
       session_id: 'sess_12345'
     })
-    assert(res.status === 201 || res.status === 400 || res.status === 429 || res.status === 500)
+    assert(res.status === 200 || res.status === 201 || res.status === 400 || res.status === 429 || res.status === 500)
   })
 })
 

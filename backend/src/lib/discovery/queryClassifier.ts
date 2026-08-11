@@ -129,8 +129,8 @@ export function classifyQueryDeterministic(
   }
 
   // SUMMARY: User asks for overview/summary
-  // "Summary of", "overview of", "tell me about the sector", "what's available"
-  const summaryPattern = /\b(summary|overview|quick|brief|gist|summary of|tell me about|what.*available|what.*options)\b/i
+  // "Summary of", "overview of", "quick summary", "what's available"
+  const summaryPattern = /\b(summary|overview|quick summary|brief overview|gist|summary of|overview of)\b/i
   if (summaryPattern.test(msg)) {
     return {
       queryKind: 'SUMMARY',

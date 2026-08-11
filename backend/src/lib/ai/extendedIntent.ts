@@ -526,10 +526,63 @@ export async function extractExtendedIntent(
     }
   }
 
-  // All providers failed — return previous intent as degraded fallback
+  // All providers failed — return rule-based fallback
   console.error('[extended_intent] all providers failed, returning degraded fallback')
-  const fallback = previousIntent || ({} as ExtendedIntentWithConfidence)
+  const fallback = extractDeterministicFallback(userMessage, previousIntent)
   return { intent: fallback, degraded: true }
+}
+
+/** Lightweight regex fallback when all LLM providers fail or rate-limit. */
+function extractDeterministicFallback(
+  userMessage: string,
+  previousIntent?: ExtendedIntentWithConfidence
+): ExtendedIntentWithConfidence {
+  const msg = userMessage.toLowerCase()
+  const base: ExtendedIntentWithConfidence = previousIntent
+    ? JSON.parse(JSON.stringify(previousIntent))
+    : {
+        financial: { confidence: 50 },
+        location: { confidence: 50 },
+        specs: { confidence: 50 },
+        timeline: { confidence: 50 },
+        builder: { confidence: 50 },
+        legal: { confidence: 50 },
+        amenities: { confidence: 50 },
+        pricing: { confidence: 50 },
+        personal: { confidence: 50 },
+        decision: { confidence: 50 },
+        gaps: { confidence: 50 },
+      }
+
+  // Budget
+  const budgetMatch = msg.match(/(?:under|below|max|budget)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(cr|crore|lakh|lakhs)?/i)
+  if (budgetMatch) {
+    const val = parseFloat(budgetMatch[1])
+    const unit = (budgetMatch[2] || '').toLowerCase()
+    const inCr = unit.startsWith('lakh') ? val / 100 : val
+    base.financial = { ...base.financial, budgetMax: inCr, confidence: 75 }
+  }
+
+  // BHK
+  const bhkMatch = msg.match(/(\d+)\s*bhk/i)
+  if (bhkMatch) {
+    base.specs = { ...base.specs, bhk: parseInt(bhkMatch[1], 10), confidence: 80 }
+  }
+
+  // Location / School / Metro
+  if (msg.includes('school')) {
+    base.location = { ...base.location, schoolPriority: true, confidence: 75 }
+  }
+  if (msg.includes('metro')) {
+    base.location = { ...base.location, metroPreference: 'under_1km', confidence: 75 }
+  }
+
+  // Timeline
+  if (msg.includes('ready') || msg.includes('month') || msg.includes('possession')) {
+    base.timeline = { ...base.timeline, possessionUrgency: 'high', confidence: 75 }
+  }
+
+  return base
 }
 
 // ============================================================================
