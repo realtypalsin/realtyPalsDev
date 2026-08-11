@@ -9,6 +9,7 @@ export async function streamWithCerebras(
   messages: Message[],
   send: SendFn,
   apiKeyOverride?: string,
+  modelOverride?: string,
 ): Promise<string> {
   const apiKey = apiKeyOverride || process.env.CEREBRAS_API_KEY
   if (!apiKey) throw new Error('CEREBRAS_API_KEY is not configured')
@@ -25,7 +26,7 @@ export async function streamWithCerebras(
   ]
 
   const stream = await client.chat.completions.create({
-    model: 'gpt-oss-120b',
+    model: modelOverride || 'llama-3.3-70b',
     messages: msgs,
     stream: true,
     max_tokens: 1024,

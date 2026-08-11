@@ -22,13 +22,19 @@ export function getShownChips(sessionId: string): Set<string> {
   return store.get(sessionId)!
 }
 
-export function markChipShown(sessionId: string, chipId: string): void {
-  getShownChips(sessionId).add(chipId)
+export function markChipShown(sessionId: string, chipId: string, label?: string): void {
+  const set = getShownChips(sessionId)
+  set.add(chipId)
+  if (label) set.add(`label:${label.trim().toLowerCase()}`)
 }
 
-export function filterNewChips<T extends { id: string }>(sessionId: string, chips: T[]): T[] {
+export function filterNewChips<T extends { id: string; label?: string }>(sessionId: string, chips: T[]): T[] {
   const shown = getShownChips(sessionId)
-  return chips.filter(c => !shown.has(c.id))
+  return chips.filter(c => {
+    if (shown.has(c.id)) return false
+    if (c.label && shown.has(`label:${c.label.trim().toLowerCase()}`)) return false
+    return true
+  })
 }
 
 export function resetSession(sessionId: string): void {

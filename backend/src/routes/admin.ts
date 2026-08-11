@@ -37,8 +37,8 @@ router.post('/auth', async (req: Request, res: Response) => {
 
   // Rate limit: 50 attempts in dev, 5 in prod per 15 minutes per IP
   const maxAttempts = process.env.NODE_ENV === 'development' ? 50 : 5
-  const isOverLimit = await checkRateLimit(`admin:login:${ip}`, maxAttempts, 900)
-  if (isOverLimit) {
+  const { allowed } = await checkRateLimit(`admin:login:${ip}`, maxAttempts, 900)
+  if (!allowed) {
     res.status(429).json({ error: 'Too many login attempts. Try again later.' })
     return
   }

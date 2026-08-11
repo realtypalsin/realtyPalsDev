@@ -788,7 +788,7 @@ router.post('/', async (req: Request, res: Response) => {
     let preChips = preSearchUiState.chips
     if (preSearchUiState.stage !== 'CLARIFYING') {
       preChips = filterNewChipsWithFloor(currentSessionId, preSearchUiState.chips, 2)
-      preChips.forEach(c => markChipShown(currentSessionId, c.id))
+      preChips.forEach(c => markChipShown(currentSessionId, c.id, c.label))
     }
     console.log('[CHAT] preSearchUiState chips:', preSearchUiState.chips.length, 'after', preSearchUiState.stage === 'CLARIFYING' ? 'CLARIFYING (no dedup)' : 'dedup', preChips.map(c => c.label))
     preSearchUiState.chips = preChips
@@ -1098,7 +1098,6 @@ Format each plan like this exact structure:
       
       // Re-emit ui_state to populate chips AFTER the component response
       // For project detail we can just generate standard chips based on the project.
-      // computeConversationState imported at top of file
       const postDetailUiState = await computeConversationState(
         intent,
         'SHORTLISTED', // because we found the project and answered
@@ -1111,6 +1110,10 @@ Format each plan like this exact structure:
         chipInventory,
         true
       )
+      const postDetailChips = filterNewChipsWithFloor(currentSessionId, postDetailUiState.chips, 2)
+      postDetailChips.forEach(c => markChipShown(currentSessionId, c.id, c.label))
+      postDetailUiState.chips = postDetailChips
+
       send('ui_state', postDetailUiState as unknown as Record<string, unknown>)
 
       send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent })
@@ -1800,16 +1803,7 @@ Format each plan like this exact structure:
       }
     }
 
-    // ─── ENHANCE RESPONSE WITH MULTI-DIMENSIONAL RECOMMENDATIONS ──────────────
-    if (fullText && projects.length > 0) {
-      try {
-        console.log('[MULTI_DIM:RESPONSE] Attaching dimension explanations and comparisons')
-        fullText = attachMultiDimensionalRecommendations(fullText, projects)
-      } catch (err) {
-        console.warn('[MULTI_DIM:RESPONSE] Enhancement failed (non-fatal):', err)
-        // Continue with unenhanced fullText
-      }
-    }
+    // Multi-dimensional context is already injected into the system prompt prior to LLM generation.
 
     if (fullText) {
       try {
@@ -1859,7 +1853,7 @@ Format each plan like this exact structure:
       postChips = postSearchUiState.chips.filter(c => preChipIds.has(c.id) || filtered.some(f => f.id === c.id))
     }
 
-    postChips.forEach(c => markChipShown(currentSessionId, c.id))
+    postChips.forEach(c => markChipShown(currentSessionId, c.id, c.label))
     postSearchUiState.chips = postChips
 
     send('ui_state', postSearchUiState as unknown as Record<string, unknown>)

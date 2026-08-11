@@ -65,7 +65,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       console.log(`[FALLBACK:DATA] Passing ${messages.length} messages + ${systemPrompt.length} char prompt`)
 
       if (item.provider === 'cerebras') {
-        const text = await streamWithCerebras(effectivePrompt, messages, send, apiKey)
+        const text = await streamWithCerebras(effectivePrompt, messages, send, apiKey, item.model)
         const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
         console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
         return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }

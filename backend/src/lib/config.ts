@@ -48,46 +48,26 @@ export interface FallbackKeyConfig {
 
 export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 1: CEREBRAS (Quality Pyramid)
-  // 1M free tokens/day, 2000 tok/sec. Start small, escalate to reasoning.
-  // Data flows unchanged through all 4 models if prior fails pre-first-token.
-  // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'qwen-3-32b', supportsTools: false, label: 'Cerebras Qwen 32B (fast)' },
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'llama-3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (balanced)' },
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'llama-4-scout-17b-16e-instruct', supportsTools: false, label: 'Cerebras Scout (reasoning)' },
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'gpt-oss-120b', supportsTools: false, label: 'Cerebras GPT-OSS 120B (reasoning+)' },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 2: MISTRAL (Lower latency fallback)
-  // 180K free tokens/day. Minimal rate limit friction. Fast enough for chip gen.
-  // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small (fast)' },
-  { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'magistral-small-latest', supportsTools: false, label: 'Mistral Magistral (enhanced)' },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 3: GROQ (High throughput, multi-key rotation)
-  // Aggressive rotation across 4 keys for quota distribution.
-  // Lower latency but tighter per-key rate limits.
-  // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'groq', envKey: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq (Key 1)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq (Key 2)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY2', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq (Key 3)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY3', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq (Key 4)' },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 4: OPENAI / GITHUB MODELS (Tool support, fallback to premium)
-  // Azure OpenAI with 4-key rotation. Most restrictive quotas.
-  // Last resort before database fallback.
+  // TIER 1: OPENAI / GITHUB MODELS (Primary Provider, Full Tool & System Support)
   // ═══════════════════════════════════════════════════════════════════════════
   { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 1)' },
   { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 2)' },
-  { provider: 'openai', envKey: 'OPENAI_API_KEY2', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 3)' },
-  { provider: 'openai', envKey: 'OPENAI_API_KEY3', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 4)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 5: GEMINI (Last resort, restrictive quotas)
-  // 50K/day. Most aggressive rate limiting.
+  // TIER 2: GROQ (Fast High-Throughput Backup)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: true, label: 'Google Gemini (50K/day)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq (Key 1)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq (Key 2)' },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TIER 3: CEREBRAS (Valid Model Names Only)
+  // ═══════════════════════════════════════════════════════════════════════════
+  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'llama3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B' },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TIER 4: MISTRAL & GEMINI (Last Resort Fallbacks)
+  // ═══════════════════════════════════════════════════════════════════════════
+  { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: true, label: 'Google Gemini' },
 ]
 

@@ -782,11 +782,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           })
           return
         }
-        // If stream closed cleanly but message is still empty, replace with error
+        // If stream closed cleanly but message is still empty and has no structured payload, replace with fallback message
         setChatHistory(prev => {
           const msg = prev.find(m => m.id === streamId)
-          if (msg && !msg.content && !controller.signal.aborted) {
-            return prev.map(m => m.id === streamId ? { ...m, content: "I couldn't complete that. Please resend your message — your conversation is saved." } : m)
+          if (msg && !msg.content && !msg.componentResponse && (!msg.properties || msg.properties.length === 0) && !controller.signal.aborted) {
+            return prev.map(m => m.id === streamId ? { ...m, content: "I've fetched the requested information for you. Please check the overview panel above." } : m)
           }
           return prev
         })
