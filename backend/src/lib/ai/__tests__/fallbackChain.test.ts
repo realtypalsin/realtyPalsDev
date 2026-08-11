@@ -82,7 +82,7 @@ describe('Multi-Provider Fallback Chain Engine', () => {
       chainConfig: customChain,
     })
 
-    assert.ok(result.includes('Our AI services are currently experiencing high traffic or are out of service'))
+    assert.ok(result.text.includes('Our AI services are currently experiencing high traffic or are out of service'))
     assert.strictEqual(events.length, 1)
     assert.strictEqual(events[0].event, 'token')
     assert.ok((events[0].data as any).token.includes('experiencing high traffic'))
