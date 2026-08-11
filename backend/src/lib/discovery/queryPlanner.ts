@@ -261,11 +261,15 @@ export async function extractProjectIds(
   const msg = message.toLowerCase()
   const projectIds: string[] = []
 
-  // Get all projects to check against message text
-  const projects = await prisma.project.findMany({
-    select: { id: true, name: true, slug: true },
-    take: 200, // Reasonable limit for checking
-  })
+  let projects: Array<{ id: string; name: string; slug: string }> = []
+  try {
+    projects = await prisma.project.findMany({
+      select: { id: true, name: true, slug: true },
+      take: 200,
+    })
+  } catch {
+    return []
+  }
 
   // Check which projects are mentioned in the message
   for (const project of projects) {

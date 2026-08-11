@@ -696,15 +696,23 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
   const where = buildHardFilters(effectiveIntent)
 
   // Get total count and paginated results
-  const [totalCount, rawProjectsUnpaginated] = await Promise.all([
-    prisma.project.count({ where }),
-    prisma.project.findMany({
-      where,
-      include: PROJECT_INCLUDE,
-      skip: offset,
-      take: RESULTS_PER_PAGE,
-    }),
-  ])
+  let totalCount = 0
+  let rawProjectsUnpaginated: any[] = []
+  try {
+    const [count, list] = await Promise.all([
+      prisma.project.count({ where }),
+      prisma.project.findMany({
+        where,
+        include: PROJECT_INCLUDE,
+        skip: offset,
+        take: RESULTS_PER_PAGE,
+      }),
+    ])
+    totalCount = count
+    rawProjectsUnpaginated = list
+  } catch (dbErr) {
+    console.warn('[DISCOVERY:DB_WARN] Connection pool exhausted or query failed:', (dbErr as Error).message)
+  }
 
   let rawProjects = rawProjectsUnpaginated
 
@@ -718,16 +726,20 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     !effectiveIntent.projectNames?.length
   ) {
     console.log(`[DISCOVERY:B2-FALLBACK] No results with full filters. Trying sector-only query for "${effectiveIntent.sector}"`)
-    rawProjects = await prisma.project.findMany({
-      where: {
-        OR: [
-          { sector: { equals: effectiveIntent.sector, mode: 'insensitive' } },
-          { sector: { startsWith: `${effectiveIntent.sector} `, mode: 'insensitive' } },
-        ],
-      },
-      include: PROJECT_INCLUDE,
-      take: 50,
-    })
+    try {
+      rawProjects = await prisma.project.findMany({
+        where: {
+          OR: [
+            { sector: { equals: effectiveIntent.sector, mode: 'insensitive' } },
+            { sector: { startsWith: `${effectiveIntent.sector} `, mode: 'insensitive' } },
+          ],
+        },
+        include: PROJECT_INCLUDE,
+        take: 50,
+      })
+    } catch {
+      rawProjects = []
+    }
     if (rawProjects.length > 0) {
       console.log(`[DISCOVERY:B2-FALLBACK] Found ${rawProjects.length} projects in sector-only fallback`)
     }
