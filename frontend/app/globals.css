@@ -431,6 +431,201 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     inset 0 1px 0 rgba(255,255,255,0.8);
 }
 
+}
+.score-ring-animate {
+  animation: score-ring 1.2s ease-out forwards;
+}
+
+/* ── Gradient shimmer for badges ── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.shimmer-badge {
+  background: linear-gradient(90deg, #0064E5, #6366f1, #0064E5);
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ── Pulse glow for winner badge ── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Count-up animation ── */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-count-up {
+  animation: count-up 0.6s ease-out forwards;
+}
+
+/* ── Staggered children fade-in ── */
+.stagger-children > * {
+  opacity: 0;
+  animation: fade-in-up 0.4s ease-out forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* ── Staggered cards (for property grid) ── */
+.stagger-cards > * {
+  opacity: 0;
+  animation: card-entrance 0.45s ease-out forwards;
+}
+@keyframes card-entrance {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.stagger-cards > *:nth-child(1) { animation-delay: 0s; }
+.stagger-cards > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger-cards > *:nth-child(3) { animation-delay: 0.16s; }
+.stagger-cards > *:nth-child(4) { animation-delay: 0.24s; }
+.stagger-cards > *:nth-child(5) { animation-delay: 0.32s; }
+.stagger-cards > *:nth-child(6) { animation-delay: 0.4s; }
+
+/* ── Image loading shimmer skeleton ── */
+@keyframes img-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.img-skeleton-old {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 400px 100%;
+  animation: img-shimmer 1.6s ease-in-out infinite;
+}
+.dark .img-skeleton-old {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 400px 100%;
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ── Mobile-specific improvements ── */
+@media (max-width: 767px) {
+
+  /* Remove tap highlight on mobile for cleaner touch interactions */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Ensure touch targets are at least 44px */
+  .touch-target-min {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Prevent overscroll/bounce on the main container */
+  .no-overscroll {
+    overscroll-behavior: none;
+  }
+
+  /* Better scrollbar for mobile (hide them for a cleaner look) */
+  .mobile-hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .mobile-hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Keyboard open state: shrink the main view */
+  .keyboard-open {
+    height: 100vh;
+    height: calc(var(--viewport-height, 100vh));
+  }
+}
+
+/* ── Mobile property carousel transition ── */
+@keyframes card-slide-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-card-slide-in {
+  animation: card-slide-in 0.25s ease-out forwards;
+}
+
+/* ── Snap scroll card carousel (mobile) ── */
+.snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.snap-center { scroll-snap-align: center; }
+
+/* Hide scrollbar on card carousel */
+.snap-x::-webkit-scrollbar { display: none; }
+.snap-x { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Modal bottom sheet safe area ── */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+/* ── Global tap highlight removal ── */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* ── Smooth scrolling everywhere ── */
+html { scroll-behavior: smooth; }
+
+/* ── Prevent horizontal overflow at root ── */
+body { overflow-x: hidden; }
+
+/* ── Better focus styles for accessibility ── */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: none;
+}
+
+/* ── Hide scrollbar class ── */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Premium Glass Card (replaces glass-surface for card contexts) ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 1px 1px rgba(0,0,0,0.02),
+    0 2px 8px rgba(0,0,0,0.04),
+    0 8px 32px rgba(0,0,0,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
 .dark .glass-card {
   background: rgba(15, 23, 42, 0.80);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -442,4 +637,26 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
   }
+}
+
+/* ── Smooth Skeleton Shimmer Loader ── */
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.img-skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.dark .img-skeleton {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
 }
