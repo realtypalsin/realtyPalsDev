@@ -2,7 +2,6 @@
  * Component Renderer Tests — Verify all component types render correctly
  */
 
-import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { ComponentRenderer } from './ComponentRenderer'
 import type { ComponentSpec, ComponentResponse } from '@/types/property'

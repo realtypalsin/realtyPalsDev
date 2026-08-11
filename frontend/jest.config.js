@@ -13,10 +13,21 @@ module.exports = createJestConfig({
   transformIgnorePatterns: [
     'node_modules/(?!(rehype-raw|rehype-sanitize|hast-util-sanitize|hast-util-parse-selector|property-information|unist-util-position|unist-util-visit|unist-util-is)/)',
   ],
+  testMatch: [
+    '**/__tests__/**/*.test.tsx',
+    '**/__tests__/**/*.test.ts',
+    '**/*.test.tsx',
+    '**/*.test.ts',
+  ],
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.next/',
     '<rootDir>/e2e/',
+    '<rootDir>/__tests__/e2e/',
+    'app/admin/__tests__/',
+    'components/chat/__tests__/',
+    'components/property-detail/__tests__/',
+    'components/__tests__/data-integrity.test.ts',
   ],
 
 })

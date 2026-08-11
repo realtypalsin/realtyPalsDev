@@ -1,5 +1,37 @@
+import '@testing-library/jest-dom';
+
+// Mock next/navigation for App Router component testing
+jest.mock('next/navigation', () => ({
+  useRouter() {
+    return {
+      prefetch: () => null,
+      push: () => null,
+      replace: () => null,
+      back: () => null,
+      forward: () => null,
+      refresh: () => null,
+    };
+  },
+  useSearchParams() {
+    return new URLSearchParams();
+  },
+  usePathname() {
+    return '';
+  },
+}));
+
 process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3002/api/v1';
 process.env.NEXT_PUBLIC_BACKEND_URL = 'http://localhost:3002';
+
+if (typeof global.fetch === 'undefined') {
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({}),
+      text: () => Promise.resolve(''),
+    })
+  );
+}
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

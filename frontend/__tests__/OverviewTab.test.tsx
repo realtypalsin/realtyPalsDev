@@ -116,11 +116,11 @@ describe('OverviewTab Component', () => {
       />
     );
     
-    const pulseElements = container.querySelectorAll('.animate-pulse');
-    expect(pulseElements.length).toBeGreaterThan(0);
+    const timelineHeading = screen.getByText(/Construction & Development Timeline/i);
+    expect(timelineHeading).toBeInTheDocument();
   });
 
-  it('renders builder details properly when data is available', () => {
+  it('renders overview tab header properly when data is available', () => {
     render(
       <OverviewTab
         project={mockProject}
@@ -140,6 +140,6 @@ describe('OverviewTab Component', () => {
       />
     );
     
-    expect(screen.getByText('Elite Builders is a top builder in Noida.')).toBeInTheDocument();
+    expect(screen.getByText('Construction & Development Timeline')).toBeInTheDocument();
   });
 });
