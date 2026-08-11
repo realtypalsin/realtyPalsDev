@@ -540,23 +540,6 @@ router.post('/', async (req: Request, res: Response) => {
       console.warn('[CHAT] Authenticated session creation failed:', err)
     }
   }
-n  // DEFENSIVE: Ensure authenticated users also have a session before analytics
-  // This prevents FK violations when initializeChatAnalytics creates ChatAnalytics record
-  if (!sessionId && userId) {
-    try {
-      const newSession = await prisma.chatSession.create({
-        data: {
-          user_id: userId,
-          title: 'Chat',
-          chat_phase: 'GATHERING',
-        },
-      })
-      sessionId = newSession.id
-      console.log('[CHAT] Created authenticated session', { sessionId, userId })
-    } catch (err) {
-      console.warn('[CHAT] Authenticated session creation failed:', err)
-    }
-  }
 
   // ─── ANALYTICS: Initialize chat tracking
   // Safe now: sessionId is guaranteed to exist or user has existing session
