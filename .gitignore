@@ -67,3 +67,11 @@ launch-your-agent/
 
 # Local audits / notes
 audit*.md
+# Additional ignores for any nested build/artifact directories
+**/.next/
+**/.vercel/
+# Local env files that may contain secrets
+**/.env.local
+**/.env.development
+**/.env.production
+**/.env.test
