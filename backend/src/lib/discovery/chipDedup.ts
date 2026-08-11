@@ -1,4 +1,4 @@
-;// Session-scoped chip deduplication.
+// Session-scoped chip deduplication.
 // Keeps an in-memory Set per sessionId of chip IDs already emitted.
 // LRU eviction after 500 sessions (prevents unbounded memory growth).
 
@@ -44,7 +44,11 @@ export async function hydrateFromDb(sessionId: string): Promise<void> {
       where: { id: sessionId },
       select: { shown_chip_ids: true }
     })
-    if (session?.shown_chip_ids && Array.isArray(session.shown_chip_ids)) {
+    if (!session) {
+      console.warn('[chipDedup] Session not found during hydration:', sessionId)
+      return
+    }
+    if (session.shown_chip_ids && Array.isArray(session.shown_chip_ids)) {
       const set = getShownChips(sessionId)
       for (const id of session.shown_chip_ids as string[]) {
         set.add(id)
