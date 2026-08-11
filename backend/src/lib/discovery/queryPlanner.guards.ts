@@ -41,20 +41,11 @@ export function validateUserMessage(message: string | undefined): ValidationErro
   }
 
   // Mostly special characters (not normal query)
-  const specialCharRatio = (trimmed.match(/[^a-z0-9\s?'.]/gi) || []).length / trimmed.length
-  if (specialCharRatio > 0.5) {
+  const specialCharRatio = (trimmed.match(/[^a-z0-9\s?'.₹,–-]/gi) || []).length / trimmed.length
+  if (specialCharRatio > 0.75) {
     return {
       type: 'parsing_error',
       message: 'Message contains too many special characters',
-      recoverable: true,
-    }
-  }
-
-  // All uppercase (likely shouting or metadata)
-  if (trimmed === trimmed.toUpperCase() && trimmed.length > 5) {
-    return {
-      type: 'parsing_error',
-      message: 'Message appears to be all caps',
       recoverable: true,
     }
   }

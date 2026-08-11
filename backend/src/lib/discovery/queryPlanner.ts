@@ -163,7 +163,7 @@ function recognizePattern(message: string): PatternMatch {
 
   // Payment intent keywords
   if (
-    /\b(payment|payments|payment-plan|payment-plans|plan|plans|emi|loan|cost|price|pricing|price breakdown|charge|fee|stamp duty|gst|parking|ifms|down payment|subvention)\b/i.test(msg) ||
+    /\b(payment|payments|payment-plan|payment-plans|payment plan|payment plans|clp|flexi plan|down payment|subvention|emi|loan|cost|costs|pricing|price breakdown|charge|charges|fee|fees|stamp duty|gst|parking|ifms)\b/i.test(msg) ||
     /how much|what.*cost|break down|how.*afford|payment.*option/i.test(msg)
   ) {
     return {

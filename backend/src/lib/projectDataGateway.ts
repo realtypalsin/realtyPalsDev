@@ -719,10 +719,15 @@ async function getBuilderWithValidation(
     sources.add(fact.source)
   })
 
-  // Filter to requested fields if specified, but preserve all fetched facts if filter is empty
+  // Filter to requested fields if specified, but always keep core project identity & RERA facts
   let filteredFacts = allFacts
   if (params.requiredFields.length > 0) {
     const matched: Record<string, FactValidation> = {}
+    // Always include core identification & RERA standing
+    const ALWAYS_PRESERVE = ['project_name', 'sector', 'builder_name', 'rera_status', 'rera_registration']
+    ALWAYS_PRESERVE.forEach((f) => {
+      if (allFacts[f]) matched[f] = allFacts[f]
+    })
     params.requiredFields.forEach((field) => {
       if (allFacts[field]) {
         matched[field] = allFacts[field]
