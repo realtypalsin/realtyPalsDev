@@ -139,7 +139,7 @@ function buildHardConstraintFilters(
 
     filters.AND = [
       { OR: [{ price_min_cr: { lte: budgetMax } }, { price_min_cr: null }] },
-      { OR: [{ price_max_cr: { gte: budgetMin } }, { price_max_cr: null }] },
+      { OR: [{ price_min_cr: { gte: budgetMin } }, { price_min_cr: null }] },
     ]
   }
 
