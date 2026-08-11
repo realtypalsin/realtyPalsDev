@@ -3,7 +3,8 @@
  * Tests all 5 phases end-to-end with real-world scenarios
  */
 
-import { describe, it, expect, beforeAll } from '@jest/globals'
+import { describe, it, before } from 'node:test'
+import assert from 'node:assert/strict'
 import { getMultiDimensionalRecommendations } from '../multiDimensionalIntegration'
 import { extractExtendedIntent } from '../../ai/extendedIntent'
 import { rankProject } from '../scoringEngine'
@@ -14,33 +15,32 @@ describe('Multi-Dimensional Integration', () => {
       const { intent } = await extractExtendedIntent({
         userMessage: 'I need a property under 1.5 crore'
       })
-      expect(intent.financial).toBeDefined()
-      expect(intent.financial?.budgetMax).toBeLessThanOrEqual(1.5)
+      assert.ok(intent.financial)
+      assert(intent.financial?.budgetMax! <= 1.5)
     })
 
     it('extracts location preferences', async () => {
       const { intent } = await extractExtendedIntent({
         userMessage: 'I need something near metro, good schools for my kids'
       })
-      expect(intent.location).toBeDefined()
-      expect(intent.location?.schoolPriority).toBe(true)
+      assert.ok(intent.location)
+      assert.equal(intent.location?.schoolPriority, true)
     })
 
     it('extracts timeline urgency', async () => {
       const { intent } = await extractExtendedIntent({
         userMessage: 'I need it ready in 6 months'
       })
-      expect(intent.timeline).toBeDefined()
-      expect(intent.timeline?.possessionUrgency).toBeTruthy()
+      assert.ok(intent.timeline)
+      assert.ok(intent.timeline?.possessionUrgency)
     })
 
     it('handles degraded intent gracefully', async () => {
       const { intent, degraded } = await extractExtendedIntent({
         userMessage: 'xyz abc 123 nonsense gibberish'
       })
-      expect(intent).toBeDefined()
-      // Should return valid structure even if degraded
-      expect(typeof degraded === 'boolean').toBe(true)
+      assert.ok(intent)
+      assert.equal(typeof degraded, 'boolean')
     })
 
     it('merges with previous intent correctly', async () => {
@@ -53,8 +53,8 @@ describe('Multi-Dimensional Integration', () => {
         previousIntent: prev.intent
       })
 
-      expect(merged.intent.specs?.bhk).toBeDefined()
-      expect(merged.intent.financial?.budgetMax).toBeDefined()
+      assert.ok(merged.intent.specs?.bhk)
+      assert.ok(merged.intent.financial?.budgetMax)
     })
   })
 
@@ -93,10 +93,10 @@ describe('Multi-Dimensional Integration', () => {
       } as any
 
       const result = rankProject(mockIntent, mockProject as any, {})
-      expect(result).toBeDefined()
-      expect(result.finalScore).toBeGreaterThan(0)
-      expect(result.finalScore).toBeLessThanOrEqual(100)
-      expect(Object.keys(result.dimensionScores).length).toBe(11)
+      assert.ok(result)
+      assert(result.finalScore > 0)
+      assert(result.finalScore <= 100)
+      assert.equal(Object.keys(result.dimensionScores).length, 11)
     })
 
     it('returns 0 for deal-breaker projects', async () => {
@@ -113,7 +113,7 @@ describe('Multi-Dimensional Integration', () => {
       } as any
 
       const result = rankProject(mockIntent, litigationProject, {})
-      expect(result.finalScore).toBe(0)
+      assert.equal(result.finalScore, 0)
     })
 
     it('applies dynamic weights based on intent', async () => {
@@ -132,9 +132,8 @@ describe('Multi-Dimensional Integration', () => {
       const investmentScore = rankProject(investmentIntent, project, {})
       const endUseScore = rankProject(endUseIntent, project, {})
 
-      // Weights should differ based on intent
-      expect(investmentScore.dimensionScores).toBeDefined()
-      expect(endUseScore.dimensionScores).toBeDefined()
+      assert.ok(investmentScore.dimensionScores)
+      assert.ok(endUseScore.dimensionScores)
     })
   })
 
@@ -147,14 +146,14 @@ describe('Multi-Dimensional Integration', () => {
         { limit: 3 }
       )
 
-      expect(result).toBeDefined()
-      expect(result.intent).toBeDefined()
-      expect(result.legacyIntent).toBeDefined()
-      expect(result.recommendations).toBeDefined()
-      expect(Array.isArray(result.recommendations)).toBe(true)
-      expect(result.confidence).toBeDefined()
-      expect(result.confidence.overallConfidence).toBeGreaterThanOrEqual(0)
-      expect(result.confidence.overallConfidence).toBeLessThanOrEqual(100)
+      assert.ok(result)
+      assert.ok(result.intent)
+      assert.ok(result.legacyIntent)
+      assert.ok(result.recommendations)
+      assert.equal(Array.isArray(result.recommendations), true)
+      assert.ok(result.confidence)
+      assert(result.confidence.overallConfidence >= 0)
+      assert(result.confidence.overallConfidence <= 100)
     })
 
     it('returns summaryForChat when projects found', async () => {
@@ -162,9 +161,9 @@ describe('Multi-Dimensional Integration', () => {
         'I need a 3BHK in Sector 62'
       )
 
-      expect(result.summaryForChat).toBeDefined()
-      expect(typeof result.summaryForChat === 'string').toBe(true)
-      expect(result.summaryForChat.length).toBeGreaterThan(0)
+      assert.ok(result.summaryForChat)
+      assert.equal(typeof result.summaryForChat, 'string')
+      assert(result.summaryForChat.length > 0)
     })
 
     it('detects deal-breakers correctly', async () => {
@@ -173,7 +172,7 @@ describe('Multi-Dimensional Integration', () => {
       )
 
       if (result.dealBreakersDetected) {
-        expect(result.recommendations.some(r => (r.dealBreakers?.length ?? 0) > 0)).toBe(true)
+        assert(result.recommendations.some(r => (r.dealBreakers?.length ?? 0) > 0))
       }
     })
 
@@ -182,10 +181,10 @@ describe('Multi-Dimensional Integration', () => {
         'I need a property in Mars under ₹10 lakhs with 10 bedrooms'
       )
 
-      expect(result.recommendations).toBeDefined()
+      assert.ok(result.recommendations)
       const hasNoProjectsSummary = result.summaryForChat.includes('No projects')
       const isEmptyRecs = result.recommendations.length === 0
-      expect(hasNoProjectsSummary || isEmptyRecs).toBe(true)
+      assert(hasNoProjectsSummary || isEmptyRecs)
     })
 
     it('maintains confidence scores across phases', async () => {
@@ -193,56 +192,54 @@ describe('Multi-Dimensional Integration', () => {
         'I need a 3BHK near metro'
       )
 
-      expect(result.confidence.intentConfidence).toBeGreaterThanOrEqual(0)
-      expect(result.confidence.intentConfidence).toBeLessThanOrEqual(100)
-      expect(result.confidence.rankingConfidence).toBeGreaterThanOrEqual(0)
-      expect(result.confidence.rankingConfidence).toBeLessThanOrEqual(100)
-      expect(result.confidence.overallConfidence).toBeGreaterThanOrEqual(0)
-      expect(result.confidence.overallConfidence).toBeLessThanOrEqual(100)
+      assert(result.confidence.intentConfidence >= 0)
+      assert(result.confidence.intentConfidence <= 100)
+      assert(result.confidence.rankingConfidence >= 0)
+      assert(result.confidence.rankingConfidence <= 100)
+      assert(result.confidence.overallConfidence >= 0)
+      assert(result.confidence.overallConfidence <= 100)
     })
   })
 
   describe('Error Handling & Edge Cases', () => {
     it('does not crash on empty message', async () => {
-      expect(async () => {
+      await assert.doesNotReject(async () => {
         await getMultiDimensionalRecommendations('')
-      }).not.toThrow()
+      })
     })
 
     it('does not crash on null metadata', async () => {
-      expect(async () => {
+      await assert.doesNotReject(async () => {
         await getMultiDimensionalRecommendations(
           'I need a property',
           [],
           undefined,
           {}
         )
-      }).not.toThrow()
+      })
     })
 
     it('returns valid structure even on LLM failure', async () => {
-      // Test intent extraction fallback
       const result = await extractExtendedIntent({
         userMessage: 'test'
       })
-      expect(result.intent).toBeDefined()
-      expect(typeof result.degraded === 'boolean').toBe(true)
+      assert.ok(result.intent)
+      assert.equal(typeof result.degraded, 'boolean')
     })
 
     it('handles missing project metadata gracefully', async () => {
       const incompleteProject = {
         id: 'incomplete',
         name: 'Incomplete Project'
-        // Missing many fields
       } as any
 
       const intent = {
         financial: { budgetMax: 1.5, confidence: 100 }
       } as any
 
-      expect(() => {
+      assert.doesNotThrow(() => {
         rankProject(intent, incompleteProject, {})
-      }).not.toThrow()
+      })
     })
   })
 
@@ -253,7 +250,7 @@ describe('Multi-Dimensional Integration', () => {
         userMessage: 'I need a 3BHK near metro'
       })
       const duration = Date.now() - start
-      expect(duration).toBeLessThan(1000)
+      assert(duration < 1000)
     })
 
     it('scores 10 projects in <500ms', async () => {
@@ -271,7 +268,7 @@ describe('Multi-Dimensional Integration', () => {
       projects.forEach(p => rankProject(intent, p, {}))
       const duration = Date.now() - start
 
-      expect(duration).toBeLessThan(500)
+      assert(duration < 500)
     })
   })
 })

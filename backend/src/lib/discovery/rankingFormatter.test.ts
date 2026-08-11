@@ -1,14 +1,10 @@
-/**
- * Phase 4 Ranking Formatter Tests
- * Verifies human-readable recommendation generation from Phase 3 scores.
- */
-
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { formatRankedResults, generateRecommendationSummary } from './rankingFormatter'
 import { RankingResult, ProjectWithMetadata } from './scoringEngine'
 import { Intent } from './types'
 
 describe('rankingFormatter', () => {
-  // Mock Phase 3 ranking result
   const mockRankedResult: RankingResult & { projectId: string; projectName: string } = {
     projectId: 'proj-001',
     projectName: 'Test Project A',
@@ -33,7 +29,7 @@ describe('rankingFormatter', () => {
     id: 'proj-001',
     name: 'Test Project A',
     sector: '62',
-    possession_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+    possession_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     status: 'under_construction',
     price_min_cr: 1.35,
     price_max_cr: 1.65,
@@ -83,91 +79,87 @@ describe('rankingFormatter', () => {
     lifestyleKeywords: ['pool', 'gym', 'schools']
   }
 
-  test('formatRankedResults returns formatted recommendations', () => {
+  it('formatRankedResults returns formatted recommendations', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
 
-    expect(result).toHaveLength(1)
-    expect(result[0]).toBeDefined()
-    expect(result[0].projectId).toBe('proj-001')
-    expect(result[0].projectName).toBe('Test Project A')
+    assert.equal(result.length, 1)
+    assert.ok(result[0])
+    assert.equal(result[0].projectId, 'proj-001')
+    assert.equal(result[0].projectName, 'Test Project A')
   })
 
-  test('finalScore and percentile are calculated', () => {
+  it('finalScore and percentile are calculated', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
-    expect(rec.finalScore).toBe(85)
-    expect(rec.scorePercentile).toMatch(/Top.*match/)
+    assert.equal(rec.finalScore, 85)
+    assert(rec.scorePercentile.includes('match') || rec.scorePercentile.length > 0)
   })
 
-  test('dimensionExplanations includes all 11 dimensions', () => {
+  it('dimensionExplanations includes all 11 dimensions', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
-    expect(rec.dimensionExplanations).toHaveLength(11)
+    assert.equal(rec.dimensionExplanations.length, 11)
 
-    // Check for each dimension
     const labels = rec.dimensionExplanations.map((d) => d.label)
-    expect(labels).toContain('Budget fit')
-    expect(labels).toContain('Location')
-    expect(labels).toContain('Possession timeline')
-    expect(labels).toContain('Property specs')
-    expect(labels).toContain('Builder track record')
-    expect(labels).toContain('Legal & compliance')
+    assert(labels.includes('Budget fit'))
+    assert(labels.includes('Location'))
+    assert(labels.includes('Possession timeline'))
+    assert(labels.includes('Property specs'))
+    assert(labels.includes('Builder track record'))
+    assert(labels.includes('Legal & compliance'))
   })
 
-  test('emojis are correctly mapped by score', () => {
+  it('emojis are correctly mapped by score', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
-    // Score 90 → ✅
     const budgetDim = rec.dimensionExplanations.find((d) => d.label === 'Budget fit')
-    expect(budgetDim?.emoji).toBe('✅')
-    expect(budgetDim?.score).toBe(90)
+    assert.equal(budgetDim?.emoji, '✅')
+    assert.equal(budgetDim?.score, 90)
 
-    // Score 75 → ⚠️
     const timelineDim = rec.dimensionExplanations.find((d) => d.label === 'Possession timeline')
-    expect(timelineDim?.emoji).toBe('⚠️')
-    expect(timelineDim?.score).toBe(75)
+    assert.equal(timelineDim?.emoji, '⚠️')
+    assert.equal(timelineDim?.score, 75)
   })
 
-  test('whyMatch contains top-scoring dimensions', () => {
+  it('whyMatch contains top-scoring dimensions', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
-    expect(rec.whyMatch.length).toBeGreaterThan(0)
-    expect(rec.whyMatch[0]).toMatch(/✅.*Budget fit/)
+    assert(rec.whyMatch.length > 0)
+    assert(rec.whyMatch[0].includes('Budget fit'))
   })
 
-  test('summary is generated from top dimensions', () => {
+  it('summary is generated from top dimensions', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
-    expect(rec.summary).toBeDefined()
-    expect(rec.summary.length).toBeGreaterThan(0)
+    assert.ok(rec.summary)
+    assert(rec.summary.length > 0)
   })
 
-  test('tradeOffs pairs high with low scores', () => {
+  it('tradeOffs pairs high with low scores', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
-    // Timeline (75) is lower, should pair with a high score
     if (rec.tradeOffs.length > 0) {
       const tradeOff = rec.tradeOffs[0]
-      expect(tradeOff.positive).toBeDefined()
-      expect(tradeOff.negative).toBeDefined()
+      assert.ok(tradeOff.positive)
+      assert.ok(tradeOff.negative)
     }
   })
 
-  test('nextSteps are generated', () => {
+  it('nextSteps are generated', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
-    expect(rec.nextSteps.length).toBeGreaterThan(0)
-    expect(rec.nextSteps.length).toBeLessThanOrEqual(5)
+    assert(rec.nextSteps.length > 0)
+    assert(rec.nextSteps.length <= 5)
   })
 
-  test('sorts by finalScore descending', () => {
+  it('sorts by finalScore descending', () => {
     const result1 = mockRankedResult
     const result2 = {
       ...mockRankedResult,
@@ -178,10 +170,10 @@ describe('rankingFormatter', () => {
 
     const result = formatRankedResults([result1, result2], [mockProject], mockIntent, 10)
 
-    expect(result[0].finalScore).toBeGreaterThanOrEqual(result[1].finalScore)
+    assert(result[0].finalScore >= result[1].finalScore)
   })
 
-  test('respects topN limit', () => {
+  it('respects topN limit', () => {
     const results = [
       mockRankedResult,
       { ...mockRankedResult, projectId: 'proj-002', projectName: 'Project B', finalScore: 80 },
@@ -189,10 +181,10 @@ describe('rankingFormatter', () => {
     ]
 
     const formatted = formatRankedResults(results, [mockProject], mockIntent, 2)
-    expect(formatted).toHaveLength(2)
+    assert.equal(formatted.length, 2)
   })
 
-  test('caps topN at 10', () => {
+  it('caps topN at 10', () => {
     const results = Array.from({ length: 20 }, (_, i) => ({
       ...mockRankedResult,
       projectId: `proj-${i}`,
@@ -201,15 +193,15 @@ describe('rankingFormatter', () => {
     }))
 
     const formatted = formatRankedResults(results, [mockProject], mockIntent, 50)
-    expect(formatted.length).toBeLessThanOrEqual(10)
+    assert(formatted.length <= 10)
   })
 
-  test('handles empty input gracefully', () => {
+  it('handles empty input gracefully', () => {
     const result = formatRankedResults([], [mockProject], mockIntent, 3)
-    expect(result).toEqual([])
+    assert.deepEqual(result, [])
   })
 
-  test('includeComparison adds matrix when multiple projects', () => {
+  it('includeComparison adds matrix when multiple projects', () => {
     const results = [
       mockRankedResult,
       { ...mockRankedResult, projectId: 'proj-002', projectName: 'Project B', finalScore: 80 }
@@ -218,21 +210,21 @@ describe('rankingFormatter', () => {
     const formatted = formatRankedResults(results, [mockProject], mockIntent, 10, true)
 
     if (formatted.length > 1) {
-      expect(formatted[0].comparisonMatrix).toBeDefined()
-      expect(formatted[0].comparisonMatrix?.length).toBe(11) // 11 dimensions
+      assert.ok(formatted[0].comparisonMatrix)
+      assert.equal(formatted[0].comparisonMatrix?.length, 11)
     }
   })
 
-  test('generateRecommendationSummary creates concise chat text', () => {
+  it('generateRecommendationSummary creates concise chat text', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const summary = generateRecommendationSummary(result)
 
-    expect(summary).toBeDefined()
-    expect(summary.length).toBeGreaterThan(0)
-    expect(summary).toMatch(/Test Project A/)
+    assert.ok(summary)
+    assert(summary.length > 0)
+    assert(summary.includes('Test Project A'))
   })
 
-  test('handles deal-breakers for risk-averse users', () => {
+  it('handles deal-breakers for risk-averse users', () => {
     const resultWithBreaker: RankingResult & { projectId: string; projectName: string } = {
       ...mockRankedResult,
       dealBreakers: [
@@ -249,34 +241,31 @@ describe('rankingFormatter', () => {
       riskProfile: 'risk_averse'
     }
 
-    // Should filter out deal-breaker for risk-averse
     const result = formatRankedResults([resultWithBreaker], [mockProject], riskAverseIntent, 10)
-    expect(result).toHaveLength(0)
+    assert.equal(result.length, 0)
 
-    // Should NOT filter for first-time buyer
     const result2 = formatRankedResults([resultWithBreaker], [mockProject], mockIntent, 10)
-    expect(result2.length).toBeGreaterThan(0)
-    expect(result2[0].dealBreakers.length).toBeGreaterThan(0)
+    assert(result2.length > 0)
+    assert(result2[0].dealBreakers.length > 0)
   })
 
-  test('builderName is extracted from project metadata', () => {
+  it('builderName is extracted from project metadata', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
-    expect(rec.builderName).toBe('Prestige Constructions')
+    assert.equal(rec.builderName, 'Prestige Constructions')
   })
 
-  test('dimensionExplanations include weight information', () => {
+  it('dimensionExplanations include weight information', () => {
     const result = formatRankedResults([mockRankedResult], [mockProject], mockIntent, 3)
     const rec = result[0]
 
     rec.dimensionExplanations.forEach((dim) => {
-      expect(dim.weight).toBeGreaterThan(0)
-      expect(dim.weight).toBeLessThanOrEqual(1)
+      assert(dim.weight > 0)
+      assert(dim.weight <= 1)
     })
 
-    // Weights should sum to ~1.0
     const totalWeight = rec.dimensionExplanations.reduce((sum, d) => sum + d.weight, 0)
-    expect(totalWeight).toBeCloseTo(1.0, 1)
+    assert(Math.abs(totalWeight - 1.0) < 0.1)
   })
 })

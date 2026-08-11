@@ -1,9 +1,5 @@
-/**
- * Phase 0: Query Classifier Tests
- *
- * Verifies deterministic classification and fallback behavior.
- */
-
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { classifyQueryDeterministic, classifyQuery, getRenderTarget } from './queryClassifier'
 import type { Intent } from './types'
 
@@ -14,8 +10,8 @@ describe('Query Classifier', () => {
         'Compare Pristine vs Godrej Green Glades',
         { projectNames: ['Pristine', 'Godrej Green Glades'] } as Partial<Intent>
       )
-      expect(result?.queryKind).toBe('COMPARISON')
-      expect(result?.renderTarget).toBe('both')
+      assert.equal(result?.queryKind, 'COMPARISON')
+      assert.equal(result?.renderTarget, 'both')
     })
 
     it('detects DRILLDOWN with attribute keywords', () => {
@@ -23,8 +19,8 @@ describe('Query Classifier', () => {
         'What is the payment plan for it?',
         {} as Partial<Intent>
       )
-      expect(result?.queryKind).toBe('DRILLDOWN')
-      expect(result?.renderTarget).toBe('text')
+      assert.equal(result?.queryKind, 'DRILLDOWN')
+      assert.equal(result?.renderTarget, 'text')
     })
 
     it('detects RANKING queries', () => {
@@ -32,8 +28,8 @@ describe('Query Classifier', () => {
         'What are the best projects under 1.5 crore in Sector 62?',
         {} as Partial<Intent>
       )
-      expect(result?.queryKind).toBe('RANKING')
-      expect(result?.renderTarget).toBe('both')
+      assert.equal(result?.queryKind, 'RANKING')
+      assert.equal(result?.renderTarget, 'both')
     })
 
     it('detects SUMMARY queries', () => {
@@ -41,8 +37,8 @@ describe('Query Classifier', () => {
         'Give me a summary of available projects',
         {} as Partial<Intent>
       )
-      expect(result?.queryKind).toBe('SUMMARY')
-      expect(result?.renderTarget).toBe('text')
+      assert.equal(result?.queryKind, 'SUMMARY')
+      assert.equal(result?.renderTarget, 'text')
     })
 
     it('returns null for uncertain queries (fallback)', () => {
@@ -50,21 +46,21 @@ describe('Query Classifier', () => {
         'Tell me about 3BHK properties',
         {} as Partial<Intent>
       )
-      expect(result).toBeNull()
+      assert.equal(result, null)
     })
   })
 
   describe('getRenderTarget', () => {
     it('maps DISCOVERY to cards', () => {
-      expect(getRenderTarget('DISCOVERY')).toBe('cards')
+      assert.equal(getRenderTarget('DISCOVERY'), 'cards')
     })
 
     it('maps COMPARISON to both', () => {
-      expect(getRenderTarget('COMPARISON')).toBe('both')
+      assert.equal(getRenderTarget('COMPARISON'), 'both')
     })
 
     it('maps DRILLDOWN to text', () => {
-      expect(getRenderTarget('DRILLDOWN')).toBe('text')
+      assert.equal(getRenderTarget('DRILLDOWN'), 'text')
     })
   })
 
@@ -74,7 +70,7 @@ describe('Query Classifier', () => {
         'Compare Pristine vs Godrej',
         { projectNames: ['Pristine', 'Godrej'] } as Partial<Intent>
       )
-      expect(result.confidence).toBe('HIGH')
+      assert.equal(result.confidence, 'HIGH')
     })
 
     it('falls back to LLM-provided queryKind', () => {
@@ -82,7 +78,7 @@ describe('Query Classifier', () => {
         'Some query',
         { queryKind: 'DISCOVERY' } as Partial<Intent>
       )
-      expect(result.queryKind).toBe('DISCOVERY')
+      assert.equal(result.queryKind, 'DISCOVERY')
     })
 
     it('defaults to DISCOVERY when queryKind is absent', () => {
@@ -90,7 +86,7 @@ describe('Query Classifier', () => {
         'Some query',
         {} as Partial<Intent>
       )
-      expect(result.queryKind).toBe('DISCOVERY')
+      assert.equal(result.queryKind, 'DISCOVERY')
     })
   })
 })

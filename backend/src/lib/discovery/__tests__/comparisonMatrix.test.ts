@@ -16,7 +16,7 @@ describe('Comparison Matrix', () => {
       { id: '3', plan_type: 'balance', down_payment_pct: 25, duration_months: 60, monthly_emi: 52500 }
     ]
     const result = rankPaymentPlans(plans as any, memory)
-    assert.equal(result.rows[0].name, 'possession_linked')
+    assert.equal(result.matrix.rows[0].name, 'possession_linked')
     assert.equal(result.winner, 'possession_linked')
     assert(result.reason.includes('budget'))
   })

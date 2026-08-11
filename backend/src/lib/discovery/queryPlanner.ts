@@ -254,7 +254,7 @@ function recognizePattern(message: string): PatternMatch {
  * Extract project names/IDs from user message.
  * Handles: "ATS Pristine", "ats-pristine", "ATS", "that project", "first one"
  */
-async function extractProjectIds(
+export async function extractProjectIds(
   message: string,
   conversationContext?: { activeProjects?: string[] }
 ): Promise<string[]> {
