@@ -627,9 +627,24 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     }
     const byName = await prisma.project.findMany({
       where: {
-        OR: effectiveIntent.projectNames!.map((n) => ({
-          name: { contains: n, mode: 'insensitive' as const },
-        })),
+        OR: effectiveIntent.projectNames!.flatMap((n) => {
+          const words = n.trim().split(/\s+/).filter((w) => w.length >= 3)
+          const conditions: Prisma.ProjectWhereInput[] = [
+            { name: { contains: n, mode: 'insensitive' as const } },
+            { slug: { contains: n.toLowerCase().replace(/\s+/g, '-'), mode: 'insensitive' as const } },
+          ]
+          if (words.length > 0) {
+            conditions.push({
+              AND: words.map((w) => ({
+                OR: [
+                  { name: { contains: w, mode: 'insensitive' as const } },
+                  { slug: { contains: w, mode: 'insensitive' as const } },
+                ],
+              })),
+            })
+          }
+          return conditions
+        }),
       },
       include: PROJECT_INCLUDE,
       take: 50,
