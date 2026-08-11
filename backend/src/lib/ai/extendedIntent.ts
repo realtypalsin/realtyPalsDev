@@ -540,19 +540,7 @@ function extractDeterministicFallback(
   const msg = userMessage.toLowerCase()
   const base: ExtendedIntentWithConfidence = previousIntent
     ? JSON.parse(JSON.stringify(previousIntent))
-    : {
-        financial: { confidence: 50 },
-        location: { confidence: 50 },
-        specs: { confidence: 50 },
-        timeline: { confidence: 50 },
-        builder: { confidence: 50 },
-        legal: { confidence: 50 },
-        amenities: { confidence: 50 },
-        pricing: { confidence: 50 },
-        personal: { confidence: 50 },
-        decision: { confidence: 50 },
-        gaps: { confidence: 50 },
-      }
+    : ({ _meta: { budgetConfidence: 50, locationConfidence: 50, specsConfidence: 50, timelineConfidence: 50 } } as ExtendedIntentWithConfidence)
 
   // Budget
   const budgetMatch = msg.match(/(?:under|below|max|budget)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(cr|crore|lakh|lakhs)?/i)
@@ -560,26 +548,36 @@ function extractDeterministicFallback(
     const val = parseFloat(budgetMatch[1])
     const unit = (budgetMatch[2] || '').toLowerCase()
     const inCr = unit.startsWith('lakh') ? val / 100 : val
-    base.financial = { ...base.financial, budgetMax: inCr, confidence: 75 }
+    base.budgetMax = inCr
+    if (!base._meta) base._meta = {}
+    base._meta.budgetConfidence = 75
   }
 
   // BHK
   const bhkMatch = msg.match(/(\d+)\s*bhk/i)
   if (bhkMatch) {
-    base.specs = { ...base.specs, bhk: parseInt(bhkMatch[1], 10), confidence: 80 }
+    base.bhk = [parseInt(bhkMatch[1], 10)]
+    if (!base._meta) base._meta = {}
+    base._meta.specsConfidence = 80
   }
 
   // Location / School / Metro
   if (msg.includes('school')) {
-    base.location = { ...base.location, schoolPriority: true, confidence: 75 }
+    base.schoolPriority = true
+    if (!base._meta) base._meta = {}
+    base._meta.locationConfidence = 75
   }
   if (msg.includes('metro')) {
-    base.location = { ...base.location, metroPreference: 'under_1km', confidence: 75 }
+    base.metroDistance = 1.0
+    if (!base._meta) base._meta = {}
+    base._meta.locationConfidence = 75
   }
 
   // Timeline
   if (msg.includes('ready') || msg.includes('month') || msg.includes('possession')) {
-    base.timeline = { ...base.timeline, possessionUrgency: 'high', confidence: 75 }
+    base.possessionUrgency = 'immediate'
+    if (!base._meta) base._meta = {}
+    base._meta.timelineConfidence = 75
   }
 
   return base

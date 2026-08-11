@@ -41,7 +41,9 @@ describe('Chat Integration Tests', () => {
       if (testBuilder?.id) {
         await prisma.builder.delete({ where: { id: testBuilder.id } }).catch(() => {})
       }
-    } catch {}
+    } catch {
+      // ignore cleanup error
+    }
   })
 
   describe('1. Project Name Extraction (Bug Fix #1)', () => {

@@ -13,7 +13,7 @@
     "db:studio": "cd frontend && npx prisma studio",
     "db:migrate": "cd frontend && npx prisma migrate dev",
     "db:push": "cd frontend && npx prisma db push",
-    "db:generate": "cd frontend && npx prisma generate",
+    "db:generate": "cd frontend && npx prisma generate && cd ../backend && npm run db:generate",
     "db:seed": "cd frontend && npm run db:seed",
     "doctor": "npx react-doctor@latest"
   },

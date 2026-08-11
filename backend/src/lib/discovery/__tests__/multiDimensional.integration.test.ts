@@ -16,7 +16,7 @@ describe('Multi-Dimensional Integration', () => {
         userMessage: 'I need a property under 1.5 crore'
       })
       assert.ok(intent.financial)
-      assert(intent.financial?.budgetMax! <= 1.5)
+      assert.ok(intent.financial.budgetMax && intent.financial.budgetMax <= 1.5)
     })
 
     it('extracts location preferences', async () => {

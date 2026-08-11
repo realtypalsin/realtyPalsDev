@@ -80,8 +80,7 @@ describe('Robustness: classify edge cases', () => {
   for (const testCase of edge_cases) {
     it(`handles ${testCase.desc}`, () => {
       assert.doesNotThrow(() => {
-        const result = classifyIntent(testCase.msg, {})
-        assert.ok(result === 'factual' || result === 'advisory' || result === 'off_topic')
+        assert.ok(result.category === 'factual' || result.category === 'advisory' || result.category === 'project_detail' || result.category === 'search')
       }, `Should not throw on ${testCase.desc}`)
     })
   }

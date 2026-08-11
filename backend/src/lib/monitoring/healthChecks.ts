@@ -2,7 +2,7 @@
  * Health Checks — Database, Redis, LLM connectivity and response times
  */
 
-import { prisma } from '@/lib/db'
+import { prisma } from '../db'
 import { Redis } from '@upstash/redis'
 
 let redis: Redis | null = null

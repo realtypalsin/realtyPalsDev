@@ -23,9 +23,10 @@ jobs:
     - name: Install dependencies (Root)
       run: npm ci
 
-    - name: Generate Prisma Client
-      working-directory: ./frontend
-      run: npx prisma generate
+    - name: Generate Prisma Clients
+      run: |
+        cd frontend && npx prisma generate
+        cd ../backend && npm run db:generate
         
     - name: Run Typecheck & Lint (Frontend)
       working-directory: ./frontend
