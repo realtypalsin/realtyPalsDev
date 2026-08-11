@@ -33,15 +33,31 @@ function Spinner() {
   )
 }
 
-function SkeletonCard() {
+function SkeletonCard({ layout = 'grid' }: { layout?: 'grid' | 'list' }) {
+  if (layout === 'list') {
+    return (
+      <div className="w-full rounded-2xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-100/80 dark:border-gray-700/60 p-4 flex gap-4">
+        <div className="w-36 h-28 img-skeleton rounded-xl shrink-0" />
+        <div className="flex-1 space-y-2.5 py-1">
+          <div className="h-4 img-skeleton rounded-lg w-2/3" />
+          <div className="h-3 img-skeleton rounded-md w-1/3" />
+          <div className="flex gap-2 pt-2">
+            <div className="h-6 img-skeleton rounded-full w-16" />
+            <div className="h-6 img-skeleton rounded-full w-20" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="rounded-[24px] overflow-hidden bg-white dark:bg-gray-800 border border-gray-100/80 dark:border-gray-700/60 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-      <div className="h-[220px] bg-gray-100 dark:bg-gray-700 animate-pulse" />
+    <div className="rounded-[24px] overflow-hidden bg-white dark:bg-gray-800 border border-gray-100/80 dark:border-gray-700/60 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex flex-col">
+      <div className="h-48 img-skeleton" />
       <div className="p-5 space-y-3">
-        <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-full w-3/4 animate-pulse" />
-        <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-1/2 animate-pulse" />
-        <div className="h-6 bg-gray-100 dark:bg-gray-700 rounded-full w-1/3 animate-pulse" />
-        <div className="h-9 bg-gray-100 dark:bg-gray-700 rounded-xl w-full animate-pulse mt-1" />
+        <div className="h-4 img-skeleton rounded-full w-3/4" />
+        <div className="h-3 img-skeleton rounded-full w-1/2" />
+        <div className="h-6 img-skeleton rounded-full w-1/3" />
+        <div className="h-9 img-skeleton rounded-xl w-full mt-1" />
       </div>
     </div>
   )

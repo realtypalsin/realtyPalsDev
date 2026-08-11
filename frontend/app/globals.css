@@ -230,18 +230,6 @@ input[type="range"]::-moz-range-thumb {
   background: #2563eb;
   cursor: pointer;
   border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-/* ── AI Score ring animation ── */
-@keyframes score-ring {
-  from { stroke-dashoffset: 283; }
-}
-.score-ring-animate {
-  animation: score-ring 1.2s ease-out forwards;
-}
-
-/* ── Gradient shimmer for badges ── */
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
