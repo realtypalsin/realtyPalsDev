@@ -20,12 +20,15 @@ export async function validateUploadedFile(buffer: Buffer): Promise<{
     const fn = (fileType as any).fromBuffer || (fileType as any).default?.fromBuffer || (fileType as any).fileTypeFromBuffer
     if (typeof fn === 'function') {
       const detected = await fn(buffer)
-      if (detected && !ALLOWED_MIME_TYPES.has(detected.mime)) {
-        return {
-          valid: false,
-          mime: detected.mime,
-          error: `File type '${detected.mime}' is not allowed. Only images and PDFs are permitted.`
+      if (detected) {
+        if (!ALLOWED_MIME_TYPES.has(detected.mime)) {
+          return {
+            valid: false,
+            mime: detected.mime,
+            error: `File type '${detected.mime}' is not allowed. Only images and PDFs are permitted.`
+          }
         }
+        return { valid: true, mime: detected.mime, error: null }
       }
     }
   } catch (e) {

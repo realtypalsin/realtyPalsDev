@@ -126,13 +126,14 @@ export async function outputGuardrail(
   // Only validate against systemPrompt context (verified DB data). Allowlist approach:
   // any project name or price not present in the prompt is flagged as fabrication.
   if (systemPrompt) {
-    // Extract project names: require "project" keyword or quotes to avoid false positives on generic words
-    const projectNamePattern = /(?:project|properties?|development)\s+(?:called\s+)?["']([A-Z][A-Za-z0-9\s&-]*?)["']|["']([A-Z][A-Za-z0-9\s&-]*(?:(?:Heights|Towers|City|Plaza|Square|Park|Garden|Grove|Residence|Residences|Court|Manor|Enclave|Hub|Complex|Villas|Apartments|Suites)))["']/g
+    // Extract project names: match both quoted and unquoted names ending with project keywords
+    const projectNamePattern = /(?:^|[\s.,;!?])\s*([A-Z][A-Za-z0-9\s&'-]*?(?:Heights|Towers|City|Plaza|Square|Park|Garden|Grove|Residence|Residences|Court|Manor|Enclave|Hub|Complex|Villas|Apartments|Suites|Estate|Tower|Project))\b/gm
     const namesInResponse = new Set<string>()
     let match
     while ((match = projectNamePattern.exec(response)) !== null) {
-      const name = (match[1] || match[2] || '').trim()
-      if (name) namesInResponse.add(name)
+      const name = (match[1] || '').trim()
+      // Only add if it looks like a project name (at least 3 chars, contains capital letter)
+      if (name && name.length >= 3 && /[A-Z]/.test(name)) namesInResponse.add(name)
     }
 
     // Extract prices: ₹XXL, ₹XX Cr, ₹XX Lakh, XXL, XX Cr patterns
