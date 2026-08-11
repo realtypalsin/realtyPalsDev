@@ -15,24 +15,23 @@ describe('Multi-Dimensional Integration', () => {
       const { intent } = await extractExtendedIntent({
         userMessage: 'I need a property under 1.5 crore'
       })
-      assert.ok(intent.financial)
-      assert.ok(intent.financial.budgetMax && intent.financial.budgetMax <= 1.5)
+      assert.ok(intent.budgetMax)
+      assert.ok(intent.budgetMax <= 1.5)
     })
 
     it('extracts location preferences', async () => {
       const { intent } = await extractExtendedIntent({
         userMessage: 'I need something near metro, good schools for my kids'
       })
-      assert.ok(intent.location)
-      assert.equal(intent.location?.schoolPriority, true)
+      assert.ok(intent.schoolPriority === true)
+      assert.ok(intent.metroDistance)
     })
 
     it('extracts timeline urgency', async () => {
       const { intent } = await extractExtendedIntent({
         userMessage: 'I need it ready in 6 months'
       })
-      assert.ok(intent.timeline)
-      assert.ok(intent.timeline?.possessionUrgency)
+      assert.ok(intent.possessionUrgency)
     })
 
     it('handles degraded intent gracefully', async () => {
@@ -53,8 +52,8 @@ describe('Multi-Dimensional Integration', () => {
         previousIntent: prev.intent
       })
 
-      assert.ok(merged.intent.specs?.bhk)
-      assert.ok(merged.intent.financial?.budgetMax)
+      assert.ok(merged.intent.bhk)
+      assert.ok(merged.intent.budgetMax)
     })
   })
 
