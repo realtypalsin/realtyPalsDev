@@ -170,9 +170,14 @@ export interface IntentResult {
 }
 
 import { FALLBACK_CHAIN } from '../config'
+import { isKeyFailed, markKeyFailed } from './providerStatus'
 
 export async function extractIntent(message: string, previousIntent: Intent): Promise<IntentResult> {
   for (const item of FALLBACK_CHAIN) {
+    if (isKeyFailed(item.envKey)) {
+      console.log(`[INTENT:SKIP] ${item.label} (${item.envKey}) — blacklisted circuit breaker active`)
+      continue
+    }
     const apiKey = process.env[item.envKey]
     if (!apiKey) continue
 
@@ -195,13 +200,16 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
       if (item.provider === 'openai') {
         console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
         const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), 6000)
+        const timer = setTimeout(() => controller.abort(), 2500) // Fast 2.5s fail-fast timeout
         try {
           const result = await extractWithOpenAIKey(message, previousIntent, apiKey, controller.signal)
           clearTimeout(timer)
           if (result) return { intent: result, degraded: false }
-        } catch (err) {
+        } catch (err: any) {
           clearTimeout(timer)
+          if (err?.status === 404 || err?.status === 401 || err?.status === 403 || err?.name === 'AbortError' || (err?.message || '').includes('404')) {
+            markKeyFailed(item.envKey)
+          }
           throw err
         }
       }

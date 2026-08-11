@@ -1459,7 +1459,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "10c8ec88-175c-465a-add4-6cf2d483e025",
@@ -2921,7 +2922,8 @@
         "phone": "+91 99100 99887",
         "email": "sales@investorsclinic.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "73778a72-2460-400c-9315-6aed4b1ff616",
@@ -4383,7 +4385,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "a9573feb-2420-4ddd-8878-3be364c9cf0f",
@@ -5845,7 +5848,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "6ecb28ab-48b6-4310-8b28-07f487b16628",
@@ -7340,7 +7344,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "0bf0fd19-8393-44cf-835e-58f00433e0bc",
@@ -8802,7 +8807,8 @@
         "phone": "+91-120-4774000",
         "email": "contact@wealthclinic.com"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "16eaaa91-b8d8-420c-914d-a0625f62e264",
@@ -10297,7 +10303,8 @@
         "phone": "+91-120-4774000",
         "email": "contact@wealthclinic.com"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "dc8427b3-0bfc-4f74-9d81-5aba9b232541",
@@ -11759,7 +11766,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "7154d9e3-3ac1-4097-82bb-40f111f456f1",
@@ -13221,7 +13229,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "76bd9947-7a1a-48af-987b-de8ca19c240f",
@@ -14716,7 +14725,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "4181e405-1425-4fb4-b114-4e73786a68f5",
@@ -16178,7 +16188,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "6e7aeac6-64e5-4a1d-b629-9519ae11ff6c",
@@ -17673,7 +17684,8 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   },
   {
     "id": "92cee7de-5fc8-4dfe-8f0c-dc5c5bfaaf6c",
@@ -19135,6 +19147,7 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   }
 ]

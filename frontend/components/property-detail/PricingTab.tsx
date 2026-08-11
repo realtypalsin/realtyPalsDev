@@ -7,7 +7,7 @@ import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
   Award, Maximize2, TrendingDown, CheckCircle2, Crown,
   Sparkles, Lightbulb, Shield, Car, User, Wind, Cpu, Droplet,
-  Layout, Home, Users, Compass, Eye
+  Layout, Home, Users, Compass, Eye, Globe, Lock, DollarSign, FileCheck
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import dynamic from 'next/dynamic'
@@ -515,6 +515,68 @@ export default function PricingTab({
           otherCharges={(_costSheet?.data?.other_charges ?? []) as any}
         />
 
+      </div>
+
+      {/* 3.5. NRI & RESALE TRANSACTION TERMS */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+        <div>
+          <h3 className="text-[18px] font-bold text-gray-900 dark:text-white tracking-tight">NRI &amp; Resale Transaction Terms</h3>
+          <p className="text-[12px] text-gray-500 mt-0.5">Purchasing eligibility, lock-in rules &amp; rental permissions.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+              <Globe size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">NRI Purchasing</p>
+              <p className="text-[15px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {(detail as any)?.nri_eligible !== false ? 'Eligible & Approved' : 'Domestic Buyers Only'}
+              </p>
+              <p className="text-[10.5px] text-gray-400 font-semibold">NRE/NRO Account Allowed</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+              <Lock size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Resale Lock-In</p>
+              <p className="text-[15px] font-black text-gray-900 dark:text-white mt-1">
+                {(detail as any)?.resale_lock_in_months ? `${(detail as any).resale_lock_in_months} Months` : '36 Months'}
+              </p>
+              <p className="text-[10.5px] text-gray-400 font-semibold">Pre-possession Transfer</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <DollarSign size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Rental Rights</p>
+              <p className="text-[15px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {(detail as any)?.rental_income_allowed !== false ? 'Permitted' : 'Restricted'}
+              </p>
+              <p className="text-[10.5px] text-gray-400 font-semibold">Immediate Lease Allowed</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+              <FileCheck size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Foreign Remittance</p>
+              <p className="text-[15px] font-black text-gray-900 dark:text-white mt-1">
+                {(detail as any)?.foreign_currency_payment_allowed !== false ? 'FEMA Compliant' : 'INR Bank Only'}
+              </p>
+              <p className="text-[10.5px] text-gray-400 font-semibold">RBI Guidelines Compliant</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 4. Amenities & Lifestyle */}

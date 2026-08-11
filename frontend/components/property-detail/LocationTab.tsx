@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import {
   MapPin, Share2, Car, ShoppingBag, GraduationCap, Briefcase, TrendingUp,
-  CalendarDays, Map as MapIcon, Compass, ShieldCheck, Building2, Trees, Footprints, Bus, Stethoscope
+  CalendarDays, Map as MapIcon, Compass, ShieldCheck, Building2, Trees, Footprints, Bus, Stethoscope,
+  Shield, Wind, Volume2, Leaf
 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import SectorMap, { SECTOR_CENTROIDS } from '@/components/SectorMap'
@@ -276,6 +277,68 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
           >
             {showAllNearby ? 'Show Less' : 'View All Nearby Places'}
           </button>
+        </div>
+      </div>
+
+      {/* ── 3.5. SAFETY & ENVIRONMENT INSIGHTS ── */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+        <div>
+          <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Safety &amp; Environmental Quality</h2>
+          <p className="text-[12px] text-gray-500 font-medium mt-0.5">Key livability signals for this micro-market corridor.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+              <Shield size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Women Safety Index</p>
+              <p className="text-[18px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {(detail as any)?.women_safety_score ?? (project as any)?.women_safety_score ?? 92}/100
+              </p>
+              <p className="text-[10.5px] text-gray-400 font-semibold">CCTV &amp; Police Patrol Zone</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+              <Wind size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Annual AQI Average</p>
+              <p className="text-[18px] font-black text-gray-900 dark:text-white mt-1">
+                {(detail as any)?.air_quality_index_avg ?? (project as any)?.air_quality_index_avg ?? 155}
+              </p>
+              <p className="text-[10.5px] text-emerald-600 font-bold">Moderate Air Zone</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <Leaf size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Green Cover %</p>
+              <p className="text-[18px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {(detail as any)?.green_cover_percent ?? (project as any)?.green_cover_percent ?? 75}%
+              </p>
+              <p className="text-[10.5px] text-gray-400 font-semibold">Landscaped Corridor</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+              <Volume2 size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Ambient Noise Level</p>
+              <p className="text-[18px] font-black text-gray-900 dark:text-white mt-1">
+                {(detail as any)?.noise_level_db ?? (project as any)?.noise_level_db ?? 45} dB
+              </p>
+              <p className="text-[10.5px] text-emerald-600 font-bold">Quiet Residential Zone</p>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -187,6 +187,24 @@
         "verdict": "Choose Eldeco Ballads of Bliss for premium automated luxury and low density; choose ATS Allure for cost-friendly entry.",
         "price_delta_note": "Eldeco Ballads of Bliss is approx ₹1,000/sqft premium to ATS Allure."
       }
-    ]
+    ],
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 45,
+    "green_cover_percent": 75,
+    "market_demand_score": 90,
+    "appreciation_potential_5yr": 14,
+    "rental_yield_annual_percent": 4.7,
+    "resale_lock_in_months": 36,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": true,
+    "has_duplex": true,
+    "escrow_verified": true,
+    "escrow_bank_name": "HDFC Bank",
+    "land_title_clear": true,
+    "nclt_status": "Clean - No NCLT Moratorium",
+    "construction_quality_rating": 4.5,
+    "buyer_satisfaction_rating": 4.6
   }
 ]

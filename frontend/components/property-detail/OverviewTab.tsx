@@ -62,7 +62,7 @@ export default function OverviewTab({
   useEffect(() => {
     if (!slug) return
     let cancelled = false
-    getProjectOverview(slug).then((data) => { if (!cancelled) setOverview(data) })
+    getProjectOverview(slug).then((data) => { if (!cancelled) setOverview(data) }).catch((err) => console.warn('getProjectOverview error:', err))
     return () => { cancelled = true }
   }, [slug])
 

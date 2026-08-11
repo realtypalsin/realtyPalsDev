@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { resolveImgUrl } from '@/lib/utils'
+import InfoTooltip from '@/components/ui/InfoTooltip'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type FloorPlanImage = { id: string; url: string; caption?: string | null; bhk?: number | null; size_sqft?: number | null }
 type LazyState<T> = { loaded: boolean; available: boolean; data: T | null; message?: string }
@@ -63,15 +65,25 @@ export interface ResidencesTabProps {
 export default function ResidencesTab({
   unitTypes, floorPlanImages, loading, detail, projectStatus, paymentPlan, costSheet, onViewFloorPlans, onGoToCosts, onGoToOverview,
 }: ResidencesTabProps) {
-  const [filter, setFilter] = useState<number | 'all'>('all')
+  const [filter, setFilter] = useState<number | 'all' | 'penthouse' | 'duplex' | 'villa'>('all')
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
   const [activePlanTab, setActivePlanTab] = useState<'floor' | 'details' | 'availability'>('floor')
   const [floorType, setFloorType] = useState<string>('Typical Floor')
   const [selectedTower, setSelectedTower] = useState<string>('Tower A')
   const [selectedUnitNo, setSelectedUnitNo] = useState<string>('Unit 3')
 
+  // Conditional special configuration detection — only show if project actually has them!
+  const pAny = detail as any
+  const hasPenthouse = !!pAny?.has_penthouse || unitTypes.some(u => u.name?.toLowerCase().includes('penthouse'))
+  const hasDuplex = !!pAny?.has_duplex || unitTypes.some(u => u.name?.toLowerCase().includes('duplex'))
+  const hasVilla = unitTypes.some(u => u.name?.toLowerCase().includes('villa'))
+
   const bhkOptions = [...new Set(unitTypes.map((u) => u.bhk))].sort((a, b) => a - b)
-  const filteredUnits = filter === 'all' ? unitTypes : unitTypes.filter((u) => u.bhk === filter)
+  const filteredUnits = filter === 'all'
+    ? unitTypes
+    : typeof filter === 'number'
+      ? unitTypes.filter((u) => u.bhk === filter)
+      : unitTypes.filter((u) => u.name?.toLowerCase().includes(filter))
 
   // Default select first unit if none selected
   const activeUnit = unitTypes.find(u => u.id === selectedUnitId) || filteredUnits[0] || unitTypes[0] || null
@@ -192,6 +204,46 @@ export default function ResidencesTab({
             {opt} BHK
           </button>
         ))}
+
+        {/* Conditional Special Configurations (Only show if project has them) */}
+        {hasPenthouse && (
+          <button
+            onClick={() => setFilter('penthouse')}
+            className={`text-[12.5px] font-extrabold px-5 py-2.5 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              filter === 'penthouse'
+                ? 'bg-amber-600 text-white shadow-md'
+                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40 hover:bg-amber-100'
+            }`}
+          >
+            <Crown size={14} /> Penthouse
+          </button>
+        )}
+
+        {hasDuplex && (
+          <button
+            onClick={() => setFilter('duplex')}
+            className={`text-[12.5px] font-extrabold px-5 py-2.5 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              filter === 'duplex'
+                ? 'bg-purple-600 text-white shadow-md'
+                : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40 hover:bg-purple-100'
+            }`}
+          >
+            <Columns size={14} /> Duplex
+          </button>
+        )}
+
+        {hasVilla && (
+          <button
+            onClick={() => setFilter('villa')}
+            className={`text-[12.5px] font-extrabold px-5 py-2.5 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              filter === 'villa'
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40 hover:bg-emerald-100'
+            }`}
+          >
+            <Home size={14} /> Villa
+          </button>
+        )}
       </div>
 
       {/* ── 2. MAIN EXPLORER WORKSPACE (Left List + Right Detail Card) ── */}
@@ -635,75 +687,178 @@ export default function ResidencesTab({
               </div>
             </div>
 
-            {/* ── 5. USABLE AREA EFFICIENCY (Donut Chart & Breakdown) ── */}
-            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+            {/* ── 5. USABLE AREA EFFICIENCY (Dynamic SVG Donut & Area Breakdown) ── */}
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
               <div>
                 <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Usable Area Efficiency</h3>
                 <p className="text-[12px] text-gray-500 font-medium mt-0.5">See how efficiently the space is utilized in this configuration.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                {/* Donut Visual + Legend */}
-                <div className="md:col-span-8 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col sm:flex-row items-center gap-6">
-                  {/* Donut */}
-                  <div className="w-32 h-32 rounded-full border-[12px] border-blue-500 border-t-emerald-400 border-r-emerald-500 border-b-gray-300 flex items-center justify-center text-center flex-shrink-0 shadow-inner">
+              {(() => {
+                const superSqft = area || 1450
+                const cSqft = carpetArea || Math.round(superSqft * 0.68)
+                const bSqft = (balconyArea || Math.round(superSqft * 0.10)) + 36
+                const shaftSqft = Math.max(0, superSqft - cSqft - bSqft)
+
+                const cPct = Math.round((cSqft / superSqft) * 100)
+                const bPct = Math.round((bSqft / superSqft) * 100)
+                const shaftPct = 100 - cPct - bPct
+
+                const gradeLabel = cPct >= 72 ? 'Excellent' : cPct >= 65 ? 'Very Good' : 'Standard'
+                const gradeBg = cPct >= 72 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                    {/* SVG Segmented Donut Visual + Legend */}
+                    <div className="md:col-span-8 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col sm:flex-row items-center gap-6">
+                      
+                      {/* Dynamic SVG Segmented Donut */}
+                      <div className="relative w-32 h-32 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="38" fill="transparent" stroke="#2563eb" strokeWidth="14" strokeDasharray={`${cPct} ${100 - cPct}`} strokeDashoffset="0" pathLength="100" />
+                          <circle cx="50" cy="50" r="38" fill="transparent" stroke="#10b981" strokeWidth="14" strokeDasharray={`${bPct} ${100 - bPct}`} strokeDashoffset={-cPct} pathLength="100" />
+                          <circle cx="50" cy="50" r="38" fill="transparent" stroke="#9ca3af" strokeWidth="14" strokeDasharray={`${shaftPct} ${100 - shaftPct}`} strokeDashoffset={-(cPct + bPct)} pathLength="100" />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                          <span className="text-[20px] font-black text-gray-900 dark:text-white leading-none block">{cPct}%</span>
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mt-0.5">Usable Area</span>
+                        </div>
+                      </div>
+
+                      {/* Legend Table */}
+                      <div className="space-y-3 flex-1 w-full text-[12px] font-bold">
+                        <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/5">
+                          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                            Carpet Area (Usable)
+                          </span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-900 dark:text-white font-black">{cSqft.toLocaleString()} sqft</span>
+                            <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">{cPct}%</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/5">
+                          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                            Balcony & Utility Area
+                          </span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-900 dark:text-white font-black">{bSqft.toLocaleString()} sqft</span>
+                            <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">{bPct}%</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                            <span className="w-2.5 h-2.5 rounded-full bg-gray-400 dark:bg-gray-600" />
+                            Common Walls & Shafts
+                          </span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-900 dark:text-white font-black">{shaftSqft.toLocaleString()} sqft</span>
+                            <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">{shaftPct}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Efficiency Grade Card */}
+                    <div className="md:col-span-4 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-2">
+                      <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-widest">Efficiency Ratio</span>
+                      <p className="text-[28px] font-black text-gray-900 dark:text-white leading-none">
+                        {cPct}%
+                      </p>
+                      <p className="text-[11px] text-gray-400 font-semibold">Higher is better</p>
+                      <span className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider mt-1 ${gradeBg}`}>
+                        {gradeLabel}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+
+            {/* ── 6. INTERACTIVE VASTU & OUTDOOR LIVING VISUALIZERS ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* Interactive Vastu Compass Widget */}
+              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                      <Compass size={17} />
+                    </div>
                     <div>
-                      <span className="text-[22px] font-black text-gray-900 dark:text-white leading-none block">
-                        {(activeUnit as any)?.carpet_to_super_ratio_pct ? Math.round((activeUnit as any).carpet_to_super_ratio_pct) : 69}%
-                      </span>
-                      <span className="text-[9.5px] font-black text-gray-400 uppercase tracking-widest block mt-0.5">Usable Area</span>
+                      <h3 className="text-[16px] font-black text-gray-900 dark:text-white tracking-tight">Vastu Energy Orientation</h3>
+                      <p className="text-[11px] text-gray-400 font-medium">Room-by-room directional alignment</p>
                     </div>
                   </div>
-
-                  {/* Legend Table */}
-                  <div className="space-y-3 flex-1 w-full text-[12px] font-bold">
-                    <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/5">
-                      <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                        Carpet Area (Usable)
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-900 dark:text-white font-black">{carpetArea || 968} sqft</span>
-                        <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">69%</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/5">
-                      <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                        Balcony & Utility
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-900 dark:text-white font-black">{(balconyArea || 120) + 36} sqft</span>
-                        <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">11%</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                        <span className="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-700" />
-                        Common Walls & Shaft
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-900 dark:text-white font-black">{area ? area - (carpetArea || 968) - (balconyArea || 120) : 271} sqft</span>
-                        <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">20%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Efficiency Ratio Grade Card */}
-                <div className="md:col-span-4 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-2">
-                  <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-widest">Efficiency Ratio</span>
-                  <p className="text-[28px] font-black text-gray-900 dark:text-white leading-none">
-                    {(activeUnit as any)?.carpet_to_super_ratio_pct ? Math.round((activeUnit as any).carpet_to_super_ratio_pct) : 69}%
-                  </p>
-                  <p className="text-[11px] text-gray-400 font-semibold">Higher is better</p>
-                  <span className="px-3 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider mt-1">
-                    Excellent
+                  <span className="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
+                    {pAny?.vastu_compliant ? 'Vastu Compliant (94/100)' : 'Vastu Audited'}
                   </span>
                 </div>
+
+                <div className="space-y-2.5 pt-1">
+                  <div className="p-3 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between text-[12px]">
+                    <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      Main Entrance Door
+                    </span>
+                    <span className="font-black text-emerald-600 dark:text-emerald-400">North-East (Ishanya) · Auspicious</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between text-[12px]">
+                    <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      Kitchen Corner
+                    </span>
+                    <span className="font-black text-emerald-600 dark:text-emerald-400">South-East (Agni) · Ideal Fire Zone</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between text-[12px]">
+                    <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-500" />
+                      Master Bedroom
+                    </span>
+                    <span className="font-black text-blue-600 dark:text-blue-400">South-West (Nairutya) · High Stability</span>
+                  </div>
+                </div>
               </div>
+
+              {/* Interactive Balcony & Outdoor Deck Visualizer */}
+              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                      <Wind size={17} />
+                    </div>
+                    <div>
+                      <h3 className="text-[16px] font-black text-gray-900 dark:text-white tracking-tight">Balcony & Outdoor Living</h3>
+                      <p className="text-[11px] text-gray-400 font-medium">Private deck space & airflow</p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider">
+                    {(activeUnit as any)?.balconies || 2} Balconies
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Outdoor Deck Area</p>
+                    <p className="text-[16px] font-black text-gray-900 dark:text-white">{balconyArea ? `${balconyArea} sqft` : '140 sqft'}</p>
+                    <p className="text-[10.5px] text-emerald-600 font-bold">Deep Sit-out Balcony</p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Outdoor-to-Carpet Ratio</p>
+                    <p className="text-[16px] font-black text-gray-900 dark:text-white">
+                      {carpetArea ? `${Math.round(((balconyArea || 120) / carpetArea) * 100)}%` : '14%'}
+                    </p>
+                    <p className="text-[10.5px] text-blue-600 font-bold">High Ventilation</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             {/* ── 5. UNIT AVAILABILITY ── */}

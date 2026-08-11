@@ -1135,6 +1135,7 @@
         "phone": "+91 99990 12345",
         "email": "contact@acmeestates.in"
       }
-    ]
+    ],
+    "resale_lock_in_months": 36
   }
 ]

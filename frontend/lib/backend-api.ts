@@ -232,9 +232,14 @@ export async function getPaymentPlan(slug: string): Promise<{
   /** Every plan offered for this project, ordered. */
   plans?: PaymentPlanDto[]
 }> {
-  const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/payment-plan`)
-  if (!res.ok) return { available: false, message: 'Unable to load payment plan.' }
-  return res.json()
+  try {
+    const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/payment-plan`)
+    if (!res.ok) return { available: false, message: 'Unable to load payment plan.' }
+    return await res.json()
+  } catch (err) {
+    console.warn('getPaymentPlan fetch error:', err)
+    return { available: false, message: 'Payment plan unavailable.' }
+  }
 }
 
 export async function getCostSheet(slug: string): Promise<{
@@ -244,9 +249,14 @@ export async function getCostSheet(slug: string): Promise<{
   illustration?: Record<string, number | null>
   illustration_note?: string
 }> {
-  const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/cost-sheet`)
-  if (!res.ok) return { available: false, message: 'Unable to load cost sheet.' }
-  return res.json()
+  try {
+    const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/cost-sheet`)
+    if (!res.ok) return { available: false, message: 'Unable to load cost sheet.' }
+    return await res.json()
+  } catch (err) {
+    console.warn('getCostSheet fetch error:', err)
+    return { available: false, message: 'Cost sheet unavailable.' }
+  }
 }
 
 export async function getInvestmentIntelligence(slug: string): Promise<{
@@ -260,19 +270,29 @@ export async function getInvestmentIntelligence(slug: string): Promise<{
     data_note: string
   }
 }> {
-  const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/investment`)
-  if (!res.ok) return { available: false }
-  return res.json()
+  try {
+    const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/investment`)
+    if (!res.ok) return { available: false }
+    return await res.json()
+  } catch (err) {
+    console.warn('getInvestmentIntelligence fetch error:', err)
+    return { available: false }
+  }
 }
 
 export async function getBuilderIntelligence(builderSlug: string): Promise<{
   available: boolean
   builder?: Record<string, unknown>
 }> {
-  const res = await fetch(`${BACKEND}/api/v1/builders/${builderSlug}`)
-  if (!res.ok) return { available: false }
-  const data = await res.json()
-  return { available: true, builder: data }
+  try {
+    const res = await fetch(`${BACKEND}/api/v1/builders/${builderSlug}`)
+    if (!res.ok) return { available: false }
+    const data = await res.json()
+    return { available: true, builder: data }
+  } catch (err) {
+    console.warn('getBuilderIntelligence fetch error:', err)
+    return { available: false }
+  }
 }
 
 export interface ProjectOverviewData {
@@ -301,7 +321,12 @@ export async function getProjectOverview(slug: string): Promise<ProjectOverviewD
     construction_milestones: null,
     on_time_delivery_pct: null,
   }
-  const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/overview`)
-  if (!res.ok) return empty
-  return res.json()
+  try {
+    const res = await fetch(`${BACKEND}/api/v1/projects/${slug}/overview`)
+    if (!res.ok) return empty
+    return await res.json()
+  } catch (err) {
+    console.warn('getProjectOverview fetch error:', err)
+    return empty
+  }
 }

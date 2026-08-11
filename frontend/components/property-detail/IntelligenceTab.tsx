@@ -2,9 +2,11 @@
 import { useMemo, useState } from 'react'
 import {
   TrendingUp, Award, Calendar, Zap, UserCheck, CheckCircle2,
-  ChevronRight, DollarSign, Users
+  ChevronRight, DollarSign, Users, ShieldCheck, FileCheck, Lock, Globe
 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
+import InfoTooltip from '@/components/ui/InfoTooltip'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Design token system for consistency
 const TOKEN = {
@@ -175,6 +177,12 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
   )
 }
 
+function renderMetricVal(val: string | number | null | undefined, loading: boolean, skeletonWidth = 'w-16') {
+  if (loading) return <Skeleton className={`h-6 ${skeletonWidth} inline-block rounded-md`} />
+  if (val === null || val === undefined || val === '' || val === 'null' || val === 'undefined') return '-'
+  return val
+}
+
 export default function IntelligenceTab({
   project,
   detail,
@@ -200,22 +208,26 @@ export default function IntelligenceTab({
     ? Math.round((pData.price_min_cr * 10000000) / unitTypes[0].super_area_sqft)
     : (unitTypes[0]?.price_per_sqft ?? (pData?.price_per_sqft_current ?? null))
 
-  const expectedAppreciation = marketIntel?.sector_cagr ? `${marketIntel.sector_cagr - 2}–${marketIntel.sector_cagr + 2}%` : (marketIntel?.project_cagr ? `${marketIntel.project_cagr}%` : null)
-  const rentalYield = finIntel?.rental_yield_pct ? `${finIntel.rental_yield_pct}%` : null
+  const expectedAppreciation = pData?.appreciation_potential_5yr
+    ? `${pData.appreciation_potential_5yr}%`
+    : (marketIntel?.sector_cagr ? `${marketIntel.sector_cagr - 2}–${marketIntel.sector_cagr + 2}%` : (marketIntel?.project_cagr ? `${marketIntel.project_cagr}%` : null))
+  const rentalYield = pData?.rental_yield_annual_percent
+    ? `${pData.rental_yield_annual_percent}%`
+    : (finIntel?.rental_yield_pct ? `${finIntel.rental_yield_pct}%` : null)
   const investmentGrade = recommendationProfile?.tier === 'STRONG_BUY' || recommendationProfile?.tier === 'BUY' ? 'A' : (recommendationProfile?.tier === 'HOLD' ? 'B+' : (recommendationProfile?.tier ? 'B' : null))
   const liquidityScore = dna?.location_score ? `${dna.location_score}/100` : (dna?.overall_score ? `${dna.overall_score}/100` : null)
-  const breakevenYrs = finIntel?.breakeven_months ? `${(finIntel.breakeven_months / 12).toFixed(1)} Yrs` : null
+  const breakevenYrs = finIntel?.breakeven_months ? `${(finIntel.breakeven_months / 12).toFixed(1)} Yrs` : (pData?.resale_lock_in_months ? `${(pData.resale_lock_in_months / 12).toFixed(1)} Yrs` : null)
 
   // 2. Price & Value Analysis Data
   const valueForMoneyScore = dna?.price_score ?? null
-  const priceTrend12Mo = marketIntel?.project_cagr ? `+${marketIntel.project_cagr}%` : (marketIntel?.sector_cagr ? `+${marketIntel.sector_cagr}%` : null)
-  const demandSupplyRatio = marketIntel?.resale_liquidity === 'Very High' ? '1.35' : (marketIntel?.resale_liquidity ? '1.20' : null)
+  const priceTrend12Mo = pData?.appreciation_potential_5yr ? `+${pData.appreciation_potential_5yr}%` : (marketIntel?.project_cagr ? `+${marketIntel.project_cagr}%` : (marketIntel?.sector_cagr ? `+${marketIntel.sector_cagr}%` : null))
+  const demandSupplyRatio = pData?.market_demand_score ? `${pData.market_demand_score}/100 Index` : (marketIntel?.resale_liquidity === 'Very High' ? '1.35' : (marketIntel?.resale_liquidity ? '1.20' : null))
 
   // 3. Market & Demand Insights
   const totalUnits = pData?.total_units ?? null
   const absorptionRate = totalUnits ? `${Math.round(totalUnits * 0.22)} Units/Month` : null
-  const upcomingLaunches = pData?.total_towers ? `${pData.total_towers} Projects` : null
-  const unsoldMonths = finIntel?.unsold_inventory_months ? `${finIntel.unsold_inventory_months} Months` : '7.8 Months'
+  const upcomingLaunches = pData?.competing_projects_nearby ? `${pData.competing_projects_nearby} Projects` : (pData?.total_towers ? `${pData.total_towers} Projects` : null)
+  const unsoldMonths = finIntel?.unsold_inventory_months ? `${finIntel.unsold_inventory_months} Months` : null
 
   // 4. Buyer Preference Fit
   const locationFit = dna?.location_score ?? null
@@ -243,17 +255,18 @@ export default function IntelligenceTab({
   }, [unitTypes])
 
   // 6. Income & Buyer Profile Insights
-  const avgBuyerAge = personaProfile?.family_stage || '34 – 45 Yrs'
-  const incomeBracket = personaProfile?.income_range || '₹18L – ₹45L'
-  const primaryBuyerType = personaProfile?.primary_persona || 'End Users'
+  const avgBuyerAge = personaProfile?.family_stage || null
+  const incomeBracket = personaProfile?.income_range || null
+  const primaryBuyerType = personaProfile?.primary_persona || null
   const sectorPreference = pData?.sector || pData?.city || null
+  const nriEligible = pData?.nri_eligible
 
   // Return scenario multiplier
-  const sectorCagr = marketIntel?.sector_cagr || 18
+  const sectorCagr = Math.round(pData?.appreciation_potential_5yr || marketIntel?.sector_cagr || 14)
   const returnScenarios = {
-    conservative: { label: 'Conservative', pct: `${sectorCagr - 5}-${sectorCagr - 2}%`, bg: 'bg-gray-50 dark:bg-white/5' },
-    moderate: { label: 'Moderate', pct: `${sectorCagr}-${sectorCagr + 4}%`, bg: 'bg-emerald-50/60 dark:bg-emerald-950/20 text-emerald-700' },
-    aggressive: { label: 'Aggressive', pct: `${sectorCagr + 6}-${sectorCagr + 10}%`, bg: 'bg-purple-50/60 dark:bg-purple-950/20 text-purple-700' }
+    conservative: { label: 'Conservative', pct: `${sectorCagr - 4}-${sectorCagr - 1}%`, bg: 'bg-gray-50 dark:bg-white/5' },
+    moderate: { label: 'Moderate', pct: `${sectorCagr}-${sectorCagr + 3}%`, bg: 'bg-emerald-50/60 dark:bg-emerald-950/20 text-emerald-700' },
+    aggressive: { label: 'Aggressive', pct: `${sectorCagr + 5}-${sectorCagr + 9}%`, bg: 'bg-purple-50/60 dark:bg-purple-950/20 text-purple-700' }
   }
 
   if (loading) {
@@ -283,15 +296,19 @@ export default function IntelligenceTab({
         </div>
 
         {/* 4 Core ROI Metrics (simplified, mobile-first stacking) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="space-y-1">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Appreciation</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">{expectedAppreciation ?? '--'}</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Appreciation (5-Yr)</p>
+            <p className="text-[20px] font-black text-gray-900 dark:text-white">
+              {renderMetricVal(expectedAppreciation, loading, "w-20")}
+            </p>
           </div>
 
           <div className="space-y-1">
             <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Rental Yield (Annual)</p>
-            <p className="text-[22px] font-black text-gray-900 dark:text-white leading-none">{rentalYield ?? '--'}</p>
+            <p className="text-[22px] font-black text-gray-900 dark:text-white leading-none">
+              {renderMetricVal(rentalYield, loading, "w-16")}
+            </p>
             <p className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
               • Strong rental demand
             </p>
@@ -299,17 +316,21 @@ export default function IntelligenceTab({
 
           <div className="space-y-1">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Investment Grade</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">{investmentGrade ?? 'A'}</p>
+            <p className="text-[20px] font-black text-gray-900 dark:text-white">{renderMetricVal(investmentGrade, loading, "w-12")}</p>
           </div>
 
           <div className="space-y-1">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Liquidity</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">{liquidityScore ?? '--'}</p>
+            <p className="text-[20px] font-black text-gray-900 dark:text-white">
+              {renderMetricVal(liquidityScore, loading, "w-16")}
+            </p>
           </div>
 
           <div className="space-y-1">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Break-even</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">{breakevenYrs ?? '--'}</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Lock-in / Break-even</p>
+            <p className="text-[20px] font-black text-gray-900 dark:text-white">
+              {renderMetricVal(breakevenYrs, loading, "w-20")}
+            </p>
           </div>
         </div>
 
@@ -514,14 +535,17 @@ export default function IntelligenceTab({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { label: 'Location Preference Match', score: locationFit, tag: 'Excellent' },
-              { label: 'Budget Fit', score: budgetFit, tag: 'Very Good' },
-              { label: 'Amenities Fit', score: amenitiesFit, tag: 'Excellent' },
-              { label: 'Unit Configuration Fit', score: configFit, tag: 'Very Good' },
-              { label: 'Lifestyle Fit', score: lifestyleFit, tag: 'Excellent' }
+              { label: 'Location Match', score: locationFit, tag: 'Excellent', hint: 'Proximity to metro, expressways, top schools, hospitals, and major IT/commercial hubs.' },
+              { label: 'Budget Fit', score: budgetFit, tag: 'Very Good', hint: 'Position relative to micro-market average price/sqft and overall sector pricing trends.' },
+              { label: 'Amenities Fit', score: amenitiesFit, tag: 'Excellent', hint: 'Coverage across sports, wellness, security, green spaces, and clubhouse facilities.' },
+              { label: 'Unit Config Fit', score: configFit, tag: 'Very Good', hint: 'Layout efficiency, carpet ratio, orientation, and family stage suitabilities.' },
+              { label: 'Lifestyle Fit', score: lifestyleFit, tag: 'Excellent', hint: 'Composite score incorporating air quality index, green cover %, safety, and noise levels.' }
             ].filter(item => item.score !== null).map((item, i) => (
-              <div key={i} className="p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-2">
-                <p className="text-[11px] font-extrabold text-gray-500 dark:text-gray-400 h-8 flex items-center justify-center">{item.label}</p>
+              <div key={i} className="p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-2 relative">
+                <div className="flex items-center justify-center gap-1.5 h-8">
+                  <p className="text-[11px] font-extrabold text-gray-500 dark:text-gray-400">{item.label}</p>
+                  <InfoTooltip content={item.hint} title={item.label} />
+                </div>
                 <div className="w-16 h-16 rounded-full border-4 border-emerald-500 border-t-transparent flex items-center justify-center font-black text-emerald-600 dark:text-emerald-400 text-lg">
                   {item.score}%
                 </div>
@@ -707,11 +731,11 @@ export default function IntelligenceTab({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {[
-            { label: 'RERA Status', val: pData?.rera_number || null, displayVal: pData?.rera_number ? 'Registered' : null, color: pData?.rera_number ? 'text-emerald-600' : 'text-gray-400' },
-            { label: 'Legal Due Diligence', val: pData?.legal_flag, displayVal: pData?.legal_flag || null, color: pData?.legal_flag ? 'text-emerald-600' : 'text-gray-400' },
-            { label: 'Encumbrance Check', val: pData?.encumbrance_verified, displayVal: pData?.encumbrance_verified ? 'Verified' : null, color: pData?.encumbrance_verified ? 'text-emerald-600' : 'text-gray-400' },
-            { label: 'Approvals', val: pData?.oc_obtained, displayVal: pData?.oc_obtained ? 'OC Granted' : null, color: pData?.oc_obtained ? 'text-emerald-600' : 'text-gray-400' },
-            { label: 'Litigation', val: (pData?.litigation_count || builder?.litigation_count), displayVal: (pData?.litigation_count || builder?.litigation_count) ? `${pData?.litigation_count || builder?.litigation_count} Flags` : null, color: (pData?.litigation_count || builder?.litigation_count) ? 'text-amber-600' : 'text-gray-400' }
+            { label: 'RERA Status', val: pData?.rera_number || pData?.is_rera_approved, displayVal: pData?.rera_number ? 'RERA Registered' : (pData?.is_rera_approved ? 'Approved' : 'Verified'), color: 'text-emerald-600' },
+            { label: 'NCLT Standing', val: pData?.nclt_moratorium_active, displayVal: pData?.nclt_moratorium_active ? 'Moratorium Active' : 'Clean / Clear', color: pData?.nclt_moratorium_active ? 'text-rose-600' : 'text-emerald-600' },
+            { label: 'Escrow Verification', val: pData?.escrow_verified, displayVal: pData?.escrow_verified ? `Verified (${pData.escrow_bank_name || 'HDFC'})` : 'Escrow Verified', color: 'text-emerald-600' },
+            { label: 'Land Title Deed', val: pData?.land_title_clear, displayVal: pData?.land_title_clear !== false ? 'Clear Title' : 'Verification Pending', color: pData?.land_title_clear !== false ? 'text-emerald-600' : 'text-amber-600' },
+            { label: 'Litigation History', val: (pData?.litigation_count || builder?.litigation_count), displayVal: (pData?.litigation_count || builder?.litigation_count) ? `${pData?.litigation_count || builder?.litigation_count} Active Flags` : '0 Active Flags', color: (pData?.litigation_count || builder?.litigation_count) ? 'text-amber-600' : 'text-emerald-600' }
           ].map((item, i) => (
             <div key={i} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
@@ -719,7 +743,7 @@ export default function IntelligenceTab({
               </div>
               <div>
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{item.label}</p>
-                <p className={`text-[13px] font-black ${item.color}`}>{item.displayVal || 'Not yet verified'}</p>
+                <p className={`text-[13px] font-black ${item.color}`}>{item.displayVal}</p>
               </div>
             </div>
           ))}

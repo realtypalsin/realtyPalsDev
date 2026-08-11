@@ -45,12 +45,16 @@ interface ProjectData {
   // Phase 5 Fields
   nri_eligible?: boolean
   vastu_compliant?: boolean
+  has_penthouse?: boolean
+  has_duplex?: boolean
   women_safety_score?: string
   air_quality_index_avg?: string
+  noise_level_db?: string
   green_cover_percent?: string
   market_demand_score?: string
   appreciation_potential_5yr?: string
   rental_yield_annual_percent?: string
+  resale_lock_in_months?: string
   approvals_status?: string
   escrow_verified?: boolean
   registry_status?: string
@@ -64,10 +68,10 @@ const EMPTY: ProjectData = {
   description: '', long_description: '', design_theme: '', architect: '', interior_designer: '', floors: '', open_space_pct: '', green_rating: '',
 
   hero_image_url: '', marketing_claims: [], ai_search_keywords: [],
-  nri_eligible: true, vastu_compliant: true, women_safety_score: '92',
-  air_quality_index_avg: '155', green_cover_percent: '75', market_demand_score: '90',
-  appreciation_potential_5yr: '14.5', rental_yield_annual_percent: '4.5',
-  approvals_status: 'Fully Approved by RERA', escrow_verified: true, registry_status: 'open'
+  nri_eligible: true, vastu_compliant: true, has_penthouse: false, has_duplex: false,
+  women_safety_score: '92', air_quality_index_avg: '155', noise_level_db: '45', green_cover_percent: '75',
+  market_demand_score: '90', appreciation_potential_5yr: '14.5', rental_yield_annual_percent: '4.5',
+  resale_lock_in_months: '36', approvals_status: 'Fully Approved by RERA', escrow_verified: true, registry_status: 'open'
 }
 
 function toSlug(name: string): string {
@@ -267,6 +271,23 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
       hero_image_url:     form.hero_image_url || undefined,
       marketing_claims:   form.marketing_claims,
       ai_search_keywords: form.ai_search_keywords,
+
+      // Phase 5 Fields
+      nri_eligible:                form.nri_eligible,
+      vastu_compliant:             form.vastu_compliant,
+      has_penthouse:               form.has_penthouse,
+      has_duplex:                  form.has_duplex,
+      women_safety_score:          form.women_safety_score ? parseInt(form.women_safety_score) : undefined,
+      air_quality_index_avg:       form.air_quality_index_avg ? parseInt(form.air_quality_index_avg) : undefined,
+      noise_level_db:              form.noise_level_db ? parseInt(form.noise_level_db) : undefined,
+      green_cover_percent:         form.green_cover_percent ? parseInt(form.green_cover_percent) : undefined,
+      market_demand_score:         form.market_demand_score ? parseInt(form.market_demand_score) : undefined,
+      appreciation_potential_5yr:  form.appreciation_potential_5yr ? parseFloat(form.appreciation_potential_5yr) : undefined,
+      rental_yield_annual_percent: form.rental_yield_annual_percent ? parseFloat(form.rental_yield_annual_percent) : undefined,
+      resale_lock_in_months:       form.resale_lock_in_months ? parseInt(form.resale_lock_in_months) : undefined,
+      approvals_status:            form.approvals_status || undefined,
+      escrow_verified:             form.escrow_verified,
+      registry_status:             form.registry_status || undefined,
     }
 
     const url    = projectId ? `${API_BASE}/admin/projects/${projectId}` : `${API_BASE}/admin/projects`

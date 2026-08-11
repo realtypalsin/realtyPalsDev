@@ -172,6 +172,24 @@
         "verdict": "Choose Mahagun Manorialle for premium golf course views and skyscraper height; choose Prateek for central access.",
         "price_delta_note": "Mahagun Manorialle is approx ₹2,000/sqft premium to Prateek Edifice."
       }
-    ]
+    ],
+    "women_safety_score": 96,
+    "air_quality_index_avg": 140,
+    "noise_level_db": 40,
+    "green_cover_percent": 82,
+    "market_demand_score": 95,
+    "appreciation_potential_5yr": 16,
+    "rental_yield_annual_percent": 4.2,
+    "resale_lock_in_months": 36,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": false,
+    "has_duplex": false,
+    "escrow_verified": true,
+    "escrow_bank_name": "HDFC Bank",
+    "land_title_clear": true,
+    "nclt_status": "Clean - No NCLT Moratorium",
+    "construction_quality_rating": 4.5,
+    "buyer_satisfaction_rating": 4.6
   }
 ]

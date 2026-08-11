@@ -488,19 +488,21 @@ export interface ExtendedIntentResult {
   degraded: boolean
 }
 
+import { isKeyFailed, markKeyFailed } from './providerStatus'
+
 /** Main entry point for extended intent extraction. */
 export async function extractExtendedIntent(
   options: ExtendedIntentExtractionOptions,
 ): Promise<ExtendedIntentResult> {
   const { userMessage, previousIntent } = options
 
-  // Attempt OpenAI with 8-second timeout, fallback to Groq
-  if (process.env.OPENAI_API_KEY) {
+  // Attempt OpenAI with 2.5-second timeout (if not blacklisted), fallback to Groq
+  if (process.env.OPENAI_API_KEY && !isKeyFailed('OPENAI_API_KEY')) {
     const controller = new AbortController()
     const timer = setTimeout(() => {
-      console.warn('[extended_intent] 8s wall-clock expired — aborting OpenAI, switching to Groq')
+      console.warn('[extended_intent] 2.5s wall-clock expired — aborting OpenAI, switching to Groq')
       controller.abort()
-    }, 8000)
+    }, 2500)
 
     try {
       console.log('[EXTENDED_INTENT] trying OpenAI path', Date.now())
@@ -508,8 +510,11 @@ export async function extractExtendedIntent(
       console.log('[EXTENDED_INTENT] OpenAI path succeeded', Date.now(), { result })
       clearTimeout(timer)
       return { intent: result, degraded: false }
-    } catch (err) {
+    } catch (err: any) {
       clearTimeout(timer)
+      if (err?.status === 404 || err?.status === 401 || err?.status === 403 || err?.name === 'AbortError' || (err?.message || '').includes('404')) {
+        markKeyFailed('OPENAI_API_KEY')
+      }
       console.warn('[extended_intent] OpenAI failed, trying Groq:', (err as Error).message)
     }
   }

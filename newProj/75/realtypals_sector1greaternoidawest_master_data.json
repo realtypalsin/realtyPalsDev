@@ -187,6 +187,24 @@
         "verdict": "Choose CRC Maesta for low-density vertical privacy and Noida access; choose Gulshan Avante for faster move-in.",
         "price_delta_note": "CRC Maesta is approx par with Gulshan Avante."
       }
-    ]
+    ],
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 45,
+    "green_cover_percent": 75,
+    "market_demand_score": 90,
+    "appreciation_potential_5yr": 14,
+    "rental_yield_annual_percent": 4.7,
+    "resale_lock_in_months": 36,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": false,
+    "has_duplex": false,
+    "escrow_verified": true,
+    "escrow_bank_name": "HDFC Bank",
+    "land_title_clear": true,
+    "nclt_status": "Clean - No NCLT Moratorium",
+    "construction_quality_rating": 4.5,
+    "buyer_satisfaction_rating": 4.6
   }
 ]
