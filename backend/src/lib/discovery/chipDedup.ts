@@ -64,7 +64,10 @@ export async function persistToDb(sessionId: string): Promise<void> {
       where: { id: sessionId },
       select: { id: true },
     })
-    if (!session) return
+    if (!session) {
+      console.warn('[chipDedup] Session not found:', sessionId)
+      return
+    }
 
     await prisma.chatSession.update({
       where: { id: sessionId },

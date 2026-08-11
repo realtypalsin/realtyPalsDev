@@ -506,6 +506,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   // Create session for new guest users (no sessionId + guest token)
+  // DEFENSIVE: Ensure session exists before any child operations (FK constraints)
   if (!sessionId && !userId && guestToken) {
     try {
       const newSession = await prisma.chatSession.create({
@@ -522,7 +523,26 @@ router.post('/', async (req: Request, res: Response) => {
     }
   }
 
+  // DEFENSIVE: Ensure authenticated users also have a session before analytics
+  // This prevents FK violations when initializeChatAnalytics creates ChatAnalytics record
+  if (!sessionId && userId) {
+    try {
+      const newSession = await prisma.chatSession.create({
+        data: {
+          user_id: userId,
+          title: 'Chat',
+          chat_phase: 'GATHERING',
+        },
+      })
+      sessionId = newSession.id
+      console.log('[CHAT] Created authenticated session', { sessionId, userId })
+    } catch (err) {
+      console.warn('[CHAT] Authenticated session creation failed:', err)
+    }
+  }
+
   // ─── ANALYTICS: Initialize chat tracking
+  // Safe now: sessionId is guaranteed to exist or user has existing session
   await initializeChatAnalytics(sessionId ?? undefined, userId, guestToken ?? undefined)
 
   const rlKey = userId ?? guestToken!

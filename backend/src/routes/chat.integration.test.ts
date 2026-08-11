@@ -2,74 +2,97 @@
  * Chat Route Integration Tests — Verify full project detail pipeline
  */
 
-import { describe, it, before, after } from 'node:test'
+import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { prisma } from '../lib/db'
 import type { ChatMessage } from '../types/property'
+import { createTestSession, createTestAnalytics, deleteTestSession } from '../__tests__/helpers/testFactory'
 
 describe('Chat Route Integration', () => {
+  let testSessionId: string
+
+  // Defensive: Create parent session before each test to prevent FK violations
+  beforeEach(async () => {
+    const session = await createTestSession()
+    testSessionId = session.id
+  })
+
+  // Cleanup: Remove test session after each test
+  afterEach(async () => {
+    await deleteTestSession(testSessionId)
+  })
+
   describe('Project Detail Pipeline', () => {
     it('should route payment questions to project detail pipeline', async () => {
-      // Simulate: user asks "How much EMI for ATS Pristine?"
-      // Expected: backend runs: classify → plan → gateway → LLM → components
+      // ✅ Session created in beforeEach — safe to create analytics/events now
+      const analytics = await createTestAnalytics(testSessionId)
+      assert.ok(analytics.session_id === testSessionId)
 
       const userMessage = 'How much EMI for ATS Pristine?'
-
-      // 1. Intent should be classified as project_detail + payment
-      // (This would be done by classifyIntent in the chat route)
       assert(userMessage.toLowerCase().includes('emi'))
       assert(userMessage.toLowerCase().includes('ats'))
     })
 
     it('should handle investment questions', async () => {
-      const userMessage = 'Is Godrej a good investment?'
+      // ✅ Parent session exists — FK constraint satisfied
+      await createTestAnalytics(testSessionId)
 
-      // Should detect: project_detail + investment intent
+      const userMessage = 'Is Godrej a good investment?'
       assert(userMessage.toLowerCase().includes('invest'))
     })
 
     it('should handle location questions', async () => {
-      const userMessage = 'How far is the metro from ATS Pristine?'
+      // ✅ Parent session exists — FK constraint satisfied
+      await createTestAnalytics(testSessionId)
 
-      // Should detect: project_detail + location intent
+      const userMessage = 'How far is the metro from ATS Pristine?'
       assert(userMessage.toLowerCase().includes('metro'))
       assert(userMessage.toLowerCase().includes('far'))
     })
 
     it('should handle timeline questions', async () => {
-      const userMessage = 'When will ATS Pristine be ready for possession?'
+      // ✅ Parent session exists — FK constraint satisfied
+      await createTestAnalytics(testSessionId)
 
-      // Should detect: project_detail + timeline intent
+      const userMessage = 'When will ATS Pristine be ready for possession?'
       assert(userMessage.toLowerCase().includes('possession'))
     })
 
     it('should handle builder questions', async () => {
-      const userMessage = 'Tell me about ATS Infra builder track record'
+      // ✅ Parent session exists — FK constraint satisfied
+      await createTestAnalytics(testSessionId)
 
-      // Should detect: project_detail + builder intent
+      const userMessage = 'Tell me about ATS Infra builder track record'
       assert(userMessage.toLowerCase().includes('builder'))
     })
 
     it('should handle overview questions', async () => {
-      const userMessage = 'Tell me about ATS Pristine'
+      // ✅ Parent session exists — FK constraint satisfied
+      await createTestAnalytics(testSessionId)
 
-      // Should detect: project_detail + details intent
+      const userMessage = 'Tell me about ATS Pristine'
       assert(userMessage.toLowerCase().includes('tell'))
     })
   })
 
   describe('Query Planning', () => {
     it('should extract required fields for payment intent', async () => {
+      await createTestAnalytics(testSessionId)
+
       const paymentFields = ['price_min_cr', 'gst_rate_pct', 'stamp_duty_pct']
       assert(paymentFields.length > 0)
     })
 
     it('should extract required fields for investment intent', async () => {
+      await createTestAnalytics(testSessionId)
+
       const investmentFields = ['price_min_cr', 'price_cagr_pct', 'construction_progress_pct']
       assert(investmentFields.length > 0)
     })
 
     it('should extract required fields for location intent', async () => {
+      await createTestAnalytics(testSessionId)
+
       const locationFields = ['connectivity_count', 'amenity_count']
       assert(locationFields.length > 0)
     })
@@ -77,6 +100,10 @@ describe('Chat Route Integration', () => {
 
   describe('Data Gateway', () => {
     it('should fetch data from database', async () => {
+      // ✅ Parent session exists
+      const analytics = await createTestAnalytics(testSessionId)
+      assert.ok(analytics.session_id === testSessionId)
+
       const project = await prisma.project.findFirst({
         take: 1,
       })
@@ -88,6 +115,10 @@ describe('Chat Route Integration', () => {
     })
 
     it('should validate completeness', async () => {
+      // ✅ Parent session exists
+      const analytics = await createTestAnalytics(testSessionId)
+      assert.ok(analytics.session_id === testSessionId)
+
       const completeness = {
         complete: true,
         coverage: 0.85,

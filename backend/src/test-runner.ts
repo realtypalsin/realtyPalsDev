@@ -13,7 +13,14 @@ async function runTests() {
     process.exit(1)
   }
 
-  const result = spawnSync('node', ['--require', 'tsx/cjs', '--test', ...testFiles], {
+  // Run tests with concurrency limit to prevent DB connection pool exhaustion
+  // Default Node test runner runs 4 tests in parallel; we reduce to 1 for DB tests
+  const result = spawnSync('node', [
+    '--require', 'tsx/cjs',
+    '--test',
+    '--test-concurrency=1',  // Sequential execution to prevent DB connection exhaustion
+    ...testFiles
+  ], {
     stdio: 'inherit',
     cwd: process.cwd(),
     env: { ...process.env, NODE_ENV: 'test' },

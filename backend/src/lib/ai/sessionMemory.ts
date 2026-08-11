@@ -83,6 +83,7 @@ export async function persistIntentToMemory(
 /**
  * Track property reactions in session memory
  * Called when user shows interest/rejection signals
+ * DEFENSIVE: Checks session exists before update to prevent FK violations
  */
 export async function trackPropertyReaction(
   sessionId: string,
@@ -91,6 +92,16 @@ export async function trackPropertyReaction(
   signals: string[] = []
 ) {
   try {
+    // Defensive: verify session exists first
+    const session = await prisma.chatSession.findUnique({
+      where: { id: sessionId },
+      select: { id: true },
+    })
+    if (!session) {
+      console.warn(`[SESSION-MEMORY:REACTION] Session ${sessionId} not found, skipping reaction track`)
+      return
+    }
+
     const memory = await getSessionMemory(sessionId)
     const reactions = (memory?.property_reactions as any[] | null) ?? []
 

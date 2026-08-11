@@ -13,7 +13,7 @@ export async function generateDynamicChips(
   usedProvider?: { provider: string; envKey: string }
 ): Promise<ChipAction[]> {
   const coreChips: ChipAction[] = []
-  
+
   if (!results || results.length === 0) {
     // Fallback static chips if no results
     return [
@@ -84,7 +84,7 @@ export async function generateDynamicChips(
     where: { project_id: topProject.id },
     select: { bhk: true }
   })
-  
+
   if (unitTypes.length > 0) {
     const bhks = [...new Set(unitTypes.map((u: { bhk: number }) => u.bhk))].sort()
     coreChips.push(
