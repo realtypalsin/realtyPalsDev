@@ -1,8 +1,8 @@
-﻿services:
+services:
   - type: web
     name: realtypals-backend
     env: node
-    nodeVersion: 20
+    nodeVersion: 22
     plan: starter
     rootDir: backend
     buildCommand: npm install --include=dev && npm run db:generate && npm run build
