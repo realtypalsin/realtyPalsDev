@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { rankPaymentPlans } from '../comparisonMatrix'
 import type { ConversationMemory } from '../types'
 
@@ -15,10 +16,9 @@ describe('Comparison Matrix', () => {
       { id: '3', plan_type: 'balance', down_payment_pct: 25, duration_months: 60, monthly_emi: 52500 }
     ]
     const result = rankPaymentPlans(plans as any, memory)
-    // Lowest upfront first
-    expect(result.rows[0].name).toBe('possession_linked')
-    expect(result.winner).toBe('possession_linked')
-    expect(result.reason).toContain('budget')
+    assert.equal(result.rows[0].name, 'possession_linked')
+    assert.equal(result.winner, 'possession_linked')
+    assert(result.reason.includes('budget'))
   })
 
   it('should rank by flexibility when timeline concerns detected', () => {
@@ -32,8 +32,7 @@ describe('Comparison Matrix', () => {
       { id: '3', plan_type: 'construction_linked', duration_months: null, down_payment_pct: 30, monthly_emi: 45000 }
     ]
     const result = rankPaymentPlans(plans as any, memory)
-    // Flexible should rank higher
-    expect(result.winner).toContain('flexible')
+    assert(result.winner.includes('flexible'))
   })
 
   it('should include reason in ranking decision', () => {
@@ -45,8 +44,8 @@ describe('Comparison Matrix', () => {
       { id: '1', plan_type: 'low_upfront', down_payment_pct: 15, duration_months: 60, monthly_emi: 50000 }
     ]
     const result = rankPaymentPlans(plans as any, memory)
-    expect(result.reason.length).toBeGreaterThan(0)
-    expect(result.reason).toContain('budget')
+    assert(result.reason.length > 0)
+    assert(result.reason.includes('budget'))
   })
 
   it('should build comparison matrix with correct structure', () => {
@@ -59,8 +58,8 @@ describe('Comparison Matrix', () => {
       { id: '2', plan_type: 'plan_b', down_payment_pct: 25, duration_months: 60, monthly_emi: 48000 }
     ]
     const result = rankPaymentPlans(plans as any, memory)
-    expect(result.matrix.dimensions.length).toBeGreaterThan(0)
-    expect(result.matrix.rows.length).toBeGreaterThan(0)
-    expect(result.matrix.rows[0].values).toBeDefined()
+    assert(result.matrix.dimensions.length > 0)
+    assert(result.matrix.rows.length > 0)
+    assert.ok(result.matrix.rows[0].values)
   })
 })

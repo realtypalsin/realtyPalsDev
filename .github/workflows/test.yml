@@ -81,6 +81,8 @@ jobs:
           ADMIN_PASSWORD: test-admin-password
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          SUPABASE_URL: http://localhost:54321
+          SUPABASE_SERVICE_ROLE_KEY: dummy-service-role-key
 
       # Build verification
       - name: Frontend build

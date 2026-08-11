@@ -20,12 +20,12 @@ describe('computeRecommendationScore confidence', () => {
     const result = computeRecommendationScore({
       ...baseInput,
       dna: {
-        builder_track_record_score: 90,
-        price_position_score: 80,
-        locality_score: 85,
-        rera_compliance_score: 100,
-        amenity_depth_score: 70,
-        possession_certainty_score: 75,
+        builder_score: 90,
+        price_score: 80,
+        location_score: 85,
+        legal_score: 100,
+        amenity_score: 70,
+        possession_score: 75,
       },
     })
     assert.equal(result.basis_count, 6)
@@ -36,12 +36,12 @@ describe('computeRecommendationScore confidence', () => {
     const result = computeRecommendationScore({
       ...baseInput,
       dna: {
-        builder_track_record_score: 90,
-        price_position_score: 80,
-        locality_score: null,
-        rera_compliance_score: null,
-        amenity_depth_score: null,
-        possession_certainty_score: null,
+        builder_score: 90,
+        price_score: 80,
+        location_score: null,
+        legal_score: null,
+        amenity_score: null,
+        possession_score: null,
       },
     })
     assert.equal(result.basis_count, 2)

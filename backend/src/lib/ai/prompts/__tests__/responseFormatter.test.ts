@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { buildResponseFormatterPrompt } from '../responseFormatter'
 
 describe('Response Formatter', () => {
@@ -17,9 +18,9 @@ describe('Response Formatter', () => {
       user_budget_max_cr: 75
     })
 
-    expect(prompt).toContain('payment plans')
-    expect(prompt).toContain('decision framework')
-    expect(prompt).toContain('₹')
+    assert(prompt.includes('payment plans'))
+    assert(prompt.includes('decision framework'))
+    assert(prompt.includes('₹'))
   })
 
   it('should build prompt for COSTS query', () => {
@@ -30,8 +31,8 @@ describe('Response Formatter', () => {
     }]
 
     const prompt = buildResponseFormatterPrompt('COSTS', costSheet, 90, {})
-    expect(prompt).toContain('cost breakdown')
-    expect(prompt).toContain('included')
+    assert(prompt.includes('cost breakdown'))
+    assert(prompt.includes('included'))
   })
 
   it('should build prompt for BUILDER_HISTORY', () => {
@@ -42,7 +43,7 @@ describe('Response Formatter', () => {
     }]
 
     const prompt = buildResponseFormatterPrompt('BUILDER_HISTORY', builder, 85, {})
-    expect(prompt).toContain('track record')
-    expect(prompt).toContain('narrative')
+    assert(prompt.includes('track record'))
+    assert(prompt.includes('narrative'))
   })
 })

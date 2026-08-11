@@ -2,7 +2,8 @@
  * Query Planner Tests — Verify intent detection and field mapping
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { planProjectDetailQuery, isActionable, getClarificationMessage } from './queryPlanner'
 
 describe('Query Planner', () => {
@@ -11,24 +12,24 @@ describe('Query Planner', () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'How much EMI for ATS Pristine?',
       })
-      expect(plan.intent).toBe('payment')
-      expect(plan.confidence).toBeGreaterThan(0.9)
+      assert.equal(plan.intent, 'payment')
+      assert(plan.confidence > 0.9)
     })
 
     it('recognizes cost breakdown queries', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'What is the cost breakdown for this project?',
       })
-      expect(plan.intent).toBe('payment')
+      assert.equal(plan.intent, 'payment')
     })
 
     it('includes required payment fields', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'How much EMI for ATS Pristine?',
       })
-      expect(plan.requiredFields).toContain('price_min_cr')
-      expect(plan.requiredFields).toContain('gst_rate_pct')
-      expect(plan.requiredFields).toContain('stamp_duty_pct')
+      assert(plan.requiredFields.includes('price_min_cr'))
+      assert(plan.requiredFields.includes('gst_rate_pct'))
+      assert(plan.requiredFields.includes('stamp_duty_pct'))
     })
   })
 
@@ -37,23 +38,23 @@ describe('Query Planner', () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'Is this a good investment?',
       })
-      expect(plan.intent).toBe('investment')
-      expect(plan.confidence).toBeGreaterThan(0.85)
+      assert.equal(plan.intent, 'investment')
+      assert(plan.confidence > 0.85)
     })
 
     it('recognizes appreciation/ROI queries', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'What is the price appreciation for this project?',
       })
-      expect(plan.intent).toBe('investment')
+      assert.equal(plan.intent, 'investment')
     })
 
     it('includes required investment fields', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'Is Godrej a good investment?',
       })
-      expect(plan.requiredFields).toContain('price_min_cr')
-      expect(plan.requiredFields).toContain('price_cagr_pct')
+      assert(plan.requiredFields.includes('price_min_cr'))
+      assert(plan.requiredFields.includes('price_cagr_pct'))
     })
   })
 
@@ -62,22 +63,22 @@ describe('Query Planner', () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'How far is the metro from here?',
       })
-      expect(plan.intent).toBe('location')
-      expect(plan.confidence).toBeGreaterThan(0.85)
+      assert.equal(plan.intent, 'location')
+      assert(plan.confidence > 0.85)
     })
 
     it('recognizes nearby amenities queries', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'What schools are nearby?',
       })
-      expect(plan.intent).toBe('location')
+      assert.equal(plan.intent, 'location')
     })
 
     it('includes connectivity fields', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'What is the connectivity like?',
       })
-      expect(plan.requiredFields).toContain('connectivity_count')
+      assert(plan.requiredFields.includes('connectivity_count'))
     })
   })
 
@@ -86,23 +87,23 @@ describe('Query Planner', () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'When will this be ready?',
       })
-      expect(plan.intent).toBe('timeline')
-      expect(plan.confidence).toBeGreaterThan(0.85)
+      assert.equal(plan.intent, 'timeline')
+      assert(plan.confidence > 0.85)
     })
 
     it('recognizes completion queries', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'What is the possession date?',
       })
-      expect(plan.intent).toBe('timeline')
+      assert.equal(plan.intent, 'timeline')
     })
 
     it('includes timeline fields', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'When will possession happen?',
       })
-      expect(plan.requiredFields).toContain('possession_date')
-      expect(plan.requiredFields).toContain('project_status')
+      assert(plan.requiredFields.includes('possession_date'))
+      assert(plan.requiredFields.includes('project_status'))
     })
   })
 
@@ -111,23 +112,23 @@ describe('Query Planner', () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'Tell me about the builder',
       })
-      expect(plan.intent).toBe('builder')
-      expect(plan.confidence).toBeGreaterThan(0.8)
+      assert.equal(plan.intent, 'builder')
+      assert(plan.confidence > 0.8)
     })
 
     it('recognizes track record queries', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'What is their delivery track record?',
       })
-      expect(plan.intent).toBe('builder')
+      assert.equal(plan.intent, 'builder')
     })
 
     it('includes builder fields', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'Who is building this?',
       })
-      expect(plan.requiredFields).toContain('builder_name')
-      expect(plan.requiredFields).toContain('builder_delivery_score')
+      assert(plan.requiredFields.includes('builder_name'))
+      assert(plan.requiredFields.includes('builder_delivery_score'))
     })
   })
 
@@ -136,14 +137,14 @@ describe('Query Planner', () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'Tell me about ATS Pristine',
       })
-      expect(plan.intent).toBe('details')
+      assert.equal(plan.intent, 'details')
     })
 
     it('includes overview fields', async () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'What are the amenities?',
       })
-      expect(plan.requiredFields).length.toBeGreaterThan(0)
+      assert(plan.requiredFields.length > 0)
     })
   })
 
@@ -152,28 +153,27 @@ describe('Query Planner', () => {
       const plan = await planProjectDetailQuery({
         userMessage: 'How much EMI for ATS Pristine?',
       })
-      // Will be actionable if projectIds extracted and confidence high
       if (plan.projectIds.length > 0 && plan.confidence > 0.7) {
-        expect(isActionable(plan)).toBe(true)
+        assert.equal(isActionable(plan), true)
       }
     })
 
     it('flags plan as not actionable when missing project', async () => {
       const plan = await planProjectDetailQuery({
-        userMessage: 'How much EMI?', // No project name
+        userMessage: 'How much EMI?',
       })
       if (plan.projectIds.length === 0) {
-        expect(isActionable(plan)).toBe(false)
+        assert.equal(isActionable(plan), false)
       }
     })
 
     it('generates clarification when needed', async () => {
       const plan = await planProjectDetailQuery({
-        userMessage: 'How much EMI?', // Missing project
+        userMessage: 'How much EMI?',
       })
       if (!isActionable(plan)) {
         const msg = getClarificationMessage(plan)
-        expect(msg).toContain('project') // Should ask for project name
+        assert(msg.includes('project'))
       }
     })
   })
@@ -186,9 +186,8 @@ describe('Query Planner', () => {
           activeProjects: ['ats-pristine', 'godrej-air'],
         },
       })
-      // Should extract from context
       if (plan.projectIds.length > 0) {
-        expect(plan.projectIds[0]).toBeDefined()
+        assert.ok(plan.projectIds[0])
       }
     })
   })
@@ -199,8 +198,8 @@ describe('Query Planner', () => {
         userMessage: 'How much EMI?',
       })
       if (plan.intent === 'payment') {
-        expect(plan.tools).toContain('calculator')
-        expect(plan.tools).toContain('db')
+        assert(plan.tools.includes('calculator'))
+        assert(plan.tools.includes('db'))
       }
     })
 
@@ -209,8 +208,8 @@ describe('Query Planner', () => {
         userMessage: 'Is this a good investment?',
       })
       if (plan.intent === 'investment') {
-        expect(plan.tools).toContain('analyzer')
-        expect(plan.tools).toContain('db')
+        assert(plan.tools.includes('analyzer'))
+        assert(plan.tools.includes('db'))
       }
     })
 
@@ -219,8 +218,8 @@ describe('Query Planner', () => {
         userMessage: 'How far is metro?',
       })
       if (plan.intent === 'location') {
-        expect(plan.tools).toContain('maps')
-        expect(plan.tools).toContain('db')
+        assert(plan.tools.includes('maps'))
+        assert(plan.tools.includes('db'))
       }
     })
   })

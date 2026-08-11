@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { fetchProjectData, calculateConfidence } from '../dataFetcher'
 
 describe('Data Fetcher', () => {
@@ -7,7 +8,7 @@ describe('Data Fetcher', () => {
     const verified = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
 
     const confidence = calculateConfidence('payment_plans', { verified_at: verified })
-    expect(confidence).toBe(95)
+    assert.equal(confidence, 95)
   })
 
   it('should apply freshness penalty (-5% per week)', () => {
@@ -15,7 +16,7 @@ describe('Data Fetcher', () => {
     const verified = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
 
     const confidence = calculateConfidence('payment_plans', { verified_at: verified })
-    expect(confidence).toBe(85)
+    assert.equal(confidence, 85)
   })
 
   it('should apply legal risk penalty (-20%)', () => {
@@ -23,6 +24,6 @@ describe('Data Fetcher', () => {
     const verified = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
 
     const confidence = calculateConfidence('payment_plans', { verified_at: verified }, true, 0)
-    expect(confidence).toBe(75)
+    assert.equal(confidence, 75)
   })
 })

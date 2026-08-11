@@ -1,5 +1,6 @@
 // backend/src/lib/chat/summaryCompression.test.ts
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { maybeCompressTopical } from './summaryCompression'
 
 describe('summaryCompression', () => {
@@ -9,8 +10,8 @@ describe('summaryCompression', () => {
       { role: 'assistant' as const, content: 'Got it' },
     ]
     const result = await maybeCompressTopical(messages)
-    expect(result.messages).toEqual(messages)
-    expect(result.newSummaries).toBeNull()
+    assert.deepEqual(result.messages, messages)
+    assert.equal(result.newSummaries, null)
   })
 
   it('compresses messages above threshold', async () => {
@@ -19,9 +20,8 @@ describe('summaryCompression', () => {
       content: `Message ${i}: Budget 1-2 crore, want Sector 62, need possession in 6 months`,
     }))
     const result = await maybeCompressTopical(messages)
-    // Should keep only recent messages
-    expect(result.messages.length).toBeLessThan(messages.length)
-    expect(result.messages.length).toBeLessThanOrEqual(8) // KEEP_RECENT = 8
+    assert(result.messages.length < messages.length)
+    assert(result.messages.length <= 8)
   })
 
   it('returns topic summaries structure', async () => {
@@ -31,9 +31,9 @@ describe('summaryCompression', () => {
     }))
     const result = await maybeCompressTopical(messages)
     if (result.newSummaries) {
-      expect(result.newSummaries).toHaveProperty('location')
-      expect(result.newSummaries).toHaveProperty('financial')
-      expect(result.newSummaries).toHaveProperty('timeline')
+      assert.ok('location' in result.newSummaries)
+      assert.ok('financial' in result.newSummaries)
+      assert.ok('timeline' in result.newSummaries)
     }
   })
 })

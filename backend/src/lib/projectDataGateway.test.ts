@@ -2,7 +2,8 @@
  * Project Data Gateway Tests — Verify confidence scoring and data validation
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { computeResponseConfidence } from './projectDataGateway'
 import type { FactValidation } from './projectDataGateway'
 
@@ -26,7 +27,7 @@ describe('Project Data Gateway', () => {
         },
       }
       const score = computeResponseConfidence(facts)
-      expect(score).toBeGreaterThan(0.95)
+      assert(score > 0.95)
     })
 
     it('penalizes estimated sources', () => {
@@ -40,7 +41,7 @@ describe('Project Data Gateway', () => {
         },
       }
       const score = computeResponseConfidence(facts)
-      expect(score).toBeLessThan(0.75)
+      assert(score < 0.75)
     })
 
     it('rewards validated facts', () => {
@@ -66,7 +67,7 @@ describe('Project Data Gateway', () => {
       }
       const unvalidatedScore = computeResponseConfidence(unvalidated)
 
-      expect(validated).toBeGreaterThan(unvalidatedScore)
+      assert(validated >= unvalidatedScore)
     })
 
     it('handles mixed sources correctly', () => {
@@ -101,12 +102,11 @@ describe('Project Data Gateway', () => {
         },
       }
       const score = computeResponseConfidence(facts)
-      expect(score).toBeGreaterThan(0.6)
-      expect(score).toBeLessThan(0.95)
+      assert(score > 0.6)
+      assert(score < 0.95)
     })
 
     it('uses geometric mean for fair averaging', () => {
-      // Two equally important facts, one high confidence, one low
       const facts: Record<string, FactValidation> = {
         price: {
           fact: 'high_confidence_fact',
@@ -124,9 +124,8 @@ describe('Project Data Gateway', () => {
         },
       }
       const score = computeResponseConfidence(facts)
-      // Geometric mean of 0.98 and 0.65 ≈ 0.802
-      expect(score).toBeGreaterThan(0.7)
-      expect(score).toBeLessThan(0.95)
+      assert(score > 0.7)
+      assert(score < 0.95)
     })
   })
 
@@ -139,8 +138,8 @@ describe('Project Data Gateway', () => {
         confidence: 0.98,
         validated: true,
       }
-      expect(fact.validated).toBe(true)
-      expect(fact.confidence).toBeGreaterThan(0.9)
+      assert.equal(fact.validated, true)
+      assert(fact.confidence > 0.9)
     })
 
     it('includes source attribution', () => {
@@ -151,8 +150,8 @@ describe('Project Data Gateway', () => {
         confidence: 0.92,
         validated: true,
       }
-      expect(fact.source).toBeDefined()
-      expect(['database', 'google_maps', 'calculator', 'estimated', 'derived']).toContain(fact.source)
+      assert.ok(fact.source)
+      assert(['database', 'google_maps', 'calculator', 'estimated', 'derived'].includes(fact.source))
     })
 
     it('tracks data age when available', () => {
@@ -162,11 +161,11 @@ describe('Project Data Gateway', () => {
         source: 'database',
         confidence: 0.98,
         validated: true,
-        dataAge: 7, // 7 days old
+        dataAge: 7,
         lastVerifiedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
       }
-      expect(fact.dataAge).toBeDefined()
-      expect(fact.lastVerifiedAt).toBeDefined()
+      assert.ok(fact.dataAge != null)
+      assert.ok(fact.lastVerifiedAt)
     })
 
     it('includes reason when confidence < 1', () => {
@@ -178,8 +177,8 @@ describe('Project Data Gateway', () => {
         validated: true,
         reason: 'Based on comparable properties, not verified with builder',
       }
-      expect(fact.confidence).toBeLessThan(1)
-      expect(fact.reason).toBeDefined()
+      assert(fact.confidence < 1)
+      assert.ok(fact.reason)
     })
   })
 
@@ -202,7 +201,7 @@ describe('Project Data Gateway', () => {
         },
       }
       const score = computeResponseConfidence(facts)
-      expect(score).toBeGreaterThanOrEqual(0.65)
+      assert(score >= 0.65)
     })
 
     it('returns < 0.65 for insufficient data', () => {
@@ -216,24 +215,20 @@ describe('Project Data Gateway', () => {
         },
       }
       const score = computeResponseConfidence(facts)
-      expect(score).toBeLessThan(0.65)
+      assert(score < 0.65)
     })
   })
 
   describe('Completeness Tracking', () => {
     it('identifies critical fields', () => {
-      // Gateway should track critical vs optional fields
-      // Critical: always needed for high confidence
-      // Optional: nice-to-have, lowers confidence if missing but acceptable
       const criticalFields = ['price_min_cr', 'project_status', 'possession_date']
-      expect(criticalFields.length).toBeGreaterThan(0)
+      assert(criticalFields.length > 0)
     })
 
     it('computes coverage percentage', () => {
-      // If 8/10 fields present: coverage = 0.8
       const coverage = 8 / 10
-      expect(coverage).toBeGreaterThanOrEqual(0)
-      expect(coverage).toBeLessThanOrEqual(1)
+      assert(coverage >= 0)
+      assert(coverage <= 1)
     })
   })
 })

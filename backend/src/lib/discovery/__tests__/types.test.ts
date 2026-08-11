@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import type { ConversationMemory } from '../types'
 
 describe('ConversationMemory types', () => {
@@ -13,6 +14,6 @@ describe('ConversationMemory types', () => {
       stage: 'CLARIFYING',
       confident_facts: {}
     }
-    expect(memory.user_budget_min_cr).toBe(50)
+    assert.equal(memory.user_budget_min_cr, 50)
   })
 })

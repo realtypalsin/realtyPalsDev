@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { detectDatabaseIntent } from '../intentTypeDetector'
 
 describe('Intent Type Detector', () => {
@@ -10,7 +11,7 @@ describe('Intent Type Detector', () => {
       'What are the installment options?'
     ]
     tests.forEach(msg => {
-      expect(detectDatabaseIntent(msg)).toBe('PAYMENT_PLANS')
+      assert.equal(detectDatabaseIntent(msg), 'PAYMENT_PLANS')
     })
   })
 
@@ -23,7 +24,7 @@ describe('Intent Type Detector', () => {
       'Calculate the total expense'
     ]
     tests.forEach(msg => {
-      expect(detectDatabaseIntent(msg)).toBe('COSTS')
+      assert.equal(detectDatabaseIntent(msg), 'COSTS')
     })
   })
 
@@ -36,7 +37,7 @@ describe('Intent Type Detector', () => {
       'RERA information about this builder'
     ]
     tests.forEach(msg => {
-      expect(detectDatabaseIntent(msg)).toBe('BUILDER_HISTORY')
+      assert.equal(detectDatabaseIntent(msg), 'BUILDER_HISTORY')
     })
   })
 
@@ -49,7 +50,7 @@ describe('Intent Type Detector', () => {
       'Area connectivity and infrastructure'
     ]
     tests.forEach(msg => {
-      expect(detectDatabaseIntent(msg)).toBe('LOCATION')
+      assert.equal(detectDatabaseIntent(msg), 'LOCATION')
     })
   })
 
@@ -62,7 +63,7 @@ describe('Intent Type Detector', () => {
       'When is it expected to be ready?'
     ]
     tests.forEach(msg => {
-      expect(detectDatabaseIntent(msg)).toBe('POSSESSION_TIMELINE')
+      assert.equal(detectDatabaseIntent(msg), 'POSSESSION_TIMELINE')
     })
   })
 
@@ -73,7 +74,7 @@ describe('Intent Type Detector', () => {
       'Anything else?'
     ]
     tests.forEach(msg => {
-      expect(detectDatabaseIntent(msg)).toBe('GENERAL')
+      assert.equal(detectDatabaseIntent(msg), 'GENERAL')
     })
   })
 })
