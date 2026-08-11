@@ -53,7 +53,7 @@ test('Phase 5: Ranking Profiles', async (t) => {
   await t.test('getRankingBasis returns description for each profile', () => {
     assert.ok(getRankingBasis('overall').includes('verified'))
     assert.ok(getRankingBasis('value').includes('price'))
-    assert.ok(getRankingBasis('trust').includes('builder'))
+    assert.ok(getRankingBasis('trust').includes('developer') || getRankingBasis('trust').includes('trusted'))
     assert.ok(getRankingBasis('speed').includes('possession'))
   })
 

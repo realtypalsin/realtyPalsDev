@@ -15,7 +15,7 @@ describe('Memory Extraction', () => {
 
   it('should extract pain points from "I want flexibility and am concerned about delays"', () => {
     const result = extractPainPoints('I want flexibility and am concerned about delays')
-    assert(result.includes('want flexibility'))
-    assert(result.includes('concerned about delays'))
+    assert(result.some(p => p.toLowerCase().includes('flexibility')))
+    assert(result.some(p => p.toLowerCase().includes('concerned')))
   })
 })

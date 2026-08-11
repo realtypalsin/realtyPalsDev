@@ -131,6 +131,36 @@ interface PatternMatch {
 function recognizePattern(message: string): PatternMatch {
   const msg = message.toLowerCase().trim()
 
+  // Investment intent keywords (check before payment so 'price appreciation' matches investment)
+  if (
+    /\b(invest|investment|return|returns|yield|appreciation|price\s+appreciation|cagr|roi|bullish|bearish|buy|hold|avoid|strong buy)\b/i.test(
+      msg
+    ) ||
+    /worth|good investment|profit|wealth/i.test(msg)
+  ) {
+    return {
+      intent: 'investment',
+      confidence: 0.92,
+      projectIds: [],
+      reason: 'Keywords: investment, returns, appreciation, recommendation',
+    }
+  }
+
+  // Builder intent keywords (check before timeline so 'delivery track record' matches builder)
+  if (
+    /\b(builder|developer|track record|delivery\s+track\s+record|reputation|credibility|rera|complaint)\b/i.test(
+      msg
+    ) ||
+    /who.*build|builder.*track|reliable/i.test(msg)
+  ) {
+    return {
+      intent: 'builder',
+      confidence: 0.91,
+      projectIds: [],
+      reason: 'Keywords: builder, developer, track record, reputation',
+    }
+  }
+
   // Payment intent keywords
   if (
     /\b(payment|payments|payment-plan|payment-plans|plan|plans|emi|loan|cost|price|pricing|price breakdown|charge|fee|stamp duty|gst|parking|ifms|down payment|subvention)\b/i.test(msg) ||
@@ -141,21 +171,6 @@ function recognizePattern(message: string): PatternMatch {
       confidence: 0.96,
       projectIds: [],
       reason: 'Keywords: payment, payment plans, EMI, cost, pricing',
-    }
-  }
-
-  // Investment intent keywords
-  if (
-    /\b(invest|return|yield|appreciation|cagr|roi|bullish|bearish|buy|hold|avoid|strong buy)\b/i.test(
-      msg
-    ) ||
-    /worth|good investment|profit|wealth/i.test(msg)
-  ) {
-    return {
-      intent: 'investment',
-      confidence: 0.92,
-      projectIds: [],
-      reason: 'Keywords: investment, returns, appreciation, recommendation',
     }
   }
 
@@ -209,6 +224,16 @@ function recognizePattern(message: string): PatternMatch {
       confidence: 0.96,
       projectIds: [],
       reason: 'Keywords: compare, versus, difference',
+    }
+  }
+
+  // Details / Overview intent keywords
+  if (/\b(tell me about|overview|details|specs|specifications|about)\b/i.test(msg)) {
+    return {
+      intent: 'details',
+      confidence: 0.88,
+      projectIds: [],
+      reason: 'Keywords: tell me about, overview, details',
     }
   }
 

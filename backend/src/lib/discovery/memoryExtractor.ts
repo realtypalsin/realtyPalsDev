@@ -9,9 +9,11 @@ export function extractBudget(content: string): { min: number; max: number } | n
 }
 
 export function extractTimeline(content: string): string | null {
-  const match = content.match(/(\d+[-–]?\d*)\s*(year|month|horizon)/i)
+  const match = content.match(/(\d+)\s*[-–]?\s*(year|month)s?/i)
   if (!match) return null
-  return `${match[1]} ${match[2]}`.toLowerCase()
+  const num = match[1]
+  const unit = match[2].toLowerCase()
+  return `${num} ${unit}${parseInt(num, 10) > 1 ? 's' : ''}`
 }
 
 export function extractPainPoints(content: string): string[] {
