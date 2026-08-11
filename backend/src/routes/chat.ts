@@ -14,6 +14,7 @@ import { classifyQuery } from '../lib/discovery/queryClassifier'
 import { resolveAnchor } from '../lib/discovery/anchorResolution'
 import { computeConfidence, buildClarificationOptions } from '../lib/discovery/confidence'
 import { findProjectsMentioned, buildProseChips } from '../lib/discovery/proseEntities'
+import { computeConversationState } from '../lib/discovery/conversationEngine'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
@@ -742,7 +743,7 @@ router.post('/', async (req: Request, res: Response) => {
     send('intent', { intent, intentState })
 
     // Emit ui_state FIRST TIME (pre-search, sets stage and thinking loader)
-    const { computeConversationState } = await import('../lib/discovery/conversationEngine')
+    // computeConversationState imported at top of file
     const chipInventory = await getChipInventory(DEFAULT_CITY)
     
     if (!isNewSession) {
@@ -1077,7 +1078,7 @@ Format each plan like this exact structure:
       
       // Re-emit ui_state to populate chips AFTER the component response
       // For project detail we can just generate standard chips based on the project.
-      const { computeConversationState } = await import('../lib/discovery/conversationEngine')
+      // computeConversationState imported at top of file
       const postDetailUiState = await computeConversationState(
         intent,
         'SHORTLISTED', // because we found the project and answered
@@ -2174,8 +2175,7 @@ async function buildRestoreUiState(
   currentSessionId?: string,
   rlKey?: string
 ) {
-  const { computeConversationState } = await import('../lib/discovery/conversationEngine')
-  const { hydrateFromDb } = await import('../lib/discovery/chipDedup')
+  // computeConversationState and hydrateFromDb imported at top of file
   const intent = (lastIntent ?? {}) as Intent
   const projects = (lastProjects as unknown as ScoredProject[]) ?? []
   const chatHistory = messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
