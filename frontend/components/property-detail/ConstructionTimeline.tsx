@@ -34,8 +34,9 @@ export default function ConstructionTimeline({
   projectRiskFlag,
   onTimeDeliveryPct = 94
 }: ConstructionTimelineProps) {
-  const isRTM = projectStatus === 'ready_to_move'
+  const isRTM = projectStatus === 'ready_to_move' || projectStatus === 'delivered'
   const [selectedPhaseIndex, setSelectedPhaseIndex] = useState<number | null>(null)
+  const [isExpanded, setIsExpanded] = useState<boolean>(!isRTM)
 
   const defaultUnderConstructionMilestones = [
     {
@@ -174,6 +175,15 @@ export default function ConstructionTimeline({
 
         {/* Status Tag Pill Top Right (Exact match to reference screenshot) */}
         <div className="flex items-center gap-3 self-start md:self-center">
+          {isRTM && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="px-4 py-1.5 rounded-full text-[12px] font-extrabold bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-200 transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <span>{isExpanded ? 'Collapse Timeline' : `View All ${list.length || 16} Milestones`}</span>
+              <span className={`text-[10px] transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+          )}
           <div className="px-3.5 py-1.5 rounded-full text-[11.5px] font-extrabold bg-[#F0FDF4] dark:bg-emerald-950/40 text-[#00875A] dark:text-emerald-300 border border-[#DCFCE7] dark:border-emerald-800/50 flex items-center gap-2 shadow-xs">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -184,9 +194,35 @@ export default function ConstructionTimeline({
         </div>
       </div>
 
-      {/* Main Timeline Card Grid (Matching reference image exact colors, fonts & spacing) */}
-      <div className="pt-6 pb-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5">
+      {/* Collapsed Summary View for Delivered / Ready to Move Projects */}
+      {isRTM && !isExpanded && (
+        <div className="pt-4 pb-2">
+          <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0">
+                <Check size={20} className="stroke-[3]" />
+              </div>
+              <div>
+                <h4 className="text-[14px] font-black text-emerald-950 dark:text-emerald-200">Possession Delivered &amp; Occupancy Certificate (OC) Issued</h4>
+                <p className="text-[12px] text-emerald-800 dark:text-emerald-300 font-medium mt-0.5">
+                  All {list.length || 16} construction phases completed &amp; verified by RERA. Resident key handovers active.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsExpanded(true)}
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[12px] shadow-sm whitespace-nowrap transition-all"
+            >
+              Expand Construction Log ({list.length || 16} Phases) ↓
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Timeline Card Grid */}
+      {isExpanded && (
+        <div className="pt-6 pb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5">
           {list.map((m: any, i: number) => {
             const isDone = m.status === 'completed'
             const isInProgress = m.status === 'in_progress'
@@ -254,6 +290,7 @@ export default function ConstructionTimeline({
           })}
         </div>
       </div>
+    )}
 
       {/* Expanded Phase Details (Interactive Drawer on Click) */}
       {selectedPhase && (

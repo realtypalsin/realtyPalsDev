@@ -696,8 +696,8 @@ export default function ResidencesTab({
 
               {(() => {
                 const superSqft = area || 1450
-                const cSqft = carpetArea || Math.round(superSqft * 0.68)
-                const bSqft = (balconyArea || Math.round(superSqft * 0.10)) + 36
+                const cSqft = carpetArea || Math.round(superSqft * 0.78)
+                const bSqft = (balconyArea || Math.round(superSqft * 0.12)) + 20
                 const shaftSqft = Math.max(0, superSqft - cSqft - bSqft)
 
                 const cPct = Math.round((cSqft / superSqft) * 100)

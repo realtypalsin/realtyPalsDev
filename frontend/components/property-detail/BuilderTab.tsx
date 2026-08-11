@@ -214,9 +214,10 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
         </div>
 
         {/* Featured Projects (6 columns) */}
-        <div className="lg:col-span-6 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Featured Projects</h2>
+        {featuredProjectsList.length > 0 && (
+          <div className="lg:col-span-6 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Featured Projects</h2>
             {showViewAllProjects && (
               <Link href={`/builder/${builderSlug}`} className="text-[12px] font-extrabold text-blue-600 hover:underline">
                 View All Projects
@@ -245,6 +246,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
             ))}
           </div>
         </div>
+      )}
 
       </div>
 
