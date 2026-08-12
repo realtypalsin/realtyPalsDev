@@ -73,18 +73,20 @@ export async function streamWithGemini(
     let functionCall: { name: string; args: Record<string, unknown> } | null = null
 
     try {
+      const genConfig: any = {
+        systemInstruction: system,
+        maxOutputTokens: config.maxTokens,
+      }
+
+      // Only attach tools if explicitly requested and no functionCall cycles have occurred yet
+      if (cycle === 0 && process.env.ENABLE_GEMINI_TOOLS === 'true') {
+        genConfig.tools = toGeminiTools()
+      }
+
       const stream = await client.models.generateContentStream({
         model: MODELS.GEMINI_MAIN,
         contents,
-        config: {
-          // Cast: the SDK's Tool type wants its `Type` enum for schema `type` fields,
-          // but Gemini's own REST API (and its own docs examples) accept plain
-          // lowercase JSON-schema strings ("object", "string", ...) at runtime —
-          // the same neutral schema shape OpenAI's tool-calling API accepts.
-          tools: toGeminiTools() as any,
-          systemInstruction: system,
-          maxOutputTokens: config.maxTokens,
-        },
+        config: genConfig,
       })
 
       for await (const chunk of stream) {

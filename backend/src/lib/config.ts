@@ -4,8 +4,8 @@
 export const MODELS = {
   MAIN: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
-  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-1.5-flash',
-  GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-1.5-flash',
+  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-3.5-flash',
+  GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-flash-latest',
   OPENAI_AZURE: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   OPENAI_FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
   GROQ_FAST: process.env.GROQ_FAST_MODEL || 'llama-3.1-8b-instant',
@@ -48,7 +48,12 @@ export interface FallbackKeyConfig {
 
 export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 1: MISTRAL & GROQ (Verified Active High-Quality Providers)
+  // TIER 1: GOOGLE GEMINI 3.5 FLASH (Primary Premium Paid Provider)
+  // ═══════════════════════════════════════════════════════════════════════════
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: true, label: 'Google Gemini 3.5 Flash (Primary)' },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TIER 2: MISTRAL & GROQ (High-Speed Backup Chain)
   // ═══════════════════════════════════════════════════════════════════════════
   { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small (Verified)' },
   { provider: 'groq', envKey: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 1)' },
@@ -56,16 +61,10 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   { provider: 'groq', envKey: 'GROQ_API_KEY2', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 3)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 2: OPENAI / GITHUB MODELS (Backup Provider)
+  // TIER 3: OPENAI & CEREBRAS (Failover Resilience Layer)
   // ═══════════════════════════════════════════════════════════════════════════
   { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 1)' },
   { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 2)' },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 3: CEREBRAS (Key 1 & Key 2) & GEMINI
-  // ═══════════════════════════════════════════════════════════════════════════
   { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'llama3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (Key 1)' },
   { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY1', model: 'llama3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (Key 2)' },
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: true, label: 'Google Gemini' },
 ]
-
