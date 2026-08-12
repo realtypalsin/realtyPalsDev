@@ -50,7 +50,7 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 1: GOOGLE GEMINI 3.5 FLASH (Primary Premium Paid Provider)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: true, label: 'Google Gemini 3.5 Flash (Primary)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: false, label: 'Google Gemini 3.5 Flash (Primary)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: MISTRAL & GROQ (High-Speed Backup Chain)

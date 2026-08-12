@@ -23,13 +23,11 @@ export function beautifyResponse(text: string): string {
     ''
   )
 
-  // ── Phase 1: Normalize whitespace ──
-  // Remove excess line breaks and leading/trailing whitespace
+  // ── Phase 1: Normalize whitespace without stripping Markdown paragraphs ──
   beautified = beautified
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .join('\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')  // Max 2 consecutive line breaks
+    .trim()
 
   // ── Phase 2: Fix common spacing issues ──
   beautified = beautified
@@ -67,6 +65,9 @@ export function beautifyResponse(text: string): string {
   // "1 crore" → "₹1 Cr" (standard real estate format)
   beautified = beautified.replace(/(\d+(?:\.\d+)?)\s*crore/gi, '₹$1 Cr')
   beautified = beautified.replace(/(\d+(?:\.\d+)?)\s*cr(?!ore)/gi, '₹$1 Cr')
+
+  // Clean up duplicate currency symbols (e.g. "₹₹1.5 Cr" → "₹1.5 Cr")
+  beautified = beautified.replace(/₹{2,}/g, '₹')
 
   // "1000 sqft" → "1,000 sq ft"
   beautified = beautified.replace(/(\d{4,})\s*sq\s*(?:ft|feet)/gi, (match, num) => {

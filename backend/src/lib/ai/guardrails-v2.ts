@@ -28,6 +28,12 @@ function extractFactsFromPrompt(systemPrompt: string): FactMap {
     builders: new Set(),
   }
 
+  // Extract any explicitly mentioned sectors from prompt text (e.g. Sector 10, Sector 78)
+  const textSectorMatches = systemPrompt.matchAll(/(?:sector|area)\s+(\d+[a-z]*)/gi)
+  for (const m of textSectorMatches) {
+    facts.sectors.add(`Sector ${m[1]}`)
+  }
+
   const jsonMatch = systemPrompt.match(/Verified facts:\s*({[\s\S]*?})\s*(?=\n\n|$)/)
   if (!jsonMatch) return facts
 
@@ -36,8 +42,10 @@ function extractFactsFromPrompt(systemPrompt: string): FactMap {
     if (Array.isArray(json.projects)) {
       json.projects.forEach((p: any) => {
         if (p.name) facts.projectNames.add(p.name)
-        if (p.price_min_cr && p.price_max_cr) {
-          facts.projectPrices.set(p.name, { min: p.price_min_cr, max: p.price_max_cr })
+        if (p.price_min_cr) {
+          const min = p.price_min_cr
+          const max = p.price_max_cr || min * 1.5
+          facts.projectPrices.set(p.name, { min, max })
         }
         if (p.sector) facts.sectors.add(p.sector)
         if (p.possession_date) facts.possessionDates.add(p.possession_date)
@@ -46,7 +54,7 @@ function extractFactsFromPrompt(systemPrompt: string): FactMap {
       })
     }
   } catch {
-    // graceful fallback: if JSON parse fails, continue without facts
+    // graceful fallback: if JSON parse fails, continue with text facts
   }
   return facts
 }
@@ -96,6 +104,10 @@ export function validateAgainstFactsSync(
 
   for (const priceStr of pricesInResponse) {
     const price = parseFloat(priceStr)
+    // Ignore budget ceiling figures or context phrases like "under ₹1.5 Cr", "budget of 1.5 Cr", "up to 1.5 Cr"
+    const isBudgetMention = new RegExp(`(?:budget|under|below|ceiling|up to|max|approx)\\s*(?:of\\s*)?₹?\\s*${priceStr}`, 'i').test(response)
+    if (isBudgetMention) continue
+
     // Check if this price appears in ANY known range
     const isKnown = Array.from(facts.projectPrices.values()).some(
       (r) => price >= r.min && price <= r.max
@@ -132,15 +144,19 @@ export function validateAgainstFactsSync(
     }
   }
 
-  // RERA number validation
-  const reraPattern = /UPRERAPRJ\d+/gi
+  // RERA number validation (allow optional slash date suffix like UPRERAPRJ916631/02/2024)
+  const reraPattern = /UPRERAPRJ[\w\/]+/gi
   const rerasInResponse = new Set<string>()
   while ((match = reraPattern.exec(response)) !== null) {
     rerasInResponse.add(match[0].toUpperCase())
   }
 
   for (const rera of rerasInResponse) {
-    if (!facts.reraNumbers.has(rera)) {
+    // Check if rera matches fully or as prefix of any verified RERA number
+    const isKnownRera = Array.from(facts.reraNumbers).some(
+      (verified) => verified.toUpperCase().startsWith(rera) || rera.startsWith(verified.toUpperCase())
+    )
+    if (!isKnownRera) {
       violations.push({
         type: 'upreraprj_hallucination',
         detail: `${rera} not in verified facts`,
