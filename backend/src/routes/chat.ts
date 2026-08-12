@@ -1186,33 +1186,131 @@ router.post('/', async (req: Request, res: Response) => {
 
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
-    // ─── DATABASE-BACKED RESPONSE (Phase 1 Integration) ────────────────────────
-    // Try enriching response with database data before running normal pipelines
-    let databaseResponse = null
-    const projectId = intent.projectNames?.[0] || (cachedProjectsFromSession?.[0]?.id)
-    if (projectId && action.type === 'TEXT_MESSAGE') {
+    // ─── GROUND TRUTH DATABASE PIPELINE (Sourced 100% from PostgreSQL) ───────────
+    const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(message)
+    const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
+
+    if ((activeProjectName || isSummaryRequest) && action.type === 'TEXT_MESSAGE') {
       try {
-        const chatHistoryForEnrichment = chatHistoryRaw.map(m => ({ role: m.role, content: m.content }))
-        databaseResponse = await enrichResponseWithDatabaseData(message, intent, chatHistoryForEnrichment, projectId, intentState)
-        if (databaseResponse?.message) {
-          console.log('[CHAT:DATABASE_ENRICHMENT] Success', { projectId, intentType: detectDatabaseIntent(message) })
-          send('token', { token: databaseResponse.message })
-          if (databaseResponse.chips && Array.isArray(databaseResponse.chips)) {
-            send('ui_state', {
-              stage: 'RESEARCH',
-              thinking: 'Here are the details:',
-              chips: databaseResponse.chips,
-              missingFields: [],
-              confidence: 'HIGH'
-            })
+        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest })
+
+        // 1. Gather all projects discussed in the chat session for interest weightage
+        const allDbProjects = await prisma.project.findMany({
+          include: {
+            builder: true,
+            unit_types: true,
+            payment_plans: true,
+            cost_sheet: true,
+            amenities: true,
           }
-          send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'database', chatResponse: databaseResponse })
+        })
+
+        // Track frequency of project mentions across current chat session
+        const sessionHistoryMessages = chatHistoryRaw.map(m => m.content).concat([message])
+        const projectMentionCounts = new Map<string, { count: number; project: typeof allDbProjects[0] }>()
+
+        allDbProjects.forEach(proj => {
+          const lowerName = proj.name.toLowerCase()
+          let count = 0
+          sessionHistoryMessages.forEach(msgText => {
+            if (msgText.toLowerCase().includes(lowerName)) {
+              count++
+            }
+          })
+          if (count > 0) {
+            projectMentionCounts.set(proj.id, { count, project: proj })
+          }
+        })
+
+        let targetProjects: typeof allDbProjects = []
+        if (isSummaryRequest) {
+          targetProjects = Array.from(projectMentionCounts.values()).map(v => v.project)
+          if (targetProjects.length === 0 && allDbProjects.length > 0) {
+            targetProjects = allDbProjects.slice(0, 3)
+          }
+        } else if (activeProjectName) {
+          const matchedProj = allDbProjects.find(p => p.name.toLowerCase().includes(activeProjectName.toLowerCase()) || activeProjectName.toLowerCase().includes(p.name.toLowerCase())) || allDbProjects.find(p => p.id === activeProjectName)
+          if (matchedProj) {
+            targetProjects = [matchedProj]
+          }
+        }
+
+        if (targetProjects.length > 0) {
+          // CRITICAL REQUIREMENT: ALWAYS EMIT PROPERTY CARDS FOR THE UI
+          send('properties', {
+            exactResults: targetProjects,
+            nearbyResults: [],
+            expansion: null,
+            renderTarget: 'cards_and_text'
+          })
+
+          // Calculate total mentions across session
+          const totalMentions = Array.from(projectMentionCounts.values()).reduce((sum, v) => sum + v.count, 0) || 1
+
+          const dbFactsJson = JSON.stringify({
+            projects: targetProjects.map(p => {
+              const mentions = projectMentionCounts.get(p.id)?.count || 1
+              const weightagePct = Math.round((mentions / totalMentions) * 100)
+              return {
+                name: p.name,
+                sector: p.sector,
+                city: p.city,
+                rera_number: p.rera_number,
+                price_min_cr: p.price_min_cr,
+                price_range_label: p.price_range_label,
+                status: p.status,
+                launch_date: p.launch_date ? p.launch_date.toISOString().slice(0, 10) : undefined,
+                possession_date: p.possession_date ? p.possession_date.toISOString().slice(0, 10) : undefined,
+                builder: p.builder ? { name: p.builder.name } : undefined,
+                description: p.description,
+                payment_plans: p.payment_plans.map(pp => pp.plan_name),
+                unit_types: p.unit_types.map(ut => `${ut.bhk} BHK (${ut.super_area_sqft} sq ft)`),
+                session_inquiry_count: mentions,
+                session_interest_weightage_pct: weightagePct,
+              }
+            })
+          })
+
+          const systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
+Verified facts: ${dbFactsJson}
+
+Strict Rules:
+1. Use ONLY the verified database facts provided above. Never invent RERA numbers, launch dates, possession dates, or prices outside what is stored in PostgreSQL DB.
+2. Present exact dates (e.g. 2024-02-01 launch, 2028-12-12 possession) and exact RERA IDs (e.g. UPRERAPRJ916631/02/2024).
+3. If user requests a summary, render an interest weightage breakdown table with inquiry counts and percentage weights.`
+
+          const systemMsgHistory = [{ role: 'user' as const, content: message }]
+
+          const fallbackResult = await executeWithFallbackChain({
+            systemPrompt,
+            messages: systemMsgHistory,
+            send,
+            onToolCall: async () => ({}),
+            groqFallbackSuffix: '',
+            userMessage: message,
+          })
+
+          const responseChips = [
+            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '📅 Schedule Site Visit', icon: '📅', analyticsId: 'chip_visit', priority: 1, payload: { text: 'Schedule a site visit' } },
+            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '🧮 Calculate Monthly EMI', icon: '🧮', analyticsId: 'chip_emi', priority: 2, payload: { text: 'Calculate EMI' } },
+            { id: `chip_plans_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '📊 View Payment Plans', icon: '📊', analyticsId: 'chip_plans', priority: 3, payload: { text: 'Show payment plans' } }
+          ]
+
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Verified database details:',
+            chips: responseChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+
+          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'ground_truth_database' })
           res.end()
           return
         }
       } catch (err) {
-        console.error('[CHAT:DATABASE_ENRICHMENT] Failed:', err)
-        // Fall through to normal pipeline
+        console.error('[CHAT:GROUND_TRUTH_DB_ERROR]', err)
+        // Fall through
       }
     }
 
