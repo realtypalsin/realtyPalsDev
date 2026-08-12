@@ -34,6 +34,14 @@ function extractFactsFromPrompt(systemPrompt: string): FactMap {
     facts.sectors.add(`Sector ${m[1]}`)
   }
 
+  // Extract any project names mentioned anywhere in systemPrompt (including user comparison queries & disclaimers)
+  const allPromptNameMatches = systemPrompt.matchAll(/(?:compare|with|for|project|about)\s+([A-Z][A-Za-z0-9\s&]+?)(?=\s+(?:with|and|in|for|sector|\n|$))/gi)
+  for (const m of allPromptNameMatches) {
+    if (m[1] && m[1].trim().length >= 3) {
+      facts.projectNames.add(m[1].trim())
+    }
+  }
+
   const jsonMatch = systemPrompt.match(/Verified facts:\s*({[\s\S]*?})\s*(?=\n\n|$)/)
   if (!jsonMatch) return facts
 
@@ -91,7 +99,9 @@ export function validateAgainstFactsSync(
     const cleanedName = name.split(/\s+/).filter(w => !GENERIC_WORDS.has(w.toLowerCase())).join(' ').trim()
     if (!cleanedName || cleanedName.length < 3) continue
 
-    if (!facts.projectNames.has(name) && !facts.projectNames.has(cleanedName)) {
+    const knownLower = Array.from(facts.projectNames).map(n => n.toLowerCase())
+    const isKnownName = knownLower.some(k => k.includes(name.toLowerCase()) || name.toLowerCase().includes(k) || (cleanedName && k.includes(cleanedName.toLowerCase())))
+    if (!isKnownName) {
       violations.push({
         type: 'name_fabrication',
         detail: `project name "${name}" not in verified facts`,

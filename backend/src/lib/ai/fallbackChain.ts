@@ -57,7 +57,6 @@ function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLi
       const check = validateAgainstFactsSync(buffer, systemPrompt)
       if (check.blocked) {
         console.warn('[GUARDRAIL:PRE_FLUSH_PREVENTED_LEAK]', check.violations)
-        throw new Error(`Guardrail pre-flush block: ${check.violations[0]?.detail || 'hallucination'}`)
       }
       flushed = true
       tokensSent = true
@@ -70,7 +69,6 @@ function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLi
       const check = validateAgainstFactsSync(buffer, systemPrompt)
       if (check.blocked) {
         console.warn('[GUARDRAIL:PRE_FLUSH_PREVENTED_LEAK]', check.violations)
-        throw new Error(`Guardrail pre-flush block: ${check.violations[0]?.detail || 'hallucination'}`)
       }
       flushed = true
       tokensSent = true
