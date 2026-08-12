@@ -1234,10 +1234,22 @@ router.post('/', async (req: Request, res: Response) => {
         })
 
         let targetProjects: typeof allDbProjects = []
+        const fuzzyMatchedNotes: string[] = []
+
         if (isCompareRequest) {
           const matchedProjects: typeof allDbProjects = []
           const msgLower = message.toLowerCase()
           
+          // Helper tokenizer to strip generic stop words for smart fuzzy matching
+          const tokenize = (str: string) => {
+            const stopWords = new Set(['the', 'by', 'group', 'project', 'sector', 'noida', 'greater', 'west', 'east', 'south', 'north'])
+            return str.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w))
+          }
+
+          const msgTokens = tokenize(message)
+          const intentTokens = (intent.projectNames || []).flatMap(pn => tokenize(pn))
+          const allUserTokens = Array.from(new Set([...msgTokens, ...intentTokens]))
+
           // Sort allDbProjects by length of name descending so longer specific names ("Ace Hanei") match before shorter generic ones ("Ace")
           const sortedDbProjects = [...allDbProjects].sort((a, b) => b.name.length - a.name.length)
 
@@ -1250,10 +1262,18 @@ router.post('/', async (req: Request, res: Response) => {
               const pnLower = pn.toLowerCase()
               return pName.includes(pnLower) || pnLower.includes(pName)
             })
-            
-            if (fullMatch || inNames) {
+
+            // Token overlap fuzzy match (e.g. user asks "Fusion Brooks", DB has "Fusion The Brook")
+            const pTokens = tokenize(p.name)
+            const overlap = pTokens.filter(pt => allUserTokens.some(ut => pt.includes(ut) || ut.includes(pt)))
+            const isFuzzyMatch = overlap.length >= 2 || (overlap.length >= 1 && (pTokens.length === 1 || overlap.some(t => t.startsWith('fusion') || t.startsWith('hanei') || t.startsWith('nimbus') || t.startsWith('aspire') || t.startsWith('brook'))))
+
+            if (fullMatch || inNames || isFuzzyMatch) {
               if (!matchedProjects.some(mp => mp.id === p.id)) {
                 matchedProjects.push(p)
+                if (!fullMatch && !inNames && isFuzzyMatch) {
+                  fuzzyMatchedNotes.push(`Did you mean **${p.name}**? We matched it based on your query.`)
+                }
               }
             }
           })
@@ -1261,6 +1281,17 @@ router.post('/', async (req: Request, res: Response) => {
           if (matchedProjects.length > 0) {
             // Strictly keep ONLY the matched requested projects (min 2, max 4) — NEVER add random unrequested projects!
             targetProjects = matchedProjects.slice(0, 4)
+
+            // Check if user requested a project that has no verified match in DB
+            const unmatchedNames = (intent.projectNames || []).filter(pn => 
+              pn.length >= 3 && !targetProjects.some(tp => 
+                tp.name.toLowerCase().includes(pn.toLowerCase()) || 
+                pn.toLowerCase().includes(tp.name.toLowerCase())
+              )
+            )
+            if (unmatchedNames.length > 0) {
+              fuzzyMatchedNotes.push(`Note: We currently do not have verified database facts for **${unmatchedNames.join(', ')}**. To maintain 100% data integrity, we have compared the requested projects for which verified database facts are available (${targetProjects.map(p => p.name).join(', ')}). For verified information on ${unmatchedNames.join(', ')}, please contact our advisory sales team.`)
+            }
           }
         } else if (isSummaryRequest) {
           targetProjects = Array.from(projectMentionCounts.values()).map(v => v.project)
@@ -1323,11 +1354,13 @@ router.post('/', async (req: Request, res: Response) => {
             })
           })
 
+          const transparentClarificationText = fuzzyMatchedNotes.length > 0 ? `\nTRANSPARENT MATCH NOTE:\n${fuzzyMatchedNotes.join('\n')}\n` : ''
+
           let systemPrompt = ''
           if (isSummaryRequest) {
             systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
 Verified facts: ${dbFactsJson}
-
+${transparentClarificationText}
 EXECUTIVE SUMMARY INSTRUCTIONS:
 1. Render a clean Markdown summary table of the session with columns: | Project Name | Inquiry Count | Interest Weightage (%) |.
 2. Below the table, provide a concise summary for each discussed project.
@@ -1336,10 +1369,11 @@ EXECUTIVE SUMMARY INSTRUCTIONS:
             const projectHeaders = targetProjects.map(p => p.name).join(' | ')
             systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
 Verified facts: ${dbFactsJson}
-
+${transparentClarificationText}
 MULTI-PROPERTY COMPARISON INSTRUCTIONS:
 1. Render a clean, multi-column Markdown comparison table comparing strictly the ${targetProjects.length} requested projects with header: | Parameter | ${projectHeaders} |.
-2. Compare key high-value buyer parameters across rows in this exact order:
+2. If a project was matched via close name similarity (e.g. user typed "Fusion Brooks" and we matched "Fusion The Brook"), include a brief 1-line transparent note at the top before the table: "Did you mean **Fusion The Brook**? Here is the comparison including verified facts for **Fusion The Brook**:".
+3. Compare key high-value buyer parameters across rows in this exact order:
    - Developer / Builder
    - Location (Sector & City)
    - Status (Under Construction vs Ready to Move)
@@ -1349,8 +1383,8 @@ MULTI-PROPERTY COMPARISON INSTRUCTIONS:
    - Key Payment Plans Offered
    - Launch & Possession Dates
    - RERA Registration Number
-3. Do NOT include unrequested projects. Show ONLY the ${targetProjects.length} requested columns.
-4. Keep table cell values concise and clear. Do NOT output unrequested text paragraphs.`
+4. Do NOT include unrequested projects. Show ONLY the ${targetProjects.length} requested columns.
+5. Keep table cell values concise and clear. Do NOT output unrequested text paragraphs.`
           } else {
             systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
 Verified facts: ${dbFactsJson}
