@@ -51,10 +51,10 @@ function extractFactsFromPrompt(systemPrompt: string): FactMap {
   return facts
 }
 
-export async function validateAgainstFacts(
+export function validateAgainstFactsSync(
   response: string,
   systemPrompt?: string,
-): Promise<GuardrailResult> {
+): GuardrailResult {
   const violations: GuardrailViolation[] = []
 
   if (!systemPrompt) {
@@ -72,8 +72,14 @@ export async function validateAgainstFacts(
     namesInResponse.add(match[1].trim())
   }
 
+  const GENERIC_WORDS = new Set(['offers', 'features', 'provides', 'includes', 'has', 'luxury', 'modern', 'spacious', 'premium', 'residential', 'upcoming', 'completed', 'various', 'several', 'these', 'those'])
+
   for (const name of namesInResponse) {
-    if (!facts.projectNames.has(name)) {
+    // Strip leading generic words (e.g., "offers luxury Apartments" -> "Apartments")
+    const cleanedName = name.split(/\s+/).filter(w => !GENERIC_WORDS.has(w.toLowerCase())).join(' ').trim()
+    if (!cleanedName || cleanedName.length < 3) continue
+
+    if (!facts.projectNames.has(name) && !facts.projectNames.has(cleanedName)) {
       violations.push({
         type: 'name_fabrication',
         detail: `project name "${name}" not in verified facts`,
@@ -103,10 +109,17 @@ export async function validateAgainstFacts(
     }
   }
 
-  // Extract sectors from response
+  // Extract sectors from response (ignore landmark references like "Jaypee Hospital (Sector 128)" or "Sector 51 Metro Station")
   const sectorPattern = /(?:sector|area|locality)\s+(\d+[a-z]*)/gi
   const sectorsInResponse = new Set<string>()
   while ((match = sectorPattern.exec(response)) !== null) {
+    const start = Math.max(0, match.index - 40)
+    const end = Math.min(response.length, match.index + 50)
+    const contextSnippet = response.slice(start, end).toLowerCase()
+
+    if (/(?:metro|station|expressway|highway|interchange|road|bus|hospital|school|college|university|mall|market|plaza|park|hub|institute|campus)/.test(contextSnippet)) {
+      continue
+    }
     sectorsInResponse.add(`Sector ${match[1]}`)
   }
 
@@ -144,4 +157,11 @@ export async function validateAgainstFacts(
     confidence: 0.95,
     violations,
   }
+}
+
+export async function validateAgainstFacts(
+  response: string,
+  systemPrompt?: string,
+): Promise<GuardrailResult> {
+  return validateAgainstFactsSync(response, systemPrompt)
 }

@@ -138,27 +138,8 @@ export async function persistToDb(sessionId: string): Promise<void> {
 export function filterNewChipsWithFloor<T extends { id: string; label?: string }>(
   sessionId: string,
   chips: T[],
-  floor = 3,
+  _floor = 3,
 ): T[] {
   if (!chips || chips.length === 0) return []
-  const filtered = filterNewChips(sessionId, chips)
-  if (filtered.length >= floor) {
-    return filtered
-  }
-
-  // Floor safety: if strict topic/label dedup stripped too many chips,
-  // ensure we still emit at least `floor` (3-4) unique interactive chips for the UI.
-  const seenLabels = new Set<string>(filtered.map(c => (c.label || '').trim().toLowerCase()))
-  const result = [...filtered]
-
-  for (const c of chips) {
-    const cleanLabel = (c.label || '').trim().toLowerCase()
-    if (cleanLabel && !seenLabels.has(cleanLabel)) {
-      result.push(c)
-      seenLabels.add(cleanLabel)
-    }
-    if (result.length >= floor) break
-  }
-
-  return result
+  return filterNewChips(sessionId, chips)
 }

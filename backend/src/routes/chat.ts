@@ -2237,12 +2237,10 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       usedProvider // Pass provider that succeeded for main response
     )
 
-    // Deduplicate chips based on session, preserving chips from preSearchUiState
+    // Deduplicate chips based on session — strictly progressive without resurrecting previously emitted chips
     let postChips = postSearchUiState.chips
     if (postSearchUiState.stage !== 'CLARIFYING') {
-      const filtered = filterNewChipsWithFloor(currentSessionId, postSearchUiState.chips, 2)
-      const preChipIds = new Set(preSearchUiState.chips.map(c => c.id))
-      postChips = postSearchUiState.chips.filter(c => preChipIds.has(c.id) || filtered.some(f => f.id === c.id))
+      postChips = filterNewChipsWithFloor(currentSessionId, postSearchUiState.chips, 0)
     }
 
     postChips.forEach(c => markChipShown(currentSessionId, c.id, c.label))

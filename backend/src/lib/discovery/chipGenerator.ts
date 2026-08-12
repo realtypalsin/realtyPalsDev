@@ -42,26 +42,24 @@ export function generateChips(
   // Intent-specific chips: always show for relevant intent types
   switch (intentType) {
     case 'PAYMENT_PLANS':
+      chips.push(makeChip('clp_plan', 'CLP (Construction-Linked Plan)', '🏗️', priority++))
+      chips.push(makeChip('investor_plan', 'Investor Plan (20-80 Slabs)', '📈', priority++))
+      chips.push(makeChip('flexi_plan', 'Flexi Payment Slabs', '💬', priority++))
+      chips.push(makeChip('full_payment', 'Full Payment Discount Plan', '🏷️', priority++))
       chips.push(makeChip('calculate_emi', 'Calculate EMI', '🧮', priority++))
-      chips.push(makeChip('ask_flexibility', 'Ask about flexibility', '💬', priority++))
-      break
-
-    case 'BUILDER_HISTORY':
-      chips.push(makeChip('verify_rera', 'Verify RERA', '✅', priority++))
-      chips.push(makeChip('view_complaints', 'View complaints', '📋', priority++))
-      break
-
-    case 'LOCATION':
-      chips.push(makeChip('show_map', 'View on map', '🗺️', priority++))
-      chips.push(makeChip('show_metro', 'Metro distance', '🚇', priority++))
       break
 
     case 'COSTS':
-      chips.push(makeChip('compare_costs', 'Compare costs', '💵', priority++))
+      chips.push(makeChip('base_price', 'Base Price & Per Sqft', '🏷️', priority++))
+      chips.push(makeChip('plc_charges', 'PLC & Club Membership', '🏆', priority++))
+      chips.push(makeChip('statutory_taxes', 'Stamp Duty & GST (Taxes)', '🏛️', priority++))
+      chips.push(makeChip('cost_sheet_full', 'Full Cost Sheet Breakdown', '💵', priority++))
       break
 
-    case 'POSSESSION_TIMELINE':
-      chips.push(makeChip('check_oc', 'Check OC status', '📅', priority++))
+    case 'FLOOR_PLANS':
+      chips.push(makeChip('floor_2bhk', '2 BHK Floor Plans', '🛏️', priority++))
+      chips.push(makeChip('floor_3bhk', '3 BHK Floor Plans', '🛏️', priority++))
+      chips.push(makeChip('floor_4bhk', '4 BHK / Duplex Plans', '👑', priority++))
       break
   }
 

@@ -32,6 +32,55 @@ export interface FallbackChainResult {
   envKey: string
 }
 
+import { validateAgainstFactsSync } from './guardrails-v2'
+
+function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLimit = 50) {
+  let buffer = ''
+  let flushed = false
+  let tokensSent = false
+
+  const bufferedSend: SendFn = (event: string, data: Record<string, unknown>) => {
+    if (event !== 'token' || typeof data.token !== 'string') {
+      originalSend(event, data)
+      return
+    }
+
+    if (flushed) {
+      tokensSent = true
+      originalSend(event, data)
+      return
+    }
+
+    buffer += data.token
+
+    if (buffer.length >= bufferLimit || buffer.includes('\n')) {
+      const check = validateAgainstFactsSync(buffer, systemPrompt)
+      if (check.blocked) {
+        console.warn('[GUARDRAIL:PRE_FLUSH_PREVENTED_LEAK]', check.violations)
+        throw new Error(`Guardrail pre-flush block: ${check.violations[0]?.detail || 'hallucination'}`)
+      }
+      flushed = true
+      tokensSent = true
+      originalSend('token', { token: buffer })
+    }
+  }
+
+  const flushRemaining = () => {
+    if (!flushed && buffer.length > 0) {
+      const check = validateAgainstFactsSync(buffer, systemPrompt)
+      if (check.blocked) {
+        console.warn('[GUARDRAIL:PRE_FLUSH_PREVENTED_LEAK]', check.violations)
+        throw new Error(`Guardrail pre-flush block: ${check.violations[0]?.detail || 'hallucination'}`)
+      }
+      flushed = true
+      tokensSent = true
+      originalSend('token', { token: buffer })
+    }
+  }
+
+  return { bufferedSend, getTokensSent: () => tokensSent, flushRemaining }
+}
+
 export async function executeWithFallbackChain(options: FallbackChainOptions): Promise<FallbackChainResult> {
   const {
     systemPrompt,
@@ -59,56 +108,40 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     }
 
     const effectivePrompt = item.supportsTools ? systemPrompt : systemPrompt + groqFallbackSuffix
+    const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, systemPrompt)
 
     try {
       console.log(`[FALLBACK:TRY] → ${item.label} | Model: ${item.model} | Tools: ${item.supportsTools}`)
       console.log(`[FALLBACK:DATA] Passing ${messages.length} messages + ${systemPrompt.length} char prompt`)
 
+      let text = ''
       if (item.provider === 'cerebras') {
-        const text = await streamWithCerebras(effectivePrompt, messages, send, apiKey, item.model)
-        const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
-        console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
-        return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
-      }
-
-      if (item.provider === 'mistral') {
-        const text = await streamWithMistral(effectivePrompt, messages, send, apiKey)
-        const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
-        console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
-        return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
-      }
-
-      if (item.provider === 'gemini') {
-        const text = await streamWithGemini(effectivePrompt, messages, send, onToolCall, undefined, apiKey)
-        const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
-        console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
-        return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
-      }
-
-      if (item.provider === 'openai') {
-        const text = await streamWithOpenAI(
+        text = await streamWithCerebras(effectivePrompt, messages, bufferedSend, apiKey, item.model)
+      } else if (item.provider === 'mistral') {
+        text = await streamWithMistral(effectivePrompt, messages, bufferedSend, apiKey)
+      } else if (item.provider === 'gemini') {
+        text = await streamWithGemini(effectivePrompt, messages, bufferedSend, onToolCall, undefined, apiKey)
+      } else if (item.provider === 'openai') {
+        text = await streamWithOpenAI(
           effectivePrompt,
           messages,
-          send,
+          bufferedSend,
           onToolCall,
           undefined,
           userId,
           sessionId,
           apiKey,
         )
-        const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
-        console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
-        return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
+      } else if (item.provider === 'groq') {
+        text = await streamWithGroq(effectivePrompt, messages, bufferedSend, userId, sessionId, apiKey)
       }
 
-      if (item.provider === 'groq') {
-        const text = await streamWithGroq(effectivePrompt, messages, send, userId, sessionId, apiKey)
-        const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
-        console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
-        return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
-      }
+      flushRemaining()
+      const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
+      console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
+      return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
     } catch (err: any) {
-      const tokensSent = err?.tokensSent === true
+      const tokensSent = getTokensSent() || err?.tokensSent === true
       const errMsg = err?.message || String(err)
 
       console.warn(`[FALLBACK:FAIL] ✗ ${item.label} failed: ${errMsg.slice(0, 100)}...`)

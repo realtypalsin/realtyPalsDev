@@ -105,34 +105,12 @@ export async function streamWithGroq(
       { signal: inactivityController.signal },
     )
   } catch (err: any) {
-    const isRateLimit = err?.status === 429 || err?.message?.includes('rate_limit_exceeded') || err?.message?.includes('Rate limit reached')
-    if (isRateLimit) {
-      console.warn('[GROQ] Rate limit on GROQ_SMART — falling back to GROQ_FAST model (llama-3.1-8b-instant)')
-      try {
-        stream = await groq.chat.completions.create(
-          {
-            model: MODELS.GROQ_FAST,
-            messages: msgs,
-            stream: true,
-            max_tokens: 1024,
-            temperature: 0.7,
-          },
-          { signal: inactivityController.signal },
-        )
-      } catch (fallbackErr) {
-        clearInactivity()
-        if (inactivityFired || inactivityController.signal.aborted) {
-          throw new GroqStreamStallError(anyTokenSent)
-        }
-        throw fallbackErr
-      }
-    } else {
-      clearInactivity()
-      if (inactivityFired || inactivityController.signal.aborted) {
-        throw new GroqStreamStallError(anyTokenSent)
-      }
-      throw err
+    clearInactivity()
+    if (inactivityFired || inactivityController.signal.aborted) {
+      throw new GroqStreamStallError(anyTokenSent)
     }
+    console.warn(`[GROQ] Call failed (${err?.status || err?.message}) — letting fallback chain switch to next provider`)
+    throw err
   }
 
   console.log('[GROQ] END create() — stream object received', Date.now())
