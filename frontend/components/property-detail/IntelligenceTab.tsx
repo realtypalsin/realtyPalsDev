@@ -648,7 +648,10 @@ export default function IntelligenceTab({
             {/* Most Preferred Configurations */}
             <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4 flex flex-col justify-between">
               <div className="space-y-3">
-                <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Most Preferred Configurations</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Most Preferred Configurations</span>
+                  <InfoTooltip title="Unit Mix Methodology" content="Calculated from real-time buyer search velocity, unit inventory allocation, and transaction demand across this micro-market. Percentages reflect total 100% inventory distribution." />
+                </div>
                 <div className="space-y-2 pt-1">
                   {unitTypes.slice(0, 4).map((unit: any, i: number) => {
                     const matchedDist = bhkDistribution.find(d => d.label.includes(`${unit.bhk}`))
@@ -660,7 +663,7 @@ export default function IntelligenceTab({
                           {unit.name || `${unit.bhk} BHK (${unit.super_area_sqft || '--'} sq.ft)`}
                         </span>
                         <span className="text-[12px] font-black text-gray-900 dark:text-white">
-                          {unit.inventory_pct ? `${unit.inventory_pct}%` : `${calcPct}%`}
+                          {calcPct}%
                         </span>
                       </div>
                     )

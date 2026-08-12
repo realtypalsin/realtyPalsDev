@@ -24,7 +24,31 @@ const IntentSchema = z.object({
   legal_check: z.boolean().optional(),
 })
 
+export function normalizeSectorName(rawSector?: string): string | undefined {
+  if (!rawSector) return undefined
+  const cleaned = rawSector.trim()
+
+  const secNumMatch = cleaned.match(/Sector\s*(\d+[A-Za-z]?)/i)
+  if (secNumMatch) {
+    return `Sector ${secNumMatch[1]}`
+  }
+
+  if (/sports\s*city/i.test(cleaned)) return 'Sector 79'
+  if (/yamuna\s*expressway/i.test(cleaned)) return 'Yamuna Expressway'
+  if (/noida\s*expressway/i.test(cleaned)) return 'Noida Expressway'
+  if (/greater\s*noida\s*west|noida\s*extension/i.test(cleaned)) return 'Greater Noida West'
+
+  return cleaned
+}
+
 export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchema>): Intent {
+  if (update.sector) {
+    update.sector = normalizeSectorName(update.sector)
+  }
+  if (previous.sector) {
+    previous.sector = normalizeSectorName(previous.sector)
+  }
+
   // projectNames and is_comparison_query are per-turn signals — they reflect the
   // CURRENT message only. Never inherit from previous turns: a search query after a
   // comparison would otherwise see stale projectNames and wrongly enter comparison mode.

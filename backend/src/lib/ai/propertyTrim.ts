@@ -19,6 +19,7 @@ export interface TrimmedProperty {
   name: string;
   sector?: { name: string } | null;
   city?: string | null;
+  address?: string | null;
   status?: string | null;
   price_range_label?: string | null;
   price_min_cr?: number | null;
@@ -111,6 +112,7 @@ export function trimPropertyForPrompt(project: any): TrimmedProperty {
       ? { name: typeof project.sector === 'string' ? project.sector : project.sector.name }
       : null,
     city: project.city ?? null,
+    address: project.address ?? null,
     status: project.status ?? null,
     price_range_label: project.price_range_label,
     price_min_cr: project.price_min_cr ?? null,

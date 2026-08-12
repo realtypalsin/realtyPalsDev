@@ -81,34 +81,48 @@ export function classifyQueryDeterministic(
     }
   }
 
-  // DRILLDOWN: Intent unchanged + attribute keyword (no new project names)
-  // "payment plan for it", "cost of that one", "carpet area details"
-  const attributeKeywords = /\b(payment\s+plan|cost|price|carpet|carpet\s+area|emi|maintenance|parking|amenities|facilities|layout|bhk|configuration|timeline|possession|construction|status|builder|reputation|trust|verification|rera)\b/i
-  const isDetailQuery = attributeKeywords.test(msg)
+  // 1. Property SEARCH Action: "show me", "find", "search", "list", "looking for", "available", "2 BHK in Sector 76"
+  const isSearchAction = /\b(show|find|search|list|get|looking for|available|flats|apartments|homes)\b/i.test(msg) ||
+    (/\b(\d\s*bhk)\b/i.test(msg) && /\b(sector|in|under|budget|crore|lakh)\b/i.test(msg))
+  const isSpecificAttributeQuestion = /\b(what is|where is|give me|explain|how many|what are|details of|about)\b/i.test(msg)
 
-  // Check if user is asking about a project they've already mentioned
-  // (same projectNames as previous intent, or pronoun reference like "it" / "that one")
-  const pronounPatterns = /\b(it|that|this one|the one|one you mentioned)\b/i
-  const hasPronounRef = pronounPatterns.test(msg)
-  const hasNewProject = (intentObj.projectNames?.length ?? 0) === 0 ||
-    (userMessage.match(/[A-Z][a-zA-Z\s]+(?:Project|Phase|\d+)?/g) ?? []).length > 0
+  if (isSearchAction && !isSpecificAttributeQuestion) {
+    const superlativePattern = /\b(best|top|most|least|cheapest|fastest|largest|highest|lowest|fewest|value|budget-friendly|affordable|safest|trusted|premium|luxury|rank)\b/i
+    if (superlativePattern.test(msg)) {
+      return {
+        queryKind: 'RANKING',
+        renderTarget: 'both',
+        confidence: 'HIGH',
+        reason: 'Property search with ranking terms -> RANKING (both)',
+      }
+    }
+    return {
+      queryKind: 'DISCOVERY',
+      renderTarget: 'both',
+      confidence: 'HIGH',
+      reason: 'Property search query -> DISCOVERY (both)',
+    }
+  }
 
-  if (isDetailQuery && !hasNewProject) {
+  // 2. DRILLDOWN: User asks specific property attributes of a project (floor, address, payment plan, vastu, security, amenities, etc.)
+  const attributeKeywords = /\b(payment\s+plan|cost|price|carpet|carpet\s+area|super\s+area|emi|maintenance|parking|amenities|facilities|layout|configuration|timeline|possession|construction|status|builder|reputation|trust|verification|rera|floor|floors|top\s+floor|height|tower|towers|address|full\s+address|complete\s+address|location|where|vastu|facing|orientation|security|safety|cctv|aqi|green|architect|designer|theme|tagline|description|details|overview|specs)\b/i
+  if (attributeKeywords.test(msg)) {
     return {
       queryKind: 'DRILLDOWN',
       renderTarget: 'text',
       confidence: 'HIGH',
-      reason: 'Attribute keyword + no new project names',
+      reason: 'Attribute question -> DRILLDOWN (text)',
     }
   }
 
-  // DRILLDOWN with pronoun resolution
-  if (isDetailQuery && hasPronounRef) {
+  // BUILDER / GENERAL ADVISORY: User asks about builders or general market
+  const builderGeneralPattern = /\b(which builders|famous builders|top builders|reputed builders|builder list|builder track record|builder reputation|about builder)\b/i
+  if (builderGeneralPattern.test(msg)) {
     return {
-      queryKind: 'DRILLDOWN',
+      queryKind: 'ADVISORY',
       renderTarget: 'text',
-      confidence: 'MEDIUM',
-      reason: 'Attribute keyword + pronoun reference to previous project',
+      confidence: 'HIGH',
+      reason: 'General builder query -> render text only',
     }
   }
 

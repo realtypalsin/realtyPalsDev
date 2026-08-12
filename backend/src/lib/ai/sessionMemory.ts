@@ -32,15 +32,16 @@ export async function hydrateIntentFromMemory(
   if (!memory?.extracted_intent) return currentIntent
 
   const stored = memory.extracted_intent as Partial<Intent>
+  const isSectorChanged = Boolean(currentIntent.sector && stored.sector && currentIntent.sector !== stored.sector)
 
   // Merge: stored intent as fallback, current intent overrides
   return {
     ...currentIntent,
-    // Only fill gaps in current intent
+    // Only fill gaps in current intent — do not resurrect stale budget when sector changes
     bhk: currentIntent.bhk ?? stored.bhk,
     sector: currentIntent.sector ?? stored.sector,
-    budgetMin: currentIntent.budgetMin ?? stored.budgetMin,
-    budgetMax: currentIntent.budgetMax ?? stored.budgetMax,
+    budgetMin: isSectorChanged ? currentIntent.budgetMin : (currentIntent.budgetMin ?? stored.budgetMin),
+    budgetMax: isSectorChanged ? currentIntent.budgetMax : (currentIntent.budgetMax ?? stored.budgetMax),
     purpose: currentIntent.purpose ?? stored.purpose,
     possession: currentIntent.possession ?? stored.possession,
   }

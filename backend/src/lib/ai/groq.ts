@@ -51,9 +51,19 @@ export async function streamWithGroq(
     maxRetries: 0,
   })
 
+  // Prune over-length prompt & messages if context exceeds 8k chars for Groq rate-limit safety
+  let trimmedSystem = system
+  if (trimmedSystem.length > 8000) {
+    trimmedSystem = trimmedSystem.slice(0, 8000)
+  }
+  const trimmedMsgs = messages.slice(-3).map((m) => ({
+    role: m.role as 'user' | 'assistant',
+    content: (m.content || '').slice(0, 2000)
+  }))
+
   const msgs: Message[] = [
-    { role: 'system', content: system },
-    ...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+    { role: 'system', content: trimmedSystem },
+    ...trimmedMsgs,
   ]
 
   // Per-request inactivity controller. Covers both the header phase (create() await)

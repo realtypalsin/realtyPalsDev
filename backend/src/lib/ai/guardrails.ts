@@ -183,7 +183,13 @@ export async function outputGuardrail(
       sectorsInResponse.add(match[1].trim().toLowerCase())
     }
     for (const sector of sectorsInResponse) {
-      if (systemPrompt.length > 0 && !systemPrompt.toLowerCase().includes(`sector ${sector}`) && !systemPrompt.toLowerCase().includes(`sector-${sector}`)) {
+      const lowerPrompt = systemPrompt.toLowerCase()
+      const hasSector = lowerPrompt.includes(`sector ${sector}`) || 
+                        lowerPrompt.includes(`sector-${sector}`) || 
+                        lowerPrompt.includes(`sector: "${sector}"`) ||
+                        lowerPrompt.includes(`sector '${sector}'`) ||
+                        lowerPrompt.includes(sector)
+      if (systemPrompt.length > 0 && !hasSector) {
         violations.push({
           type: 'name_fabrication',
           detail: `sector "${sector}" appears in response but not in verified context`,

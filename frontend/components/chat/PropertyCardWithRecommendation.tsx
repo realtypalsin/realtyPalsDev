@@ -38,7 +38,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
 
   const unitsByBhk = project.unit_types.reduce((acc, u) => {
     if (!acc[u.bhk]) acc[u.bhk] = []
-    const area = u.carpet_area_sqft || u.super_area_sqft
+    const area = u.super_area_sqft || u.carpet_area_sqft
     if (area) acc[u.bhk].push(`${area}sqft`)
     return acc
   }, {} as Record<number, string[]>)

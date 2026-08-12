@@ -708,9 +708,9 @@ export default function ResidencesTab({
                 const gradeBg = cPct >= 72 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
 
                 return (
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                  <div className="w-full">
                     {/* SVG Segmented Donut Visual + Legend */}
-                    <div className="md:col-span-8 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col sm:flex-row items-center gap-6">
+                    <div className="w-full p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col sm:flex-row items-center gap-6">
                       
                       {/* Dynamic SVG Segmented Donut */}
                       <div className="relative w-32 h-32 flex items-center justify-center flex-shrink-0">

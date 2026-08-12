@@ -172,14 +172,35 @@ export async function generateDynamicChips(
     }
   }
 
-  // Fill the rest with the filtered database chips
-  const needed = 4 - finalChips.length
-  if (needed > 0) {
-    const turn = Math.floor(chatHistory.length / 2)
-    const maxStartIndex = Math.max(0, filteredCoreChips.length - needed)
-    const startIndex = maxStartIndex > 0 ? (turn % maxStartIndex) : 0
-    finalChips.push(...filteredCoreChips.slice(startIndex, startIndex + needed))
+  // Fill the rest with the filtered database chips or coreChips
+  if (finalChips.length < 4) {
+    const existingLabels = new Set(finalChips.map(c => c.label.toLowerCase()))
+    for (const chipItem of coreChips) {
+      if (!existingLabels.has(chipItem.label.toLowerCase())) {
+        finalChips.push(chipItem)
+        existingLabels.add(chipItem.label.toLowerCase())
+      }
+      if (finalChips.length >= 4) break
+    }
   }
 
-  return finalChips
+  // Backup static high-value chips if still under 3 chips
+  if (finalChips.length < 3) {
+    const backupChips: ChipAction[] = [
+      chip(`TEXT_MESSAGE:backup_rera_${Date.now()}`, 'TEXT_MESSAGE', 'Check RERA & Legal status', '', { text: 'Show RERA numbers and legal safety for top projects in Sector 79' }, 1),
+      chip(`TEXT_MESSAGE:backup_payment_${Date.now()}`, 'TEXT_MESSAGE', 'Review payment plans', '', { text: 'Show payment plan options and CLP schedules' }, 2),
+      chip(`TEXT_MESSAGE:backup_builders_${Date.now()}`, 'TEXT_MESSAGE', 'Famous builders in Noida', '', { text: 'Which builders are famous in Noida?' }, 3),
+      chip(`TEXT_MESSAGE:backup_amenities_${Date.now()}`, 'TEXT_MESSAGE', 'Explore amenities', '', { text: 'What amenities are available in top projects?' }, 4)
+    ]
+    const existingLabels = new Set(finalChips.map(c => c.label.toLowerCase()))
+    for (const bChip of backupChips) {
+      if (!existingLabels.has(bChip.label.toLowerCase())) {
+        finalChips.push(bChip)
+        existingLabels.add(bChip.label.toLowerCase())
+      }
+      if (finalChips.length >= 4) break
+    }
+  }
+
+  return finalChips.slice(0, 4)
 }

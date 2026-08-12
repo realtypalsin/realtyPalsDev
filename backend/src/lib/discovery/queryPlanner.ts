@@ -47,6 +47,7 @@ export interface QueryPlan {
 const INTENT_FIELD_MAP: Record<QueryIntent, { critical: string[]; optional: string[] }> = {
   details: {
     critical: [
+      'full_address',
       'floor_plan_count',
       'project_status',
       'amenity_count',
@@ -68,7 +69,7 @@ const INTENT_FIELD_MAP: Record<QueryIntent, { critical: string[]; optional: stri
   },
 
   location: {
-    critical: ['connectivity_count', 'amenity_count', 'amenities_list'],
+    critical: ['full_address', 'connectivity_count', 'amenity_count', 'amenities_list'],
     optional: ['coordinates', 'aqi_data', 'commute_data'],
   },
 
@@ -163,23 +164,23 @@ function recognizePattern(message: string): PatternMatch {
 
   // Payment intent keywords
   if (
-    /\b(payment|payments|payment-plan|payment-plans|payment plan|payment plans|clp|flexi plan|down payment|subvention|emi|loan|cost|costs|pricing|price breakdown|charge|charges|fee|fees|stamp duty|gst|parking|ifms)\b/i.test(msg) ||
-    /how much|what.*cost|break down|how.*afford|payment.*option/i.test(msg)
+    /\b(payment|payments|payment-plan|payment-plans|payment plan|payment plans|flow|flows|flow-data|payment-flow|payment-flows|cashflow|cash-flow|schedule|schedules|milestone|milestones|clp|flexi plan|down payment|subvention|emi|loan|cost|costs|pricing|price breakdown|charge|charges|fee|fees|stamp duty|gst|parking|ifms)\b/i.test(msg) ||
+    /how much|what.*cost|break down|how.*afford|payment.*option|payment.*flow/i.test(msg)
   ) {
     return {
       intent: 'payment',
       confidence: 0.96,
       projectIds: [],
-      reason: 'Keywords: payment, payment plans, EMI, cost, pricing',
+      reason: 'Keywords: payment, payment plans, flows, schedule, EMI, cost, pricing',
     }
   }
 
-  // Location intent keywords
+  // Location & Address intent keywords
   if (
-    /\b(metro|station|stations|school|hospital|mall|airport|nearby|distance|commute|travel|connectivity|location)\b/i.test(
+    /\b(address|full address|complete address|plot|pincode|coordinates|metro|station|stations|school|hospital|mall|airport|nearby|distance|commute|travel|connectivity|location)\b/i.test(
       msg
     ) ||
-    /how far|how long|close to|near/i.test(msg)
+    /how far|how long|close to|near|where is/i.test(msg)
   ) {
     return {
       intent: 'location',
@@ -228,12 +229,12 @@ function recognizePattern(message: string): PatternMatch {
   }
 
   // Details / Overview intent keywords
-  if (/\b(tell me about|overview|details|specs|specifications|about)\b/i.test(msg)) {
+  if (/\b(tell me about|overview|details|specs|specifications|about|floor|floors|top floor|top-floor|height|tower|towers|building|structure|amenities|amenity|facilities|layout|layouts|unit types)\b/i.test(msg)) {
     return {
       intent: 'details',
       confidence: 0.88,
       projectIds: [],
-      reason: 'Keywords: tell me about, overview, details',
+      reason: 'Keywords: tell me about, overview, details, floors, structure, amenities',
     }
   }
 

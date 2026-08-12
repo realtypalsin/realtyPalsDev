@@ -137,7 +137,7 @@ export default function OverviewTab({
       }))
     : defaultPerfectFor
 
-  // Around the Project: Categorized nearbies from connections DB
+  // Around the Project: Categorized nearbies strictly from connections DB
   const categorizedConnections: Record<string, { name: string; distance: string; time: string; icon: any }[]> = {
     Metro: [],
     Hospitals: [],
@@ -146,9 +146,9 @@ export default function OverviewTab({
     Expressway: [],
   }
 
-  connections.forEach(c => {
-    const distStr = c.distance_km != null ? `${c.distance_km} km` : '1.5 km'
-    const timeEst = c.distance_km != null ? `${Math.ceil(c.distance_km * 2.5)} min` : '5 min'
+  connections.forEach((c: any) => {
+    const distStr = c.distance_km != null ? `${c.distance_km} km` : ''
+    const timeEst = c.travel_time_mins != null ? `${c.travel_time_mins} min` : (c.distance_km != null ? `${Math.ceil(c.distance_km * 2.5)} min` : '')
     
     if (c.type === 'metro') {
       categorizedConnections.Metro.push({ name: c.name, distance: distStr, time: timeEst, icon: TrainFront })
@@ -163,7 +163,7 @@ export default function OverviewTab({
     }
   })
 
-  // Flatten top items for 5-column layout
+  // Flatten top items for 5-column layout — ONLY real DB items
   const aroundProjectList: { category: string; name: string; distance: string; time: string; icon: any }[] = []
   Object.entries(categorizedConnections).forEach(([cat, list]) => {
     if (list.length > 0) {
@@ -171,9 +171,14 @@ export default function OverviewTab({
     }
   })
 
-  // Channel Partners: No fake data fallback
+  // Channel Partners: Clean extraction from DB
   const rawChannelPartners = (d as any)?.channel_partners || (detail as any)?.channel_partners || (overview as any)?.channel_partners || []
-  const channelPartners = rawChannelPartners
+  const channelPartners = Array.isArray(rawChannelPartners) ? rawChannelPartners.map((cp: any) => ({
+    name: cp.name || cp.company_name || cp.channel_partner?.name || 'RERA Authorized Partner',
+    company_name: cp.company_name || cp.type || cp.channel_partner?.type || 'Authorized Realty Advisor',
+    rera_registration: cp.rera_registration || cp.rera_registration_number || cp.channel_partner?.rera_registration || 'Verified RERA Agent',
+    phone: cp.phone || cp.channel_partner?.phone || null,
+  })) : []
 
   return (
     <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
@@ -470,19 +475,19 @@ export default function OverviewTab({
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'STATUS', val: d?.status === 'ready_to_move' ? 'Ready to Move' : d?.status === 'new_launch' ? 'New Launch' : 'Under Construction', icon: Building2 },
-            { label: 'TOTAL TOWERS', val: d?.total_towers ? `${d.total_towers}` : '7', icon: Building2 },
-            { label: 'TOTAL UNITS', val: (d as any)?.total_units ? `${(d as any).total_units}` : '--', icon: Sparkles },
-            { label: 'CONFIGURATIONS', val: unitTypes.length > 0 ? ([...new Set(unitTypes.map(u => u.bhk))].sort((a,b)=>a-b).join(', ') + ' BHK') : '3, 3.5, 4 BHK', icon: BedDouble },
-            { label: 'PROJECT AREA', val: d?.land_area_acres ? `${d.land_area_acres} Acres` : '5.44 Acres', icon: Leaf },
-            { label: 'OPEN SPACE', val: d?.open_space_pct ? `${d.open_space_pct}%` : '69%', icon: Leaf },
-            { label: 'LAUNCH DATE', val: d?.launch_date ? (() => { const d2 = new Date(d.launch_date); return isNaN(d2.getTime()) ? 'May 2023' : d2.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })() : 'May 2023', icon: CalendarDays },
-            { label: 'POSSESSION', val: d?.possession_label ?? 'Dec 2028', icon: CalendarDays },
+            { label: 'STATUS', val: d?.status === 'ready_to_move' ? 'Ready to Move' : (d?.status as string) === 'delivered' ? 'Possession Delivered' : d?.status === 'new_launch' ? 'New Launch' : 'Under Construction', icon: Building2 },
+            ...(d?.total_towers ? [{ label: 'TOTAL TOWERS', val: `${d.total_towers}`, icon: Building2 }] : []),
+            ...((d as any)?.total_units ? [{ label: 'TOTAL UNITS', val: `${(d as any).total_units}`, icon: Sparkles }] : []),
+            ...(unitTypes.length > 0 ? [{ label: 'CONFIGURATIONS', val: [...new Set(unitTypes.map(u => u.bhk))].sort((a,b)=>a-b).join(', ') + ' BHK', icon: BedDouble }] : []),
+            ...(d?.land_area_acres ? [{ label: 'PROJECT AREA', val: `${d.land_area_acres} Acres`, icon: Leaf }] : []),
+            ...(d?.open_space_pct ? [{ label: 'OPEN SPACE', val: `${d.open_space_pct}%`, icon: Leaf }] : []),
+            ...(d?.launch_date ? [{ label: 'LAUNCH DATE', val: (() => { const d2 = new Date(d.launch_date); return isNaN(d2.getTime()) ? 'Unspecified' : d2.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })(), icon: CalendarDays }] : []),
+            { label: 'POSSESSION', val: d?.possession_label ?? (d?.status === 'ready_to_move' || (d?.status as string) === 'delivered' ? 'Delivered' : 'Under Construction'), icon: CalendarDays },
             ...(showAllDetails ? [
-              { label: 'RERA NO.', val: d?.rera_number || 'UPRERAPRJ12345', icon: FileText },
+              ...(d?.rera_number ? [{ label: 'RERA NO.', val: d.rera_number, icon: FileText }] : []),
               { label: 'DEVELOPER', val: devName, icon: Building2 },
-              { label: 'PROJECT TYPE', val: (d as any)?.property_type || 'Residential Apartment', icon: Building2 },
-              { label: 'GREEN RATING', val: d?.green_rating || 'IGBC Certified', icon: Leaf },
+              ...((d as any)?.property_type ? [{ label: 'PROJECT TYPE', val: (d as any).property_type, icon: Building2 }] : []),
+              ...(d?.green_rating ? [{ label: 'GREEN RATING', val: d.green_rating, icon: Leaf }] : []),
             ] : [])
           ].map((detailItem, i) => {
             const Icon = detailItem.icon

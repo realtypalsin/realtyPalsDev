@@ -142,7 +142,7 @@ export async function generateContextualLLMChips(
       if (item.provider === 'openai') {
         const client = new OpenAI({ apiKey, baseURL: 'https://models.inference.ai.azure.com', maxRetries: 0 })
         const res = await client.chat.completions.create({
-          model: MODELS.OPENAI_FALLBACK,
+          model: 'gpt-4o',
           messages: [
             { role: 'system', content: CHIP_SYSTEM_PROMPT },
             { role: 'user', content: historyText },

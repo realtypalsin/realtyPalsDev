@@ -57,11 +57,13 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const totalPayment = estimatedEmi * totalMonths
   const totalInterest = Math.max(0, totalPayment - loanAmount)
 
+  const isRTM = (detail?.status as string) === 'ready_to_move' || (detail?.status as string) === 'delivered'
+
   // Payment Plan Selection State & Configuration Picker
-  const [selectedPlanTab, setSelectedPlanTab] = useState<'clp' | 'investor' | 'flexi' | 'full'>('clp')
+  const [selectedPlanTab, setSelectedPlanTab] = useState<'clp' | 'investor' | 'flexi' | 'full'>(isRTM ? 'full' : 'clp')
 
   // Cost Breakdown Toggle State & Donut Hover Isolation State
-  const [costBreakdownStage, setCostBreakdownStage] = useState<'construction' | 'possession'>('construction')
+  const [costBreakdownStage, setCostBreakdownStage] = useState<'construction' | 'possession'>('possession')
   const [hoveredCostIdx, setHoveredCostIdx] = useState<number | null>(null)
 
   // Modal States for Plan Comparison & Check Eligibility
@@ -70,7 +72,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
 
   const waUrl = detail ? buildWhatsAppUrl(detail, 'panel') : null
   const reraNum = detail?.rera_number ?? 'UPRERAPRJ916631/02/2024'
-  const possessionLabel = detail?.possession_label ?? 'Dec 2028'
+  const possessionLabel = detail?.possession_label ?? (isRTM ? 'Delivered & Ready' : 'Dec 2028')
   const pricePsf = selectedUnit?.super_area_sqft ? Math.round((unitMinCr * 10000000) / selectedUnit.super_area_sqft) : 14388
 
   // Extract all payment plans dynamically from DB (if present)
@@ -95,7 +97,11 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
 
   // Dynamic payment plan milestones derived from DB or structured templates
   const paymentPlanMilestones: Record<string, any[]> = {
-    clp: getMilestonesForType('clp', [
+    clp: getMilestonesForType('clp', isRTM ? [
+      { milestone: 'Booking Amount', due: 'At the time of booking token', pct: 10 },
+      { milestone: 'Within 30 Days of Booking', due: 'Agreement execution & bank sanction', pct: 15 },
+      { milestone: 'At Key Handover & Possession', due: 'Immediate OC occupancy & key transfer', pct: 75 }
+    ] : [
       { milestone: 'At the Time of Booking', due: 'Within 15 days of booking token', pct: 10 },
       { milestone: 'Within 30 Days of Booking', due: 'Agreement execution & stamp registration', pct: 10 },
       { milestone: 'On Excavation & Substructure', due: 'Substructure & basement raft completion', pct: 15 },
@@ -103,19 +109,30 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
       { milestone: 'On External Facade & Plaster', due: 'Exterior double-glazed glass & painting', pct: 20 },
       { milestone: 'At the Time of Offer of Possession', due: 'Final keys handover & registry execution', pct: 20 }
     ]),
-    investor: getMilestonesForType('investor', [
+    investor: getMilestonesForType('investor', isRTM ? [
+      { milestone: 'Token Booking Amount', due: 'At booking time', pct: 10 },
+      { milestone: 'Within 45 Days', due: 'Agreement execution & allotment', pct: 20 },
+      { milestone: 'On Handover & Registry', due: 'Final key handover & instant registry', pct: 70 }
+    ] : [
       { milestone: 'Booking Amount', due: 'At the time of booking', pct: 20 },
       { milestone: 'Within 60 Days', due: 'Allotment & agreement execution', pct: 30 },
       { milestone: 'On Completion of Superstructure', due: 'Tower roof slab completion', pct: 30 },
       { milestone: 'At the Time of Possession', due: 'Keys handover & registry', pct: 20 }
     ]),
-    flexi: getMilestonesForType('flexi', [
+    flexi: getMilestonesForType('flexi', isRTM ? [
+      { milestone: 'Booking Token Amount', due: 'Immediate token payment', pct: 10 },
+      { milestone: 'Bank Loan / Flexi Disbursal', due: 'Sanction from ICICI/HDFC/SBI', pct: 80 },
+      { milestone: 'On Keys Handover', due: 'Final occupancy & unit handover', pct: 10 }
+    ] : [
       { milestone: 'Booking Token Amount', due: 'Immediate token payment', pct: 10 },
       { milestone: 'Flexi Bullet Installments', due: 'Quarterly milestone bullet payments', pct: 50 },
       { milestone: 'On Finishing & Fit-outs', due: 'Pre-handover audit check', pct: 20 },
       { milestone: 'On Offer of Possession', due: 'Final keys & registry execution', pct: 20 }
     ]),
-    full: getMilestonesForType('full', [
+    full: getMilestonesForType('full', isRTM ? [
+      { milestone: 'Booking Token Amount', due: 'At booking time', pct: 10 },
+      { milestone: 'Full Settlement & Handover', due: 'Within 30 days (Instant Possession & Registry)', pct: 90 }
+    ] : [
       { milestone: 'Booking Token Amount', due: 'At booking time', pct: 10 },
       { milestone: 'Down Payment Balance', due: 'Within 45 days of booking', pct: 90 }
     ])

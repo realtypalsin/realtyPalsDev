@@ -625,7 +625,7 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     for (const n of effectiveIntent.projectNames!) {
       console.log(`[DISCOVERY:B1]   term="${n}"  SQL: name ILIKE '%${n}%'`)
     }
-    const byName = await prisma.project.findMany({
+    let byName = await prisma.project.findMany({
       where: {
         OR: effectiveIntent.projectNames!.flatMap((n) => {
           const words = n.trim().split(/\s+/).filter((w) => w.length >= 3)
@@ -668,17 +668,23 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     // The chat route will short-circuit and ask "which one?" instead of silently picking.
     if (effectiveIntent.projectNames!.length === 1 && byName.length > 1) {
       const query = effectiveIntent.projectNames![0]
-      console.log(`[DISCOVERY:B1] MULTI-MATCH: "${query}" matched ${byName.length} projects — disambiguation required`)
-      const res: DiscoveryResult = {
-        exactResults: [],
-        nearbyResults: [],
-        disambiguation: {
-          query,
-          candidates: byName.map((p) => ({ name: p.name, sector: p.sector, builder: p.builder.name })),
-        },
+      const exactMatch = byName.find((p) => p.name.toLowerCase() === query.trim().toLowerCase() || p.slug.toLowerCase() === query.trim().toLowerCase())
+      if (exactMatch) {
+        console.log(`[DISCOVERY:B1] EXACT-MATCH found for "${query}": ${exactMatch.name} (${exactMatch.sector}) — bypassing disambiguation`)
+        byName = [exactMatch]
+      } else {
+        console.log(`[DISCOVERY:B1] MULTI-MATCH: "${query}" matched ${byName.length} projects — disambiguation required`)
+        const res: DiscoveryResult = {
+          exactResults: [],
+          nearbyResults: [],
+          disambiguation: {
+            query,
+            candidates: byName.map((p) => ({ name: p.name, sector: p.sector, builder: p.builder.name })),
+          },
+        }
+        await setCached(cacheKey, res, 300)
+        return res
       }
-      await setCached(cacheKey, res, 300)
-      return res
     }
 
     const notFoundNames = effectiveIntent.projectNames!.filter(

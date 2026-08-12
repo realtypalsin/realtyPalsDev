@@ -42,9 +42,9 @@ RESPONSE FAILURE — disqualifies the response:
 
 HARD LIMIT: 15 words. Target: 5–10 words. Must fit one screen without scrolling.
 
-The cards already show: price, builder name, BHK, carpet area, amenity list, possession date, RERA status, sector, and AI recommendations.
-NEVER put any of those facts in your text — the user can already see them.
-Do not provide a textual recommendation. The recommendation will be shown in the UI cards.
+The cards below render the exact matching properties (price, builder name, BHK, carpet area, possession date, RERA status, sector).
+Your text response MUST be 1 brief lead-in sentence ONLY (e.g., "Here are the top verified properties in Sector 10:").
+NEVER list project names, prices, or bullets in your text — the user can already see them in the property cards below. NEVER invent unlisted project names.
 
 ---
 

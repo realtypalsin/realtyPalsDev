@@ -51,6 +51,7 @@ export type ComponentType =
   | 'nearby-projects'       // Competing projects in same sector
   | 'reviews-summary'       // Aggregated resident reviews
   | 'transaction-history'   // Recent sales in the project
+  | 'lead-form'             // Contact / lead capture form for missing data
 
 export interface ComponentSpec {
   type: ComponentType
@@ -215,6 +216,12 @@ export const COMPONENT_REQUIREMENTS: Record<ComponentType, {
     required: [],
     optional: ['recent_transactions_count'],
     minConfidence: 0.7,
+  },
+
+  'lead-form': {
+    required: [],
+    optional: ['projectName', 'inquiryTopic'],
+    minConfidence: 0.1,
   },
 }
 

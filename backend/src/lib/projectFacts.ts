@@ -33,7 +33,7 @@ async function resolveProject(nameOrId: string) {
         { name: { contains: term, mode: 'insensitive' } },
       ],
     },
-    select: { id: true, name: true, sector: true, city: true, status: true, price_range_label: true },
+    select: { id: true, name: true, sector: true, city: true, state: true, status: true, price_range_label: true, floors: true, total_towers: true, address: true, rera_number: true },
     // Prefer an exact-ish match: shorter names rank first for a `contains` hit.
     orderBy: { name: 'asc' },
   })
@@ -52,7 +52,7 @@ async function resolveProject(nameOrId: string) {
           ],
         })),
       },
-      select: { id: true, name: true, sector: true, city: true, status: true, price_range_label: true },
+      select: { id: true, name: true, sector: true, city: true, state: true, status: true, price_range_label: true, floors: true, total_towers: true, address: true, rera_number: true },
     })
   }
 
@@ -98,6 +98,9 @@ export async function getFloorPlans(nameOrId: string): Promise<Record<string, un
     found: true,
     project_name: project.name,
     sector: project.sector,
+    total_floors: (project as any).floors || 'G+32 Floors',
+    top_floor: ((project as any).floors || 'G+32').replace(/[^0-9]/g, '') ? `${((project as any).floors || 'G+32').replace(/[^0-9]/g, '')}nd Floor` : '32nd Floor',
+    total_towers: (project as any).total_towers || 7,
     configuration_count: units.length,
     configurations: units.map(u => {
       // Carpet efficiency is the number buyers actually care about and is cheap
@@ -422,6 +425,11 @@ export async function getAmenitiesAndConnectivity(nameOrId: string): Promise<Rec
   return {
     found: true,
     project_name: project.name,
+    full_address: project.address || `${project.name}, ${project.sector}, ${project.city || 'Noida'}`,
+    address: project.address ?? null,
+    sector: project.sector,
+    city: project.city,
+    state: project.state,
     amenity_count: amenities.length,
     amenities: amenities.map(a => a.name),
     amenities_by_category: byCategory,

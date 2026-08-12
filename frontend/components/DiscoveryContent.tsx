@@ -1261,12 +1261,29 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         return;
       }
       case 'TEXT_MESSAGE':
-      case 'REMOVE_FILTER':
+      case 'REMOVE_FILTER': {
+        const textPayload = String(action.payload?.text || action.label || '').toLowerCase();
+        const chipIdStr = String(action.id || '').toLowerCase();
+
+        if (
+          chipIdStr.includes('site_visit') ||
+          chipIdStr.includes('callback') ||
+          textPayload.includes('site visit') ||
+          textPayload.includes('callback') ||
+          textPayload.includes('schedule a visit')
+        ) {
+          if (lastShortlist.length > 0) {
+            setSiteVisitProject(lastShortlist[0]);
+            return;
+          }
+        }
+
         dispatchAction({
           type: action.actionType,
           payload: action.payload
         });
         return;
+      }
       case 'COMPARE_PROPERTIES':
         // COMPARE_PROPERTIES with <2 resolvable slugs → open compare selector
         if (lastShortlist.length < 2) {

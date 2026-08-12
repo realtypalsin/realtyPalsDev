@@ -63,20 +63,25 @@ const ADVISORY_KEYWORDS = new Set([
  *   "Tell me about Godrej" → project_detail (overview)
  *   "Is Pristine good for investment?" → project_detail (investment)
  */
-function detectProjectDetail(userMessage: string): ProjectDetailIntent | null {
+function detectProjectDetail(userMessage: string, activeProjectName?: string): ProjectDetailIntent | null {
   const msg = userMessage.toLowerCase().trim()
 
   // Keyword patterns for different detail types
-  const paymentKeywords = /\b(emi|loan|cost|price|payment|charge|fee|stamp duty|gst|affordability|mortgage|down payment)\b/i
+  const paymentKeywords = /\b(emi|loan|cost|price|payment|payments|plan|plans|charge|fee|stamp duty|gst|affordability|mortgage|down payment|flow|flows|cashflow|schedule|milestone|milestones|clp|flexi)\b/i
   const investmentKeywords = /\b(invest|return|yield|appreciation|cagr|roi|bullish|bearish|buy|hold|strong buy|exit|sell|liquidity|resale)\b/i
-  const locationKeywords = /\b(metro|school|hospital|mall|nearby|distance|commute|connectivity|how far|how long)\b/i
+  const locationKeywords = /\b(address|full address|complete address|location|where|plot|coordinates|pincode|metro|school|hospital|mall|nearby|distance|commute|connectivity|how far|how long)\b/i
   const timelineKeywords = /\b(possession|ready|completion|delivery|delay|when|timeline|move in)\b/i
   const builderKeywords = /\b(builder|developer|track|reputation|credibility|delivery|rera|complaint)\b/i
-  const overviewKeywords = /\b(tell me|about|details|configuration|layout|amenities|features|highlights)\b/i
+  const overviewKeywords = /\b(tell me|about|details|configuration|layout|layouts|amenities|features|highlights|floor|floors|top floor|height|tower|towers|units|structure)\b/i
 
   // Check for project mention (words after "for", "about", "in", "at")
   const projectMention = msg.match(/\b(?:for|about|in|at)\s+([a-z0-9\s]+?)(?:\?|$)/i)
-  const projectIdentifier = projectMention ? projectMention[1].trim() : undefined
+  let projectIdentifier = projectMention ? projectMention[1].trim() : undefined
+
+  // Fallback to implicit references ("this project", "here", or active project context)
+  if (!projectIdentifier && (/\b(this project|the project|here|this property|the property)\b/i.test(msg) || activeProjectName)) {
+    projectIdentifier = activeProjectName || 'active_project'
+  }
 
   // Detect detail type
   let detailType: ProjectDetailType | null = null
@@ -86,7 +91,7 @@ function detectProjectDetail(userMessage: string): ProjectDetailIntent | null {
   if (paymentKeywords.test(msg)) {
     detailType = 'payment'
     confidence = 0.95
-    reason = 'Keywords: EMI, cost, charges, affordability'
+    reason = 'Keywords: EMI, cost, payment plans, flows, charges'
   } else if (investmentKeywords.test(msg)) {
     detailType = 'investment'
     confidence = 0.92
@@ -106,11 +111,10 @@ function detectProjectDetail(userMessage: string): ProjectDetailIntent | null {
   } else if (overviewKeywords.test(msg)) {
     detailType = 'overview'
     confidence = 0.85
-    reason = 'Keywords: tell me, details, features, amenities'
+    reason = 'Keywords: tell me, details, features, amenities, floors, structure'
   }
 
-  // Only return if we detected a detail type AND have a project mention
-  // Generic factual/advisory queries without a specific project should not be project_detail
+  // Return project detail intent if detailType and projectIdentifier (explicit or context) exist
   if (!detailType || !projectIdentifier) return null
 
   return {
@@ -129,7 +133,8 @@ function detectProjectDetail(userMessage: string): ProjectDetailIntent | null {
  */
 export function classifyIntent(userMessage: string, intent?: Intent): IntentClassification {
   // 1. Check for PROJECT_DETAIL intent (highest priority)
-  const projectDetail = detectProjectDetail(userMessage)
+  const activeProject = intent?.projectNames && intent.projectNames.length > 0 ? intent.projectNames[0] : undefined
+  const projectDetail = detectProjectDetail(userMessage, activeProject)
   if (projectDetail) {
     return {
       category: 'project_detail',

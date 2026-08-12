@@ -1,8 +1,8 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { MapPin, Home, Zap, TrendingUp, Clock, Building, AlertCircle, CheckCircle, DollarSign, MapIcon } from 'lucide-react'
+import { MapPin, Home, Zap, TrendingUp, Clock, Building, AlertCircle, CheckCircle, DollarSign, MapIcon, Send } from 'lucide-react'
 import type { ComponentSpec } from '@/types/property'
 
 // ─── Individual Component Renderers ───────────────────────────────────────
@@ -276,6 +276,84 @@ function RiskMeter({ props }: { props: Record<string, any> }) {
   )
 }
 
+function LeadForm({ props }: { props: Record<string, any> }) {
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!phone || phone.length < 10) return
+    setLoading(true)
+    try {
+      await fetch('/api/v1/leads/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name || 'Interested Buyer',
+          phone,
+          project_name: props.projectName || props.project_name || 'Project Inquiry',
+          notes: props.inquiryTopic ? `Requested verified data: ${props.inquiryTopic}` : 'Advisory document request',
+        })
+      })
+      setSubmitted(true)
+    } catch {
+      setSubmitted(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl text-center">
+        <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+        <h4 className="font-semibold text-emerald-900 dark:text-emerald-200">Request Sent Successfully!</h4>
+        <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1">Our advisory team will share verified records & documents with you shortly.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-gray-900 dark:to-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl shadow-sm">
+      <div className="flex items-center gap-2 mb-2">
+        <Send className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <h3 className="font-bold text-gray-900 dark:text-white text-sm">Request Official Verified Documents</h3>
+      </div>
+      <p className="text-xs text-gray-600 dark:text-gray-300 mb-3">
+        {props.inquiryTopic ? `Specific records for "${props.inquiryTopic}" of ${props.projectName || 'this project'} are under verification update. Connect with our advisory desk for direct verified files:` : 'Connect with our project intelligence desk for personalized verified documents:'}
+      </p>
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input
+            type="text"
+            placeholder="Your Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+          />
+          <input
+            type="tel"
+            placeholder="Phone Number *"
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+        >
+          {loading ? 'Submitting...' : 'Submit Request to Advisory Desk'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
 // Map component type to renderer
 const COMPONENT_RENDERERS: Record<string, React.ComponentType<{ props: Record<string, any> }>> = {
   'property-card': PropertyCard,
@@ -290,6 +368,7 @@ const COMPONENT_RENDERERS: Record<string, React.ComponentType<{ props: Record<st
   'location-scorecard': LocationScorecard,
   'confidence-badge': ConfidenceBadge,
   'risk-meter': RiskMeter,
+  'lead-form': LeadForm,
 }
 
 // ─── Main Renderer ───────────────────────────────────────────────────────

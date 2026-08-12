@@ -146,7 +146,7 @@ export type ComponentType =
   | 'investment-score' | 'floor-plan-gallery' | 'decision-card'
   | 'confidence-badge' | 'risk-meter' | 'possession-timeline'
   | 'society-stats' | 'commute-card' | 'rental-yield-card'
-  | 'nearby-projects' | 'reviews-summary' | 'transaction-history'
+  | 'nearby-projects' | 'reviews-summary' | 'transaction-history' | 'lead-form'
 
 export type QueryIntent = 'payment' | 'investment' | 'location' | 'timeline' | 'builder' | 'details' | 'compare'
 

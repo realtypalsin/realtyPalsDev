@@ -10,6 +10,21 @@ import dynamic from 'next/dynamic'
 import RealtyBox from '@/components/RealtyBox'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
 import { parseResponseBlocks } from '@/lib/responseParser'
+import {
+  Building2,
+  MapPin,
+  Compass,
+  ShieldCheck,
+  CreditCard,
+  BarChart3,
+  Calendar,
+  Sparkles,
+  Layers,
+  Home,
+  CheckCircle2,
+  FileText,
+  Info
+} from 'lucide-react'
 
 const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
   ssr: false,
@@ -33,17 +48,30 @@ interface MessageContentRendererProps {
   onAction?: (action: any) => void
 }
 
+function getHeaderIcon(text: string) {
+  const t = text.toLowerCase()
+  if (t.includes('payment') || t.includes('plan') || t.includes('cost') || t.includes('price')) return CreditCard
+  if (t.includes('building') || t.includes('tower') || t.includes('floor') || t.includes('height')) return Building2
+  if (t.includes('address') || t.includes('location') || t.includes('where')) return MapPin
+  if (t.includes('vastu') || t.includes('orient') || t.includes('facing')) return Compass
+  if (t.includes('safety') || t.includes('security') || t.includes('cctv') || t.includes('aqi')) return ShieldCheck
+  if (t.includes('status') || t.includes('timeline') || t.includes('possession') || t.includes('date')) return Calendar
+  if (t.includes('layout') || t.includes('unit') || t.includes('bhk') || t.includes('config')) return Home
+  if (t.includes('amenit') || t.includes('facility') || t.includes('feature')) return Sparkles
+  if (t.includes('connectiv') || t.includes('nearby') || t.includes('infra')) return Layers
+  if (t.includes('decision') || t.includes('verdict') || t.includes('intelligence') || t.includes('thesis')) return BarChart3
+  return Info
+}
+
 export function MessageContentRenderer({ content, isStreaming, onAction }: MessageContentRendererProps) {
   const blocks = isStreaming ? null : parseResponseBlocks(content)
 
-  const proseClass = "prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-blue-700 dark:prose-headings:text-blue-400 prose-a:text-blue-500 prose-strong:bg-blue-50 dark:prose-strong:bg-blue-900/30 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md prose-strong:text-blue-700 dark:prose-strong:text-blue-300 prose-strong:font-semibold prose-strong:border prose-strong:border-blue-100 dark:prose-strong:border-blue-800/50 prose-table:w-full prose-table:text-sm prose-table:my-4 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-100 dark:prose-th:bg-blue-900/40 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-gray-800 dark:prose-th:text-blue-200 prose-th:border prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-gray-200 dark:prose-td:border-gray-700"
+  const proseClass = "prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-2.5 prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900 dark:prose-headings:text-slate-100 prose-a:text-[#0064E5] dark:prose-a:text-[#4793FF] prose-a:no-underline hover:prose-a:underline prose-strong:font-semibold prose-strong:text-slate-900 dark:prose-strong:text-slate-100 prose-ul:my-2 prose-li:my-1"
 
   if (blocks) {
     return <ResponseBlockRenderer blocks={blocks} />
   }
 
-  // react-markdown v9 dropped the `className` prop — it used to render this
-  // wrapper div itself, so wrap explicitly to keep the same markup.
   return (
     <>
       <div className={proseClass}>
@@ -53,22 +81,47 @@ export function MessageContentRenderer({ content, isStreaming, onAction }: Messa
         components={{
           'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
           'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
+          h3: ({ node, children, ...props }: any) => {
+            const titleText = String(children || '')
+            const IconComponent = getHeaderIcon(titleText)
+            return (
+              <h3 className="flex items-center gap-2.5 text-base md:text-lg font-bold text-slate-900 dark:text-slate-100 mt-5 mb-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 first:border-0 first:pt-0 first:mt-0" {...props}>
+                <span className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-[#0064E5] dark:text-[#4793FF] flex-shrink-0">
+                  <IconComponent className="w-4 h-4" />
+                </span>
+                <span>{children}</span>
+              </h3>
+            )
+          },
+          h4: ({ node, children, ...props }: any) => {
+            const titleText = String(children || '')
+            const IconComponent = getHeaderIcon(titleText)
+            return (
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4 mb-2" {...props}>
+                <IconComponent className="w-3.5 h-3.5 text-[#0064E5] dark:text-[#4793FF] flex-shrink-0" />
+                <span>{children}</span>
+              </h4>
+            )
+          },
+          blockquote: ({ node, ...props }: any) => (
+            <blockquote className="my-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 p-4 text-slate-700 dark:text-slate-300 not-italic shadow-xs" {...props} />
+          ),
           table: ({ node, ...props }: any) => (
-            <div className="my-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#151b27] shadow-sm">
-              <table className="w-full border-collapse text-left text-sm text-gray-500 dark:text-gray-400" {...props} />
+            <div className="my-4 overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#151b27] shadow-xs">
+              <table className="w-full border-collapse text-left text-xs md:text-sm text-slate-700 dark:text-slate-300" {...props} />
             </div>
           ),
           thead: ({ node, ...props }: any) => (
-            <thead className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800" {...props} />
+            <thead className="bg-slate-100/70 dark:bg-slate-800/60 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/80" {...props} />
           ),
           th: ({ node, ...props }: any) => (
-            <th className="px-4 py-3 font-semibold text-gray-900 dark:text-white" {...props} />
+            <th className="px-4 py-3 font-bold text-slate-900 dark:text-slate-100" {...props} />
           ),
           td: ({ node, ...props }: any) => (
-            <td className="px-4 py-3 border-b border-gray-100 dark:border-gray-800/50 last:border-0 text-gray-700 dark:text-gray-300" {...props} />
+            <td className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 last:border-0" {...props} />
           ),
           tr: ({ node, ...props }: any) => (
-            <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors" {...props} />
+            <tr className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors even:bg-slate-50/30 dark:even:bg-slate-900/20" {...props} />
           ),
           a: ({ node, ...props }: any) => {
             const href = props.href || ''
@@ -86,13 +139,13 @@ export function MessageContentRenderer({ content, isStreaming, onAction }: Messa
                     priority: 2,
                     payload: { text: `Tell me more about ${projectName}` },
                   })}
-                  className="text-[#c47860] hover:underline cursor-pointer font-medium"
+                  className="text-[#0064E5] hover:underline cursor-pointer font-medium"
                 >
                   {projectName}
                 </button>
               )
             }
-            return <a {...props} className="text-[#c47860] hover:underline" />
+            return <a {...props} className="text-[#0064E5] hover:underline" />
           }
         } as any}
       >
@@ -100,7 +153,7 @@ export function MessageContentRenderer({ content, isStreaming, onAction }: Messa
       </ReactMarkdown>
       </div>
       {isStreaming && (
-        <span className="inline-block w-0.5 h-[1em] bg-current animate-pulse ml-0.5 align-middle opacity-70" />
+        <span className="inline-block w-1.5 h-4 bg-[#0064E5] animate-pulse ml-1 align-middle rounded-full" />
       )}
     </>
   )

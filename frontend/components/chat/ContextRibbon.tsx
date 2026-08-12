@@ -13,12 +13,13 @@ export default function ContextRibbon({ intent, onRemove }: ContextRibbonProps) 
   if (!intent) return null;
 
   // We only want to display certain fields that are meaningful to the user
-  const displayFields = ['sector', 'bhk', 'budgetMax', 'budgetMin', 'builderName', 'possession'];
+  const displayFields = ['projectNames', 'sector', 'bhk', 'budgetMax', 'budgetMin', 'builderName', 'possession'];
 
   const activeFilters = Object.entries(intent)
-    .filter(([key, value]) => displayFields.includes(key) && value !== null && value !== undefined && value !== '')
+    .filter(([key, value]) => displayFields.includes(key) && value !== null && value !== undefined && value !== '' && (Array.isArray(value) ? value.length > 0 : true))
     .map(([key, value]) => {
       let label = String(value);
+      if (key === 'projectNames') label = Array.isArray(value) ? value.join(', ') : String(value);
       if (key === 'bhk' && Array.isArray(value)) label = `${value.join(', ')} BHK`;
       if (key === 'budgetMax') label = `Max ₹${value}Cr`;
       if (key === 'budgetMin') label = `Min ₹${value}Cr`;

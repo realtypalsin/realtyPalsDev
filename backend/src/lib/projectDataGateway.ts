@@ -371,6 +371,16 @@ async function getAmenitiesAndConnectivityWithValidation(
     return facts
   }
 
+  if (data.full_address || data.address) {
+    facts['full_address'] = {
+      fact: 'Verified physical address',
+      value: (data.full_address || data.address) as string,
+      source: 'database',
+      confidence: 1.0,
+      validated: true,
+    }
+  }
+
   facts['amenity_count'] = {
     fact: 'Total amenities',
     value: data.amenity_count,
