@@ -91,7 +91,7 @@ export default function SessionDiscoverPage() {
         <ChatErrorBoundary>
           <Suspense fallback={<div className="flex-1"><UniversalLoader variant="skeleton-page" label="Loading chat…" /></div>}>
             <DiscoveryContent
-              key={sessionId ?? 'new'}
+              key="discovery-content"
               initialSessionId={sessionId}
               userId={userId}
               guestToken={guestToken}

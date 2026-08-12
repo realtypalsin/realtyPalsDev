@@ -1188,14 +1188,15 @@ router.post('/', async (req: Request, res: Response) => {
 
     // ─── GROUND TRUTH DATABASE PIPELINE (Sourced 100% from PostgreSQL) ───────────
     const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(message)
+    const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(message)
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
-    if ((activeProjectName || isSummaryRequest) && action.type === 'TEXT_MESSAGE') {
+    if ((activeProjectName || isSummaryRequest || isCompareRequest) && action.type === 'TEXT_MESSAGE') {
       try {
-        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest })
+        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest })
 
         // 1. Gather all projects discussed in the chat session for interest weightage
-        const allDbProjects = await prisma.project.findMany({
+        const rawDbProjects = await prisma.project.findMany({
           include: {
             builder: true,
             unit_types: true,
@@ -1205,14 +1206,24 @@ router.post('/', async (req: Request, res: Response) => {
           }
         })
 
-        // Track frequency of project mentions across current chat session
-        const sessionHistoryMessages = chatHistoryRaw.map(m => m.content).concat([message])
+        // Filter out duplicate IITL Nimbus project permanently
+        const allDbProjects = rawDbProjects.filter(p => !p.name.toLowerCase().includes('iitl nimbus'))
+
+        // Track frequency of project mentions strictly across user messages (excluding assistant outputs & meta summary commands)
+        const isMetaSummaryMsg = (txt: string) => /summarize|session summary|interest weightage|calculate weight|summary of session/i.test(txt)
+        const userInquiryMessages = chatHistoryRaw
+          .filter(m => m.role === 'user' && !isMetaSummaryMsg(m.content))
+          .map(m => m.content)
+        if (!isSummaryRequest) {
+          userInquiryMessages.push(message)
+        }
+
         const projectMentionCounts = new Map<string, { count: number; project: typeof allDbProjects[0] }>()
 
         allDbProjects.forEach(proj => {
           const lowerName = proj.name.toLowerCase()
           let count = 0
-          sessionHistoryMessages.forEach(msgText => {
+          userInquiryMessages.forEach(msgText => {
             if (msgText.toLowerCase().includes(lowerName)) {
               count++
             }
@@ -1223,7 +1234,35 @@ router.post('/', async (req: Request, res: Response) => {
         })
 
         let targetProjects: typeof allDbProjects = []
-        if (isSummaryRequest) {
+        if (isCompareRequest) {
+          const matchedProjects: typeof allDbProjects = []
+          const msgLower = message.toLowerCase()
+          
+          // Sort allDbProjects by length of name descending so longer specific names ("Ace Hanei") match before shorter generic ones ("Ace")
+          const sortedDbProjects = [...allDbProjects].sort((a, b) => b.name.length - a.name.length)
+
+          sortedDbProjects.forEach(p => {
+            const pName = p.name.toLowerCase()
+            
+            // Match full name or explicit project names in user message or intent
+            const fullMatch = msgLower.includes(pName)
+            const inNames = intent.projectNames && intent.projectNames.some(pn => {
+              const pnLower = pn.toLowerCase()
+              return pName.includes(pnLower) || pnLower.includes(pName)
+            })
+            
+            if (fullMatch || inNames) {
+              if (!matchedProjects.some(mp => mp.id === p.id)) {
+                matchedProjects.push(p)
+              }
+            }
+          })
+
+          if (matchedProjects.length > 0) {
+            // Strictly keep ONLY the matched requested projects (min 2, max 4) — NEVER add random unrequested projects!
+            targetProjects = matchedProjects.slice(0, 4)
+          }
+        } else if (isSummaryRequest) {
           targetProjects = Array.from(projectMentionCounts.values()).map(v => v.project)
           if (targetProjects.length === 0 && allDbProjects.length > 0) {
             targetProjects = allDbProjects.slice(0, 3)
@@ -1236,6 +1275,16 @@ router.post('/', async (req: Request, res: Response) => {
         }
 
         if (targetProjects.length > 0) {
+          // Deduplicate targetProjects so duplicate DB records for the same property only render 1 card
+          const seenKeys = new Set<string>()
+          targetProjects = targetProjects.filter(p => {
+            const normName = p.name.toLowerCase().replace(/^(iitl\s+|nimbus\s+)/g, '').replace(/\bthe\b/g, '').trim()
+            const key = p.rera_number && p.rera_number.length > 5 ? p.rera_number : normName
+            if (seenKeys.has(key)) return false
+            seenKeys.add(key)
+            return true
+          })
+
           // CRITICAL REQUIREMENT: ALWAYS EMIT PROPERTY CARDS FOR THE UI
           send('properties', {
             exactResults: targetProjects,
@@ -1251,7 +1300,7 @@ router.post('/', async (req: Request, res: Response) => {
             projects: targetProjects.map(p => {
               const mentions = projectMentionCounts.get(p.id)?.count || 1
               const weightagePct = Math.round((mentions / totalMentions) * 100)
-              return {
+              const baseObj: Record<string, any> = {
                 name: p.name,
                 sector: p.sector,
                 city: p.city,
@@ -1265,19 +1314,54 @@ router.post('/', async (req: Request, res: Response) => {
                 description: p.description,
                 payment_plans: p.payment_plans.map(pp => pp.plan_name),
                 unit_types: p.unit_types.map(ut => `${ut.bhk} BHK (${ut.super_area_sqft} sq ft)`),
-                session_inquiry_count: mentions,
-                session_interest_weightage_pct: weightagePct,
               }
+              if (isSummaryRequest) {
+                baseObj.session_inquiry_count = mentions
+                baseObj.session_interest_weightage_pct = weightagePct
+              }
+              return baseObj
             })
           })
 
-          const systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
+          let systemPrompt = ''
+          if (isSummaryRequest) {
+            systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
 Verified facts: ${dbFactsJson}
 
-Strict Rules:
-1. Use ONLY the verified database facts provided above. Never invent RERA numbers, launch dates, possession dates, or prices outside what is stored in PostgreSQL DB.
-2. Present exact dates (e.g. 2024-02-01 launch, 2028-12-12 possession) and exact RERA IDs (e.g. UPRERAPRJ916631/02/2024).
-3. If user requests a summary, render an interest weightage breakdown table with inquiry counts and percentage weights.`
+EXECUTIVE SUMMARY INSTRUCTIONS:
+1. Render a clean Markdown summary table of the session with columns: | Project Name | Inquiry Count | Interest Weightage (%) |.
+2. Below the table, provide a concise summary for each discussed project.
+3. Never invent facts outside PostgreSQL DB.`
+          } else if (isCompareRequest && targetProjects.length >= 2) {
+            const projectHeaders = targetProjects.map(p => p.name).join(' | ')
+            systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
+Verified facts: ${dbFactsJson}
+
+MULTI-PROPERTY COMPARISON INSTRUCTIONS:
+1. Render a clean, multi-column Markdown comparison table comparing strictly the ${targetProjects.length} requested projects with header: | Parameter | ${projectHeaders} |.
+2. Compare key high-value buyer parameters across rows in this exact order:
+   - Developer / Builder
+   - Location (Sector & City)
+   - Status (Under Construction vs Ready to Move)
+   - Price Range (₹ Cr / Lakh)
+   - Configurations Offered (e.g. 2 BHK, 3 BHK)
+   - Unit Sizes (sq ft)
+   - Key Payment Plans Offered
+   - Launch & Possession Dates
+   - RERA Registration Number
+3. Do NOT include unrequested projects. Show ONLY the ${targetProjects.length} requested columns.
+4. Keep table cell values concise and clear. Do NOT output unrequested text paragraphs.`
+          } else {
+            systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
+Verified facts: ${dbFactsJson}
+
+EXECUTIVE INSTRUCTIONS:
+1. Answer ONLY what the user explicitly asked for in their question. Be extremely concise.
+2. Format your response strictly as a clean, elegant Markdown comparison table (2 columns: Parameter | Value).
+3. Do NOT output long text paragraphs or dump lists of unit types/payment plans unless the user explicitly requested them.
+4. Do NOT output any "Session Interest Summary" table or extra meta commentary.
+5. Use exact dates (e.g. 2024-02-01 launch, 2028-12-12 possession) and exact RERA IDs (e.g. UPRERAPRJ916631/02/2024).`
+          }
 
           const systemMsgHistory = [{ role: 'user' as const, content: message }]
 
@@ -1291,9 +1375,9 @@ Strict Rules:
           })
 
           const responseChips = [
-            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '📅 Schedule Site Visit', icon: '📅', analyticsId: 'chip_visit', priority: 1, payload: { text: 'Schedule a site visit' } },
-            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '🧮 Calculate Monthly EMI', icon: '🧮', analyticsId: 'chip_emi', priority: 2, payload: { text: 'Calculate EMI' } },
-            { id: `chip_plans_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '📊 View Payment Plans', icon: '📊', analyticsId: 'chip_plans', priority: 3, payload: { text: 'Show payment plans' } }
+            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit', priority: 1, payload: { text: 'Schedule a site visit' } },
+            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 2, payload: { text: 'Calculate EMI' } },
+            { id: `chip_plans_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Payment Plans', icon: 'file-text', analyticsId: 'chip_plans', priority: 3, payload: { text: 'Show payment plans' } }
           ]
 
           send('ui_state', {
@@ -1303,6 +1387,50 @@ Strict Rules:
             missingFields: [],
             confidence: 'HIGH'
           })
+
+          // Persist session & chat messages to PostgreSQL Database so sidebar logs it immediately
+          try {
+            if (isNewSession) {
+              await prisma.chatSession.create({
+                data: {
+                  id: currentSessionId,
+                  ...(userId ? { user_id: userId } : { guest_token: guestToken }),
+                  title: message.slice(0, 60),
+                  chat_phase: 'SHORTLISTED',
+                  message_count: 2,
+                }
+              })
+              if (userId) await invalidateSessionList(userId).catch(() => {})
+            } else {
+              await prisma.chatSession.update({
+                where: { id: currentSessionId },
+                data: {
+                  last_active: new Date(),
+                  chat_phase: 'SHORTLISTED',
+                  message_count: { increment: 2 },
+                }
+              })
+              if (userId) await invalidateSessionList(userId).catch(() => {})
+            }
+
+            await prisma.chatMessage.createMany({
+              data: [
+                {
+                  session_id: currentSessionId,
+                  role: 'user',
+                  content: message,
+                  intent_snapshot: intent as unknown as Prisma.InputJsonValue,
+                },
+                {
+                  session_id: currentSessionId,
+                  role: 'assistant',
+                  content: fallbackResult.text || '[streamed]',
+                },
+              ]
+            })
+          } catch (dbErr) {
+            console.error('[CHAT:GROUND_TRUTH_DB_SAVE_ERROR]', dbErr)
+          }
 
           send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'ground_truth_database' })
           res.end()

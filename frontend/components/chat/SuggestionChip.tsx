@@ -56,7 +56,8 @@ function renderChipIcon(chip: ChipAction, isActive: boolean) {
  */
 export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, disabled }: SuggestionChipProps) {
   if (!chip.label || !chip.label.trim()) return null
-  const isActive = chipPicker?.label === chip.label
+  const cleanLabel = chip.label.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim()
+  const isActive = chipPicker?.label === chip.label || chipPicker?.label === cleanLabel
   const hasDropdown = chip.actionType === 'COMPARE_PROPERTIES' || chip.actionType === 'CALCULATE_EMI' || chip.actionType === 'BOOK_VISIT'
 
   return (
@@ -82,13 +83,13 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
             : 'bg-white/95 dark:bg-zinc-800/90 backdrop-blur-md text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/80 hover:bg-white dark:hover:bg-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-950 dark:hover:text-white shadow-2xs hover:shadow-xs'
         }
       `}
-      title={chip.label}
-      aria-label={chip.label}
+      title={cleanLabel}
+      aria-label={cleanLabel}
       role="button"
       aria-pressed={isActive}
     >
       {renderChipIcon(chip, isActive)}
-      <span className="truncate min-w-0 font-medium tracking-tight">{chip.label}</span>
+      <span className="truncate min-w-0 font-medium tracking-tight">{cleanLabel}</span>
       {hasDropdown && (
         <ChevronDown
           size={13}

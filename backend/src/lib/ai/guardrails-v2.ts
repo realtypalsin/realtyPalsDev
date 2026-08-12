@@ -47,7 +47,11 @@ function extractFactsFromPrompt(systemPrompt: string): FactMap {
           const max = p.price_max_cr || min * 1.5
           facts.projectPrices.set(p.name, { min, max })
         }
-        if (p.sector) facts.sectors.add(p.sector)
+        if (p.sector) {
+          facts.sectors.add(p.sector)
+          const m = p.sector.match(/(?:sector|area)\s+(\d+[a-z]*)/i)
+          if (m) facts.sectors.add(`Sector ${m[1]}`)
+        }
         if (p.possession_date) facts.possessionDates.add(p.possession_date)
         if (p.rera_number) facts.reraNumbers.add(p.rera_number)
         if (p.builder?.name) facts.builders.add(p.builder.name)
@@ -136,7 +140,8 @@ export function validateAgainstFactsSync(
   }
 
   for (const sector of sectorsInResponse) {
-    if (!facts.sectors.has(sector)) {
+    const isKnownSector = Array.from(facts.sectors).some(s => s.toLowerCase().includes(sector.toLowerCase()) || sector.toLowerCase().includes(s.toLowerCase()))
+    if (!isKnownSector) {
       violations.push({
         type: 'sector_fabrication',
         detail: `sector "${sector}" not in verified facts`,
