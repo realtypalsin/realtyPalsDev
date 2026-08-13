@@ -1466,7 +1466,14 @@ EXECUTIVE INSTRUCTIONS:
             console.error('[CHAT:GROUND_TRUTH_DB_SAVE_ERROR]', dbErr)
           }
 
-          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'ground_truth_database' })
+          const responseMode = isCompareRequest && targetProjects.length >= 2 ? 'comparison' : 'ground_truth_database'
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            responseMode,
+            ...(isCompareRequest && targetProjects.length >= 2 ? { comparisonProjects: targetProjects } : {})
+          })
           res.end()
           return
         }

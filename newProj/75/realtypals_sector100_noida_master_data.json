@@ -1,0 +1,324 @@
+[
+  {
+    "id": "lotus-boulevard-sector-100",
+    "name": "Lotus Boulevard",
+    "slug": "lotus-boulevard-sector-100",
+    "sector": "Sector 100",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Lotus Boulevard Luxury Gated Living in Sector 100",
+    "address": "Sector 100, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ2019",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 3200,
+    "total_towers": 30,
+    "land_area_acres": 40,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Lotus Boulevard is a high-end delivered residential society in Sector 100 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Lotus Boulevard is a high-end delivered residential society in Sector 100 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 100",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "lotus boulevard",
+      "sector 100",
+      "apartments in sector 100"
+    ],
+    "price_min_cr": 1.1,
+    "price_range_label": "₹110 Lakh - ₹1.60 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "3C Company",
+      "slug": "3c-company",
+      "logo_url": "https://ui-avatars.com/api/?name=3C&background=0D8ABC&color=fff",
+      "experience_years": "20+ Years",
+      "delivered_units": 3200,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 10800,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Boulevard Facing",
+          "psf": 150
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 75,
+      "club_membership": 200000,
+      "maintenance_psf_monthly": 3.6
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Green Home",
+        "bhk": 2,
+        "super_area_sqft": 1020,
+        "carpet_area_sqft": 620,
+        "price_min_cr": 1.1,
+        "price_max_cr": 1.2,
+        "price_per_sqft": 10800
+      },
+      {
+        "name": "3 BHK Green Estate",
+        "bhk": 3,
+        "super_area_sqft": 1356,
+        "carpet_area_sqft": 840,
+        "price_min_cr": 1.46,
+        "price_max_cr": 1.6,
+        "price_per_sqft": 10800
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 10800,
+        "total_price_cr": 1.1,
+        "recorded_at": "2026-08-13T06:00:33.755Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.756Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "lotus-boulevard-espacia-sector-100",
+    "name": "Lotus Boulevard Espacia",
+    "slug": "lotus-boulevard-espacia-sector-100",
+    "sector": "Sector 100",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Lotus Boulevard Espacia Luxury Gated Living in Sector 100",
+    "address": "Sector 100, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ2025",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 750,
+    "total_towers": 8,
+    "land_area_acres": 10,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Lotus Boulevard Espacia is a high-end delivered residential society in Sector 100 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Lotus Boulevard Espacia is a high-end delivered residential society in Sector 100 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 100",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "lotus boulevard espacia",
+      "sector 100",
+      "apartments in sector 100"
+    ],
+    "price_min_cr": 2.26,
+    "price_range_label": "₹226 Lakh - ₹3.20 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "3C Company",
+      "slug": "3c-company",
+      "logo_url": "https://ui-avatars.com/api/?name=3C&background=0D8ABC&color=fff",
+      "experience_years": "20+ Years",
+      "delivered_units": 750,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 11500,
+      "floor_rise_per_floor": 30,
+      "plc_charges": [
+        {
+          "name": "Central Park Facing",
+          "psf": 200
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 80,
+      "club_membership": 250000,
+      "maintenance_psf_monthly": 4
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Luxury Espacia",
+        "bhk": 3,
+        "super_area_sqft": 1970,
+        "carpet_area_sqft": 1220,
+        "price_min_cr": 2.26,
+        "price_max_cr": 2.45,
+        "price_per_sqft": 11500
+      },
+      {
+        "name": "4 BHK Grand Espacia",
+        "bhk": 4,
+        "super_area_sqft": 2560,
+        "carpet_area_sqft": 1650,
+        "price_min_cr": 2.94,
+        "price_max_cr": 3.2,
+        "price_per_sqft": 11500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 11500,
+        "total_price_cr": 2.26,
+        "recorded_at": "2026-08-13T06:00:33.756Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.756Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  }
+]

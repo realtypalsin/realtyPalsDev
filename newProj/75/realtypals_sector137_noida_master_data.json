@@ -1,0 +1,1111 @@
+[
+  {
+    "id": "purvanchal-royal-park-sector-137",
+    "name": "Purvanchal Royal Park",
+    "slug": "purvanchal-royal-park-sector-137",
+    "sector": "Sector 137",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Purvanchal Royal Park Luxury Gated Living in Sector 137",
+    "address": "Sector 137, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ9912",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1100,
+    "total_towers": 16,
+    "land_area_acres": 16,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Purvanchal Royal Park is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Purvanchal Royal Park is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "purvanchal royal park",
+      "sector 137",
+      "apartments in sector 137"
+    ],
+    "price_min_cr": 1.28,
+    "price_range_label": "₹128 Lakh - ₹1.85 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Purvanchal Projects",
+      "slug": "purvanchal-projects",
+      "logo_url": "https://ui-avatars.com/api/?name=Purvanchal&background=0D8ABC&color=fff",
+      "experience_years": "28+ Years",
+      "delivered_units": 1100,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 9800,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Central Green Facing",
+          "psf": 150
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 75,
+      "club_membership": 200000,
+      "maintenance_psf_monthly": 3.5
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Compact",
+        "bhk": 3,
+        "super_area_sqft": 1315,
+        "carpet_area_sqft": 810,
+        "price_min_cr": 1.28,
+        "price_max_cr": 1.4,
+        "price_per_sqft": 9800
+      },
+      {
+        "name": "3 BHK Deluxe",
+        "bhk": 3,
+        "super_area_sqft": 1735,
+        "carpet_area_sqft": 1080,
+        "price_min_cr": 1.7,
+        "price_max_cr": 1.85,
+        "price_per_sqft": 9800
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 1.28,
+        "recorded_at": "2026-08-13T06:00:33.758Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.758Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "paras-tierea-sector-137",
+    "name": "Paras Tierea",
+    "slug": "paras-tierea-sector-137",
+    "sector": "Sector 137",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Paras Tierea Luxury Gated Living in Sector 137",
+    "address": "Sector 137, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ3318",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 3800,
+    "total_towers": 28,
+    "land_area_acres": 30,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Paras Tierea is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Paras Tierea is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "paras tierea",
+      "sector 137",
+      "apartments in sector 137"
+    ],
+    "price_min_cr": 0.85,
+    "price_range_label": "₹85 Lakh - ₹1.38 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Paras Buildtech",
+      "slug": "paras-buildtech",
+      "logo_url": "https://ui-avatars.com/api/?name=Paras&background=0D8ABC&color=fff",
+      "experience_years": "20+ Years",
+      "delivered_units": 3800,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 9200,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Park Facing",
+          "psf": 120
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 60,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3.2
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Standard",
+        "bhk": 2,
+        "super_area_sqft": 925,
+        "carpet_area_sqft": 560,
+        "price_min_cr": 0.85,
+        "price_max_cr": 0.95,
+        "price_per_sqft": 9200
+      },
+      {
+        "name": "3 BHK Family",
+        "bhk": 3,
+        "super_area_sqft": 1365,
+        "carpet_area_sqft": 840,
+        "price_min_cr": 1.25,
+        "price_max_cr": 1.38,
+        "price_per_sqft": 9200
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9200,
+        "total_price_cr": 0.85,
+        "recorded_at": "2026-08-13T06:00:33.758Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.758Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "gulshan-vivante-sector-137",
+    "name": "Gulshan Vivante",
+    "slug": "gulshan-vivante-sector-137",
+    "sector": "Sector 137",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Gulshan Vivante Luxury Gated Living in Sector 137",
+    "address": "Sector 137, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1182",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 850,
+    "total_towers": 11,
+    "land_area_acres": 6.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Gulshan Vivante is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Gulshan Vivante is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Gian P. Mathur & Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "gulshan vivante",
+      "sector 137",
+      "apartments in sector 137"
+    ],
+    "price_min_cr": 1.1,
+    "price_range_label": "₹110 Lakh - ₹1.68 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Gulshan Group",
+      "slug": "gulshan-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Gulshan&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "delivered_units": 850,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 10200,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Club Facing",
+          "psf": 150
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 75,
+      "club_membership": 200000,
+      "maintenance_psf_monthly": 3.6
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Luxury",
+        "bhk": 2,
+        "super_area_sqft": 1080,
+        "carpet_area_sqft": 660,
+        "price_min_cr": 1.1,
+        "price_max_cr": 1.22,
+        "price_per_sqft": 10200
+      },
+      {
+        "name": "3 BHK Deluxe",
+        "bhk": 3,
+        "super_area_sqft": 1490,
+        "carpet_area_sqft": 920,
+        "price_min_cr": 1.52,
+        "price_max_cr": 1.68,
+        "price_per_sqft": 10200
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 10200,
+        "total_price_cr": 1.1,
+        "recorded_at": "2026-08-13T06:00:33.758Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.758Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "supertech-ecociti-sector-137",
+    "name": "Supertech Ecociti",
+    "slug": "supertech-ecociti-sector-137",
+    "sector": "Sector 137",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Supertech Ecociti Luxury Gated Living in Sector 137",
+    "address": "Sector 137, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1370",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1800,
+    "total_towers": 20,
+    "land_area_acres": 14,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Supertech Ecociti is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Supertech Ecociti is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "supertech ecociti",
+      "sector 137",
+      "apartments in sector 137"
+    ],
+    "price_min_cr": 0.78,
+    "price_range_label": "₹78 Lakh - ₹1.25 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Supertech Limited",
+      "slug": "supertech-limited",
+      "logo_url": "https://ui-avatars.com/api/?name=Supertech&background=0D8ABC&color=fff",
+      "experience_years": "25+ Years",
+      "delivered_units": 1800,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 8800,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Park Facing",
+          "psf": 100
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 60,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Eco",
+        "bhk": 2,
+        "super_area_sqft": 890,
+        "carpet_area_sqft": 540,
+        "price_min_cr": 0.78,
+        "price_max_cr": 0.88,
+        "price_per_sqft": 8800
+      },
+      {
+        "name": "3 BHK Eco Grand",
+        "bhk": 3,
+        "super_area_sqft": 1295,
+        "carpet_area_sqft": 790,
+        "price_min_cr": 1.13,
+        "price_max_cr": 1.25,
+        "price_per_sqft": 8800
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 8800,
+        "total_price_cr": 0.78,
+        "recorded_at": "2026-08-13T06:00:33.758Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.758Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "exotica-fresco-sector-137",
+    "name": "Exotica Fresco",
+    "slug": "exotica-fresco-sector-137",
+    "sector": "Sector 137",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Exotica Fresco Luxury Gated Living in Sector 137",
+    "address": "Sector 137, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1371",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 830,
+    "total_towers": 10,
+    "land_area_acres": 7,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Exotica Fresco is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Exotica Fresco is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "exotica fresco",
+      "sector 137",
+      "apartments in sector 137"
+    ],
+    "price_min_cr": 1.05,
+    "price_range_label": "₹105 Lakh - ₹1.62 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Exotica Housing",
+      "slug": "exotica-housing",
+      "logo_url": "https://ui-avatars.com/api/?name=Exotica&background=0D8ABC&color=fff",
+      "experience_years": "18+ Years",
+      "delivered_units": 830,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 9500,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Green Belt Facing",
+          "psf": 130
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 70,
+      "club_membership": 180000,
+      "maintenance_psf_monthly": 3.4
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Fresco",
+        "bhk": 2,
+        "super_area_sqft": 1110,
+        "carpet_area_sqft": 680,
+        "price_min_cr": 1.05,
+        "price_max_cr": 1.15,
+        "price_per_sqft": 9500
+      },
+      {
+        "name": "3 BHK Fresco Premium",
+        "bhk": 3,
+        "super_area_sqft": 1560,
+        "carpet_area_sqft": 960,
+        "price_min_cr": 1.48,
+        "price_max_cr": 1.62,
+        "price_per_sqft": 9500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9500,
+        "total_price_cr": 1.05,
+        "recorded_at": "2026-08-13T06:00:33.758Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.758Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "logix-blossom-county-sector-137",
+    "name": "Logix Blossom County",
+    "slug": "logix-blossom-county-sector-137",
+    "sector": "Sector 137",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Logix Blossom County Luxury Gated Living in Sector 137",
+    "address": "Sector 137, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1372",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 2400,
+    "total_towers": 22,
+    "land_area_acres": 25,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Logix Blossom County is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Logix Blossom County is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "logix blossom county",
+      "sector 137",
+      "apartments in sector 137"
+    ],
+    "price_min_cr": 1.48,
+    "price_range_label": "₹148 Lakh - ₹1.62 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Logix Group",
+      "slug": "logix-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Logix&background=0D8ABC&color=fff",
+      "experience_years": "22+ Years",
+      "delivered_units": 2400,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 9400,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Park Facing",
+          "psf": 120
+        }
+      ],
+      "parking_cost": 320000,
+      "ifms": 65,
+      "club_membership": 180000,
+      "maintenance_psf_monthly": 3.3
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Blossom Suite",
+        "bhk": 3,
+        "super_area_sqft": 1575,
+        "carpet_area_sqft": 980,
+        "price_min_cr": 1.48,
+        "price_max_cr": 1.62,
+        "price_per_sqft": 9400
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9400,
+        "total_price_cr": 1.48,
+        "recorded_at": "2026-08-13T06:02:44.957Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.957Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "ajnara-daffodil-sector-137",
+    "name": "Ajnara Daffodil",
+    "slug": "ajnara-daffodil-sector-137",
+    "sector": "Sector 137",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Ajnara Daffodil Luxury Gated Living in Sector 137",
+    "address": "Sector 137, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1373",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1100,
+    "total_towers": 12,
+    "land_area_acres": 9.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Ajnara Daffodil is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Ajnara Daffodil is a high-end delivered residential society in Sector 137 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Gian P. Mathur & Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "ajnara daffodil",
+      "sector 137",
+      "apartments in sector 137"
+    ],
+    "price_min_cr": 0.88,
+    "price_range_label": "₹88 Lakh - ₹0.98 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Ajnara India",
+      "slug": "ajnara-india",
+      "logo_url": "https://ui-avatars.com/api/?name=Ajnara&background=0D8ABC&color=fff",
+      "experience_years": "28+ Years",
+      "delivered_units": 1100,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 9100,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Club View",
+          "psf": 110
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 60,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3.1
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Daffodil",
+        "bhk": 2,
+        "super_area_sqft": 975,
+        "carpet_area_sqft": 590,
+        "price_min_cr": 0.88,
+        "price_max_cr": 0.98,
+        "price_per_sqft": 9100
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9100,
+        "total_price_cr": 0.88,
+        "recorded_at": "2026-08-13T06:02:44.957Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.957Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  }
+]

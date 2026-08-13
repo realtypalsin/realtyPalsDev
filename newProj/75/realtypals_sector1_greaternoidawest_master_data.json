@@ -1,0 +1,866 @@
+[
+  {
+    "name": "CRC Maesta",
+    "slug": "crc-maesta-sector-1-greater-noida-west",
+    "sector": "Sector 1 Greater Noida West",
+    "status": "under_construction",
+    "possession_date": "2029-05-21",
+    "rera_number": "UPRERAPRJ724518/07/2024",
+    "description": "Super-premium G+33 residential towers offering the lowest density layout with only 2 apartments per floor in Sector 1.",
+    "long_description": "CRC Maesta is a super-premium, under-construction residential development located in the ultra-prime Sector 1, Noida Extension (Greater Noida West). Spanning approximately 3.6 acres of land, this high-end gated community features 5 iconic high-rise towers soaring up to G+33 floors, housing a total of only 358 exclusive residences. Designed for buyers who demand absolute privacy and spaciousness, the project represents the lowest-density development in the region, offering only 2 apartments per floor. Built to high specifications, Maesta offers grand 3 BHK and 4 BHK layouts, each providing 270-degree panoramic green views. The central community highlights a palatial 26,000 sq ft clubhouse, a temperature-controlled indoor swimming pool, high-tech wellness gyms, a dedicated buggy-friendly pathway, and a no-vehicular walking zone, located just 5 minutes drive over the Hindon Bridge to central Noida.",
+    "tagline": "The Ultimate Low-Density Landmark",
+    "address": "Plot No. GH-11B, Sector 1, Bisrakh Jalalpur, Greater Noida West, Uttar Pradesh 201306",
+    "lat": 28.6012,
+    "lng": 77.451,
+    "hero_image_url": "/images/properties/crc-maesta-sector-1-greater-noida-west/hero.jpg",
+    "builder": {
+      "name": "CRC Group",
+      "slug": "crc-group",
+      "logo_url": "https://ui-avatars.com/api/?name=CRC%20Group&background=0D8ABC&color=fff&size=200"
+    },
+    "pricing": {
+      "price_min_cr": 2.32,
+      "price_max_cr": 3.7,
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "milestones": [
+            {
+              "amt": 0,
+              "due": "Immediate",
+              "pct": 10,
+              "done": true,
+              "milestone": "At Booking"
+            },
+            {
+              "amt": 0,
+              "due": "Foundation Phase",
+              "pct": 15,
+              "done": false,
+              "milestone": "Foundation Complete"
+            },
+            {
+              "amt": 0,
+              "due": "Mid-Phase",
+              "pct": 25,
+              "done": false,
+              "milestone": "On Casting of 15th Slab Slab"
+            },
+            {
+              "amt": 0,
+              "due": "May 2029",
+              "pct": 50,
+              "done": false,
+              "milestone": "Registry & Possession Handover"
+            }
+          ]
+        }
+      ]
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Premium",
+        "bathrooms": 3,
+        "carpet_area_sqft": 1093,
+        "super_area_sqft": 1720,
+        "price_min_cr": 2.32,
+        "price_max_cr": 2.5
+      },
+      {
+        "name": "4 BHK Elite",
+        "bathrooms": 4,
+        "carpet_area_sqft": 1650,
+        "super_area_sqft": 2650,
+        "price_min_cr": 3.58,
+        "price_max_cr": 3.7
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Temperature-Controlled Indoor Pool",
+        "category": "sports"
+      },
+      {
+        "name": "Palatial Central Clubhouse (26K Sqft)",
+        "category": "lifestyle"
+      },
+      {
+        "name": "High-Tech Gymnasium & Wellness Spa",
+        "category": "sports"
+      },
+      {
+        "name": "Buggy-Friendly Pathways",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Pedestrian No-Vehicular Zones",
+        "category": "security"
+      },
+      {
+        "name": "Lawn Tennis & Badminton Courts",
+        "category": "sports"
+      },
+      {
+        "name": "CCTV & Advanced 3-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Covered Multi-Level Parking",
+        "category": "parking"
+      }
+    ],
+    "connectivity": [
+      {
+        "distance_km": 1.2
+      },
+      {
+        "distance_km": 0.5
+      },
+      {
+        "distance_km": 3
+      },
+      {
+        "distance_km": 4.5
+      },
+      {
+        "distance_km": 8
+      }
+    ],
+    "analysis_intelligence": {
+      "financial_intelligence": {
+        "investmentReport": {
+          "market_desc": "High buyer absorption rate and strong demand corridor.",
+          "rental_desc": "Strong tenant demand driven by corporate & IT hubs in Sector 1 Greater Noida West.",
+          "market_trend": "Bullish",
+          "rental_yield": "4.2-4.8%",
+          "liquidity_desc": "Active resale market with multiple transaction points.",
+          "liquidity_score": "High",
+          "appreciation_desc": "Estimated annual capital growth for CRC Maesta based on regional infrastructure expansion.",
+          "appreciation_annual": "12-15%",
+          "investment_highlights": [
+            "Prime sector connectivity along main road axis in Sector 1 Greater Noida West",
+            "High corporate tenant demand yielding stable rental income",
+            "Proven builder track record with strong asset appreciation"
+          ]
+        }
+      },
+      "market_intelligence": {
+        "location_data": {
+          "essentials": [
+            "Top IB & CBSE schools (DPS, Lotus Valley, Ryan International) within 3 km",
+            "Multi-specialty hospitals (Yatharth, Fortis, Jaypee) under 10 mins drive"
+          ],
+          "connectivity": [
+            "Direct access to Metro Station within 1.5 km of CRC Maesta",
+            "Seamless connectivity to Noida-Greater Noida Expressway & main sector road"
+          ],
+          "neighborhood_advantages": [
+            "Established residential cluster in Sector 1 Greater Noida West with 80%+ occupancy",
+            "Surrounded by green belts, sports complexes, and retail centers"
+          ]
+        },
+        "demand_drivers": [
+          "Metro Corridor",
+          "Expressway Access",
+          "IT Employment Hubs"
+        ],
+        "resale_liquidity": "Very High"
+      },
+      "decision_thesis": "CRC Maesta is the ultimate low-density luxury skyscraper on the Sector 1 Hindon corridor, offering a true mansion-in-the-sky experience.",
+      "why_buy": [
+        "Unbeatable Density: The lowest density residential layout in Noida Extension with only 2 apartments per floor.",
+        "Unparalleled commuting: Placed directly on the Sector 1 Hindon bridge, only a 5-minute drive to Central Noida.",
+        "Spectacular G+33 height providing 270-degree panoramic views of open greens.",
+        "Elite specifications: Central VRF AC ready pre-ducting and temperature-controlled indoor pool."
+      ],
+      "why_avoid": [
+        "Under construction: expected handovers scheduled for May 2029, requiring a steady holding timeline.",
+        "Premium starting price position (starts at ₹2.32 Cr) limits speculative fast-flipping opportunities."
+      ]
+    },
+    "channel_partners": [],
+    "competitors": [
+      {
+        "name": "Gulshan Avante",
+        "slug": "gulshan-avante-sector-16b",
+        "this_project_advantage": "Lower density with only 2 apartments per floor vs 4; closer proximity to Noida bridge link.",
+        "competitor_advantage": "Earlier expected possession timeframe.",
+        "verdict": "Choose CRC Maesta for low-density vertical privacy and Noida access; choose Gulshan Avante for faster move-in.",
+        "price_delta_note": "CRC Maesta is approx par with Gulshan Avante."
+      }
+    ],
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 45,
+    "green_cover_percent": 75,
+    "market_demand_score": 90,
+    "appreciation_potential_5yr": 14,
+    "rental_yield_annual_percent": 4.7,
+    "resale_lock_in_months": 36,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": false,
+    "has_duplex": false,
+    "escrow_verified": true,
+    "escrow_bank_name": "HDFC Bank",
+    "land_title_clear": true,
+    "nclt_status": "Clean - No NCLT Moratorium",
+    "construction_quality_rating": 4.5,
+    "buyer_satisfaction_rating": 4.6,
+    "price_min_cr": 2.32,
+    "price_range_label": "₹232 Lakh - ₹3.70 Cr (2026 Rate)",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 1 Greater Noida West",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "crc maesta",
+      "crc maesta sector 1 greater noida west",
+      "apartments in sector 1 greater noida west",
+      "flat for sale in crc maesta",
+      "ready to move in sector 1 greater noida west",
+      "CRC Group projects in noida"
+    ],
+    "last_verified_at": "2026-08-13T05:53:48.241Z",
+    "possession_confidence": "delivered",
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 7000,
+        "total_price_cr": 2.32,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.241Z"
+      }
+    ],
+    "total_towers": 5,
+    "total_units": 520,
+    "land_area_acres": 4.2,
+    "architect": "Gian P. Mathur & Associates",
+    "cost_sheet": {
+      "base_price_per_sqft": 7000,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Park Facing",
+          "psf": 150
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 75,
+      "club_membership": 200000,
+      "gst_rate_pct": 0,
+      "stamp_duty_pct": 6,
+      "registration_pct": 1,
+      "maintenance_psf_monthly": 3.5
+    },
+    "launch_date": "2016-03-01T00:00:00.000Z",
+    "oc_obtained": true,
+    "construction_milestones": [
+      {
+        "stage_code": "approvals",
+        "name": "RERA Approval & Registration",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Granted"
+      },
+      {
+        "stage_code": "excavation",
+        "name": "Excavation & Substructure",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "superstructure",
+        "name": "Tower RCC Frame Structure",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "finishing",
+        "name": "Brickwork, Plaster & MEP",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "oc_certification",
+        "name": "Occupancy Certificate (OC)",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Issued"
+      },
+      {
+        "stage_code": "handover",
+        "name": "Possession & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active Handover"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Progress & Resident Handover Update",
+        "description": "Final quality checks completed and active physical possession underway.",
+        "update_date": "2026-06-15T00:00:00.000Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100,
+        "source": "UP RERA Site Audit"
+      }
+    ],
+    "walkability_score": 86,
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 8.5,
+        "travel_mode": "drive",
+        "travel_time_min": 18
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 6,
+        "travel_mode": "drive",
+        "travel_time_min": 12
+      },
+      {
+        "destination": "Nearest Aqua Line Metro Station",
+        "distance_km": 1.2,
+        "travel_mode": "drive",
+        "travel_time_min": 5
+      },
+      {
+        "destination": "Connaught Place, Central Delhi",
+        "distance_km": 24,
+        "travel_mode": "drive",
+        "travel_time_min": 42
+      },
+      {
+        "destination": "Jewar International Airport (Upcoming)",
+        "distance_km": 42,
+        "travel_mode": "drive",
+        "travel_time_min": 45
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+        "milestones": [
+          {
+            "stage": "At Application & Booking",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "On Execution of Agreement",
+            "pct": 10,
+            "timeline": "30 Days"
+          },
+          {
+            "stage": "On Completion of Raft & Foundation",
+            "pct": 10,
+            "timeline": "Milestone"
+          },
+          {
+            "stage": "On Offer of Possession & Handover",
+            "pct": 10,
+            "timeline": "Possession Call"
+          }
+        ],
+        "sort_order": 1
+      },
+      {
+        "plan_type": "down_payment",
+        "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+        "milestones": [
+          {
+            "stage": "At Booking",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "Within 45 Days",
+            "pct": 85,
+            "timeline": "45 Days"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 5,
+            "timeline": "Possession"
+          }
+        ],
+        "down_payment_pct": 85,
+        "discount_offered_pct": 8,
+        "sort_order": 2
+      }
+    ]
+  },
+  {
+    "id": "stellar-jeevan-sector-1",
+    "name": "Stellar Jeevan",
+    "slug": "stellar-jeevan-sector-1",
+    "sector": "Sector 1 Greater Noida West",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Stellar Jeevan Luxury Gated Living in Sector 1 Greater Noida West",
+    "address": "Sector 1 Greater Noida West, Greater Noida West, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1009",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 2100,
+    "total_towers": 18,
+    "land_area_acres": 18,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Stellar Jeevan is a high-end delivered residential society in Sector 1 Greater Noida West offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Stellar Jeevan is a high-end delivered residential society in Sector 1 Greater Noida West offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 1 Greater Noida West",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "stellar jeevan",
+      "sector 1 greater noida west",
+      "apartments in sector 1 greater noida west"
+    ],
+    "price_min_cr": 0.66,
+    "price_range_label": "₹66 Lakh - ₹1.05 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Stellar Group",
+      "slug": "stellar-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Stellar+Group&background=0D8ABC&color=fff",
+      "experience_years": "25+ Years",
+      "delivered_units": 2100,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 7100,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Park Facing",
+          "psf": 100
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 55,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Standard",
+        "bhk": 2,
+        "super_area_sqft": 935,
+        "carpet_area_sqft": 560,
+        "price_min_cr": 0.66,
+        "price_max_cr": 0.74,
+        "price_per_sqft": 7100
+      },
+      {
+        "name": "3 BHK Deluxe",
+        "bhk": 3,
+        "super_area_sqft": 1325,
+        "carpet_area_sqft": 810,
+        "price_min_cr": 0.94,
+        "price_max_cr": 1.05,
+        "price_per_sqft": 7100
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 7100,
+        "total_price_cr": 0.66,
+        "recorded_at": "2026-08-13T05:58:21.484Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T05:58:21.484Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "express-astra-sector-1",
+    "name": "Express Astra",
+    "slug": "express-astra-sector-1",
+    "sector": "Sector 1 Greater Noida West",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "under_construction",
+    "tagline": "Express Astra Luxury Gated Living in Sector 1 Greater Noida West",
+    "address": "Sector 1 Greater Noida West, Greater Noida West, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1001",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 920,
+    "total_towers": 10,
+    "land_area_acres": 6,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Express Astra is a high-end delivered residential society in Sector 1 Greater Noida West offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Express Astra is a high-end delivered residential society in Sector 1 Greater Noida West offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 1 Greater Noida West",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "express astra",
+      "sector 1 greater noida west",
+      "apartments in sector 1 greater noida west"
+    ],
+    "price_min_cr": 0.99,
+    "price_range_label": "₹99 Lakh - ₹1.10 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Express Builders",
+      "slug": "express-builders",
+      "logo_url": "https://ui-avatars.com/api/?name=Express&background=0D8ABC&color=fff",
+      "experience_years": "25+ Years",
+      "delivered_units": 920,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 7400,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Park Facing",
+          "psf": 110
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 55,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Astra",
+        "bhk": 3,
+        "super_area_sqft": 1350,
+        "carpet_area_sqft": 820,
+        "price_min_cr": 0.99,
+        "price_max_cr": 1.1,
+        "price_per_sqft": 7400
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 7400,
+        "total_price_cr": 0.99,
+        "recorded_at": "2026-08-13T06:02:44.961Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.961Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "arihant-arden-sector-1",
+    "name": "Arihant Arden",
+    "slug": "arihant-arden-sector-1",
+    "sector": "Sector 1 Greater Noida West",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Arihant Arden Luxury Gated Living in Sector 1 Greater Noida West",
+    "address": "Sector 1 Greater Noida West, Greater Noida West, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1002",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1500,
+    "total_towers": 14,
+    "land_area_acres": 10,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Arihant Arden is a high-end delivered residential society in Sector 1 Greater Noida West offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Arihant Arden is a high-end delivered residential society in Sector 1 Greater Noida West offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Gian P. Mathur & Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 1 Greater Noida West",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "arihant arden",
+      "sector 1 greater noida west",
+      "apartments in sector 1 greater noida west"
+    ],
+    "price_min_cr": 0.68,
+    "price_range_label": "₹68 Lakh - ₹0.76 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Arihant Buildcon",
+      "slug": "arihant-buildcon",
+      "logo_url": "https://ui-avatars.com/api/?name=Arihant&background=0D8ABC&color=fff",
+      "experience_years": "20+ Years",
+      "delivered_units": 1500,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 7300,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Central Garden",
+          "psf": 100
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 55,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Arden",
+        "bhk": 2,
+        "super_area_sqft": 935,
+        "carpet_area_sqft": 560,
+        "price_min_cr": 0.68,
+        "price_max_cr": 0.76,
+        "price_per_sqft": 7300
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 7300,
+        "total_price_cr": 0.68,
+        "recorded_at": "2026-08-13T06:02:44.961Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.961Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  }
+]

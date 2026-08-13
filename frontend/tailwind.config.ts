@@ -58,6 +58,14 @@ const config: Config = {
         md: "var(--shadow-3)",
         lg: "var(--shadow-4)",
       },
+      backgroundImage: {
+        'gradient-user-bubble': 'linear-gradient(135deg, rgb(37, 99, 235) 0%, rgb(37, 99, 235) 50%, rgb(79, 70, 229) 100%)',
+        'gradient-header': 'linear-gradient(90deg, rgba(241, 245, 249, 0.95) 0%, rgba(219, 234, 254, 0.4) 50%, rgba(238, 242, 255, 0.6) 100%)',
+        'gradient-header-dark': 'linear-gradient(90deg, rgba(24, 24, 27, 0.95) 0%, rgba(24, 24, 27, 0.9) 50%, rgba(30, 27, 75, 0.4) 100%)',
+        'gradient-button': 'linear-gradient(90deg, rgb(37, 99, 235) 0%, rgb(79, 70, 229) 100%)',
+        'gradient-button-hover': 'linear-gradient(90deg, rgb(29, 78, 216) 0%, rgb(67, 56, 202) 100%)',
+        'gradient-overlay': 'linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%)',
+      },
       transitionDuration: {
         fast: "var(--duration-fast)",
         base: "var(--duration-normal)",

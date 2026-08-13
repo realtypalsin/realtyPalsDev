@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useEffect, useRef } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import {  m, AnimatePresence  } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import NextImage from 'next/image'
@@ -15,6 +15,7 @@ import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import { SuggestionChip } from '@/components/chat/SuggestionChip'
 import { CardSelectorChip } from '@/components/chat/CardSelectorChip'
 import UniversalLoader from '@/components/ui/universal-loader'
+import { useInlineEdit } from '@/hooks/useInlineEdit'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
@@ -317,29 +318,8 @@ function MessageBubbleInner({
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
   const [showAllProperties, setShowAllProperties] = useState(false)
-  const [isInlineEditing, setIsInlineEditing] = useState(false)
-  const [inlineText, setInlineText] = useState(message.content || '')
-  const [editLoading, setEditLoading] = useState(false)
-
   const displayContent = message.content || ''
-
-  const handleInlineSave = async () => {
-    const trimmed = inlineText.trim()
-    if (!trimmed || trimmed === displayContent) {
-      setIsInlineEditing(false)
-      return
-    }
-    setEditLoading(true)
-    try {
-      await onEditMessage(message.id, trimmed)
-      setIsInlineEditing(false)
-    } catch (error) {
-      console.error('Failed to edit message:', error)
-      onToast('Failed to save changes')
-    } finally {
-      setEditLoading(false)
-    }
-  }
+  const inlineEdit = useInlineEdit(displayContent)
   const rawChips: import('./types').ChipAction[] = [...((message.chips as import('./types').ChipAction[]) || []), ...(isLast ? chips : [])]
   const combinedChips: import('./types').ChipAction[] = Array.from(new Map(rawChips.map((c) => [c.id || c.label, c])).values())
 
@@ -405,7 +385,7 @@ function MessageBubbleInner({
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
           className={`px-5 py-3.5 transition-all duration-300 ${isUser
-            ? 'max-w-[85%] sm:max-w-[78%] bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 text-white shadow-[0_4px_18px_rgba(37,99,235,0.28)] rounded-[22px] rounded-br-[6px] border border-blue-400/30 text-sm font-medium tracking-tight'
+            ? 'max-w-[85%] sm:max-w-[78%] bg-gradient-user-bubble text-white shadow-[0_4px_18px_rgba(37,99,235,0.28)] rounded-[22px] rounded-br-[6px] border border-blue-400/30 text-sm font-medium tracking-tight'
             : 'max-w-[95%] sm:max-w-[85%] bg-white dark:bg-[#121214] ring-1 ring-inset ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100 relative overflow-hidden rounded-[22px] rounded-tl-[6px] cursor-pointer sm:cursor-default shadow-[0_2px_16px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
             }`}
         >
@@ -614,20 +594,22 @@ function MessageBubbleInner({
                 return null
               })()}
             </div>
-          ) : isUser && isInlineEditing ? (
+          ) : isUser && inlineEdit.isEditing ? (
             <div className="w-full space-y-2 relative z-10 min-w-[260px] sm:min-w-[320px]">
               <textarea
                 autoFocus
-                value={inlineText}
-                onChange={(e) => setInlineText(e.target.value)}
+                value={inlineEdit.text}
+                onChange={(e) => inlineEdit.setText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                     e.preventDefault()
-                    handleInlineSave()
+                    inlineEdit.handleSave((text) => onEditMessage(message.id, text)).catch((error) => {
+                      console.error('Failed to edit message:', error)
+                      onToast('Failed to save changes')
+                    })
                   }
                   if (e.key === 'Escape') {
-                    setIsInlineEditing(false)
-                    setInlineText(displayContent)
+                    inlineEdit.handleCancel()
                   }
                 }}
                 className="w-full min-h-[70px] p-3 text-[15px] font-medium text-gray-900 dark:text-white bg-white dark:bg-zinc-800 border border-blue-500/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
@@ -635,21 +617,21 @@ function MessageBubbleInner({
               <div className="flex items-center justify-end gap-2 pt-0.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsInlineEditing(false)
-                    setInlineText(displayContent)
-                  }}
+                  onClick={() => inlineEdit.handleCancel()}
                   className="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-zinc-700/60 rounded-lg transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={handleInlineSave}
-                  disabled={!inlineText.trim() || editLoading}
+                  onClick={() => inlineEdit.handleSave((text) => onEditMessage(message.id, text)).catch((error) => {
+                    console.error('Failed to edit message:', error)
+                    onToast('Failed to save changes')
+                  })}
+                  disabled={!inlineEdit.text.trim() || inlineEdit.isLoading}
                   className="px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all shadow-xs disabled:opacity-50 cursor-pointer"
                 >
-                  {editLoading ? 'Saving...' : 'Save & Submit'}
+                  {inlineEdit.isLoading ? 'Saving...' : 'Save & Submit'}
                 </button>
               </div>
             </div>
@@ -665,15 +647,12 @@ function MessageBubbleInner({
             {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
           </span>
         )}
-        {isUser && displayContent && !isInlineEditing && (
+        {isUser && displayContent && !inlineEdit.isEditing && (
           <button
-            onClick={() => {
-              setIsInlineEditing(true)
-              setInlineText(displayContent)
-            }}
+            onClick={() => inlineEdit.setIsEditing(true)}
             title="Edit message"
             className="text-gray-400 hover:text-blue-500 transition-colors opacity-0 group-hover/msg:opacity-100"
-            disabled={editLoading}
+            disabled={inlineEdit.isLoading}
           >
             <Edit2 size={12} />
           </button>
@@ -831,7 +810,7 @@ function MessageBubbleInner({
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-4 flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-gradient-to-r from-slate-50/95 via-blue-50/40 to-indigo-50/60 dark:from-zinc-900/95 dark:via-zinc-900/90 dark:to-blue-950/40 border border-blue-500/15 dark:border-blue-400/20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md"
+              className="mt-4 flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-gradient-header dark:bg-gradient-header-dark border border-blue-500/15 dark:border-blue-400/20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md"
             >
               <div className="flex items-center gap-2.5">
                 <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-blue-600/10 dark:bg-blue-400/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs shadow-2xs">
@@ -996,7 +975,7 @@ function MessageBubbleInner({
                   <div className="mt-4 flex justify-center w-full">
                     <button
                       onClick={() => setShowAllProperties(prev => !prev)}
-                      className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-[12px] font-bold rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                      className="px-6 py-2.5 bg-gradient-button hover:bg-gradient-button-hover text-white text-[12px] font-bold rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
                     >
                       <span>{showAllProperties ? 'Show initial 6 properties' : `View remaining ${totalCards - MAX_CARDS} properties (All ${totalCards})`}</span>
                       <ChevronDown size={14} className={`transition-transform duration-200 ${showAllProperties ? 'rotate-180' : ''}`} />

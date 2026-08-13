@@ -39,6 +39,17 @@ function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLi
   let flushed = false
   let tokensSent = false
 
+  const validateAndFlush = (forceFlush = false) => {
+    if (!buffer.length) return
+    const check = validateAgainstFactsSync(buffer, systemPrompt)
+    if (check.blocked) {
+      console.warn('[GUARDRAIL:PRE_FLUSH_PREVENTED_LEAK]', check.violations)
+    }
+    flushed = true
+    tokensSent = true
+    originalSend('token', { token: buffer })
+  }
+
   const bufferedSend: SendFn = (event: string, data: Record<string, unknown>) => {
     if (event !== 'token' || typeof data.token !== 'string') {
       originalSend(event, data)
@@ -54,25 +65,13 @@ function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLi
     buffer += data.token
 
     if (buffer.length >= bufferLimit || buffer.includes('\n')) {
-      const check = validateAgainstFactsSync(buffer, systemPrompt)
-      if (check.blocked) {
-        console.warn('[GUARDRAIL:PRE_FLUSH_PREVENTED_LEAK]', check.violations)
-      }
-      flushed = true
-      tokensSent = true
-      originalSend('token', { token: buffer })
+      validateAndFlush()
     }
   }
 
   const flushRemaining = () => {
     if (!flushed && buffer.length > 0) {
-      const check = validateAgainstFactsSync(buffer, systemPrompt)
-      if (check.blocked) {
-        console.warn('[GUARDRAIL:PRE_FLUSH_PREVENTED_LEAK]', check.violations)
-      }
-      flushed = true
-      tokensSent = true
-      originalSend('token', { token: buffer })
+      validateAndFlush()
     }
   }
 
@@ -138,9 +137,10 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
       console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
       return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
-    } catch (err: any) {
-      const tokensSent = getTokensSent() || err?.tokensSent === true
-      const errMsg = err?.message || String(err)
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      const tokensSent = getTokensSent() || (err as any)?.tokensSent === true
+      const errMsg = error.message || String(err)
 
       console.warn(`[FALLBACK:FAIL] ✗ ${item.label} failed: ${errMsg.slice(0, 100)}...`)
 

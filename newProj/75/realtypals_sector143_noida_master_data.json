@@ -1,0 +1,467 @@
+[
+  {
+    "id": "gulshan-ikebana-sector-143",
+    "name": "Gulshan Ikebana",
+    "slug": "gulshan-ikebana-sector-143",
+    "sector": "Sector 143",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Gulshan Ikebana Luxury Gated Living in Sector 143",
+    "address": "Sector 143, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ5512",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1500,
+    "total_towers": 17,
+    "land_area_acres": 12.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Gulshan Ikebana is a high-end delivered residential society in Sector 143 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Gulshan Ikebana is a high-end delivered residential society in Sector 143 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Gian P. Mathur & Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 143",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "gulshan ikebana",
+      "sector 143",
+      "apartments in sector 143"
+    ],
+    "price_min_cr": 1.28,
+    "price_range_label": "₹128 Lakh - ₹1.40 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Gulshan Group",
+      "slug": "gulshan-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Gulshan&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "delivered_units": 1500,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 9600,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Garden Facing",
+          "psf": 140
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 70,
+      "club_membership": 200000,
+      "maintenance_psf_monthly": 3.5
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Zen Standard",
+        "bhk": 3,
+        "super_area_sqft": 1340,
+        "carpet_area_sqft": 820,
+        "price_min_cr": 1.28,
+        "price_max_cr": 1.4,
+        "price_per_sqft": 9600
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9600,
+        "total_price_cr": 1.28,
+        "recorded_at": "2026-08-13T06:00:33.759Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.759Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "ska-orion-sector-143",
+    "name": "SKA Orion",
+    "slug": "ska-orion-sector-143",
+    "sector": "Sector 143",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "under_construction",
+    "tagline": "SKA Orion Luxury Gated Living in Sector 143",
+    "address": "Sector 143, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ4281",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 508,
+    "total_towers": 3,
+    "land_area_acres": 3.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "SKA Orion is a high-end delivered residential society in Sector 143 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "SKA Orion is a high-end delivered residential society in Sector 143 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 143",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "ska orion",
+      "sector 143",
+      "apartments in sector 143"
+    ],
+    "price_min_cr": 1.28,
+    "price_range_label": "₹128 Lakh - ₹1.42 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "SKA India",
+      "slug": "ska-india",
+      "logo_url": "https://ui-avatars.com/api/?name=SKA&background=0D8ABC&color=fff",
+      "experience_years": "12+ Years",
+      "delivered_units": 508,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 9900,
+      "floor_rise_per_floor": 30,
+      "plc_charges": [
+        {
+          "name": "Sky Club Facing",
+          "psf": 150
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 75,
+      "club_membership": 200000,
+      "maintenance_psf_monthly": 3.5
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Sky Suite",
+        "bhk": 3,
+        "super_area_sqft": 1300,
+        "carpet_area_sqft": 800,
+        "price_min_cr": 1.28,
+        "price_max_cr": 1.42,
+        "price_per_sqft": 9900
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9900,
+        "total_price_cr": 1.28,
+        "recorded_at": "2026-08-13T06:00:33.759Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.759Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "logix-blossom-zest-sector-143",
+    "name": "Logix Blossom Zest",
+    "slug": "logix-blossom-zest-sector-143",
+    "sector": "Sector 143",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Logix Blossom Zest Luxury Gated Living in Sector 143",
+    "address": "Sector 143, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1430",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 2200,
+    "total_towers": 14,
+    "land_area_acres": 18,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Logix Blossom Zest is a high-end delivered residential society in Sector 143 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Logix Blossom Zest is a high-end delivered residential society in Sector 143 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 143",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "logix blossom zest",
+      "sector 143",
+      "apartments in sector 143"
+    ],
+    "price_min_cr": 0.41,
+    "price_range_label": "₹41 Lakh - ₹0.98 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Logix Group",
+      "slug": "logix-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Logix&background=0D8ABC&color=fff",
+      "experience_years": "22+ Years",
+      "delivered_units": 2200,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 8900,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Expressway View",
+          "psf": 120
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 60,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3.2
+    },
+    "unit_types": [
+      {
+        "name": "1 BHK Studio",
+        "bhk": 1,
+        "super_area_sqft": 470,
+        "carpet_area_sqft": 280,
+        "price_min_cr": 0.41,
+        "price_max_cr": 0.46,
+        "price_per_sqft": 8900
+      },
+      {
+        "name": "2 BHK Compact",
+        "bhk": 2,
+        "super_area_sqft": 990,
+        "carpet_area_sqft": 600,
+        "price_min_cr": 0.88,
+        "price_max_cr": 0.98,
+        "price_per_sqft": 8900
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 8900,
+        "total_price_cr": 0.41,
+        "recorded_at": "2026-08-13T06:00:33.759Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.759Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  }
+]

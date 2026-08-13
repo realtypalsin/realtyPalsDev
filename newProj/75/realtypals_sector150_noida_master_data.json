@@ -1,0 +1,941 @@
+[
+  {
+    "id": "godrej-palm-retreat-sector-150",
+    "name": "Godrej Palm Retreat",
+    "slug": "godrej-palm-retreat-sector-150",
+    "sector": "Sector 150",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "under_construction",
+    "tagline": "Godrej Palm Retreat Luxury Gated Living in Sector 150",
+    "address": "Sector 150, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1501",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 640,
+    "total_towers": 8,
+    "land_area_acres": 14.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Godrej Palm Retreat is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Godrej Palm Retreat is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Hafeez Contractor",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 150",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "godrej palm retreat",
+      "sector 150",
+      "apartments in sector 150"
+    ],
+    "price_min_cr": 1.68,
+    "price_range_label": "₹168 Lakh - ₹2.80 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Godrej Properties",
+      "slug": "godrej-properties",
+      "logo_url": "https://ui-avatars.com/api/?name=Godrej&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "delivered_units": 640,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 13500,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "name": "Resort View",
+          "psf": 250
+        }
+      ],
+      "parking_cost": 450000,
+      "ifms": 90,
+      "club_membership": 300000,
+      "maintenance_psf_monthly": 4.5
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Resort Suite",
+        "bhk": 2,
+        "super_area_sqft": 1250,
+        "carpet_area_sqft": 780,
+        "price_min_cr": 1.68,
+        "price_max_cr": 1.85,
+        "price_per_sqft": 13500
+      },
+      {
+        "name": "3 BHK Resort Villa",
+        "bhk": 3,
+        "super_area_sqft": 1900,
+        "carpet_area_sqft": 1200,
+        "price_min_cr": 2.56,
+        "price_max_cr": 2.8,
+        "price_per_sqft": 13500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 13500,
+        "total_price_cr": 1.68,
+        "recorded_at": "2026-08-13T06:00:33.759Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.759Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "ats-pristine-sector-150",
+    "name": "ATS Pristine",
+    "slug": "ats-pristine-sector-150",
+    "sector": "Sector 150",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "ATS Pristine Luxury Gated Living in Sector 150",
+    "address": "Sector 150, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ2875",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1050,
+    "total_towers": 13,
+    "land_area_acres": 23,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "ATS Pristine is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "ATS Pristine is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Hafeez Contractor",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 150",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "ats pristine",
+      "sector 150",
+      "apartments in sector 150"
+    ],
+    "price_min_cr": 2.48,
+    "price_range_label": "₹248 Lakh - ₹4.90 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "ATS Infrastructure",
+      "slug": "ats-infrastructure",
+      "logo_url": "https://ui-avatars.com/api/?name=ATS&background=0D8ABC&color=fff",
+      "experience_years": "25+ Years",
+      "delivered_units": 1050,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 14200,
+      "floor_rise_per_floor": 40,
+      "plc_charges": [
+        {
+          "name": "Golf Greens View",
+          "psf": 300
+        }
+      ],
+      "parking_cost": 500000,
+      "ifms": 100,
+      "club_membership": 350000,
+      "maintenance_psf_monthly": 4.8
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Pristine",
+        "bhk": 3,
+        "super_area_sqft": 1750,
+        "carpet_area_sqft": 1120,
+        "price_min_cr": 2.48,
+        "price_max_cr": 2.7,
+        "price_per_sqft": 14200
+      },
+      {
+        "name": "4 BHK Pristine Grand",
+        "bhk": 4,
+        "super_area_sqft": 3200,
+        "carpet_area_sqft": 2050,
+        "price_min_cr": 4.54,
+        "price_max_cr": 4.9,
+        "price_per_sqft": 14200
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 14200,
+        "total_price_cr": 2.48,
+        "recorded_at": "2026-08-13T06:00:33.759Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.759Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "tata-eureka-park-sector-150",
+    "name": "Tata Eureka Park",
+    "slug": "tata-eureka-park-sector-150",
+    "sector": "Sector 150",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "under_construction",
+    "tagline": "Tata Eureka Park Luxury Gated Living in Sector 150",
+    "address": "Sector 150, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1502",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1100,
+    "total_towers": 20,
+    "land_area_acres": 12.6,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Tata Eureka Park is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Tata Eureka Park is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 150",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "tata eureka park",
+      "sector 150",
+      "apartments in sector 150"
+    ],
+    "price_min_cr": 1.43,
+    "price_range_label": "₹143 Lakh - ₹2.25 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Tata Value Homes",
+      "slug": "tata-value-homes",
+      "logo_url": "https://ui-avatars.com/api/?name=Tata&background=0D8ABC&color=fff",
+      "experience_years": "35+ Years",
+      "delivered_units": 1100,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 13000,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "name": "Smart Home Facing",
+          "psf": 200
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 80,
+      "club_membership": 250000,
+      "maintenance_psf_monthly": 4.2
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Smart",
+        "bhk": 2,
+        "super_area_sqft": 1100,
+        "carpet_area_sqft": 680,
+        "price_min_cr": 1.43,
+        "price_max_cr": 1.58,
+        "price_per_sqft": 13000
+      },
+      {
+        "name": "3 BHK Smart",
+        "bhk": 3,
+        "super_area_sqft": 1575,
+        "carpet_area_sqft": 980,
+        "price_min_cr": 2.04,
+        "price_max_cr": 2.25,
+        "price_per_sqft": 13000
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 13000,
+        "total_price_cr": 1.43,
+        "recorded_at": "2026-08-13T06:00:33.759Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.759Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "samridhi-luxuriate-sector-150",
+    "name": "Samridhi Luxuriate",
+    "slug": "samridhi-luxuriate-sector-150",
+    "sector": "Sector 150",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "under_construction",
+    "tagline": "Samridhi Luxuriate Luxury Gated Living in Sector 150",
+    "address": "Sector 150, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1503",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 720,
+    "total_towers": 7,
+    "land_area_acres": 6.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Samridhi Luxuriate is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Samridhi Luxuriate is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 150",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "samridhi luxuriate",
+      "sector 150",
+      "apartments in sector 150"
+    ],
+    "price_min_cr": 2.08,
+    "price_range_label": "₹208 Lakh - ₹2.28 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Samridhi Group",
+      "slug": "samridhi-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Samridhi&background=0D8ABC&color=fff",
+      "experience_years": "15+ Years",
+      "delivered_units": 720,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 12800,
+      "floor_rise_per_floor": 30,
+      "plc_charges": [
+        {
+          "name": "Sports City View",
+          "psf": 200
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 80,
+      "club_membership": 250000,
+      "maintenance_psf_monthly": 4
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Luxuriate",
+        "bhk": 3,
+        "super_area_sqft": 1625,
+        "carpet_area_sqft": 1010,
+        "price_min_cr": 2.08,
+        "price_max_cr": 2.28,
+        "price_per_sqft": 12800
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 12800,
+        "total_price_cr": 2.08,
+        "recorded_at": "2026-08-13T06:02:44.959Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.959Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "apex-golf-avenue-sector-150",
+    "name": "Apex Golf Avenue",
+    "slug": "apex-golf-avenue-sector-150",
+    "sector": "Sector 150",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Apex Golf Avenue Luxury Gated Living in Sector 150",
+    "address": "Sector 150, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1504",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 850,
+    "total_towers": 9,
+    "land_area_acres": 8,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Apex Golf Avenue is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Apex Golf Avenue is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 150",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "apex golf avenue",
+      "sector 150",
+      "apartments in sector 150"
+    ],
+    "price_min_cr": 2.25,
+    "price_range_label": "₹225 Lakh - ₹2.45 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Apex Group",
+      "slug": "apex-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Apex&background=0D8ABC&color=fff",
+      "experience_years": "22+ Years",
+      "delivered_units": 850,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 13100,
+      "floor_rise_per_floor": 30,
+      "plc_charges": [
+        {
+          "name": "Golf Greens Facing",
+          "psf": 220
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 80,
+      "club_membership": 250000,
+      "maintenance_psf_monthly": 4.1
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Golf View",
+        "bhk": 3,
+        "super_area_sqft": 1720,
+        "carpet_area_sqft": 1070,
+        "price_min_cr": 2.25,
+        "price_max_cr": 2.45,
+        "price_per_sqft": 13100
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 13100,
+        "total_price_cr": 2.25,
+        "recorded_at": "2026-08-13T06:02:44.959Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.959Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "eldeco-live-by-the-greens-sector-150",
+    "name": "Eldeco Live By The Greens",
+    "slug": "eldeco-live-by-the-greens-sector-150",
+    "sector": "Sector 150",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "under_construction",
+    "tagline": "Eldeco Live By The Greens Luxury Gated Living in Sector 150",
+    "address": "Sector 150, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1505",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1400,
+    "total_towers": 17,
+    "land_area_acres": 20,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Eldeco Live By The Greens is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Eldeco Live By The Greens is a high-end delivered residential society in Sector 150 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 150",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "eldeco live by the greens",
+      "sector 150",
+      "apartments in sector 150"
+    ],
+    "price_min_cr": 1.52,
+    "price_range_label": "₹152 Lakh - ₹1.68 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Eldeco Infrastructure",
+      "slug": "eldeco-infrastructure",
+      "logo_url": "https://ui-avatars.com/api/?name=Eldeco&background=0D8ABC&color=fff",
+      "experience_years": "35+ Years",
+      "delivered_units": 1400,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 13400,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "name": "Cricket Field View",
+          "psf": 250
+        }
+      ],
+      "parking_cost": 450000,
+      "ifms": 85,
+      "club_membership": 280000,
+      "maintenance_psf_monthly": 4.3
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Greens",
+        "bhk": 2,
+        "super_area_sqft": 1137,
+        "carpet_area_sqft": 710,
+        "price_min_cr": 1.52,
+        "price_max_cr": 1.68,
+        "price_per_sqft": 13400
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 13400,
+        "total_price_cr": 1.52,
+        "recorded_at": "2026-08-13T06:02:44.959Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.959Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  }
+]

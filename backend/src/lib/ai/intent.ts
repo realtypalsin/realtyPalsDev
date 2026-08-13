@@ -1,28 +1,11 @@
 // backend/src/lib/ai/intent.ts
 import Groq from 'groq-sdk'
 import OpenAI from 'openai'
-// import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import { INTENT_EXTRACTION_PROMPT } from './prompts/index'
 import type { Intent } from '../discovery'
 import { MODELS } from '../config'
-
-const IntentSchema = z.object({
-  bhk: z.array(z.number()).optional(),
-  budgetMin: z.number().optional(),
-  budgetMax: z.number().optional(),
-  possession: z.enum(['immediate', '1year', '2year', '3year+']).optional(),
-  sector: z.string().optional(),
-  areaMin: z.number().optional(),
-  areaMax: z.number().optional(),
-  purpose: z.enum(['endUse', 'investment']).optional(),
-  builderName: z.string().optional(),
-  lifestyleKeywords: z.array(z.string()).optional(),
-  projectNames: z.array(z.string()).optional(),
-  riskProfile: z.enum(['nri', 'retiree', 'risk_averse', 'first_time_buyer']).optional(),
-  is_comparison_query: z.boolean().optional(),
-  legal_check: z.boolean().optional(),
-})
+import { IntentSchema } from '../discovery/intent'
 
 export function normalizeSectorName(rawSector?: string): string | undefined {
   if (!rawSector) return undefined
@@ -146,7 +129,7 @@ async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string): Pr
   } catch (err: any) {
     if (err?.status === 429 || err?.message?.includes('rate_limit_exceeded') || err?.message?.includes('Rate limit reached')) {
       console.warn('[INTENT:GROQ] 70B rate limited, retrying intent with 8B instant model')
-      const completion = await groq.chat.completions.create({
+      const fallbackCompletion = await groq.chat.completions.create({
         model: MODELS.GROQ_FAST,
         messages: [
           { role: 'system', content: INTENT_EXTRACTION_PROMPT },
@@ -156,7 +139,12 @@ async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string): Pr
         max_tokens: 256,
         temperature: 0.1,
       })
-      raw = completion.choices[0]?.message?.content ?? '{}'
+      const fallbackRaw = fallbackCompletion.choices[0]?.message?.content
+      if (!fallbackRaw || !fallbackRaw.trim()) {
+        console.error('[INTENT:GROQ] Both GROQ models failed after rate limit')
+        throw new Error('Both GROQ models failed after rate limit exceeded')
+      }
+      raw = fallbackRaw
     } else {
       throw err
     }
@@ -251,20 +239,64 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
 function extractIntentHeuristic(message: string, previousIntent: Intent): Intent {
   const fallback = { ...previousIntent }
 
-  // Simple heuristic: extract key patterns from message
+  // BHK extraction
   const bhkMatch = message.match(/(\d)\s*(?:bhk|bed\s*room)/i)
   if (bhkMatch) {
     fallback.bhk = [parseInt(bhkMatch[1])]
   }
 
-  const croreMatch = message.match(/(\d+(?:\.\d+)?)\s*crore/i)
-  if (croreMatch) {
-    fallback.budgetMax = parseFloat(croreMatch[1])
+  // Budget extraction (handles crore, cr, lakh, lac)
+  const budgetMatch = message.match(/(?:under|within|upto|up\s*to)?[\s]*₹?(\d+(?:\.\d+)?)\s*(crore|cr|lakh|lac)/i)
+  if (budgetMatch) {
+    let value = parseFloat(budgetMatch[1])
+    const unit = budgetMatch[2].toLowerCase()
+    if (unit === 'lakh' || unit === 'lac') {
+      value = value / 100 // Convert lakh to crore
+    }
+    fallback.budgetMax = value
   }
 
+  // Sector extraction
   const sectorMatch = message.match(/sector\s+(\d+[a-z]*)/i)
   if (sectorMatch) {
-    fallback.sector = `Sector ${sectorMatch[1]}`
+    fallback.sector = normalizeSectorName(`Sector ${sectorMatch[1]}`)
+  }
+
+  // Possession/timeline extraction
+  if (/ready\s*to\s*move|rtm|immediate|asap/i.test(message)) {
+    fallback.possession = 'immediate'
+  } else if (/within\s*1\s*year|1\s*year|next\s*year/i.test(message)) {
+    fallback.possession = '1year'
+  } else if (/within\s*2\s*year|2\s*year|in\s*2\s*year/i.test(message)) {
+    fallback.possession = '2year'
+  } else if (/within\s*3\s*year|3\s*year|in\s*3\s*year|long\s*term/i.test(message)) {
+    fallback.possession = '3year+'
+  }
+
+  // Purpose extraction
+  if (/invest|investment|appreciation|roi|returns|income/i.test(message)) {
+    fallback.purpose = 'investment'
+  } else if (/live|stay|own|occupy|home/i.test(message)) {
+    fallback.purpose = 'endUse'
+  }
+
+  // Area range extraction
+  const areaMatch = message.match(/(\d+)\s*(?:to|—|-)\s*(\d+)\s*(?:sq|sqft|sq\.\s*ft|square\s*feet)/i)
+  if (areaMatch) {
+    fallback.areaMin = parseInt(areaMatch[1])
+    fallback.areaMax = parseInt(areaMatch[2])
+  } else {
+    const singleAreaMatch = message.match(/(?:about|around|approximately)\s*(\d+)\s*(?:sq|sqft|sq\.\s*ft|square\s*feet)/i)
+    if (singleAreaMatch) {
+      fallback.areaMin = parseInt(singleAreaMatch[1]) * 0.9
+      fallback.areaMax = parseInt(singleAreaMatch[1]) * 1.1
+    }
+  }
+
+  // Builder name extraction (basic pattern)
+  const builderMatch = message.match(/(?:by|from|builder|developer)\s+([A-Z][a-zA-Z\s&]+?)(?:\s+(?:project|in|at|sector)|$)/i)
+  if (builderMatch) {
+    fallback.builderName = builderMatch[1].trim()
   }
 
   return fallback

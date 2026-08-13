@@ -701,6 +701,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             (event as any).responseMode ??
             (localProjects.length > 0 ? 'search' : 'chat')
           const isComparison = responseMode === 'comparison'
+          const comparisonProjects = (event as any).comparisonProjects || localProjects.slice(0, 4)
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
               ? {
@@ -709,7 +710,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 responseMode,
                 showComparisonTable: isComparison,
                 ...(isComparison ? {
-                  comparisonProjects: localProjects.slice(0, 4),
+                  comparisonProjects,
                 } : {}),
                 ...(responseMode === 'database' && (event as any).chatResponse ? {
                   chatResponse: (event as any).chatResponse,

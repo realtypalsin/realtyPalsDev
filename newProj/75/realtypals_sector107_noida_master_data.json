@@ -1,0 +1,780 @@
+[
+  {
+    "id": "great-value-sharanam-sector-107",
+    "name": "Great Value Sharanam",
+    "slug": "great-value-sharanam-sector-107",
+    "sector": "Sector 107",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Great Value Sharanam Luxury Gated Living in Sector 107",
+    "address": "Sector 107, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ6712",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1200,
+    "total_towers": 14,
+    "land_area_acres": 20,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Great Value Sharanam is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Great Value Sharanam is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "C.P. Kukreja Architects",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 107",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "great value sharanam",
+      "sector 107",
+      "apartments in sector 107"
+    ],
+    "price_min_cr": 1.52,
+    "price_range_label": "₹152 Lakh - ₹2.10 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Great Value Realty",
+      "slug": "great-value-realty",
+      "logo_url": "https://ui-avatars.com/api/?name=Great+Value&background=0D8ABC&color=fff",
+      "experience_years": "20+ Years",
+      "delivered_units": 1200,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 11800,
+      "floor_rise_per_floor": 30,
+      "plc_charges": [
+        {
+          "name": "Corner Unit",
+          "psf": 200
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 80,
+      "club_membership": 250000,
+      "maintenance_psf_monthly": 4
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Luxury",
+        "bhk": 2,
+        "super_area_sqft": 1295,
+        "carpet_area_sqft": 790,
+        "price_min_cr": 1.52,
+        "price_max_cr": 1.65,
+        "price_per_sqft": 11800
+      },
+      {
+        "name": "3 BHK Grand",
+        "bhk": 3,
+        "super_area_sqft": 1625,
+        "carpet_area_sqft": 1010,
+        "price_min_cr": 1.91,
+        "price_max_cr": 2.1,
+        "price_per_sqft": 11800
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 11800,
+        "total_price_cr": 1.52,
+        "recorded_at": "2026-08-13T06:00:33.756Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.756Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "sunworld-vanalika-sector-107",
+    "name": "Sunworld Vanalika",
+    "slug": "sunworld-vanalika-sector-107",
+    "sector": "Sector 107",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Sunworld Vanalika Luxury Gated Living in Sector 107",
+    "address": "Sector 107, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ8823",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 750,
+    "total_towers": 8,
+    "land_area_acres": 7.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Sunworld Vanalika is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Sunworld Vanalika is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Hafeez Contractor",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 107",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "sunworld vanalika",
+      "sector 107",
+      "apartments in sector 107"
+    ],
+    "price_min_cr": 2.11,
+    "price_range_label": "₹211 Lakh - ₹2.30 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Sunworld City",
+      "slug": "sunworld-city",
+      "logo_url": "https://ui-avatars.com/api/?name=Sunworld&background=0D8ABC&color=fff",
+      "experience_years": "15+ Years",
+      "delivered_units": 750,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 12200,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "name": "Golf View",
+          "psf": 250
+        }
+      ],
+      "parking_cost": 450000,
+      "ifms": 90,
+      "club_membership": 300000,
+      "maintenance_psf_monthly": 4.2
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Premium",
+        "bhk": 3,
+        "super_area_sqft": 1730,
+        "carpet_area_sqft": 1080,
+        "price_min_cr": 2.11,
+        "price_max_cr": 2.3,
+        "price_per_sqft": 12200
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 12200,
+        "total_price_cr": 2.11,
+        "recorded_at": "2026-08-13T06:00:33.756Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.756Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "prateek-edifice-sector-107",
+    "name": "Prateek Edifice",
+    "slug": "prateek-edifice-sector-107",
+    "sector": "Sector 107",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Prateek Edifice Luxury Gated Living in Sector 107",
+    "address": "Sector 107, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ4419",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 420,
+    "total_towers": 4,
+    "land_area_acres": 6.9,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Prateek Edifice is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Prateek Edifice is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 107",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "prateek edifice",
+      "sector 107",
+      "apartments in sector 107"
+    ],
+    "price_min_cr": 3,
+    "price_range_label": "₹300 Lakh - ₹3.25 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Prateek Group",
+      "slug": "prateek-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Prateek&background=0D8ABC&color=fff",
+      "experience_years": "22+ Years",
+      "delivered_units": 420,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 14500,
+      "floor_rise_per_floor": 40,
+      "plc_charges": [
+        {
+          "name": "Pool View",
+          "psf": 300
+        }
+      ],
+      "parking_cost": 500000,
+      "ifms": 100,
+      "club_membership": 350000,
+      "maintenance_psf_monthly": 4.5
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Royal",
+        "bhk": 3,
+        "super_area_sqft": 2070,
+        "carpet_area_sqft": 1310,
+        "price_min_cr": 3,
+        "price_max_cr": 3.25,
+        "price_per_sqft": 14500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 14500,
+        "total_price_cr": 3,
+        "recorded_at": "2026-08-13T06:00:33.756Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.756Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "3c-lotus-300-sector-107",
+    "name": "3C Lotus 300",
+    "slug": "3c-lotus-300-sector-107",
+    "sector": "Sector 107",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "3C Lotus 300 Luxury Gated Living in Sector 107",
+    "address": "Sector 107, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ3300",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 300,
+    "total_towers": 6,
+    "land_area_acres": 10,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "3C Lotus 300 is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "3C Lotus 300 is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 107",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "3c lotus 300",
+      "sector 107",
+      "apartments in sector 107"
+    ],
+    "price_min_cr": 5.65,
+    "price_range_label": "₹565 Lakh - ₹9.00 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "3C Company",
+      "slug": "3c-company",
+      "logo_url": "https://ui-avatars.com/api/?name=3C&background=0D8ABC&color=fff",
+      "experience_years": "20+ Years",
+      "delivered_units": 300,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 15500,
+      "floor_rise_per_floor": 45,
+      "plc_charges": [
+        {
+          "name": "Private Lift Lobby",
+          "psf": 350
+        }
+      ],
+      "parking_cost": 600000,
+      "ifms": 120,
+      "club_membership": 400000,
+      "maintenance_psf_monthly": 5
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Sky Duplex",
+        "bhk": 3,
+        "super_area_sqft": 3650,
+        "carpet_area_sqft": 2400,
+        "price_min_cr": 5.65,
+        "price_max_cr": 6.2,
+        "price_per_sqft": 15500
+      },
+      {
+        "name": "4 BHK Luxury Mansion",
+        "bhk": 4,
+        "super_area_sqft": 5300,
+        "carpet_area_sqft": 3500,
+        "price_min_cr": 8.2,
+        "price_max_cr": 9,
+        "price_per_sqft": 15500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 15500,
+        "total_price_cr": 5.65,
+        "recorded_at": "2026-08-13T06:00:33.756Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.756Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "salcon-verandas-sector-107",
+    "name": "Salcon Verandas Noida",
+    "slug": "salcon-verandas-sector-107",
+    "sector": "Sector 107",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Salcon Verandas Noida Luxury Gated Living in Sector 107",
+    "address": "Sector 107, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1075",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 350,
+    "total_towers": 4,
+    "land_area_acres": 5.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Salcon Verandas Noida is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Salcon Verandas Noida is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Hafeez Contractor",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 107",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "salcon verandas noida",
+      "sector 107",
+      "apartments in sector 107"
+    ],
+    "price_min_cr": 3.03,
+    "price_range_label": "₹303 Lakh - ₹3.35 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Salcon Building",
+      "slug": "salcon-building",
+      "logo_url": "https://ui-avatars.com/api/?name=Salcon&background=0D8ABC&color=fff",
+      "experience_years": "20+ Years",
+      "delivered_units": 350,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 13500,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "name": "Veranda View",
+          "psf": 250
+        }
+      ],
+      "parking_cost": 450000,
+      "ifms": 90,
+      "club_membership": 300000,
+      "maintenance_psf_monthly": 4.5
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Veranda Suite",
+        "bhk": 3,
+        "super_area_sqft": 2250,
+        "carpet_area_sqft": 1450,
+        "price_min_cr": 3.03,
+        "price_max_cr": 3.35,
+        "price_per_sqft": 13500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 13500,
+        "total_price_cr": 3.03,
+        "recorded_at": "2026-08-13T06:02:44.954Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.955Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  }
+]

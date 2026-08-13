@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Building2, Wallet, Scale, MapPin, Trees, MessageSquare, ShieldCheck, FileText } from 'lucide-react'
+import { ChevronDown, Building2 } from 'lucide-react'
+import { renderChipIcon } from '@/lib/chipIconUtils'
 import type { ChipAction } from './types'
 
 interface CardSelectorChipProps {
@@ -12,60 +13,26 @@ interface CardSelectorChipProps {
   disabled?: boolean
 }
 
-/** Render topic-matched contextual icon instead of generic star icons */
-function renderChipIcon(chip: ChipAction, isActive: boolean) {
-  if (chip.icon) {
-    return <span className="text-[14px] leading-none flex-shrink-0" aria-hidden="true">{chip.icon}</span>
-  }
-
-  const label = chip.label.toLowerCase()
-  const iconClass = `flex-shrink-0 transition-colors ${
-    isActive
-      ? 'text-blue-200'
-      : 'text-blue-500/80 dark:text-blue-400/80 group-hover:text-blue-600 dark:group-hover:text-blue-300'
-  }`
-
-  if (/cost|price|budget|emi|payment|crore|lakh|₹|financial|loan/.test(label)) {
-    return <Wallet size={13.5} className={iconClass} />
-  }
-  if (/bhk|project|apartment|house|home|villa|society|building|flat/.test(label)) {
-    return <Building2 size={13.5} className={iconClass} />
-  }
-  if (/compare|vs|difference|tradeoff/.test(label)) {
-    return <Scale size={13.5} className={iconClass} />
-  }
-  if (/amenit|park|pool|gym|clubhouse|garden|green/.test(label)) {
-    return <Trees size={13.5} className={iconClass} />
-  }
-  if (/sector|metro|location|area|distance|near/.test(label)) {
-    return <MapPin size={13.5} className={iconClass} />
-  }
-  if (/builder|developer|rera|legal|risk|track/.test(label)) {
-    return <ShieldCheck size={13.5} className={iconClass} />
-  }
-  if (/plan|document|review/.test(label)) {
-    return <FileText size={13.5} className={iconClass} />
-  }
-
-  return <MessageSquare size={13.5} className={iconClass} />
-}
-
 /** Multi-project chip that shows dropdown to select which card to apply action to */
 export function CardSelectorChip({ chip, projects, onSelect, disabled }: CardSelectorChipProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!isOpen) return
+    const controller = new AbortController()
+
     const onDocClick = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) setIsOpen(false)
     }
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsOpen(false) }
-    document.addEventListener('mousedown', onDocClick)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDocClick)
-      document.removeEventListener('keydown', onKey)
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false)
     }
+
+    document.addEventListener('mousedown', onDocClick, { signal: controller.signal })
+    document.addEventListener('keydown', onKey, { signal: controller.signal })
+
+    return () => controller.abort()
   }, [isOpen])
 
   if (projects.length <= 1) {
@@ -102,7 +69,7 @@ export function CardSelectorChip({ chip, projects, onSelect, disabled }: CardSel
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        {renderChipIcon(chip, isOpen)}
+        {renderChipIcon(chip.label, isOpen)}
         <span className="truncate min-w-0 font-medium tracking-tight">{chip.label}</span>
         <ChevronDown
           size={13}
@@ -133,9 +100,9 @@ export function CardSelectorChip({ chip, projects, onSelect, disabled }: CardSel
                   onClick={() => handleProjectSelect(project.id)}
                   role="option"
                   aria-selected={false}
-                  className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-medium text-zinc-700 dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2 group/item"
+                  className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-medium text-slate-900 dark:text-slate-50 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center gap-2 group/item"
                 >
-                  <Building2 size={13} className="text-zinc-400 group-hover/item:text-blue-500 shrink-0" />
+                  <Building2 size={13} className="text-zinc-500 dark:text-zinc-400 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-500 shrink-0" />
                   <span className="truncate">{project.name}</span>
                 </button>
               ))}

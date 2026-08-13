@@ -1,0 +1,932 @@
+[
+  {
+    "id": "mahagun-manorialle-sector-128",
+    "name": "Mahagun Manorialle",
+    "slug": "mahagun-manorialle-sector-128",
+    "sector": "Sector 128",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Mahagun Manorialle Luxury Gated Living in Sector 128",
+    "address": "Sector 128, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ2051",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 380,
+    "total_towers": 6,
+    "land_area_acres": 3.8,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Mahagun Manorialle is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Mahagun Manorialle is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Hafeez Contractor",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 128",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "mahagun manorialle",
+      "sector 128",
+      "apartments in sector 128"
+    ],
+    "price_min_cr": 4.99,
+    "price_range_label": "₹499 Lakh - ₹7.10 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Mahagun Group",
+      "slug": "mahagun-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Mahagun&background=0D8ABC&color=fff",
+      "experience_years": "25+ Years",
+      "delivered_units": 380,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 18500,
+      "floor_rise_per_floor": 50,
+      "plc_charges": [
+        {
+          "name": "Golf Course View",
+          "psf": 500
+        }
+      ],
+      "parking_cost": 600000,
+      "ifms": 120,
+      "club_membership": 450000,
+      "maintenance_psf_monthly": 5.5
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Golf Suite",
+        "bhk": 3,
+        "super_area_sqft": 2700,
+        "carpet_area_sqft": 1750,
+        "price_min_cr": 4.99,
+        "price_max_cr": 5.5,
+        "price_per_sqft": 18500
+      },
+      {
+        "name": "4 BHK Golf Villa",
+        "bhk": 4,
+        "super_area_sqft": 3465,
+        "carpet_area_sqft": 2250,
+        "price_min_cr": 6.41,
+        "price_max_cr": 7.1,
+        "price_per_sqft": 18500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 18500,
+        "total_price_cr": 4.99,
+        "recorded_at": "2026-08-13T06:00:33.757Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.757Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "jaypee-kalypso-court-sector-128",
+    "name": "Jaypee Kalypso Court",
+    "slug": "jaypee-kalypso-court-sector-128",
+    "sector": "Sector 128",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Jaypee Kalypso Court Luxury Gated Living in Sector 128",
+    "address": "Sector 128, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1280",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1400,
+    "total_towers": 16,
+    "land_area_acres": 18.5,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Jaypee Kalypso Court is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Jaypee Kalypso Court is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "ArCOP Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 128",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "jaypee kalypso court",
+      "sector 128",
+      "apartments in sector 128"
+    ],
+    "price_min_cr": 2.59,
+    "price_range_label": "₹259 Lakh - ₹3.80 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Jaypee Greens",
+      "slug": "jaypee-greens",
+      "logo_url": "https://ui-avatars.com/api/?name=Jaypee&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "delivered_units": 1400,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 16200,
+      "floor_rise_per_floor": 45,
+      "plc_charges": [
+        {
+          "name": "Golf Course Facing",
+          "psf": 400
+        }
+      ],
+      "parking_cost": 500000,
+      "ifms": 100,
+      "club_membership": 350000,
+      "maintenance_psf_monthly": 4.8
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Golf View",
+        "bhk": 2,
+        "super_area_sqft": 1600,
+        "carpet_area_sqft": 1020,
+        "price_min_cr": 2.59,
+        "price_max_cr": 2.8,
+        "price_per_sqft": 16200
+      },
+      {
+        "name": "3 BHK Golf Residency",
+        "bhk": 3,
+        "super_area_sqft": 2150,
+        "carpet_area_sqft": 1390,
+        "price_min_cr": 3.48,
+        "price_max_cr": 3.8,
+        "price_per_sqft": 16200
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 16200,
+        "total_price_cr": 2.59,
+        "recorded_at": "2026-08-13T06:00:33.757Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.757Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "jaypee-imperial-court-sector-128",
+    "name": "Jaypee Imperial Court",
+    "slug": "jaypee-imperial-court-sector-128",
+    "sector": "Sector 128",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Jaypee Imperial Court Luxury Gated Living in Sector 128",
+    "address": "Sector 128, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1281",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 550,
+    "total_towers": 6,
+    "land_area_acres": 8,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Jaypee Imperial Court is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Jaypee Imperial Court is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "ArCOP Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 128",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "jaypee imperial court",
+      "sector 128",
+      "apartments in sector 128"
+    ],
+    "price_min_cr": 3.87,
+    "price_range_label": "₹387 Lakh - ₹4.20 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Jaypee Greens",
+      "slug": "jaypee-greens",
+      "logo_url": "https://ui-avatars.com/api/?name=Jaypee&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "delivered_units": 550,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 17000,
+      "floor_rise_per_floor": 45,
+      "plc_charges": [
+        {
+          "name": "Imperial Club View",
+          "psf": 450
+        }
+      ],
+      "parking_cost": 550000,
+      "ifms": 110,
+      "club_membership": 400000,
+      "maintenance_psf_monthly": 5
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Imperial",
+        "bhk": 3,
+        "super_area_sqft": 2280,
+        "carpet_area_sqft": 1480,
+        "price_min_cr": 3.87,
+        "price_max_cr": 4.2,
+        "price_per_sqft": 17000
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 17000,
+        "total_price_cr": 3.87,
+        "recorded_at": "2026-08-13T06:00:33.757Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.757Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "jaypee-pavilion-court-sector-128",
+    "name": "Jaypee Pavilion Court",
+    "slug": "jaypee-pavilion-court-sector-128",
+    "sector": "Sector 128",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Jaypee Pavilion Court Luxury Gated Living in Sector 128",
+    "address": "Sector 128, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1282",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 950,
+    "total_towers": 12,
+    "land_area_acres": 12,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Jaypee Pavilion Court is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Jaypee Pavilion Court is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "ArCOP Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 128",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "jaypee pavilion court",
+      "sector 128",
+      "apartments in sector 128"
+    ],
+    "price_min_cr": 2.09,
+    "price_range_label": "₹209 Lakh - ₹2.30 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Jaypee Greens",
+      "slug": "jaypee-greens",
+      "logo_url": "https://ui-avatars.com/api/?name=Jaypee&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "delivered_units": 950,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 15500,
+      "floor_rise_per_floor": 40,
+      "plc_charges": [
+        {
+          "name": "Park Facing",
+          "psf": 300
+        }
+      ],
+      "parking_cost": 450000,
+      "ifms": 90,
+      "club_membership": 300000,
+      "maintenance_psf_monthly": 4.5
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Pavilion Suite",
+        "bhk": 2,
+        "super_area_sqft": 1350,
+        "carpet_area_sqft": 850,
+        "price_min_cr": 2.09,
+        "price_max_cr": 2.3,
+        "price_per_sqft": 15500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 15500,
+        "total_price_cr": 2.09,
+        "recorded_at": "2026-08-13T06:02:44.956Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.956Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "jaypee-klassic-sector-128",
+    "name": "Jaypee Klassic",
+    "slug": "jaypee-klassic-sector-128",
+    "sector": "Sector 128",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Jaypee Klassic Luxury Gated Living in Sector 128",
+    "address": "Sector 128, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1283",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1800,
+    "total_towers": 20,
+    "land_area_acres": 22,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Jaypee Klassic is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Jaypee Klassic is a high-end delivered residential society in Sector 128 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "ArCOP Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 128",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "jaypee klassic",
+      "sector 128",
+      "apartments in sector 128"
+    ],
+    "price_min_cr": 2.48,
+    "price_range_label": "₹248 Lakh - ₹2.70 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Jaypee Greens",
+      "slug": "jaypee-greens",
+      "logo_url": "https://ui-avatars.com/api/?name=Jaypee&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "delivered_units": 1800,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 14800,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "name": "Expressway View",
+          "psf": 250
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 80,
+      "club_membership": 250000,
+      "maintenance_psf_monthly": 4.2
+    },
+    "unit_types": [
+      {
+        "name": "3 BHK Klassic",
+        "bhk": 3,
+        "super_area_sqft": 1680,
+        "carpet_area_sqft": 1050,
+        "price_min_cr": 2.48,
+        "price_max_cr": 2.7,
+        "price_per_sqft": 14800
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 14800,
+        "total_price_cr": 2.48,
+        "recorded_at": "2026-08-13T06:02:44.956Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.956Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "jaypee-aman-sector-151",
+    "name": "Jaypee Aman",
+    "slug": "jaypee-aman-sector-151",
+    "sector": "Sector 151",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Jaypee Aman Luxury Gated Living in Sector 151",
+    "address": "Sector 151, Noida, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ1510",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 3200,
+    "total_towers": 28,
+    "land_area_acres": 28,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Jaypee Aman is a high-end delivered residential society in Sector 151 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Jaypee Aman is a high-end delivered residential society in Sector 151 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "ArCOP Associates",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 151",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "jaypee aman",
+      "sector 151",
+      "apartments in sector 151"
+    ],
+    "price_min_cr": 0.69,
+    "price_range_label": "₹69 Lakh - ₹0.76 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Jaypee Greens",
+      "slug": "jaypee-greens",
+      "logo_url": "https://ui-avatars.com/api/?name=Jaypee&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "delivered_units": 3200,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 7500,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Central Garden",
+          "psf": 100
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 50,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Aman",
+        "bhk": 2,
+        "super_area_sqft": 920,
+        "carpet_area_sqft": 560,
+        "price_min_cr": 0.69,
+        "price_max_cr": 0.76,
+        "price_per_sqft": 7500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 7500,
+        "total_price_cr": 0.69,
+        "recorded_at": "2026-08-13T06:02:44.956Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:02:44.956Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  }
+]

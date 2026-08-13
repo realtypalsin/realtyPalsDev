@@ -36,11 +36,23 @@
     "green_rating": "IGBC Certified",
     "has_duplex": false,
     "has_penthouse": false,
-    "hero_image_url": "/placeholder.png",
-    "marketing_claims": [],
-    "ai_search_keywords": [],
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 77",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "elite homz",
+      "elite homz sector 77",
+      "apartments in sector 77",
+      "flat for sale in elite homz",
+      "ready to move in sector 77",
+      "Elite Group projects in noida"
+    ],
     "price_min_cr": 0.91,
-    "price_range_label": "₹91 Lakh - ₹1.23 Cr",
+    "price_range_label": "₹91 Lakh - ₹1.78 Cr (2026 Rate)",
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
     "location_advantages": [
@@ -133,7 +145,7 @@
       "slug": "elite-group",
       "tagline": "Golf Living Redefined",
       "company_overview": "Elite Group developer of Elite Golf Greens in Sector 79 Sports City.",
-      "logo_url": null,
+      "logo_url": "https://ui-avatars.com/api/?name=Elite%20Group&background=0D8ABC&color=fff&size=200",
       "experience_years": "16+ Years",
       "projects_delivered_count": 3,
       "total_projects_count": 20,
@@ -1086,6 +1098,13 @@
         "total_price_cr": 0.72,
         "event_note": null,
         "recorded_at": "2025-12-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 0.91,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.203Z"
       }
     ],
     "dna": {
@@ -1493,7 +1512,63 @@
         "email": "contact@acmeestates.in"
       }
     ],
-    "resale_lock_in_months": 36
+    "resale_lock_in_months": 36,
+    "last_verified_at": "2026-08-13T05:53:48.203Z",
+    "pricing": {
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+          "milestones": [
+            {
+              "stage": "At Application & Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "On Execution of Agreement",
+              "pct": 10,
+              "timeline": "30 Days"
+            },
+            {
+              "stage": "On Completion of Raft & Foundation",
+              "pct": 10,
+              "timeline": "Milestone"
+            },
+            {
+              "stage": "On Offer of Possession & Handover",
+              "pct": 10,
+              "timeline": "Possession Call"
+            }
+          ],
+          "sort_order": 1
+        },
+        {
+          "plan_type": "down_payment",
+          "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+          "milestones": [
+            {
+              "stage": "At Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "Within 45 Days",
+              "pct": 85,
+              "timeline": "45 Days"
+            },
+            {
+              "stage": "At Possession",
+              "pct": 5,
+              "timeline": "Possession"
+            }
+          ],
+          "down_payment_pct": 85,
+          "discount_offered_pct": 8,
+          "sort_order": 2
+        }
+      ]
+    }
   },
   {
     "id": "285960fb-e6ba-4d19-887e-647e3998230b",
@@ -1532,11 +1607,23 @@
     "green_rating": "IGBC Certified",
     "has_duplex": false,
     "has_penthouse": false,
-    "hero_image_url": "/placeholder.png",
-    "marketing_claims": [],
-    "ai_search_keywords": [],
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 77",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "civitech sampriti",
+      "civitech sampriti sector 77",
+      "apartments in sector 77",
+      "flat for sale in civitech sampriti",
+      "ready to move in sector 77",
+      "Civitech Developers projects in noida"
+    ],
     "price_min_cr": 0.92,
-    "price_range_label": "₹92 Lakh - ₹1.24 Cr",
+    "price_range_label": "₹92 Lakh - ₹1.79 Cr (2026 Rate)",
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
     "location_advantages": [
@@ -1629,7 +1716,7 @@
       "slug": "civitech-developers",
       "tagline": "Building Sports Lifestyle",
       "company_overview": "Civitech Developers is an established developer known for Civitech Stadia in Sports City.",
-      "logo_url": null,
+      "logo_url": "https://ui-avatars.com/api/?name=Civitech%20Developers&background=0D8ABC&color=fff&size=200",
       "experience_years": "31+ Years",
       "projects_delivered_count": 5,
       "total_projects_count": 20,
@@ -2582,6 +2669,13 @@
         "total_price_cr": 0.72,
         "event_note": null,
         "recorded_at": "2025-12-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 0.92,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.203Z"
       }
     ],
     "dna": {
@@ -2989,7 +3083,63 @@
         "email": "contact@acmeestates.in"
       }
     ],
-    "resale_lock_in_months": 36
+    "resale_lock_in_months": 36,
+    "last_verified_at": "2026-08-13T05:53:48.203Z",
+    "pricing": {
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+          "milestones": [
+            {
+              "stage": "At Application & Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "On Execution of Agreement",
+              "pct": 10,
+              "timeline": "30 Days"
+            },
+            {
+              "stage": "On Completion of Raft & Foundation",
+              "pct": 10,
+              "timeline": "Milestone"
+            },
+            {
+              "stage": "On Offer of Possession & Handover",
+              "pct": 10,
+              "timeline": "Possession Call"
+            }
+          ],
+          "sort_order": 1
+        },
+        {
+          "plan_type": "down_payment",
+          "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+          "milestones": [
+            {
+              "stage": "At Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "Within 45 Days",
+              "pct": 85,
+              "timeline": "45 Days"
+            },
+            {
+              "stage": "At Possession",
+              "pct": 5,
+              "timeline": "Possession"
+            }
+          ],
+          "down_payment_pct": 85,
+          "discount_offered_pct": 8,
+          "sort_order": 2
+        }
+      ]
+    }
   },
   {
     "id": "61578c3f-0f78-4a76-affb-94f40dfa4e43",
@@ -3029,10 +3179,22 @@
     "has_duplex": false,
     "has_penthouse": true,
     "hero_image_url": "/images/properties/antriksh-forest-sector-77-noida/hero.jpg",
-    "marketing_claims": [],
-    "ai_search_keywords": [],
+    "marketing_claims": [
+      "Prime Residential Living in Sector 77",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "antriksh forest",
+      "antriksh forest sector 77",
+      "apartments in sector 77",
+      "flat for sale in antriksh forest",
+      "ready to move in sector 77",
+      "Antriksh Group projects in noida"
+    ],
     "price_min_cr": 0.9,
-    "price_range_label": "₹90 Lakh - ₹1.22 Cr",
+    "price_range_label": "₹90 Lakh - ₹1.75 Cr (2026 Rate)",
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
     "location_advantages": [
@@ -3125,7 +3287,7 @@
       "slug": "antriksh-group",
       "tagline": "Golf Living Redefined",
       "company_overview": "Antriksh Group developer of Golf View II township in Sector 78 Noida.",
-      "logo_url": null,
+      "logo_url": "https://ui-avatars.com/api/?name=Antriksh%20Group&background=0D8ABC&color=fff&size=200",
       "experience_years": null,
       "projects_delivered_count": 10,
       "total_projects_count": 20,
@@ -4078,6 +4240,13 @@
         "total_price_cr": 1.3,
         "event_note": null,
         "recorded_at": "2025-12-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 0.9,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.203Z"
       }
     ],
     "dna": {
@@ -4485,7 +4654,63 @@
         "email": "contact@acmeestates.in"
       }
     ],
-    "resale_lock_in_months": 36
+    "resale_lock_in_months": 36,
+    "last_verified_at": "2026-08-13T05:53:48.203Z",
+    "pricing": {
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+          "milestones": [
+            {
+              "stage": "At Application & Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "On Execution of Agreement",
+              "pct": 10,
+              "timeline": "30 Days"
+            },
+            {
+              "stage": "On Completion of Raft & Foundation",
+              "pct": 10,
+              "timeline": "Milestone"
+            },
+            {
+              "stage": "On Offer of Possession & Handover",
+              "pct": 10,
+              "timeline": "Possession Call"
+            }
+          ],
+          "sort_order": 1
+        },
+        {
+          "plan_type": "down_payment",
+          "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+          "milestones": [
+            {
+              "stage": "At Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "Within 45 Days",
+              "pct": 85,
+              "timeline": "45 Days"
+            },
+            {
+              "stage": "At Possession",
+              "pct": 5,
+              "timeline": "Possession"
+            }
+          ],
+          "down_payment_pct": 85,
+          "discount_offered_pct": 8,
+          "sort_order": 2
+        }
+      ]
+    }
   },
   {
     "id": "0a6e23a3-5401-4adb-a778-ec47d8e51766",
@@ -4525,10 +4750,22 @@
     "has_duplex": false,
     "has_penthouse": true,
     "hero_image_url": "/images/properties/prateek-wisteria-sector-77-noida/hero.jpg",
-    "marketing_claims": [],
-    "ai_search_keywords": [],
+    "marketing_claims": [
+      "Prime Residential Living in Sector 77",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "prateek wisteria",
+      "prateek wisteria sector 77",
+      "apartments in sector 77",
+      "flat for sale in prateek wisteria",
+      "ready to move in sector 77",
+      "Prateek Group projects in noida"
+    ],
     "price_min_cr": 0.94,
-    "price_range_label": "₹94 Lakh - ₹1.27 Cr",
+    "price_range_label": "₹94 Lakh - ₹1.83 Cr (2026 Rate)",
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
     "location_advantages": [
@@ -4621,7 +4858,7 @@
       "slug": "prateek-group",
       "tagline": "Creating Landmarks, Setting Benchmarks",
       "company_overview": "Prateek Group is an A-grade developer in NCR known for mega townships like Prateek Wisteria.",
-      "logo_url": null,
+      "logo_url": "https://ui-avatars.com/api/?name=Prateek%20Group&background=0D8ABC&color=fff&size=200",
       "experience_years": "21+ Years",
       "projects_delivered_count": 10,
       "total_projects_count": 20,
@@ -5574,6 +5811,13 @@
         "total_price_cr": 0.85,
         "event_note": null,
         "recorded_at": "2025-12-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 0.94,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.203Z"
       }
     ],
     "dna": {
@@ -5981,7 +6225,63 @@
         "email": "contact@acmeestates.in"
       }
     ],
-    "resale_lock_in_months": 36
+    "resale_lock_in_months": 36,
+    "last_verified_at": "2026-08-13T05:53:48.203Z",
+    "pricing": {
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+          "milestones": [
+            {
+              "stage": "At Application & Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "On Execution of Agreement",
+              "pct": 10,
+              "timeline": "30 Days"
+            },
+            {
+              "stage": "On Completion of Raft & Foundation",
+              "pct": 10,
+              "timeline": "Milestone"
+            },
+            {
+              "stage": "On Offer of Possession & Handover",
+              "pct": 10,
+              "timeline": "Possession Call"
+            }
+          ],
+          "sort_order": 1
+        },
+        {
+          "plan_type": "down_payment",
+          "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+          "milestones": [
+            {
+              "stage": "At Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "Within 45 Days",
+              "pct": 85,
+              "timeline": "45 Days"
+            },
+            {
+              "stage": "At Possession",
+              "pct": 5,
+              "timeline": "Possession"
+            }
+          ],
+          "down_payment_pct": 85,
+          "discount_offered_pct": 8,
+          "sort_order": 2
+        }
+      ]
+    }
   },
   {
     "id": "1765326b-4ec6-4662-aa98-e71ec6702c94",
@@ -6020,11 +6320,23 @@
     "green_rating": "IGBC Certified",
     "has_duplex": false,
     "has_penthouse": false,
-    "hero_image_url": "/placeholder.png",
-    "marketing_claims": [],
-    "ai_search_keywords": [],
+    "hero_image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 77",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "griha pravesh",
+      "griha pravesh sector 77",
+      "apartments in sector 77",
+      "flat for sale in griha pravesh",
+      "ready to move in sector 77",
+      "Griha Pravesh Buildteck projects in noida"
+    ],
     "price_min_cr": 0.91,
-    "price_range_label": "₹91 Lakh - ₹1.23 Cr",
+    "price_range_label": "₹91 Lakh - ₹1.77 Cr (2026 Rate)",
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
     "location_advantages": [
@@ -6117,7 +6429,7 @@
       "slug": "griha-pravesh-buildteck",
       "tagline": "Welcome to Your Dream Home",
       "company_overview": "Griha Pravesh Buildteck is a trusted developer in NCR delivering Griha Pravesh in Sector 77.",
-      "logo_url": null,
+      "logo_url": "https://ui-avatars.com/api/?name=Griha%20Pravesh%20Buildteck&background=0D8ABC&color=fff&size=200",
       "experience_years": null,
       "projects_delivered_count": 2,
       "total_projects_count": 20,
@@ -7070,6 +7382,13 @@
         "total_price_cr": 0.72,
         "event_note": null,
         "recorded_at": "2025-12-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 0.91,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.203Z"
       }
     ],
     "dna": {
@@ -7477,7 +7796,63 @@
         "email": "contact@acmeestates.in"
       }
     ],
-    "resale_lock_in_months": 36
+    "resale_lock_in_months": 36,
+    "last_verified_at": "2026-08-13T05:53:48.203Z",
+    "pricing": {
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+          "milestones": [
+            {
+              "stage": "At Application & Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "On Execution of Agreement",
+              "pct": 10,
+              "timeline": "30 Days"
+            },
+            {
+              "stage": "On Completion of Raft & Foundation",
+              "pct": 10,
+              "timeline": "Milestone"
+            },
+            {
+              "stage": "On Offer of Possession & Handover",
+              "pct": 10,
+              "timeline": "Possession Call"
+            }
+          ],
+          "sort_order": 1
+        },
+        {
+          "plan_type": "down_payment",
+          "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+          "milestones": [
+            {
+              "stage": "At Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "Within 45 Days",
+              "pct": 85,
+              "timeline": "45 Days"
+            },
+            {
+              "stage": "At Possession",
+              "pct": 5,
+              "timeline": "Possession"
+            }
+          ],
+          "down_payment_pct": 85,
+          "discount_offered_pct": 8,
+          "sort_order": 2
+        }
+      ]
+    }
   },
   {
     "id": "9836d171-28ff-4ffd-9b6c-cb9b9dd5b6df",
@@ -7517,10 +7892,22 @@
     "has_duplex": false,
     "has_penthouse": false,
     "hero_image_url": "/images/properties/avs-orchard-sector-77-noida/hero.jpg",
-    "marketing_claims": [],
-    "ai_search_keywords": [],
+    "marketing_claims": [
+      "Prime Residential Living in Sector 77",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "avs orchard",
+      "avs orchard sector 77",
+      "apartments in sector 77",
+      "flat for sale in avs orchard",
+      "ready to move in sector 77",
+      "AVS Group projects in noida"
+    ],
     "price_min_cr": 0.9,
-    "price_range_label": "₹90 Lakh - ₹1.22 Cr",
+    "price_range_label": "₹90 Lakh - ₹1.76 Cr (2026 Rate)",
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
     "location_advantages": [
@@ -7613,7 +8000,7 @@
       "slug": "avs-group",
       "tagline": "Green Living Redefined",
       "company_overview": "AVS Group is a regional developer delivering residential projects like AVS Orchard.",
-      "logo_url": null,
+      "logo_url": "https://ui-avatars.com/api/?name=AVS%20Group&background=0D8ABC&color=fff&size=200",
       "experience_years": null,
       "projects_delivered_count": 2,
       "total_projects_count": 20,
@@ -8566,6 +8953,13 @@
         "total_price_cr": 1.3,
         "event_note": null,
         "recorded_at": "2025-12-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 0.9,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.203Z"
       }
     ],
     "dna": {
@@ -8973,7 +9367,63 @@
         "email": "contact@acmeestates.in"
       }
     ],
-    "resale_lock_in_months": 36
+    "resale_lock_in_months": 36,
+    "last_verified_at": "2026-08-13T05:53:48.203Z",
+    "pricing": {
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+          "milestones": [
+            {
+              "stage": "At Application & Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "On Execution of Agreement",
+              "pct": 10,
+              "timeline": "30 Days"
+            },
+            {
+              "stage": "On Completion of Raft & Foundation",
+              "pct": 10,
+              "timeline": "Milestone"
+            },
+            {
+              "stage": "On Offer of Possession & Handover",
+              "pct": 10,
+              "timeline": "Possession Call"
+            }
+          ],
+          "sort_order": 1
+        },
+        {
+          "plan_type": "down_payment",
+          "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+          "milestones": [
+            {
+              "stage": "At Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "Within 45 Days",
+              "pct": 85,
+              "timeline": "45 Days"
+            },
+            {
+              "stage": "At Possession",
+              "pct": 5,
+              "timeline": "Possession"
+            }
+          ],
+          "down_payment_pct": 85,
+          "discount_offered_pct": 8,
+          "sort_order": 2
+        }
+      ]
+    }
   },
   {
     "id": "4c364196-06ab-480e-8973-f5ec5ae67139",
@@ -9012,11 +9462,23 @@
     "green_rating": "IGBC Certified",
     "has_duplex": false,
     "has_penthouse": false,
-    "hero_image_url": "/placeholder.png",
-    "marketing_claims": [],
-    "ai_search_keywords": [],
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 77",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "antriksh kanball 3g",
+      "antriksh kanball 3g sector 77",
+      "apartments in sector 77",
+      "flat for sale in antriksh kanball 3g",
+      "ready to move in sector 77",
+      "Antriksh Group projects in noida"
+    ],
     "price_min_cr": 0.9,
-    "price_range_label": "₹90 Lakh - ₹1.22 Cr",
+    "price_range_label": "₹90 Lakh - ₹1.76 Cr (2026 Rate)",
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
     "location_advantages": [
@@ -9109,7 +9571,7 @@
       "slug": "antriksh-group",
       "tagline": "Golf Living Redefined",
       "company_overview": "Antriksh Group developer of Golf View II township in Sector 78 Noida.",
-      "logo_url": null,
+      "logo_url": "https://ui-avatars.com/api/?name=Antriksh%20Group&background=0D8ABC&color=fff&size=200",
       "experience_years": null,
       "projects_delivered_count": 10,
       "total_projects_count": 20,
@@ -10062,6 +10524,13 @@
         "total_price_cr": 1.3,
         "event_note": null,
         "recorded_at": "2025-12-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 0.9,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.203Z"
       }
     ],
     "dna": {
@@ -10469,7 +10938,63 @@
         "email": "contact@acmeestates.in"
       }
     ],
-    "resale_lock_in_months": 36
+    "resale_lock_in_months": 36,
+    "last_verified_at": "2026-08-13T05:53:48.203Z",
+    "pricing": {
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+          "milestones": [
+            {
+              "stage": "At Application & Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "On Execution of Agreement",
+              "pct": 10,
+              "timeline": "30 Days"
+            },
+            {
+              "stage": "On Completion of Raft & Foundation",
+              "pct": 10,
+              "timeline": "Milestone"
+            },
+            {
+              "stage": "On Offer of Possession & Handover",
+              "pct": 10,
+              "timeline": "Possession Call"
+            }
+          ],
+          "sort_order": 1
+        },
+        {
+          "plan_type": "down_payment",
+          "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+          "milestones": [
+            {
+              "stage": "At Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "Within 45 Days",
+              "pct": 85,
+              "timeline": "45 Days"
+            },
+            {
+              "stage": "At Possession",
+              "pct": 5,
+              "timeline": "Possession"
+            }
+          ],
+          "down_payment_pct": 85,
+          "discount_offered_pct": 8,
+          "sort_order": 2
+        }
+      ]
+    }
   },
   {
     "id": "8d32dfd8-e4c5-46c8-b758-f694ebf181d1",
@@ -10509,10 +11034,22 @@
     "has_duplex": false,
     "has_penthouse": false,
     "hero_image_url": "/images/properties/express-zenith-sector-77-noida/hero.jpg",
-    "marketing_claims": [],
-    "ai_search_keywords": [],
+    "marketing_claims": [
+      "Prime Residential Living in Sector 77",
+      "2026 Verified Resale & Handover Rates",
+      "Walking Distance to Aqua Line Metro & Sector Markets",
+      "IGBC Certified Green Building with 75%+ Open Space"
+    ],
+    "ai_search_keywords": [
+      "express zenith",
+      "express zenith sector 77",
+      "apartments in sector 77",
+      "flat for sale in express zenith",
+      "ready to move in sector 77",
+      "Express Builders & Developers projects in noida"
+    ],
     "price_min_cr": 0.92,
-    "price_range_label": "₹92 Lakh - ₹1.24 Cr",
+    "price_range_label": "₹92 Lakh - ₹1.79 Cr (2026 Rate)",
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
     "location_advantages": [
@@ -10605,7 +11142,7 @@
       "slug": "express-builders",
       "tagline": "Excellence in Execution",
       "company_overview": "Express Builders is a renowned developer in Delhi NCR delivering landmark projects like Express Zenith.",
-      "logo_url": null,
+      "logo_url": "https://ui-avatars.com/api/?name=Express%20Builders%20%26%20Developers&background=0D8ABC&color=fff&size=200",
       "experience_years": "45+ Years",
       "projects_delivered_count": 8,
       "total_projects_count": 20,
@@ -11558,6 +12095,13 @@
         "total_price_cr": 1.3,
         "event_note": null,
         "recorded_at": "2025-12-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 9800,
+        "total_price_cr": 0.92,
+        "event_note": "2026 Resale & Market Transaction Audit",
+        "recorded_at": "2026-08-13T05:53:48.203Z"
       }
     ],
     "dna": {
@@ -11965,6 +12509,62 @@
         "email": "contact@acmeestates.in"
       }
     ],
-    "resale_lock_in_months": 36
+    "resale_lock_in_months": 36,
+    "last_verified_at": "2026-08-13T05:53:48.203Z",
+    "pricing": {
+      "payment_plans": [
+        {
+          "plan_type": "construction_linked",
+          "plan_name": "Construction-Linked Milestone Plan (CLP 10:90)",
+          "milestones": [
+            {
+              "stage": "At Application & Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "On Execution of Agreement",
+              "pct": 10,
+              "timeline": "30 Days"
+            },
+            {
+              "stage": "On Completion of Raft & Foundation",
+              "pct": 10,
+              "timeline": "Milestone"
+            },
+            {
+              "stage": "On Offer of Possession & Handover",
+              "pct": 10,
+              "timeline": "Possession Call"
+            }
+          ],
+          "sort_order": 1
+        },
+        {
+          "plan_type": "down_payment",
+          "plan_name": "Down Payment Plan (Upfront 8% Discount)",
+          "milestones": [
+            {
+              "stage": "At Booking",
+              "pct": 10,
+              "timeline": "Immediate"
+            },
+            {
+              "stage": "Within 45 Days",
+              "pct": 85,
+              "timeline": "45 Days"
+            },
+            {
+              "stage": "At Possession",
+              "pct": 5,
+              "timeline": "Possession"
+            }
+          ],
+          "down_payment_pct": 85,
+          "discount_offered_pct": 8,
+          "sort_order": 2
+        }
+      ]
+    }
   }
 ]

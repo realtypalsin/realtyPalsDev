@@ -1,0 +1,485 @@
+[
+  {
+    "id": "vvip-homes-sector-16c",
+    "name": "VVIP Homes",
+    "slug": "vvip-homes-sector-16c",
+    "sector": "Sector 16C",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "VVIP Homes Luxury Gated Living in Sector 16C",
+    "address": "Sector 16C, Greater Noida West, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ16C0",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 1200,
+    "total_towers": 10,
+    "land_area_acres": 8,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "VVIP Homes is a high-end delivered residential society in Sector 16C offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "VVIP Homes is a high-end delivered residential society in Sector 16C offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 16C",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "vvip homes",
+      "sector 16c",
+      "apartments in sector 16c"
+    ],
+    "price_min_cr": 0.76,
+    "price_range_label": "₹76 Lakh - ₹1.18 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "VVIP Group",
+      "slug": "vvip-group",
+      "logo_url": "https://ui-avatars.com/api/?name=VVIP&background=0D8ABC&color=fff",
+      "experience_years": "22+ Years",
+      "delivered_units": 1200,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 7200,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Park View",
+          "psf": 100
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 55,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK VVIP",
+        "bhk": 2,
+        "super_area_sqft": 1060,
+        "carpet_area_sqft": 640,
+        "price_min_cr": 0.76,
+        "price_max_cr": 0.84,
+        "price_per_sqft": 7200
+      },
+      {
+        "name": "3 BHK VVIP",
+        "bhk": 3,
+        "super_area_sqft": 1490,
+        "carpet_area_sqft": 910,
+        "price_min_cr": 1.07,
+        "price_max_cr": 1.18,
+        "price_per_sqft": 7200
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 7200,
+        "total_price_cr": 0.76,
+        "recorded_at": "2026-08-13T06:00:33.760Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.760Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "gaur-city-2-16th-avenue",
+    "name": "Gaur City 2 - 16th Avenue",
+    "slug": "gaur-city-2-16th-avenue",
+    "sector": "Sector 16C",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Gaur City 2 - 16th Avenue Luxury Gated Living in Sector 16C",
+    "address": "Sector 16C, Greater Noida West, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ16C1",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 2800,
+    "total_towers": 24,
+    "land_area_acres": 22,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Gaur City 2 - 16th Avenue is a high-end delivered residential society in Sector 16C offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Gaur City 2 - 16th Avenue is a high-end delivered residential society in Sector 16C offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Design Forum International",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 16C",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "gaur city 2 - 16th avenue",
+      "sector 16c",
+      "apartments in sector 16c"
+    ],
+    "price_min_cr": 0.73,
+    "price_range_label": "₹73 Lakh - ₹1.15 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Gaurs Group",
+      "slug": "gaurs-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Gaurs&background=0D8ABC&color=fff",
+      "experience_years": "28+ Years",
+      "delivered_units": 2800,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 7500,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Stadium View",
+          "psf": 120
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 60,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Gaur Avenue",
+        "bhk": 2,
+        "super_area_sqft": 985,
+        "carpet_area_sqft": 590,
+        "price_min_cr": 0.73,
+        "price_max_cr": 0.81,
+        "price_per_sqft": 7500
+      },
+      {
+        "name": "3 BHK Gaur Avenue",
+        "bhk": 3,
+        "super_area_sqft": 1390,
+        "carpet_area_sqft": 850,
+        "price_min_cr": 1.04,
+        "price_max_cr": 1.15,
+        "price_per_sqft": 7500
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 7500,
+        "total_price_cr": 0.73,
+        "recorded_at": "2026-08-13T06:00:33.760Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.760Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  },
+  {
+    "id": "mahagun-mywoods-sector-16c",
+    "name": "Mahagun Mywoods",
+    "slug": "mahagun-mywoods-sector-16c",
+    "sector": "Sector 16C",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "status": "ready_to_move",
+    "tagline": "Mahagun Mywoods Luxury Gated Living in Sector 16C",
+    "address": "Sector 16C, Greater Noida West, UP 201301",
+    "lat": 28.575,
+    "lng": 77.385,
+    "rera_number": "UPRERAPRJ16C2",
+    "rera_url": "https://www.up-rera.in/",
+    "total_units": 6000,
+    "total_towers": 45,
+    "land_area_acres": 35,
+    "launch_date": "2016-01-01T00:00:00.000Z",
+    "possession_date": "2023-06-01T00:00:00.000Z",
+    "possession_label": "Ready to Move",
+    "possession_confidence": "delivered",
+    "oc_obtained": true,
+    "description": "Mahagun Mywoods is a high-end delivered residential society in Sector 16C offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Mahagun Mywoods is a high-end delivered residential society in Sector 16C offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "design_theme": "Modern Architecture",
+    "architect": "Hafeez Contractor",
+    "floors": "G + 24",
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 16C",
+      "2026 Verified Resale Benchmark"
+    ],
+    "ai_search_keywords": [
+      "mahagun mywoods",
+      "sector 16c",
+      "apartments in sector 16c"
+    ],
+    "price_min_cr": 0.72,
+    "price_range_label": "₹72 Lakh - ₹1.16 Cr",
+    "walkability_score": 88,
+    "builder": {
+      "name": "Mahagun Group",
+      "slug": "mahagun-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Mahagun&background=0D8ABC&color=fff",
+      "experience_years": "25+ Years",
+      "delivered_units": 6000,
+      "delivery_score": 90,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 88
+    },
+    "cost_sheet": {
+      "base_price_per_sqft": 7600,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Central Woodland View",
+          "psf": 130
+        }
+      ],
+      "parking_cost": 320000,
+      "ifms": 60,
+      "club_membership": 180000,
+      "maintenance_psf_monthly": 3.2
+    },
+    "unit_types": [
+      {
+        "name": "2 BHK Woods",
+        "bhk": 2,
+        "super_area_sqft": 960,
+        "carpet_area_sqft": 580,
+        "price_min_cr": 0.72,
+        "price_max_cr": 0.8,
+        "price_per_sqft": 7600
+      },
+      {
+        "name": "3 BHK Woods",
+        "bhk": 3,
+        "super_area_sqft": 1370,
+        "carpet_area_sqft": 840,
+        "price_min_cr": 1.04,
+        "price_max_cr": 1.16,
+        "price_per_sqft": 7600
+      }
+    ],
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Milestone Plan",
+        "milestones": [
+          {
+            "stage": "Booking Amount",
+            "pct": 10,
+            "timeline": "Immediate"
+          },
+          {
+            "stage": "At Possession",
+            "pct": 10,
+            "timeline": "Possession"
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q3 2026",
+        "price_per_sqft": 7600,
+        "total_price_cr": 0.72,
+        "recorded_at": "2026-08-13T06:00:33.760Z"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "handover",
+        "name": "Possession & Active Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Active"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Site Inspection & Possession Update",
+        "update_date": "2026-08-13T06:00:33.760Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 100
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 IT Hub, Noida",
+        "distance_km": 9,
+        "travel_mode": "drive",
+        "travel_time_min": 20
+      },
+      {
+        "destination": "Expressway Tech Parks",
+        "distance_km": 7,
+        "travel_mode": "drive",
+        "travel_time_min": 14
+      }
+    ],
+    "connectivity": [
+      {
+        "type": "metro",
+        "name": "Aqua Line Metro Station",
+        "distance_km": 1.5,
+        "travel_time_min": 5,
+        "travel_mode": "drive"
+      },
+      {
+        "type": "hospital",
+        "name": "Yatharth Hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "travel_mode": "drive"
+      }
+    ]
+  }
+]
