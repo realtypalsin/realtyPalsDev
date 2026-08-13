@@ -314,6 +314,7 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
         persona_profile: true,
         recommendation_profile: true,
         competitors: { orderBy: { sort_order: 'asc' } },
+        spec_items: { orderBy: { sort_order: 'asc' } },
         construction_milestones: { orderBy: { completion_pct: 'desc' } },
         construction_updates: { orderBy: { update_date: 'desc' } },
         lifecycle_updates: { orderBy: { update_date: 'desc' } },

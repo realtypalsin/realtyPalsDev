@@ -806,6 +806,7 @@ export default function AdminProjectEditPage({
                 initialPersona={data.persona_profile}
                 initialRecommendation={data.recommendation_profile}
                 initialCompetitors={data.competitors ?? []}
+                initialSpecs={data.spec_items ?? []}
                 onSaved={handleSaved}
               />
             </div>
