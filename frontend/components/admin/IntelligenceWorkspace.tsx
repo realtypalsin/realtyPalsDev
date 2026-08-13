@@ -6,6 +6,7 @@ import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import JsonEditor from './JsonEditor'
 import CustomSelect from './CustomSelect'
+import SpecEditor from './SpecEditor'
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -113,6 +114,7 @@ interface Props {
   initialPersona?:        any
   initialRecommendation?: any
   initialCompetitors?:    any[]
+  initialSpecs?:          any[]
   onSaved?:               () => void
 }
 
@@ -386,13 +388,14 @@ function StatusBadge({ status }: { status: string }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function IntelligenceWorkspace({
-  projectId, initialDna, initialDecision, initialPersona, initialRecommendation, initialCompetitors,
+  projectId, initialDna, initialDecision, initialPersona, initialRecommendation, initialCompetitors, initialSpecs,
 }: Props) {
   const [dna, setDna]     = useState<DnaState>(() => initDna(initialDna))
   const [dec, setDec]     = useState<DecisionState>(() => initDecision(initialDecision))
   const [per, setPer]     = useState<PersonaState>(() => initPersona(initialPersona))
   const [rec, setRec]     = useState<RecState>(() => initRec(initialRecommendation))
   const [comps, setComps] = useState<Competitor[]>(() => initCompetitors(initialCompetitors))
+  const [specs, setSpecs] = useState<any[]>(initialSpecs ?? [])
   
   const [buyerPersonas, setBuyerPersonas] = useState<any>(
     initialDecision?.intelligence_data?.buyerPersonas ?? []
@@ -1295,6 +1298,15 @@ export default function IntelligenceWorkspace({
             </button>
           </div>
         )}
+      </div>
+
+      {/* Specifications */}
+      <div className="border-t pt-6 space-y-4">
+        <SpecEditor
+          projectId={projectId}
+          specs={specs}
+          onSpecsChange={setSpecs}
+        />
       </div>
 
     </div>

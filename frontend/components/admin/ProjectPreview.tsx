@@ -5,7 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   CheckCircle2, Clock, Zap, Shield, MapPin, Building2,
-  BedDouble, ExternalLink, RefreshCw, Smartphone, Layers
+  BedDouble, ExternalLink, RefreshCw, Smartphone, Layers,
+  CalendarDays, FileText, IndianRupee, LineChart, Sparkles,
+  TrainFront, Leaf, Users
 } from 'lucide-react'
 
 interface UnitType {
@@ -37,6 +39,7 @@ interface ProjectData {
   builder_detail?: { name: string }
   unit_types?: UnitType[]
   amenities?: { name: string; category: string }[]
+  open_space_pct?: number
   images?: { url: string; type: string }[]
 }
 
@@ -67,6 +70,9 @@ interface Props {
 
 export default function ProjectPreview({ project, onRefresh, refreshing }: Props) {
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('light')
+  const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop')
+  const [activeMobileTab, setActiveMobileTab] = useState<'Overview' | 'Analysis' | 'Floor Plans' | 'Pricing' | 'Location' | 'Builder'>('Overview')
+
   const status = STATUS_CFG[project.status] ?? STATUS_CFG.ready_to_move
   const units  = project.unit_types ?? []
   
@@ -108,7 +114,29 @@ export default function ProjectPreview({ project, onRefresh, refreshing }: Props
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Segmented Desktop/Mobile Toggle */}
+          <div className="flex items-center p-0.5 bg-zinc-200/60 dark:bg-zinc-800 rounded-xl border border-zinc-300/50 dark:border-zinc-700/60">
+            <button
+              type="button"
+              onClick={() => setDeviceMode('desktop')}
+              className={`px-2.5 py-1 text-[10.5px] font-bold rounded-lg transition-all cursor-pointer ${
+                deviceMode === 'desktop' ? 'bg-white text-zinc-900 dark:bg-zinc-700 dark:text-white shadow-xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900'
+              }`}
+            >
+              Desktop
+            </button>
+            <button
+              type="button"
+              onClick={() => setDeviceMode('mobile')}
+              className={`px-2.5 py-1 text-[10.5px] font-bold rounded-lg transition-all cursor-pointer ${
+                deviceMode === 'mobile' ? 'bg-blue-600 text-white shadow-xs font-extrabold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900'
+              }`}
+            >
+              Mobile Sheet
+            </button>
+          </div>
+
           {/* Segmented Light/Dark Toggle */}
           <div className="flex items-center p-0.5 bg-zinc-200/60 dark:bg-zinc-800 rounded-xl border border-zinc-300/50 dark:border-zinc-700/60">
             <button
@@ -155,10 +183,172 @@ export default function ProjectPreview({ project, onRefresh, refreshing }: Props
         </div>
       </div>
 
-      {/* Main Luxury Preview Card Container */}
-      <div className={`rounded-3xl border shadow-lg overflow-hidden transition-all duration-300 ${
-        isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 shadow-black/40' : 'bg-white border-zinc-200/90 text-zinc-900 shadow-zinc-200/60'
-      }`}>
+      {deviceMode === 'mobile' ? (
+        /* Mobile Sheet Frame Mockup */
+        <div className="max-w-[340px] mx-auto rounded-[28px] border-4 border-zinc-800 bg-zinc-950 shadow-2xl overflow-hidden text-zinc-100 font-sans relative flex flex-col h-[520px]">
+          {/* Scrollable Container */}
+          <div className="flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-12">
+            
+            {/* New full-height luxury Mobile Hero */}
+            {(() => {
+              const rates = units.map(u => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : null).filter(Boolean) as number[]
+              const minRate = rates.length > 0 ? Math.min(...rates) : null
+              const perSqftRate = minRate ? minRate.toLocaleString('en-IN') : '15,942'
+              const displayPossession = project.possession_label || 'Dec 2028'
+              const displayScore = (project as any).recommendation_score?.total || (project as any).recommendation_score || 94
+              const isRTM = project.status === 'ready_to_move'
+              const isNew = project.status === 'new_launch'
+
+              return (
+                <div className="relative w-full overflow-hidden flex-shrink-0 h-[280px]">
+                  <Image src={displayImageUrl} alt={project.name || ''} fill unoptimized className="object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/20" />
+
+                  {/* Top-left Status */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className={`text-[8.5px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-full shadow-md
+                      ${isRTM ? 'bg-emerald-500 text-white' : isNew ? 'bg-blue-500 text-white' : 'bg-amber-500 text-white'}`}>
+                      {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
+                    </span>
+                  </div>
+
+                  {/* Top-right AI Score */}
+                  {displayScore && (
+                    <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl p-2 text-right flex flex-col items-center justify-center">
+                      <span className="text-[7.5px] text-zinc-300 font-bold tracking-wider leading-none">⚡ AI SCORE</span>
+                      <div className="flex items-baseline gap-0.5 mt-0.5">
+                        <span className="text-lg font-black text-white leading-none">{displayScore}</span>
+                        <span className="text-[8px] text-zinc-400 font-bold">/100</span>
+                      </div>
+                      <span className="text-[7.5px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider leading-none">Strong Buy</span>
+                    </div>
+                  )}
+
+                  {/* Middle Title / Builder / Location */}
+                  <div className="absolute bottom-[76px] left-3 right-3 z-10 space-y-0.5">
+                    <h3 className="text-lg font-black text-white leading-tight">{project.name || 'Project Name'}</h3>
+                    <p className="text-[11px] font-semibold text-zinc-300">
+                      by <span className="underline decoration-dashed decoration-zinc-400 font-bold text-white">{builderName}</span> ˅
+                    </p>
+                    <p className="text-[10px] text-zinc-300 flex items-center gap-1">
+                      <MapPin size={10} className="text-zinc-400" />
+                      {project.sector || 'Sector'}, {project.city || 'Noida'}
+                    </p>
+                  </div>
+
+                  {/* Bottom Translucent Price & Possession Dock */}
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 bg-black/40 backdrop-blur-md border border-white/15 rounded-xl p-2.5 flex items-center justify-between shadow-xl">
+                    <div>
+                      <p className="text-xs font-black text-white leading-tight">{priceRange(units)}</p>
+                      <p className="text-[8.5px] text-zinc-300 font-semibold mt-0.5">Starts ₹{perSqftRate} / sq.ft</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-wider leading-none">Possession</p>
+                      <p className="text-[10.5px] font-extrabold text-white mt-1 leading-none">{displayPossession}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+
+            {/* Mobile Tab Strip Sync */}
+            <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800 flex justify-around px-1 py-1">
+              {(['Overview', 'Analysis', 'Floor Plans', 'Pricing', 'Location', 'Builder'] as const).map((tab) => {
+                const isActive = activeMobileTab === tab
+                const labels: Record<string, string> = {
+                  Overview: 'Overview',
+                  Analysis: 'Analysis',
+                  'Floor Plans': 'Residences',
+                  Pricing: 'Pricing',
+                  Location: 'Location',
+                  Builder: 'Docs'
+                }
+                const icons: Record<string, React.ReactNode> = {
+                  Overview: <Building2 size={15} />,
+                  Analysis: <LineChart size={15} />,
+                  'Floor Plans': <BedDouble size={15} />,
+                  Pricing: <IndianRupee size={15} />,
+                  Location: <MapPin size={15} />,
+                  Builder: <FileText size={15} />
+                }
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveMobileTab(tab)}
+                    className={`flex flex-col items-center gap-1 py-1.5 px-0.5 relative transition-all flex-1 min-w-[42px] ${
+                      isActive ? 'text-blue-500 font-extrabold' : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    {icons[tab]}
+                    <span className={`text-[8.5px] font-bold tracking-tight ${isActive ? 'text-blue-500' : 'text-zinc-400'}`}>
+                      {labels[tab]}
+                    </span>
+                    {isActive && (
+                      <div className="absolute bottom-0 left-1 right-1 h-0.5 bg-blue-500 rounded-full" />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Tab content mockup matching grid-cols-3 layout */}
+            <div className="p-3 space-y-3">
+              {activeMobileTab === 'Overview' ? (
+                <>
+                  {/* USP Bento Grid 3 columns */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: project.open_space_pct ? `${project.open_space_pct}%` : '75%', sub: 'Open Green', icon: Leaf, color: 'bg-emerald-950 text-emerald-400' },
+                      { value: '3 mins', sub: 'Aqua Metro', icon: TrainFront, color: 'bg-blue-950 text-blue-400' },
+                      { value: 'IGBC', sub: 'Gold Rated', icon: Leaf, color: 'bg-amber-950 text-amber-400' },
+                      { value: 'Low', sub: 'Density Living', icon: Users, color: 'bg-purple-950 text-purple-400' },
+                      { value: 'Corner', sub: 'Smart Units', icon: Sparkles, color: 'bg-orange-950 text-orange-400' },
+                      { value: 'RERA', sub: 'Registered', icon: Shield, color: 'bg-teal-950 text-teal-400' }
+                    ].map((item, idx) => {
+                      const Icon = item.icon
+                      return (
+                        <div key={idx} className="bg-zinc-900 border border-zinc-800 rounded-xl p-2 flex flex-col items-center justify-center text-center">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.color} mb-1`}>
+                            <Icon size={14} />
+                          </div>
+                          <span className="text-[11px] font-black text-white">{item.value}</span>
+                          <span className="text-[8px] text-zinc-400 font-bold mt-0.5">{item.sub}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Persona recommendation info callout */}
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-1">
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Perfect For</p>
+                    <p className="font-semibold text-zinc-200">{project.name || 'Ivy County'} — {builderName}</p>
+                    <p className="text-[9.5px] text-zinc-400">RERA Approved project in top premium sector.</p>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center text-zinc-400">
+                  <p className="text-[10px] font-bold uppercase tracking-wider">{activeMobileTab} Tab Content</p>
+                  <p className="text-[9.5px] mt-1">Preview of edited layout fields synced live.</p>
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          {/* Sticky Bottom CTA */}
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-zinc-900 border-t border-zinc-800 flex gap-2 z-10">
+            <button type="button" className="w-full bg-white text-zinc-900 font-black py-2 rounded-xl text-[11px] shadow-sm">
+              Book Site Visit
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+        {/* Main Luxury Preview Card Container */}
+        <div className={`rounded-3xl border shadow-lg overflow-hidden transition-all duration-300 ${
+          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 shadow-black/40' : 'bg-white border-zinc-200/90 text-zinc-900 shadow-zinc-200/60'
+        }`}>
         {/* Image Frame */}
         <div className="relative w-full bg-zinc-900" style={{ height: 195 }}>
           <Image
@@ -277,6 +467,8 @@ export default function ProjectPreview({ project, onRefresh, refreshing }: Props
             )}
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   )

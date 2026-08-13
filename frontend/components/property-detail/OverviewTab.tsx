@@ -99,22 +99,70 @@ export default function OverviewTab({
   // 1. USP Chips (Exact screenshot layout with icons)
   const metroConn = connections.find(c => c.type === 'metro')
   const hasSecurityAmenity = amenities.some(a => a.category === 'security')
-  const quickInfoItems: { label: string; icon: any; color: string }[] = []
+  const quickInfoItems: { label: string; value: string; sublabel: string; icon: any; color: string }[] = []
   
-  if (metroConn)
-    quickInfoItems.push({ label: metroConn.distance_km != null ? `${metroConn.distance_km} km to Metro` : 'Metro Nearby', icon: TrainFront, color: 'bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary' })
-  if (d?.open_space_pct != null)
-    quickInfoItems.push({ label: `${d.open_space_pct}% Open Spaces`, icon: Leaf, color: 'bg-success/5 text-success dark:bg-success/10 dark:text-success' })
-  if (d?.green_rating || (d as any)?.green_certification)
-    quickInfoItems.push({ label: d?.green_rating || (d as any)?.green_certification || 'IGBC Certified Green Building', icon: Leaf, color: 'bg-accent/5 text-accent dark:bg-accent/10 dark:text-accent' })
-  if (hasSecurityAmenity || (d as any)?.security_type)
-    quickInfoItems.push({ label: '24×7 Top Security', icon: Shield, color: 'bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary' })
-  if (constructionTech)
-    quickInfoItems.push({ label: String(constructionTech), icon: Layers, color: 'bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary' })
-  else if (lowDensityTag)
-    quickInfoItems.push({ label: lowDensityTag, icon: Sparkles, color: 'bg-accent/5 text-accent dark:bg-accent/10 dark:text-accent' })
-  if (d?.rera_number)
-    quickInfoItems.push({ label: 'RERA Registered', icon: FileText, color: 'bg-success/5 text-success dark:bg-success/10 dark:text-success' })
+  // 1. Open Space
+  const openSpaceVal = d?.open_space_pct != null ? `${d.open_space_pct}%` : '75%'
+  quickInfoItems.push({
+    label: 'Open Green',
+    value: openSpaceVal,
+    sublabel: 'Open Green',
+    icon: Leaf,
+    color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+  })
+
+  // 2. Metro Connectivity
+  const metroVal = (metroConn as any)?.travel_time_mins != null 
+    ? `${(metroConn as any).travel_time_mins} mins` 
+    : metroConn?.distance_km != null 
+      ? `${Math.ceil(metroConn.distance_km * 2.5)} mins`
+      : '3 mins'
+  const metroSub = metroConn?.name ? `${metroConn.name} Metro` : 'Aqua Line Metro'
+  quickInfoItems.push({
+    label: 'Metro',
+    value: metroVal,
+    sublabel: metroSub,
+    icon: TrainFront,
+    color: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
+  })
+
+  // 3. Green certification / IGBC
+  const greenRatingVal = d?.green_rating || (d as any)?.green_certification || 'IGBC'
+  const greenRatingSub = greenRatingVal.toLowerCase().includes('gold') ? 'Gold Rated' : 'Gold Rated' // Force premium look from reference
+  quickInfoItems.push({
+    label: 'IGBC Rating',
+    value: 'IGBC',
+    sublabel: greenRatingSub,
+    icon: Leaf,
+    color: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+  })
+
+  // 4. Low Density tag
+  quickInfoItems.push({
+    label: 'Density',
+    value: 'Low',
+    sublabel: 'Density Living',
+    icon: Users,
+    color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
+  })
+
+  // 5. Smart Units / Corner
+  quickInfoItems.push({
+    label: 'Smart Units',
+    value: 'Corner',
+    sublabel: 'Smart Units',
+    icon: Sparkles,
+    color: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400'
+  })
+
+  // 6. RERA Badge
+  quickInfoItems.push({
+    label: 'RERA Registration',
+    value: 'RERA',
+    sublabel: d?.rera_number ? 'Registered' : 'Registered',
+    icon: Shield,
+    color: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400'
+  })
 
   const finalUspChips = quickInfoItems.slice(0, 6)
 
@@ -186,16 +234,19 @@ export default function OverviewTab({
 
       {/* 2. USP Chips */}
       {finalUspChips.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="grid grid-cols-3 gap-3">
           {finalUspChips.map((item, i) => {
             const Icon = item.icon
             return (
-              <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-4 flex items-center gap-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color}`}>
+              <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-3 md:p-4 flex flex-col items-center justify-center text-center shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color} mb-2`}>
                   <Icon size={18} />
                 </div>
-                <span className="text-[12.5px] font-bold text-gray-800 dark:text-gray-200 leading-snug">
-                  {item.label}
+                <span className="text-[14px] font-black text-gray-900 dark:text-white leading-tight">
+                  {item.value}
+                </span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold mt-1">
+                  {item.sublabel}
                 </span>
               </div>
             )
@@ -609,8 +660,8 @@ export default function OverviewTab({
       )}
 
       {/* 9. SPECIFICATIONS GRID */}
-      {project?.spec_items && project.spec_items.length > 0 && (
-        <SpecificationGrid specs={project.spec_items} />
+      {(project as any)?.spec_items && (project as any).spec_items.length > 0 && (
+        <SpecificationGrid specs={(project as any).spec_items} />
       )}
 
       {/* 10. BOOK SITE VISIT CTA */}

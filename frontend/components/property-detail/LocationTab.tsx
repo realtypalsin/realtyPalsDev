@@ -128,7 +128,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
           
           {/* Interactive Map (8 columns) */}
           <div className="lg:col-span-8 space-y-4">
-            <div className="h-[420px] rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 relative shadow-inner">
+            <div className="h-64 sm:h-80 md:h-[420px] rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 relative shadow-inner">
               {projectAddress && process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
                 <iframe
                   title="Google Maps Location"

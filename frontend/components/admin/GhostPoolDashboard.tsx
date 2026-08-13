@@ -27,9 +27,9 @@ export function GhostPoolDashboard({ projectId }: { projectId: string }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetch() {
+    async function fetchData() {
       try {
-        const res = await fetch(`/api/leads/projects/${projectId}/ghost-pool`)
+        const res = await window.fetch(`/api/leads/projects/${projectId}/ghost-pool`)
         const json = await res.json()
         setData(json)
       } catch (err) {
@@ -39,7 +39,7 @@ export function GhostPoolDashboard({ projectId }: { projectId: string }) {
       }
     }
 
-    fetch()
+    fetchData()
   }, [projectId])
 
   if (loading) return <div className="p-6 text-center text-gray-500">Loading ghost pool analysis...</div>

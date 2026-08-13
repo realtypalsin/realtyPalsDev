@@ -196,7 +196,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
+    <div className="p-3 sm:p-4 md:p-8 space-y-6 md:space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
 
       {/* ── 1. PRICING & INVESTMENT HEADER ── */}
       <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">

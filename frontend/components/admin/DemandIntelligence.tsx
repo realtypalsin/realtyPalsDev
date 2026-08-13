@@ -22,9 +22,9 @@ export function DemandIntelligence({ projectId }: { projectId: string }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetch() {
+    async function fetchData() {
       try {
-        const res = await fetch(`/api/leads/projects/${projectId}/demand`)
+        const res = await window.fetch(`/api/leads/projects/${projectId}/demand`)
         const json = await res.json()
         setData(json)
       } catch (err) {
@@ -34,7 +34,7 @@ export function DemandIntelligence({ projectId }: { projectId: string }) {
       }
     }
 
-    fetch()
+    fetchData()
   }, [projectId])
 
   if (loading) return <div className="p-6 text-center text-gray-500">Loading demand analysis...</div>

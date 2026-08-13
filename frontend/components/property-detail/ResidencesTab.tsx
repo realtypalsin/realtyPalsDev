@@ -154,7 +154,7 @@ export default function ResidencesTab({
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
+    <div className="p-3 sm:p-4 md:p-8 space-y-6 md:space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
 
       {/* ── 1. HEADER SECTION ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -180,7 +180,7 @@ export default function ResidencesTab({
       </div>
 
       {/* BHK Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <button
           onClick={() => setFilter('all')}
           className={`text-[12.5px] font-extrabold px-5 py-2.5 rounded-full transition-all whitespace-nowrap ${

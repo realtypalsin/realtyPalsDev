@@ -147,7 +147,7 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
       </div>
 
       {/* ── 2. LEGACY & DELIVERED STAT METRICS BANNER ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {[
           { title: `${legacyYears}+`, label: 'Years of Legacy', icon: Clock, color: 'text-blue-600 bg-blue-50' },
           { title: `${builder?.projects_delivered_count || 42}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' },

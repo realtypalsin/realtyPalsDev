@@ -151,7 +151,7 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
 
           {/* Interactive Points */}
           {chartPoints.map((pt, i) => (
-            <g key={i} className="cursor-pointer group" onMouseEnter={() => setHoveredIdx(i)}>
+            <g key={i} className="cursor-pointer group" onMouseEnter={() => setHoveredIdx(i)} onClick={() => setHoveredIdx(i)}>
               {/* Target hit area */}
               <circle cx={pt.x} cy={pt.yProj} r="14" fill="transparent" />
               <circle 
@@ -297,7 +297,7 @@ export default function IntelligenceTab({
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-8 text-gray-900 dark:text-gray-100">
+    <div className="p-3 sm:p-4 md:p-8 space-y-6 md:space-y-8 text-gray-900 dark:text-gray-100">
 
       {/* ── 1. ROI & INVESTMENT SNAPSHOT (Distilled) ── */}
       <div className="space-y-6">

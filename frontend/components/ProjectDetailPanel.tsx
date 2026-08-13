@@ -432,8 +432,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const stickyHeader = (
     <div className="sticky top-0 z-40 w-full bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 shadow-xs transition-all duration-300">
       <div className="flex items-center justify-between px-3 md:px-6 h-[58px] max-w-7xl mx-auto gap-2">
-        
-        {/* Left: Identity & Interactive RERA Badge */}
         <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
           <div className="flex items-center gap-2 max-w-[120px] sm:max-w-[160px] md:max-w-[200px]">
             <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
@@ -462,7 +460,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0 hidden md:block" />
         </div>
 
-        {/* Center: Flexible Non-Overlapping Tab Strip */}
         <div className="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0 justify-start sm:justify-center px-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {SECTION_TABS.map((tab) => {
             const isActive = activeTab === tab;
@@ -483,7 +480,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           })}
         </div>
 
-        {/* Right: Price & CTA */}
         <div className="flex items-center justify-end gap-2.5 flex-shrink-0 ml-1">
           <p className="text-[12px] font-bold text-gray-900 dark:text-white hidden xl:block whitespace-nowrap">{sanitizePriceLabel(d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr+` : ''))}</p>
           <button onClick={() => handleOpenSiteVisit()} className="px-3.5 py-1.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-bold rounded-full text-[12px] transition-all whitespace-nowrap shadow-2xs cursor-pointer">
@@ -491,6 +487,63 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           </button>
         </div>
       </div>
+    </div>
+  )
+
+  const mobileTabIcons: Record<Tab, React.ReactNode> = {
+    Overview: <Building2 size={18} />,
+    Analysis: <LineChart size={18} />,
+    'Floor Plans': <BedDouble size={18} />,
+    Pricing: <IndianRupee size={18} />,
+    Location: <MapPin size={18} />,
+    Builder: <FileText size={18} />
+  }
+
+  const mobileTabLabels: Record<Tab, string> = {
+    Overview: 'Overview',
+    Analysis: 'Analysis',
+    'Floor Plans': 'Residences',
+    Pricing: 'Pricing',
+    Location: 'Location',
+    Builder: 'Docs'
+  }
+
+  const mobileTabBar = (
+    <div className="sticky top-0 z-45 w-full bg-white dark:bg-[#120f0d] border-b border-gray-100 dark:border-gray-800 shadow-xs flex-shrink-0">
+      <div className="flex items-center justify-around px-1 py-1">
+        {SECTION_TABS.map((tab) => {
+          const isActive = activeTab === tab
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex flex-col items-center gap-1.5 py-2 px-1 relative transition-all cursor-pointer flex-1 min-w-[50px] ${
+                isActive ? 'text-blue-600 dark:text-blue-400 font-extrabold' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              {mobileTabIcons[tab]}
+              <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>
+                {mobileTabLabels[tab]}
+              </span>
+              {isActive && (
+                <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full" />
+              )}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  const mobileCtaFooter = (
+    <div className="sticky bottom-0 z-40 w-full bg-white/95 dark:bg-[#120f0d]/95 backdrop-blur-md border-t border-gray-200/80 dark:border-gray-800/80 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] flex items-center gap-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      <button
+        onClick={() => handleOpenSiteVisit()}
+        className="w-full bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white font-extrabold py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-xs active:scale-[0.98]"
+      >
+        <CalendarDays size={16} />
+        Book Site Visit
+      </button>
     </div>
   )
 
@@ -712,6 +765,123 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     )
   }
 
+  const renderMobileHero = () => {
+    const unitTypes = d?.unit_types ?? []
+    const validPricesMin = unitTypes.map((u: any) => u.price_min_cr).filter(Boolean) as number[]
+    const validPricesMax = unitTypes.map((u: any) => u.price_max_cr).filter(Boolean) as number[]
+    const minCalculated = validPricesMin.length > 0 ? Math.min(...validPricesMin) : d?.price_min_cr
+    const maxCalculated = validPricesMax.length > 0 ? Math.max(...validPricesMax) : (d as any)?.price_max_cr
+
+    let displayPrice = 'Price on Request'
+    if (d?.price_range_label && !/price on request|price on demand/i.test(d.price_range_label)) {
+      displayPrice = sanitizePriceLabel(d.price_range_label)
+    } else if (minCalculated != null) {
+      if (maxCalculated != null && maxCalculated > minCalculated) {
+        displayPrice = sanitizePriceLabel(`₹${minCalculated}–${maxCalculated} Cr`)
+      } else {
+        displayPrice = sanitizePriceLabel(`₹${minCalculated} Cr Onwards`)
+      }
+    }
+
+    const displayPossession = d?.possession_label || 'Dec 2028'
+    const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 86
+    const builderName = typeof d?.builder === 'object' ? (d.builder as any)?.name : (d?.builder || 'Elite Group')
+
+    const rates = unitTypes.map((u: any) => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : null).filter(Boolean) as number[]
+    const minRate = rates.length > 0 ? Math.min(...rates) : null
+    const perSqftRate = minRate ? minRate.toLocaleString('en-IN') : '15,942'
+
+    return (
+      <div className="relative w-full overflow-hidden flex-shrink-0" style={{ height: 380 }}>
+        {currentImg ? (
+          <Image 
+            src={currentImg} 
+            alt={d?.name ?? ''} 
+            fill 
+            priority 
+            className="object-cover" 
+            sizes="100vw" 
+            onError={() => markImageFailed(currentImg)} 
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+            <Building2 size={48} className="text-slate-600" />
+          </div>
+        )}
+        {/* Dark vertical gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/20" />
+
+        {/* Top-left: Status Pill */}
+        <div className="absolute top-4 left-4 z-10">
+          <span className={`text-[10px] font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-md
+            ${isRTM ? 'bg-emerald-500 text-white' : isNew ? 'bg-blue-500 text-white' : 'bg-amber-500 text-white'}`}>
+            {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
+          </span>
+        </div>
+
+        {/* Top-right: AI Score Badge */}
+        {displayScore && (
+          <div className="absolute top-4 right-4 z-10 bg-black/60 backdrop-blur-md border border-white/20 rounded-2xl p-3 text-right flex flex-col items-center justify-center shadow-lg">
+            <p className="text-[9px] text-gray-300 font-bold tracking-wider flex items-center gap-0.5 justify-end">⚡ AI SCORE</p>
+            <div className="flex items-baseline gap-0.5 mt-0.5">
+              <span className="text-2xl font-black text-white leading-none">{displayScore}</span>
+              <span className="text-[10px] text-gray-400 font-bold">/100</span>
+            </div>
+            {tier && (
+              <span className="text-[9px] font-extrabold text-emerald-400 mt-1 uppercase tracking-wider">
+                🛡️ {tierLabel[tier] ?? tier}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Close Button */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-[calc(5rem+0.5rem)] z-10 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 transition-colors"
+        >
+          <X size={15} />
+        </button>
+
+        {/* Middle: Title, Builder, and Location */}
+        <div className="absolute bottom-[92px] left-4 right-4 z-10 space-y-1">
+          <h2 className="text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+            {d?.name}
+          </h2>
+          {builderName && (
+            <p className="text-[13px] font-semibold text-gray-200 drop-shadow-sm flex items-center gap-1 cursor-pointer">
+              by <span className="underline decoration-dashed decoration-gray-400 underline-offset-4 font-extrabold text-white">{builderName}</span>
+              <span className="text-gray-400 text-xs">˅</span>
+            </p>
+          )}
+          <p className="text-[11px] text-gray-300 font-medium drop-shadow-sm flex items-center gap-1">
+            <MapPin size={11} className="text-gray-400" />
+            {d?.sector}, {d?.city}, {(d as any)?.state || 'Uttar Pradesh'}
+          </p>
+        </div>
+
+        {/* Bottom Translucent Price & Possession Overlay Dock */}
+        <div className="absolute bottom-3 left-3 right-3 z-10 bg-black/40 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 flex items-center justify-between shadow-xl">
+          <div>
+            <p className="text-lg font-black text-white leading-tight">{displayPrice}</p>
+            <p className="text-[10px] text-gray-300 font-semibold mt-0.5">Starts ₹{perSqftRate} / sq.ft</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider leading-none">Possession</p>
+            <p className="text-[12.5px] font-extrabold text-white mt-1 leading-none">{displayPossession}</p>
+          </div>
+        </div>
+
+        {/* Photos badge */}
+        {allImages.length > 0 && (
+          <span className="absolute bottom-[104px] right-4 text-[9.5px] font-bold bg-black/60 text-white px-2 py-0.5 rounded-full z-10 backdrop-blur-xs flex items-center gap-1">
+            📷 {allImages.length}
+          </span>
+        )}
+      </div>
+    )
+  }
+
 
   // ── Inline mode (property page) ─────────────────────────────────────────────
   if (inline) {
@@ -841,7 +1011,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         )}
       </AnimatePresence>
 
-      {/* Mobile bottom sheet gets its own AnimatePresence */}
+       {/* Mobile bottom sheet gets its own AnimatePresence */}
       <AnimatePresence mode="wait">
         {isOpen && (
             <m.div
@@ -851,79 +1021,30 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               exit={{ y: '100%' }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className="fixed z-50 bottom-0 left-0 right-0 flex flex-col
-                         md:hidden max-h-[92vh]
-                         bg-white rounded-t-[24px] overflow-hidden
+                         md:hidden h-[92vh] max-h-[92vh]
+                         bg-white dark:bg-[#120f0d] rounded-t-[24px] overflow-hidden
                          shadow-[0_-8px_40px_rgba(0,0,0,0.18)]"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Drag handle */}
-              <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-                <div className="w-10 h-1 bg-gray-200 rounded-full" />
-              </div>
+              {/* Scrollable container containing Hero, sticky mobile Tab Bar, and Tab Content */}
+              <div 
+                ref={scrollContainerMobileRef} 
+                className="flex-1 overflow-y-auto overscroll-contain relative pb-20 dark:bg-[#0a0a0a]"
+              >
+                {/* New full-height luxury Mobile Hero */}
+                {renderMobileHero()}
 
-              {/* Hero image */}
-              <div className="relative h-56 bg-gray-900 flex-shrink-0 overflow-hidden">
-                {currentImg ? (
-                  <Image src={currentImg} alt={d?.name ?? ''} fill priority className="object-cover" sizes="100vw" onError={() => markImageFailed(currentImg)} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
-                    <Building2 size={40} className="text-slate-600" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
-                {imageBadges}
-                {imageCarouselDots}
-              </div>
+                {/* Mobile Tab Strip (sticky top-0 inside this scroll container) */}
+                {mobileTabBar}
 
-              {/* Name bar */}
-              <div className="px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  {loading && !d?.name ? (
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-5 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                  ) : (
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h2 className="text-[18px] font-black text-gray-900 tracking-tight leading-tight truncate">{d?.name}</h2>
-                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-gray-500 font-medium">
-                        <MapPin size={10} className="text-gray-400" />
-                        <span>{d?.builder?.name}</span>
-                        <span>·</span>
-                        <span>{d?.sector}</span>
-                        {d?.rera_number && (
-                          <>
-                            <span>·</span>
-                            <span className="flex items-center gap-0.5 text-blue-600 font-semibold">
-                              <CheckCircle2 size={10} />
-                              RERA
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {d?.price_range_label && (
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-[18px] font-black text-gray-900 leading-none">{d.price_range_label}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{bhkLabel}</p>
-                    </div>
-                  )}
+                {/* Tab content body */}
+                <div className="p-3 sm:p-4">
+                  {tabBody}
                 </div>
-                {intelligenceChips && <div className="mb-3">{intelligenceChips}</div>}
-                {stickyHeader}
               </div>
 
-              {/* Scrollable body */}
-              <div className="flex-1 overflow-y-auto overscroll-contain">
-                {tabBody}
-              </div>
-
-              {/* Footer CTA */}
-              {ctaFooter}
+              {/* Mobile Sticky CTA Dock */}
+              {mobileCtaFooter}
             </m.div>
         )}
       </AnimatePresence>
