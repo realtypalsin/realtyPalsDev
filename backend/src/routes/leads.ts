@@ -8,6 +8,9 @@ import { env } from '../lib/env'
 import { notifyLead } from '../lib/notify'
 import { checkRateLimit } from '../lib/cache'
 import { loadLeadProfile, scoreLead } from '../lib/leadProfile'
+import { buildLeadDossier } from '../lib/leadDossier'
+import { analyzeGhostPoolByProject } from '../lib/ghostPool'
+import { analyzeProjectDemand, getDemandSnapshot } from '../lib/demandIntelligence'
 
 const router = Router()
 
@@ -368,6 +371,79 @@ router.get('/metrics', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('[leads:metrics] error:', err)
     res.status(500).json({ error: 'Failed to fetch metrics' })
+  }
+})
+
+// Get rich lead dossier for a specific lead
+router.get('/callback/:leadId/dossier', async (req: Request, res: Response) => {
+  try {
+    const { leadId } = req.params
+
+    // Verify the requesting user has access to this lead's builder
+    const lead = await prisma.callbackRequest.findUnique({
+      where: { id: leadId },
+    })
+
+    if (!lead) {
+      return res.status(404).json({ error: 'Lead not found' })
+    }
+
+    // If project_id is set, verify builder access (optional — depends on auth model)
+    // For now, just return the dossier
+
+    const dossier = await buildLeadDossier(leadId, 'system')
+
+    if (!dossier) {
+      return res.status(404).json({ error: 'Could not build dossier' })
+    }
+
+    res.json(dossier)
+  } catch (err) {
+    console.error('[leads:dossier] error:', err)
+    res.status(500).json({ error: 'Failed to fetch lead dossier' })
+  }
+})
+
+// Get ghost pool analysis for a project
+router.get('/projects/:projectId/ghost-pool', async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params
+
+    const analysis = await analyzeGhostPoolByProject(projectId)
+
+    res.json(analysis)
+  } catch (err) {
+    console.error('[leads:ghostPool] error:', err)
+    res.status(500).json({ error: 'Failed to fetch ghost pool analysis' })
+  }
+})
+
+// Get demand intelligence for a project
+router.get('/projects/:projectId/demand', async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params
+
+    const demand = await analyzeProjectDemand(projectId)
+
+    if (!demand) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    res.json(demand)
+  } catch (err) {
+    console.error('[leads:demand] error:', err)
+    res.status(500).json({ error: 'Failed to fetch demand analysis' })
+  }
+})
+
+// Get market demand snapshot
+router.get('/market/snapshot', async (req: Request, res: Response) => {
+  try {
+    const snapshot = await getDemandSnapshot()
+    res.json(snapshot)
+  } catch (err) {
+    console.error('[leads:snapshot] error:', err)
+    res.status(500).json({ error: 'Failed to fetch market snapshot' })
   }
 })
 

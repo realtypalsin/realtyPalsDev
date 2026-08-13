@@ -212,6 +212,7 @@ export interface ProjectDetail extends ProjectCard {
   all_connectivity: { type: string; name: string; distance_km: number | null; data_source?: string | null }[]
   unit_inventory: { unit_type_id: string; tower_name: string; floor_number: number; unit_number: string; facing: string | null; view: string | null; status: string }[]
   channel_partners: { name: string; type: string; is_verified: boolean }[]
+  spec_items: { label: string; value: string; brand?: string | null; tier?: string | null; category: string; verified_at?: Date | null }[]
   builder_detail: BuilderDetail
   dna:                    ProjectDnaPublic | null
   decision_profile:       DecisionProfilePublic | null

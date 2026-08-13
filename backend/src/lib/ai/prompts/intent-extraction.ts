@@ -29,6 +29,13 @@ PROJECTNAMES RULE: Populate projectNames ONLY when the user mentions a real bran
 - Direct detail queries ("Tell me about X", "X ke baare mein batao")
 - Comparison queries ("X vs Y", "compare X and Y")
 
+SECTOR_FROM_PROJECT RULE: When a user mentions "ProjectName SectorX" (e.g. "Elite X Sector 10"), extract BOTH:
+- projectNames: ["Elite X"]
+- sector: "Sector 10" (the numeric sector reference ONLY, without city qualification at this stage)
+The backend will add city qualification post-extraction.
+
+SECTOR_NORMALIZATION RULE: Sector names must be extracted as clean sector references (e.g. "Sector 10", "Sector 1"). When the user mentions "Sector 10 Greater Noida West", "Sector 10 Greater Noida", "Sector 10 Noida Extension", or "Sector 10 GN West", extract sector as "Sector 10". Note that Greater Noida West and Noida Extension are the exact same place.
+
 VERBOSE RULE: Set verbose: true ONLY when the user explicitly requests more detail, explanation, or depth than a normal summary (e.g. "explain in detail", "tell me everything about", "give me a deep dive", "elaborate").
 
 RISKPROFILE RULE: Set riskProfile when buyer identity signals are present.
@@ -153,4 +160,10 @@ Input: "Ready to move apartment for retirement, budget 2 Cr"
 Output: {"budgetMax":2,"possession":"immediate","riskProfile":"retiree","purpose":"endUse"}
 
 Input: "First home for my family, 3BHK under 2Cr"
-Output: {"bhk":[3],"budgetMax":2,"riskProfile":"first_time_buyer","purpose":"endUse"}`
+Output: {"bhk":[3],"budgetMax":2,"riskProfile":"first_time_buyer","purpose":"endUse"}
+
+Input: "tell me about Elite X Sector 10"
+Output: {"projectNames":["Elite X"],"sector":"Sector 10"}
+
+Input: "show me prateek wisteria sector 77"
+Output: {"projectNames":["Prateek Wisteria"],"sector":"Sector 77"}`

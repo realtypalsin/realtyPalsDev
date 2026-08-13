@@ -162,11 +162,15 @@ export function scoreProject(
 
   // ── Recommendation tier ──────────────────────────────────────────────
   const tier = p.recommendation_profile?.tier
-  if      (tier === 'STRONG_BUY') score += 8
-  else if (tier === 'BUY')        score += 4
-  else if (tier === 'WATCH')      score -= 4
-  else if (tier === 'AVOID')      score -= 25
-  // HOLD: ±0
+  if (tier === 'STRONG_BUY' || tier === 'Tier 1 Top Pick' || tier?.includes('Top Pick') || tier?.includes('Tier 1')) {
+    score += 8
+  } else if (tier === 'BUY' || tier?.includes('BUY') || tier?.includes('Tier 2')) {
+    score += 4
+  } else if (tier === 'WATCH') {
+    score -= 4
+  } else if (tier === 'AVOID' || tier === 'HIGH_RISK') {
+    score -= 25
+  }
 
   // ── Persona match (max +5) ───────────────────────────────────────────
   if (p.persona_profile && intent.purpose) {
@@ -183,7 +187,16 @@ export function scoreProject(
   }
 
   // ── Risk penalties ───────────────────────────────────────────────────
-  if (p.project_risk_flag)    score -= 20
+  if (p.project_risk_flag) {
+    const rf = p.project_risk_flag.toLowerCase()
+    if (rf.includes('high') || rf.includes('nclt') || rf.includes('litigation')) {
+      score -= 20
+    } else if (rf.includes('moderate') || rf.includes('caution')) {
+      score -= 5
+    } else {
+      score -= 10
+    }
+  }
   if (p.builder.legal_flag)   score -= 15
 
   // ── Budget penalty ───────────────────────────────────────────────────

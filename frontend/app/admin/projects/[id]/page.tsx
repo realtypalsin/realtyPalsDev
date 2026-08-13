@@ -529,8 +529,8 @@ export default function AdminProjectEditPage({
           </div>
 
           {/* Tab rail with polished completion indicators */}
-          <div className="flex items-center p-1 bg-zinc-100/90 dark:bg-zinc-800/70 rounded-2xl border border-zinc-200/80 dark:border-zinc-700/60 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-inner">
-            <div className="flex items-center gap-1 min-w-full sm:min-w-0 justify-between sm:justify-start w-full">
+          <div className="flex items-center p-1.5 bg-zinc-100/90 dark:bg-zinc-800/80 backdrop-blur-xl rounded-2xl border border-zinc-200/80 dark:border-zinc-700/70 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-xs">
+            <div className="flex items-center gap-1.5 min-w-full sm:min-w-0 justify-between sm:justify-start w-full">
               {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
                 const isActive = adminTab === tabId
                 const pct = tabScores[tabId] ?? 100
@@ -545,54 +545,48 @@ export default function AdminProjectEditPage({
                       onClick={() => setAdminTab(tabId)}
                       onMouseEnter={() => setHoveredTab(tabId)}
                       onMouseLeave={() => setHoveredTab(null)}
-                      className={`relative flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl transition-all duration-200 whitespace-nowrap font-medium cursor-pointer ${
+                      className={`relative flex items-center gap-2 px-3.5 py-2 text-xs rounded-xl transition-all duration-200 whitespace-nowrap cursor-pointer select-none ${
                         isActive
-                          ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold'
-                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60'
+                          ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-md ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold scale-[1.01]'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/70 dark:hover:bg-zinc-800/70 font-medium'
                       }`}
                     >
                       <Icon
                         size={14}
-                        className={
+                        className={`transition-colors ${
                           isActive
                             ? 'text-blue-600 dark:text-blue-400'
                             : 'text-zinc-400 dark:text-zinc-500'
-                        }
+                        }`}
                       />
                       <span>{label}</span>
 
                       <span
-                        className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md border transition-colors ${
+                        className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all ${
                           isComplete
                             ? (isActive
-                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/80'
-                                : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40')
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-300/80 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/80'
+                                : 'bg-emerald-500/10 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40')
                             : isMedium
                             ? (isActive
-                                ? 'bg-amber-100 text-amber-800 border-amber-300/80 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700/80'
-                                : 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40')
+                                ? 'bg-amber-50 text-amber-700 border-amber-300/80 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700/80'
+                                : 'bg-amber-500/10 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40')
                             : (isActive
-                                ? 'bg-rose-100 text-rose-800 border-rose-300/80 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-700/80'
-                                : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40')
+                                ? 'bg-rose-50 text-rose-700 border-rose-300/80 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-700/80'
+                                : 'bg-rose-500/10 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40')
                         }`}
                       >
                         <span
-                          className="w-1.5 h-1.5 rounded-full shrink-0"
-                          style={{
-                            backgroundColor: isComplete ? '#10b981' : isMedium ? '#f59e0b' : '#f43f5e'
-                          }}
+                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                            isComplete ? 'bg-emerald-500 animate-pulse' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
+                          }`}
                         />
                         <span>{pct}%</span>
                       </span>
 
                       {isActive && (
-                        <div className="absolute bottom-0.5 left-2.5 right-2.5 h-[2px] bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-500 ${
-                              isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
-                            }`}
-                            style={{ width: `${pct}%` }}
-                          />
+                        <div className="absolute bottom-0 left-3 right-3 h-[2.5px] bg-gray-200 dark:bg-gray-700 rounded-full shadow-xs overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
                         </div>
                       )}
                     </button>

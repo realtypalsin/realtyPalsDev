@@ -2,7 +2,7 @@
   "_instructions": {
     "usage": "Fill in every field below with real project data, then seed it with: npx tsx scripts/seed-from-json.ts path/to/this-file.json",
     "rules": [
-      "Do NOT remove any key \u2014 if unknown, leave as null or empty string.",
+      "Do NOT remove any key — if unknown, leave as null or empty string.",
       "Dates must be ISO 8601 format: '2024-06-15T00:00:00.000Z'",
       "status: 'under_construction' | 'ready_to_move' | 'new_launch'",
       "intelligence status: 'DRAFT' | 'IN_REVIEW' | 'PUBLISHED'",
@@ -10,7 +10,7 @@
       "ConnectivityType: 'metro' | 'road' | 'expressway' | 'school' | 'hospital' | 'mall' | 'landmark' | 'airport' | 'university'",
       "DataSource: 'brochure' | 'google' | 'estimated' | 'manual'",
       "recommendation tier: 'STRONG_BUY' | 'BUY' | 'BUY_WITH_CAUTION' | 'HOLD' | 'AVOID'",
-      "Leave image/document storage_url and url as empty string '' \u2014 add via admin Media panel"
+      "Leave image/document storage_url and url as empty string '' — add via admin Media panel"
     ]
   },
   "project": {
@@ -21,7 +21,7 @@
     "address": "Plot No. GH-10, Sector 75, Noida, Uttar Pradesh 201304",
     "tagline": "Unmatched Location, Extreme Legal Risk",
     "description": "Gardenia Gateway is a physically ready-to-move housing society in Sector 75, Noida, offering massive discount pricing due to the builder's active bankruptcy and a complete flat registration freeze.",
-    "long_description": "Gardenia Gateway is a large residential complex spanning 9.88 acres in the heart of Sector 75, Central Noida. Comprising 8 high-rise towers rising up to 19 floors, the project holds 1,201 total units. While the physical structure is fully completed and has been occupied by over 1,500 families since 2015, the project suffers from a catastrophic legal freeze. The builder, Gardenia India Limited, is undergoing active Corporate Insolvency Resolution Proceedings (CIRP) under NCLT as of July 2025 and owes a colossal \u20b91,717 Crore in unpaid land dues to the Noida Authority. Consequently, not a single flat has been legally registered in the society since possession, creating a complete registry embargo. The society's active Apartment Owners Association (AOA) manages basic daily facilities under severe financial constraints. Despite having world-class location advantages\u2014located only 300 meters from the Sector 50 Aqua Line Metro Station and directly across from the Medanta Super-Speciality Hospital\u2014the project carries extreme legal, financial, and liquidity risks for prospective buyers.",
+    "long_description": "Gardenia Gateway is a large residential complex spanning 9.88 acres in the heart of Sector 75, Central Noida. Comprising 8 high-rise towers rising up to 19 floors, the project holds 1,201 total units. While the physical structure is fully completed and has been occupied by over 1,500 families since 2015, the project suffers from a catastrophic legal freeze. The builder, Gardenia India Limited, is undergoing active Corporate Insolvency Resolution Proceedings (CIRP) under NCLT as of July 2025 and owes a colossal ₹1,717 Crore in unpaid land dues to the Noida Authority. Consequently, not a single flat has been legally registered in the society since possession, creating a complete registry embargo. The society's active Apartment Owners Association (AOA) manages basic daily facilities under severe financial constraints. Despite having world-class location advantages—located only 300 meters from the Sector 50 Aqua Line Metro Station and directly across from the Medanta Super-Speciality Hospital—the project carries extreme legal, financial, and liquidity risks for prospective buyers.",
     "hero_image_url": "",
     "status": "ready_to_move",
     "rera_number": "UPRERAPRJ11023",
@@ -41,7 +41,7 @@
     "possession_date": "2015-12-15T00:00:00.000Z",
     "possession_label": "Possession Handed Over (Registry Embargoed since 2015)",
     "price_min_cr": 0.63,
-    "price_range_label": "Rs 63.00 L - Rs 2.00 Cr (Resale Only)",
+    "price_range_label": "Rs 63.00 L - Rs 2.00 Cr",
     "architect": "B.P. Dhaka & Associates",
     "interior_designer": "In-house Design Team",
     "design_theme": "Modern High-Density Urban Living",
@@ -68,12 +68,12 @@
     "it_parks_nearby_count": 8,
     "banks_nearby_count": 1,
     "restaurants_nearby_count": 15,
-    "project_risk_flag": "Extreme: Developer under NCLT bankruptcy, CBI investigation, and colossal land dues of \u20b91,717 Cr causing a total registry embargo.",
+    "project_risk_flag": "Extreme: Developer under NCLT bankruptcy, CBI investigation, and colossal land dues of ₹1,717 Cr causing a total registry embargo.",
     "escrow_verified": false,
     "escrow_bank_name": "None (Active Insolvency Moratorium)",
     "registry_status": "Blocked",
     "registry_embargo_reasons": [
-      "Gardenia India Limited owes \u20b91,717 Crore in outstanding land dues to Noida Authority.",
+      "Gardenia India Limited owes ₹1,717 Crore in outstanding land dues to Noida Authority.",
       "The project lacks a Completion Certificate (CC) or Occupancy Certificate (OC) due to default.",
       "The developer is undergoing Corporate Insolvency Resolution Proceedings (CIRP) under NCLT."
     ],
@@ -84,7 +84,7 @@
     "slug": "gardenia-india-limited",
     "tagline": "Building for the Future (Under Active NCLT Insolvency)",
     "founder": "Sanjeev Kumar",
-    "company_overview": "Gardenia India Limited (Gardenia Group) was established in February 2007 as a private real estate developer operating in the Delhi NCR region. While the group historically delivered massive projects like Gardenia Gateway (Eco City) in Sector 75 and Gardenia Glory in Sector 46, Noida, it has collapsed into extreme financial distress. The developer is currently undergoing active Corporate Insolvency Resolution Proceedings (CIRP) in NCLT as of July 2025, initiated by distressed lenders and homebuyers. The company owes an astronomical debt of over \u20b92,400 Crore to the Noida Authority, face concurrent CBI investigations for bank fraud, and have been heavily penalized with UP RERA fines of \u20b935.41 Lakh for severe structural and amenity non-compliance.",
+    "company_overview": "Gardenia India Limited (Gardenia Group) was established in February 2007 as a private real estate developer operating in the Delhi NCR region. While the group historically delivered massive projects like Gardenia Gateway (Eco City) in Sector 75 and Gardenia Glory in Sector 46, Noida, it has collapsed into extreme financial distress. The developer is currently undergoing active Corporate Insolvency Resolution Proceedings (CIRP) in NCLT as of July 2025, initiated by distressed lenders and homebuyers. The company owes an astronomical debt of over ₹2,400 Crore to the Noida Authority, face concurrent CBI investigations for bank fraud, and have been heavily penalized with UP RERA fines of ₹35.41 Lakh for severe structural and amenity non-compliance.",
     "logo_url": "",
     "founded_year": 2007,
     "headquarters": "Mayur Vihar, New Delhi",
@@ -97,7 +97,7 @@
     "total_projects_count": 6,
     "delivered_units": 4500,
     "delayed_projects_count": 4,
-    "average_delay_months": 72.0,
+    "average_delay_months": 72,
     "delivery_score": 40,
     "construction_quality_score": 55,
     "after_sales_score": 20,
@@ -231,7 +231,7 @@
         "D-Block"
       ],
       "price_min_cr": 1.65,
-      "price_max_cr": 2.0,
+      "price_max_cr": 2,
       "price_label": "Rs 1.65 Cr - Rs 2.00 Cr",
       "price_is_estimated": false,
       "subtitle": "Palatial 4 BHK with servant quarters",
@@ -335,14 +335,14 @@
     {
       "name": "FNG Expressway",
       "type": "road",
-      "distance_km": 1.0,
+      "distance_km": 1,
       "notes": "Faridabad-Noida-Ghaziabad highway for direct transit across NCR.",
       "data_source": "google"
     }
   ],
   "cost_sheet": {
-    "base_price_per_sqft": 6500.0,
-    "floor_rise_per_floor": 30.0,
+    "base_price_per_sqft": 6500,
+    "floor_rise_per_floor": 30,
     "plc_charges": [
       {
         "label": "Park / Pool Facing PLC",
@@ -353,22 +353,22 @@
         "amount_per_sqft": 100
       }
     ],
-    "parking_cost": 350000.0,
-    "ifms": 80.0,
-    "club_membership": 100000.0,
+    "parking_cost": 350000,
+    "ifms": 80,
+    "club_membership": 100000,
     "other_charges": [
       {
         "label": "Utility Connection Charges",
         "amount": 100000
       }
     ],
-    "gst_rate_pct": 0.0,
-    "stamp_duty_pct": 7.0,
-    "registration_pct": 1.0,
+    "gst_rate_pct": 0,
+    "stamp_duty_pct": 7,
+    "registration_pct": 1,
     "assumptions": [
       "Secondary market transaction prices are severely depressed due to active NCLT CIRP and flat registry freeze.",
       "PSU and major private bank loans are completely unavailable; all deals must be transacted via cash or specialized private funding.",
-      "All flat registries are strictly blocked due to massive builder land defaults of \u20b91,717 Cr."
+      "All flat registries are strictly blocked due to massive builder land defaults of ₹1,717 Cr."
     ]
   },
   "payment_plan": {
@@ -378,14 +378,14 @@
     "milestones": [
       {
         "milestone": "Agreement Token Payment",
-        "pct": 10.0,
+        "pct": 10,
         "amt": 0,
         "due": "At the time of signing secondary contract",
         "done": true
       },
       {
         "milestone": "Possession & NOC Transfer Payment",
-        "pct": 90.0,
+        "pct": 90,
         "amt": 0,
         "due": "Within 30-45 days against direct physical possession and AOA transfer documentation",
         "done": false
@@ -411,12 +411,12 @@
     "status": "PUBLISHED",
     "decision_thesis": "Gardenia Gateway offers an ultra-cheap, prime location ready-to-move apartment at half the micro-market price, but carries extreme, near-insoluble legal risks and a total ban on flat registrations.",
     "why_buy": [
-      "Extremely Low Entry Price: Priced at a heavily discounted \u20b96,200 - \u20b97,900/sqft, making it nearly 50% cheaper than surrounding compliant societies.",
+      "Extremely Low Entry Price: Priced at a heavily discounted ₹6,200 - ₹7,900/sqft, making it nearly 50% cheaper than surrounding compliant societies.",
       "Elite Connectivity benefits: Literally a 3-minute walk (300 meters) to the Sector 50 Metro Station and Spectrum Metro Mall.",
       "Immediate Inhabitation: Fully built and occupied by over 1,500 active families since 2015, ensuring a functioning community environment."
     ],
     "why_avoid": [
-      "Absolute Registry Embargo: Outstanding builder dues of \u20b91,717 Crore to the Noida Authority have completely frozen all registrations for over a decade.",
+      "Absolute Registry Embargo: Outstanding builder dues of ₹1,717 Crore to the Noida Authority have completely frozen all registrations for over a decade.",
       "No Traditional Bank Loans: Major financial institutions (HDFC, SBI, ICICI) will not issue home loans due to active insolvency and lack of title deeds.",
       "Active NCLT CIRP: The developer Gardenia India Limited is in active bankruptcy and managed by a court-appointed Interim Resolution Professional.",
       "Incomplete Amenities & Maintenance decay: Promised luxury features and high-end upkeep were abandoned by the developer, leaving the AOA to manage basic operations on tight budgets."
@@ -429,7 +429,7 @@
       "UP RERA Penal Audit Records",
       "AOA Secondary Resale Tracker"
     ],
-    "recommendation_notes": "Internal audit highlights that the site has active occupation but zero legal titles can be registered. Unresolved land dues of \u20b91,717 Cr mean legal resolution may take several years.",
+    "recommendation_notes": "Internal audit highlights that the site has active occupation but zero legal titles can be registered. Unresolved land dues of ₹1,717 Cr mean legal resolution may take several years.",
     "advisor_notes": "Do not advise standard home buyers to touch this. Only suitable if the buyer has 100% hard cash they are willing to lock into a long-term legal dispute in exchange for immediate zero-rent housing in a highly strategic metro location.",
     "intelligence_data": {
       "topLevelMetrics": {
@@ -473,7 +473,7 @@
           "stars": 4,
           "headline": "High-Risk Arbitrage Play",
           "reasons": [
-            "Buying at a depressed \u20b96,500/sqft hoping for a government-led resolution package that clears Noida Authority dues.",
+            "Buying at a depressed ₹6,500/sqft hoping for a government-led resolution package that clears Noida Authority dues.",
             "Potential for 80-100% capital appreciation if registrations are unlocked in the future."
           ]
         },
@@ -527,7 +527,7 @@
         {
           "label": "OC / CC Received",
           "ok": false,
-          "details": "Noida Authority has refused CC/OC due to \u20b91,717 Cr outstanding dues."
+          "details": "Noida Authority has refused CC/OC due to ₹1,717 Cr outstanding dues."
         },
         {
           "label": "Registry Active",
@@ -549,7 +549,7 @@
         "appreciation_annual": "Flat / Negative",
         "appreciation_desc": "Capital values remain completely stagnant and frozen due to the inability to execute legal titles or registries.",
         "rental_yield": "4.5-5.2%",
-        "rental_desc": "Relatively strong rental demand due to walking proximity to Sector 50 Metro and Medanta Hospital. Typical 3 BHK rentals command \u20b928,000 - \u20b935,000/month.",
+        "rental_desc": "Relatively strong rental demand due to walking proximity to Sector 50 Metro and Medanta Hospital. Typical 3 BHK rentals command ₹28,000 - ₹35,000/month.",
         "market_trend": "Bearish",
         "market_desc": "The local Sector 75 market is heavily saturated with distressed units, depressing local sentiment.",
         "liquidity_score": "Very Low",
@@ -662,7 +662,7 @@
     "tier": "AVOID",
     "primary_thesis": "Gardenia Gateway is an extremely high-risk ready-to-move property. Despite its world-class micro-market location, the combination of developer bankruptcy (NCLT) and an absolute Noida Authority registry freeze makes it a high-risk venture for typical end-users.",
     "end_use_thesis": "For typical families, the lack of formal registration and inability to secure standard bank loans represent severe, unacceptable risks. A lease deed registry is the primary proof of property ownership in Noida; without it, your investment lacks absolute safety.",
-    "investment_thesis": "Highly speculative wealth play. Only suitable for distressed asset buyers buying at deep discounts (< \u20b96,500/sqft super area) who can afford to wait 5-10 years for Noida Authority or Supreme Court legal resolutions.",
+    "investment_thesis": "Highly speculative wealth play. Only suitable for distressed asset buyers buying at deep discounts (< ₹6,500/sqft super area) who can afford to wait 5-10 years for Noida Authority or Supreme Court legal resolutions.",
     "family_thesis": "Unsuitable. While families currently occupy the towers and kids use the basic play areas, the deteriorating maintenance due to tight AOA funds poses long-term security and infrastructure risks.",
     "investor_thesis": "Highly speculative. Rental yields are high (around 5%) because people will rent unregistered apartments, but capital exits are extremely difficult, restricted only to cash buyers.",
     "luxury_thesis": "Far from luxury benchmarks. Basic construction specifications and fading external paint reflect the developer's historical financial abandonment.",
@@ -673,7 +673,7 @@
     ],
     "negotiation_leverage": [
       "Force a severe legal discount of at least 45% compared to compliant Sector 75 projects like Panchsheel Pratishtha or Ivy County.",
-      "Highlight active NCLT CIRP and lack of CC/OC to drive resale prices below \u20b96,500 per sqft of super area with motivated cash-strapped sellers."
+      "Highlight active NCLT CIRP and lack of CC/OC to drive resale prices below ₹6,500 per sqft of super area with motivated cash-strapped sellers."
     ],
     "timeline_advice": "Do not purchase unless buying a deeply discounted, fully cash-settled unit from a desperate seller. If you proceed, ensure immediate physical possession and formal contract/AOA membership transfer."
   },
@@ -684,13 +684,13 @@
       "this_project_advantage": "Slightly closer to Sector 50 Metro Station (300m vs 400m); larger configurations available.",
       "competitor_advantage": "Flawless legal titles and active registries; no bankruptcy or NCLT issues; built using advanced Mivan formwork tech; active bank loan facilities from SBI/HDFC.",
       "verdict": "Panchsheel Pratishtha is the clear winner for any standard buyer. The legal safety, active registries, and robust construction quality make it a secure investment, whereas Gardenia Gateway is a legal landmine.",
-      "price_delta_note": "Panchsheel Pratishtha is \u20b95,000 - \u20b96,000 per sqft more expensive than Gardenia Gateway.",
+      "price_delta_note": "Panchsheel Pratishtha is ₹5,000 - ₹6,000 per sqft more expensive than Gardenia Gateway.",
       "sort_order": 1
     },
     {
       "competitor_name": "Dasnac The Jewel of Noida",
       "competitor_slug": "dasnac-the-jewel-of-noida-sector-75",
-      "this_project_advantage": "Extreme price discount (\u20b96,500/sqft vs \u20b915,000+/sqft of Dasnac).",
+      "this_project_advantage": "Extreme price discount (₹6,500/sqft vs ₹15,000+/sqft of Dasnac).",
       "competitor_advantage": "Elite luxury, active registries, premium finishing, low-density layouts, and flawless legal compliance.",
       "verdict": "Dasnac is an elite premium asset with zero delivery or title risks; Gardenia Gateway is only for high-risk distressed cash arbitrage.",
       "price_delta_note": "Dasnac is nearly 2.5x more expensive than Gardenia Gateway.",

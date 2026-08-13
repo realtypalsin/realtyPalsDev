@@ -99,4 +99,11 @@ export const SECTOR_ADJACENCY: Record<string, string[]> = {
   'Omega II':   ['Omega I', 'Alpha II', 'Gamma I'],
   'Zeta I':     ['Zeta II', 'Alpha I', 'Delta I', 'Omega I'],
   'Zeta II':    ['Zeta I', 'Delta I'],
+
+  // Greater Noida West / Noida Extension sectors
+  'Sector 10':  ['Sector 12', 'Sector 1', 'Techzone 4', 'Sector 16C'],
+  'Sector 1':   ['Sector 10', 'Sector 4', 'Techzone 4', 'Sector 12'],
+  'Sector 12':  ['Sector 10', 'Sector 16C', 'Techzone 4'],
+  'Techzone 4': ['Sector 1', 'Sector 4', 'Sector 10', 'Sector 12'],
+  'Sector 16C': ['Sector 12', 'Sector 10', 'Techzone 4'],
 }

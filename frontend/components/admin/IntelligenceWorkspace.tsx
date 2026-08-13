@@ -5,6 +5,7 @@ import { Check, Loader2, AlertCircle, ChevronDown, ChevronUp, Plus, Trash2 } fro
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import JsonEditor from './JsonEditor'
+import CustomSelect from './CustomSelect'
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -253,28 +254,28 @@ function calcCompletion(dna: DnaState, dec: DecisionState, per: PersonaState, re
 
 // Base input — all interactive inputs share this
 const inputCls = [
-  'w-full bg-slate-50/80 border border-transparent hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3',
-  'text-[14px] text-slate-900',
-  'placeholder:text-slate-400',
-  'focus:outline-none focus:border-slate-200 focus:ring-4 focus:ring-slate-100',
-  'transition-all duration-200 shadow-sm',
+  'w-full bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 hover:bg-slate-50 dark:hover:bg-zinc-800 focus:bg-white dark:focus:bg-zinc-900 rounded-xl px-4 py-2.5',
+  'text-[14px] text-slate-900 dark:text-zinc-100 font-medium',
+  'placeholder:text-slate-400 dark:placeholder:text-zinc-500',
+  'focus:outline-none focus:border-blue-500/80 focus:ring-4 focus:ring-blue-500/10',
+  'transition-all duration-200 shadow-2xs',
 ].join(' ')
 
 // Inline/compact input (score field, slug, etc.)
 const smallInputCls = [
-  'bg-slate-50/80 border border-transparent hover:bg-slate-50 focus:bg-white rounded-xl px-3 py-2',
-  'text-[13px] text-slate-900',
-  'placeholder:text-slate-400',
-  'focus:outline-none focus:border-slate-200 focus:ring-4 focus:ring-slate-100',
-  'transition-all duration-200 shadow-sm',
+  'bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 hover:bg-slate-50 dark:hover:bg-zinc-800 focus:bg-white dark:focus:bg-zinc-900 rounded-xl px-3 py-2',
+  'text-[13px] text-slate-900 dark:text-zinc-100 font-medium',
+  'placeholder:text-slate-400 dark:placeholder:text-zinc-500',
+  'focus:outline-none focus:border-blue-500/80 focus:ring-4 focus:ring-blue-500/10',
+  'transition-all duration-200 shadow-2xs',
 ].join(' ')
 
-// Select — matches input but without ring flash
+// Select — matches input with sleek SVG chevron and active focus
 const selectCls = [
-  'bg-slate-50/80 border border-transparent hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5',
-  'text-[14px] text-slate-900',
-  'focus:outline-none focus:border-slate-200 focus:ring-4 focus:ring-slate-100',
-  'transition-all duration-200 shadow-sm cursor-pointer',
+  'admin-select bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 hover:bg-slate-100/80 dark:hover:bg-zinc-800 focus:bg-white dark:focus:bg-zinc-900 rounded-xl px-4 py-2.5',
+  'text-[13.5px] font-semibold text-slate-800 dark:text-zinc-100',
+  'focus:outline-none focus:border-blue-500/80 focus:ring-4 focus:ring-blue-500/10',
+  'transition-all duration-200 shadow-2xs cursor-pointer',
 ].join(' ')
 
 // ── Micro-components ─────────────────────────────────────────────────────────
@@ -313,12 +314,13 @@ function ScorePill({ dim, score }: { dim: string; score: number | null }) {
 
 // Completion badge beside section header
 function CompPill({ value }: { value: number }) {
-  const cls = value >= 80 ? 'bg-emerald-50 text-emerald-600'
-            : value >= 40 ? 'bg-amber-50 text-amber-600'
-            : 'bg-gray-100 text-gray-700'
+  const cls = value >= 80 ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60'
+            : value >= 40 ? 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60'
+            : 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
   return (
-    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md tabular-nums ${cls}`}>
-      {value}%
+    <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-lg border tabular-nums flex items-center gap-1 ${cls}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${value >= 80 ? 'bg-emerald-500' : value >= 40 ? 'bg-amber-500' : 'bg-zinc-400'}`} />
+      <span>{value}% Score</span>
     </span>
   )
 }
@@ -331,18 +333,17 @@ function SecHead({ title, score, save: sv, collapsed, onToggle }: {
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors text-left border-b border-gray-100"
+      className="w-full flex items-center justify-between px-6 py-4 bg-slate-50/40 dark:bg-zinc-900/60 hover:bg-slate-100/70 dark:hover:bg-zinc-800/60 transition-all duration-200 text-left border-b border-slate-100 dark:border-zinc-800/80 cursor-pointer group select-none"
     >
       <div className="flex items-center gap-3">
-        <span className="text-[16px] font-serif font-black text-slate-900 tracking-tight">{title}</span>
+        <span className="text-[15px] font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight">{title}</span>
         <CompPill value={score} />
       </div>
       <div className="flex items-center gap-3">
         <SaveBadge state={sv} />
-        {collapsed
-          ? <ChevronDown size={13} className="text-gray-300" />
-          : <ChevronUp size={13} className="text-gray-300" />
-        }
+        <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-800 group-hover:bg-white dark:group-hover:bg-zinc-700 border border-slate-200/60 dark:border-zinc-700/60 flex items-center justify-center transition-all shadow-2xs">
+          <ChevronDown size={14} className={`text-slate-500 dark:text-zinc-400 group-hover:text-slate-800 dark:group-hover:text-zinc-100 transition-transform duration-200 ${!collapsed ? 'rotate-180' : ''}`} />
+        </div>
       </div>
     </button>
   )
@@ -370,13 +371,14 @@ function AdminDivider() {
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, string> = {
-    DRAFT:     'bg-gray-100 text-gray-700',
-    IN_REVIEW: 'bg-amber-100 text-amber-700',
-    PUBLISHED: 'bg-emerald-100 text-emerald-700',
+    DRAFT:     'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700',
+    IN_REVIEW: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60',
+    PUBLISHED: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60',
   }
   return (
-    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${cfg[status] ?? 'bg-gray-100 text-gray-700'}`}>
-      {status.replace('_', ' ')}
+    <span className={`text-[10.5px] font-bold px-2.5 py-1 rounded-lg border inline-flex items-center gap-1.5 ${cfg[status] ?? 'bg-zinc-100 text-zinc-700 border-zinc-200'}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${status === 'PUBLISHED' ? 'bg-emerald-500 animate-pulse' : status === 'IN_REVIEW' ? 'bg-amber-500' : 'bg-zinc-400'}`} />
+      <span>{status.replace('_', ' ')}</span>
     </span>
   )
 }
@@ -672,14 +674,17 @@ export default function IntelligenceWorkspace({
         {!collapsed.decision && (
           <div className="px-6 pt-4 pb-6 space-y-5">
 
-            <div className="flex items-center gap-2">
-              <select
+            <div className="flex items-center gap-3">
+              <CustomSelect
                 value={dec.status}
-                onChange={e => { const v = { ...dec, status: e.target.value }; setDec(v); saveDecision(v) }}
-                className={selectCls}
-              >
-                {STATUS_OPTS.map(o => <option key={o} value={o}>{o.replace('_', ' ')}</option>)}
-              </select>
+                onChange={val => { const v = { ...dec, status: val }; setDec(v); saveDecision(v) }}
+                options={[
+                  { value: 'DRAFT', label: 'DRAFT', dotColor: 'bg-zinc-400' },
+                  { value: 'IN_REVIEW', label: 'IN REVIEW', dotColor: 'bg-amber-500' },
+                  { value: 'PUBLISHED', label: 'PUBLISHED', dotColor: 'bg-emerald-500' },
+                ]}
+                className="w-48"
+              />
               <StatusBadge status={dec.status} />
             </div>
 

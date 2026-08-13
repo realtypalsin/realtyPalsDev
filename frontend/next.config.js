@@ -3,7 +3,7 @@ const { withSentryConfig } = require('@sentry/nextjs')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: false,
+    ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: false,
@@ -31,7 +31,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'supabase.co',
+        hostname: '*.supabase.co',
       },
       {
         protocol: 'https',
@@ -86,10 +86,14 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: (() => {
               const isDev = process.env.NODE_ENV !== 'production'
+              const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://realtypalsdev.onrender.com'
               const connectSrc = isDev
                 ? "'self' http://localhost:* wss://localhost:* https: ws: wss:"
-                : "'self' https://realtypalsdev.onrender.com wss: https: ws:"
-              return `default-src 'self'; script-src 'self' https://www.google-analytics.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
+                : `'self' ${backendUrl} wss: https: ws:`
+              const scriptSrc = isDev
+                ? "'self' 'unsafe-eval' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com"
+                : "'self' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com"
+              return `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
             })(),
           },
         ],

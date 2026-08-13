@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import {  AnimatePresence, m  } from 'framer-motion'
 import Image from 'next/image'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
+import { sanitizePriceLabel } from '@/lib/format'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { track, trackPropertyEvent } from '@/lib/analytics'
 import { getAqi, type AqiResult } from '@/lib/waqi'
@@ -484,7 +485,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
         {/* Right: Price & CTA */}
         <div className="flex items-center justify-end gap-2.5 flex-shrink-0 ml-1">
-          <p className="text-[12px] font-bold text-gray-900 dark:text-white hidden xl:block whitespace-nowrap">{d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr+` : '')}</p>
+          <p className="text-[12px] font-bold text-gray-900 dark:text-white hidden xl:block whitespace-nowrap">{sanitizePriceLabel(d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr+` : ''))}</p>
           <button onClick={() => handleOpenSiteVisit()} className="px-3.5 py-1.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-bold rounded-full text-[12px] transition-all whitespace-nowrap shadow-2xs cursor-pointer">
             Book Site Visit
           </button>
@@ -502,12 +503,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
     let displayPrice = 'Price on Request'
     if (d?.price_range_label && !/price on request|price on demand/i.test(d.price_range_label)) {
-      displayPrice = d.price_range_label
+      displayPrice = sanitizePriceLabel(d.price_range_label)
     } else if (minCalculated != null) {
       if (maxCalculated != null && maxCalculated > minCalculated) {
-        displayPrice = `₹${minCalculated}–${maxCalculated}Cr`
+        displayPrice = sanitizePriceLabel(`₹${minCalculated}–${maxCalculated} Cr`)
       } else {
-        displayPrice = `₹${minCalculated} Cr Onwards`
+        displayPrice = sanitizePriceLabel(`₹${minCalculated} Cr Onwards`)
       }
     }
 
@@ -662,46 +663,46 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         <div className="mx-6 md:mx-8 mb-6 md:mb-8 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 md:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] grid grid-cols-1 md:grid-cols-12 gap-4 items-center divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/10">
           
           {/* Price Range */}
-          <div className="md:col-span-4 pb-4 md:pb-0 md:pr-4 flex flex-col justify-between">
-            <p className="text-[26px] md:text-[32px] font-black tracking-tighter text-gray-900 dark:text-white leading-none whitespace-nowrap">
+          <div className="md:col-span-5 pb-4 md:pb-0 md:pr-4 flex flex-col justify-between overflow-hidden min-w-0">
+            <p className="text-[20px] sm:text-[24px] md:text-[26px] xl:text-[28px] font-black tracking-tighter text-gray-900 dark:text-white leading-tight break-words">
               {displayPrice}
             </p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-2">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-1.5">
               ALL INCLUSIVE {unitTypes.length > 0 && `· STARTS ₹${Math.min(...unitTypes.map(u => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter(v => v !== Infinity))}/SQFT`}
             </p>
           </div>
 
           {/* Highlighted Possession Badge */}
-          <div className="md:col-span-3 py-3.5 md:py-0 md:px-4 flex items-center gap-3 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 p-3 rounded-2xl">
-            <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center flex-shrink-0">
-              <CalendarDays size={18} />
+          <div className="md:col-span-3 py-3.5 md:py-0 md:px-3 flex items-center gap-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 p-3 rounded-2xl min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center flex-shrink-0">
+              <CalendarDays size={16} />
             </div>
-            <div>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider leading-none">Possession</p>
-              <p className="text-[13.5px] font-extrabold text-gray-900 dark:text-white mt-1 leading-snug">{displayPossession}</p>
+            <div className="min-w-0">
+              <p className="text-[9.5px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider leading-none">Possession</p>
+              <p className="text-[12.5px] font-extrabold text-gray-900 dark:text-white mt-1 leading-snug truncate">{displayPossession}</p>
             </div>
           </div>
 
           {/* Configurations */}
-          <div className="md:col-span-3 py-3.5 md:py-0 md:px-4 flex items-center gap-3 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 p-3 rounded-2xl">
-            <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center flex-shrink-0">
-              <BedDouble size={18} />
+          <div className="md:col-span-2 py-3.5 md:py-0 md:px-3 flex items-center gap-2.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 p-3 rounded-2xl min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center flex-shrink-0">
+              <BedDouble size={16} />
             </div>
-            <div>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider leading-none">Configurations</p>
-              <p className="text-[13.5px] font-extrabold text-gray-900 dark:text-white mt-1 leading-snug">
-                {unitTypes.length > 0 ? [...new Set(unitTypes.map(u => u.bhk))].sort((a,b)=>a-b).join(' • ') + ' BHK' : '3 • 3.5 • 4 BHK'}
+            <div className="min-w-0">
+              <p className="text-[9.5px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider leading-none">Configurations</p>
+              <p className="text-[12.5px] font-extrabold text-gray-900 dark:text-white mt-1 leading-snug truncate">
+                {unitTypes.length > 0 ? [...new Set(unitTypes.map(u => u.bhk))].sort((a,b)=>a-b).join(' • ') + ' BHK' : '3 • 4 BHK'}
               </p>
             </div>
           </div>
 
           {/* Book Site Visit CTA */}
-          <div className="md:col-span-2 py-4 md:py-0 md:pl-4 flex items-center justify-end">
+          <div className="md:col-span-2 py-4 md:py-0 md:pl-3 flex items-center justify-end">
             <button
               onClick={() => handleOpenSiteVisit()}
-              className="w-full py-3.5 px-4 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-gray-900 font-extrabold rounded-2xl text-[13px] transition-all shadow-md flex items-center justify-center gap-2"
+              className="w-full py-3 px-3 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-gray-900 font-extrabold rounded-2xl text-[12px] transition-all shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap"
             >
-              <CalendarDays size={16} />
+              <CalendarDays size={14} />
               Book Site Visit
             </button>
           </div>

@@ -32,7 +32,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 0.93,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -716,7 +716,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.66,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -1400,7 +1400,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.7,
-    "price_range_label": "₹113 Lakh - ₹2.16 Cr (2026 Rate)",
+    "price_range_label": "₹113 Lakh - ₹2.16 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -2084,7 +2084,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.09,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Creative Group Architects",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -2768,7 +2768,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.91,
-    "price_range_label": "₹125 Lakh - ₹2.81 Cr (2026 Rate)",
+    "price_range_label": "₹125 Lakh - ₹2.81 Cr",
     "architect": "Unknown",
     "marketing_claims": [
       "Vastu Compliant Homes",
@@ -3406,7 +3406,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 1.1,
-    "price_range_label": "₹110 Lakh - ₹2.13 Cr (2026 Rate)",
+    "price_range_label": "₹110 Lakh - ₹2.13 Cr",
     "architect": "Unknown",
     "marketing_claims": [
       "10 Acre Development"
@@ -4000,7 +4000,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 2.4,
-    "price_range_label": "₹160 Lakh - ₹3.68 Cr (2026 Rate)",
+    "price_range_label": "₹160 Lakh - ₹3.68 Cr",
     "architect": "Unknown",
     "marketing_claims": [
       "Greek Themed Architecture",
@@ -4638,7 +4638,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 0.93,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -5322,7 +5322,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 0.98,
-    "price_range_label": "₹98 Lakh - ₹1.88 Cr (2026 Rate)",
+    "price_range_label": "₹98 Lakh - ₹1.88 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -6006,7 +6006,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 1.21,
-    "price_range_label": "₹121 Lakh - ₹2.19 Cr (2026 Rate)",
+    "price_range_label": "₹121 Lakh - ₹2.19 Cr",
     "architect": "Unknown",
     "marketing_claims": [
       "150 Acre Ecosystem",
@@ -6601,7 +6601,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.85,
-    "price_range_label": "₹106 Lakh - ₹2.58 Cr (2026 Rate)",
+    "price_range_label": "₹106 Lakh - ₹2.58 Cr",
     "architect": "Unknown",
     "marketing_claims": [
       "Vaastu Friendly Layout",
@@ -7238,7 +7238,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.66,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -7922,7 +7922,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 0.93,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Creative Group Architects",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -8606,7 +8606,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 1.73,
-    "price_range_label": "₹147 Lakh - ₹2.82 Cr (2026 Rate)",
+    "price_range_label": "₹147 Lakh - ₹2.82 Cr",
     "architect": "DASNAC Architectural Studio",
     "marketing_claims": [
       "IGBC Gold-rated",
@@ -9291,7 +9291,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.41,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -9975,7 +9975,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1,
-    "price_range_label": "₹100 Lakh - ₹2.81 Cr (2026 Rate)",
+    "price_range_label": "₹1 Cr - ₹2.81 Cr",
     "architect": "Design Partners & Associates",
     "marketing_claims": [
       "Golf-Centric Landscaped Gardens",
@@ -10025,7 +10025,7 @@
         "price_min_cr": 1,
         "price_max_cr": 1.19,
         "price_per_sqft": 10500,
-        "price_label": "₹100 Lakhs onwards",
+        "price_label": "₹1 Cr onwards",
         "subtitle": "Spacious 2 BHK Residence",
         "description": "Well-ventilated 2 BHK layout with modern fittings and central park views.",
         "category_badge": "Standard Comfort",
@@ -10660,7 +10660,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 3.15,
-    "price_range_label": "₹3.15 Cr - ₹5.02 Cr (2026 Market Rate)",
+    "price_range_label": "₹3.15 Cr - ₹5.02 Cr",
     "architect": "Hafeez Contractor Studio",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -11302,7 +11302,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 2.15,
-    "price_range_label": "₹118 Lakh - ₹2.26 Cr (2026 Rate)",
+    "price_range_label": "₹118 Lakh - ₹2.26 Cr",
     "architect": "DASNAC Architectural Studio",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -11986,7 +11986,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 0.93,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
@@ -12670,7 +12670,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.4,
-    "price_range_label": "₹93 Lakh - ₹1.79 Cr (2026 Rate)",
+    "price_range_label": "₹93 Lakh - ₹1.79 Cr",
     "architect": "Creative Group Architects",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",

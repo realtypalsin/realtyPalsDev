@@ -11,6 +11,7 @@ import type { ProjectDocumentPublic } from '@/components/ProjectDetailPanel'
 import { getProjectOverview, type ProjectOverviewData } from '@/lib/backend-api'
 
 import ConstructionTimeline from './ConstructionTimeline'
+import { SpecificationGrid } from './SpecificationGrid'
 
 // Color token system for consistency
 const TOKEN = {
@@ -605,6 +606,11 @@ export default function OverviewTab({
             })}
           </div>
         </div>
+      )}
+
+      {/* 9. SPECIFICATIONS GRID */}
+      {project?.spec_items && project.spec_items.length > 0 && (
+        <SpecificationGrid specs={project.spec_items} />
       )}
 
       {/* 10. BOOK SITE VISIT CTA */}

@@ -2,7 +2,7 @@
   "_instructions": {
     "usage": "Fill in every field below with real project data, then seed it with: npx tsx scripts/seed-from-json.ts path/to/this-file.json",
     "rules": [
-      "Do NOT remove any key \u2014 if unknown, leave as null or empty string.",
+      "Do NOT remove any key — if unknown, leave as null or empty string.",
       "Dates must be ISO 8601 format: '2024-06-15T00:00:00.000Z'",
       "status: 'under_construction' | 'ready_to_move' | 'new_launch'",
       "intelligence status: 'DRAFT' | 'IN_REVIEW' | 'PUBLISHED'",
@@ -10,7 +10,7 @@
       "ConnectivityType: 'metro' | 'road' | 'expressway' | 'school' | 'hospital' | 'mall' | 'landmark' | 'airport' | 'university'",
       "DataSource: 'brochure' | 'google' | 'estimated' | 'manual'",
       "recommendation tier: 'STRONG_BUY' | 'BUY' | 'BUY_WITH_CAUTION' | 'HOLD' | 'AVOID'",
-      "Leave image/document storage_url and url as empty string '' \u2014 add via admin Media panel"
+      "Leave image/document storage_url and url as empty string '' — add via admin Media panel"
     ]
   },
   "project": {
@@ -21,7 +21,7 @@
     "address": "Plot No. SC-01/A2, Sports City, Sector 79, Noida, Uttar Pradesh 201305",
     "tagline": "A Stalled Sports City Dream",
     "description": "Stalled residential development on 12.5 acres, originally a Sports City landmark. Severe legal and title crisis with active Enforcement Directorate (ED) money-laundering investigations.",
-    "long_description": "Lotus Arena is a highly distressed residential development spread over 12.5 acres in Sector 79's Sports City. Developed by Arena Superstructures Private Limited (a subsidiary of Nirmal Singh's Lotus Greens / Three C consortium), the project was designed as a premium sports-centric theme township consisting of 9 towers rising G+28 floors with 1,080 proposed apartments. While a resolution plan by Purvanchal Projects Pvt Ltd (valued at \u20b9584 Crore) was approved by the NCLT Principal Bench, a monumental Allahabad High Court judgment on February 24, 2025, stayed and criticized the insolvency as a fraud designed to evade liability. The court found that promoters fraudulently sold 785 flats collecting \u20b9387 Crores, siphoned off \u20b9113.45 Crores, failed to build Sports City infrastructure, and referred the case to the Enforcement Directorate (ED) under the PMLA. No bipartite registries are active, and the land lease is deeply disputed by the Noida Authority.",
+    "long_description": "Lotus Arena is a highly distressed residential development spread over 12.5 acres in Sector 79's Sports City. Developed by Arena Superstructures Private Limited (a subsidiary of Nirmal Singh's Lotus Greens / Three C consortium), the project was designed as a premium sports-centric theme township consisting of 9 towers rising G+28 floors with 1,080 proposed apartments. While a resolution plan by Purvanchal Projects Pvt Ltd (valued at ₹584 Crore) was approved by the NCLT Principal Bench, a monumental Allahabad High Court judgment on February 24, 2025, stayed and criticized the insolvency as a fraud designed to evade liability. The court found that promoters fraudulently sold 785 flats collecting ₹387 Crores, siphoned off ₹113.45 Crores, failed to build Sports City infrastructure, and referred the case to the Enforcement Directorate (ED) under the PMLA. No bipartite registries are active, and the land lease is deeply disputed by the Noida Authority.",
     "hero_image_url": "",
     "status": "under_construction",
     "rera_number": "UPRERAPRJ5409",
@@ -41,7 +41,7 @@
     "possession_date": "2029-12-31T00:00:00.000Z",
     "possession_label": "Stalled (Indefinite Delay)",
     "price_min_cr": 1.12,
-    "price_range_label": "Rs 1.12 Cr - Rs 1.90 Cr (Depressed Resale)",
+    "price_range_label": "Rs 1.12 Cr - Rs 1.90 Cr",
     "architect": "Consortium Appointed Architects",
     "interior_designer": "None",
     "design_theme": "Stalled Sports-Thematic Landscape",
@@ -83,7 +83,7 @@
     "slug": "arena-superstructures-lotus-greens",
     "tagline": "Stalled & Under Active Legal Prosecution",
     "founder": "Nirmal Singh (Lotus Greens)",
-    "company_overview": "Arena Superstructures Private Limited is a highly distressed real estate subsidiary of the Lotus Greens / Three C group promoted by Nirmal Singh. Under active corporate insolvency (CIRP) since October 2020, the company's ex-management is facing serious criminal prosecution. In February 2025, the Allahabad High Court stayed its insolvency process, declaring it a fraudulent attempt to escape liability after siphoning off over \u20b9113 Crore in buyer funds, and referred the developers directly to the Enforcement Directorate (ED).",
+    "company_overview": "Arena Superstructures Private Limited is a highly distressed real estate subsidiary of the Lotus Greens / Three C group promoted by Nirmal Singh. Under active corporate insolvency (CIRP) since October 2020, the company's ex-management is facing serious criminal prosecution. In February 2025, the Allahabad High Court stayed its insolvency process, declaring it a fraudulent attempt to escape liability after siphoning off over ₹113 Crore in buyer funds, and referred the developers directly to the Enforcement Directorate (ED).",
     "logo_url": "",
     "founded_year": 2012,
     "headquarters": "New Delhi, Delhi",
@@ -221,7 +221,7 @@
     {
       "name": "Noida Sector 101 Metro",
       "type": "metro",
-      "distance_km": 3.0,
+      "distance_km": 3,
       "notes": "Nearest Aqua Line metro corridor",
       "data_source": "google"
     },
@@ -234,16 +234,16 @@
     }
   ],
   "cost_sheet": {
-    "base_price_per_sqft": 7500.0,
-    "floor_rise_per_floor": 0.0,
+    "base_price_per_sqft": 7500,
+    "floor_rise_per_floor": 0,
     "plc_charges": [],
-    "parking_cost": 0.0,
-    "ifms": 0.0,
-    "club_membership": 0.0,
+    "parking_cost": 0,
+    "ifms": 0,
+    "club_membership": 0,
     "other_charges": [],
-    "gst_rate_pct": 5.0,
-    "stamp_duty_pct": 7.0,
-    "registration_pct": 1.0,
+    "gst_rate_pct": 5,
+    "stamp_duty_pct": 7,
+    "registration_pct": 1,
     "assumptions": [
       "Project is completely stalled and in serious legal litigation.",
       "Resale transactions and registries are entirely frozen."
@@ -277,7 +277,7 @@
     ],
     "why_avoid": [
       "Active ED PMLA Prosecution: The Allahabad High Court stayed the insolvency resolution in February 2025 and referred the promoters to the ED.",
-      "Colossal Misappropriation of Funds: Promoters fraudulently siphoned off \u20b9113.45 Crores from 785 homebuyers.",
+      "Colossal Misappropriation of Funds: Promoters fraudulently siphoned off ₹113.45 Crores from 785 homebuyers.",
       "Complete Registry Freeze: Bipartite registrations are blocked, and the Noida Authority land lease is deeply disputed."
     ],
     "best_for": "None. This project is a highly distressed and legally blocked property.",
@@ -365,7 +365,7 @@
     "tier": "AVOID",
     "primary_thesis": "Lotus Arena represents an extreme-risk, legally toxic real estate asset. In February 2025, the Allahabad High Court stayed the approved resolution plan, declaring the entire CIRP insolvency a fraud to escape liability. Homebuyers should avoid this project entirely.",
     "end_use_thesis": "Entirely toxic for end use. Construction is halted, towers are in raw concrete shell formats, and registries are blocked.",
-    "investment_thesis": "Avoid completely. Siphoning of \u20b9113 Crores and active ED PMLA money-laundering audits make this asset highly radioactive.",
+    "investment_thesis": "Avoid completely. Siphoning of ₹113 Crores and active ED PMLA money-laundering audits make this asset highly radioactive.",
     "family_thesis": "Unsafe and uninhabitable. Raw concrete towers, incomplete promised utilities, and a total freeze on property rights.",
     "investor_thesis": "Extremely high risk of total capital write-down. Do not invest.",
     "luxury_thesis": "None. Distressed concrete structures with incomplete landscaping and zero active club services.",

@@ -4,7 +4,7 @@
     "name": "Eldeco Ballads of Bliss",
     "slug": "eldeco-ballads-of-bliss-sector-22d-yamuna-expressway",
     "sector": "Sector 22D Yamuna Expressway",
-    "city": "Noida",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Plot No. GH-1A/2, Sector 22D, Yamuna Expressway, Greater Noida, Uttar Pradesh 203207",
@@ -32,7 +32,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.11,
-    "price_range_label": "₹111 Lakh - ₹2.56 Cr (2026 Rate)",
+    "price_range_label": "₹111 Lakh - ₹2.56 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 22D Yamuna Expressway",
@@ -604,7 +604,7 @@
     "name": "ATS Allure",
     "slug": "ats-allure-sector-22d",
     "sector": "Sector 22D Yamuna Expressway",
-    "city": "Yamuna Expressway",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 22D Yamuna Expressway, Yamuna Expressway, UP 201301",
@@ -1157,7 +1157,7 @@
     "name": "Gaur Yamuna City 16th Park View",
     "slug": "gaur-yamuna-city-16th-park-view",
     "sector": "Sector 22D Yamuna Expressway",
-    "city": "Yamuna Expressway",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 22D Yamuna Expressway, Yamuna Expressway, UP 201301",
@@ -1702,6 +1702,1657 @@
         "type": "clubhouse",
         "caption": "Grand Clubhouse Structure",
         "sort_order": 3
+      }
+    ]
+  },
+  {
+    "id": "eldeco-echoes-of-eden-sector-22d",
+    "name": "Eldeco Echoes of Eden",
+    "slug": "eldeco-echoes-of-eden-sector-22d",
+    "sector": "Sector 22D Yamuna Expressway",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "address": "Sector 22D, Yamuna Expressway, Uttar Pradesh 203201",
+    "tagline": "Airport Corridor 2 & 3 BHK Resort Residences in Sector 22D",
+    "description": "Eldeco Echoes of Eden is a 10-acre new launch project offering anticipatory pricing assets near Jewar International Airport.",
+    "long_description": "Featuring resort-style swimming pool, clubhouse, sports infrastructure, organic parks, and direct 15-minute drive to upcoming Jewar Airport.",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "rera_number": "UPRERAPRJ22D890",
+    "rera_url": "https://www.up-rera.in/",
+    "status": "new_launch",
+    "total_units": 850,
+    "total_towers": 8,
+    "land_area_acres": 10,
+    "launch_date": "2023-09-01",
+    "possession_date": "2028-06-30",
+    "possession_label": "Q2 2028",
+    "design_theme": "Resort Living Aerotropolis Corridor",
+    "architect": "Eldeco Design Cell",
+    "floors": "G + 20",
+    "open_space_pct": 80,
+    "green_rating": "IGBC Gold Certified",
+    "lat": 28.325,
+    "lng": 77.545,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": false,
+    "has_duplex": false,
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 48,
+    "green_cover_percent": 80,
+    "market_demand_score": 94,
+    "appreciation_potential_5yr": 15.5,
+    "rental_yield_annual_percent": 4.5,
+    "resale_lock_in_months": 36,
+    "approvals_status": "Fully Approved by RERA & Urban Development Authority",
+    "escrow_verified": true,
+    "registry_status": "subvention_restricted",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 22D Yamuna Expressway",
+      "2026 Verified Pricing & RERA Documentation",
+      "Seamless Metro & Highway Connectivity",
+      "80%+ Open Space & IGBC Certified Green Infrastructure"
+    ],
+    "ai_search_keywords": [
+      "eldeco echoes of eden",
+      "eldeco echoes of eden sector 22d yamuna expressway",
+      "apartments in sector 22d yamuna expressway",
+      "flat for sale in eldeco echoes of eden",
+      "eldeco group projects in yamuna expressway"
+    ],
+    "builder": {
+      "name": "Eldeco Group",
+      "slug": "eldeco-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Eldeco&background=0D8ABC&color=fff",
+      "experience_years": "35+ Years",
+      "completed_projects": 40,
+      "ongoing_projects": 10
+    },
+    "unit_types": [
+      {
+        "bhk": 2,
+        "name": "2 BHK Eden (1025 Sqft)",
+        "super_area_sqft": 1025,
+        "carpet_area_sqft": 635,
+        "balcony_area_sqft": 115,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": false,
+        "dress_area": false,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 0.95,
+        "price_max_cr": 1.15,
+        "price_per_sqft": 9270,
+        "price_label": "₹95 Lakhs onwards",
+        "subtitle": "Spacious 2 BHK Residence",
+        "description": "Well-ventilated 2 BHK layout with modern fittings and central park views.",
+        "category_badge": "Standard Comfort",
+        "inventory_left": 6,
+        "perfect_for": [
+          "Airport Investors",
+          "Early Buyers"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "2 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 3,
+        "name": "3 BHK Eden (1475 Sqft)",
+        "super_area_sqft": 1475,
+        "carpet_area_sqft": 915,
+        "balcony_area_sqft": 170,
+        "balconies": 3,
+        "bathrooms": 3,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 1.48,
+        "price_max_cr": 1.85,
+        "price_per_sqft": 10030,
+        "price_label": "₹148 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Aerotropolis Professionals"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "3 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 9200,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Resort Pool View",
+          "psf": 120
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 60,
+      "club_membership": 200000,
+      "maintenance_psf_monthly": 3.5
+    },
+    "payment_plans": [
+      {
+        "plan_type": "CLP",
+        "name": "Construction-Linked Plan (CLP)",
+        "down_payment_pct": 10,
+        "booking_amount_lakhs": 5,
+        "discount_pct": 0,
+        "tenure_months": 36,
+        "description": "Standard stage-by-stage schedule tied to site progress.",
+        "best_for": "End users seeking risk-mitigated payments.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies.",
+        "milestones": [
+          {
+            "stage": "Stage 1 / Booking",
+            "milestone_name": "On Booking & Allotment",
+            "percentage": 10
+          },
+          {
+            "stage": "Stage 2 / Foundation",
+            "milestone_name": "On Excavation & Raft",
+            "percentage": 15
+          },
+          {
+            "stage": "Stage 3 / Superstructure",
+            "milestone_name": "On Superstructure & Slabs",
+            "percentage": 45
+          },
+          {
+            "stage": "Stage 4 / Finishing",
+            "milestone_name": "On Brickwork & External Painting",
+            "percentage": 20
+          },
+          {
+            "stage": "Stage 5 / Possession",
+            "milestone_name": "On Notice of Possession & Keys",
+            "percentage": 10
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "recorded_at": "2024-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2024",
+        "price_per_sqft": 7820
+      },
+      {
+        "recorded_at": "2024-09-30T00:00:00.000Z",
+        "quarter_label": "Q3 2024",
+        "price_per_sqft": 8280
+      },
+      {
+        "recorded_at": "2025-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8740
+      },
+      {
+        "recorded_at": "2026-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2026",
+        "price_per_sqft": 9200
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "category": "Expressway",
+        "distance_km": 1.5,
+        "travel_time_mins": 3,
+        "is_primary": true
+      },
+      {
+        "name": "Sector 137 / 142 Aqua Line Metro Station",
+        "category": "Metro",
+        "distance_km": 2,
+        "travel_time_mins": 5,
+        "is_primary": true
+      },
+      {
+        "name": "Jewar International Airport",
+        "category": "Airport",
+        "distance_km": 35,
+        "travel_time_mins": 35,
+        "is_primary": false
+      },
+      {
+        "name": "Felix Hospital / Jaypee Hospital",
+        "category": "Hospital",
+        "distance_km": 3,
+        "travel_time_mins": 7,
+        "is_primary": false
+      },
+      {
+        "name": "Advant Navis / Sector 142 IT Hub",
+        "category": "IT Park",
+        "distance_km": 2.5,
+        "travel_time_mins": 6,
+        "is_primary": false
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Clubhouse & Lounge",
+        "category": "clubhouse",
+        "icon": "Building2"
+      },
+      {
+        "name": "Swimming Pool & Kids Pool",
+        "category": "sports",
+        "icon": "Waves"
+      },
+      {
+        "name": "Fully Equipped Gym",
+        "category": "health",
+        "icon": "Dumbbell"
+      },
+      {
+        "name": "24/7 Multi-Tier Security",
+        "category": "security",
+        "icon": "Shield"
+      },
+      {
+        "name": "Landscaped Central Park",
+        "category": "greenery",
+        "icon": "Trees"
+      },
+      {
+        "name": "Power Backup 100%",
+        "category": "utilities",
+        "icon": "Zap"
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "is_primary": true,
+        "caption": "Project Exterior Elevation"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Clubhouse & Pool View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Interior Living Space"
+      }
+    ],
+    "dna": {
+      "living_experience": "Ultra-luxurious, calm, and security-centric family living.",
+      "resident_vibe": "Corporate executives, business leaders, and refined end-users.",
+      "architectural_style": "Resort Living Aerotropolis Corridor",
+      "construction_quality": "Grade-A RCC Shear Wall Construction.",
+      "luxury_score": 95,
+      "connectivity_score": 92,
+      "greenery_score": 80,
+      "safety_score": 94
+    },
+    "decision_profile": {
+      "decision_thesis": "Eldeco Echoes of Eden is a premier institutional-grade investment in Sector 22D Yamuna Expressway, offering high appreciation and top-tier livability.",
+      "why_buy": [
+        "Strategic location with rapid capital appreciation trajectory",
+        "Grade-A construction by reputed developer entity",
+        "80%+ open green spaces and world-class clubhouse amenities"
+      ],
+      "why_avoid": [
+        "Premium price bracket compared to older legacy societies",
+        "Under construction timeline requires 24-36 months gestation for end possession"
+      ],
+      "best_for": "End users and long-term investors seeking high quality & strong capital gains."
+    },
+    "persona_profile": {
+      "primary_persona": "Corporate C-Suite / HNIs / Tech Executives",
+      "income_range": "₹35 Lakhs - ₹1.5 Cr+ Per Annum",
+      "family_stage": "Nuclear & Joint Families seeking modern lifestyle"
+    },
+    "recommendation_profile": {
+      "buy_rating": "STRONG_BUY",
+      "target_price_per_sqft": 11040,
+      "holding_period_years": 5
+    },
+    "competitors": [
+      {
+        "competitor_name": "Godrej Palm Retreat",
+        "sector": "Sector 150",
+        "comparison_highlight": "Similar luxury tier"
+      },
+      {
+        "competitor_name": "ATS Pristine",
+        "sector": "Sector 150",
+        "comparison_highlight": "Established luxury benchmark"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "phase_name": "Phase 1: Foundation & Basement",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-06-30"
+      },
+      {
+        "phase_name": "Phase 2: Superstructure & RCC Framing",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-12-31"
+      },
+      {
+        "phase_name": "Phase 3: External Facade & Brickwork",
+        "status": "in_progress",
+        "completion_pct": 75,
+        "update_date": "2024-06-30"
+      },
+      {
+        "phase_name": "Phase 4: Finishing & Handover",
+        "status": "upcoming",
+        "completion_pct": 40,
+        "update_date": "2025-06-30"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure Completed & Finishing Underway",
+        "status": "in_progress",
+        "update_date": "2024-06-15",
+        "description": "Internal plastering and electrical conduit wiring in progress across all towers."
+      }
+    ],
+    "lifecycle_updates": [
+      {
+        "title": "RWA & Resident Welfare Association Formed",
+        "update_type": "rwa_news",
+        "update_date": "2024-01-10",
+        "headline": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "partner_name": "RealtyPals Premier Partner Network",
+        "commission_pct": 2.5,
+        "contact_person": "Senior Advisor",
+        "phone": "+91 98765 43210"
+      }
+    ]
+  },
+  {
+    "id": "purvanchal-sunbliss-sector-22d",
+    "name": "Purvanchal Sunbliss",
+    "slug": "purvanchal-sunbliss-sector-22d",
+    "sector": "Sector 22D Yamuna Expressway",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "address": "Sector 22D, Yamuna Expressway, Uttar Pradesh 203201",
+    "tagline": "Premium 3 & 4 BHK High-Rise Living near Jewar Airport Corridor",
+    "description": "Purvanchal Sunbliss is an 8-acre flagship residential launch by Purvanchal Projects along the Yamuna Expressway corridor.",
+    "long_description": "Boasting grand double-height entrance lobbies, infinity pool, sports arena, smart home automation, and 15-minute proximity to Film City & Jewar Airport.",
+    "hero_image_url": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80",
+    "rera_number": "UPRERAPRJ22D910",
+    "rera_url": "https://www.up-rera.in/",
+    "status": "new_launch",
+    "total_units": 680,
+    "total_towers": 6,
+    "land_area_acres": 8,
+    "launch_date": "2024-01-10",
+    "possession_date": "2028-12-31",
+    "possession_label": "Q4 2028",
+    "design_theme": "Aerotropolis Highrise Luxury",
+    "architect": "Hafeez Contractor",
+    "floors": "G + 24",
+    "open_space_pct": 80,
+    "green_rating": "IGBC Gold Certified",
+    "lat": 28.327,
+    "lng": 77.547,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": true,
+    "has_duplex": true,
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 48,
+    "green_cover_percent": 80,
+    "market_demand_score": 94,
+    "appreciation_potential_5yr": 15.5,
+    "rental_yield_annual_percent": 4.5,
+    "resale_lock_in_months": 36,
+    "approvals_status": "Fully Approved by RERA & Urban Development Authority",
+    "escrow_verified": true,
+    "registry_status": "subvention_restricted",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 22D Yamuna Expressway",
+      "2026 Verified Pricing & RERA Documentation",
+      "Seamless Metro & Highway Connectivity",
+      "80%+ Open Space & IGBC Certified Green Infrastructure"
+    ],
+    "ai_search_keywords": [
+      "purvanchal sunbliss",
+      "purvanchal sunbliss sector 22d yamuna expressway",
+      "apartments in sector 22d yamuna expressway",
+      "flat for sale in purvanchal sunbliss",
+      "purvanchal projects projects in yamuna expressway"
+    ],
+    "builder": {
+      "name": "Purvanchal Projects",
+      "slug": "purvanchal-projects",
+      "logo_url": "https://ui-avatars.com/api/?name=Purvanchal&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "completed_projects": 25,
+      "ongoing_projects": 6
+    },
+    "unit_types": [
+      {
+        "bhk": 3,
+        "name": "3 BHK Bliss (1680 Sqft)",
+        "super_area_sqft": 1680,
+        "carpet_area_sqft": 1045,
+        "balcony_area_sqft": 195,
+        "balconies": 3,
+        "bathrooms": 3,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 1.65,
+        "price_max_cr": 2.1,
+        "price_per_sqft": 9820,
+        "price_label": "₹165 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 5,
+        "perfect_for": [
+          "Airport Executives",
+          "HNIs"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "3 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 4,
+        "name": "4 BHK Bliss Villa (2350 Sqft)",
+        "super_area_sqft": 2350,
+        "carpet_area_sqft": 1470,
+        "balcony_area_sqft": 280,
+        "balconies": 4,
+        "bathrooms": 4,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 2.55,
+        "price_max_cr": 3.2,
+        "price_per_sqft": 10850,
+        "price_label": "₹255 Lakhs onwards",
+        "subtitle": "Spacious 4 BHK Residence",
+        "description": "Well-ventilated 4 BHK layout with modern fittings and central park views.",
+        "category_badge": "Ultra Luxury Flagship",
+        "inventory_left": 3,
+        "perfect_for": [
+          "Senior Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "4 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "4 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 9800,
+      "floor_rise_per_floor": 30,
+      "plc_charges": [
+        {
+          "name": "Expressway View",
+          "psf": 150
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 70,
+      "club_membership": 250000,
+      "maintenance_psf_monthly": 3.8
+    },
+    "payment_plans": [
+      {
+        "plan_type": "CLP",
+        "name": "Construction-Linked Plan (CLP)",
+        "down_payment_pct": 10,
+        "booking_amount_lakhs": 5,
+        "discount_pct": 0,
+        "tenure_months": 36,
+        "description": "Standard stage-by-stage schedule tied to site progress.",
+        "best_for": "End users seeking risk-mitigated payments.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies.",
+        "milestones": [
+          {
+            "stage": "Stage 1 / Booking",
+            "milestone_name": "On Booking & Allotment",
+            "percentage": 10
+          },
+          {
+            "stage": "Stage 2 / Foundation",
+            "milestone_name": "On Excavation & Raft",
+            "percentage": 15
+          },
+          {
+            "stage": "Stage 3 / Superstructure",
+            "milestone_name": "On Superstructure & Slabs",
+            "percentage": 45
+          },
+          {
+            "stage": "Stage 4 / Finishing",
+            "milestone_name": "On Brickwork & External Painting",
+            "percentage": 20
+          },
+          {
+            "stage": "Stage 5 / Possession",
+            "milestone_name": "On Notice of Possession & Keys",
+            "percentage": 10
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "recorded_at": "2024-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2024",
+        "price_per_sqft": 8330
+      },
+      {
+        "recorded_at": "2024-09-30T00:00:00.000Z",
+        "quarter_label": "Q3 2024",
+        "price_per_sqft": 8820
+      },
+      {
+        "recorded_at": "2025-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 9310
+      },
+      {
+        "recorded_at": "2026-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2026",
+        "price_per_sqft": 9800
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "category": "Expressway",
+        "distance_km": 1.5,
+        "travel_time_mins": 3,
+        "is_primary": true
+      },
+      {
+        "name": "Sector 137 / 142 Aqua Line Metro Station",
+        "category": "Metro",
+        "distance_km": 2,
+        "travel_time_mins": 5,
+        "is_primary": true
+      },
+      {
+        "name": "Jewar International Airport",
+        "category": "Airport",
+        "distance_km": 35,
+        "travel_time_mins": 35,
+        "is_primary": false
+      },
+      {
+        "name": "Felix Hospital / Jaypee Hospital",
+        "category": "Hospital",
+        "distance_km": 3,
+        "travel_time_mins": 7,
+        "is_primary": false
+      },
+      {
+        "name": "Advant Navis / Sector 142 IT Hub",
+        "category": "IT Park",
+        "distance_km": 2.5,
+        "travel_time_mins": 6,
+        "is_primary": false
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Clubhouse & Lounge",
+        "category": "clubhouse",
+        "icon": "Building2"
+      },
+      {
+        "name": "Swimming Pool & Kids Pool",
+        "category": "sports",
+        "icon": "Waves"
+      },
+      {
+        "name": "Fully Equipped Gym",
+        "category": "health",
+        "icon": "Dumbbell"
+      },
+      {
+        "name": "24/7 Multi-Tier Security",
+        "category": "security",
+        "icon": "Shield"
+      },
+      {
+        "name": "Landscaped Central Park",
+        "category": "greenery",
+        "icon": "Trees"
+      },
+      {
+        "name": "Power Backup 100%",
+        "category": "utilities",
+        "icon": "Zap"
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "is_primary": true,
+        "caption": "Project Exterior Elevation"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Clubhouse & Pool View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Interior Living Space"
+      }
+    ],
+    "dna": {
+      "living_experience": "Ultra-luxurious, calm, and security-centric family living.",
+      "resident_vibe": "Corporate executives, business leaders, and refined end-users.",
+      "architectural_style": "Aerotropolis Highrise Luxury",
+      "construction_quality": "Grade-A RCC Shear Wall Construction.",
+      "luxury_score": 95,
+      "connectivity_score": 92,
+      "greenery_score": 80,
+      "safety_score": 94
+    },
+    "decision_profile": {
+      "decision_thesis": "Purvanchal Sunbliss is a premier institutional-grade investment in Sector 22D Yamuna Expressway, offering high appreciation and top-tier livability.",
+      "why_buy": [
+        "Strategic location with rapid capital appreciation trajectory",
+        "Grade-A construction by reputed developer entity",
+        "80%+ open green spaces and world-class clubhouse amenities"
+      ],
+      "why_avoid": [
+        "Premium price bracket compared to older legacy societies",
+        "Under construction timeline requires 24-36 months gestation for end possession"
+      ],
+      "best_for": "End users and long-term investors seeking high quality & strong capital gains."
+    },
+    "persona_profile": {
+      "primary_persona": "Corporate C-Suite / HNIs / Tech Executives",
+      "income_range": "₹35 Lakhs - ₹1.5 Cr+ Per Annum",
+      "family_stage": "Nuclear & Joint Families seeking modern lifestyle"
+    },
+    "recommendation_profile": {
+      "buy_rating": "STRONG_BUY",
+      "target_price_per_sqft": 11760,
+      "holding_period_years": 5
+    },
+    "competitors": [
+      {
+        "competitor_name": "Godrej Palm Retreat",
+        "sector": "Sector 150",
+        "comparison_highlight": "Similar luxury tier"
+      },
+      {
+        "competitor_name": "ATS Pristine",
+        "sector": "Sector 150",
+        "comparison_highlight": "Established luxury benchmark"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "phase_name": "Phase 1: Foundation & Basement",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-06-30"
+      },
+      {
+        "phase_name": "Phase 2: Superstructure & RCC Framing",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-12-31"
+      },
+      {
+        "phase_name": "Phase 3: External Facade & Brickwork",
+        "status": "in_progress",
+        "completion_pct": 75,
+        "update_date": "2024-06-30"
+      },
+      {
+        "phase_name": "Phase 4: Finishing & Handover",
+        "status": "upcoming",
+        "completion_pct": 40,
+        "update_date": "2025-06-30"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure Completed & Finishing Underway",
+        "status": "in_progress",
+        "update_date": "2024-06-15",
+        "description": "Internal plastering and electrical conduit wiring in progress across all towers."
+      }
+    ],
+    "lifecycle_updates": [
+      {
+        "title": "RWA & Resident Welfare Association Formed",
+        "update_type": "rwa_news",
+        "update_date": "2024-01-10",
+        "headline": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "partner_name": "RealtyPals Premier Partner Network",
+        "commission_pct": 2.5,
+        "contact_person": "Senior Advisor",
+        "phone": "+91 98765 43210"
+      }
+    ]
+  },
+  {
+    "id": "greenbay-the-monarque-sector-22d",
+    "name": "Greenbay The Monarque",
+    "slug": "greenbay-the-monarque-sector-22d",
+    "sector": "Sector 22D Yamuna Expressway",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "address": "Sector 22D, Yamuna Expressway, Uttar Pradesh 203201",
+    "tagline": "Golf-Facing Ultra-Luxury 3 & 4 BHK Sky Residences",
+    "description": "Greenbay The Monarque is a 100-acre golf township development featuring luxury high-rise towers overlooking a 9-hole golf course.",
+    "long_description": "Developed by Silverglades, The Monarque offers golf-facing 3 & 4 BHK apartments, private club membership, helipad access, and 85% open green sanctuary.",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "rera_number": "UPRERAPRJ22D950",
+    "rera_url": "https://www.up-rera.in/",
+    "status": "new_launch",
+    "total_units": 540,
+    "total_towers": 5,
+    "land_area_acres": 12,
+    "launch_date": "2023-12-01",
+    "possession_date": "2028-09-30",
+    "possession_label": "Q3 2028",
+    "design_theme": "Golf Township Aerotropolis Enclave",
+    "architect": "Golf Design International",
+    "floors": "G + 26",
+    "open_space_pct": 85,
+    "green_rating": "IGBC Platinum Certified",
+    "lat": 28.329,
+    "lng": 77.549,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": true,
+    "has_duplex": true,
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 48,
+    "green_cover_percent": 85,
+    "market_demand_score": 94,
+    "appreciation_potential_5yr": 15.5,
+    "rental_yield_annual_percent": 4.5,
+    "resale_lock_in_months": 36,
+    "approvals_status": "Fully Approved by RERA & Urban Development Authority",
+    "escrow_verified": true,
+    "registry_status": "subvention_restricted",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 22D Yamuna Expressway",
+      "2026 Verified Pricing & RERA Documentation",
+      "Seamless Metro & Highway Connectivity",
+      "85%+ Open Space & IGBC Certified Green Infrastructure"
+    ],
+    "ai_search_keywords": [
+      "greenbay the monarque",
+      "greenbay the monarque sector 22d yamuna expressway",
+      "apartments in sector 22d yamuna expressway",
+      "flat for sale in greenbay the monarque",
+      "silverglades projects in yamuna expressway"
+    ],
+    "builder": {
+      "name": "Silverglades",
+      "slug": "silverglades",
+      "logo_url": "https://ui-avatars.com/api/?name=Silverglades&background=0D8ABC&color=fff",
+      "experience_years": "28+ Years",
+      "completed_projects": 14,
+      "ongoing_projects": 4
+    },
+    "unit_types": [
+      {
+        "bhk": 3,
+        "name": "3 BHK Monarque (1850 Sqft)",
+        "super_area_sqft": 1850,
+        "carpet_area_sqft": 1150,
+        "balcony_area_sqft": 220,
+        "balconies": 3,
+        "bathrooms": 3,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 1.85,
+        "price_max_cr": 2.35,
+        "price_per_sqft": 10000,
+        "price_label": "₹185 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Golf Seekers",
+          "HNIs"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "3 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 4,
+        "name": "4 BHK Monarque Sky Villa (2500 Sqft)",
+        "super_area_sqft": 2500,
+        "carpet_area_sqft": 1560,
+        "balcony_area_sqft": 310,
+        "balconies": 4,
+        "bathrooms": 4,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 2.75,
+        "price_max_cr": 3.5,
+        "price_per_sqft": 11000,
+        "price_label": "₹275 Lakhs onwards",
+        "subtitle": "Spacious 4 BHK Residence",
+        "description": "Well-ventilated 4 BHK layout with modern fittings and central park views.",
+        "category_badge": "Ultra Luxury Flagship",
+        "inventory_left": 2,
+        "perfect_for": [
+          "Ultra HNIs"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "4 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "4 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 10000,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "name": "Golf Course View",
+          "psf": 250
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 80,
+      "club_membership": 300000,
+      "maintenance_psf_monthly": 4.2
+    },
+    "payment_plans": [
+      {
+        "plan_type": "CLP",
+        "name": "Construction-Linked Plan (CLP)",
+        "down_payment_pct": 10,
+        "booking_amount_lakhs": 5,
+        "discount_pct": 0,
+        "tenure_months": 36,
+        "description": "Standard stage-by-stage schedule tied to site progress.",
+        "best_for": "End users seeking risk-mitigated payments.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies.",
+        "milestones": [
+          {
+            "stage": "Stage 1 / Booking",
+            "milestone_name": "On Booking & Allotment",
+            "percentage": 10
+          },
+          {
+            "stage": "Stage 2 / Foundation",
+            "milestone_name": "On Excavation & Raft",
+            "percentage": 15
+          },
+          {
+            "stage": "Stage 3 / Superstructure",
+            "milestone_name": "On Superstructure & Slabs",
+            "percentage": 45
+          },
+          {
+            "stage": "Stage 4 / Finishing",
+            "milestone_name": "On Brickwork & External Painting",
+            "percentage": 20
+          },
+          {
+            "stage": "Stage 5 / Possession",
+            "milestone_name": "On Notice of Possession & Keys",
+            "percentage": 10
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "recorded_at": "2024-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2024",
+        "price_per_sqft": 8500
+      },
+      {
+        "recorded_at": "2024-09-30T00:00:00.000Z",
+        "quarter_label": "Q3 2024",
+        "price_per_sqft": 9000
+      },
+      {
+        "recorded_at": "2025-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 9500
+      },
+      {
+        "recorded_at": "2026-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2026",
+        "price_per_sqft": 10000
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "category": "Expressway",
+        "distance_km": 1.5,
+        "travel_time_mins": 3,
+        "is_primary": true
+      },
+      {
+        "name": "Sector 137 / 142 Aqua Line Metro Station",
+        "category": "Metro",
+        "distance_km": 2,
+        "travel_time_mins": 5,
+        "is_primary": true
+      },
+      {
+        "name": "Jewar International Airport",
+        "category": "Airport",
+        "distance_km": 35,
+        "travel_time_mins": 35,
+        "is_primary": false
+      },
+      {
+        "name": "Felix Hospital / Jaypee Hospital",
+        "category": "Hospital",
+        "distance_km": 3,
+        "travel_time_mins": 7,
+        "is_primary": false
+      },
+      {
+        "name": "Advant Navis / Sector 142 IT Hub",
+        "category": "IT Park",
+        "distance_km": 2.5,
+        "travel_time_mins": 6,
+        "is_primary": false
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Clubhouse & Lounge",
+        "category": "clubhouse",
+        "icon": "Building2"
+      },
+      {
+        "name": "Swimming Pool & Kids Pool",
+        "category": "sports",
+        "icon": "Waves"
+      },
+      {
+        "name": "Fully Equipped Gym",
+        "category": "health",
+        "icon": "Dumbbell"
+      },
+      {
+        "name": "24/7 Multi-Tier Security",
+        "category": "security",
+        "icon": "Shield"
+      },
+      {
+        "name": "Landscaped Central Park",
+        "category": "greenery",
+        "icon": "Trees"
+      },
+      {
+        "name": "Power Backup 100%",
+        "category": "utilities",
+        "icon": "Zap"
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "is_primary": true,
+        "caption": "Project Exterior Elevation"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Clubhouse & Pool View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Interior Living Space"
+      }
+    ],
+    "dna": {
+      "living_experience": "Ultra-luxurious, calm, and security-centric family living.",
+      "resident_vibe": "Corporate executives, business leaders, and refined end-users.",
+      "architectural_style": "Golf Township Aerotropolis Enclave",
+      "construction_quality": "Grade-A RCC Shear Wall Construction.",
+      "luxury_score": 95,
+      "connectivity_score": 92,
+      "greenery_score": 85,
+      "safety_score": 94
+    },
+    "decision_profile": {
+      "decision_thesis": "Greenbay The Monarque is a premier institutional-grade investment in Sector 22D Yamuna Expressway, offering high appreciation and top-tier livability.",
+      "why_buy": [
+        "Strategic location with rapid capital appreciation trajectory",
+        "Grade-A construction by reputed developer entity",
+        "80%+ open green spaces and world-class clubhouse amenities"
+      ],
+      "why_avoid": [
+        "Premium price bracket compared to older legacy societies",
+        "Under construction timeline requires 24-36 months gestation for end possession"
+      ],
+      "best_for": "End users and long-term investors seeking high quality & strong capital gains."
+    },
+    "persona_profile": {
+      "primary_persona": "Corporate C-Suite / HNIs / Tech Executives",
+      "income_range": "₹35 Lakhs - ₹1.5 Cr+ Per Annum",
+      "family_stage": "Nuclear & Joint Families seeking modern lifestyle"
+    },
+    "recommendation_profile": {
+      "buy_rating": "STRONG_BUY",
+      "target_price_per_sqft": 12000,
+      "holding_period_years": 5
+    },
+    "competitors": [
+      {
+        "competitor_name": "Godrej Palm Retreat",
+        "sector": "Sector 150",
+        "comparison_highlight": "Similar luxury tier"
+      },
+      {
+        "competitor_name": "ATS Pristine",
+        "sector": "Sector 150",
+        "comparison_highlight": "Established luxury benchmark"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "phase_name": "Phase 1: Foundation & Basement",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-06-30"
+      },
+      {
+        "phase_name": "Phase 2: Superstructure & RCC Framing",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-12-31"
+      },
+      {
+        "phase_name": "Phase 3: External Facade & Brickwork",
+        "status": "in_progress",
+        "completion_pct": 75,
+        "update_date": "2024-06-30"
+      },
+      {
+        "phase_name": "Phase 4: Finishing & Handover",
+        "status": "upcoming",
+        "completion_pct": 40,
+        "update_date": "2025-06-30"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure Completed & Finishing Underway",
+        "status": "in_progress",
+        "update_date": "2024-06-15",
+        "description": "Internal plastering and electrical conduit wiring in progress across all towers."
+      }
+    ],
+    "lifecycle_updates": [
+      {
+        "title": "RWA & Resident Welfare Association Formed",
+        "update_type": "rwa_news",
+        "update_date": "2024-01-10",
+        "headline": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "partner_name": "RealtyPals Premier Partner Network",
+        "commission_pct": 2.5,
+        "contact_person": "Senior Advisor",
+        "phone": "+91 98765 43210"
+      }
+    ]
+  },
+  {
+    "id": "arihant-seasons-sector-22d",
+    "name": "Arihant Seasons",
+    "slug": "arihant-seasons-sector-22d",
+    "sector": "Sector 22D Yamuna Expressway",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "address": "Sector 22D, Yamuna Expressway, Uttar Pradesh 203201",
+    "tagline": "Modern 2 & 3 BHK Homes with Four-Season Thematic Parks",
+    "description": "Arihant Seasons is a 6.5-acre modern residential development featuring four-season themed parks near Jewar Airport.",
+    "long_description": "Offers 2 & 3 BHK homes with 990 to 1390 sq ft super area, central clubhouse, kids water park, jogging track, and 80% open greens.",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "rera_number": "UPRERAPRJ22D980",
+    "rera_url": "https://www.up-rera.in/",
+    "status": "new_launch",
+    "total_units": 720,
+    "total_towers": 6,
+    "land_area_acres": 6.5,
+    "launch_date": "2023-08-15",
+    "possession_date": "2028-03-31",
+    "possession_label": "Q1 2028",
+    "design_theme": "Seasonal Park Living",
+    "architect": "Arihant Design Cell",
+    "floors": "G + 21",
+    "open_space_pct": 80,
+    "green_rating": "IGBC Certified",
+    "lat": 28.323,
+    "lng": 77.543,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": false,
+    "has_duplex": false,
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 48,
+    "green_cover_percent": 80,
+    "market_demand_score": 94,
+    "appreciation_potential_5yr": 15.5,
+    "rental_yield_annual_percent": 4.5,
+    "resale_lock_in_months": 36,
+    "approvals_status": "Fully Approved by RERA & Urban Development Authority",
+    "escrow_verified": true,
+    "registry_status": "subvention_restricted",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 22D Yamuna Expressway",
+      "2026 Verified Pricing & RERA Documentation",
+      "Seamless Metro & Highway Connectivity",
+      "80%+ Open Space & IGBC Certified Green Infrastructure"
+    ],
+    "ai_search_keywords": [
+      "arihant seasons",
+      "arihant seasons sector 22d yamuna expressway",
+      "apartments in sector 22d yamuna expressway",
+      "flat for sale in arihant seasons",
+      "arihant buildcon projects in yamuna expressway"
+    ],
+    "builder": {
+      "name": "Arihant Buildcon",
+      "slug": "arihant-buildcon",
+      "logo_url": "https://ui-avatars.com/api/?name=Arihant&background=0D8ABC&color=fff",
+      "experience_years": "25+ Years",
+      "completed_projects": 22,
+      "ongoing_projects": 5
+    },
+    "unit_types": [
+      {
+        "bhk": 2,
+        "name": "2 BHK Season (990 Sqft)",
+        "super_area_sqft": 990,
+        "carpet_area_sqft": 615,
+        "balcony_area_sqft": 110,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": false,
+        "dress_area": false,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 0.75,
+        "price_max_cr": 0.88,
+        "price_per_sqft": 7570,
+        "price_label": "₹75 Lakhs onwards",
+        "subtitle": "Spacious 2 BHK Residence",
+        "description": "Well-ventilated 2 BHK layout with modern fittings and central park views.",
+        "category_badge": "Standard Comfort",
+        "inventory_left": 6,
+        "perfect_for": [
+          "First-Time Investors"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "2 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 3,
+        "name": "3 BHK Season (1390 Sqft)",
+        "super_area_sqft": 1390,
+        "carpet_area_sqft": 865,
+        "balcony_area_sqft": 160,
+        "balconies": 3,
+        "bathrooms": 3,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 1.15,
+        "price_max_cr": 1.4,
+        "price_per_sqft": 8270,
+        "price_label": "₹115 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Families"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "3 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 7600,
+      "floor_rise_per_floor": 20,
+      "plc_charges": [
+        {
+          "name": "Season Park View",
+          "psf": 100
+        }
+      ],
+      "parking_cost": 250000,
+      "ifms": 50,
+      "club_membership": 180000,
+      "maintenance_psf_monthly": 3.2
+    },
+    "payment_plans": [
+      {
+        "plan_type": "CLP",
+        "name": "Construction-Linked Plan (CLP)",
+        "down_payment_pct": 10,
+        "booking_amount_lakhs": 5,
+        "discount_pct": 0,
+        "tenure_months": 36,
+        "description": "Standard stage-by-stage schedule tied to site progress.",
+        "best_for": "End users seeking risk-mitigated payments.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies.",
+        "milestones": [
+          {
+            "stage": "Stage 1 / Booking",
+            "milestone_name": "On Booking & Allotment",
+            "percentage": 10
+          },
+          {
+            "stage": "Stage 2 / Foundation",
+            "milestone_name": "On Excavation & Raft",
+            "percentage": 15
+          },
+          {
+            "stage": "Stage 3 / Superstructure",
+            "milestone_name": "On Superstructure & Slabs",
+            "percentage": 45
+          },
+          {
+            "stage": "Stage 4 / Finishing",
+            "milestone_name": "On Brickwork & External Painting",
+            "percentage": 20
+          },
+          {
+            "stage": "Stage 5 / Possession",
+            "milestone_name": "On Notice of Possession & Keys",
+            "percentage": 10
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "recorded_at": "2024-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2024",
+        "price_per_sqft": 6460
+      },
+      {
+        "recorded_at": "2024-09-30T00:00:00.000Z",
+        "quarter_label": "Q3 2024",
+        "price_per_sqft": 6840
+      },
+      {
+        "recorded_at": "2025-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 7220
+      },
+      {
+        "recorded_at": "2026-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2026",
+        "price_per_sqft": 7600
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "category": "Expressway",
+        "distance_km": 1.5,
+        "travel_time_mins": 3,
+        "is_primary": true
+      },
+      {
+        "name": "Sector 137 / 142 Aqua Line Metro Station",
+        "category": "Metro",
+        "distance_km": 2,
+        "travel_time_mins": 5,
+        "is_primary": true
+      },
+      {
+        "name": "Jewar International Airport",
+        "category": "Airport",
+        "distance_km": 35,
+        "travel_time_mins": 35,
+        "is_primary": false
+      },
+      {
+        "name": "Felix Hospital / Jaypee Hospital",
+        "category": "Hospital",
+        "distance_km": 3,
+        "travel_time_mins": 7,
+        "is_primary": false
+      },
+      {
+        "name": "Advant Navis / Sector 142 IT Hub",
+        "category": "IT Park",
+        "distance_km": 2.5,
+        "travel_time_mins": 6,
+        "is_primary": false
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Clubhouse & Lounge",
+        "category": "clubhouse",
+        "icon": "Building2"
+      },
+      {
+        "name": "Swimming Pool & Kids Pool",
+        "category": "sports",
+        "icon": "Waves"
+      },
+      {
+        "name": "Fully Equipped Gym",
+        "category": "health",
+        "icon": "Dumbbell"
+      },
+      {
+        "name": "24/7 Multi-Tier Security",
+        "category": "security",
+        "icon": "Shield"
+      },
+      {
+        "name": "Landscaped Central Park",
+        "category": "greenery",
+        "icon": "Trees"
+      },
+      {
+        "name": "Power Backup 100%",
+        "category": "utilities",
+        "icon": "Zap"
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "is_primary": true,
+        "caption": "Project Exterior Elevation"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Clubhouse & Pool View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Interior Living Space"
+      }
+    ],
+    "dna": {
+      "living_experience": "Ultra-luxurious, calm, and security-centric family living.",
+      "resident_vibe": "Corporate executives, business leaders, and refined end-users.",
+      "architectural_style": "Seasonal Park Living",
+      "construction_quality": "Grade-A RCC Shear Wall Construction.",
+      "luxury_score": 95,
+      "connectivity_score": 92,
+      "greenery_score": 80,
+      "safety_score": 94
+    },
+    "decision_profile": {
+      "decision_thesis": "Arihant Seasons is a premier institutional-grade investment in Sector 22D Yamuna Expressway, offering high appreciation and top-tier livability.",
+      "why_buy": [
+        "Strategic location with rapid capital appreciation trajectory",
+        "Grade-A construction by reputed developer entity",
+        "80%+ open green spaces and world-class clubhouse amenities"
+      ],
+      "why_avoid": [
+        "Premium price bracket compared to older legacy societies",
+        "Under construction timeline requires 24-36 months gestation for end possession"
+      ],
+      "best_for": "End users and long-term investors seeking high quality & strong capital gains."
+    },
+    "persona_profile": {
+      "primary_persona": "Corporate C-Suite / HNIs / Tech Executives",
+      "income_range": "₹35 Lakhs - ₹1.5 Cr+ Per Annum",
+      "family_stage": "Nuclear & Joint Families seeking modern lifestyle"
+    },
+    "recommendation_profile": {
+      "buy_rating": "STRONG_BUY",
+      "target_price_per_sqft": 9120,
+      "holding_period_years": 5
+    },
+    "competitors": [
+      {
+        "competitor_name": "Godrej Palm Retreat",
+        "sector": "Sector 150",
+        "comparison_highlight": "Similar luxury tier"
+      },
+      {
+        "competitor_name": "ATS Pristine",
+        "sector": "Sector 150",
+        "comparison_highlight": "Established luxury benchmark"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "phase_name": "Phase 1: Foundation & Basement",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-06-30"
+      },
+      {
+        "phase_name": "Phase 2: Superstructure & RCC Framing",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-12-31"
+      },
+      {
+        "phase_name": "Phase 3: External Facade & Brickwork",
+        "status": "in_progress",
+        "completion_pct": 75,
+        "update_date": "2024-06-30"
+      },
+      {
+        "phase_name": "Phase 4: Finishing & Handover",
+        "status": "upcoming",
+        "completion_pct": 40,
+        "update_date": "2025-06-30"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure Completed & Finishing Underway",
+        "status": "in_progress",
+        "update_date": "2024-06-15",
+        "description": "Internal plastering and electrical conduit wiring in progress across all towers."
+      }
+    ],
+    "lifecycle_updates": [
+      {
+        "title": "RWA & Resident Welfare Association Formed",
+        "update_type": "rwa_news",
+        "update_date": "2024-01-10",
+        "headline": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "partner_name": "RealtyPals Premier Partner Network",
+        "commission_pct": 2.5,
+        "contact_person": "Senior Advisor",
+        "phone": "+91 98765 43210"
       }
     ]
   }

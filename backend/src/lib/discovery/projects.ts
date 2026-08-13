@@ -70,6 +70,11 @@ const PROJECT_INCLUDE = {
   images: { take: 3, orderBy: { sort_order: 'asc' as const } },
   amenities: { take: 10 },
   connectivity: { take: 5, orderBy: { distance_km: 'asc' as const } },
+  spec_items: {
+    where: { is_highlight: true, unit_type_id: null },
+    take: 12,
+    orderBy: { sort_order: 'asc' as const },
+  },
   // `status` is selected purely so gatePublished() can drop DRAFT profiles —
   // it is stripped again before the project leaves mapToScored().
   recommendation_profile: {
@@ -207,13 +212,17 @@ export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Pr
       let cleanSector = sectorStr
       const cityTerms = [
         ...SUPPORTED_CITIES.map((c) => ` ${c.toLowerCase()}`),
-        ' gurgaon', ' gurugram', ' delhi', ' mumbai', ' bangalore', ' hyderabad', ' pune', ' chennai'
+        ' gurgaon', ' gurugram', ' delhi', ' mumbai', ' bangalore', ' hyderabad', ' pune', ' chennai',
+        ' noida extension', ' gn west', ' gnw'
       ]
+      // Strip trailing commas and regional terms
+      cleanSector = cleanSector.replace(/,\s*(greater noida west|greater noida|noida extension|noida|up|uttar pradesh)$/i, '').trim()
       for (const city of cityTerms) {
         if (cleanSector.toLowerCase().endsWith(city)) {
           cleanSector = cleanSector.slice(0, -city.length).trim()
         }
       }
+      cleanSector = cleanSector.replace(/^[,\s]+|[,\s]+$/g, '').trim()
       return [
         { sector: { equals: cleanSector, mode: 'insensitive' } },
         { sector: { startsWith: `${cleanSector} `, mode: 'insensitive' } },

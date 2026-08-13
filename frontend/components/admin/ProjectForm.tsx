@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Save, Loader2, Plus, X } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import CustomSelect from './CustomSelect'
+
 interface Builder { id: string; name: string }
 
 interface ProjectData {
@@ -132,8 +134,7 @@ function Select({ value, onChange, children }: {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-slate-50/80 border border-transparent hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3 text-[14px] text-slate-900 focus:outline-none focus:border-slate-200 focus:ring-4 focus:ring-slate-100 transition-all duration-200 shadow-sm"
-
+      className="admin-select w-full bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 hover:bg-slate-100/80 dark:hover:bg-zinc-800 focus:bg-white dark:focus:bg-zinc-900 rounded-xl px-4 py-3 text-[14px] font-semibold text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500/80 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 shadow-2xs cursor-pointer"
     >
       {children}
     </select>
@@ -363,20 +364,24 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
         </Field>
 
         <Field label="Builder" required>
-          <Select value={form.builder_id} onChange={set('builder_id')}>
-            <option value="">Select builder…</option>
-            {builders.map((b) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </Select>
+          <CustomSelect
+            value={form.builder_id}
+            onChange={set('builder_id')}
+            placeholder="Select builder…"
+            options={builders.map((b) => ({ value: b.id, label: b.name }))}
+          />
         </Field>
 
         <Field label="Status" required>
-          <Select value={form.status} onChange={set('status')}>
-            <option value="ready_to_move">Ready to Move</option>
-            <option value="under_construction">Under Construction</option>
-            <option value="new_launch">New Launch</option>
-          </Select>
+          <CustomSelect
+            value={form.status}
+            onChange={set('status')}
+            options={[
+              { value: 'ready_to_move', label: 'Ready to Move', dotColor: 'bg-emerald-500' },
+              { value: 'under_construction', label: 'Under Construction', dotColor: 'bg-amber-500' },
+              { value: 'new_launch', label: 'New Launch', dotColor: 'bg-blue-500' },
+            ]}
+          />
         </Field>
 
         <Field label="Sector" required hint="e.g. Sector 150">

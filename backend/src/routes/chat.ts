@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { prisma } from '../lib/db'
 import { checkRateLimit, invalidateSessionList, getCached, setCached } from '../lib/cache'
 import { extractIntent } from '../lib/ai/intent'
+import { postProcessIntent } from '../lib/discovery/intentPostProcessor'
 import { hydrateIntentFromMemory, persistIntentToMemory, trackPropertyReaction } from '../lib/ai/sessionMemory'
 import { gradeResponseAsync } from '../lib/ai/responseGrader'
 import { IntentSchema, getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel, matchesProjectName } from '../lib/discovery'
@@ -110,7 +111,7 @@ function logRouting(
   console.log(`[ROUTING:${event}]`, detail)
 }
 
-async function generateDatabaseFallbackResponse(userMsg: string, projects: any[]): Promise<any> {
+async function generateDatabaseFallbackResponse(userMsg: string, projects: any[], sessionId?: string): Promise<any> {
   const queryLower = userMsg.toLowerCase()
   let p = projects.find((proj) => proj.name && queryLower.includes(proj.name.toLowerCase())) || projects[0] || null
 
@@ -237,8 +238,9 @@ async function generateDatabaseFallbackResponse(userMsg: string, projects: any[]
 
       const dynamicPaymentChips = (Array.isArray(p.payment_plans) ? p.payment_plans : []).map((pl: any, idx: number) => {
         const plName = pl.plan_name || pl.name || `Plan ${idx + 1}`
+        const planId = pl.id || pl.plan_name || pl.name || `plan_${idx}`
         return {
-          id: `chip_plan_${idx}_${Date.now()}`,
+          id: `chip_plan_${p.id}_${planId}`.replace(/[^a-z0-9_-]/gi, '_'),
           actionType: 'TEXT_MESSAGE' as const,
           label: plName,
           analyticsId: 'chip_plan_select',
@@ -248,7 +250,7 @@ async function generateDatabaseFallbackResponse(userMsg: string, projects: any[]
       })
 
       dynamicPaymentChips.push({
-        id: `chip_emi_${Date.now()}`,
+        id: `chip_emi_${p.id}`,
         actionType: 'TEXT_MESSAGE' as const,
         label: 'Calculate EMI',
         analyticsId: 'chip_emi',
@@ -257,7 +259,7 @@ async function generateDatabaseFallbackResponse(userMsg: string, projects: any[]
       })
 
       dynamicPaymentChips.push({
-        id: `chip_site_visit_${Date.now()}`,
+        id: `chip_site_visit_${p.id}`,
         actionType: 'TEXT_MESSAGE' as const,
         label: 'Schedule a Site Visit',
         analyticsId: 'chip_site_visit',
@@ -266,7 +268,9 @@ async function generateDatabaseFallbackResponse(userMsg: string, projects: any[]
       })
 
       const replyText = `### Verified Payment Plan Options for **${name}** (${sector})\n\n**Overall Project Price Range**: ${priceText}\n\n${plansText}`
-      return { message: replyText, chips: dynamicPaymentChips }
+      // Apply session-based deduplication before returning
+      const filteredChips = sessionId ? filterNewChips(sessionId, dynamicPaymentChips) : dynamicPaymentChips
+      return { message: replyText, chips: filteredChips }
     }
 
     // 2. Full Cost Sheet & Maintenance Breakdown
@@ -1009,6 +1013,26 @@ router.post('/', async (req: Request, res: Response) => {
     const isNewSession = !sessionId || !sessionData
     const currentSessionId = sessionId || randomUUID()
 
+    // Post-process intent: qualify sectors with cities, resolve project context
+    const previousProjectIds = (sessionData?.last_projects as string[]) ?? []
+    const postProcessed = await postProcessIntent(hydratedIntent, previousProjectIds, 'Noida')
+    hydratedIntent = postProcessed.intent
+    const projectContext = postProcessed.projectContext
+    const intentContextSwitched = postProcessed.contextSwitched
+
+    if (intentContextSwitched) {
+      console.log('[CHAT] Project context switched to:', projectContext?.projectName)
+    }
+
+    // Track current projects in session for next turn context detection
+    if (projectContext) {
+      const newProjectIds = [projectContext.projectId, ...previousProjectIds].slice(0, 5)
+      await prisma.chatSession.update({
+        where: { id: currentSessionId },
+        data: { last_projects: newProjectIds },
+      }).catch(e => console.warn('[CHAT] Failed to update last_projects:', e))
+    }
+
     intentDegraded = rawIntentResult.degraded
     const rawIntent = rawIntentResult.intent
 
@@ -1699,7 +1723,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
             where: { id: plan.projectIds[0] },
             include: { unit_types: true, payment_plans: true, amenities: true, cost_sheet: true },
           })
-          componentSummary = await generateDatabaseFallbackResponse(message, dbProject ? [dbProject] : [])
+          componentSummary = await generateDatabaseFallbackResponse(message, dbProject ? [dbProject] : [], currentSessionId)
         } catch {
           const topFacts = factsList.slice(0, 5).map(f => `${f.key}: ${f.value}`).join('. ')
           componentSummary = `### Project Details\n\n${topFacts}`

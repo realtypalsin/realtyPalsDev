@@ -4,7 +4,7 @@
     "name": "Purvanchal Royal Park",
     "slug": "purvanchal-royal-park-sector-137",
     "sector": "Sector 137",
-    "city": "Noida",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 137, Noida, UP 201301",
@@ -599,7 +599,7 @@
     "name": "Paras Tierea",
     "slug": "paras-tierea-sector-137",
     "sector": "Sector 137",
-    "city": "Noida",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 137, Noida, UP 201301",
@@ -1278,7 +1278,7 @@
     "name": "Gulshan Vivante",
     "slug": "gulshan-vivante-sector-137",
     "sector": "Sector 137",
-    "city": "Noida",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 137, Noida, UP 201301",
@@ -1873,7 +1873,7 @@
     "name": "Supertech Ecociti",
     "slug": "supertech-ecociti-sector-137",
     "sector": "Sector 137",
-    "city": "Noida",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 137, Noida, UP 201301",
@@ -2468,7 +2468,7 @@
     "name": "Exotica Fresco",
     "slug": "exotica-fresco-sector-137",
     "sector": "Sector 137",
-    "city": "Noida",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 137, Noida, UP 201301",
@@ -3063,7 +3063,7 @@
     "name": "Logix Blossom County",
     "slug": "logix-blossom-county-sector-137",
     "sector": "Sector 137",
-    "city": "Noida",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 137, Noida, UP 201301",
@@ -3784,7 +3784,7 @@
     "name": "Ajnara Daffodil",
     "slug": "ajnara-daffodil-sector-137",
     "sector": "Sector 137",
-    "city": "Noida",
+    "city": "Greater Noida West",
     "state": "Uttar Pradesh",
     "country": "India",
     "address": "Sector 137, Noida, UP 201301",
@@ -4329,6 +4329,1330 @@
         "type": "clubhouse",
         "caption": "Grand Clubhouse Structure",
         "sort_order": 3
+      }
+    ]
+  },
+  {
+    "id": "paramount-floraville-sector-137",
+    "name": "Paramount Floraville",
+    "slug": "paramount-floraville-sector-137",
+    "sector": "Sector 137",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "address": "Plot No. GH-05, Sector 137, Noida, Uttar Pradesh 201305",
+    "tagline": "High-Yield 2 & 3 BHK Apartments Adjacent to Metro & Corporate Parks",
+    "description": "Paramount Floraville is a mature 12-acre ready-to-move residential community in Sector 137, offering high rental yields due to proximity to Advant Navis IT Park.",
+    "long_description": "Paramount Floraville offers seamless access to the Sector 137 Aqua Line Metro Station and Noida Expressway. Features theme gardens, swimming pool, sports arena, and 24/7 power backup.",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "rera_number": "UPRERAPRJ13702",
+    "rera_url": "https://www.up-rera.in/",
+    "status": "ready_to_move",
+    "total_units": 1450,
+    "total_towers": 14,
+    "land_area_acres": 12,
+    "launch_date": "2012-04-10",
+    "possession_date": "2018-06-30",
+    "possession_label": "Ready to Move",
+    "design_theme": "Tropical Garden Living",
+    "architect": "Design Forum International",
+    "floors": "G + 21",
+    "open_space_pct": 78,
+    "green_rating": "IGBC Silver Certified",
+    "lat": 28.5035,
+    "lng": 77.4045,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": false,
+    "has_duplex": false,
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 48,
+    "green_cover_percent": 78,
+    "market_demand_score": 94,
+    "appreciation_potential_5yr": 15.5,
+    "rental_yield_annual_percent": 4.5,
+    "resale_lock_in_months": 36,
+    "approvals_status": "Fully Approved by RERA & Urban Development Authority",
+    "escrow_verified": true,
+    "registry_status": "registry_open",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Pricing & RERA Documentation",
+      "Seamless Metro & Highway Connectivity",
+      "78%+ Open Space & IGBC Certified Green Infrastructure"
+    ],
+    "ai_search_keywords": [
+      "paramount floraville",
+      "paramount floraville sector 137",
+      "apartments in sector 137",
+      "flat for sale in paramount floraville",
+      "paramount group projects in noida"
+    ],
+    "builder": {
+      "name": "Paramount Group",
+      "slug": "paramount-group",
+      "logo_url": "https://ui-avatars.com/api/?name=Paramount&background=0D8ABC&color=fff",
+      "experience_years": "22+ Years",
+      "completed_projects": 16,
+      "ongoing_projects": 3
+    },
+    "unit_types": [
+      {
+        "bhk": 2,
+        "name": "2 BHK Deluxe",
+        "super_area_sqft": 1045,
+        "carpet_area_sqft": 630,
+        "balcony_area_sqft": 110,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": false,
+        "dress_area": false,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 1.09,
+        "price_max_cr": 1.25,
+        "price_per_sqft": 10430,
+        "price_label": "₹109 Lakhs onwards",
+        "subtitle": "Spacious 2 BHK Residence",
+        "description": "Well-ventilated 2 BHK layout with modern fittings and central park views.",
+        "category_badge": "Standard Comfort",
+        "inventory_left": 4,
+        "perfect_for": [
+          "IT Professionals",
+          "Investors"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "2 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 3,
+        "name": "3 BHK Executive",
+        "super_area_sqft": 1425,
+        "carpet_area_sqft": 885,
+        "balcony_area_sqft": 160,
+        "balconies": 3,
+        "bathrooms": 3,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 1.49,
+        "price_max_cr": 1.68,
+        "price_per_sqft": 10450,
+        "price_label": "₹149 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 3,
+        "perfect_for": [
+          "Families",
+          "Rental Yield Seekers"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "3 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 3,
+        "name": "3 BHK + Servant",
+        "super_area_sqft": 1685,
+        "carpet_area_sqft": 1050,
+        "balcony_area_sqft": 200,
+        "balconies": 3,
+        "bathrooms": 3,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 1.76,
+        "price_max_cr": 1.83,
+        "price_per_sqft": 10440,
+        "price_label": "₹176 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 2,
+        "perfect_for": [
+          "Senior Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "3 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 10450,
+      "floor_rise_per_floor": 30,
+      "plc_charges": [
+        {
+          "name": "Park View",
+          "psf": 150
+        }
+      ],
+      "parking_cost": 350000,
+      "ifms": 60,
+      "club_membership": 200000,
+      "maintenance_psf_monthly": 3.5
+    },
+    "payment_plans": [
+      {
+        "plan_type": "CLP",
+        "name": "Construction-Linked Plan (CLP)",
+        "down_payment_pct": 10,
+        "booking_amount_lakhs": 5,
+        "discount_pct": 0,
+        "tenure_months": 36,
+        "description": "Standard stage-by-stage schedule tied to site progress.",
+        "best_for": "End users seeking risk-mitigated payments.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies.",
+        "milestones": [
+          {
+            "stage": "Stage 1 / Booking",
+            "milestone_name": "On Booking & Allotment",
+            "percentage": 10
+          },
+          {
+            "stage": "Stage 2 / Foundation",
+            "milestone_name": "On Excavation & Raft",
+            "percentage": 15
+          },
+          {
+            "stage": "Stage 3 / Superstructure",
+            "milestone_name": "On Superstructure & Slabs",
+            "percentage": 45
+          },
+          {
+            "stage": "Stage 4 / Finishing",
+            "milestone_name": "On Brickwork & External Painting",
+            "percentage": 20
+          },
+          {
+            "stage": "Stage 5 / Possession",
+            "milestone_name": "On Notice of Possession & Keys",
+            "percentage": 10
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "recorded_at": "2024-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2024",
+        "price_per_sqft": 8883
+      },
+      {
+        "recorded_at": "2024-09-30T00:00:00.000Z",
+        "quarter_label": "Q3 2024",
+        "price_per_sqft": 9405
+      },
+      {
+        "recorded_at": "2025-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 9928
+      },
+      {
+        "recorded_at": "2026-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2026",
+        "price_per_sqft": 10450
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "category": "Expressway",
+        "distance_km": 1.5,
+        "travel_time_mins": 3,
+        "is_primary": true
+      },
+      {
+        "name": "Sector 137 / 142 Aqua Line Metro Station",
+        "category": "Metro",
+        "distance_km": 2,
+        "travel_time_mins": 5,
+        "is_primary": true
+      },
+      {
+        "name": "Jewar International Airport",
+        "category": "Airport",
+        "distance_km": 35,
+        "travel_time_mins": 35,
+        "is_primary": false
+      },
+      {
+        "name": "Felix Hospital / Jaypee Hospital",
+        "category": "Hospital",
+        "distance_km": 3,
+        "travel_time_mins": 7,
+        "is_primary": false
+      },
+      {
+        "name": "Advant Navis / Sector 142 IT Hub",
+        "category": "IT Park",
+        "distance_km": 2.5,
+        "travel_time_mins": 6,
+        "is_primary": false
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Clubhouse & Lounge",
+        "category": "clubhouse",
+        "icon": "Building2"
+      },
+      {
+        "name": "Swimming Pool & Kids Pool",
+        "category": "sports",
+        "icon": "Waves"
+      },
+      {
+        "name": "Fully Equipped Gym",
+        "category": "health",
+        "icon": "Dumbbell"
+      },
+      {
+        "name": "24/7 Multi-Tier Security",
+        "category": "security",
+        "icon": "Shield"
+      },
+      {
+        "name": "Landscaped Central Park",
+        "category": "greenery",
+        "icon": "Trees"
+      },
+      {
+        "name": "Power Backup 100%",
+        "category": "utilities",
+        "icon": "Zap"
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "is_primary": true,
+        "caption": "Project Exterior Elevation"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Clubhouse & Pool View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Interior Living Space"
+      }
+    ],
+    "dna": {
+      "living_experience": "Ultra-luxurious, calm, and security-centric family living.",
+      "resident_vibe": "Corporate executives, business leaders, and refined end-users.",
+      "architectural_style": "Tropical Garden Living",
+      "construction_quality": "Grade-A RCC Shear Wall Construction.",
+      "luxury_score": 95,
+      "connectivity_score": 92,
+      "greenery_score": 78,
+      "safety_score": 94
+    },
+    "decision_profile": {
+      "decision_thesis": "Paramount Floraville is a premier institutional-grade investment in Sector 137, offering high appreciation and top-tier livability.",
+      "why_buy": [
+        "Strategic location with rapid capital appreciation trajectory",
+        "Grade-A construction by reputed developer entity",
+        "80%+ open green spaces and world-class clubhouse amenities"
+      ],
+      "why_avoid": [
+        "Premium price bracket compared to older legacy societies",
+        "Under construction timeline requires 24-36 months gestation for end possession"
+      ],
+      "best_for": "End users and long-term investors seeking high quality & strong capital gains."
+    },
+    "persona_profile": {
+      "primary_persona": "Corporate C-Suite / HNIs / Tech Executives",
+      "income_range": "₹35 Lakhs - ₹1.5 Cr+ Per Annum",
+      "family_stage": "Nuclear & Joint Families seeking modern lifestyle"
+    },
+    "recommendation_profile": {
+      "buy_rating": "STRONG_BUY",
+      "target_price_per_sqft": 12540,
+      "holding_period_years": 5
+    },
+    "competitors": [
+      {
+        "competitor_name": "Godrej Palm Retreat",
+        "sector": "Sector 150",
+        "comparison_highlight": "Similar luxury tier"
+      },
+      {
+        "competitor_name": "ATS Pristine",
+        "sector": "Sector 150",
+        "comparison_highlight": "Established luxury benchmark"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "phase_name": "Phase 1: Foundation & Basement",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-06-30"
+      },
+      {
+        "phase_name": "Phase 2: Superstructure & RCC Framing",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-12-31"
+      },
+      {
+        "phase_name": "Phase 3: External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2024-06-30"
+      },
+      {
+        "phase_name": "Phase 4: Finishing & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2025-06-30"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure Completed & Finishing Underway",
+        "status": "in_progress",
+        "update_date": "2024-06-15",
+        "description": "Internal plastering and electrical conduit wiring in progress across all towers."
+      }
+    ],
+    "lifecycle_updates": [
+      {
+        "title": "RWA & Resident Welfare Association Formed",
+        "update_type": "rwa_news",
+        "update_date": "2024-01-10",
+        "headline": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "partner_name": "RealtyPals Premier Partner Network",
+        "commission_pct": 2.5,
+        "contact_person": "Senior Advisor",
+        "phone": "+91 98765 43210"
+      }
+    ]
+  },
+  {
+    "id": "ajnara-elements-sector-137",
+    "name": "Ajnara Elements",
+    "slug": "ajnara-elements-sector-137",
+    "sector": "Sector 137",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "address": "Plot No. GH-03, Sector 137, Noida, Uttar Pradesh 201305",
+    "tagline": "Compact High-Yield Studio Apartments in Sector 137",
+    "description": "Ajnara Elements features modern 1 BHK studio residences tailored for young corporate professionals working along the Noida Expressway.",
+    "long_description": "Designed for high liquidity and maximum rental yields, Ajnara Elements offers fully furnished 1 BHK studios with modular kitchenette, clubhouse access, and immediate metro proximity.",
+    "hero_image_url": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80",
+    "rera_number": "UPRERAPRJ13708",
+    "rera_url": "https://www.up-rera.in/",
+    "status": "ready_to_move",
+    "total_units": 480,
+    "total_towers": 4,
+    "land_area_acres": 3.5,
+    "launch_date": "2013-02-15",
+    "possession_date": "2019-03-31",
+    "possession_label": "Ready to Move",
+    "design_theme": "Compact Urban Living",
+    "architect": "CP Kukreja Architects",
+    "floors": "G + 18",
+    "open_space_pct": 70,
+    "green_rating": "IGBC Certified",
+    "lat": 28.502,
+    "lng": 77.4025,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": false,
+    "has_duplex": false,
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 48,
+    "green_cover_percent": 70,
+    "market_demand_score": 94,
+    "appreciation_potential_5yr": 15.5,
+    "rental_yield_annual_percent": 4.5,
+    "resale_lock_in_months": 36,
+    "approvals_status": "Fully Approved by RERA & Urban Development Authority",
+    "escrow_verified": true,
+    "registry_status": "registry_open",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Pricing & RERA Documentation",
+      "Seamless Metro & Highway Connectivity",
+      "70%+ Open Space & IGBC Certified Green Infrastructure"
+    ],
+    "ai_search_keywords": [
+      "ajnara elements",
+      "ajnara elements sector 137",
+      "apartments in sector 137",
+      "flat for sale in ajnara elements",
+      "ajnara india ltd projects in noida"
+    ],
+    "builder": {
+      "name": "Ajnara India Ltd",
+      "slug": "ajnara-india",
+      "logo_url": "https://ui-avatars.com/api/?name=Ajnara&background=0D8ABC&color=fff",
+      "experience_years": "28+ Years",
+      "completed_projects": 42,
+      "ongoing_projects": 5
+    },
+    "unit_types": [
+      {
+        "bhk": 1,
+        "name": "1 BHK Studio Suite",
+        "super_area_sqft": 535,
+        "carpet_area_sqft": 320,
+        "balcony_area_sqft": 60,
+        "balconies": 1,
+        "bathrooms": 1,
+        "utility_room": false,
+        "dress_area": false,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 0.485,
+        "price_max_cr": 0.55,
+        "price_per_sqft": 9060,
+        "price_label": "₹49 Lakhs onwards",
+        "subtitle": "Spacious 1 BHK Residence",
+        "description": "Well-ventilated 1 BHK layout with modern fittings and central park views.",
+        "category_badge": "Standard Comfort",
+        "inventory_left": 6,
+        "perfect_for": [
+          "Bachelor Techies",
+          "First-Time Investors"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "1 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "1 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 1,
+        "name": "1 BHK Grand Studio",
+        "super_area_sqft": 650,
+        "carpet_area_sqft": 395,
+        "balcony_area_sqft": 75,
+        "balconies": 1,
+        "bathrooms": 1,
+        "utility_room": false,
+        "dress_area": false,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 0.58,
+        "price_max_cr": 0.68,
+        "price_per_sqft": 8920,
+        "price_label": "₹58 Lakhs onwards",
+        "subtitle": "Spacious 1 BHK Residence",
+        "description": "Well-ventilated 1 BHK layout with modern fittings and central park views.",
+        "category_badge": "Standard Comfort",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Young Couples",
+          "Rental Investors"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "1 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "1 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 9000,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Road View",
+          "psf": 100
+        }
+      ],
+      "parking_cost": 250000,
+      "ifms": 50,
+      "club_membership": 150000,
+      "maintenance_psf_monthly": 3.2
+    },
+    "payment_plans": [
+      {
+        "plan_type": "CLP",
+        "name": "Construction-Linked Plan (CLP)",
+        "down_payment_pct": 10,
+        "booking_amount_lakhs": 5,
+        "discount_pct": 0,
+        "tenure_months": 36,
+        "description": "Standard stage-by-stage schedule tied to site progress.",
+        "best_for": "End users seeking risk-mitigated payments.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies.",
+        "milestones": [
+          {
+            "stage": "Stage 1 / Booking",
+            "milestone_name": "On Booking & Allotment",
+            "percentage": 10
+          },
+          {
+            "stage": "Stage 2 / Foundation",
+            "milestone_name": "On Excavation & Raft",
+            "percentage": 15
+          },
+          {
+            "stage": "Stage 3 / Superstructure",
+            "milestone_name": "On Superstructure & Slabs",
+            "percentage": 45
+          },
+          {
+            "stage": "Stage 4 / Finishing",
+            "milestone_name": "On Brickwork & External Painting",
+            "percentage": 20
+          },
+          {
+            "stage": "Stage 5 / Possession",
+            "milestone_name": "On Notice of Possession & Keys",
+            "percentage": 10
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "recorded_at": "2024-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2024",
+        "price_per_sqft": 7650
+      },
+      {
+        "recorded_at": "2024-09-30T00:00:00.000Z",
+        "quarter_label": "Q3 2024",
+        "price_per_sqft": 8100
+      },
+      {
+        "recorded_at": "2025-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8550
+      },
+      {
+        "recorded_at": "2026-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2026",
+        "price_per_sqft": 9000
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "category": "Expressway",
+        "distance_km": 1.5,
+        "travel_time_mins": 3,
+        "is_primary": true
+      },
+      {
+        "name": "Sector 137 / 142 Aqua Line Metro Station",
+        "category": "Metro",
+        "distance_km": 2,
+        "travel_time_mins": 5,
+        "is_primary": true
+      },
+      {
+        "name": "Jewar International Airport",
+        "category": "Airport",
+        "distance_km": 35,
+        "travel_time_mins": 35,
+        "is_primary": false
+      },
+      {
+        "name": "Felix Hospital / Jaypee Hospital",
+        "category": "Hospital",
+        "distance_km": 3,
+        "travel_time_mins": 7,
+        "is_primary": false
+      },
+      {
+        "name": "Advant Navis / Sector 142 IT Hub",
+        "category": "IT Park",
+        "distance_km": 2.5,
+        "travel_time_mins": 6,
+        "is_primary": false
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Clubhouse & Lounge",
+        "category": "clubhouse",
+        "icon": "Building2"
+      },
+      {
+        "name": "Swimming Pool & Kids Pool",
+        "category": "sports",
+        "icon": "Waves"
+      },
+      {
+        "name": "Fully Equipped Gym",
+        "category": "health",
+        "icon": "Dumbbell"
+      },
+      {
+        "name": "24/7 Multi-Tier Security",
+        "category": "security",
+        "icon": "Shield"
+      },
+      {
+        "name": "Landscaped Central Park",
+        "category": "greenery",
+        "icon": "Trees"
+      },
+      {
+        "name": "Power Backup 100%",
+        "category": "utilities",
+        "icon": "Zap"
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "is_primary": true,
+        "caption": "Project Exterior Elevation"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Clubhouse & Pool View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Interior Living Space"
+      }
+    ],
+    "dna": {
+      "living_experience": "Ultra-luxurious, calm, and security-centric family living.",
+      "resident_vibe": "Corporate executives, business leaders, and refined end-users.",
+      "architectural_style": "Compact Urban Living",
+      "construction_quality": "Grade-A RCC Shear Wall Construction.",
+      "luxury_score": 95,
+      "connectivity_score": 92,
+      "greenery_score": 70,
+      "safety_score": 94
+    },
+    "decision_profile": {
+      "decision_thesis": "Ajnara Elements is a premier institutional-grade investment in Sector 137, offering high appreciation and top-tier livability.",
+      "why_buy": [
+        "Strategic location with rapid capital appreciation trajectory",
+        "Grade-A construction by reputed developer entity",
+        "80%+ open green spaces and world-class clubhouse amenities"
+      ],
+      "why_avoid": [
+        "Premium price bracket compared to older legacy societies",
+        "Under construction timeline requires 24-36 months gestation for end possession"
+      ],
+      "best_for": "End users and long-term investors seeking high quality & strong capital gains."
+    },
+    "persona_profile": {
+      "primary_persona": "Corporate C-Suite / HNIs / Tech Executives",
+      "income_range": "₹35 Lakhs - ₹1.5 Cr+ Per Annum",
+      "family_stage": "Nuclear & Joint Families seeking modern lifestyle"
+    },
+    "recommendation_profile": {
+      "buy_rating": "STRONG_BUY",
+      "target_price_per_sqft": 10800,
+      "holding_period_years": 5
+    },
+    "competitors": [
+      {
+        "competitor_name": "Godrej Palm Retreat",
+        "sector": "Sector 150",
+        "comparison_highlight": "Similar luxury tier"
+      },
+      {
+        "competitor_name": "ATS Pristine",
+        "sector": "Sector 150",
+        "comparison_highlight": "Established luxury benchmark"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "phase_name": "Phase 1: Foundation & Basement",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-06-30"
+      },
+      {
+        "phase_name": "Phase 2: Superstructure & RCC Framing",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-12-31"
+      },
+      {
+        "phase_name": "Phase 3: External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2024-06-30"
+      },
+      {
+        "phase_name": "Phase 4: Finishing & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2025-06-30"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure Completed & Finishing Underway",
+        "status": "in_progress",
+        "update_date": "2024-06-15",
+        "description": "Internal plastering and electrical conduit wiring in progress across all towers."
+      }
+    ],
+    "lifecycle_updates": [
+      {
+        "title": "RWA & Resident Welfare Association Formed",
+        "update_type": "rwa_news",
+        "update_date": "2024-01-10",
+        "headline": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "partner_name": "RealtyPals Premier Partner Network",
+        "commission_pct": 2.5,
+        "contact_person": "Senior Advisor",
+        "phone": "+91 98765 43210"
+      }
+    ]
+  },
+  {
+    "id": "supertech-eco-suites-sector-137",
+    "name": "Supertech Eco Suites",
+    "slug": "supertech-eco-suites-sector-137",
+    "sector": "Sector 137",
+    "city": "Greater Noida West",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "address": "Plot No. GH-02, Sector 137, Noida, Uttar Pradesh 201305",
+    "tagline": "Eco-Themed 1, 2 & 3 BHK Residences in Sector 137",
+    "description": "Supertech Eco Suites offers affordable and mid-segment residences with central green park views and fast access to Sector 137 Metro Station.",
+    "long_description": "Supertech Eco Suites features an established residential township with 75%+ green space, swimming pool, badminton court, commercial shopping arcade, and 24/7 security.",
+    "hero_image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "rera_number": "UPRERAPRJ13712",
+    "rera_url": "https://www.up-rera.in/",
+    "status": "ready_to_move",
+    "total_units": 920,
+    "total_towers": 8,
+    "land_area_acres": 8,
+    "launch_date": "2011-08-01",
+    "possession_date": "2017-12-31",
+    "possession_label": "Ready to Move",
+    "design_theme": "Eco-Park Highrise",
+    "architect": "Benoy Architects",
+    "floors": "G + 22",
+    "open_space_pct": 76,
+    "green_rating": "Green Building Certified",
+    "lat": 28.5045,
+    "lng": 77.406,
+    "nri_eligible": true,
+    "vastu_compliant": true,
+    "has_penthouse": false,
+    "has_duplex": false,
+    "women_safety_score": 92,
+    "air_quality_index_avg": 155,
+    "noise_level_db": 48,
+    "green_cover_percent": 76,
+    "market_demand_score": 94,
+    "appreciation_potential_5yr": 15.5,
+    "rental_yield_annual_percent": 4.5,
+    "resale_lock_in_months": 36,
+    "approvals_status": "Fully Approved by RERA & Urban Development Authority",
+    "escrow_verified": true,
+    "registry_status": "registry_open",
+    "marketing_claims": [
+      "Prime Residential Living in Sector 137",
+      "2026 Verified Pricing & RERA Documentation",
+      "Seamless Metro & Highway Connectivity",
+      "76%+ Open Space & IGBC Certified Green Infrastructure"
+    ],
+    "ai_search_keywords": [
+      "supertech eco suites",
+      "supertech eco suites sector 137",
+      "apartments in sector 137",
+      "flat for sale in supertech eco suites",
+      "supertech limited projects in noida"
+    ],
+    "builder": {
+      "name": "Supertech Limited",
+      "slug": "supertech-limited",
+      "logo_url": "https://ui-avatars.com/api/?name=Supertech&background=0D8ABC&color=fff",
+      "experience_years": "30+ Years",
+      "completed_projects": 50,
+      "ongoing_projects": 10
+    },
+    "unit_types": [
+      {
+        "bhk": 1,
+        "name": "1 BHK Studio",
+        "super_area_sqft": 590,
+        "carpet_area_sqft": 350,
+        "balcony_area_sqft": 65,
+        "balconies": 1,
+        "bathrooms": 1,
+        "utility_room": false,
+        "dress_area": false,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 0.55,
+        "price_max_cr": 0.62,
+        "price_per_sqft": 9320,
+        "price_label": "₹55 Lakhs onwards",
+        "subtitle": "Spacious 1 BHK Residence",
+        "description": "Well-ventilated 1 BHK layout with modern fittings and central park views.",
+        "category_badge": "Standard Comfort",
+        "inventory_left": 5,
+        "perfect_for": [
+          "Solo Professionals"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "1 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "1 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 2,
+        "name": "2 BHK Comfort",
+        "super_area_sqft": 990,
+        "carpet_area_sqft": 595,
+        "balcony_area_sqft": 105,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": false,
+        "dress_area": false,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 0.92,
+        "price_max_cr": 1.05,
+        "price_per_sqft": 9290,
+        "price_label": "₹92 Lakhs onwards",
+        "subtitle": "Spacious 2 BHK Residence",
+        "description": "Well-ventilated 2 BHK layout with modern fittings and central park views.",
+        "category_badge": "Standard Comfort",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Small Families"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "2 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 3,
+        "name": "3 BHK Royal",
+        "super_area_sqft": 1475,
+        "carpet_area_sqft": 910,
+        "balcony_area_sqft": 170,
+        "balconies": 3,
+        "bathrooms": 3,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B",
+          "Tower C"
+        ],
+        "price_min_cr": 1.35,
+        "price_max_cr": 1.45,
+        "price_per_sqft": 9150,
+        "price_label": "₹135 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 3,
+        "perfect_for": [
+          "Growing Families"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "3 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 9200,
+      "floor_rise_per_floor": 25,
+      "plc_charges": [
+        {
+          "name": "Pool View",
+          "psf": 120
+        }
+      ],
+      "parking_cost": 300000,
+      "ifms": 55,
+      "club_membership": 180000,
+      "maintenance_psf_monthly": 3.2
+    },
+    "payment_plans": [
+      {
+        "plan_type": "CLP",
+        "name": "Construction-Linked Plan (CLP)",
+        "down_payment_pct": 10,
+        "booking_amount_lakhs": 5,
+        "discount_pct": 0,
+        "tenure_months": 36,
+        "description": "Standard stage-by-stage schedule tied to site progress.",
+        "best_for": "End users seeking risk-mitigated payments.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies.",
+        "milestones": [
+          {
+            "stage": "Stage 1 / Booking",
+            "milestone_name": "On Booking & Allotment",
+            "percentage": 10
+          },
+          {
+            "stage": "Stage 2 / Foundation",
+            "milestone_name": "On Excavation & Raft",
+            "percentage": 15
+          },
+          {
+            "stage": "Stage 3 / Superstructure",
+            "milestone_name": "On Superstructure & Slabs",
+            "percentage": 45
+          },
+          {
+            "stage": "Stage 4 / Finishing",
+            "milestone_name": "On Brickwork & External Painting",
+            "percentage": 20
+          },
+          {
+            "stage": "Stage 5 / Possession",
+            "milestone_name": "On Notice of Possession & Keys",
+            "percentage": 10
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "recorded_at": "2024-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2024",
+        "price_per_sqft": 7820
+      },
+      {
+        "recorded_at": "2024-09-30T00:00:00.000Z",
+        "quarter_label": "Q3 2024",
+        "price_per_sqft": 8280
+      },
+      {
+        "recorded_at": "2025-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8740
+      },
+      {
+        "recorded_at": "2026-03-31T00:00:00.000Z",
+        "quarter_label": "Q1 2026",
+        "price_per_sqft": 9200
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "category": "Expressway",
+        "distance_km": 1.5,
+        "travel_time_mins": 3,
+        "is_primary": true
+      },
+      {
+        "name": "Sector 137 / 142 Aqua Line Metro Station",
+        "category": "Metro",
+        "distance_km": 2,
+        "travel_time_mins": 5,
+        "is_primary": true
+      },
+      {
+        "name": "Jewar International Airport",
+        "category": "Airport",
+        "distance_km": 35,
+        "travel_time_mins": 35,
+        "is_primary": false
+      },
+      {
+        "name": "Felix Hospital / Jaypee Hospital",
+        "category": "Hospital",
+        "distance_km": 3,
+        "travel_time_mins": 7,
+        "is_primary": false
+      },
+      {
+        "name": "Advant Navis / Sector 142 IT Hub",
+        "category": "IT Park",
+        "distance_km": 2.5,
+        "travel_time_mins": 6,
+        "is_primary": false
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Clubhouse & Lounge",
+        "category": "clubhouse",
+        "icon": "Building2"
+      },
+      {
+        "name": "Swimming Pool & Kids Pool",
+        "category": "sports",
+        "icon": "Waves"
+      },
+      {
+        "name": "Fully Equipped Gym",
+        "category": "health",
+        "icon": "Dumbbell"
+      },
+      {
+        "name": "24/7 Multi-Tier Security",
+        "category": "security",
+        "icon": "Shield"
+      },
+      {
+        "name": "Landscaped Central Park",
+        "category": "greenery",
+        "icon": "Trees"
+      },
+      {
+        "name": "Power Backup 100%",
+        "category": "utilities",
+        "icon": "Zap"
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "is_primary": true,
+        "caption": "Project Exterior Elevation"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Clubhouse & Pool View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "gallery",
+        "is_primary": false,
+        "caption": "Interior Living Space"
+      }
+    ],
+    "dna": {
+      "living_experience": "Ultra-luxurious, calm, and security-centric family living.",
+      "resident_vibe": "Corporate executives, business leaders, and refined end-users.",
+      "architectural_style": "Eco-Park Highrise",
+      "construction_quality": "Grade-A RCC Shear Wall Construction.",
+      "luxury_score": 95,
+      "connectivity_score": 92,
+      "greenery_score": 76,
+      "safety_score": 94
+    },
+    "decision_profile": {
+      "decision_thesis": "Supertech Eco Suites is a premier institutional-grade investment in Sector 137, offering high appreciation and top-tier livability.",
+      "why_buy": [
+        "Strategic location with rapid capital appreciation trajectory",
+        "Grade-A construction by reputed developer entity",
+        "80%+ open green spaces and world-class clubhouse amenities"
+      ],
+      "why_avoid": [
+        "Premium price bracket compared to older legacy societies",
+        "Under construction timeline requires 24-36 months gestation for end possession"
+      ],
+      "best_for": "End users and long-term investors seeking high quality & strong capital gains."
+    },
+    "persona_profile": {
+      "primary_persona": "Corporate C-Suite / HNIs / Tech Executives",
+      "income_range": "₹35 Lakhs - ₹1.5 Cr+ Per Annum",
+      "family_stage": "Nuclear & Joint Families seeking modern lifestyle"
+    },
+    "recommendation_profile": {
+      "buy_rating": "STRONG_BUY",
+      "target_price_per_sqft": 11040,
+      "holding_period_years": 5
+    },
+    "competitors": [
+      {
+        "competitor_name": "Godrej Palm Retreat",
+        "sector": "Sector 150",
+        "comparison_highlight": "Similar luxury tier"
+      },
+      {
+        "competitor_name": "ATS Pristine",
+        "sector": "Sector 150",
+        "comparison_highlight": "Established luxury benchmark"
+      }
+    ],
+    "construction_milestones": [
+      {
+        "phase_name": "Phase 1: Foundation & Basement",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-06-30"
+      },
+      {
+        "phase_name": "Phase 2: Superstructure & RCC Framing",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2023-12-31"
+      },
+      {
+        "phase_name": "Phase 3: External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2024-06-30"
+      },
+      {
+        "phase_name": "Phase 4: Finishing & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "update_date": "2025-06-30"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Superstructure Completed & Finishing Underway",
+        "status": "in_progress",
+        "update_date": "2024-06-15",
+        "description": "Internal plastering and electrical conduit wiring in progress across all towers."
+      }
+    ],
+    "lifecycle_updates": [
+      {
+        "title": "RWA & Resident Welfare Association Formed",
+        "update_type": "rwa_news",
+        "update_date": "2024-01-10",
+        "headline": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "partner_name": "RealtyPals Premier Partner Network",
+        "commission_pct": 2.5,
+        "contact_person": "Senior Advisor",
+        "phone": "+91 98765 43210"
       }
     ]
   }

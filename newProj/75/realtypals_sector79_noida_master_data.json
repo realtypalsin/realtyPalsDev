@@ -32,7 +32,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.8,
-    "price_range_label": "₹99 Lakh - ₹1.95 Cr (2026 Rate)",
+    "price_range_label": "₹99 Lakh - ₹1.95 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -716,7 +716,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 1.62,
-    "price_range_label": "₹162 Lakh - ₹3.47 Cr (2026 Rate)",
+    "price_range_label": "₹162 Lakh - ₹3.47 Cr",
     "architect": "Unknown",
     "marketing_claims": [
       "Part of 100-Acre Sports City"
@@ -1311,7 +1311,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.31,
-    "price_range_label": "₹131 Lakh - ₹1.85 Cr (2026 Rate)",
+    "price_range_label": "₹131 Lakh - ₹1.85 Cr",
     "architect": "Urbtech Appointed Design Partners",
     "marketing_claims": [
       "Highly competitive entry-level pricing",
@@ -1911,7 +1911,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.8,
-    "price_range_label": "₹99 Lakh - ₹1.95 Cr (2026 Rate)",
+    "price_range_label": "₹99 Lakh - ₹1.95 Cr",
     "architect": "Biswas & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -2595,7 +2595,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1,
-    "price_range_label": "₹100 Lakh - ₹1.96 Cr (2026 Rate)",
+    "price_range_label": "₹1 Cr - ₹1.96 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -2644,7 +2644,7 @@
         "price_min_cr": 1,
         "price_max_cr": 1.08,
         "price_per_sqft": 10000,
-        "price_label": "₹100 Lakhs onwards",
+        "price_label": "₹1 Cr onwards",
         "subtitle": "Spacious 2 BHK Residence",
         "description": "Well-ventilated 2 BHK layout with modern fittings and central park views.",
         "category_badge": "Standard Comfort",
@@ -3279,7 +3279,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 0.99,
-    "price_range_label": "₹99 Lakh - ₹1.94 Cr (2026 Rate)",
+    "price_range_label": "₹99 Lakh - ₹1.94 Cr",
     "architect": "Creative Group Architects",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -3963,7 +3963,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 2.18,
-    "price_range_label": "₹120 Lakh - ₹2.36 Cr (2026 Rate)",
+    "price_range_label": "₹120 Lakh - ₹2.36 Cr",
     "architect": "Hafeez Contractor",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -4647,7 +4647,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.01,
-    "price_range_label": "₹101 Lakh - ₹1.98 Cr (2026 Rate)",
+    "price_range_label": "₹101 Lakh - ₹1.98 Cr",
     "architect": "Hafeez Contractor",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -5331,7 +5331,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.17,
-    "price_range_label": "₹98 Lakh - ₹1.93 Cr (2026 Rate)",
+    "price_range_label": "₹98 Lakh - ₹1.93 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -6015,7 +6015,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 0.98,
-    "price_range_label": "₹98 Lakh - ₹1.92 Cr (2026 Rate)",
+    "price_range_label": "₹98 Lakh - ₹1.92 Cr",
     "architect": "Hafeez Contractor",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -6699,7 +6699,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1,
-    "price_range_label": "₹100 Lakh - ₹1.97 Cr (2026 Rate)",
+    "price_range_label": "₹1 Cr - ₹1.97 Cr",
     "architect": "Creative Group Architects",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -6748,7 +6748,7 @@
         "price_min_cr": 1,
         "price_max_cr": 1.08,
         "price_per_sqft": 10000,
-        "price_label": "₹100 Lakhs onwards",
+        "price_label": "₹1 Cr onwards",
         "subtitle": "Spacious 2 BHK Residence",
         "description": "Well-ventilated 2 BHK layout with modern fittings and central park views.",
         "category_badge": "Standard Comfort",
@@ -7383,7 +7383,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 0.95,
-    "price_range_label": "₹95 Lakh - ₹1.86 Cr (2026 Rate)",
+    "price_range_label": "₹95 Lakh - ₹1.86 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -8067,7 +8067,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.63,
-    "price_range_label": "₹108 Lakh - ₹2.12 Cr (2026 Rate)",
+    "price_range_label": "₹108 Lakh - ₹2.12 Cr",
     "architect": "Hafeez Contractor",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -8751,7 +8751,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.27,
-    "price_range_label": "₹107 Lakh - ₹2.10 Cr (2026 Rate)",
+    "price_range_label": "₹107 Lakh - ₹2.10 Cr",
     "architect": "Hafeez Contractor",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -9435,7 +9435,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.78,
-    "price_range_label": "₹98 Lakh - ₹1.92 Cr (2026 Rate)",
+    "price_range_label": "₹98 Lakh - ₹1.92 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -10119,7 +10119,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": true,
     "price_min_cr": 1.52,
-    "price_range_label": "₹101 Lakh - ₹1.98 Cr (2026 Rate)",
+    "price_range_label": "₹101 Lakh - ₹1.98 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",
@@ -10803,7 +10803,7 @@
     "possession_confidence": "delivered",
     "oc_obtained": false,
     "price_min_cr": 1.15,
-    "price_range_label": "₹97 Lakh - ₹1.90 Cr (2026 Rate)",
+    "price_range_label": "₹97 Lakh - ₹1.90 Cr",
     "architect": "Gian P. Mathur & Associates",
     "marketing_claims": [
       "Prime Residential Living in Sector 79",

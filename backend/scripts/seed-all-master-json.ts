@@ -169,10 +169,10 @@ async function seedAllMasterFiles() {
               gst_rate_pct: proj.cost_sheet.gst_rate_pct || 0,
               stamp_duty_pct: proj.cost_sheet.stamp_duty_pct || 7,
               registration_pct: proj.cost_sheet.registration_pct || 1,
-              assumptions: proj.cost_sheet.assumptions || null,
+              assumptions: proj.cost_sheet.assumptions || [],
             },
             create: {
-              project_id: project.id,
+              project: { connect: { id: project.id } },
               base_price_per_sqft: proj.cost_sheet.base_price_per_sqft || null,
               floor_rise_per_floor: proj.cost_sheet.floor_rise_per_floor || null,
               plc_charges: proj.cost_sheet.plc_charges || null,
@@ -182,7 +182,7 @@ async function seedAllMasterFiles() {
               gst_rate_pct: proj.cost_sheet.gst_rate_pct || 0,
               stamp_duty_pct: proj.cost_sheet.stamp_duty_pct || 7,
               registration_pct: proj.cost_sheet.registration_pct || 1,
-              assumptions: proj.cost_sheet.assumptions || null,
+              assumptions: proj.cost_sheet.assumptions || [],
             },
           });
         }

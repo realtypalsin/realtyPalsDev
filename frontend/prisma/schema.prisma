@@ -260,6 +260,7 @@ model Project {
   unit_inventory           UnitInventory[]
   channel_partners         ProjectChannelPartner[]
   chat_sessions            ChatSession[]          @relation("ProjectFocusedChats")
+  spec_items               ProjectSpecItem[]
 
   @@index([city, sector])
   @@index([status])
@@ -476,6 +477,7 @@ model UnitType {
   efficiency_rating      String?  @default("Excellent")
   project            Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
   unit_inventory     UnitInventory[]
+  spec_items         ProjectSpecItem[]
 
   @@index([project_id, bhk])
   @@index([project_id, price_min_cr, price_max_cr])
@@ -838,6 +840,37 @@ model LeadObjection {
   @@index([project_slug])
   @@index([reason_category])
   @@map("lead_objections")
+}
+
+model ProjectSpecItem {
+  id           String    @id @default(uuid())
+  project_id   String
+  unit_type_id String?
+
+  category     String
+  label        String
+  value        String
+  brand        String?
+  tier         String?    // standard | premium | luxury
+
+  source       DataSource @default(brochure)
+  verified_at  DateTime?
+  verified_by  String?
+
+  is_highlight Boolean   @default(false)
+  sort_order   Int       @default(0)
+  notes        String?
+
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  project      Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  unit_type    UnitType? @relation(fields: [unit_type_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, category])
+  @@index([project_id, is_highlight])
+  @@index([brand])
+  @@map("project_spec_items")
 }
 
 model PriceAlert {

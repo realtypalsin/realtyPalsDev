@@ -37,3 +37,28 @@ export function formatBudget(value: number): string {
 export function formatPriceInrCompact(price: number): string {
   return formatPriceCr(price);
 }
+
+/**
+ * Sanitize raw price label strings:
+ * - Converts "100 Lakh" / "100 Lakhs" to "₹1 Cr", etc.
+ * - Strips off parenthetical year rate annotations such as "(2026 Rate)", "(2020 Rate)", "(Market Rate)", "Rate".
+ */
+export function sanitizePriceLabel(label: string | null | undefined): string {
+  if (!label) return 'Price on Request'
+  let sanitized = label
+    .replace(/\s*\((?:19|20)\d\d\s*[^)]*\)/gi, '')
+    .replace(/\s*\([^)]*Rate[^)]*\)/gi, '')
+    .replace(/\s*Rate\b/gi, '')
+    .replace(/(?:₹\s*)?(\d+(?:\.\d+)?)\s*Lakhs?/gi, (match, val) => {
+      const num = parseFloat(val)
+      if (num >= 100) {
+        const cr = num / 100
+        const formattedCr = cr % 1 === 0 ? cr.toFixed(0) : cr.toFixed(2).replace(/\.00$/, '')
+        return `₹${formattedCr} Cr`
+      }
+      return `₹${num} Lakh`
+    })
+
+  return sanitized.replace(/₹\s*₹/g, '₹').replace(/\s+/g, ' ').trim()
+}
+
