@@ -1,16 +1,21 @@
 // backend/src/lib/discovery/sectors.ts
 import { prisma } from '../db'
 import { SectorContext, SectorOverview } from './types'
+import { getSectorLocation } from './sectorToCity'
 import { SECTORS_OVERVIEW_MAX, SECTOR_ADJACENCY } from './constants'
 
-export async function getSectorContext(sector: string, city: string = 'Noida'): Promise<SectorContext | null> {
-  // Exact match — `contains` would return "Sector 107" projects for a "Sector 10" query.
-  // Multi-city support: filter by both city AND sector (for future expansion)
+export async function getSectorContext(rawSector: string, city?: string): Promise<SectorContext | null> {
+  const cleanSector = rawSector.replace(/,\s*(greater noida west|greater noida|noida extension|noida|up|uttar pradesh)$/i, '').replace(/^[,\s]+|[,\s]+$/g, '').trim()
+  const loc = getSectorLocation(cleanSector)
+  const targetCity = loc ? loc.city : (city || undefined)
+
+  const where: any = { sector: { equals: cleanSector, mode: 'insensitive' } }
+  if (targetCity) {
+    where.city = { equals: targetCity, mode: 'insensitive' }
+  }
+
   const projects = await prisma.project.findMany({
-    where: {
-      sector: { equals: sector, mode: 'insensitive' },
-      city: { equals: city, mode: 'insensitive' },
-    },
+    where,
     include: {
       unit_types: { select: { price_min_cr: true, price_max_cr: true } },
       connectivity: { select: { type: true, name: true, distance_km: true } },
@@ -53,7 +58,7 @@ export async function getSectorContext(sector: string, city: string = 'Noida'): 
   ].slice(0, 4)
 
   return {
-    sector,
+    sector: cleanSector,
     projectCount: projects.length,
     priceMinCr,
     priceMaxCr,

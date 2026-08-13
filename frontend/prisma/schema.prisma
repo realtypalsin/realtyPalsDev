@@ -794,6 +794,7 @@ model CallbackRequest {
   user_id      String?
   guest_token  String?
   status       String   @default("new")
+  source_session String?
 
   // Lead qualification — written by backend/src/routes/leads.ts on callback create.
   lead_score        Float?
@@ -806,13 +807,37 @@ model CallbackRequest {
   projects_viewed   Int?     @default(0)
   budget_min_cr     Float?
   budget_max_cr     Float?
+  source_intent     Json?
 
   created_at   DateTime @default(now())
+
+  objections LeadObjection[]
 
   @@index([project_slug])
   @@index([lead_tier])
   @@index([created_at])
   @@map("callback_requests")
+}
+
+model LeadObjection {
+  id                       String    @id @default(uuid())
+  callback_request_id      String
+  project_slug             String
+  project_name             String?
+  reason_category          String
+  reason_text              String
+  confidence_score         Float?
+  extracted_from_message_id String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  callbackRequest CallbackRequest @relation(fields: [callback_request_id], references: [id], onDelete: Cascade)
+
+  @@index([callback_request_id])
+  @@index([project_slug])
+  @@index([reason_category])
+  @@map("lead_objections")
 }
 
 model PriceAlert {
