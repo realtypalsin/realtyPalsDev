@@ -93,12 +93,19 @@ router.get('/callbacks', requireAdmin, async (req: Request, res: Response) => {
       where.status = status as string
     }
 
+    const limitNum = parseInt(limit as string) || 50
+    const offsetNum = parseInt(offset as string) || 0
+    if (isNaN(limitNum) || isNaN(offsetNum) || limitNum < 1 || offsetNum < 0) {
+      res.status(400).json({ error: 'Invalid limit or offset parameters' })
+      return
+    }
+
     const [callbacks, total] = await Promise.all([
       prisma.callbackRequest.findMany({
         where,
         orderBy: { created_at: 'desc' },
-        take: parseInt(limit as string),
-        skip: parseInt(offset as string),
+        take: limitNum,
+        skip: offsetNum,
       }),
       prisma.callbackRequest.count({ where }),
     ])
@@ -106,8 +113,8 @@ router.get('/callbacks', requireAdmin, async (req: Request, res: Response) => {
     res.json({
       callbacks,
       total,
-      limit: parseInt(limit as string),
-      offset: parseInt(offset as string),
+      limit: limitNum,
+      offset: offsetNum,
     })
   } catch (err) {
     console.error('[admin] callbacks query failed:', err)
@@ -224,7 +231,7 @@ router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
       } catch (err) {
         if (retries < maxRetries) {
           console.warn(`[admin] projects query retry ${retries + 1}/${maxRetries}:`, err instanceof Error ? err.message : err)
-          await new Promise(r => setTimeout(r, backoffMs[retries]))
+          await new Promise(r => setTimeout(r, backoffMs[Math.min(retries, backoffMs.length - 1)]))
           retries++
         } else {
           console.error('[admin] projects query failed after all retries:', err instanceof Error ? err.message : err)
@@ -280,7 +287,7 @@ router.post('/projects', requireAdmin, async (req: Request, res: Response) => {
       },
     })
 
-    res.status(201).json({ project, ...project })
+    res.status(201).json({ project })
   } catch (err) {
     console.error('[admin] project create failed:', err)
     res.status(500).json({ error: 'Failed to create project' })
@@ -418,6 +425,9 @@ router.patch('/projects/:id', requireAdmin, async (req: Request, res: Response) 
 
     if (validFields.possession_date) {
       validFields.possession_date = new Date(validFields.possession_date)
+    }
+    if (validFields.launch_date) {
+      validFields.launch_date = new Date(validFields.launch_date)
     }
 
     const project = await prisma.project.update({

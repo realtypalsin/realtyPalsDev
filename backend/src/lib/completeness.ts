@@ -37,6 +37,7 @@ export interface DecisionProfileSnapshot {
   decision_thesis: string | null
   why_buy:         string[]
   why_avoid:       string[]
+  best_for?:       string | null
   financial_intelligence?: Record<string, unknown>
   market_intelligence?: Record<string, unknown>
 }
@@ -223,13 +224,14 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
   enrichment.push(hasReraUrl)
 
   // Unit checks
-  const hasSuperArea = (project.unit_types || []).length > 0 && (project.unit_types || []).every(u => u.super_area_sqft != null)
+  const units = project.unit_types || []
+  const hasSuperArea = units.length > 0 && units.every(u => u.super_area_sqft != null)
   enrichment.push(hasSuperArea)
 
-  const hasCarpetArea = (project.unit_types || []).length > 0 && (project.unit_types || []).every(u => u.carpet_area_sqft != null)
+  const hasCarpetArea = units.length > 0 && units.every(u => u.carpet_area_sqft != null)
   enrichment.push(hasCarpetArea)
 
-  const hasBalconiesCount = (project.unit_types || []).length > 0 && (project.unit_types || []).every(u => u.balconies != null)
+  const hasBalconiesCount = units.length > 0 && units.every(u => u.balconies != null)
   enrichment.push(hasBalconiesCount)
 
   // Media checks
@@ -253,7 +255,7 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
     hasDecisionThesis,
     (project.decision_profile?.why_buy?.length ?? 0) > 0,
     (project.decision_profile?.why_avoid?.length ?? 0) > 0,
-    present(project.decision_profile?.['best_for'] as string | null | undefined ?? null),
+    present(project.decision_profile?.best_for ?? null),
   ]
   const decScore = Math.round((decPoints.filter(Boolean).length / decPoints.length) * 100)
   if (decScore < 100) missing.intelligence.push('Decision profile incomplete (thesis, why buy/avoid, target buyer)')
@@ -292,7 +294,7 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
   enrichment.push(hasCompetitors)
 
   // CostSheet, PaymentPlans & Timelines
-  const hasCostSheet = project.cost_sheet != null && (project.cost_sheet.base_price_per_sqft != null || project.cost_sheet.base_cost_cr != null)
+  const hasCostSheet = project.cost_sheet != null && (project.cost_sheet?.base_price_per_sqft != null || project.cost_sheet?.base_cost_cr != null)
   enrichment.push(hasCostSheet)
   if (!hasCostSheet) missing.overview.push('Cost sheet base price missing')
 

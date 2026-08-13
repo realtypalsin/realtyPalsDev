@@ -4,7 +4,7 @@ import { use, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, ChevronRight, Eye, LayoutPanelLeft, AlertCircle, CheckCircle2, Info,
-  Images, Cpu, Activity, IndianRupee, Users
+  Images, Cpu, Activity, IndianRupee, Users, ShieldCheck
 } from 'lucide-react'
 import { adminFetch } from '@/lib/adminFetch'
 import ProjectForm from '@/components/admin/ProjectForm'
@@ -179,7 +179,7 @@ function SectionAuditSidebar({
   const isMedium = pct >= 60 && pct < 90
 
   return (
-    <div className="sticky top-20 space-y-4">
+    <div className="space-y-4">
       <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-sm">
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4 mb-4">
           <div>
@@ -271,6 +271,7 @@ export default function AdminProjectEditPage({
   const [adminTab, setAdminTab] = useState<AdminTab>('core')
   const [hoveredTab, setHoveredTab] = useState<AdminTab | null>(null)
   const [preview, setPreview] = useState<any>(null)
+  const [coreRightView, setCoreRightView] = useState<'audit' | 'preview'>('audit')
   const [showCompleteness, setShowCompleteness] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -433,20 +434,29 @@ export default function AdminProjectEditPage({
     { id: 'partners',     label: 'Channel Partners',     icon: Users },
   ]
 
-  const getDynamicScore = (tabId: AdminTab): number => {
-    const audit = getTabAuditDetails(tabId, data, documents)
+  // Pre-compute all tab audits once to avoid O(N) recalculation
+  const tabAudits = {
+    core: getTabAuditDetails('core', data, documents),
+    pricing: getTabAuditDetails('pricing', data, documents),
+    media: getTabAuditDetails('media', data, documents),
+    intelligence: getTabAuditDetails('intelligence', data, documents),
+    updates: getTabAuditDetails('updates', data, documents),
+    partners: getTabAuditDetails('partners', data, documents),
+  } as Record<AdminTab, ReturnType<typeof getTabAuditDetails>>
+
+  const computeTabScore = (audit: ReturnType<typeof getTabAuditDetails>): number => {
     const total = audit.completed.length + audit.missing.length
     if (total === 0) return 100
     return Math.round((audit.completed.length / total) * 100)
   }
 
   const tabScores: Record<AdminTab, number> = {
-    core: getDynamicScore('core'),
-    pricing: getDynamicScore('pricing'),
-    media: getDynamicScore('media'),
-    intelligence: getDynamicScore('intelligence'),
-    updates: getDynamicScore('updates'),
-    partners: getDynamicScore('partners'),
+    core: computeTabScore(tabAudits.core),
+    pricing: computeTabScore(tabAudits.pricing),
+    media: computeTabScore(tabAudits.media),
+    intelligence: computeTabScore(tabAudits.intelligence),
+    updates: computeTabScore(tabAudits.updates),
+    partners: computeTabScore(tabAudits.partners),
   }
 
   const overallHealth = Math.round(
@@ -685,21 +695,52 @@ export default function AdminProjectEditPage({
                 onSaved={handleSaved}
               />
             </div>
-            <div className="space-y-6">
-              {preview && (
-                <ProjectPreview
-                  project={preview}
-                  onRefresh={handleSaved}
-                  refreshing={refreshing}
+            <div className="sticky top-24 space-y-4 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {/* Core Info Right View Switcher */}
+              <div className="flex items-center p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl border border-zinc-200/80 dark:border-zinc-700/60 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setCoreRightView('audit')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    coreRightView === 'audit'
+                      ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
+                      : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900'
+                  }`}
+                >
+                  <ShieldCheck size={13} className={coreRightView === 'audit' ? 'text-emerald-500' : ''} />
+                  <span>Tab Audit ({tabScores.core}%)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCoreRightView('preview')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    coreRightView === 'preview'
+                      ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
+                      : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900'
+                  }`}
+                >
+                  <Eye size={13} className={coreRightView === 'preview' ? 'text-blue-500' : ''} />
+                  <span>Buyer Card</span>
+                </button>
+              </div>
+
+              {coreRightView === 'audit' ? (
+                <SectionAuditSidebar
+                  tabId="core"
+                  tabLabel="Core Info"
+                  pct={tabScores.core}
+                  data={data}
+                  documents={documents}
                 />
+              ) : (
+                preview && (
+                  <ProjectPreview
+                    project={preview}
+                    onRefresh={handleSaved}
+                    refreshing={refreshing}
+                  />
+                )
               )}
-              <SectionAuditSidebar
-                tabId="core"
-                tabLabel="Core Info"
-                pct={tabScores.core}
-                data={data}
-                documents={documents}
-              />
             </div>
           </div>
         )}
@@ -719,13 +760,15 @@ export default function AdminProjectEditPage({
               />
               <LocationIntelligenceEditor projectId={id} initialData={data} />
             </div>
-            <SectionAuditSidebar
-              tabId="pricing"
-              tabLabel="Pricing & Location"
-              pct={tabScores.pricing}
-              data={data}
-              documents={documents}
-            />
+            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <SectionAuditSidebar
+                tabId="pricing"
+                tabLabel="Pricing & Location"
+                pct={tabScores.pricing}
+                data={data}
+                documents={documents}
+              />
+            </div>
           </div>
         )}
 
@@ -746,13 +789,15 @@ export default function AdminProjectEditPage({
                 onSaved={handleSaved}
               />
             </div>
-            <SectionAuditSidebar
-              tabId="media"
-              tabLabel="Media Assets"
-              pct={tabScores.media}
-              data={data}
-              documents={documents}
-            />
+            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <SectionAuditSidebar
+                tabId="media"
+                tabLabel="Media Assets"
+                pct={tabScores.media}
+                data={data}
+                documents={documents}
+              />
+            </div>
           </div>
         )}
 
@@ -770,13 +815,15 @@ export default function AdminProjectEditPage({
                 onSaved={handleSaved}
               />
             </div>
-            <SectionAuditSidebar
-              tabId="intelligence"
-              tabLabel="Project Intelligence"
-              pct={tabScores.intelligence}
-              data={data}
-              documents={documents}
-            />
+            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <SectionAuditSidebar
+                tabId="intelligence"
+                tabLabel="Project Intelligence"
+                pct={tabScores.intelligence}
+                data={data}
+                documents={documents}
+              />
+            </div>
           </div>
         )}
 
@@ -793,13 +840,15 @@ export default function AdminProjectEditPage({
                 <LifecycleUpdatesEditor projectId={id} />
               )}
             </div>
-            <SectionAuditSidebar
-              tabId="updates"
-              tabLabel="Updates & Timeline"
-              pct={tabScores.updates}
-              data={data}
-              documents={documents}
-            />
+            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <SectionAuditSidebar
+                tabId="updates"
+                tabLabel="Updates & Timeline"
+                pct={tabScores.updates}
+                data={data}
+                documents={documents}
+              />
+            </div>
           </div>
         )}
 
@@ -813,13 +862,15 @@ export default function AdminProjectEditPage({
                 onSaved={handleSaved}
               />
             </div>
-            <SectionAuditSidebar
-              tabId="partners"
-              tabLabel="Channel Partners"
-              pct={tabScores.partners}
-              data={data}
-              documents={documents}
-            />
+            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <SectionAuditSidebar
+                tabId="partners"
+                tabLabel="Channel Partners"
+                pct={tabScores.partners}
+                data={data}
+                documents={documents}
+              />
+            </div>
           </div>
         )}
 

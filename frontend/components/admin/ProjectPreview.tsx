@@ -33,6 +33,8 @@ interface ProjectData {
   description?: string
   marketing_claims?: string[]
   builder?: { name: string }
+  builder_name?: string
+  builder_detail?: { name: string }
   unit_types?: UnitType[]
   amenities?: { name: string; category: string }[]
   images?: { url: string; type: string }[]
@@ -73,13 +75,21 @@ export default function ProjectPreview({ project, onRefresh, refreshing }: Props
     project.hero_image_url
 
   const fallbackImageUrl = 'https://images.unsplash.com/photo-1567496898669-ee935f5f647a?auto=format&fit=crop&w=1200&q=80'
-  const displayImageUrl = rawImageUrl && rawImageUrl.startsWith('https://') ? rawImageUrl : fallbackImageUrl
+  const isValidImageUrl = rawImageUrl ? (() => {
+    try {
+      const url = new URL(rawImageUrl)
+      return url.protocol === 'http:' || url.protocol === 'https:'
+    } catch {
+      return false
+    }
+  })() : false
+  const displayImageUrl = isValidImageUrl ? rawImageUrl : fallbackImageUrl
 
   const builderName = project.builder?.name ?? project.builder_name ?? project.builder_detail?.name ?? 'Unknown Builder'
   const isDark = previewTheme === 'dark'
 
   return (
-    <div className="sticky top-20 space-y-3">
+    <div className="space-y-3">
       {/* Header bar */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
