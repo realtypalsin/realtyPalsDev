@@ -100,6 +100,7 @@ interface Project {
   amenities?: { id: string }[]
   connectivity?: { id: string }[]
   images?: { url: string; type: string }[]
+  completenessScore?: number
 }
 
 export interface FilterToken {
@@ -129,6 +130,9 @@ function ProjectThumbnail({ src, alt }: { src?: string | null; alt: string }) {
 }
 
 function quickHealth(p: Project): { score: number; missing: string[] } {
+  if (typeof p.completenessScore === 'number') {
+    return { score: p.completenessScore, missing: [] }
+  }
   const images = p.images || []
   const unitTypes = p.unit_types || []
   const hasImage = images.length > 0 || !!p.hero_image_url
@@ -175,7 +179,7 @@ export default function AdminProjects() {
   const [query, setQuery] = useState('')
   const [activeTokens, setActiveTokens] = useState<FilterToken[]>([])
   const [statusFilter, setStatusFilter] = useState<'all' | 'ready_to_move' | 'under_construction' | 'new_launch'>('all')
-  const [healthFilter, setHealthFilter] = useState<'all' | 'perfect' | 'needs_fix'>('all')
+  const [healthFilter, setHealthFilter] = useState<'all' | 'excellent' | 'good' | 'needs_fix'>('all')
   const [priceFilter, setPriceFilter] = useState<'all' | 'under_1cr' | '1_2cr' | '2_4cr' | 'above_4cr'>('all')
 
   // Sorting
@@ -266,9 +270,10 @@ export default function AdminProjects() {
       if (statusFilter !== 'all' && p.status !== statusFilter) return false
 
       // 2. Health Filter
-      const { score } = quickHealth(p)
-      if (healthFilter === 'perfect' && score < 100) return false
-      if (healthFilter === 'needs_fix' && score >= 100) return false
+      const score = typeof p.completenessScore === 'number' ? p.completenessScore : quickHealth(p).score
+      if (healthFilter === 'excellent' && score < 95) return false
+      if (healthFilter === 'good' && (score < 80 || score >= 95)) return false
+      if (healthFilter === 'needs_fix' && score >= 80) return false
 
       // 3. Price Filter
       const minP = priceMinVal(p.unit_types)
@@ -337,13 +342,17 @@ export default function AdminProjects() {
     setDeleting(id)
 
     const deletePromise = async () => {
-      const res = await adminFetch(`/admin/projects/${id}`, { method: 'DELETE' })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to delete project')
+      try {
+        const res = await adminFetch(`/admin/projects/${id}`, { method: 'DELETE' })
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          throw new Error(errData.error || 'Failed to delete project')
+        }
+        setProjects((p) => p.filter((x) => x.id !== id))
+        return `Deleted ${name}`
+      } finally {
+        setDeleting('')
       }
-      setProjects((p) => p.filter((x) => x.id !== id))
-      return `Deleted ${name}`
     }
 
     toast.promise(deletePromise(), {
@@ -362,7 +371,9 @@ export default function AdminProjects() {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement?.tagName === 'INPUT' && !['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) return
+      const activeEl = document.activeElement as HTMLElement | null
+      const isEditable = activeEl?.tagName === 'INPUT' || activeEl?.tagName === 'TEXTAREA' || activeEl?.contentEditable === 'true'
+      if (isEditable && !['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) return
 
       if (e.key === '/') {
         e.preventDefault()
@@ -488,7 +499,7 @@ export default function AdminProjects() {
         {/* Autocomplete Suggestions Popover */}
         {isPopoverOpen && suggestions.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 overflow-hidden p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 px-3 py-1.5">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 px-3 py-1.5">
               Suggested Filter Matches
             </div>
             {suggestions.map((s, idx) => (
@@ -496,15 +507,15 @@ export default function AdminProjects() {
                 key={`${s.type}_${s.value}_${idx}`}
                 type="button"
                 onClick={() => addFilterToken(s)}
-                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center justify-between group cursor-pointer"
+                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center justify-between group cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
-                  {s.type === 'builder' && <Building2 size={14} className="text-zinc-400 group-hover:text-blue-500" />}
-                  {s.type === 'sector' && <MapPin size={14} className="text-zinc-400 group-hover:text-blue-500" />}
+                  {s.type === 'builder' && <Building2 size={14} className="text-zinc-600 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />}
+                  {s.type === 'sector' && <MapPin size={14} className="text-zinc-600 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />}
                   <span>{s.label}</span>
                 </div>
                 {s.count && (
-                  <span className="text-[11px] font-medium text-zinc-400 group-hover:text-blue-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
                     {s.count} properties
                   </span>
                 )}
@@ -554,8 +565,9 @@ export default function AdminProjects() {
             onChange={(val) => setHealthFilter(val)}
             options={[
               { value: 'all', label: 'Health: All' },
-              { value: 'perfect', label: '100% Perfect', icon: <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> },
-              { value: 'needs_fix', label: 'Needs Fixes (<80%)', icon: <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" /> },
+              { value: 'excellent', label: 'Excellent (95–100%)', icon: <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> },
+              { value: 'good', label: 'Good (80–94%)', icon: <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" /> },
+              { value: 'needs_fix', label: 'Needs Action (<80%)', icon: <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" /> },
             ]}
           />
 
@@ -719,19 +731,32 @@ export default function AdminProjects() {
                   </div>
 
                   {/* Health Score */}
-                  <div className="w-[90px] hidden sm:flex justify-end pr-6">
+                  <div className="w-[100px] hidden sm:flex justify-end pr-6 relative group/health">
                     <div
-                      className={`flex items-center gap-1.5 text-xs font-bold tabular-nums px-2 py-0.5 rounded-md border ${
-                        pct === 100
+                      className={`flex items-center gap-1.5 text-xs font-bold tabular-nums px-2.5 py-1 rounded-xl border shadow-2xs transition-all ${
+                        pct >= 95
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
-                          : pct >= 60
-                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60'
+                          : pct >= 80
+                          ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60'
                           : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800/60'
                       }`}
-                      title={missing.length > 0 ? `Missing: ${missing.join(', ')}` : 'Perfect 100% Health'}
                     >
-                      {pct === 100 && <CheckCircle2 size={12} className="text-emerald-500" strokeWidth={2.5} />}
+                      {pct >= 95 && <CheckCircle2 size={12} className="text-emerald-500" strokeWidth={2.5} />}
                       <span>{pct}%</span>
+                    </div>
+
+                    {/* Section Breakdown Tooltip */}
+                    <div className="absolute right-0 bottom-full mb-2 hidden group-hover/health:block w-48 bg-zinc-900 text-white rounded-2xl p-3 shadow-xl z-50 text-[10px] space-y-1.5 border border-zinc-700/60 animate-in fade-in duration-150">
+                      <div className="font-bold border-b border-zinc-800 pb-1 text-zinc-400 uppercase tracking-wider flex justify-between">
+                        <span>Section Health</span>
+                        <span>{pct}%</span>
+                      </div>
+                      <div className="flex justify-between font-medium"><span>Core Info:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.core ?? 100}%</span></div>
+                      <div className="flex justify-between font-medium"><span>Pricing & Loc:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.pricing ?? 100}%</span></div>
+                      <div className="flex justify-between font-medium"><span>Media:</span><span className="font-mono font-bold text-amber-400">{(p as any).tabScores?.media ?? 70}%</span></div>
+                      <div className="flex justify-between font-medium"><span>Intelligence:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.intelligence ?? 100}%</span></div>
+                      <div className="flex justify-between font-medium"><span>Updates:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.updates ?? 100}%</span></div>
+                      <div className="flex justify-between font-medium"><span>Partners:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.partners ?? 100}%</span></div>
                     </div>
                   </div>
 
@@ -743,7 +768,7 @@ export default function AdminProjects() {
                         handleDelete(p.id, p.name)
                       }} 
                       disabled={deleting === p.id}
-                      className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-zinc-600 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer dark:text-zinc-400"
                       aria-label="Delete"
                       title="Delete property"
                     >

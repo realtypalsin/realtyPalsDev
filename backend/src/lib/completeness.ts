@@ -37,8 +37,8 @@ export interface DecisionProfileSnapshot {
   decision_thesis: string | null
   why_buy:         string[]
   why_avoid:       string[]
-  financial_intelligence?: any
-  market_intelligence?: any
+  financial_intelligence?: Record<string, unknown>
+  market_intelligence?: Record<string, unknown>
 }
 
 export interface PersonaProfileSnapshot {
@@ -88,13 +88,13 @@ export interface ProjectSnapshot {
   persona_profile:          PersonaProfileSnapshot | null
   recommendation_profile:   RecommendationProfileSnapshot | null
   competitors:              { id: string }[]
-  cost_sheet?:              any
-  payment_plans?:           any[]
-  construction_milestones?: any[]
-  construction_updates?:    any[]
-  lifecycle_updates?:       any[]
-  price_history?:           any[]
-  channel_partners?:        any[]
+  cost_sheet?:              Record<string, unknown>
+  payment_plans?:           Array<Record<string, unknown>>
+  construction_milestones?: Array<Record<string, unknown>>
+  construction_updates?:    Array<Record<string, unknown>>
+  lifecycle_updates?:       Array<Record<string, unknown>>
+  price_history?:           Array<Record<string, unknown>>
+  channel_partners?:        Array<Record<string, unknown>>
 
   documents?: DocumentSnapshot[]
 }
@@ -249,26 +249,56 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
 
   // Intelligence
   const hasDecisionThesis = present(project.decision_profile?.decision_thesis ?? null)
-  enrichment.push(hasDecisionThesis)
+  const decPoints = [
+    hasDecisionThesis,
+    (project.decision_profile?.why_buy?.length ?? 0) > 0,
+    (project.decision_profile?.why_avoid?.length ?? 0) > 0,
+    present(project.decision_profile?.['best_for'] as string | null | undefined ?? null),
+  ]
+  const decScore = Math.round((decPoints.filter(Boolean).length / decPoints.length) * 100)
+  if (decScore < 100) missing.intelligence.push('Decision profile incomplete (thesis, why buy/avoid, target buyer)')
 
   const hasPersona = present(project.persona_profile?.primary_persona ?? null)
-  enrichment.push(hasPersona)
+  const perPoints = [
+    hasPersona,
+    present((project.persona_profile as any)?.income_range ?? null),
+    present((project.persona_profile as any)?.family_stage ?? null),
+    present((project.persona_profile as any)?.work_location ?? null),
+  ]
+  const perScore = Math.round((perPoints.filter(Boolean).length / perPoints.length) * 100)
+  if (perScore < 100) missing.intelligence.push('Persona profile incomplete (primary persona, income range, family stage)')
 
   const hasRecommendationTier = present(project.recommendation_profile?.tier ?? null)
-  enrichment.push(hasRecommendationTier)
+  const recPoints = [
+    hasRecommendationTier,
+    present(project.recommendation_profile?.primary_thesis ?? null),
+  ]
+  const recScore = Math.round((recPoints.filter(Boolean).length / recPoints.length) * 100)
+  if (recScore < 100) missing.intelligence.push('Recommendation profile incomplete (tier, thesis)')
 
   const hasDna = project.dna != null
-  enrichment.push(hasDna)
+  if (!hasDna) missing.intelligence.push('Project DNA scores missing')
 
   const hasCompetitors = (project.competitors?.length ?? 0) >= 1
+  if (!hasCompetitors) missing.intelligence.push('Competitor analysis missing')
+
+  const dnaScore = hasDna ? 100 : 0
+  const compScore = hasCompetitors ? 100 : 0
+
+  enrichment.push(hasDecisionThesis)
+  enrichment.push(hasPersona)
+  enrichment.push(hasRecommendationTier)
+  enrichment.push(hasDna)
   enrichment.push(hasCompetitors)
 
   // CostSheet, PaymentPlans & Timelines
   const hasCostSheet = project.cost_sheet != null && (project.cost_sheet.base_price_per_sqft != null || project.cost_sheet.base_cost_cr != null)
   enrichment.push(hasCostSheet)
+  if (!hasCostSheet) missing.overview.push('Cost sheet base price missing')
 
   const hasPaymentPlans = (project.payment_plans?.length ?? 0) >= 2
   enrichment.push(hasPaymentPlans)
+  if (!hasPaymentPlans) missing.overview.push('Payment plans incomplete (need 2+ plans)')
 
   const hasMilestones = (project.construction_milestones?.length ?? 0) >= 4
   enrichment.push(hasMilestones)
@@ -295,10 +325,19 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
   ))
 
   // 2. Pricing & Location Tab (25% weight)
+  const hasValidMilestones = (project.payment_plans || []).every((p: any) => {
+    const ms = p.milestones || []
+    return Array.isArray(ms) && ms.length >= 2 && ms.every((m: any) => present(m.milestone || m.stage || m.label))
+  })
+  if (!hasValidMilestones && hasPaymentPlans) {
+    missing.overview.push('Payment plan stage milestones incomplete (need non-empty stage descriptions)')
+  }
+
   const pricingScore = Math.min(100, Math.round(
     (hasPricedUnit ? 20 : 0) +
-    (hasCostSheet ? 30 : 0) +
-    (hasPaymentPlans ? 25 : 0) +
+    (hasCostSheet ? 25 : 0) +
+    (hasPaymentPlans ? 20 : 0) +
+    (hasValidMilestones ? 10 : 0) +
     (hasConnectivity ? 15 : 0) +
     ((project.price_history?.length ?? 0) >= 1 ? 10 : 0)
   ))
@@ -311,13 +350,7 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
   ))
 
   // 4. Intelligence Tab (20% weight)
-  const intelligenceScore = Math.min(100, Math.round(
-    (hasDecisionThesis ? 20 : 0) +
-    (hasPersona ? 20 : 0) +
-    (hasRecommendationTier ? 20 : 0) +
-    (hasDna ? 20 : 0) +
-    (hasCompetitors ? 20 : 0)
-  ))
+  const intelligenceScore = Math.round((dnaScore + decScore + perScore + recScore + compScore) / 5)
 
   // 5. Updates & Timeline Tab (10% weight)
   const isReady = project.status === 'ready_to_move'
@@ -333,9 +366,6 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
   // 6. Channel Partners Tab (10% weight)
   const partnersScore = hasPartners ? 100 : 0
 
-  function ExtremelyStrict() {
-    return (hasBalconiesCount ? 0 : -5)
-  }
 
   const tabScores: TabScores = {
     core: Math.max(0, coreScore),

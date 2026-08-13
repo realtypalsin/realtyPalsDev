@@ -7,29 +7,33 @@
     "city": "Noida",
     "state": "Uttar Pradesh",
     "country": "India",
-    "status": "ready_to_move",
-    "tagline": "Great Value Sharanam Luxury Gated Living in Sector 107",
     "address": "Sector 107, Noida, UP 201301",
-    "lat": 28.575,
-    "lng": 77.385,
+    "tagline": "Great Value Sharanam Luxury Gated Living in Sector 107",
+    "description": "Great Value Sharanam is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Great Value Sharanam is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "status": "ready_to_move",
     "rera_number": "UPRERAPRJ6712",
     "rera_url": "https://www.up-rera.in/",
-    "total_units": 1200,
+    "lat": 28.575,
+    "lng": 77.385,
     "total_towers": 14,
+    "total_units": 1200,
+    "floors": "G + 24",
     "land_area_acres": 20,
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "has_duplex": false,
+    "has_penthouse": false,
+    "project_type": "Residential High-Rise",
     "launch_date": "2016-01-01T00:00:00.000Z",
     "possession_date": "2023-06-01T00:00:00.000Z",
     "possession_label": "Ready to Move",
     "possession_confidence": "delivered",
     "oc_obtained": true,
-    "description": "Great Value Sharanam is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "long_description": "Great Value Sharanam is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "design_theme": "Modern Architecture",
+    "price_min_cr": 1.52,
+    "price_range_label": "₹152 Lakh - ₹2.10 Cr",
     "architect": "C.P. Kukreja Architects",
-    "floors": "G + 24",
-    "open_space_pct": 75,
-    "green_rating": "IGBC Gold Certified",
-    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
     "marketing_claims": [
       "Prime Residential Living in Sector 107",
       "2026 Verified Resale Benchmark"
@@ -39,124 +43,554 @@
       "sector 107",
       "apartments in sector 107"
     ],
-    "price_min_cr": 1.52,
-    "price_range_label": "₹152 Lakh - ₹2.10 Cr",
     "walkability_score": 88,
     "builder": {
       "name": "Great Value Realty",
       "slug": "great-value-realty",
+      "tagline": "Great Value Realty — Excellence in Real Estate",
+      "company_overview": "Great Value Realty is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=Great+Value&background=0D8ABC&color=fff",
       "experience_years": "20+ Years",
-      "delivered_units": 1200,
+      "projects_delivered_count": 18,
+      "total_projects_count": 24,
       "delivery_score": 90,
       "construction_quality_score": 90,
-      "buyer_satisfaction_score": 88
-    },
-    "cost_sheet": {
-      "base_price_per_sqft": 11800,
-      "floor_rise_per_floor": 30,
-      "plc_charges": [
-        {
-          "name": "Corner Unit",
-          "psf": 200
-        }
-      ],
-      "parking_cost": 400000,
-      "ifms": 80,
-      "club_membership": 250000,
-      "maintenance_psf_monthly": 4
+      "buyer_satisfaction_score": 88,
+      "rera_compliance_score": 96
     },
     "unit_types": [
       {
-        "name": "2 BHK Luxury",
         "bhk": 2,
+        "name": "2 BHK Luxury",
         "super_area_sqft": 1295,
         "carpet_area_sqft": 790,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": false,
+        "dress_area": false,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
         "price_min_cr": 1.52,
         "price_max_cr": 1.65,
-        "price_per_sqft": 11800
+        "price_per_sqft": 11800,
+        "price_label": "₹152 Lakhs onwards",
+        "subtitle": "Spacious 2 BHK Residence",
+        "description": "Well-ventilated 2 BHK layout with modern fittings and central park views.",
+        "category_badge": "Standard Comfort",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Young Couples",
+          "Working Professionals"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "2 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
       },
       {
-        "name": "3 BHK Grand",
         "bhk": 3,
+        "name": "3 BHK Grand",
         "super_area_sqft": 1625,
         "carpet_area_sqft": 1010,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
         "price_min_cr": 1.91,
         "price_max_cr": 2.1,
-        "price_per_sqft": 11800
+        "price_per_sqft": 11800,
+        "price_label": "₹191 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 3,
+        "perfect_for": [
+          "Growing Families",
+          "IT Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
       }
     ],
+    "amenities": [
+      {
+        "name": "Grand Clubhouse & Lounge",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Swimming Pool & Toddler Pool",
+        "category": "sports"
+      },
+      {
+        "name": "Fully Equipped Gymnasium",
+        "category": "wellness"
+      },
+      {
+        "name": "Children Play Park",
+        "category": "kids"
+      },
+      {
+        "name": "24/7 CCTV & Multi-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Reserved Underground Parking",
+        "category": "parking"
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Sector 107 Aqua Line Metro Station",
+        "type": "metro",
+        "distance_km": 1.2,
+        "travel_time_min": 4,
+        "notes": "Rapid metro transit link"
+      },
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "type": "expressway",
+        "distance_km": 2.5,
+        "travel_time_min": 6,
+        "notes": "Direct arterial highway"
+      },
+      {
+        "name": "Jaypee Hospital / Medanta Hospital",
+        "type": "hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "notes": "Super-speciality medical facility"
+      },
+      {
+        "name": "DPS / Shriram Millennium School",
+        "type": "school",
+        "distance_km": 1.8,
+        "travel_time_min": 5,
+        "notes": "Top-tier K-12 education"
+      },
+      {
+        "name": "Spectrum Metro / Logix Mall",
+        "type": "mall",
+        "distance_km": 2,
+        "travel_time_min": 5,
+        "notes": "Retail and dining destination"
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 Commercial IT Hub",
+        "distance_km": 12,
+        "travel_mode": "drive",
+        "travel_time_min": 22
+      },
+      {
+        "destination": "DND Flyway (Delhi Border)",
+        "distance_km": 14.5,
+        "travel_mode": "drive",
+        "travel_time_min": 25
+      },
+      {
+        "destination": "Noida International Airport (Jewar)",
+        "distance_km": 42,
+        "travel_mode": "expressway",
+        "travel_time_min": 45
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 11800,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "label": "Central Green / Park Facing",
+          "amount_per_sqft": 250
+        },
+        {
+          "label": "Corner Unit PLC",
+          "amount_per_sqft": 150
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 85,
+      "club_membership": 200000,
+      "gst_rate_pct": 0,
+      "stamp_duty_pct": 7,
+      "registration_pct": 1,
+      "assumptions": [
+        "Ready-to-move resale purchase. GST is 0%."
+      ]
+    },
     "payment_plans": [
       {
         "plan_type": "construction_linked",
-        "plan_name": "Construction-Linked Milestone Plan",
+        "plan_name": "Construction-Linked Plan (CLP)",
+        "source": "Builder Official Brochure",
+        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
+        "down_payment_pct": 10,
+        "booking_amount_lakh": 7.6,
+        "discount_offered_pct": 0,
+        "total_duration_months": 36,
+        "best_for": "End-user buyers seeking risk-mitigated milestone payments tied to physical site progress.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies if installment delayed > 15 days.",
         "milestones": [
           {
+            "milestone": "On Booking & Allotment",
             "stage": "Booking Amount",
-            "pct": 10,
-            "timeline": "Immediate"
+            "pct": "10%",
+            "amt": "₹15.2 Lakhs",
+            "due": "Stage 1 / Booking",
+            "timeline": "Immediate",
+            "done": true
           },
           {
-            "stage": "At Possession",
-            "pct": 10,
-            "timeline": "Possession"
+            "milestone": "On Excavation & Foundation Raft",
+            "stage": "Foundation Raft",
+            "pct": "15%",
+            "amt": "₹22.8 Lakhs",
+            "due": "Stage 2 / Foundation",
+            "timeline": "Within 3 Months",
+            "done": true
+          },
+          {
+            "milestone": "On Superstructure & Floor Slabs",
+            "stage": "Superstructure Slabs",
+            "pct": "45%",
+            "amt": "₹68.4 Lakhs",
+            "due": "Stage 3 / Superstructure",
+            "timeline": "Milestone Linked",
+            "done": false
+          },
+          {
+            "milestone": "On Brickwork, Plastering & External Painting",
+            "stage": "Finishing Works",
+            "pct": "20%",
+            "amt": "₹30.4 Lakhs",
+            "due": "Stage 4 / Finishing",
+            "timeline": "Near Completion",
+            "done": false
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "10%",
+            "amt": "₹15.2 Lakhs",
+            "due": "Stage 5 / Possession",
+            "timeline": "At Possession",
+            "done": false
+          }
+        ]
+      },
+      {
+        "plan_type": "possession_linked",
+        "plan_name": "Possession-Linked Plan (30:70 PLP)",
+        "source": "Developer Finance Offer",
+        "notes": "Pay 30% now, 70% at possession handover.",
+        "down_payment_pct": 30,
+        "booking_amount_lakh": 15.2,
+        "discount_offered_pct": 2,
+        "total_duration_months": 24,
+        "best_for": "Investors seeking zero EMI burden during construction phase.",
+        "watch_out": "Requires bank loan pre-approval before contract signing.",
+        "milestones": [
+          {
+            "milestone": "On Booking & Agreement Execution",
+            "stage": "Booking & Agreement",
+            "pct": "30%",
+            "amt": "₹45.6 Lakhs",
+            "due": "Stage 1 / Agreement",
+            "timeline": "Within 30 Days",
+            "done": true
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "70%",
+            "amt": "₹106.4 Lakhs",
+            "due": "Stage 2 / Handover",
+            "timeline": "At Handover",
+            "done": false
           }
         ]
       }
     ],
     "price_history": [
       {
-        "quarter_label": "Q3 2026",
-        "price_per_sqft": 11800,
-        "total_price_cr": 1.52,
-        "recorded_at": "2026-08-13T06:00:33.756Z"
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8500,
+        "total_price_cr": 1.1,
+        "recorded_at": "2025-03-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q2 2025",
+        "price_per_sqft": 8800,
+        "total_price_cr": 1.15,
+        "recorded_at": "2025-06-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2025",
+        "price_per_sqft": 9100,
+        "total_price_cr": 1.2,
+        "recorded_at": "2025-09-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q4 2025",
+        "price_per_sqft": 9500,
+        "total_price_cr": 1.25,
+        "recorded_at": "2025-12-31T00:00:00.000Z"
+      }
+    ],
+    "project_dna": {
+      "builder_track_record_score": 90,
+      "builder_track_record_label": "Strong Tier-1 Record",
+      "price_position_score": 88,
+      "price_position_label": "Fair Market Valuation",
+      "locality_score": 92,
+      "locality_label": "Prime Connected Corridor",
+      "rera_compliance_score": 96,
+      "rera_compliance_label": "Fully Compliant",
+      "amenity_depth_score": 90,
+      "amenity_depth_label": "Comprehensive Active",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "Fully Ready",
+      "verified_by": "seed"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Great Value Sharanam represents an exceptional residential acquisition in Sector 107, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "why_buy": [
+        "Prime Connectivity: Located in Sector 107 with fast access to metro and major expressways.",
+        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
+        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
+        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+      ],
+      "why_avoid": [
+        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
+        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
+        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+      ],
+      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
+      "confidence_sources": [
+        "RERA Official Filings",
+        "Municipal Survey Data",
+        "Market Transaction Registries"
+      ],
+      "intelligence_data": {
+        "topLevelMetrics": {
+          "overallScore": 88,
+          "tier": "STRONG_BUY",
+          "investmentGrade": "A+",
+          "priceAdvantage": "Fair Market Value",
+          "priceAdvantageSubtext": "Strong Growth Corridor",
+          "confidenceLevel": "High",
+          "confidenceLabel": "Verified via RERA"
+        },
+        "dimensionScores": {
+          "builderTrust": {
+            "score": 92,
+            "status": "Excellent"
+          },
+          "locationQuality": {
+            "score": 90,
+            "status": "Prime"
+          },
+          "lifestyleAmenities": {
+            "score": 88,
+            "status": "Operational"
+          },
+          "valueForMoney": {
+            "score": 86,
+            "status": "High Value"
+          },
+          "appreciationPotential": {
+            "score": 88,
+            "status": "Strong Growth"
+          },
+          "legalSafety": {
+            "score": 96,
+            "status": "Fully Clear Title"
+          }
+        }
+      }
+    },
+    "persona_profile": {
+      "primary_persona": "Value-Seeking Corporate Managers",
+      "secondary_personas": [
+        "IT & Tech Executives",
+        "NRI Investors",
+        "Upgrading Nuclear Families"
+      ],
+      "persona_descriptions": {
+        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
+      },
+      "income_range": "₹25L - ₹50L per annum",
+      "risk_appetite": "Low-Moderate (prioritizes clean RERA titles and high builder delivery trust)",
+      "family_stage": "Nuclear or joint family with school-going children",
+      "work_location": "Noida Expressway / Sector 62 / Central Delhi",
+      "timeline_horizon": "5-10 Years",
+      "motivation_note": "Acquire long-term family asset in Sector 107 with green surroundings and supreme daily convenience."
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "STRONG_BUY",
+      "primary_thesis": "Great Value Sharanam is a top-recommended residential project in Sector 107 due to high construction standards, excellent location access, and robust price appreciation potential.",
+      "end_use_thesis": "Supreme day-to-day comfort with central parks, sports courts, and top schools nearby.",
+      "investment_thesis": "High capital appreciation driven by nearby commercial IT parks and infrastructure expansions.",
+      "family_thesis": "Safe gated environment with active children play zones and 24/7 security.",
+      "investor_thesis": "Consistently strong rental yields of 4.2% - 4.8% annually.",
+      "luxury_thesis": "High-end marble and wooden floor finishes with grand elevator lobbies.",
+      "risk_thesis": "Low legal risk; verify clear title chain during resale transfers.",
+      "walk_away_conditions": [
+        "Any pending municipal dues on individual seller units during resale."
+      ],
+      "negotiation_leverage": [
+        "Use current bank valuation rates to negotiate competitive pricing on upper floors."
+      ],
+      "timeline_advice": "Ideal entry window during current quarterly inventory wave."
+    },
+    "competitors": [
+      {
+        "competitor_name": "Adjacent Premium Project in Sector 107",
+        "competitor_slug": "sector-107-competitor-1",
+        "this_project_advantage": "Superior open green percentage and larger balcony layouts.",
+        "competitor_advantage": "Slightly lower entry pricing.",
+        "verdict": "Choose Great Value Sharanam for superior construction quality and clubhouse amenities.",
+        "price_delta_note": "Competitive pricing parity within 5%.",
+        "sort_order": 1
       }
     ],
     "construction_milestones": [
       {
-        "stage_code": "handover",
-        "name": "Possession & Active Handover",
+        "stage_code": "superstructure",
+        "name": "Superstructure & RCC Framing",
         "status": "completed",
         "completion_pct": 100,
-        "date_label": "Active"
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "external_facade",
+        "name": "External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "internal_finishing",
+        "name": "Internal Flooring & Plumbing",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "possession_handover",
+        "name": "Possession & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Ready to Move"
       }
     ],
     "construction_updates": [
       {
-        "title": "Site Inspection & Possession Update",
-        "update_date": "2026-08-13T06:00:33.756Z",
+        "title": "Township Infrastructure Completion",
+        "update_date": "2026-08-13T09:25:12.133Z",
         "quarter_label": "Q2 2026",
-        "completion_pct": 100
+        "completion_pct": 100,
+        "description": "Lush central gardens and clubhouse amenities operational."
       }
     ],
-    "commute_matrix": [
+    "lifecycle_updates": [
       {
-        "destination": "Sector 62 IT Hub, Noida",
-        "distance_km": 9,
-        "travel_mode": "drive",
-        "travel_time_min": 20
-      },
-      {
-        "destination": "Expressway Tech Parks",
-        "distance_km": 7,
-        "travel_mode": "drive",
-        "travel_time_min": 14
+        "title": "Resident Association & Maintenance Handover",
+        "update_date": "2026-08-13T09:25:12.133Z",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 100,
+        "description": "Active resident welfare association overseeing daily maintenance."
       }
     ],
-    "connectivity": [
+    "channel_partners": [
       {
-        "type": "metro",
-        "name": "Aqua Line Metro Station",
-        "distance_km": 1.5,
-        "travel_time_min": 5,
-        "travel_mode": "drive"
+        "name": "Space Realty Network",
+        "agency": "Space Realty NCR",
+        "contact_number": "+919876543210",
+        "commission_pct": 2,
+        "verified": true
       },
       {
-        "type": "hospital",
-        "name": "Yatharth Hospital",
-        "distance_km": 3,
-        "travel_time_min": 8,
-        "travel_mode": "drive"
+        "name": "RealtyPals Direct Partner",
+        "agency": "RealtyPals Advisory",
+        "contact_number": "+919999988888",
+        "commission_pct": 2,
+        "verified": true
+      }
+    ],
+    "documents": [
+      {
+        "name": "Official Project Brochure",
+        "storage_url": "",
+        "doc_type": "brochure",
+        "file_size_bytes": 5242880
+      },
+      {
+        "name": "Master Floor Plan Layouts",
+        "storage_url": "",
+        "doc_type": "floor_plan",
+        "file_size_bytes": 3145728
+      },
+      {
+        "name": "UP RERA Registration Certificate",
+        "storage_url": "",
+        "doc_type": "rera",
+        "file_size_bytes": 1048576
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "caption": "Front Elevation View",
+        "sort_order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+        "type": "exterior",
+        "caption": "Landscaped Central Park",
+        "sort_order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+        "type": "clubhouse",
+        "caption": "Grand Clubhouse Structure",
+        "sort_order": 3
       }
     ]
   },
@@ -168,29 +602,33 @@
     "city": "Noida",
     "state": "Uttar Pradesh",
     "country": "India",
-    "status": "ready_to_move",
-    "tagline": "Sunworld Vanalika Luxury Gated Living in Sector 107",
     "address": "Sector 107, Noida, UP 201301",
-    "lat": 28.575,
-    "lng": 77.385,
+    "tagline": "Sunworld Vanalika Luxury Gated Living in Sector 107",
+    "description": "Sunworld Vanalika is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Sunworld Vanalika is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+    "status": "ready_to_move",
     "rera_number": "UPRERAPRJ8823",
     "rera_url": "https://www.up-rera.in/",
-    "total_units": 750,
+    "lat": 28.575,
+    "lng": 77.385,
     "total_towers": 8,
+    "total_units": 750,
+    "floors": "G + 24",
     "land_area_acres": 7.5,
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "has_duplex": false,
+    "has_penthouse": false,
+    "project_type": "Residential High-Rise",
     "launch_date": "2016-01-01T00:00:00.000Z",
     "possession_date": "2023-06-01T00:00:00.000Z",
     "possession_label": "Ready to Move",
     "possession_confidence": "delivered",
     "oc_obtained": true,
-    "description": "Sunworld Vanalika is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "long_description": "Sunworld Vanalika is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "design_theme": "Modern Architecture",
+    "price_min_cr": 2.11,
+    "price_range_label": "₹211 Lakh - ₹2.30 Cr",
     "architect": "Hafeez Contractor",
-    "floors": "G + 24",
-    "open_space_pct": 75,
-    "green_rating": "IGBC Gold Certified",
-    "hero_image_url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
     "marketing_claims": [
       "Prime Residential Living in Sector 107",
       "2026 Verified Resale Benchmark"
@@ -200,115 +638,512 @@
       "sector 107",
       "apartments in sector 107"
     ],
-    "price_min_cr": 2.11,
-    "price_range_label": "₹211 Lakh - ₹2.30 Cr",
     "walkability_score": 88,
     "builder": {
       "name": "Sunworld City",
       "slug": "sunworld-city",
+      "tagline": "Sunworld City — Excellence in Real Estate",
+      "company_overview": "Sunworld City is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=Sunworld&background=0D8ABC&color=fff",
       "experience_years": "15+ Years",
-      "delivered_units": 750,
+      "projects_delivered_count": 18,
+      "total_projects_count": 24,
       "delivery_score": 90,
       "construction_quality_score": 90,
-      "buyer_satisfaction_score": 88
+      "buyer_satisfaction_score": 88,
+      "rera_compliance_score": 96
     },
+    "unit_types": [
+      {
+        "bhk": 3,
+        "name": "3 BHK Premium",
+        "super_area_sqft": 1730,
+        "carpet_area_sqft": 1080,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
+        "price_min_cr": 2.11,
+        "price_max_cr": 2.3,
+        "price_per_sqft": 12200,
+        "price_label": "₹211 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Growing Families",
+          "IT Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Grand Clubhouse & Lounge",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Swimming Pool & Toddler Pool",
+        "category": "sports"
+      },
+      {
+        "name": "Fully Equipped Gymnasium",
+        "category": "wellness"
+      },
+      {
+        "name": "Children Play Park",
+        "category": "kids"
+      },
+      {
+        "name": "24/7 CCTV & Multi-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Reserved Underground Parking",
+        "category": "parking"
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Sector 107 Aqua Line Metro Station",
+        "type": "metro",
+        "distance_km": 1.2,
+        "travel_time_min": 4,
+        "notes": "Rapid metro transit link"
+      },
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "type": "expressway",
+        "distance_km": 2.5,
+        "travel_time_min": 6,
+        "notes": "Direct arterial highway"
+      },
+      {
+        "name": "Jaypee Hospital / Medanta Hospital",
+        "type": "hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "notes": "Super-speciality medical facility"
+      },
+      {
+        "name": "DPS / Shriram Millennium School",
+        "type": "school",
+        "distance_km": 1.8,
+        "travel_time_min": 5,
+        "notes": "Top-tier K-12 education"
+      },
+      {
+        "name": "Spectrum Metro / Logix Mall",
+        "type": "mall",
+        "distance_km": 2,
+        "travel_time_min": 5,
+        "notes": "Retail and dining destination"
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 Commercial IT Hub",
+        "distance_km": 12,
+        "travel_mode": "drive",
+        "travel_time_min": 22
+      },
+      {
+        "destination": "DND Flyway (Delhi Border)",
+        "distance_km": 14.5,
+        "travel_mode": "drive",
+        "travel_time_min": 25
+      },
+      {
+        "destination": "Noida International Airport (Jewar)",
+        "distance_km": 42,
+        "travel_mode": "expressway",
+        "travel_time_min": 45
+      }
+    ],
     "cost_sheet": {
       "base_price_per_sqft": 12200,
       "floor_rise_per_floor": 35,
       "plc_charges": [
         {
-          "name": "Golf View",
-          "psf": 250
+          "label": "Central Green / Park Facing",
+          "amount_per_sqft": 250
+        },
+        {
+          "label": "Corner Unit PLC",
+          "amount_per_sqft": 150
         }
       ],
-      "parking_cost": 450000,
-      "ifms": 90,
-      "club_membership": 300000,
-      "maintenance_psf_monthly": 4.2
+      "parking_cost": 400000,
+      "ifms": 85,
+      "club_membership": 200000,
+      "gst_rate_pct": 0,
+      "stamp_duty_pct": 7,
+      "registration_pct": 1,
+      "assumptions": [
+        "Ready-to-move resale purchase. GST is 0%."
+      ]
     },
-    "unit_types": [
-      {
-        "name": "3 BHK Premium",
-        "bhk": 3,
-        "super_area_sqft": 1730,
-        "carpet_area_sqft": 1080,
-        "price_min_cr": 2.11,
-        "price_max_cr": 2.3,
-        "price_per_sqft": 12200
-      }
-    ],
     "payment_plans": [
       {
         "plan_type": "construction_linked",
-        "plan_name": "Construction-Linked Milestone Plan",
+        "plan_name": "Construction-Linked Plan (CLP)",
+        "source": "Builder Official Brochure",
+        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
+        "down_payment_pct": 10,
+        "booking_amount_lakh": 10.5,
+        "discount_offered_pct": 0,
+        "total_duration_months": 36,
+        "best_for": "End-user buyers seeking risk-mitigated milestone payments tied to physical site progress.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies if installment delayed > 15 days.",
         "milestones": [
           {
+            "milestone": "On Booking & Allotment",
             "stage": "Booking Amount",
-            "pct": 10,
-            "timeline": "Immediate"
+            "pct": "10%",
+            "amt": "₹21.1 Lakhs",
+            "due": "Stage 1 / Booking",
+            "timeline": "Immediate",
+            "done": true
           },
           {
-            "stage": "At Possession",
-            "pct": 10,
-            "timeline": "Possession"
+            "milestone": "On Excavation & Foundation Raft",
+            "stage": "Foundation Raft",
+            "pct": "15%",
+            "amt": "₹31.6 Lakhs",
+            "due": "Stage 2 / Foundation",
+            "timeline": "Within 3 Months",
+            "done": true
+          },
+          {
+            "milestone": "On Superstructure & Floor Slabs",
+            "stage": "Superstructure Slabs",
+            "pct": "45%",
+            "amt": "₹94.9 Lakhs",
+            "due": "Stage 3 / Superstructure",
+            "timeline": "Milestone Linked",
+            "done": false
+          },
+          {
+            "milestone": "On Brickwork, Plastering & External Painting",
+            "stage": "Finishing Works",
+            "pct": "20%",
+            "amt": "₹42.2 Lakhs",
+            "due": "Stage 4 / Finishing",
+            "timeline": "Near Completion",
+            "done": false
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "10%",
+            "amt": "₹21.1 Lakhs",
+            "due": "Stage 5 / Possession",
+            "timeline": "At Possession",
+            "done": false
+          }
+        ]
+      },
+      {
+        "plan_type": "possession_linked",
+        "plan_name": "Possession-Linked Plan (30:70 PLP)",
+        "source": "Developer Finance Offer",
+        "notes": "Pay 30% now, 70% at possession handover.",
+        "down_payment_pct": 30,
+        "booking_amount_lakh": 21.1,
+        "discount_offered_pct": 2,
+        "total_duration_months": 24,
+        "best_for": "Investors seeking zero EMI burden during construction phase.",
+        "watch_out": "Requires bank loan pre-approval before contract signing.",
+        "milestones": [
+          {
+            "milestone": "On Booking & Agreement Execution",
+            "stage": "Booking & Agreement",
+            "pct": "30%",
+            "amt": "₹63.3 Lakhs",
+            "due": "Stage 1 / Agreement",
+            "timeline": "Within 30 Days",
+            "done": true
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "70%",
+            "amt": "₹147.7 Lakhs",
+            "due": "Stage 2 / Handover",
+            "timeline": "At Handover",
+            "done": false
           }
         ]
       }
     ],
     "price_history": [
       {
-        "quarter_label": "Q3 2026",
-        "price_per_sqft": 12200,
-        "total_price_cr": 2.11,
-        "recorded_at": "2026-08-13T06:00:33.756Z"
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8500,
+        "total_price_cr": 1.1,
+        "recorded_at": "2025-03-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q2 2025",
+        "price_per_sqft": 8800,
+        "total_price_cr": 1.15,
+        "recorded_at": "2025-06-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2025",
+        "price_per_sqft": 9100,
+        "total_price_cr": 1.2,
+        "recorded_at": "2025-09-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q4 2025",
+        "price_per_sqft": 9500,
+        "total_price_cr": 1.25,
+        "recorded_at": "2025-12-31T00:00:00.000Z"
+      }
+    ],
+    "project_dna": {
+      "builder_track_record_score": 90,
+      "builder_track_record_label": "Strong Tier-1 Record",
+      "price_position_score": 88,
+      "price_position_label": "Fair Market Valuation",
+      "locality_score": 92,
+      "locality_label": "Prime Connected Corridor",
+      "rera_compliance_score": 96,
+      "rera_compliance_label": "Fully Compliant",
+      "amenity_depth_score": 90,
+      "amenity_depth_label": "Comprehensive Active",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "Fully Ready",
+      "verified_by": "seed"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Sunworld Vanalika represents an exceptional residential acquisition in Sector 107, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "why_buy": [
+        "Prime Connectivity: Located in Sector 107 with fast access to metro and major expressways.",
+        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
+        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
+        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+      ],
+      "why_avoid": [
+        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
+        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
+        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+      ],
+      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
+      "confidence_sources": [
+        "RERA Official Filings",
+        "Municipal Survey Data",
+        "Market Transaction Registries"
+      ],
+      "intelligence_data": {
+        "topLevelMetrics": {
+          "overallScore": 88,
+          "tier": "STRONG_BUY",
+          "investmentGrade": "A+",
+          "priceAdvantage": "Fair Market Value",
+          "priceAdvantageSubtext": "Strong Growth Corridor",
+          "confidenceLevel": "High",
+          "confidenceLabel": "Verified via RERA"
+        },
+        "dimensionScores": {
+          "builderTrust": {
+            "score": 92,
+            "status": "Excellent"
+          },
+          "locationQuality": {
+            "score": 90,
+            "status": "Prime"
+          },
+          "lifestyleAmenities": {
+            "score": 88,
+            "status": "Operational"
+          },
+          "valueForMoney": {
+            "score": 86,
+            "status": "High Value"
+          },
+          "appreciationPotential": {
+            "score": 88,
+            "status": "Strong Growth"
+          },
+          "legalSafety": {
+            "score": 96,
+            "status": "Fully Clear Title"
+          }
+        }
+      }
+    },
+    "persona_profile": {
+      "primary_persona": "Value-Seeking Corporate Managers",
+      "secondary_personas": [
+        "IT & Tech Executives",
+        "NRI Investors",
+        "Upgrading Nuclear Families"
+      ],
+      "persona_descriptions": {
+        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
+      },
+      "income_range": "₹25L - ₹50L per annum",
+      "risk_appetite": "Low-Moderate (prioritizes clean RERA titles and high builder delivery trust)",
+      "family_stage": "Nuclear or joint family with school-going children",
+      "work_location": "Noida Expressway / Sector 62 / Central Delhi",
+      "timeline_horizon": "5-10 Years",
+      "motivation_note": "Acquire long-term family asset in Sector 107 with green surroundings and supreme daily convenience."
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "STRONG_BUY",
+      "primary_thesis": "Sunworld Vanalika is a top-recommended residential project in Sector 107 due to high construction standards, excellent location access, and robust price appreciation potential.",
+      "end_use_thesis": "Supreme day-to-day comfort with central parks, sports courts, and top schools nearby.",
+      "investment_thesis": "High capital appreciation driven by nearby commercial IT parks and infrastructure expansions.",
+      "family_thesis": "Safe gated environment with active children play zones and 24/7 security.",
+      "investor_thesis": "Consistently strong rental yields of 4.2% - 4.8% annually.",
+      "luxury_thesis": "High-end marble and wooden floor finishes with grand elevator lobbies.",
+      "risk_thesis": "Low legal risk; verify clear title chain during resale transfers.",
+      "walk_away_conditions": [
+        "Any pending municipal dues on individual seller units during resale."
+      ],
+      "negotiation_leverage": [
+        "Use current bank valuation rates to negotiate competitive pricing on upper floors."
+      ],
+      "timeline_advice": "Ideal entry window during current quarterly inventory wave."
+    },
+    "competitors": [
+      {
+        "competitor_name": "Adjacent Premium Project in Sector 107",
+        "competitor_slug": "sector-107-competitor-1",
+        "this_project_advantage": "Superior open green percentage and larger balcony layouts.",
+        "competitor_advantage": "Slightly lower entry pricing.",
+        "verdict": "Choose Sunworld Vanalika for superior construction quality and clubhouse amenities.",
+        "price_delta_note": "Competitive pricing parity within 5%.",
+        "sort_order": 1
       }
     ],
     "construction_milestones": [
       {
-        "stage_code": "handover",
-        "name": "Possession & Active Handover",
+        "stage_code": "superstructure",
+        "name": "Superstructure & RCC Framing",
         "status": "completed",
         "completion_pct": 100,
-        "date_label": "Active"
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "external_facade",
+        "name": "External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "internal_finishing",
+        "name": "Internal Flooring & Plumbing",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "possession_handover",
+        "name": "Possession & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Ready to Move"
       }
     ],
     "construction_updates": [
       {
-        "title": "Site Inspection & Possession Update",
-        "update_date": "2026-08-13T06:00:33.756Z",
+        "title": "Township Infrastructure Completion",
+        "update_date": "2026-08-13T09:25:12.134Z",
         "quarter_label": "Q2 2026",
-        "completion_pct": 100
+        "completion_pct": 100,
+        "description": "Lush central gardens and clubhouse amenities operational."
       }
     ],
-    "commute_matrix": [
+    "lifecycle_updates": [
       {
-        "destination": "Sector 62 IT Hub, Noida",
-        "distance_km": 9,
-        "travel_mode": "drive",
-        "travel_time_min": 20
-      },
-      {
-        "destination": "Expressway Tech Parks",
-        "distance_km": 7,
-        "travel_mode": "drive",
-        "travel_time_min": 14
+        "title": "Resident Association & Maintenance Handover",
+        "update_date": "2026-08-13T09:25:12.134Z",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 100,
+        "description": "Active resident welfare association overseeing daily maintenance."
       }
     ],
-    "connectivity": [
+    "channel_partners": [
       {
-        "type": "metro",
-        "name": "Aqua Line Metro Station",
-        "distance_km": 1.5,
-        "travel_time_min": 5,
-        "travel_mode": "drive"
+        "name": "Space Realty Network",
+        "agency": "Space Realty NCR",
+        "contact_number": "+919876543210",
+        "commission_pct": 2,
+        "verified": true
       },
       {
-        "type": "hospital",
-        "name": "Yatharth Hospital",
-        "distance_km": 3,
-        "travel_time_min": 8,
-        "travel_mode": "drive"
+        "name": "RealtyPals Direct Partner",
+        "agency": "RealtyPals Advisory",
+        "contact_number": "+919999988888",
+        "commission_pct": 2,
+        "verified": true
+      }
+    ],
+    "documents": [
+      {
+        "name": "Official Project Brochure",
+        "storage_url": "",
+        "doc_type": "brochure",
+        "file_size_bytes": 5242880
+      },
+      {
+        "name": "Master Floor Plan Layouts",
+        "storage_url": "",
+        "doc_type": "floor_plan",
+        "file_size_bytes": 3145728
+      },
+      {
+        "name": "UP RERA Registration Certificate",
+        "storage_url": "",
+        "doc_type": "rera",
+        "file_size_bytes": 1048576
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "caption": "Front Elevation View",
+        "sort_order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+        "type": "exterior",
+        "caption": "Landscaped Central Park",
+        "sort_order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+        "type": "clubhouse",
+        "caption": "Grand Clubhouse Structure",
+        "sort_order": 3
       }
     ]
   },
@@ -320,29 +1155,33 @@
     "city": "Noida",
     "state": "Uttar Pradesh",
     "country": "India",
-    "status": "ready_to_move",
-    "tagline": "Prateek Edifice Luxury Gated Living in Sector 107",
     "address": "Sector 107, Noida, UP 201301",
-    "lat": 28.575,
-    "lng": 77.385,
+    "tagline": "Prateek Edifice Luxury Gated Living in Sector 107",
+    "description": "Prateek Edifice is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Prateek Edifice is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+    "status": "ready_to_move",
     "rera_number": "UPRERAPRJ4419",
     "rera_url": "https://www.up-rera.in/",
-    "total_units": 420,
+    "lat": 28.575,
+    "lng": 77.385,
     "total_towers": 4,
+    "total_units": 420,
+    "floors": "G + 24",
     "land_area_acres": 6.9,
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "has_duplex": false,
+    "has_penthouse": false,
+    "project_type": "Residential High-Rise",
     "launch_date": "2016-01-01T00:00:00.000Z",
     "possession_date": "2023-06-01T00:00:00.000Z",
     "possession_label": "Ready to Move",
     "possession_confidence": "delivered",
     "oc_obtained": true,
-    "description": "Prateek Edifice is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "long_description": "Prateek Edifice is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "design_theme": "Modern Architecture",
+    "price_min_cr": 3,
+    "price_range_label": "₹300 Lakh - ₹3.25 Cr",
     "architect": "Design Forum International",
-    "floors": "G + 24",
-    "open_space_pct": 75,
-    "green_rating": "IGBC Gold Certified",
-    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
     "marketing_claims": [
       "Prime Residential Living in Sector 107",
       "2026 Verified Resale Benchmark"
@@ -352,115 +1191,512 @@
       "sector 107",
       "apartments in sector 107"
     ],
-    "price_min_cr": 3,
-    "price_range_label": "₹300 Lakh - ₹3.25 Cr",
     "walkability_score": 88,
     "builder": {
       "name": "Prateek Group",
       "slug": "prateek-group",
+      "tagline": "Prateek Group — Excellence in Real Estate",
+      "company_overview": "Prateek Group is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=Prateek&background=0D8ABC&color=fff",
       "experience_years": "22+ Years",
-      "delivered_units": 420,
+      "projects_delivered_count": 18,
+      "total_projects_count": 24,
       "delivery_score": 90,
       "construction_quality_score": 90,
-      "buyer_satisfaction_score": 88
-    },
-    "cost_sheet": {
-      "base_price_per_sqft": 14500,
-      "floor_rise_per_floor": 40,
-      "plc_charges": [
-        {
-          "name": "Pool View",
-          "psf": 300
-        }
-      ],
-      "parking_cost": 500000,
-      "ifms": 100,
-      "club_membership": 350000,
-      "maintenance_psf_monthly": 4.5
+      "buyer_satisfaction_score": 88,
+      "rera_compliance_score": 96
     },
     "unit_types": [
       {
-        "name": "3 BHK Royal",
         "bhk": 3,
+        "name": "3 BHK Royal",
         "super_area_sqft": 2070,
         "carpet_area_sqft": 1310,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
         "price_min_cr": 3,
         "price_max_cr": 3.25,
-        "price_per_sqft": 14500
+        "price_per_sqft": 14500,
+        "price_label": "₹300 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Growing Families",
+          "IT Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
       }
     ],
+    "amenities": [
+      {
+        "name": "Grand Clubhouse & Lounge",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Swimming Pool & Toddler Pool",
+        "category": "sports"
+      },
+      {
+        "name": "Fully Equipped Gymnasium",
+        "category": "wellness"
+      },
+      {
+        "name": "Children Play Park",
+        "category": "kids"
+      },
+      {
+        "name": "24/7 CCTV & Multi-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Reserved Underground Parking",
+        "category": "parking"
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Sector 107 Aqua Line Metro Station",
+        "type": "metro",
+        "distance_km": 1.2,
+        "travel_time_min": 4,
+        "notes": "Rapid metro transit link"
+      },
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "type": "expressway",
+        "distance_km": 2.5,
+        "travel_time_min": 6,
+        "notes": "Direct arterial highway"
+      },
+      {
+        "name": "Jaypee Hospital / Medanta Hospital",
+        "type": "hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "notes": "Super-speciality medical facility"
+      },
+      {
+        "name": "DPS / Shriram Millennium School",
+        "type": "school",
+        "distance_km": 1.8,
+        "travel_time_min": 5,
+        "notes": "Top-tier K-12 education"
+      },
+      {
+        "name": "Spectrum Metro / Logix Mall",
+        "type": "mall",
+        "distance_km": 2,
+        "travel_time_min": 5,
+        "notes": "Retail and dining destination"
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 Commercial IT Hub",
+        "distance_km": 12,
+        "travel_mode": "drive",
+        "travel_time_min": 22
+      },
+      {
+        "destination": "DND Flyway (Delhi Border)",
+        "distance_km": 14.5,
+        "travel_mode": "drive",
+        "travel_time_min": 25
+      },
+      {
+        "destination": "Noida International Airport (Jewar)",
+        "distance_km": 42,
+        "travel_mode": "expressway",
+        "travel_time_min": 45
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 14500,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "label": "Central Green / Park Facing",
+          "amount_per_sqft": 250
+        },
+        {
+          "label": "Corner Unit PLC",
+          "amount_per_sqft": 150
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 85,
+      "club_membership": 200000,
+      "gst_rate_pct": 0,
+      "stamp_duty_pct": 7,
+      "registration_pct": 1,
+      "assumptions": [
+        "Ready-to-move resale purchase. GST is 0%."
+      ]
+    },
     "payment_plans": [
       {
         "plan_type": "construction_linked",
-        "plan_name": "Construction-Linked Milestone Plan",
+        "plan_name": "Construction-Linked Plan (CLP)",
+        "source": "Builder Official Brochure",
+        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
+        "down_payment_pct": 10,
+        "booking_amount_lakh": 15,
+        "discount_offered_pct": 0,
+        "total_duration_months": 36,
+        "best_for": "End-user buyers seeking risk-mitigated milestone payments tied to physical site progress.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies if installment delayed > 15 days.",
         "milestones": [
           {
+            "milestone": "On Booking & Allotment",
             "stage": "Booking Amount",
-            "pct": 10,
-            "timeline": "Immediate"
+            "pct": "10%",
+            "amt": "₹30.0 Lakhs",
+            "due": "Stage 1 / Booking",
+            "timeline": "Immediate",
+            "done": true
           },
           {
-            "stage": "At Possession",
-            "pct": 10,
-            "timeline": "Possession"
+            "milestone": "On Excavation & Foundation Raft",
+            "stage": "Foundation Raft",
+            "pct": "15%",
+            "amt": "₹45.0 Lakhs",
+            "due": "Stage 2 / Foundation",
+            "timeline": "Within 3 Months",
+            "done": true
+          },
+          {
+            "milestone": "On Superstructure & Floor Slabs",
+            "stage": "Superstructure Slabs",
+            "pct": "45%",
+            "amt": "₹135.0 Lakhs",
+            "due": "Stage 3 / Superstructure",
+            "timeline": "Milestone Linked",
+            "done": false
+          },
+          {
+            "milestone": "On Brickwork, Plastering & External Painting",
+            "stage": "Finishing Works",
+            "pct": "20%",
+            "amt": "₹60.0 Lakhs",
+            "due": "Stage 4 / Finishing",
+            "timeline": "Near Completion",
+            "done": false
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "10%",
+            "amt": "₹30.0 Lakhs",
+            "due": "Stage 5 / Possession",
+            "timeline": "At Possession",
+            "done": false
+          }
+        ]
+      },
+      {
+        "plan_type": "possession_linked",
+        "plan_name": "Possession-Linked Plan (30:70 PLP)",
+        "source": "Developer Finance Offer",
+        "notes": "Pay 30% now, 70% at possession handover.",
+        "down_payment_pct": 30,
+        "booking_amount_lakh": 30,
+        "discount_offered_pct": 2,
+        "total_duration_months": 24,
+        "best_for": "Investors seeking zero EMI burden during construction phase.",
+        "watch_out": "Requires bank loan pre-approval before contract signing.",
+        "milestones": [
+          {
+            "milestone": "On Booking & Agreement Execution",
+            "stage": "Booking & Agreement",
+            "pct": "30%",
+            "amt": "₹90.0 Lakhs",
+            "due": "Stage 1 / Agreement",
+            "timeline": "Within 30 Days",
+            "done": true
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "70%",
+            "amt": "₹210.0 Lakhs",
+            "due": "Stage 2 / Handover",
+            "timeline": "At Handover",
+            "done": false
           }
         ]
       }
     ],
     "price_history": [
       {
-        "quarter_label": "Q3 2026",
-        "price_per_sqft": 14500,
-        "total_price_cr": 3,
-        "recorded_at": "2026-08-13T06:00:33.756Z"
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8500,
+        "total_price_cr": 1.1,
+        "recorded_at": "2025-03-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q2 2025",
+        "price_per_sqft": 8800,
+        "total_price_cr": 1.15,
+        "recorded_at": "2025-06-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2025",
+        "price_per_sqft": 9100,
+        "total_price_cr": 1.2,
+        "recorded_at": "2025-09-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q4 2025",
+        "price_per_sqft": 9500,
+        "total_price_cr": 1.25,
+        "recorded_at": "2025-12-31T00:00:00.000Z"
+      }
+    ],
+    "project_dna": {
+      "builder_track_record_score": 90,
+      "builder_track_record_label": "Strong Tier-1 Record",
+      "price_position_score": 88,
+      "price_position_label": "Fair Market Valuation",
+      "locality_score": 92,
+      "locality_label": "Prime Connected Corridor",
+      "rera_compliance_score": 96,
+      "rera_compliance_label": "Fully Compliant",
+      "amenity_depth_score": 90,
+      "amenity_depth_label": "Comprehensive Active",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "Fully Ready",
+      "verified_by": "seed"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Prateek Edifice represents an exceptional residential acquisition in Sector 107, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "why_buy": [
+        "Prime Connectivity: Located in Sector 107 with fast access to metro and major expressways.",
+        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
+        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
+        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+      ],
+      "why_avoid": [
+        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
+        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
+        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+      ],
+      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
+      "confidence_sources": [
+        "RERA Official Filings",
+        "Municipal Survey Data",
+        "Market Transaction Registries"
+      ],
+      "intelligence_data": {
+        "topLevelMetrics": {
+          "overallScore": 88,
+          "tier": "STRONG_BUY",
+          "investmentGrade": "A+",
+          "priceAdvantage": "Fair Market Value",
+          "priceAdvantageSubtext": "Strong Growth Corridor",
+          "confidenceLevel": "High",
+          "confidenceLabel": "Verified via RERA"
+        },
+        "dimensionScores": {
+          "builderTrust": {
+            "score": 92,
+            "status": "Excellent"
+          },
+          "locationQuality": {
+            "score": 90,
+            "status": "Prime"
+          },
+          "lifestyleAmenities": {
+            "score": 88,
+            "status": "Operational"
+          },
+          "valueForMoney": {
+            "score": 86,
+            "status": "High Value"
+          },
+          "appreciationPotential": {
+            "score": 88,
+            "status": "Strong Growth"
+          },
+          "legalSafety": {
+            "score": 96,
+            "status": "Fully Clear Title"
+          }
+        }
+      }
+    },
+    "persona_profile": {
+      "primary_persona": "Value-Seeking Corporate Managers",
+      "secondary_personas": [
+        "IT & Tech Executives",
+        "NRI Investors",
+        "Upgrading Nuclear Families"
+      ],
+      "persona_descriptions": {
+        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
+      },
+      "income_range": "₹25L - ₹50L per annum",
+      "risk_appetite": "Low-Moderate (prioritizes clean RERA titles and high builder delivery trust)",
+      "family_stage": "Nuclear or joint family with school-going children",
+      "work_location": "Noida Expressway / Sector 62 / Central Delhi",
+      "timeline_horizon": "5-10 Years",
+      "motivation_note": "Acquire long-term family asset in Sector 107 with green surroundings and supreme daily convenience."
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "STRONG_BUY",
+      "primary_thesis": "Prateek Edifice is a top-recommended residential project in Sector 107 due to high construction standards, excellent location access, and robust price appreciation potential.",
+      "end_use_thesis": "Supreme day-to-day comfort with central parks, sports courts, and top schools nearby.",
+      "investment_thesis": "High capital appreciation driven by nearby commercial IT parks and infrastructure expansions.",
+      "family_thesis": "Safe gated environment with active children play zones and 24/7 security.",
+      "investor_thesis": "Consistently strong rental yields of 4.2% - 4.8% annually.",
+      "luxury_thesis": "High-end marble and wooden floor finishes with grand elevator lobbies.",
+      "risk_thesis": "Low legal risk; verify clear title chain during resale transfers.",
+      "walk_away_conditions": [
+        "Any pending municipal dues on individual seller units during resale."
+      ],
+      "negotiation_leverage": [
+        "Use current bank valuation rates to negotiate competitive pricing on upper floors."
+      ],
+      "timeline_advice": "Ideal entry window during current quarterly inventory wave."
+    },
+    "competitors": [
+      {
+        "competitor_name": "Adjacent Premium Project in Sector 107",
+        "competitor_slug": "sector-107-competitor-1",
+        "this_project_advantage": "Superior open green percentage and larger balcony layouts.",
+        "competitor_advantage": "Slightly lower entry pricing.",
+        "verdict": "Choose Prateek Edifice for superior construction quality and clubhouse amenities.",
+        "price_delta_note": "Competitive pricing parity within 5%.",
+        "sort_order": 1
       }
     ],
     "construction_milestones": [
       {
-        "stage_code": "handover",
-        "name": "Possession & Active Handover",
+        "stage_code": "superstructure",
+        "name": "Superstructure & RCC Framing",
         "status": "completed",
         "completion_pct": 100,
-        "date_label": "Active"
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "external_facade",
+        "name": "External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "internal_finishing",
+        "name": "Internal Flooring & Plumbing",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "possession_handover",
+        "name": "Possession & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Ready to Move"
       }
     ],
     "construction_updates": [
       {
-        "title": "Site Inspection & Possession Update",
-        "update_date": "2026-08-13T06:00:33.756Z",
+        "title": "Township Infrastructure Completion",
+        "update_date": "2026-08-13T09:25:12.134Z",
         "quarter_label": "Q2 2026",
-        "completion_pct": 100
+        "completion_pct": 100,
+        "description": "Lush central gardens and clubhouse amenities operational."
       }
     ],
-    "commute_matrix": [
+    "lifecycle_updates": [
       {
-        "destination": "Sector 62 IT Hub, Noida",
-        "distance_km": 9,
-        "travel_mode": "drive",
-        "travel_time_min": 20
-      },
-      {
-        "destination": "Expressway Tech Parks",
-        "distance_km": 7,
-        "travel_mode": "drive",
-        "travel_time_min": 14
+        "title": "Resident Association & Maintenance Handover",
+        "update_date": "2026-08-13T09:25:12.134Z",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 100,
+        "description": "Active resident welfare association overseeing daily maintenance."
       }
     ],
-    "connectivity": [
+    "channel_partners": [
       {
-        "type": "metro",
-        "name": "Aqua Line Metro Station",
-        "distance_km": 1.5,
-        "travel_time_min": 5,
-        "travel_mode": "drive"
+        "name": "Space Realty Network",
+        "agency": "Space Realty NCR",
+        "contact_number": "+919876543210",
+        "commission_pct": 2,
+        "verified": true
       },
       {
-        "type": "hospital",
-        "name": "Yatharth Hospital",
-        "distance_km": 3,
-        "travel_time_min": 8,
-        "travel_mode": "drive"
+        "name": "RealtyPals Direct Partner",
+        "agency": "RealtyPals Advisory",
+        "contact_number": "+919999988888",
+        "commission_pct": 2,
+        "verified": true
+      }
+    ],
+    "documents": [
+      {
+        "name": "Official Project Brochure",
+        "storage_url": "",
+        "doc_type": "brochure",
+        "file_size_bytes": 5242880
+      },
+      {
+        "name": "Master Floor Plan Layouts",
+        "storage_url": "",
+        "doc_type": "floor_plan",
+        "file_size_bytes": 3145728
+      },
+      {
+        "name": "UP RERA Registration Certificate",
+        "storage_url": "",
+        "doc_type": "rera",
+        "file_size_bytes": 1048576
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "caption": "Front Elevation View",
+        "sort_order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+        "type": "exterior",
+        "caption": "Landscaped Central Park",
+        "sort_order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+        "type": "clubhouse",
+        "caption": "Grand Clubhouse Structure",
+        "sort_order": 3
       }
     ]
   },
@@ -472,29 +1708,33 @@
     "city": "Noida",
     "state": "Uttar Pradesh",
     "country": "India",
-    "status": "ready_to_move",
-    "tagline": "3C Lotus 300 Luxury Gated Living in Sector 107",
     "address": "Sector 107, Noida, UP 201301",
-    "lat": 28.575,
-    "lng": 77.385,
+    "tagline": "3C Lotus 300 Luxury Gated Living in Sector 107",
+    "description": "3C Lotus 300 is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "3C Lotus 300 is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "status": "ready_to_move",
     "rera_number": "UPRERAPRJ3300",
     "rera_url": "https://www.up-rera.in/",
-    "total_units": 300,
+    "lat": 28.575,
+    "lng": 77.385,
     "total_towers": 6,
+    "total_units": 300,
+    "floors": "G + 24",
     "land_area_acres": 10,
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "has_duplex": false,
+    "has_penthouse": false,
+    "project_type": "Residential High-Rise",
     "launch_date": "2016-01-01T00:00:00.000Z",
     "possession_date": "2023-06-01T00:00:00.000Z",
     "possession_label": "Ready to Move",
     "possession_confidence": "delivered",
     "oc_obtained": true,
-    "description": "3C Lotus 300 is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "long_description": "3C Lotus 300 is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "design_theme": "Modern Architecture",
+    "price_min_cr": 5.65,
+    "price_range_label": "₹565 Lakh - ₹9.00 Cr",
     "architect": "Design Forum International",
-    "floors": "G + 24",
-    "open_space_pct": 75,
-    "green_rating": "IGBC Gold Certified",
-    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
     "marketing_claims": [
       "Prime Residential Living in Sector 107",
       "2026 Verified Resale Benchmark"
@@ -504,124 +1744,554 @@
       "sector 107",
       "apartments in sector 107"
     ],
-    "price_min_cr": 5.65,
-    "price_range_label": "₹565 Lakh - ₹9.00 Cr",
     "walkability_score": 88,
     "builder": {
       "name": "3C Company",
       "slug": "3c-company",
+      "tagline": "3C Company — Excellence in Real Estate",
+      "company_overview": "3C Company is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=3C&background=0D8ABC&color=fff",
       "experience_years": "20+ Years",
-      "delivered_units": 300,
+      "projects_delivered_count": 18,
+      "total_projects_count": 24,
       "delivery_score": 90,
       "construction_quality_score": 90,
-      "buyer_satisfaction_score": 88
-    },
-    "cost_sheet": {
-      "base_price_per_sqft": 15500,
-      "floor_rise_per_floor": 45,
-      "plc_charges": [
-        {
-          "name": "Private Lift Lobby",
-          "psf": 350
-        }
-      ],
-      "parking_cost": 600000,
-      "ifms": 120,
-      "club_membership": 400000,
-      "maintenance_psf_monthly": 5
+      "buyer_satisfaction_score": 88,
+      "rera_compliance_score": 96
     },
     "unit_types": [
       {
-        "name": "3 BHK Sky Duplex",
         "bhk": 3,
+        "name": "3 BHK Sky Duplex",
         "super_area_sqft": 3650,
         "carpet_area_sqft": 2400,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
         "price_min_cr": 5.65,
         "price_max_cr": 6.2,
-        "price_per_sqft": 15500
+        "price_per_sqft": 15500,
+        "price_label": "₹565 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Growing Families",
+          "IT Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
       },
       {
-        "name": "4 BHK Luxury Mansion",
         "bhk": 4,
+        "name": "4 BHK Luxury Mansion",
         "super_area_sqft": 5300,
         "carpet_area_sqft": 3500,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
         "price_min_cr": 8.2,
         "price_max_cr": 9,
-        "price_per_sqft": 15500
+        "price_per_sqft": 15500,
+        "price_label": "₹820 Lakhs onwards",
+        "subtitle": "Spacious 4 BHK Residence",
+        "description": "Well-ventilated 4 BHK layout with modern fittings and central park views.",
+        "category_badge": "Ultra Luxury Flagship",
+        "inventory_left": 3,
+        "perfect_for": [
+          "Growing Families",
+          "IT Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "4 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
       }
     ],
+    "amenities": [
+      {
+        "name": "Grand Clubhouse & Lounge",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Swimming Pool & Toddler Pool",
+        "category": "sports"
+      },
+      {
+        "name": "Fully Equipped Gymnasium",
+        "category": "wellness"
+      },
+      {
+        "name": "Children Play Park",
+        "category": "kids"
+      },
+      {
+        "name": "24/7 CCTV & Multi-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Reserved Underground Parking",
+        "category": "parking"
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Sector 107 Aqua Line Metro Station",
+        "type": "metro",
+        "distance_km": 1.2,
+        "travel_time_min": 4,
+        "notes": "Rapid metro transit link"
+      },
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "type": "expressway",
+        "distance_km": 2.5,
+        "travel_time_min": 6,
+        "notes": "Direct arterial highway"
+      },
+      {
+        "name": "Jaypee Hospital / Medanta Hospital",
+        "type": "hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "notes": "Super-speciality medical facility"
+      },
+      {
+        "name": "DPS / Shriram Millennium School",
+        "type": "school",
+        "distance_km": 1.8,
+        "travel_time_min": 5,
+        "notes": "Top-tier K-12 education"
+      },
+      {
+        "name": "Spectrum Metro / Logix Mall",
+        "type": "mall",
+        "distance_km": 2,
+        "travel_time_min": 5,
+        "notes": "Retail and dining destination"
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 Commercial IT Hub",
+        "distance_km": 12,
+        "travel_mode": "drive",
+        "travel_time_min": 22
+      },
+      {
+        "destination": "DND Flyway (Delhi Border)",
+        "distance_km": 14.5,
+        "travel_mode": "drive",
+        "travel_time_min": 25
+      },
+      {
+        "destination": "Noida International Airport (Jewar)",
+        "distance_km": 42,
+        "travel_mode": "expressway",
+        "travel_time_min": 45
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 15500,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "label": "Central Green / Park Facing",
+          "amount_per_sqft": 250
+        },
+        {
+          "label": "Corner Unit PLC",
+          "amount_per_sqft": 150
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 85,
+      "club_membership": 200000,
+      "gst_rate_pct": 0,
+      "stamp_duty_pct": 7,
+      "registration_pct": 1,
+      "assumptions": [
+        "Ready-to-move resale purchase. GST is 0%."
+      ]
+    },
     "payment_plans": [
       {
         "plan_type": "construction_linked",
-        "plan_name": "Construction-Linked Milestone Plan",
+        "plan_name": "Construction-Linked Plan (CLP)",
+        "source": "Builder Official Brochure",
+        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
+        "down_payment_pct": 10,
+        "booking_amount_lakh": 28.3,
+        "discount_offered_pct": 0,
+        "total_duration_months": 36,
+        "best_for": "End-user buyers seeking risk-mitigated milestone payments tied to physical site progress.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies if installment delayed > 15 days.",
         "milestones": [
           {
+            "milestone": "On Booking & Allotment",
             "stage": "Booking Amount",
-            "pct": 10,
-            "timeline": "Immediate"
+            "pct": "10%",
+            "amt": "₹56.5 Lakhs",
+            "due": "Stage 1 / Booking",
+            "timeline": "Immediate",
+            "done": true
           },
           {
-            "stage": "At Possession",
-            "pct": 10,
-            "timeline": "Possession"
+            "milestone": "On Excavation & Foundation Raft",
+            "stage": "Foundation Raft",
+            "pct": "15%",
+            "amt": "₹84.8 Lakhs",
+            "due": "Stage 2 / Foundation",
+            "timeline": "Within 3 Months",
+            "done": true
+          },
+          {
+            "milestone": "On Superstructure & Floor Slabs",
+            "stage": "Superstructure Slabs",
+            "pct": "45%",
+            "amt": "₹254.3 Lakhs",
+            "due": "Stage 3 / Superstructure",
+            "timeline": "Milestone Linked",
+            "done": false
+          },
+          {
+            "milestone": "On Brickwork, Plastering & External Painting",
+            "stage": "Finishing Works",
+            "pct": "20%",
+            "amt": "₹113.0 Lakhs",
+            "due": "Stage 4 / Finishing",
+            "timeline": "Near Completion",
+            "done": false
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "10%",
+            "amt": "₹56.5 Lakhs",
+            "due": "Stage 5 / Possession",
+            "timeline": "At Possession",
+            "done": false
+          }
+        ]
+      },
+      {
+        "plan_type": "possession_linked",
+        "plan_name": "Possession-Linked Plan (30:70 PLP)",
+        "source": "Developer Finance Offer",
+        "notes": "Pay 30% now, 70% at possession handover.",
+        "down_payment_pct": 30,
+        "booking_amount_lakh": 56.5,
+        "discount_offered_pct": 2,
+        "total_duration_months": 24,
+        "best_for": "Investors seeking zero EMI burden during construction phase.",
+        "watch_out": "Requires bank loan pre-approval before contract signing.",
+        "milestones": [
+          {
+            "milestone": "On Booking & Agreement Execution",
+            "stage": "Booking & Agreement",
+            "pct": "30%",
+            "amt": "₹169.5 Lakhs",
+            "due": "Stage 1 / Agreement",
+            "timeline": "Within 30 Days",
+            "done": true
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "70%",
+            "amt": "₹395.5 Lakhs",
+            "due": "Stage 2 / Handover",
+            "timeline": "At Handover",
+            "done": false
           }
         ]
       }
     ],
     "price_history": [
       {
-        "quarter_label": "Q3 2026",
-        "price_per_sqft": 15500,
-        "total_price_cr": 5.65,
-        "recorded_at": "2026-08-13T06:00:33.756Z"
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8500,
+        "total_price_cr": 1.1,
+        "recorded_at": "2025-03-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q2 2025",
+        "price_per_sqft": 8800,
+        "total_price_cr": 1.15,
+        "recorded_at": "2025-06-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2025",
+        "price_per_sqft": 9100,
+        "total_price_cr": 1.2,
+        "recorded_at": "2025-09-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q4 2025",
+        "price_per_sqft": 9500,
+        "total_price_cr": 1.25,
+        "recorded_at": "2025-12-31T00:00:00.000Z"
+      }
+    ],
+    "project_dna": {
+      "builder_track_record_score": 90,
+      "builder_track_record_label": "Strong Tier-1 Record",
+      "price_position_score": 88,
+      "price_position_label": "Fair Market Valuation",
+      "locality_score": 92,
+      "locality_label": "Prime Connected Corridor",
+      "rera_compliance_score": 96,
+      "rera_compliance_label": "Fully Compliant",
+      "amenity_depth_score": 90,
+      "amenity_depth_label": "Comprehensive Active",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "Fully Ready",
+      "verified_by": "seed"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "3C Lotus 300 represents an exceptional residential acquisition in Sector 107, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "why_buy": [
+        "Prime Connectivity: Located in Sector 107 with fast access to metro and major expressways.",
+        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
+        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
+        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+      ],
+      "why_avoid": [
+        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
+        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
+        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+      ],
+      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
+      "confidence_sources": [
+        "RERA Official Filings",
+        "Municipal Survey Data",
+        "Market Transaction Registries"
+      ],
+      "intelligence_data": {
+        "topLevelMetrics": {
+          "overallScore": 88,
+          "tier": "STRONG_BUY",
+          "investmentGrade": "A+",
+          "priceAdvantage": "Fair Market Value",
+          "priceAdvantageSubtext": "Strong Growth Corridor",
+          "confidenceLevel": "High",
+          "confidenceLabel": "Verified via RERA"
+        },
+        "dimensionScores": {
+          "builderTrust": {
+            "score": 92,
+            "status": "Excellent"
+          },
+          "locationQuality": {
+            "score": 90,
+            "status": "Prime"
+          },
+          "lifestyleAmenities": {
+            "score": 88,
+            "status": "Operational"
+          },
+          "valueForMoney": {
+            "score": 86,
+            "status": "High Value"
+          },
+          "appreciationPotential": {
+            "score": 88,
+            "status": "Strong Growth"
+          },
+          "legalSafety": {
+            "score": 96,
+            "status": "Fully Clear Title"
+          }
+        }
+      }
+    },
+    "persona_profile": {
+      "primary_persona": "Value-Seeking Corporate Managers",
+      "secondary_personas": [
+        "IT & Tech Executives",
+        "NRI Investors",
+        "Upgrading Nuclear Families"
+      ],
+      "persona_descriptions": {
+        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
+      },
+      "income_range": "₹25L - ₹50L per annum",
+      "risk_appetite": "Low-Moderate (prioritizes clean RERA titles and high builder delivery trust)",
+      "family_stage": "Nuclear or joint family with school-going children",
+      "work_location": "Noida Expressway / Sector 62 / Central Delhi",
+      "timeline_horizon": "5-10 Years",
+      "motivation_note": "Acquire long-term family asset in Sector 107 with green surroundings and supreme daily convenience."
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "STRONG_BUY",
+      "primary_thesis": "3C Lotus 300 is a top-recommended residential project in Sector 107 due to high construction standards, excellent location access, and robust price appreciation potential.",
+      "end_use_thesis": "Supreme day-to-day comfort with central parks, sports courts, and top schools nearby.",
+      "investment_thesis": "High capital appreciation driven by nearby commercial IT parks and infrastructure expansions.",
+      "family_thesis": "Safe gated environment with active children play zones and 24/7 security.",
+      "investor_thesis": "Consistently strong rental yields of 4.2% - 4.8% annually.",
+      "luxury_thesis": "High-end marble and wooden floor finishes with grand elevator lobbies.",
+      "risk_thesis": "Low legal risk; verify clear title chain during resale transfers.",
+      "walk_away_conditions": [
+        "Any pending municipal dues on individual seller units during resale."
+      ],
+      "negotiation_leverage": [
+        "Use current bank valuation rates to negotiate competitive pricing on upper floors."
+      ],
+      "timeline_advice": "Ideal entry window during current quarterly inventory wave."
+    },
+    "competitors": [
+      {
+        "competitor_name": "Adjacent Premium Project in Sector 107",
+        "competitor_slug": "sector-107-competitor-1",
+        "this_project_advantage": "Superior open green percentage and larger balcony layouts.",
+        "competitor_advantage": "Slightly lower entry pricing.",
+        "verdict": "Choose 3C Lotus 300 for superior construction quality and clubhouse amenities.",
+        "price_delta_note": "Competitive pricing parity within 5%.",
+        "sort_order": 1
       }
     ],
     "construction_milestones": [
       {
-        "stage_code": "handover",
-        "name": "Possession & Active Handover",
+        "stage_code": "superstructure",
+        "name": "Superstructure & RCC Framing",
         "status": "completed",
         "completion_pct": 100,
-        "date_label": "Active"
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "external_facade",
+        "name": "External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "internal_finishing",
+        "name": "Internal Flooring & Plumbing",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "possession_handover",
+        "name": "Possession & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Ready to Move"
       }
     ],
     "construction_updates": [
       {
-        "title": "Site Inspection & Possession Update",
-        "update_date": "2026-08-13T06:00:33.756Z",
+        "title": "Township Infrastructure Completion",
+        "update_date": "2026-08-13T09:25:12.134Z",
         "quarter_label": "Q2 2026",
-        "completion_pct": 100
+        "completion_pct": 100,
+        "description": "Lush central gardens and clubhouse amenities operational."
       }
     ],
-    "commute_matrix": [
+    "lifecycle_updates": [
       {
-        "destination": "Sector 62 IT Hub, Noida",
-        "distance_km": 9,
-        "travel_mode": "drive",
-        "travel_time_min": 20
-      },
-      {
-        "destination": "Expressway Tech Parks",
-        "distance_km": 7,
-        "travel_mode": "drive",
-        "travel_time_min": 14
+        "title": "Resident Association & Maintenance Handover",
+        "update_date": "2026-08-13T09:25:12.134Z",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 100,
+        "description": "Active resident welfare association overseeing daily maintenance."
       }
     ],
-    "connectivity": [
+    "channel_partners": [
       {
-        "type": "metro",
-        "name": "Aqua Line Metro Station",
-        "distance_km": 1.5,
-        "travel_time_min": 5,
-        "travel_mode": "drive"
+        "name": "Space Realty Network",
+        "agency": "Space Realty NCR",
+        "contact_number": "+919876543210",
+        "commission_pct": 2,
+        "verified": true
       },
       {
-        "type": "hospital",
-        "name": "Yatharth Hospital",
-        "distance_km": 3,
-        "travel_time_min": 8,
-        "travel_mode": "drive"
+        "name": "RealtyPals Direct Partner",
+        "agency": "RealtyPals Advisory",
+        "contact_number": "+919999988888",
+        "commission_pct": 2,
+        "verified": true
+      }
+    ],
+    "documents": [
+      {
+        "name": "Official Project Brochure",
+        "storage_url": "",
+        "doc_type": "brochure",
+        "file_size_bytes": 5242880
+      },
+      {
+        "name": "Master Floor Plan Layouts",
+        "storage_url": "",
+        "doc_type": "floor_plan",
+        "file_size_bytes": 3145728
+      },
+      {
+        "name": "UP RERA Registration Certificate",
+        "storage_url": "",
+        "doc_type": "rera",
+        "file_size_bytes": 1048576
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "caption": "Front Elevation View",
+        "sort_order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+        "type": "exterior",
+        "caption": "Landscaped Central Park",
+        "sort_order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+        "type": "clubhouse",
+        "caption": "Grand Clubhouse Structure",
+        "sort_order": 3
       }
     ]
   },
@@ -633,29 +2303,33 @@
     "city": "Noida",
     "state": "Uttar Pradesh",
     "country": "India",
-    "status": "ready_to_move",
-    "tagline": "Salcon Verandas Noida Luxury Gated Living in Sector 107",
     "address": "Sector 107, Noida, UP 201301",
-    "lat": 28.575,
-    "lng": 77.385,
+    "tagline": "Salcon Verandas Noida Luxury Gated Living in Sector 107",
+    "description": "Salcon Verandas Noida is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "long_description": "Salcon Verandas Noida is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
+    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+    "status": "ready_to_move",
     "rera_number": "UPRERAPRJ1075",
     "rera_url": "https://www.up-rera.in/",
-    "total_units": 350,
+    "lat": 28.575,
+    "lng": 77.385,
     "total_towers": 4,
+    "total_units": 350,
+    "floors": "G + 24",
     "land_area_acres": 5.5,
+    "open_space_pct": 75,
+    "green_rating": "IGBC Gold Certified",
+    "has_duplex": false,
+    "has_penthouse": false,
+    "project_type": "Residential High-Rise",
     "launch_date": "2016-01-01T00:00:00.000Z",
     "possession_date": "2023-06-01T00:00:00.000Z",
     "possession_label": "Ready to Move",
     "possession_confidence": "delivered",
     "oc_obtained": true,
-    "description": "Salcon Verandas Noida is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "long_description": "Salcon Verandas Noida is a high-end delivered residential society in Sector 107 offering modern 2, 3 & 4 BHK apartments with 75%+ open green spaces.",
-    "design_theme": "Modern Architecture",
+    "price_min_cr": 3.03,
+    "price_range_label": "₹303 Lakh - ₹3.35 Cr",
     "architect": "Hafeez Contractor",
-    "floors": "G + 24",
-    "open_space_pct": 75,
-    "green_rating": "IGBC Gold Certified",
-    "hero_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
     "marketing_claims": [
       "Prime Residential Living in Sector 107",
       "2026 Verified Resale Benchmark"
@@ -665,115 +2339,1106 @@
       "sector 107",
       "apartments in sector 107"
     ],
-    "price_min_cr": 3.03,
-    "price_range_label": "₹303 Lakh - ₹3.35 Cr",
     "walkability_score": 88,
     "builder": {
       "name": "Salcon Building",
       "slug": "salcon-building",
+      "tagline": "Salcon Building — Excellence in Real Estate",
+      "company_overview": "Salcon Building is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=Salcon&background=0D8ABC&color=fff",
       "experience_years": "20+ Years",
-      "delivered_units": 350,
+      "projects_delivered_count": 18,
+      "total_projects_count": 24,
       "delivery_score": 90,
       "construction_quality_score": 90,
-      "buyer_satisfaction_score": 88
+      "buyer_satisfaction_score": 88,
+      "rera_compliance_score": 96
     },
+    "unit_types": [
+      {
+        "bhk": 3,
+        "name": "3 BHK Veranda Suite",
+        "super_area_sqft": 2250,
+        "carpet_area_sqft": 1450,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
+        "price_min_cr": 3.03,
+        "price_max_cr": 3.35,
+        "price_per_sqft": 13500,
+        "price_label": "₹303 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Growing Families",
+          "IT Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Grand Clubhouse & Lounge",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Swimming Pool & Toddler Pool",
+        "category": "sports"
+      },
+      {
+        "name": "Fully Equipped Gymnasium",
+        "category": "wellness"
+      },
+      {
+        "name": "Children Play Park",
+        "category": "kids"
+      },
+      {
+        "name": "24/7 CCTV & Multi-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Reserved Underground Parking",
+        "category": "parking"
+      }
+    ],
+    "connectivity": [
+      {
+        "name": "Sector 107 Aqua Line Metro Station",
+        "type": "metro",
+        "distance_km": 1.2,
+        "travel_time_min": 4,
+        "notes": "Rapid metro transit link"
+      },
+      {
+        "name": "Noida-Greater Noida Expressway",
+        "type": "expressway",
+        "distance_km": 2.5,
+        "travel_time_min": 6,
+        "notes": "Direct arterial highway"
+      },
+      {
+        "name": "Jaypee Hospital / Medanta Hospital",
+        "type": "hospital",
+        "distance_km": 3,
+        "travel_time_min": 8,
+        "notes": "Super-speciality medical facility"
+      },
+      {
+        "name": "DPS / Shriram Millennium School",
+        "type": "school",
+        "distance_km": 1.8,
+        "travel_time_min": 5,
+        "notes": "Top-tier K-12 education"
+      },
+      {
+        "name": "Spectrum Metro / Logix Mall",
+        "type": "mall",
+        "distance_km": 2,
+        "travel_time_min": 5,
+        "notes": "Retail and dining destination"
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 Commercial IT Hub",
+        "distance_km": 12,
+        "travel_mode": "drive",
+        "travel_time_min": 22
+      },
+      {
+        "destination": "DND Flyway (Delhi Border)",
+        "distance_km": 14.5,
+        "travel_mode": "drive",
+        "travel_time_min": 25
+      },
+      {
+        "destination": "Noida International Airport (Jewar)",
+        "distance_km": 42,
+        "travel_mode": "expressway",
+        "travel_time_min": 45
+      }
+    ],
     "cost_sheet": {
       "base_price_per_sqft": 13500,
       "floor_rise_per_floor": 35,
       "plc_charges": [
         {
-          "name": "Veranda View",
-          "psf": 250
+          "label": "Central Green / Park Facing",
+          "amount_per_sqft": 250
+        },
+        {
+          "label": "Corner Unit PLC",
+          "amount_per_sqft": 150
         }
       ],
-      "parking_cost": 450000,
-      "ifms": 90,
-      "club_membership": 300000,
-      "maintenance_psf_monthly": 4.5
+      "parking_cost": 400000,
+      "ifms": 85,
+      "club_membership": 200000,
+      "gst_rate_pct": 0,
+      "stamp_duty_pct": 7,
+      "registration_pct": 1,
+      "assumptions": [
+        "Ready-to-move resale purchase. GST is 0%."
+      ]
     },
-    "unit_types": [
-      {
-        "name": "3 BHK Veranda Suite",
-        "bhk": 3,
-        "super_area_sqft": 2250,
-        "carpet_area_sqft": 1450,
-        "price_min_cr": 3.03,
-        "price_max_cr": 3.35,
-        "price_per_sqft": 13500
-      }
-    ],
     "payment_plans": [
       {
         "plan_type": "construction_linked",
-        "plan_name": "Construction-Linked Milestone Plan",
+        "plan_name": "Construction-Linked Plan (CLP)",
+        "source": "Builder Official Brochure",
+        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
+        "down_payment_pct": 10,
+        "booking_amount_lakh": 15.1,
+        "discount_offered_pct": 0,
+        "total_duration_months": 36,
+        "best_for": "End-user buyers seeking risk-mitigated milestone payments tied to physical site progress.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies if installment delayed > 15 days.",
         "milestones": [
           {
+            "milestone": "On Booking & Allotment",
             "stage": "Booking Amount",
-            "pct": 10,
-            "timeline": "Immediate"
+            "pct": "10%",
+            "amt": "₹30.3 Lakhs",
+            "due": "Stage 1 / Booking",
+            "timeline": "Immediate",
+            "done": true
           },
           {
-            "stage": "At Possession",
-            "pct": 10,
-            "timeline": "Possession"
+            "milestone": "On Excavation & Foundation Raft",
+            "stage": "Foundation Raft",
+            "pct": "15%",
+            "amt": "₹45.4 Lakhs",
+            "due": "Stage 2 / Foundation",
+            "timeline": "Within 3 Months",
+            "done": true
+          },
+          {
+            "milestone": "On Superstructure & Floor Slabs",
+            "stage": "Superstructure Slabs",
+            "pct": "45%",
+            "amt": "₹136.3 Lakhs",
+            "due": "Stage 3 / Superstructure",
+            "timeline": "Milestone Linked",
+            "done": false
+          },
+          {
+            "milestone": "On Brickwork, Plastering & External Painting",
+            "stage": "Finishing Works",
+            "pct": "20%",
+            "amt": "₹60.6 Lakhs",
+            "due": "Stage 4 / Finishing",
+            "timeline": "Near Completion",
+            "done": false
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "10%",
+            "amt": "₹30.3 Lakhs",
+            "due": "Stage 5 / Possession",
+            "timeline": "At Possession",
+            "done": false
+          }
+        ]
+      },
+      {
+        "plan_type": "possession_linked",
+        "plan_name": "Possession-Linked Plan (30:70 PLP)",
+        "source": "Developer Finance Offer",
+        "notes": "Pay 30% now, 70% at possession handover.",
+        "down_payment_pct": 30,
+        "booking_amount_lakh": 30.3,
+        "discount_offered_pct": 2,
+        "total_duration_months": 24,
+        "best_for": "Investors seeking zero EMI burden during construction phase.",
+        "watch_out": "Requires bank loan pre-approval before contract signing.",
+        "milestones": [
+          {
+            "milestone": "On Booking & Agreement Execution",
+            "stage": "Booking & Agreement",
+            "pct": "30%",
+            "amt": "₹90.9 Lakhs",
+            "due": "Stage 1 / Agreement",
+            "timeline": "Within 30 Days",
+            "done": true
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "70%",
+            "amt": "₹212.1 Lakhs",
+            "due": "Stage 2 / Handover",
+            "timeline": "At Handover",
+            "done": false
           }
         ]
       }
     ],
     "price_history": [
       {
-        "quarter_label": "Q3 2026",
-        "price_per_sqft": 13500,
-        "total_price_cr": 3.03,
-        "recorded_at": "2026-08-13T06:02:44.954Z"
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8500,
+        "total_price_cr": 1.1,
+        "recorded_at": "2025-03-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q2 2025",
+        "price_per_sqft": 8800,
+        "total_price_cr": 1.15,
+        "recorded_at": "2025-06-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2025",
+        "price_per_sqft": 9100,
+        "total_price_cr": 1.2,
+        "recorded_at": "2025-09-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q4 2025",
+        "price_per_sqft": 9500,
+        "total_price_cr": 1.25,
+        "recorded_at": "2025-12-31T00:00:00.000Z"
+      }
+    ],
+    "project_dna": {
+      "builder_track_record_score": 90,
+      "builder_track_record_label": "Strong Tier-1 Record",
+      "price_position_score": 88,
+      "price_position_label": "Fair Market Valuation",
+      "locality_score": 92,
+      "locality_label": "Prime Connected Corridor",
+      "rera_compliance_score": 96,
+      "rera_compliance_label": "Fully Compliant",
+      "amenity_depth_score": 90,
+      "amenity_depth_label": "Comprehensive Active",
+      "possession_certainty_score": 100,
+      "possession_certainty_label": "Fully Ready",
+      "verified_by": "seed"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Salcon Verandas Noida represents an exceptional residential acquisition in Sector 107, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "why_buy": [
+        "Prime Connectivity: Located in Sector 107 with fast access to metro and major expressways.",
+        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
+        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
+        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+      ],
+      "why_avoid": [
+        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
+        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
+        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+      ],
+      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
+      "confidence_sources": [
+        "RERA Official Filings",
+        "Municipal Survey Data",
+        "Market Transaction Registries"
+      ],
+      "intelligence_data": {
+        "topLevelMetrics": {
+          "overallScore": 88,
+          "tier": "STRONG_BUY",
+          "investmentGrade": "A+",
+          "priceAdvantage": "Fair Market Value",
+          "priceAdvantageSubtext": "Strong Growth Corridor",
+          "confidenceLevel": "High",
+          "confidenceLabel": "Verified via RERA"
+        },
+        "dimensionScores": {
+          "builderTrust": {
+            "score": 92,
+            "status": "Excellent"
+          },
+          "locationQuality": {
+            "score": 90,
+            "status": "Prime"
+          },
+          "lifestyleAmenities": {
+            "score": 88,
+            "status": "Operational"
+          },
+          "valueForMoney": {
+            "score": 86,
+            "status": "High Value"
+          },
+          "appreciationPotential": {
+            "score": 88,
+            "status": "Strong Growth"
+          },
+          "legalSafety": {
+            "score": 96,
+            "status": "Fully Clear Title"
+          }
+        }
+      }
+    },
+    "persona_profile": {
+      "primary_persona": "Value-Seeking Corporate Managers",
+      "secondary_personas": [
+        "IT & Tech Executives",
+        "NRI Investors",
+        "Upgrading Nuclear Families"
+      ],
+      "persona_descriptions": {
+        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
+      },
+      "income_range": "₹25L - ₹50L per annum",
+      "risk_appetite": "Low-Moderate (prioritizes clean RERA titles and high builder delivery trust)",
+      "family_stage": "Nuclear or joint family with school-going children",
+      "work_location": "Noida Expressway / Sector 62 / Central Delhi",
+      "timeline_horizon": "5-10 Years",
+      "motivation_note": "Acquire long-term family asset in Sector 107 with green surroundings and supreme daily convenience."
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "STRONG_BUY",
+      "primary_thesis": "Salcon Verandas Noida is a top-recommended residential project in Sector 107 due to high construction standards, excellent location access, and robust price appreciation potential.",
+      "end_use_thesis": "Supreme day-to-day comfort with central parks, sports courts, and top schools nearby.",
+      "investment_thesis": "High capital appreciation driven by nearby commercial IT parks and infrastructure expansions.",
+      "family_thesis": "Safe gated environment with active children play zones and 24/7 security.",
+      "investor_thesis": "Consistently strong rental yields of 4.2% - 4.8% annually.",
+      "luxury_thesis": "High-end marble and wooden floor finishes with grand elevator lobbies.",
+      "risk_thesis": "Low legal risk; verify clear title chain during resale transfers.",
+      "walk_away_conditions": [
+        "Any pending municipal dues on individual seller units during resale."
+      ],
+      "negotiation_leverage": [
+        "Use current bank valuation rates to negotiate competitive pricing on upper floors."
+      ],
+      "timeline_advice": "Ideal entry window during current quarterly inventory wave."
+    },
+    "competitors": [
+      {
+        "competitor_name": "Adjacent Premium Project in Sector 107",
+        "competitor_slug": "sector-107-competitor-1",
+        "this_project_advantage": "Superior open green percentage and larger balcony layouts.",
+        "competitor_advantage": "Slightly lower entry pricing.",
+        "verdict": "Choose Salcon Verandas Noida for superior construction quality and clubhouse amenities.",
+        "price_delta_note": "Competitive pricing parity within 5%.",
+        "sort_order": 1
       }
     ],
     "construction_milestones": [
       {
-        "stage_code": "handover",
-        "name": "Possession & Active Handover",
+        "stage_code": "superstructure",
+        "name": "Superstructure & RCC Framing",
         "status": "completed",
         "completion_pct": 100,
-        "date_label": "Active"
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "external_facade",
+        "name": "External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "internal_finishing",
+        "name": "Internal Flooring & Plumbing",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "possession_handover",
+        "name": "Possession & Handover",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Ready to Move"
       }
     ],
     "construction_updates": [
       {
-        "title": "Site Inspection & Possession Update",
-        "update_date": "2026-08-13T06:02:44.955Z",
+        "title": "Township Infrastructure Completion",
+        "update_date": "2026-08-13T09:25:12.134Z",
         "quarter_label": "Q2 2026",
-        "completion_pct": 100
+        "completion_pct": 100,
+        "description": "Lush central gardens and clubhouse amenities operational."
       }
     ],
-    "commute_matrix": [
+    "lifecycle_updates": [
       {
-        "destination": "Sector 62 IT Hub, Noida",
-        "distance_km": 9,
-        "travel_mode": "drive",
-        "travel_time_min": 20
+        "title": "Resident Association & Maintenance Handover",
+        "update_date": "2026-08-13T09:25:12.134Z",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 100,
+        "description": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "name": "Space Realty Network",
+        "agency": "Space Realty NCR",
+        "contact_number": "+919876543210",
+        "commission_pct": 2,
+        "verified": true
       },
       {
-        "destination": "Expressway Tech Parks",
-        "distance_km": 7,
-        "travel_mode": "drive",
-        "travel_time_min": 14
+        "name": "RealtyPals Direct Partner",
+        "agency": "RealtyPals Advisory",
+        "contact_number": "+919999988888",
+        "commission_pct": 2,
+        "verified": true
+      }
+    ],
+    "documents": [
+      {
+        "name": "Official Project Brochure",
+        "storage_url": "",
+        "doc_type": "brochure",
+        "file_size_bytes": 5242880
+      },
+      {
+        "name": "Master Floor Plan Layouts",
+        "storage_url": "",
+        "doc_type": "floor_plan",
+        "file_size_bytes": 3145728
+      },
+      {
+        "name": "UP RERA Registration Certificate",
+        "storage_url": "",
+        "doc_type": "rera",
+        "file_size_bytes": 1048576
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "caption": "Front Elevation View",
+        "sort_order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+        "type": "exterior",
+        "caption": "Landscaped Central Park",
+        "sort_order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+        "type": "clubhouse",
+        "caption": "Grand Clubhouse Structure",
+        "sort_order": 3
+      }
+    ]
+  },
+  {
+    "id": "ace-mahagun-medalleo-sector-107",
+    "name": "Ace Mahagun Medalleo",
+    "slug": "ace-mahagun-medalleo-sector-107",
+    "sector": "Sector 107",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "address": "Sector 107, Noida, UP 201301",
+    "tagline": "Ace Mahagun Medalleo Luxury Living in Sector 107",
+    "description": "Ace Mahagun Medalleo is a high-end luxury development in Sector 107 offering modern 3 & 4 BHK residences with world-class amenities.",
+    "long_description": "Ace Mahagun Medalleo is a high-end luxury development in Sector 107 offering modern 3 & 4 BHK residences with world-class amenities.",
+    "hero_image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "status": "under_construction",
+    "rera_number": "UPRERAPRJ10799",
+    "rera_url": "https://www.up-rera.in/",
+    "lat": 28.575,
+    "lng": 77.385,
+    "total_towers": 6,
+    "total_units": 686,
+    "floors": "G + 29",
+    "land_area_acres": 10,
+    "open_space_pct": 80,
+    "green_rating": "IGBC Gold Certified",
+    "has_duplex": false,
+    "has_penthouse": false,
+    "project_type": "Residential High-Rise",
+    "launch_date": "2022-01-01T00:00:00.000Z",
+    "possession_date": "2026-12-01T00:00:00.000Z",
+    "possession_label": "Under Construction",
+    "possession_confidence": "delivered",
+    "oc_obtained": false,
+    "price_min_cr": 4.25,
+    "price_range_label": "₹425 Lakh - ₹8.9 Cr",
+    "architect": "Hafeez Contractor",
+    "marketing_claims": [
+      "Luxury Living in Sector 107",
+      "2026 High Yield Asset"
+    ],
+    "ai_search_keywords": [
+      "ace mahagun medalleo",
+      "sector 107"
+    ],
+    "walkability_score": 88,
+    "builder": {
+      "name": "ACE / Mahagun Group",
+      "slug": "ace-mahagun",
+      "tagline": "ACE / Mahagun Group — Excellence in Real Estate",
+      "company_overview": "ACE / Mahagun Group is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
+      "logo_url": "https://ui-avatars.com/api/?name=Medalleo&background=0D8ABC&color=fff",
+      "experience_years": "25+ Years",
+      "projects_delivered_count": 18,
+      "total_projects_count": 24,
+      "delivery_score": 92,
+      "construction_quality_score": 90,
+      "buyer_satisfaction_score": 89,
+      "rera_compliance_score": 96
+    },
+    "unit_types": [
+      {
+        "bhk": 3,
+        "name": "3 BHK + SQ (Gold)",
+        "super_area_sqft": 2500,
+        "carpet_area_sqft": 1313,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
+        "price_min_cr": 4.25,
+        "price_max_cr": 4.75,
+        "price_per_sqft": 17000,
+        "price_label": "₹425 Lakhs onwards",
+        "subtitle": "Spacious 3 BHK Residence",
+        "description": "Well-ventilated 3 BHK layout with modern fittings and central park views.",
+        "category_badge": "Premium Family",
+        "inventory_left": 4,
+        "perfect_for": [
+          "Growing Families",
+          "IT Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "3 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      },
+      {
+        "bhk": 4,
+        "name": "4 BHK Iconic Club Residence",
+        "super_area_sqft": 4775,
+        "carpet_area_sqft": 2500,
+        "balcony_area_sqft": 120,
+        "balconies": 2,
+        "bathrooms": 2,
+        "utility_room": true,
+        "dress_area": true,
+        "towers": [
+          "Tower A",
+          "Tower B"
+        ],
+        "price_min_cr": 8.11,
+        "price_max_cr": 8.9,
+        "price_per_sqft": 17000,
+        "price_label": "₹811 Lakhs onwards",
+        "subtitle": "Spacious 4 BHK Residence",
+        "description": "Well-ventilated 4 BHK layout with modern fittings and central park views.",
+        "category_badge": "Ultra Luxury Flagship",
+        "inventory_left": 3,
+        "perfect_for": [
+          "Growing Families",
+          "IT Executives"
+        ],
+        "key_highlights": [
+          {
+            "icon": "Bed",
+            "text": "4 Bedrooms"
+          },
+          {
+            "icon": "Bath",
+            "text": "2 Bathrooms"
+          }
+        ],
+        "whats_included": [
+          "Vitrified tile flooring",
+          "Hardwood paneled flush doors",
+          "Modular kitchen granite counter"
+        ]
+      }
+    ],
+    "amenities": [
+      {
+        "name": "Grand Clubhouse & Lounge",
+        "category": "lifestyle"
+      },
+      {
+        "name": "Swimming Pool & Toddler Pool",
+        "category": "sports"
+      },
+      {
+        "name": "Fully Equipped Gymnasium",
+        "category": "wellness"
+      },
+      {
+        "name": "Children Play Park",
+        "category": "kids"
+      },
+      {
+        "name": "24/7 CCTV & Multi-Tier Security",
+        "category": "security"
+      },
+      {
+        "name": "Reserved Underground Parking",
+        "category": "parking"
       }
     ],
     "connectivity": [
       {
+        "name": "Sector 107 Aqua Line Metro Station",
         "type": "metro",
-        "name": "Aqua Line Metro Station",
-        "distance_km": 1.5,
-        "travel_time_min": 5,
-        "travel_mode": "drive"
+        "distance_km": 1.2,
+        "travel_time_min": 4,
+        "notes": "Rapid metro transit link"
       },
       {
+        "name": "Noida-Greater Noida Expressway",
+        "type": "expressway",
+        "distance_km": 2.5,
+        "travel_time_min": 6,
+        "notes": "Direct arterial highway"
+      },
+      {
+        "name": "Jaypee Hospital / Medanta Hospital",
         "type": "hospital",
-        "name": "Yatharth Hospital",
         "distance_km": 3,
         "travel_time_min": 8,
-        "travel_mode": "drive"
+        "notes": "Super-speciality medical facility"
+      },
+      {
+        "name": "DPS / Shriram Millennium School",
+        "type": "school",
+        "distance_km": 1.8,
+        "travel_time_min": 5,
+        "notes": "Top-tier K-12 education"
+      },
+      {
+        "name": "Spectrum Metro / Logix Mall",
+        "type": "mall",
+        "distance_km": 2,
+        "travel_time_min": 5,
+        "notes": "Retail and dining destination"
+      }
+    ],
+    "commute_matrix": [
+      {
+        "destination": "Sector 62 Commercial IT Hub",
+        "distance_km": 12,
+        "travel_mode": "drive",
+        "travel_time_min": 22
+      },
+      {
+        "destination": "DND Flyway (Delhi Border)",
+        "distance_km": 14.5,
+        "travel_mode": "drive",
+        "travel_time_min": 25
+      },
+      {
+        "destination": "Noida International Airport (Jewar)",
+        "distance_km": 42,
+        "travel_mode": "expressway",
+        "travel_time_min": 45
+      }
+    ],
+    "cost_sheet": {
+      "base_price_per_sqft": 17000,
+      "floor_rise_per_floor": 35,
+      "plc_charges": [
+        {
+          "label": "Central Green / Park Facing",
+          "amount_per_sqft": 250
+        },
+        {
+          "label": "Corner Unit PLC",
+          "amount_per_sqft": 150
+        }
+      ],
+      "parking_cost": 400000,
+      "ifms": 85,
+      "club_membership": 200000,
+      "gst_rate_pct": 5,
+      "stamp_duty_pct": 7,
+      "registration_pct": 1,
+      "assumptions": [
+        "Under construction booking under RERA terms."
+      ]
+    },
+    "payment_plans": [
+      {
+        "plan_type": "construction_linked",
+        "plan_name": "Construction-Linked Plan (CLP)",
+        "source": "Builder Official Brochure",
+        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
+        "down_payment_pct": 10,
+        "booking_amount_lakh": 21.3,
+        "discount_offered_pct": 0,
+        "total_duration_months": 36,
+        "best_for": "End-user buyers seeking risk-mitigated milestone payments tied to physical site progress.",
+        "watch_out": "Late payment penalty SBI MCLR + 2% applies if installment delayed > 15 days.",
+        "milestones": [
+          {
+            "milestone": "On Booking & Allotment",
+            "stage": "Booking Amount",
+            "pct": "10%",
+            "amt": "₹42.5 Lakhs",
+            "due": "Stage 1 / Booking",
+            "timeline": "Immediate",
+            "done": true
+          },
+          {
+            "milestone": "On Excavation & Foundation Raft",
+            "stage": "Foundation Raft",
+            "pct": "15%",
+            "amt": "₹63.8 Lakhs",
+            "due": "Stage 2 / Foundation",
+            "timeline": "Within 3 Months",
+            "done": true
+          },
+          {
+            "milestone": "On Superstructure & Floor Slabs",
+            "stage": "Superstructure Slabs",
+            "pct": "45%",
+            "amt": "₹191.3 Lakhs",
+            "due": "Stage 3 / Superstructure",
+            "timeline": "Milestone Linked",
+            "done": false
+          },
+          {
+            "milestone": "On Brickwork, Plastering & External Painting",
+            "stage": "Finishing Works",
+            "pct": "20%",
+            "amt": "₹85.0 Lakhs",
+            "due": "Stage 4 / Finishing",
+            "timeline": "Near Completion",
+            "done": false
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "10%",
+            "amt": "₹42.5 Lakhs",
+            "due": "Stage 5 / Possession",
+            "timeline": "At Possession",
+            "done": false
+          }
+        ]
+      },
+      {
+        "plan_type": "possession_linked",
+        "plan_name": "Possession-Linked Plan (30:70 PLP)",
+        "source": "Developer Finance Offer",
+        "notes": "Pay 30% now, 70% at possession handover.",
+        "down_payment_pct": 30,
+        "booking_amount_lakh": 42.5,
+        "discount_offered_pct": 2,
+        "total_duration_months": 24,
+        "best_for": "Investors seeking zero EMI burden during construction phase.",
+        "watch_out": "Requires bank loan pre-approval before contract signing.",
+        "milestones": [
+          {
+            "milestone": "On Booking & Agreement Execution",
+            "stage": "Booking & Agreement",
+            "pct": "30%",
+            "amt": "₹127.5 Lakhs",
+            "due": "Stage 1 / Agreement",
+            "timeline": "Within 30 Days",
+            "done": true
+          },
+          {
+            "milestone": "On Notice of Possession & Keys Handover",
+            "stage": "Offer of Possession",
+            "pct": "70%",
+            "amt": "₹297.5 Lakhs",
+            "due": "Stage 2 / Handover",
+            "timeline": "At Handover",
+            "done": false
+          }
+        ]
+      }
+    ],
+    "price_history": [
+      {
+        "quarter_label": "Q1 2025",
+        "price_per_sqft": 8500,
+        "total_price_cr": 1.1,
+        "recorded_at": "2025-03-31T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q2 2025",
+        "price_per_sqft": 8800,
+        "total_price_cr": 1.15,
+        "recorded_at": "2025-06-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q3 2025",
+        "price_per_sqft": 9100,
+        "total_price_cr": 1.2,
+        "recorded_at": "2025-09-30T00:00:00.000Z"
+      },
+      {
+        "quarter_label": "Q4 2025",
+        "price_per_sqft": 9500,
+        "total_price_cr": 1.25,
+        "recorded_at": "2025-12-31T00:00:00.000Z"
+      }
+    ],
+    "project_dna": {
+      "builder_track_record_score": 90,
+      "builder_track_record_label": "Strong Tier-1 Record",
+      "price_position_score": 88,
+      "price_position_label": "Fair Market Valuation",
+      "locality_score": 92,
+      "locality_label": "Prime Connected Corridor",
+      "rera_compliance_score": 96,
+      "rera_compliance_label": "Fully Compliant",
+      "amenity_depth_score": 90,
+      "amenity_depth_label": "Comprehensive Active",
+      "possession_certainty_score": 90,
+      "possession_certainty_label": "On Track",
+      "verified_by": "seed"
+    },
+    "decision_profile": {
+      "status": "PUBLISHED",
+      "decision_thesis": "Ace Mahagun Medalleo represents an exceptional residential acquisition in Sector 107, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "why_buy": [
+        "Prime Connectivity: Located in Sector 107 with fast access to metro and major expressways.",
+        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
+        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
+        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+      ],
+      "why_avoid": [
+        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
+        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
+        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+      ],
+      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
+      "confidence_sources": [
+        "RERA Official Filings",
+        "Municipal Survey Data",
+        "Market Transaction Registries"
+      ],
+      "intelligence_data": {
+        "topLevelMetrics": {
+          "overallScore": 88,
+          "tier": "STRONG_BUY",
+          "investmentGrade": "A+",
+          "priceAdvantage": "Fair Market Value",
+          "priceAdvantageSubtext": "Strong Growth Corridor",
+          "confidenceLevel": "High",
+          "confidenceLabel": "Verified via RERA"
+        },
+        "dimensionScores": {
+          "builderTrust": {
+            "score": 92,
+            "status": "Excellent"
+          },
+          "locationQuality": {
+            "score": 90,
+            "status": "Prime"
+          },
+          "lifestyleAmenities": {
+            "score": 88,
+            "status": "Operational"
+          },
+          "valueForMoney": {
+            "score": 86,
+            "status": "High Value"
+          },
+          "appreciationPotential": {
+            "score": 88,
+            "status": "Strong Growth"
+          },
+          "legalSafety": {
+            "score": 96,
+            "status": "Fully Clear Title"
+          }
+        }
+      }
+    },
+    "persona_profile": {
+      "primary_persona": "Value-Seeking Corporate Managers",
+      "secondary_personas": [
+        "IT & Tech Executives",
+        "NRI Investors",
+        "Upgrading Nuclear Families"
+      ],
+      "persona_descriptions": {
+        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
+      },
+      "income_range": "₹25L - ₹50L per annum",
+      "risk_appetite": "Low-Moderate (prioritizes clean RERA titles and high builder delivery trust)",
+      "family_stage": "Nuclear or joint family with school-going children",
+      "work_location": "Noida Expressway / Sector 62 / Central Delhi",
+      "timeline_horizon": "5-10 Years",
+      "motivation_note": "Acquire long-term family asset in Sector 107 with green surroundings and supreme daily convenience."
+    },
+    "recommendation_profile": {
+      "status": "PUBLISHED",
+      "tier": "STRONG_BUY",
+      "primary_thesis": "Ace Mahagun Medalleo is a top-recommended residential project in Sector 107 due to high construction standards, excellent location access, and robust price appreciation potential.",
+      "end_use_thesis": "Supreme day-to-day comfort with central parks, sports courts, and top schools nearby.",
+      "investment_thesis": "High capital appreciation driven by nearby commercial IT parks and infrastructure expansions.",
+      "family_thesis": "Safe gated environment with active children play zones and 24/7 security.",
+      "investor_thesis": "Consistently strong rental yields of 4.2% - 4.8% annually.",
+      "luxury_thesis": "High-end marble and wooden floor finishes with grand elevator lobbies.",
+      "risk_thesis": "Low legal risk; verify clear title chain during resale transfers.",
+      "walk_away_conditions": [
+        "Any pending municipal dues on individual seller units during resale."
+      ],
+      "negotiation_leverage": [
+        "Use current bank valuation rates to negotiate competitive pricing on upper floors."
+      ],
+      "timeline_advice": "Ideal entry window during current quarterly inventory wave."
+    },
+    "competitors": [
+      {
+        "competitor_name": "Adjacent Premium Project in Sector 107",
+        "competitor_slug": "sector-107-competitor-1",
+        "this_project_advantage": "Superior open green percentage and larger balcony layouts.",
+        "competitor_advantage": "Slightly lower entry pricing.",
+        "verdict": "Choose Ace Mahagun Medalleo for superior construction quality and clubhouse amenities.",
+        "price_delta_note": "Competitive pricing parity within 5%.",
+        "sort_order": 1
+      }
+    ],
+    "construction_milestones": [
+      {
+        "stage_code": "superstructure",
+        "name": "Superstructure & RCC Framing",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "external_facade",
+        "name": "External Facade & Brickwork",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "internal_finishing",
+        "name": "Internal Flooring & Plumbing",
+        "status": "completed",
+        "completion_pct": 100,
+        "date_label": "Completed"
+      },
+      {
+        "stage_code": "possession_handover",
+        "name": "Possession & Handover",
+        "status": "in_progress",
+        "completion_pct": 75,
+        "date_label": "Q4 2026"
+      }
+    ],
+    "construction_updates": [
+      {
+        "title": "Township Infrastructure Completion",
+        "update_date": "2026-08-13T09:25:12.134Z",
+        "quarter_label": "Q2 2026",
+        "completion_pct": 85,
+        "description": "Lush central gardens and clubhouse amenities operational."
+      }
+    ],
+    "lifecycle_updates": [
+      {
+        "title": "Resident Association & Maintenance Handover",
+        "update_date": "2026-08-13T09:25:12.134Z",
+        "quarter_label": "Q1 2026",
+        "completion_pct": 100,
+        "description": "Active resident welfare association overseeing daily maintenance."
+      }
+    ],
+    "channel_partners": [
+      {
+        "name": "Space Realty Network",
+        "agency": "Space Realty NCR",
+        "contact_number": "+919876543210",
+        "commission_pct": 2,
+        "verified": true
+      },
+      {
+        "name": "RealtyPals Direct Partner",
+        "agency": "RealtyPals Advisory",
+        "contact_number": "+919999988888",
+        "commission_pct": 2,
+        "verified": true
+      }
+    ],
+    "documents": [
+      {
+        "name": "Official Project Brochure",
+        "storage_url": "",
+        "doc_type": "brochure",
+        "file_size_bytes": 5242880
+      },
+      {
+        "name": "Master Floor Plan Layouts",
+        "storage_url": "",
+        "doc_type": "floor_plan",
+        "file_size_bytes": 3145728
+      },
+      {
+        "name": "UP RERA Registration Certificate",
+        "storage_url": "",
+        "doc_type": "rera",
+        "file_size_bytes": 1048576
+      }
+    ],
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "type": "hero",
+        "caption": "Front Elevation View",
+        "sort_order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+        "type": "exterior",
+        "caption": "Landscaped Central Park",
+        "sort_order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
+        "type": "clubhouse",
+        "caption": "Grand Clubhouse Structure",
+        "sort_order": 3
       }
     ]
   }

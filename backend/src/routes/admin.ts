@@ -33,7 +33,9 @@ function passwordMatches(input: string, expected: string): boolean {
 
 // POST /api/v1/admin/auth — exchange the admin password for a session token.
 router.post('/auth', async (req: Request, res: Response) => {
-  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
+  const rawIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
+  const isValidIp = /^(\d{1,3}\.){3}\d{1,3}$|^[a-f0-9:]+$/i.test(rawIp)
+  const ip = isValidIp ? rawIp : 'unknown'
 
   // Rate limit: 50 attempts in dev, 5 in prod per 15 minutes per IP
   const maxAttempts = process.env.NODE_ENV === 'development' ? 50 : 5
@@ -197,6 +199,20 @@ router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
               builder: { select: { id: true, name: true, slug: true } },
               unit_types: true,
               images: true,
+              amenities: true,
+              connectivity: true,
+              dna: true,
+              decision_profile: true,
+              persona_profile: true,
+              recommendation_profile: true,
+              competitors: true,
+              cost_sheet: true,
+              payment_plans: true,
+              construction_milestones: true,
+              construction_updates: true,
+              lifecycle_updates: true,
+              price_history: true,
+              channel_partners: true,
             },
             orderBy: { name: 'asc' },
             take: parseInt(limit as string),
@@ -207,20 +223,27 @@ router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
         break // Success, exit retry loop
       } catch (err) {
         if (retries < maxRetries) {
+          console.warn(`[admin] projects query retry ${retries + 1}/${maxRetries}:`, err instanceof Error ? err.message : err)
           await new Promise(r => setTimeout(r, backoffMs[retries]))
           retries++
         } else {
+          console.error('[admin] projects query failed after all retries:', err instanceof Error ? err.message : err)
           throw err // Final retry failed, propagate error
         }
       }
     }
 
-    // Ensure array fields are non-null for frontend safety
-    const safeProjects = projects.map(p => ({
-      ...p,
-      unit_types: p.unit_types ?? [],
-      images: p.images ?? [],
-    }))
+    // Compute exact completeness score & tabScores for each project for admin dashboard alignment
+    const safeProjects = projects.map(p => {
+      const completeness = computeCompleteness(p as any)
+      return {
+        ...p,
+        unit_types: p.unit_types ?? [],
+        images: p.images ?? [],
+        completenessScore: completeness.totalScore,
+        tabScores: completeness.tabScores,
+      }
+    })
 
     res.json({ projects: safeProjects, total, limit: parseInt(limit as string), offset: parseInt(offset as string) })
   } catch (err) {
@@ -284,7 +307,10 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
         persona_profile: true,
         recommendation_profile: true,
         competitors: { orderBy: { sort_order: 'asc' } },
+        construction_milestones: { orderBy: { completion_pct: 'desc' } },
         construction_updates: { orderBy: { update_date: 'desc' } },
+        lifecycle_updates: { orderBy: { update_date: 'desc' } },
+        price_history: { orderBy: { recorded_at: 'desc' } },
         channel_partners: { include: { channel_partner: true }, orderBy: { created_at: 'asc' } },
         payment_plans: { orderBy: [{ sort_order: 'asc' }, { created_at: 'asc' }] },
         cost_sheet: true,
@@ -303,6 +329,10 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
       unit_types: p.unit_types ?? [],
       images: p.images ?? [],
       payment_plans: p.payment_plans ?? [],
+      construction_milestones: p.construction_milestones ?? [],
+      construction_updates: p.construction_updates ?? [],
+      lifecycle_updates: p.lifecycle_updates ?? [],
+      price_history: p.price_history ?? [],
       // Primary plan — the admin editor edits one plan at a time.
       payment_plan: p.payment_plans?.[0] ?? null,
     }
@@ -430,26 +460,26 @@ router.delete('/projects/:id', requireAdmin, async (req: Request, res: Response)
 
     await prisma.$transaction(async (tx) => {
       // Clean up all related records to prevent foreign key constraint violations
-      await tx.amenity.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.connectivity.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.projectImage.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.unitType.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.paymentPlan.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.costSheet.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.priceHistory.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.constructionMilestone.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.constructionUpdate.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.projectLifecycleUpdate.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.unitInventory.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.projectChannelPartner.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      await tx.amenity.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] amenity delete failed:', e))
+      await tx.connectivity.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] connectivity delete failed:', e))
+      await tx.projectImage.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] projectImage delete failed:', e))
+      await tx.unitType.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] unitType delete failed:', e))
+      await tx.paymentPlan.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] paymentPlan delete failed:', e))
+      await tx.costSheet.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] costSheet delete failed:', e))
+      await tx.priceHistory.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] priceHistory delete failed:', e))
+      await tx.constructionMilestone.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] constructionMilestone delete failed:', e))
+      await tx.constructionUpdate.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] constructionUpdate delete failed:', e))
+      await tx.projectLifecycleUpdate.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] projectLifecycleUpdate delete failed:', e))
+      await tx.unitInventory.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] unitInventory delete failed:', e))
+      await tx.projectChannelPartner.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] projectChannelPartner delete failed:', e))
       await tx.projectCompetitor.deleteMany({
         where: { OR: [{ project_id: targetId }, { competitor_project_id: targetId }] }
-      }).catch(() => {})
-      await tx.savedProperty.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.priceAlert.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.builderLead.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.projectDna.deleteMany({ where: { project_id: targetId } }).catch(() => {})
-      await tx.decisionProfile.deleteMany({ where: { project_id: targetId } }).catch(() => {})
+      }).catch(e => console.warn('[admin] projectCompetitor delete failed:', e))
+      await tx.savedProperty.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] savedProperty delete failed:', e))
+      await tx.priceAlert.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] priceAlert delete failed:', e))
+      await tx.builderLead.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] builderLead delete failed:', e))
+      await tx.projectDna.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] projectDna delete failed:', e))
+      await tx.decisionProfile.deleteMany({ where: { project_id: targetId } }).catch(e => console.warn('[admin] decisionProfile delete failed:', e))
       await tx.personaProfile.deleteMany({ where: { project_id: targetId } }).catch(() => {})
       await tx.recommendationProfile.deleteMany({ where: { project_id: targetId } }).catch(() => {})
 

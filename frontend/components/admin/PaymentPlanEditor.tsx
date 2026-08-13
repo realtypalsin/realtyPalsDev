@@ -35,7 +35,8 @@ export default function PaymentPlanEditor({ projectId, initialData }: { projectI
         }
       }
       if (initialData) setPlans([initialData])
-    } catch {
+    } catch (err) {
+      console.warn('[PaymentPlanEditor] fetch failed, using initial data:', err)
       if (initialData) setPlans([initialData])
     } finally {
       setLoading(false)
@@ -71,7 +72,7 @@ export default function PaymentPlanEditor({ projectId, initialData }: { projectI
 
   const addMilestone = () => {
     const ms = currentPlan.milestones || []
-    updateCurrentPlan('milestones', [...ms, { milestone: '', pct: '', amt: '', due: '', done: false }])
+    updateCurrentPlan('milestones', [...ms, { milestone: 'New Milestone', pct: 0, amt: 0, due: '', done: false }])
   }
 
   const updateMilestone = (i: number, key: string, val: any) => {
@@ -176,7 +177,13 @@ export default function PaymentPlanEditor({ projectId, initialData }: { projectI
             <input
               type="number"
               value={currentPlan.down_payment_pct ?? ''}
-              onChange={(e) => updateCurrentPlan('down_payment_pct', parseFloat(e.target.value) || 0)}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value) || 0
+                const clamped = Math.max(0, Math.min(100, val))
+                updateCurrentPlan('down_payment_pct', clamped)
+              }}
+              min="0"
+              max="100"
               className="w-full bg-white rounded-lg px-3 py-1.5 text-[13px] font-medium border border-gray-200"
               placeholder="10"
             />
@@ -254,7 +261,7 @@ export default function PaymentPlanEditor({ projectId, initialData }: { projectI
                 {m.done && <CheckCircle2 size={12} />}
               </button>
               <input
-                value={m.milestone || m.label || ''}
+                value={m.milestone || m.stage || m.label || ''}
                 onChange={(e) => updateMilestone(i, 'milestone', e.target.value)}
                 className="bg-white rounded px-2.5 py-1.5 text-[12px] font-medium border border-gray-200"
                 placeholder="Milestone description"
@@ -272,10 +279,10 @@ export default function PaymentPlanEditor({ projectId, initialData }: { projectI
                 placeholder="₹12.5 Lakhs"
               />
               <input
-                value={m.due || ''}
+                value={m.due || m.timeline || ''}
                 onChange={(e) => updateMilestone(i, 'due', e.target.value)}
                 className="bg-white rounded px-2.5 py-1.5 text-[12px] font-medium border border-gray-200"
-                placeholder="Milestone 1 / Date"
+                placeholder="Stage 1 / Timeline"
               />
               <button onClick={() => removeMilestone(i)} className="text-gray-400 hover:text-red-500 p-1.5">
                 <X size={15} />

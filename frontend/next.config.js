@@ -2,6 +2,12 @@ const { withSentryConfig } = require('@sentry/nextjs')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
   experimental: {
     instrumentationHook: true,
     optimizePackageImports: ['lucide-react', '@phosphor-icons/react'],
@@ -25,7 +31,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: 'supabase.co',
       },
       {
         protocol: 'https',
@@ -83,7 +89,7 @@ const nextConfig = {
               const connectSrc = isDev
                 ? "'self' http://localhost:* wss://localhost:* https: ws: wss:"
                 : "'self' https://realtypalsdev.onrender.com wss: https: ws:"
-              return `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
+              return `default-src 'self'; script-src 'self' https://www.google-analytics.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
             })(),
           },
         ],

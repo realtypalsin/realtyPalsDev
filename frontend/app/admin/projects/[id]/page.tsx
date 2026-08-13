@@ -3,7 +3,7 @@
 import { use, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import {
-  ArrowLeft, ChevronRight, Eye, LayoutPanelLeft, AlertCircle,
+  ArrowLeft, ChevronRight, Eye, LayoutPanelLeft, AlertCircle, CheckCircle2, Info,
   Images, Cpu, Activity, IndianRupee, Users
 } from 'lucide-react'
 import { adminFetch } from '@/lib/adminFetch'
@@ -48,6 +48,215 @@ interface CompletenessData {
 }
 
 
+function getTabAuditDetails(
+  tabId: AdminTab,
+  data: any,
+  documents: any[]
+): { completed: string[]; missing: string[] } {
+  const completed: string[] = []
+  const missing: string[] = []
+
+  if (tabId === 'core') {
+    if (data?.name) completed.push('Project Name')
+    else missing.push('Project Name')
+
+    if (data?.status) completed.push('Project Status')
+    else missing.push('Project Status')
+
+    if (data?.possession_date) completed.push('Possession Date')
+    else missing.push('Possession Date')
+
+    if (data?.rera_number) completed.push('RERA Number')
+    else missing.push('RERA Number')
+
+    if (data?.description) completed.push('Project Description')
+    else missing.push('Project Description')
+
+    if (data?.hero_image_url) completed.push('Hero Image')
+    else missing.push('Hero Image')
+
+    if ((data?.unit_types?.length || 0) >= 1) completed.push(`Unit Configurations (${data.unit_types.length} types)`)
+    else missing.push('Unit Types / Configurations')
+
+    if ((data?.amenities?.length || 0) >= 3) completed.push(`Amenities (${data.amenities.length} added)`)
+    else missing.push(`Amenities (need 3+, currently ${data?.amenities?.length || 0})`)
+  }
+
+  if (tabId === 'pricing') {
+    if (data?.unit_types?.some((u: any) => u.price_min_cr != null)) completed.push('Priced Unit Configurations')
+    else missing.push('Priced Unit Configurations')
+
+    if (data?.cost_sheet?.base_price_per_sqft) completed.push('Cost Sheet Base Price')
+    else missing.push('Cost Sheet Base Price')
+
+    if ((data?.payment_plans?.length || 0) >= 2) completed.push(`Payment Plans (${data.payment_plans.length} active)`)
+    else missing.push(`Payment Plans (need 2+, currently ${data?.payment_plans?.length || 0})`)
+
+    if ((data?.connectivity?.length || 0) >= 3) completed.push(`Connectivity Points (${data.connectivity.length} mapped)`)
+    else missing.push(`Connectivity Points (need 3+, currently ${data?.connectivity?.length || 0})`)
+
+    if ((data?.price_history?.length || 0) >= 1) completed.push('Quarterly Price History')
+    else missing.push('Price History Snapshots')
+  }
+
+  if (tabId === 'media') {
+    if (data?.hero_image_url) completed.push('Hero Image')
+    else missing.push('Hero Image')
+
+    const galleryImages = (data?.images || []).filter((i: any) => i.type !== 'hero')
+    if (galleryImages.length >= 3) completed.push(`Gallery Photos (${galleryImages.length} uploaded)`)
+    else missing.push(`Gallery Photos (need 3+, currently ${galleryImages.length})`)
+
+    if (documents?.some((d: any) => d.doc_type === 'brochure')) completed.push('Official Project Brochure')
+    else missing.push('Official Project Brochure document')
+  }
+
+  if (tabId === 'intelligence') {
+    if (data?.decision_profile?.decision_thesis) completed.push('Decision Thesis')
+    else missing.push('Decision Thesis')
+
+    if (data?.decision_profile?.best_for) completed.push('Target Buyer Profile (Best For)')
+    else missing.push('Target Buyer Profile (Best For)')
+
+    if ((data?.decision_profile?.why_buy?.length || 0) >= 1) completed.push(`Why Buy Bullets (${data.decision_profile.why_buy.length} added)`)
+    else missing.push('Why Buy Highlights')
+
+    if ((data?.decision_profile?.why_avoid?.length || 0) >= 1) completed.push(`Why Avoid Bullets (${data.decision_profile.why_avoid.length} added)`)
+    else missing.push('Why Avoid Risk Points')
+
+    if (data?.persona_profile?.primary_persona) completed.push('Primary Buyer Persona')
+    else missing.push('Primary Buyer Persona')
+
+    if (data?.persona_profile?.income_range) completed.push('Persona Income Range')
+    else missing.push('Persona Income Range')
+
+    if (data?.recommendation_profile?.tier) completed.push(`Recommendation Tier (${data.recommendation_profile.tier})`)
+    else missing.push('Recommendation Tier')
+
+    if (data?.dna) completed.push('Project DNA Scores')
+    else missing.push('Project DNA Scores')
+
+    if ((data?.competitors?.length || 0) >= 1) completed.push(`Competitor Analysis (${data.competitors.length} linked)`)
+    else missing.push('Competitor Analysis')
+  }
+
+  if (tabId === 'updates') {
+    if ((data?.construction_milestones?.length || 0) >= 4) completed.push(`Construction Milestones (${data.construction_milestones.length} stages)`)
+    else missing.push(`Construction Milestones (need 4+, currently ${data?.construction_milestones?.length || 0})`)
+
+    const isReady = data?.status === 'ready_to_move'
+    const hasUpdates = isReady
+      ? (data?.lifecycle_updates?.length || 0) >= 1
+      : (data?.construction_updates?.length || 0) >= 1
+
+    if (hasUpdates) completed.push(isReady ? 'RWA & Society Handover Feed' : 'Construction Progress Feed')
+    else missing.push(isReady ? 'RWA & Society Handover Feed' : 'Construction Progress Feed')
+  }
+
+  if (tabId === 'partners') {
+    if ((data?.channel_partners?.length || 0) >= 1) completed.push(`Channel Partners (${data.channel_partners.length} linked)`)
+    else missing.push('Linked Channel Partners')
+  }
+
+  return { completed, missing }
+}
+
+function SectionAuditSidebar({
+  tabId,
+  tabLabel,
+  pct,
+  data,
+  documents,
+}: {
+  tabId: AdminTab
+  tabLabel: string
+  pct: number
+  data: any
+  documents: any[]
+}) {
+  const audit = getTabAuditDetails(tabId, data, documents)
+  const isComplete = pct >= 90
+  const isMedium = pct >= 60 && pct < 90
+
+  return (
+    <div className="sticky top-20 space-y-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-sm">
+        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4 mb-4">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Live Tab Audit</span>
+            <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100">{tabLabel}</h4>
+          </div>
+          <div className="text-right">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold px-2.5 py-1 rounded-xl border ${
+              isComplete ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800' : isMedium ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800' : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-800'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'}`} />
+              {pct}% Score
+            </span>
+          </div>
+        </div>
+
+        {/* Incomplete / Missing Fields */}
+        {audit.missing.length > 0 ? (
+          <div className="mb-5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider mb-2">
+              <AlertCircle size={14} />
+              <span>Incomplete Fields ({audit.missing.length})</span>
+            </div>
+            <ul className="space-y-2 pl-0.5">
+              {audit.missing.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2 bg-rose-50/60 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/40 p-2.5 rounded-xl text-xs text-rose-900 dark:text-rose-200">
+                  <span className="text-rose-500 font-black shrink-0 mt-0.5">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="mb-5 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 p-3.5 rounded-2xl flex items-center gap-2.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+            <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+            <span>All required fields in {tabLabel} are 100% filled and verified!</span>
+          </div>
+        )}
+
+        {/* Verified Sub-Sections */}
+        {audit.completed.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-2">
+              <CheckCircle2 size={14} />
+              <span>Verified Sub-Sections ({audit.completed.length})</span>
+            </div>
+            <ul className="space-y-1.5 pl-0.5 max-h-60 overflow-y-auto">
+              {audit.completed.map((item, idx) => (
+                <li key={idx} className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-xl text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-100 dark:border-zinc-800">
+                  <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                  <span className="font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Standards & Guidelines Card */}
+      <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/50 dark:from-zinc-900 dark:to-zinc-900/80 rounded-3xl border border-blue-100 dark:border-zinc-800 p-5 shadow-xs">
+        <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-bold text-xs uppercase tracking-wider mb-2">
+          <Info size={14} />
+          <span>Data Standard Guidance</span>
+        </div>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          {tabId === 'core' && 'Ensure project name, RERA registration number, status, hero image, unit configurations, and at least 3 amenities are configured.'}
+          {tabId === 'pricing' && 'Ensure unit price ranges, cost sheet base price, 2+ payment plans with stage milestones, 3+ connectivity nodes, and quarterly price history are filled.'}
+          {tabId === 'media' && 'Upload a hero image, at least 3 high-res gallery exterior/interior photos, and official brochure PDF documents.'}
+          {tabId === 'intelligence' && 'Fill decision thesis, target buyer (best for), why buy/avoid points, buyer persona income ranges, recommendation tier, DNA scores, and competitors.'}
+          {tabId === 'updates' && 'Configure at least 4 construction milestone stages and active construction or RWA lifecycle update feeds.'}
+          {tabId === 'partners' && 'Link verified channel partners with agency name, contact number, and commission percentage.'}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminProjectEditPage({
   params,
 }: {
@@ -60,6 +269,7 @@ export default function AdminProjectEditPage({
   const [completeness, setCompleteness] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [adminTab, setAdminTab] = useState<AdminTab>('core')
+  const [hoveredTab, setHoveredTab] = useState<AdminTab | null>(null)
   const [preview, setPreview] = useState<any>(null)
   const [showCompleteness, setShowCompleteness] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -223,14 +433,30 @@ export default function AdminProjectEditPage({
     { id: 'partners',     label: 'Channel Partners',     icon: Users },
   ]
 
-  const tabScores: Record<AdminTab, number> = completeness?.tabScores ?? {
-    core: 0,
-    pricing: 0,
-    media: 0,
-    intelligence: 0,
-    updates: 100,
-    partners: 100,
+  const getDynamicScore = (tabId: AdminTab): number => {
+    const audit = getTabAuditDetails(tabId, data, documents)
+    const total = audit.completed.length + audit.missing.length
+    if (total === 0) return 100
+    return Math.round((audit.completed.length / total) * 100)
   }
+
+  const tabScores: Record<AdminTab, number> = {
+    core: getDynamicScore('core'),
+    pricing: getDynamicScore('pricing'),
+    media: getDynamicScore('media'),
+    intelligence: getDynamicScore('intelligence'),
+    updates: getDynamicScore('updates'),
+    partners: getDynamicScore('partners'),
+  }
+
+  const overallHealth = Math.round(
+    (tabScores.core * 0.20) +
+    (tabScores.pricing * 0.25) +
+    (tabScores.media * 0.15) +
+    (tabScores.intelligence * 0.20) +
+    (tabScores.updates * 0.10) +
+    (tabScores.partners * 0.10)
+  )
 
   return (
     <>
@@ -300,62 +526,126 @@ export default function AdminProjectEditPage({
                 const pct = tabScores[tabId] ?? 100
                 const isComplete = pct >= 90
                 const isMedium = pct >= 60 && pct < 90
+                const audit = getTabAuditDetails(tabId, data, documents)
+                const isHovered = hoveredTab === tabId
 
                 return (
-                  <button
-                    key={tabId}
-                    onClick={() => setAdminTab(tabId)}
-                    className={`relative flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl transition-all duration-200 whitespace-nowrap font-medium cursor-pointer ${
-                      isActive
-                        ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60'
-                    }`}
-                  >
-                    <Icon
-                      size={14}
-                      className={
+                  <div key={tabId} className="relative">
+                    <button
+                      onClick={() => setAdminTab(tabId)}
+                      onMouseEnter={() => setHoveredTab(tabId)}
+                      onMouseLeave={() => setHoveredTab(null)}
+                      className={`relative flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl transition-all duration-200 whitespace-nowrap font-medium cursor-pointer ${
                         isActive
-                          ? 'text-blue-600 dark:text-blue-400'
-                          : 'text-zinc-400 dark:text-zinc-500'
-                      }
-                    />
-                    <span>{label}</span>
-
-                    <span
-                      className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md border transition-colors ${
-                        isComplete
-                          ? (isActive
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/80'
-                              : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40')
-                          : isMedium
-                          ? (isActive
-                              ? 'bg-amber-100 text-amber-800 border-amber-300/80 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700/80'
-                              : 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40')
-                          : (isActive
-                              ? 'bg-rose-100 text-rose-800 border-rose-300/80 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-700/80'
-                              : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40')
+                          ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60'
                       }`}
                     >
-                      <span
-                        className="w-1.5 h-1.5 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: isComplete ? '#10b981' : isMedium ? '#f59e0b' : '#f43f5e'
-                        }}
+                      <Icon
+                        size={14}
+                        className={
+                          isActive
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-zinc-400 dark:text-zinc-500'
+                        }
                       />
-                      <span>{pct}%</span>
-                    </span>
+                      <span>{label}</span>
 
-                    {isActive && (
-                      <div className="absolute bottom-0.5 left-2.5 right-2.5 h-[2px] bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-500 ${
-                            isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
-                          }`}
-                          style={{ width: `${pct}%` }}
+                      <span
+                        className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md border transition-colors ${
+                          isComplete
+                            ? (isActive
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/80'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40')
+                            : isMedium
+                            ? (isActive
+                                ? 'bg-amber-100 text-amber-800 border-amber-300/80 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700/80'
+                                : 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40')
+                            : (isActive
+                                ? 'bg-rose-100 text-rose-800 border-rose-300/80 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-700/80'
+                                : 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40')
+                        }`}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{
+                            backgroundColor: isComplete ? '#10b981' : isMedium ? '#f59e0b' : '#f43f5e'
+                          }}
                         />
+                        <span>{pct}%</span>
+                      </span>
+
+                      {isActive && (
+                        <div className="absolute bottom-0.5 left-2.5 right-2.5 h-[2px] bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
+                            }`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Hover Popover Tooltip showing missing / incomplete details */}
+                    {isHovered && (
+                      <div className="absolute top-full left-0 mt-2 w-72 p-3.5 bg-zinc-900/95 dark:bg-zinc-950/95 backdrop-blur-md text-white text-xs rounded-2xl shadow-2xl z-50 border border-zinc-700/80 animate-in fade-in slide-in-from-top-2 duration-150 pointer-events-none text-left font-normal">
+                        <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-2">
+                          <span className="font-bold text-zinc-100 flex items-center gap-1.5">
+                            <Icon size={14} className="text-blue-400" />
+                            {label} Status
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                            isComplete ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : isMedium ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                          }`}>
+                            {pct}% Complete
+                          </span>
+                        </div>
+
+                        {audit.missing.length > 0 ? (
+                          <div className="mb-2">
+                            <p className="text-[10.5px] uppercase font-bold text-rose-400 tracking-wider mb-1 flex items-center gap-1">
+                              <AlertCircle size={11} /> Missing / Incomplete ({audit.missing.length}):
+                            </p>
+                            <ul className="space-y-1 pl-1">
+                              {audit.missing.map((item, idx) => (
+                                <li key={idx} className="flex items-start gap-1.5 text-zinc-300 text-[11px]">
+                                  <span className="text-rose-400 font-bold shrink-0">•</span>
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <div className="mb-2 flex items-center gap-1.5 text-emerald-400 font-semibold text-[11px] bg-emerald-950/40 border border-emerald-800/60 p-2 rounded-xl">
+                            <CheckCircle2 size={13} className="shrink-0" />
+                            <span>All fields in this section are 100% complete!</span>
+                          </div>
+                        )}
+
+                        {audit.completed.length > 0 && (
+                          <div className="pt-1 border-t border-zinc-800/60">
+                            <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider mb-1 flex items-center gap-1">
+                              <CheckCircle2 size={10} className="text-emerald-400" /> Verified Sub-Sections ({audit.completed.length}):
+                            </p>
+                            <ul className="space-y-0.5 pl-1 max-h-24 overflow-y-auto">
+                              {audit.completed.slice(0, 5).map((item, idx) => (
+                                <li key={idx} className="flex items-center gap-1.5 text-zinc-400 text-[10.5px]">
+                                  <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                                  <span className="truncate">{item}</span>
+                                </li>
+                              ))}
+                              {audit.completed.length > 5 && (
+                                <li className="text-[9.5px] text-zinc-500 italic pl-3">
+                                  + {audit.completed.length - 5} more items verified
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </button>
+                  </div>
                 )
               })}
             </div>
@@ -395,7 +685,7 @@ export default function AdminProjectEditPage({
                 onSaved={handleSaved}
               />
             </div>
-            <div>
+            <div className="space-y-6">
               {preview && (
                 <ProjectPreview
                   project={preview}
@@ -403,78 +693,132 @@ export default function AdminProjectEditPage({
                   refreshing={refreshing}
                 />
               )}
+              <SectionAuditSidebar
+                tabId="core"
+                tabLabel="Core Info"
+                pct={tabScores.core}
+                data={data}
+                documents={documents}
+              />
             </div>
           </div>
         )}
 
         {/* 2. Pricing & Location tab */}
         {adminTab === 'pricing' && (
-          <div className="max-w-4xl space-y-6">
-            <PaymentPlanEditor projectId={id} initialData={data.payment_plan} />
-            <CostSheetEditor projectId={id} initialData={data.cost_sheet} />
-            <PriceHistoryEditor projectId={id} />
-            <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile} />
-            <ConnectivityEditor
-              connectivity={data.connectivity ?? []}
-              projectId={id}
-              onSaved={handleSaved}
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
+            <div className="space-y-6">
+              <PaymentPlanEditor projectId={id} initialData={data.payment_plan} />
+              <CostSheetEditor projectId={id} initialData={data.cost_sheet} />
+              <PriceHistoryEditor projectId={id} />
+              <InvestmentInsightsEditor projectId={id} initialData={data.decision_profile} />
+              <ConnectivityEditor
+                connectivity={data.connectivity ?? []}
+                projectId={id}
+                onSaved={handleSaved}
+              />
+              <LocationIntelligenceEditor projectId={id} initialData={data} />
+            </div>
+            <SectionAuditSidebar
+              tabId="pricing"
+              tabLabel="Pricing & Location"
+              pct={tabScores.pricing}
+              data={data}
+              documents={documents}
             />
-            <LocationIntelligenceEditor projectId={id} initialData={data} />
           </div>
         )}
 
         {/* 3. Media tab */}
         {adminTab === 'media' && (
-          <div className="max-w-4xl space-y-6">
-            <ImagesEditor
-              images={data.images ?? []}
-              projectId={id}
-              slug={data.slug ?? id}
-              onSaved={handleSaved}
-            />
-            <DocumentsEditor
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
+            <div className="space-y-6">
+              <ImagesEditor
+                images={data.images ?? []}
+                projectId={id}
+                slug={data.slug ?? id}
+                onSaved={handleSaved}
+              />
+              <DocumentsEditor
+                documents={documents}
+                projectId={id}
+                slug={data.slug ?? id}
+                onSaved={handleSaved}
+              />
+            </div>
+            <SectionAuditSidebar
+              tabId="media"
+              tabLabel="Media Assets"
+              pct={tabScores.media}
+              data={data}
               documents={documents}
-              projectId={id}
-              slug={data.slug ?? id}
-              onSaved={handleSaved}
             />
           </div>
         )}
 
         {/* 4. Intelligence tab */}
         {adminTab === 'intelligence' && (
-          <IntelligenceWorkspace
-            projectId={id}
-            initialDna={data.dna ?? data.project_dna}
-            initialDecision={data.decision_profile}
-            initialPersona={data.persona_profile}
-            initialRecommendation={data.recommendation_profile}
-            initialCompetitors={data.competitors ?? []}
-            onSaved={handleSaved}
-          />
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
+            <div>
+              <IntelligenceWorkspace
+                projectId={id}
+                initialDna={data.dna ?? data.project_dna}
+                initialDecision={data.decision_profile}
+                initialPersona={data.persona_profile}
+                initialRecommendation={data.recommendation_profile}
+                initialCompetitors={data.competitors ?? []}
+                onSaved={handleSaved}
+              />
+            </div>
+            <SectionAuditSidebar
+              tabId="intelligence"
+              tabLabel="Project Intelligence"
+              pct={tabScores.intelligence}
+              data={data}
+              documents={documents}
+            />
+          </div>
         )}
 
         {/* 5. Updates & Timeline tab */}
         {adminTab === 'updates' && (
-          <div className="max-w-4xl space-y-6">
-            <ConstructionMilestonesEditor projectId={id} />
-            <ProjectUpdatesEditor
-              projectId={id}
-              projectStatus={data.status}
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
+            <div className="space-y-6">
+              <ConstructionMilestonesEditor projectId={id} />
+              <ProjectUpdatesEditor
+                projectId={id}
+                projectStatus={data.status}
+              />
+              {data.status === 'ready_to_move' && (
+                <LifecycleUpdatesEditor projectId={id} />
+              )}
+            </div>
+            <SectionAuditSidebar
+              tabId="updates"
+              tabLabel="Updates & Timeline"
+              pct={tabScores.updates}
+              data={data}
+              documents={documents}
             />
-            {data.status === 'ready_to_move' && (
-              <LifecycleUpdatesEditor projectId={id} />
-            )}
           </div>
         )}
 
         {/* 6. Channel Partners tab */}
         {adminTab === 'partners' && (
-          <div className="max-w-4xl space-y-6">
-            <ChannelPartnersEditor
-              projectId={id}
-              initialPartners={data.channel_partners ?? []}
-              onSaved={handleSaved}
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
+            <div className="space-y-6">
+              <ChannelPartnersEditor
+                projectId={id}
+                initialPartners={data.channel_partners ?? []}
+                onSaved={handleSaved}
+              />
+            </div>
+            <SectionAuditSidebar
+              tabId="partners"
+              tabLabel="Channel Partners"
+              pct={tabScores.partners}
+              data={data}
+              documents={documents}
             />
           </div>
         )}
