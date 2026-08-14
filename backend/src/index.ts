@@ -30,6 +30,7 @@ import registryPricesRouter from './routes/registryPrices'
 import builderRegistrationRouter from './routes/builderRegistration'
 import builderApplicationsRouter from './routes/builderApplications'
 import analyticsRouter from './routes/analytics'
+import adminIntelligenceRouter from './routes/admin-intelligence'
 
 // Initialize Sentry for error tracking and monitoring
 if (process.env.SENTRY_DSN) {
@@ -178,6 +179,7 @@ app.use('/api/v1/registry-prices', registryPricesRouter)
 app.use('/api/v1/builder-registration', builderRegistrationRouter)
 app.use('/api/v1/builder-applications', builderApplicationsRouter)
 app.use('/api/v1/analytics', analyticsRouter)
+app.use('/api/v1/admin/intelligence', adminIntelligenceRouter)
 
 // Sentry Error Handler (v8 - handled below in custom error middleware)
 

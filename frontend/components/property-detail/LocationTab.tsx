@@ -83,7 +83,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
         <div className="space-y-4 max-w-xl z-10">
           <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Project Address</p>
           <h1 className="text-[26px] md:text-[32px] font-black text-gray-900 dark:text-white leading-tight tracking-tight">
-            {projectAddress || `Sector ${d?.sector || '10'}, Greater Noida West, Uttar Pradesh 203207, India`}
+            {projectAddress || (d?.sector ? `Sector ${d.sector}` : 'Address not available')}
           </h1>
           <p className="text-[12px] text-gray-400 font-semibold italic">Location details not verified yet</p>
 
@@ -259,9 +259,9 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
                       <span className="text-gray-900 dark:text-white">{place.name}</span>
                     </td>
                     <td className="py-3.5 pr-4 text-gray-500 font-semibold">{place.type || 'Landmark'}</td>
-                    <td className="py-3.5 pr-4 text-gray-800 dark:text-gray-200">{place.distance || '1.2 km'}</td>
+                    <td className="py-3.5 pr-4 text-gray-800 dark:text-gray-200">{place.distance || '-'}</td>
                     <td className="py-3.5 text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                      <Icon size={14} /> {place.time || '5 mins'}
+                      <Icon size={14} /> {place.time || '-'}
                     </td>
                   </tr>
                 )
@@ -295,7 +295,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
             <div>
               <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Women Safety Index</p>
               <p className="text-[18px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                {(detail as any)?.women_safety_score ?? (project as any)?.women_safety_score ?? 92}/100
+                {(detail as any)?.women_safety_score ?? (project as any)?.women_safety_score ? `${(detail as any)?.women_safety_score ?? (project as any)?.women_safety_score}/100` : 'Not available'}
               </p>
               <p className="text-[10.5px] text-gray-400 font-semibold">CCTV &amp; Police Patrol Zone</p>
             </div>
@@ -308,7 +308,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
             <div>
               <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Annual AQI Average</p>
               <p className="text-[18px] font-black text-gray-900 dark:text-white mt-1">
-                {(detail as any)?.air_quality_index_avg ?? (project as any)?.air_quality_index_avg ?? 155}
+                {(detail as any)?.air_quality_index_avg ?? (project as any)?.air_quality_index_avg ?? 'Not available'}
               </p>
               <p className="text-[10.5px] text-emerald-600 font-bold">Moderate Air Zone</p>
             </div>
@@ -321,7 +321,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
             <div>
               <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Green Cover %</p>
               <p className="text-[18px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                {(detail as any)?.green_cover_percent ?? (project as any)?.green_cover_percent ?? 75}%
+                {(detail as any)?.green_cover_percent ?? (project as any)?.green_cover_percent ? `${(detail as any)?.green_cover_percent ?? (project as any)?.green_cover_percent}%` : 'Not available'}
               </p>
               <p className="text-[10.5px] text-gray-400 font-semibold">Landscaped Corridor</p>
             </div>
@@ -334,7 +334,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
             <div>
               <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Ambient Noise Level</p>
               <p className="text-[18px] font-black text-gray-900 dark:text-white mt-1">
-                {(detail as any)?.noise_level_db ?? (project as any)?.noise_level_db ?? 45} dB
+                {(detail as any)?.noise_level_db ?? (project as any)?.noise_level_db ? `${(detail as any)?.noise_level_db ?? (project as any)?.noise_level_db} dB` : 'Not available'}
               </p>
               <p className="text-[10.5px] text-emerald-600 font-bold">Quiet Residential Zone</p>
             </div>

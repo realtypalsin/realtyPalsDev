@@ -761,7 +761,7 @@ export default function AdminProjects() {
                   </div>
 
                   {/* Actions */}
-                  <div className="w-[60px] flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-[60px] flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={(e) => {
                         e.preventDefault()

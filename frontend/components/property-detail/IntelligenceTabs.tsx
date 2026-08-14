@@ -149,6 +149,8 @@ export default function IntelligenceTabs({ data, isAdmin = false }: Intelligence
                 id={`intel-tab-${tab.key}`}
                 aria-selected={isActive}
                 aria-controls={`intel-panel-${tab.key}`}
+                aria-label={tab.label}
+                title={tab.label}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center justify-center gap-1 px-2 py-2 rounded-md transition-colors ${
                   isActive
@@ -157,7 +159,7 @@ export default function IntelligenceTabs({ data, isAdmin = false }: Intelligence
                 }`}
               >
                 {tab.icon}
-                <span className="hidden sm:inline text-xs font-medium">{tab.label}</span>
+                <span className="text-[10px] sm:text-xs font-medium">{tab.label}</span>
               </button>
             );
           })}

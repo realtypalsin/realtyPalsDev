@@ -548,7 +548,7 @@ export default function ResidencesTab({
                   </div>
 
                   <div className="overflow-x-auto border border-gray-100 dark:border-white/5 rounded-2xl">
-                    <table className="w-full text-left text-[12.5px] border-collapse">
+                    <table className="w-full min-w-[720px] text-left text-[12.5px] border-collapse">
                       <thead>
                         <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[10px] uppercase tracking-wider">
                           <th className="p-3.5 pl-4">Tower</th>
@@ -868,7 +868,7 @@ export default function ResidencesTab({
                   <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Unit Availability</h3>
                   <p className="text-[11.5px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Only {activeUnit.inventory_left || 8} units left in this configuration
+                    Only {activeUnit.inventory_left ?? '?'} units left in this configuration
                   </p>
                 </div>
                 <button onClick={onGoToCosts} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
@@ -878,7 +878,7 @@ export default function ResidencesTab({
 
               {/* Table */}
               <div className="overflow-x-auto border border-gray-100 dark:border-white/5 rounded-2xl">
-                <table className="w-full text-left text-[12.5px] border-collapse">
+                <table className="w-full min-w-[720px] text-left text-[12.5px] border-collapse">
                   <thead>
                     <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[10px] uppercase tracking-wider">
                       <th className="p-3.5 pl-4">Tower</th>

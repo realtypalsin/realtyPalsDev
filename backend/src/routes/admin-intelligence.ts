@@ -2,8 +2,10 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/db'
 import { generateAllIntelligence, ProjectDataForIntelligence } from '../lib/ai/generateIntelligence'
+import { requireAdmin } from '../lib/adminAuth'
 
 const router = Router()
+router.use(requireAdmin)
 
 // POST /api/admin/intelligence/batch
 // Bulk generate intelligence for multiple projects

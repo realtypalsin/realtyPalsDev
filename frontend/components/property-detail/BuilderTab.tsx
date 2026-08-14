@@ -26,8 +26,8 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
     )
   }
 
-  const builderName = builder?.name || project?.builder_name || 'Elite Group'
-  const foundedYear = builder?.founded_year || 2006
+  const builderName = builder?.name || project?.builder_name
+  const foundedYear = builder?.founded_year || project?.builder_founded_year
   const legacyYears = new Date().getFullYear() - foundedYear
   const builderSlug = builder?.slug || builderName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
@@ -259,12 +259,10 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {[
-            { title: 'RERA Registered', sub: builder?.rera_promoter_id || 'UPRERAPRJ916631', tag: 'Registered', color: 'bg-blue-50 text-blue-600' },
-            { title: 'ISO 9001:2015', sub: 'Quality Management', tag: 'Certified', color: 'bg-indigo-50 text-indigo-600' },
-            { title: 'CREDAI Member', sub: 'Confederation of Real Estate', tag: 'Member', color: 'bg-emerald-50 text-emerald-600' },
-            { title: 'IGBC Member', sub: 'Indian Green Building Council', tag: 'Green', color: 'bg-teal-50 text-teal-600' },
-            { title: 'GST Compliant', sub: '27AABCE1234F1Z5', tag: 'Verified', color: 'bg-purple-50 text-purple-600' }
-          ].map((item, i) => (
+            builder?.rera_promoter_id ? { title: 'RERA Registered', sub: builder.rera_promoter_id, tag: 'Registered', color: 'bg-blue-50 text-blue-600' } : null,
+            builder?.iso_certified ? { title: 'ISO 9001:2015', sub: 'Quality Management', tag: 'Certified', color: 'bg-indigo-50 text-indigo-600' } : null,
+            builder?.credai_member ? { title: 'CREDAI Member', sub: 'Confederation of Real Estate', tag: 'Member', color: 'bg-emerald-50 text-emerald-600' } : null
+          ].filter(Boolean).map((item: any, i) => (
             <div key={i} className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
               <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${item.color}`}>
                 <BadgeCheck size={16} />

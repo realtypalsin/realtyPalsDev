@@ -91,8 +91,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       setReraCopied(true)
       setTimeout(() => setReraCopied(false), 2000)
     }
-    const targetUrl = reraUrl || `https://maharerait.mahaonline.gov.in/PublicSearchRera.aspx?Action=GetProjectDetail&ProjectId=${encodeURIComponent(reraNo)}`
-    window.open(targetUrl, '_blank')
+    if (!reraUrl) return
+    window.open(reraUrl, '_blank')
   }
   const marketRef                     = useRef<HTMLDivElement>(null)
   const scrollContainerRef            = useRef<HTMLDivElement>(null)
@@ -565,9 +565,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       }
     }
 
-    const displayPossession = d?.possession_label || 'Dec 2028 (~3.3 Yrs)'
-    const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 86
-    const builderName = typeof d?.builder === 'object' ? (d.builder as any)?.name : (d?.builder || 'Elite Group')
+    const displayPossession = d?.possession_label
+    const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total
+    const builderName = typeof d?.builder === 'object' ? (d.builder as any)?.name : d?.builder
 
     return (
       <div className="relative w-full bg-white dark:bg-[#120f0d] border-b border-gray-100 dark:border-gray-800/40 overflow-hidden flex-shrink-0">
@@ -645,7 +645,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                       <div className="absolute top-full left-0 mt-2 z-30 w-80 bg-white dark:bg-[#181614] text-gray-900 dark:text-gray-100 p-4 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 text-[12px] space-y-2.5">
                         <p className="font-black text-[14px] text-gray-900 dark:text-white">Built by {builderName}</p>
                         <p className="text-[11.5px] text-gray-600 dark:text-gray-300 leading-relaxed">
-                          {detail?.builder_detail?.company_overview || `A premier luxury developer in Noida known for high-end residential estates, zero-delay delivery track record, and flawless legal titles.`}
+                          {detail?.builder_detail?.company_overview || 'Company information not available'}
                         </p>
                         <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100 dark:border-gray-800 text-[11px] font-bold text-gray-700 dark:text-gray-300">
                           {detail?.builder_detail?.founded_year && <div>• {new Date().getFullYear() - detail.builder_detail.founded_year}+ Yrs Experience</div>}
@@ -666,11 +666,11 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             {/* Stats Bento Cards (Towers, Floors, Land Area, Open Space) */}
             <div className="grid grid-cols-4 gap-2 md:gap-3 pt-6 border-t border-gray-100 dark:border-gray-800/40">
               {[
-                { value: d?.total_towers ? `${d.total_towers}` : '5', label: 'Towers' },
-                { value: (d as any)?.floors ? `${(d as any).floors}` : 'G+26', label: 'Floors' },
-                { value: d?.land_area_acres ? `${d.land_area_acres} Ac` : '5.1 Ac', label: 'Land Area' },
-                { value: (d as any)?.open_space_pct ? `${(d as any).open_space_pct}%` : '69%', label: 'Open Space' }
-              ].map((stat, i) => (
+                { value: d?.total_towers ? `${d.total_towers}` : null, label: 'Towers' },
+                { value: (d as any)?.floors ? `${(d as any).floors}` : null, label: 'Floors' },
+                { value: d?.land_area_acres ? `${d.land_area_acres} Ac` : null, label: 'Land Area' },
+                { value: (d as any)?.open_space_pct ? `${(d as any).open_space_pct}%` : null, label: 'Open Space' }
+              ].filter(stat => stat.value).map((stat, i) => (
                 <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[16px] p-4 text-center shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all hover:-translate-y-0.5">
                   <p className="text-[20px] md:text-[24px] font-black tracking-tight text-gray-900 dark:text-white leading-none">
                     {stat.value}
@@ -792,7 +792,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     const perSqftRate = minRate ? minRate.toLocaleString('en-IN') : '15,942'
 
     return (
-      <div className="relative w-full overflow-hidden flex-shrink-0" style={{ height: 380 }}>
+      <div className="relative w-full overflow-hidden flex-shrink-0" style={{ height: 'min(45vh, 340px)' }}>
         {currentImg ? (
           <Image 
             src={currentImg} 
@@ -893,12 +893,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         transition={{ duration: 0.25, ease: 'easeOut' }}
       >
         <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-2xl rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col border border-gray-200/50 dark:border-gray-700/50">
-          {renderHero()}
+          {isMobile ? renderMobileHero() : renderHero()}
 
           {/* Tab strip — unified header */}
-          {stickyHeader}
+          {isMobile ? mobileTabBar : stickyHeader}
           <div className="flex-1 overflow-y-auto">{tabBody}</div>
-          {ctaFooter}
+          {isMobile ? mobileCtaFooter : ctaFooter}
         </div>
 
         <AnimatePresence mode="wait">
@@ -940,7 +940,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   return (
     <div className="project-detail-wrapper">
       <AnimatePresence mode="wait">
-        {isOpen && (
+        {isOpen && !isMobile && (
           <>
             {/* Backdrop & Centering Wrapper for Desktop */}
             <m.div
@@ -1013,7 +1013,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
        {/* Mobile bottom sheet gets its own AnimatePresence */}
       <AnimatePresence mode="wait">
-        {isOpen && (
+        {isOpen && isMobile && (
             <m.div
               key="dialog-mobile"
               initial={{ y: '100%' }}
@@ -1021,7 +1021,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               exit={{ y: '100%' }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className="fixed z-50 bottom-0 left-0 right-0 flex flex-col
-                         md:hidden h-[92vh] max-h-[92vh]
+                         md:hidden h-[92dvh] max-h-[92dvh]
                          bg-white dark:bg-[#120f0d] rounded-t-[24px] overflow-hidden
                          shadow-[0_-8px_40px_rgba(0,0,0,0.18)]"
               onClick={(e) => e.stopPropagation()}

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Check, AlertCircle } from 'lucide-react';
+import { API_BASE } from '@/lib/env';
 
 interface IntelligenceEditModalProps {
   projectId: string;
@@ -38,7 +39,7 @@ export default function IntelligenceEditModal({
     setError(null);
 
     try {
-      const res = await fetch(`/api/admin/intelligence/${projectId}`, {
+      const res = await fetch(`${API_BASE}/admin/intelligence/${projectId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

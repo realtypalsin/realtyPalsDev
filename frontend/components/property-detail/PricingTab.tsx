@@ -143,10 +143,10 @@ export default function PricingTab({
           const previewImg = floorPlans[0]
 
           // Cast dynamic highlights & properties
-          const subtitleStr = unit.subtitle || 'Premium configuration designed for modern living.'
-          const descStr = unit.description || 'Exquisite layout prioritizing comfort, privacy, and expansive living spaces.'
-          const categoryBadge = unit.category_badge || 'Premium Configuration'
-          const inventoryLeft = unit.inventory_left || 8
+          const subtitleStr = unit.subtitle
+          const descStr = unit.description
+          const categoryBadge = unit.category_badge
+          const inventoryLeft = unit.inventory_left
           const parseArray = (v: any) => {
             if (Array.isArray(v)) return v;
             if (typeof v === 'string') {
