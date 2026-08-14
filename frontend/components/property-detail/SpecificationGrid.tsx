@@ -47,17 +47,17 @@ const CATEGORY_LABEL: Record<string, string> = {
 function TierBadge({ tier }: { tier?: string | null }) {
   if (!tier) return null
   const colors = {
-    luxury: 'bg-amber-100 text-amber-800',
-    premium: 'bg-blue-100 text-blue-800',
-    standard: 'bg-gray-100 text-gray-800',
+    luxury: 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300',
+    premium: 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300',
+    standard: 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-300',
   }
   const color = colors[tier as keyof typeof colors] || colors.standard
   return <span className={`text-xs px-2 py-1 rounded ${color}`}>{tier}</span>
 }
 
 function VerificationBadge({ verified }: { verified?: Date | null }) {
-  if (!verified) return <span className="text-xs text-gray-400">Brochure claim</span>
-  return <span className="text-xs text-green-600">✓ Site verified</span>
+  if (!verified) return <span className="text-xs text-gray-400 dark:text-gray-500">Brochure claim</span>
+  return <span className="text-xs text-green-600 dark:text-green-400">✓ Site verified</span>
 }
 
 export function SpecificationGrid({ specs }: SpecificationGridProps) {
@@ -78,25 +78,25 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
     <div className="space-y-8 py-4">
       {/* Highlights Grid (4-card showcase) */}
       <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
           <span>🏢</span> Construction & Material Specifications
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {Object.entries(grouped).map(([category, items]) => (
             <div
               key={category}
-              className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition"
+              className="border border-gray-200 dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-800 hover:shadow-md dark:hover:shadow-slate-900 transition"
             >
               <div className="text-2xl mb-2">{CATEGORY_ICON[category] || '📋'}</div>
-              <h3 className="font-semibold text-sm mb-3 text-gray-800">
+              <h3 className="font-semibold text-sm mb-3 text-gray-800 dark:text-gray-200">
                 {CATEGORY_LABEL[category] || category}
               </h3>
               <ul className="space-y-2">
                 {items.slice(0, 2).map((spec, idx) => (
                   <li key={idx} className="text-xs">
-                    <div className="font-medium text-gray-700">{spec.label}</div>
-                    <div className="text-gray-600 text-xs mt-0.5">{spec.value}</div>
-                    {spec.brand && <div className="text-gray-500 text-xs">📌 {spec.brand}</div>}
+                    <div className="font-medium text-gray-700 dark:text-gray-300">{spec.label}</div>
+                    <div className="text-gray-600 dark:text-gray-400 text-xs mt-0.5">{spec.value}</div>
+                    {spec.brand && <div className="text-gray-500 dark:text-gray-500 text-xs">📌 {spec.brand}</div>}
                   </li>
                 ))}
               </ul>
