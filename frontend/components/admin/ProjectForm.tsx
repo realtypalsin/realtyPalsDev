@@ -82,7 +82,7 @@ function toSlug(name: string): string {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="col-span-2 pt-6 mt-4 first:pt-0 first:mt-0">
+    <div className="col-span-1 sm:col-span-2 pt-6 mt-4 first:pt-0 first:mt-0">
       <div className="flex items-center gap-4">
         <span className="text-[16px] font-serif font-black text-slate-900 dark:text-white tracking-tight">{title}</span>
         <div className="flex-1 h-px bg-slate-100 dark:bg-slate-700" />
@@ -473,7 +473,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
 
         <SectionHeader title="Descriptions" />
 
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           <Field label="Short Description" hint="1–2 sentences used by the AI in recommendations">
             <Textarea
               value={form.description}

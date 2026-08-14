@@ -114,7 +114,7 @@ export default function ConnectivityEditor({ connectivity: initial, projectId, o
       {error && <p className="text-[12px] text-red-500 mb-3">{error}</p>}
 
       {adding && (
-        <div className="grid grid-cols-2 gap-2 mb-4 p-3 bg-blue-50/60 rounded-xl border border-blue-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 p-3 bg-blue-50/60 rounded-xl border border-blue-100">
           <select
             value={newRow.type}
             onChange={e => setNewRow(r => ({ ...r, type: e.target.value as ConnType }))}

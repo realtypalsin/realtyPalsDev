@@ -45,7 +45,7 @@ export function formatPriceInrCompact(price: number): string {
  */
 export function sanitizePriceLabel(label: string | null | undefined): string {
   if (!label) return 'Price on Request'
-  let sanitized = label
+  const sanitized = label
     .replace(/\s*\((?:19|20)\d\d\s*[^)]*\)/gi, '')
     .replace(/\s*\([^)]*Rate[^)]*\)/gi, '')
     .replace(/\s*Rate\b/gi, '')

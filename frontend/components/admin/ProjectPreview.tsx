@@ -75,8 +75,8 @@ export default function ProjectPreview({ project, onRefresh, refreshing }: Props
 
   const status = STATUS_CFG[project.status] ?? STATUS_CFG.ready_to_move
   const units  = project.unit_types ?? []
-  
-  let rawImageUrl = project.images?.find(i => i.type === 'hero')?.url ||
+
+  const rawImageUrl = project.images?.find(i => i.type === 'hero')?.url ||
     project.images?.[0]?.url ||
     project.hero_image_url
 
