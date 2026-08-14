@@ -2,9 +2,6 @@ const { withSentryConfig } = require('@sentry/nextjs')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -96,6 +93,7 @@ const nextConfig = {
               const connectSrc = isDev
                 ? "'self' http://localhost:* wss://localhost:* https: ws: wss:"
                 : `'self' ${backendUrl} wss: https: ws:`
+              // Dev-only: unsafe-eval for Next.js HMR only. Production uses strict CSP.
               const scriptSrc = isDev
                 ? "'self' 'unsafe-eval' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com"
                 : "'self' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com"
