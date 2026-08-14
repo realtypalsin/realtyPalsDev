@@ -72,7 +72,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
     console.warn(`[ProjectCard] isSelectable=true but onToggleSelect callback is missing for project ${project.id}`)
   }
   const askMenuRef = useRef<HTMLDivElement>(null)
-  const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg } = usePreferredImages(project)
+  const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg, setImgIdx } = usePreferredImages(project)
 
   useEffect(() => {
     if (!askMenuOpen) return
@@ -243,14 +243,15 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
           <>
             <button
               onClick={prevImg}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-full flex items-center justify-center text-gray-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
-
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-full flex items-center justify-center text-gray-900 dark:text-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
+              aria-label="Previous image"
             >
               <CaretLeft size={14} weight="bold" />
             </button>
             <button
               onClick={nextImg}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-full flex items-center justify-center text-gray-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-full flex items-center justify-center text-gray-900 dark:text-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
+              aria-label="Next image"
             >
               <CaretRight size={14} weight="bold" />
             </button>
@@ -258,8 +259,9 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               {workingImages.map((_, i) => (
                 <button
                   key={`dot-${i}`}
+                  onClick={() => setImgIdx(i)}
                   className={`rounded-full transition-all ${i === imgIdx ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
-
+                  aria-label={`Image ${i + 1}`}
                 />
               ))}
             </div>

@@ -538,10 +538,12 @@ export default function ResidencesTab({
               {activePlanTab === 'availability' && (
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-[12px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Only {activeUnit.inventory_left || mockAvailability.length || 8} units available in {activeUnit.name}
-                    </p>
+                    {activeUnit.inventory_left && (
+                      <p className="text-[12px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Only {activeUnit.inventory_left} units available in {activeUnit.name}
+                      </p>
+                    )}
                     <button onClick={onGoToCosts} className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
                       Inquire Specific Unit <ChevronRight size={14} />
                     </button>
@@ -793,9 +795,11 @@ export default function ResidencesTab({
                       <p className="text-[11px] text-gray-400 font-medium">Room-by-room directional alignment</p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
-                    {pAny?.vastu_compliant ? 'Vastu Compliant (94/100)' : 'Vastu Audited'}
-                  </span>
+                  {pAny?.vastu_compliant && (
+                    <span className="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
+                      Vastu Compliant
+                    </span>
+                  )}
                 </div>
 
                 <div className="space-y-2.5 pt-1">
