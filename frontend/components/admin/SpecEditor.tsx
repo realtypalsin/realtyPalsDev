@@ -79,6 +79,7 @@ export default function SpecEditor({
   const [saving, setSaving] = useState(false)
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all')
   const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' } | null>(null)
+  const [validationErrors, setValidationErrors] = useState<Record<number, string[]>>({})
 
   useEffect(() => {
     if (specsProp && specsProp.length > 0) {
@@ -125,11 +126,12 @@ export default function SpecEditor({
   }
 
   const handleApplyPresets = () => {
-    if (specs.length > 0 && !confirm('Add standard luxury presets to existing specs?')) {
+    if (specs.length > 0 && !confirm(`Replace all ${specs.length} specifications with luxury presets?`)) {
       return
     }
-    setSpecs(prev => [...prev, ...COMMON_PRESETS])
-    setToast({ message: 'Added standard specifications presets', type: 'success' })
+    setSpecs(COMMON_PRESETS)
+    setValidationErrors({})
+    setToast({ message: `Loaded ${COMMON_PRESETS.length} luxury specifications presets`, type: 'success' })
   }
 
   const handleUpdate = (index: number, field: keyof SpecItem, value: any) => {
@@ -144,7 +146,25 @@ export default function SpecEditor({
     setSpecs(prev => prev.filter((_, i) => i !== index))
   }
 
+  const validateSpecs = (): Record<number, string[]> => {
+    const errors: Record<number, string[]> = {}
+    specs.forEach((spec, idx) => {
+      const errs: string[] = []
+      if (!spec.label?.trim()) errs.push('Label required')
+      if (!spec.value?.trim()) errs.push('Value required')
+      if (errs.length > 0) errors[idx] = errs
+    })
+    return errors
+  }
+
   const handleSave = async () => {
+    const errors = validateSpecs()
+    setValidationErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      setToast({ message: `Fix ${Object.keys(errors).length} validation error(s)`, type: 'error' })
+      return
+    }
+
     setSaving(true)
     try {
       const res = await adminFetch(`/admin/projects/${projectId}/specs`, {
@@ -163,6 +183,7 @@ export default function SpecEditor({
         setSpecs(data.specs)
         onSpecsChange?.(data.specs)
       }
+      setValidationErrors({})
       setToast({ message: 'Specifications saved successfully!', type: 'success' })
       onSaved?.()
     } catch (err: any) {
@@ -255,8 +276,18 @@ export default function SpecEditor({
         })}
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="p-8 rounded-2xl border border-gray-200 dark:border-white/10 text-center space-y-3">
+          <div className="flex justify-center">
+            <RefreshCw size={20} className="text-gray-400 dark:text-gray-600 animate-spin" />
+          </div>
+          <p className="text-sm font-bold text-gray-500 dark:text-gray-400">Loading specifications...</p>
+        </div>
+      )}
+
       {/* Specifications List */}
-      {filteredSpecs.length === 0 ? (
+      {!loading && filteredSpecs.length === 0 ? (
         <div className="p-8 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 text-center space-y-3">
           <p className="text-sm font-bold text-gray-500 dark:text-gray-400">No specifications added in this category yet.</p>
           <button
@@ -267,7 +298,7 @@ export default function SpecEditor({
             + Add First Specification
           </button>
         </div>
-      ) : (
+      ) : !loading && (
         <div className="space-y-3.5 max-h-[600px] overflow-y-auto pr-1">
           {filteredSpecs.map((spec, idx) => {
             const catObj = SPEC_CATEGORIES.find(c => c.id === spec.category) || SPEC_CATEGORIES[0]
@@ -346,6 +377,16 @@ export default function SpecEditor({
                   </div>
                 </div>
 
+                {/* Validation Errors */}
+                {validationErrors[realIdx] && (
+                  <div className="px-3 py-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 rounded-lg flex items-start gap-2">
+                    <AlertCircle size={14} className="text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs text-red-700 dark:text-red-300 space-y-0.5">
+                      {validationErrors[realIdx].map((err, i) => <div key={i}>• {err}</div>)}
+                    </div>
+                  </div>
+                )}
+
                 {/* Input Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                   <div className="md:col-span-4 space-y-1">
@@ -356,8 +397,15 @@ export default function SpecEditor({
                       type="text"
                       placeholder="e.g. Master Bedroom Flooring"
                       value={spec.label}
-                      onChange={e => handleUpdate(realIdx, 'label', e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-extrabold border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400"
+                      onChange={e => {
+                        handleUpdate(realIdx, 'label', e.target.value)
+                        if (validationErrors[realIdx]) setValidationErrors(prev => ({ ...prev, [realIdx]: prev[realIdx].filter(e => !e.includes('Label')) }))
+                      }}
+                      className={`w-full px-3 py-2 text-xs font-extrabold border rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400 transition-colors ${
+                        validationErrors[realIdx]?.some(e => e.includes('Label'))
+                          ? 'border-red-300 dark:border-red-700'
+                          : 'border-gray-200 dark:border-zinc-700'
+                      }`}
                     />
                   </div>
 
@@ -369,8 +417,15 @@ export default function SpecEditor({
                       type="text"
                       placeholder="e.g. Engineered laminated wooden flooring (AC4 grade)"
                       value={spec.value}
-                      onChange={e => handleUpdate(realIdx, 'value', e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-bold border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400"
+                      onChange={e => {
+                        handleUpdate(realIdx, 'value', e.target.value)
+                        if (validationErrors[realIdx]) setValidationErrors(prev => ({ ...prev, [realIdx]: prev[realIdx].filter(e => !e.includes('Value')) }))
+                      }}
+                      className={`w-full px-3 py-2 text-xs font-bold border rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400 transition-colors ${
+                        validationErrors[realIdx]?.some(e => e.includes('Value'))
+                          ? 'border-red-300 dark:border-red-700'
+                          : 'border-gray-200 dark:border-zinc-700'
+                      }`}
                     />
                   </div>
 
@@ -386,6 +441,20 @@ export default function SpecEditor({
                       className="w-full px-3 py-2 text-xs font-bold border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400"
                     />
                   </div>
+                </div>
+
+                {/* Notes Field */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider block">
+                    Internal Notes (Admin Only)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Verified on site visit, pending brand confirmation"
+                    value={spec.notes || ''}
+                    onChange={e => handleUpdate(realIdx, 'notes', e.target.value || null)}
+                    className="w-full px-3 py-2 text-xs font-medium border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400"
+                  />
                 </div>
               </div>
             )

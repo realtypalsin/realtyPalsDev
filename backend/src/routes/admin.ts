@@ -620,6 +620,12 @@ router.put('/projects/:id/specs', requireAdmin, async (req: Request, res: Respon
     return
   }
 
+  const invalidSpecs = specs.filter(s => !s.label?.trim() || !s.value?.trim())
+  if (invalidSpecs.length > 0) {
+    res.status(400).json({ error: 'Label and value are required for all specifications' })
+    return
+  }
+
   try {
     const project = await prisma.project.findFirst({
       where: { OR: [{ id }, { slug: id }] },
@@ -638,8 +644,8 @@ router.put('/projects/:id/specs', requireAdmin, async (req: Request, res: Respon
             project_id: project.id,
             unit_type_id: s.unit_type_id || null,
             category: s.category || 'structure',
-            label: s.label?.trim() || 'Specification',
-            value: s.value?.trim() || '',
+            label: s.label?.trim(),
+            value: s.value?.trim(),
             brand: s.brand?.trim() || null,
             tier: s.tier || null,
             is_highlight: Boolean(s.is_highlight),
@@ -659,7 +665,7 @@ router.put('/projects/:id/specs', requireAdmin, async (req: Request, res: Respon
     res.json({ ok: true, specs: updated })
   } catch (err: any) {
     console.error('[admin] update specs failed:', err)
-    res.status(500).json({ error: 'Failed to save specifications' })
+    res.status(400).json({ error: err.message || 'Failed to save specifications' })
   }
 })
 
@@ -691,8 +697,8 @@ router.post('/projects/:id/specs', requireAdmin, async (req: Request, res: Respo
             project_id: project.id,
             unit_type_id: s.unit_type_id || null,
             category: s.category || 'structure',
-            label: s.label?.trim() || 'Specification',
-            value: s.value?.trim() || '',
+            label: s.label?.trim(),
+            value: s.value?.trim(),
             brand: s.brand?.trim() || null,
             tier: s.tier || null,
             is_highlight: Boolean(s.is_highlight),
@@ -713,6 +719,65 @@ router.post('/projects/:id/specs', requireAdmin, async (req: Request, res: Respo
   } catch (err: any) {
     console.error('[admin] post specs failed:', err)
     res.status(500).json({ error: 'Failed to save specifications' })
+  }
+})
+
+// POST /api/v1/admin/projects/:id/specs — same as PUT
+router.post('/projects/:id/specs', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { specs } = req.body as { specs: any[] }
+
+  if (!Array.isArray(specs)) {
+    res.status(400).json({ error: 'specs array required' })
+    return
+  }
+
+  const invalidSpecs = specs.filter(s => !s.label?.trim() || !s.value?.trim())
+  if (invalidSpecs.length > 0) {
+    res.status(400).json({ error: 'Label and value are required for all specifications' })
+    return
+  }
+
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.projectSpecItem.deleteMany({ where: { project_id: project.id } })
+      if (specs.length > 0) {
+        await tx.projectSpecItem.createMany({
+          data: specs.map((s, idx) => ({
+            project_id: project.id,
+            unit_type_id: s.unit_type_id || null,
+            category: s.category || 'structure',
+            label: s.label.trim(),
+            value: s.value.trim(),
+            brand: s.brand?.trim() || null,
+            tier: s.tier || null,
+            is_highlight: Boolean(s.is_highlight),
+            sort_order: s.sort_order ?? (idx + 1),
+            notes: s.notes?.trim() || null
+          }))
+        })
+      }
+    })
+
+    const updated = await prisma.projectSpecItem.findMany({
+      where: { project_id: project.id },
+      include: { unit_type: { select: { id: true, name: true, bhk: true } } },
+      orderBy: [{ sort_order: 'asc' }, { category: 'asc' }]
+    })
+
+    res.json({ ok: true, specs: updated })
+  } catch (err: any) {
+    console.error('[admin] post specs failed:', err)
+    res.status(400).json({ error: err.message || 'Failed to save specifications' })
   }
 })
 
