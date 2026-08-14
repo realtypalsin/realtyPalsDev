@@ -102,29 +102,33 @@ export default function OverviewTab({
   const quickInfoItems: { label: string; value: string; sublabel: string; icon: any; color: string }[] = []
   
   // 1. Open Space
-  const openSpaceVal = d?.open_space_pct != null ? `${d.open_space_pct}%` : '75%'
-  quickInfoItems.push({
-    label: 'Open Green',
-    value: openSpaceVal,
-    sublabel: 'Open Green',
-    icon: Leaf,
-    color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
-  })
+  if (d?.open_space_pct != null) {
+    quickInfoItems.push({
+      label: 'Open Green',
+      value: `${d.open_space_pct}%`,
+      sublabel: 'Open Green',
+      icon: Leaf,
+      color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+    })
+  }
 
   // 2. Metro Connectivity
-  const metroVal = (metroConn as any)?.travel_time_mins != null 
-    ? `${(metroConn as any).travel_time_mins} mins` 
-    : metroConn?.distance_km != null 
-      ? `${Math.ceil(metroConn.distance_km * 2.5)} mins`
-      : '3 mins'
-  const metroSub = metroConn?.name ? `${metroConn.name} Metro` : 'Aqua Line Metro'
-  quickInfoItems.push({
-    label: 'Metro',
-    value: metroVal,
-    sublabel: metroSub,
-    icon: TrainFront,
-    color: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
-  })
+  if (metroConn) {
+    const metroVal = (metroConn as any)?.travel_time_mins != null
+      ? `${(metroConn as any).travel_time_mins} mins`
+      : metroConn?.distance_km != null
+        ? `${Math.ceil(metroConn.distance_km * 2.5)} mins`
+        : null
+    if (metroVal) {
+      quickInfoItems.push({
+        label: 'Metro',
+        value: metroVal,
+        sublabel: `${metroConn.name || 'Nearest'} Metro`,
+        icon: TrainFront,
+        color: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
+      })
+    }
+  }
 
   // 3. Green certification / IGBC
   const greenRatingVal = d?.green_rating || (d as any)?.green_certification || 'IGBC'
