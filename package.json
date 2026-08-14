@@ -7,8 +7,8 @@
   ],
   "scripts": {
     "build": "cd frontend && npm run db:generate && npm run build",
-    "dev:backend": "npm run dev --workspace=backend",
-    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm --workspace=backend run dev",
+    "dev:frontend": "npm --workspace=frontend run dev",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "db:studio": "cd frontend && npx prisma studio",
     "db:migrate": "cd frontend && npx prisma migrate dev",

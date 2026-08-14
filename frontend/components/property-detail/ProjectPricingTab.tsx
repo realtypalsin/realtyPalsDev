@@ -24,18 +24,18 @@ function fmtRs(num: number): string {
 }
 
 export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: ProjectPricingTabProps) {
-  const availableBhks = unitTypes.length > 0 ? Array.from(new Set(unitTypes.map(u => `${u.bhk} BHK`))) : ['3 BHK', '3.5 BHK', '4 BHK', '4 BHK + Servant']
-  const [bhkFilterState, setBhkFilter] = useState<string>(availableBhks[0] ?? '3 BHK')
-  const bhkFilter = availableBhks.includes(bhkFilterState) ? bhkFilterState : (availableBhks[0] ?? '3 BHK')
+  const availableBhks = unitTypes.length > 0 ? Array.from(new Set(unitTypes.map(u => `${u.bhk} BHK`))) : []
+  const [bhkFilterState, setBhkFilter] = useState<string>(availableBhks[0] ?? '')
+  const bhkFilter = availableBhks.includes(bhkFilterState) ? bhkFilterState : (availableBhks[0] ?? '')
 
   // Selected unit details
   const selectedUnit = unitTypes.find(u => `${u.bhk} BHK` === bhkFilter) || unitTypes[0]
-  const unitMinCr: number = selectedUnit?.price_min_cr ?? 2.01
-  const unitMaxCr: number = selectedUnit?.price_max_cr ?? (unitMinCr * 1.5)
-  const unitAreaSqft: number = selectedUnit?.super_area_sqft ?? 1397
+  const unitMinCr: number | null = selectedUnit?.price_min_cr ?? null
+  const unitMaxCr: number | null = selectedUnit?.price_max_cr ?? null
+  const unitAreaSqft: number | null = selectedUnit?.super_area_sqft ?? null
 
   // Interactive EMI State (synced precisely with property price & selected unit)
-  const [propertyPrice, setPropertyPrice] = useState<number>(unitMinCr * 10000000)
+  const [propertyPrice, setPropertyPrice] = useState<number>(unitMinCr ? unitMinCr * 10000000 : 0)
   const [downPaymentPct, setDownPaymentPct] = useState<number>(20)
   const [tenureYears, setTenureYears] = useState<number>(20)
 
@@ -43,7 +43,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const dbPaymentPlan = detail?.payment_plan ?? null
   const dbCostSheet = detail?.cost_sheet ?? null
 
-  const interestRatePct = dbCostSheet?.base_interest_rate || 8.5
+  const interestRatePct = dbCostSheet?.base_interest_rate ?? 8.5
 
   const downPaymentAmount = propertyPrice * (downPaymentPct / 100)
   const loanAmount = Math.max(0, propertyPrice - downPaymentAmount)
@@ -71,9 +71,9 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const [showEligibilityModal, setShowEligibilityModal] = useState<boolean>(false)
 
   const waUrl = detail ? buildWhatsAppUrl(detail, 'panel') : null
-  const reraNum = detail?.rera_number ?? 'UPRERAPRJ916631/02/2024'
-  const possessionLabel = detail?.possession_label ?? (isRTM ? 'Delivered & Ready' : 'Dec 2028')
-  const pricePsf: number = selectedUnit?.super_area_sqft ? Math.round((unitMinCr * 10000000) / selectedUnit.super_area_sqft) : 14388
+  const reraNum = detail?.rera_number ?? null
+  const possessionLabel = detail?.possession_label ?? (isRTM ? 'Delivered & Ready' : null)
+  const pricePsf: number | null = unitMinCr && unitAreaSqft ? Math.round((unitMinCr * 10000000) / unitAreaSqft) : null
 
   // Extract all payment plans dynamically from DB (if present)
   const dbPlansList: any[] = Array.isArray((detail as any)?.payment_plans)
@@ -162,7 +162,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const grandTotalAtPossession = constructionTotalCost + totalPossessionAdditions
 
   // Adaptive breakdown components based on Stage Toggle (At Booking vs At Possession)
-  const breakdownComponents = costBreakdownStage === 'construction' ? [
+  const breakdownComponents = !unitAreaSqft ? [] : costBreakdownStage === 'construction' ? [
     { id: 'base', name: `Base Price (${unitAreaSqft.toLocaleString('en-IN')} sq.ft)`, amount: baseCostVal, pct: ((baseCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-[#2563EB]', stroke: '#2563EB' },
     { id: 'plc', name: 'PLC Charges', amount: plcCostVal, pct: ((plcCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-indigo-500', stroke: '#6366F1' },
     { id: 'club', name: 'Club Membership', amount: clubCostVal, pct: ((clubCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-amber-400', stroke: '#FBBF24' },
@@ -208,51 +208,53 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
             <p className="text-[13px] text-gray-500 font-medium mt-0.5">Transparent pricing, flexible plans and complete cost breakdown.</p>
           </div>
 
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 text-[11.5px] font-extrabold self-start sm:self-auto">
-            <ShieldCheck size={16} className="text-blue-600 dark:text-blue-400" />
-            <span>RERA verified · {reraNum}</span>
-          </div>
+          {reraNum && (
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 text-[11.5px] font-extrabold self-start sm:self-auto">
+              <ShieldCheck size={16} className="text-blue-600 dark:text-blue-400" />
+              <span>RERA verified · {reraNum}</span>
+            </div>
+          )}
         </div>
 
         {/* 4 Stat Cards Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
-              <IndianRupee size={18} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+              <IndianRupee size={17} />
             </div>
-            <div>
-              <p className="text-[18px] font-black text-gray-900 dark:text-white leading-tight">{fmtCr(unitMinCr)}</p>
-              <p className="text-[11px] text-gray-400 font-bold mt-0.5">Starting Price (All Inclusive)</p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
-              <TrendingUp size={18} />
-            </div>
-            <div>
-              <p className="text-[18px] font-black text-gray-900 dark:text-white leading-tight">₹{pricePsf.toLocaleString('en-IN')}/sqft</p>
-              <p className="text-[11px] text-gray-400 font-bold mt-0.5">Avg. Price per sq.ft</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-tight truncate">{fmtCr(unitMinCr)}</p>
+              <p className="text-[10px] sm:text-[11px] text-gray-400 font-bold mt-0.5 leading-tight line-clamp-1 sm:line-clamp-none">Starting Price (All Incl.)</p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
-              <CalendarDays size={18} />
+          <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+              <TrendingUp size={17} />
             </div>
-            <div>
-              <p className="text-[18px] font-black text-gray-900 dark:text-white leading-tight">{possessionLabel}</p>
-              <p className="text-[11px] text-gray-400 font-bold mt-0.5">Expected Possession</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-tight truncate">₹{pricePsf ? pricePsf.toLocaleString('en-IN') : '—'}/sqft</p>
+              <p className="text-[10px] sm:text-[11px] text-gray-400 font-bold mt-0.5 leading-tight line-clamp-1 sm:line-clamp-none">Avg. Price per sq.ft</p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <Percent size={18} />
+          <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+              <CalendarDays size={17} />
             </div>
-            <div>
-              <p className="text-[18px] font-black text-gray-900 dark:text-white leading-tight">10%</p>
-              <p className="text-[11px] text-gray-400 font-bold mt-0.5">Booking Amount</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-tight truncate">{possessionLabel}</p>
+              <p className="text-[10px] sm:text-[11px] text-gray-400 font-bold mt-0.5 leading-tight line-clamp-1 sm:line-clamp-none">Expected Possession</p>
+            </div>
+          </div>
+
+          <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <Percent size={17} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-tight truncate">10%</p>
+              <p className="text-[10px] sm:text-[11px] text-gray-400 font-bold mt-0.5 leading-tight line-clamp-1 sm:line-clamp-none">Booking Amount</p>
             </div>
           </div>
         </div>
@@ -537,7 +539,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
                 : (item.percentage != null ? parseFloat(String(item.percentage)) : 0)
 
               const pctVal = isNaN(rawPctVal) ? 0 : rawPctVal
-              const basePrice = propertyPrice > 0 ? propertyPrice : (unitMinCr * 10000000)
+              const basePrice = propertyPrice > 0 ? propertyPrice : (unitMinCr ? unitMinCr * 10000000 : 0)
 
               const milestoneAmt = (item.amt && item.amt > 0)
                 ? item.amt
@@ -907,7 +909,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/5 space-y-2 text-[12.5px] font-extrabold">
               <div className="flex justify-between">
                 <span className="text-gray-500">Selected Unit</span>
-                <span>{bhkFilter} ({unitAreaSqft} sq.ft)</span>
+                <span>{bhkFilter} {unitAreaSqft ? `(${unitAreaSqft} sq.ft)` : ''}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Property Price</span>

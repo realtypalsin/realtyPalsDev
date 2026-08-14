@@ -296,10 +296,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     <AnimatePresence mode="wait">
       <m.div
         key={activeTab}
-        initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
       >
       {activeTab === 'Overview' && (
         <OverviewTab
@@ -380,6 +380,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           <BuilderTab
             builder={(d as any)?.builder || null}
             project={d as any}
+            documents={documents}
             loading={loading && !detail}
           />
         </div>
@@ -491,12 +492,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   )
 
   const mobileTabIcons: Record<Tab, React.ReactNode> = {
-    Overview: <Building2 size={18} />,
-    Analysis: <LineChart size={18} />,
-    'Floor Plans': <BedDouble size={18} />,
-    Pricing: <IndianRupee size={18} />,
-    Location: <MapPin size={18} />,
-    Builder: <FileText size={18} />
+    Overview: <Building2 size={17} />,
+    Analysis: <LineChart size={17} />,
+    'Floor Plans': <BedDouble size={17} />,
+    Pricing: <IndianRupee size={17} />,
+    Location: <MapPin size={17} />,
+    Builder: <FileText size={17} />
   }
 
   const mobileTabLabels: Record<Tab, string> = {
@@ -509,20 +510,25 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   }
 
   const mobileTabBar = (
-    <div className="sticky top-0 z-45 w-full bg-white dark:bg-[#120f0d] border-b border-gray-100 dark:border-gray-800 shadow-xs flex-shrink-0">
-      <div className="flex items-center justify-around px-1 py-1">
+    <div className="sticky top-0 z-30 w-full bg-white/95 dark:bg-[#120f0d]/95 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-xs flex-shrink-0">
+      <div className="flex items-center justify-around px-0.5 py-1">
         {SECTION_TABS.map((tab) => {
           const isActive = activeTab === tab
           return (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex flex-col items-center gap-1.5 py-2 px-1 relative transition-all cursor-pointer flex-1 min-w-[50px] ${
+              onClick={() => {
+                setActiveTab(tab)
+                if (scrollContainerMobileRef.current) {
+                  scrollContainerMobileRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+              }}
+              className={`flex flex-col items-center gap-1 py-1.5 px-1 relative transition-all cursor-pointer flex-1 min-w-[48px] ${
                 isActive ? 'text-blue-600 dark:text-blue-400 font-extrabold' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               {mobileTabIcons[tab]}
-              <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>
+              <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
                 {mobileTabLabels[tab]}
               </span>
               {isActive && (
@@ -536,7 +542,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   )
 
   const mobileCtaFooter = (
-    <div className="sticky bottom-0 z-40 w-full bg-white/95 dark:bg-[#120f0d]/95 backdrop-blur-md border-t border-gray-200/80 dark:border-gray-800/80 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] flex items-center gap-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+    <div className="sticky bottom-0 z-40 w-full bg-white/95 dark:bg-[#120f0d]/95 backdrop-blur-md border-t border-gray-200/80 dark:border-gray-800/80 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] flex items-center gap-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex-shrink-0">
       <button
         onClick={() => handleOpenSiteVisit()}
         className="w-full bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white font-extrabold py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-xs active:scale-[0.98]"
@@ -792,7 +798,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     const perSqftRate = minRate ? minRate.toLocaleString('en-IN') : null
 
     return (
-      <div className="relative w-full overflow-hidden flex-shrink-0" style={{ height: 'min(45vh, 340px)' }}>
+      <div className="relative w-full overflow-hidden flex-shrink-0" style={{ height: 'min(44vh, 320px)' }}>
         {currentImg ? (
           <Image 
             src={currentImg} 
@@ -809,72 +815,72 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           </div>
         )}
         {/* Dark vertical gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/25" />
 
-        {/* Top-left: Status Pill */}
-        <div className="absolute top-4 left-4 z-10">
-          <span className={`text-[10px] font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-md
-            ${isRTM ? 'bg-emerald-500 text-white' : isNew ? 'bg-blue-500 text-white' : 'bg-amber-500 text-white'}`}>
+        {/* Top-left: Dedicated Close Button with zero collision */}
+        <button 
+          onClick={onClose} 
+          aria-label="Close card"
+          className="absolute top-3.5 left-3.5 z-30 w-9 h-9 bg-black/50 hover:bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 shadow-md transition-all active:scale-95 cursor-pointer"
+        >
+          <X size={17} />
+        </button>
+
+        {/* Top-left Status Pill */}
+        <div className="absolute top-3.5 left-14 z-20">
+          <span className={`text-[10px] font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-md backdrop-blur-xs
+            ${isRTM ? 'bg-emerald-500/90 text-white' : isNew ? 'bg-blue-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
             {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
           </span>
         </div>
 
-        {/* Top-right: AI Score Badge */}
+        {/* Top-right: AI Score Badge (Clean, isolated) */}
         {displayScore && (
-          <div className="absolute top-4 right-4 z-10 bg-black/60 backdrop-blur-md border border-white/20 rounded-2xl p-3 text-right flex flex-col items-center justify-center shadow-lg">
-            <p className="text-[9px] text-gray-300 font-bold tracking-wider flex items-center gap-0.5 justify-end">⚡ AI SCORE</p>
+          <div className="absolute top-3.5 right-3.5 z-20 bg-black/60 backdrop-blur-md border border-white/20 rounded-2xl p-2.5 px-3 text-right flex flex-col items-center justify-center shadow-lg">
+            <p className="text-[8.5px] text-gray-300 font-bold tracking-wider flex items-center gap-0.5 justify-end">⚡ AI SCORE</p>
             <div className="flex items-baseline gap-0.5 mt-0.5">
-              <span className="text-2xl font-black text-white leading-none">{displayScore}</span>
-              <span className="text-[10px] text-gray-400 font-bold">/100</span>
+              <span className="text-xl font-black text-white leading-none">{displayScore}</span>
+              <span className="text-[9.5px] text-gray-400 font-bold">/100</span>
             </div>
             {tier && (
-              <span className="text-[9px] font-extrabold text-emerald-400 mt-1 uppercase tracking-wider">
+              <span className="text-[8.5px] font-extrabold text-emerald-400 mt-1 uppercase tracking-wider">
                 🛡️ {tierLabel[tier] ?? tier}
               </span>
             )}
           </div>
         )}
 
-        {/* Close Button */}
-        <button 
-          onClick={onClose} 
-          className="absolute top-4 right-[calc(5rem+0.5rem)] z-10 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 transition-colors"
-        >
-          <X size={15} />
-        </button>
-
         {/* Middle: Title, Builder, and Location */}
-        <div className="absolute bottom-[92px] left-4 right-4 z-10 space-y-1">
-          <h2 className="text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+        <div className="absolute bottom-[86px] left-3.5 right-3.5 z-10 space-y-1">
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md truncate">
             {d?.name}
           </h2>
           {builderName && (
-            <p className="text-[13px] font-semibold text-gray-200 drop-shadow-sm flex items-center gap-1 cursor-pointer">
-              by <span className="underline decoration-dashed decoration-gray-400 underline-offset-4 font-extrabold text-white">{builderName}</span>
-              <span className="text-gray-400 text-xs">˅</span>
+            <p className="text-[12.5px] font-semibold text-gray-200 drop-shadow-sm flex items-center gap-1 cursor-pointer truncate">
+              by <span className="underline decoration-dashed decoration-gray-400 underline-offset-4 font-extrabold text-white truncate">{builderName}</span>
             </p>
           )}
-          <p className="text-[11px] text-gray-300 font-medium drop-shadow-sm flex items-center gap-1">
-            <MapPin size={11} className="text-gray-400" />
-            {d?.sector}, {d?.city}, {(d as any)?.state || 'Uttar Pradesh'}
+          <p className="text-[11px] text-gray-300 font-medium drop-shadow-sm flex items-center gap-1 truncate">
+            <MapPin size={11} className="text-gray-400 flex-shrink-0" />
+            <span className="truncate">{d?.sector}, {d?.city}</span>
           </p>
         </div>
 
         {/* Bottom Translucent Price & Possession Overlay Dock */}
-        <div className="absolute bottom-3 left-3 right-3 z-10 bg-black/40 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 flex items-center justify-between shadow-xl">
-          <div>
-            <p className="text-lg font-black text-white leading-tight">{displayPrice}</p>
-            {perSqftRate && <p className="text-[10px] text-gray-300 font-semibold mt-0.5">Starts ₹{perSqftRate} / sq.ft</p>}
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 bg-black/50 backdrop-blur-md border border-white/15 rounded-2xl p-3 flex items-center justify-between shadow-xl">
+          <div className="min-w-0 pr-2">
+            <p className="text-base sm:text-lg font-black text-white leading-tight truncate">{displayPrice}</p>
+            {perSqftRate && <p className="text-[9.5px] text-gray-300 font-semibold mt-0.5 truncate">Starts ₹{perSqftRate}/sqft</p>}
           </div>
-          <div className="text-right">
-            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider leading-none">Possession</p>
-            <p className="text-[12.5px] font-extrabold text-white mt-1 leading-none">{displayPossession ?? 'Not announced'}</p>
+          <div className="text-right flex-shrink-0">
+            <p className="text-[8.5px] text-gray-400 font-bold uppercase tracking-wider leading-none">Possession</p>
+            <p className="text-[11.5px] font-extrabold text-white mt-1 leading-none">{displayPossession ?? 'Not announced'}</p>
           </div>
         </div>
 
         {/* Photos badge */}
         {allImages.length > 0 && (
-          <span className="absolute bottom-[104px] right-4 text-[9.5px] font-bold bg-black/60 text-white px-2 py-0.5 rounded-full z-10 backdrop-blur-xs flex items-center gap-1">
+          <span className="absolute bottom-[94px] right-3.5 text-[9px] font-bold bg-black/60 text-white px-2 py-0.5 rounded-full z-10 backdrop-blur-xs flex items-center gap-1">
             📷 {allImages.length}
           </span>
         )}
@@ -963,11 +969,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                            rounded-3xl bg-gray-50 dark:bg-slate-800 overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.4)]"
                 onClick={(e) => e.stopPropagation()}
               >
-              {/* 
-                 Floating Header is completely removed. 
-                 The stickyHeader (tab bar) now dynamically injects the identity and action on scroll! 
-              */}
-
               {/* Scrollable Content */}
               <div ref={scrollContainerRef} className="flex-1 overflow-y-auto w-full relative pb-24 hide-scrollbar" onScroll={handleScroll}>
                 {/* Hero Section */}
@@ -978,7 +979,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
                 {/* Main Content Area */}
                 <div className="p-8 md:p-10 max-w-[1200px] mx-auto">
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
+                  <div className="bg-white dark:bg-[#111] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden min-h-[400px]">
                      {tabBody}
                   </div>
                 </div>
@@ -986,8 +987,8 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
               {/* Floating Footer CTA (Pill Dock) */}
               <div className="absolute bottom-8 inset-x-0 z-50 hidden md:flex justify-center pointer-events-none">
-                <div className="flex gap-3 bg-white/90 backdrop-blur-xl p-2 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-200/50 pointer-events-auto">
-                  <button onClick={() => handleOpenSiteVisit()} className="px-8 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-full text-[14px] transition-all flex items-center gap-2 shadow-sm">
+                <div className="flex gap-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl p-2 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-200/50 dark:border-white/10 pointer-events-auto">
+                  <button onClick={() => handleOpenSiteVisit()} className="px-8 py-3 bg-gray-900 hover:bg-black dark:bg-white dark:text-gray-900 text-white font-semibold rounded-full text-[14px] transition-all flex items-center gap-2 shadow-sm">
                     <CalendarDays size={16} />
                     Book Site Visit
                   </button>
@@ -996,7 +997,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                     return waUrl ? (
                       <a href={waUrl} target="_blank" rel="noopener noreferrer"
                         onClick={() => track('whatsapp_handoff', { project_slug: (d as any)?.slug, project_name: (d as any)?.name })}
-                        className="px-6 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-full text-[14px] transition-all flex items-center gap-2">
+                        className="px-6 py-3 bg-white dark:bg-white/10 hover:bg-gray-50 dark:hover:bg-white/20 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 font-semibold rounded-full text-[14px] transition-all flex items-center gap-2">
                         <WhatsAppIcon size={16} />
                         Ask on WhatsApp
                       </a>
@@ -1011,27 +1012,36 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         )}
       </AnimatePresence>
 
-       {/* Mobile bottom sheet gets its own AnimatePresence */}
+       {/* Mobile bottom sheet gets its own AnimatePresence with full clickable backdrop */}
       <AnimatePresence mode="wait">
         {isOpen && isMobile && (
+          <div
+            key="backdrop-mobile"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex flex-col justify-end"
+            onClick={onClose}
+          >
             <m.div
               key="dialog-mobile"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="fixed z-50 bottom-0 left-0 right-0 flex flex-col
-                         md:hidden h-[92dvh] max-h-[92dvh]
+              className="relative flex flex-col w-full h-[92dvh] max-h-[92dvh]
                          bg-white dark:bg-[#120f0d] rounded-t-[24px] overflow-hidden
-                         shadow-[0_-8px_40px_rgba(0,0,0,0.18)]"
+                         shadow-[0_-8px_40px_rgba(0,0,0,0.25)]"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Subtle top grab handle */}
+              <div className="w-full flex justify-center pt-2 pb-1 bg-transparent absolute top-0 inset-x-0 z-40 pointer-events-none">
+                <div className="w-10 h-1 rounded-full bg-white/60 shadow-xs" />
+              </div>
+
               {/* Scrollable container containing Hero, sticky mobile Tab Bar, and Tab Content */}
               <div 
                 ref={scrollContainerMobileRef} 
                 className="flex-1 overflow-y-auto overscroll-contain relative pb-20 dark:bg-[#0a0a0a]"
               >
-                {/* New full-height luxury Mobile Hero */}
+                {/* Full-height luxury Mobile Hero */}
                 {renderMobileHero()}
 
                 {/* Mobile Tab Strip (sticky top-0 inside this scroll container) */}
@@ -1046,6 +1056,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               {/* Mobile Sticky CTA Dock */}
               {mobileCtaFooter}
             </m.div>
+          </div>
         )}
       </AnimatePresence>
 

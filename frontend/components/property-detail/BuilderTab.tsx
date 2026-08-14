@@ -5,17 +5,18 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   Globe, Download, Building2, Users, TrendingUp, Award, CalendarDays,
-  ShieldCheck, ArrowUpRight, Sparkles, CheckCircle2, Clock, MapPin, BadgeCheck, Phone
+  ShieldCheck, ArrowUpRight, Sparkles, CheckCircle2, Clock, MapPin, BadgeCheck, Phone, FileText
 } from 'lucide-react'
 import type { Builder } from '@prisma/client'
 
 interface BuilderTabProps {
   builder: (Builder & { logo_url?: string | null }) | null
   project: any
+  documents?: any[]
   loading: boolean
 }
 
-export default function BuilderTab({ builder, project, loading }: BuilderTabProps) {
+export default function BuilderTab({ builder, project, documents = [], loading }: BuilderTabProps) {
   if (loading) {
     return (
       <div className="space-y-4 p-6">
@@ -287,14 +288,12 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {[
             { val: `${legacyYears}+`, label: 'Years of Legacy' },
-            { val: `${builder?.projects_delivered_count || 42}+`, label: 'Projects Delivered' },
-            { val: '22.4M+', label: 'Sq. Ft. Delivered' },
-            { val: '18,000+', label: 'Happy Families' },
-            { val: '4.7/5', label: 'Customer Rating (1200+ reviews)' }
-          ].map((imp, i) => (
+            builder?.projects_delivered_count && { val: `${builder.projects_delivered_count}+`, label: 'Projects Delivered' },
+            builder?.delivered_units && { val: `${(builder.delivered_units / 1000000).toFixed(1)}M+`, label: 'Sq. Ft. Delivered' }
+          ].filter(Boolean).map((imp, i) => (
             <div key={i} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-              <h3 className="text-[22px] font-black text-gray-900 dark:text-white">{imp.val}</h3>
-              <p className="text-[11px] text-gray-400 font-extrabold">{imp.label}</p>
+              <h3 className="text-[22px] font-black text-gray-900 dark:text-white">{(imp as any).val}</h3>
+              <p className="text-[11px] text-gray-400 font-extrabold">{(imp as any).label}</p>
             </div>
           ))}
         </div>
@@ -386,6 +385,46 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
           ))}
         </div>
       </div>
+
+      {/* ── 7.5. OFFICIAL DOCUMENTS & DOWNLOADS ── */}
+      {documents.length > 0 && (
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Official Project Documents</h2>
+              <p className="text-[12px] text-gray-500 font-medium mt-0.5">Verified approvals, brochures, and legal disclosures.</p>
+            </div>
+            <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
+              {documents.length} Verified Docs
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+            {documents.map((doc: any, idx: number) => (
+              <a
+                key={doc.id || idx}
+                href={doc.storage_url || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between gap-3 hover:bg-gray-100/70 dark:hover:bg-white/10 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+                    <FileText size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-[13px] font-black text-gray-900 dark:text-white truncate">{doc.name || doc.doc_type?.replace(/_/g, ' ') || 'Project Document'}</h4>
+                    <p className="text-[10.5px] text-gray-400 font-semibold truncate capitalize">{doc.doc_type?.replace(/_/g, ' ') || 'Official Clearance'}</p>
+                  </div>
+                </div>
+                <div className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform flex-shrink-0 shadow-2xs">
+                  <Download size={14} />
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── 8. WHY CHOOSE BUILDER? GRID ── */}
       <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">

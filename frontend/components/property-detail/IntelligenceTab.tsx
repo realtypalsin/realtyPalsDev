@@ -43,11 +43,12 @@ interface IntelligenceTabProps {
 function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: number | null }) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   
-  const baseRate = pricePsf || 14388
-  const sectorCagr = pData?.decision_profile?.market_intelligence?.sector_cagr || 12
-  const projectCagr = pData?.decision_profile?.market_intelligence?.project_cagr || (sectorCagr + 1.2)
+  const baseRate = pricePsf || null
+  const sectorCagr = pData?.decision_profile?.market_intelligence?.sector_cagr ?? null
+  const projectCagr = pData?.decision_profile?.market_intelligence?.project_cagr ?? null
 
   const points = useMemo(() => {
+    if (!baseRate || !sectorCagr || !projectCagr) return []
     return [0, 1, 2, 3, 4, 5].map((yr) => {
       const projRate = Math.round(baseRate * Math.pow(1 + (projectCagr / 100), yr))
       const avgRate = Math.round((baseRate * 0.92) * Math.pow(1 + (sectorCagr / 100), yr))
@@ -279,12 +280,13 @@ export default function IntelligenceTab({
   const nriEligible = pData?.nri_eligible
 
   // Return scenario multiplier
-  const sectorCagr = Math.round(pData?.appreciation_potential_5yr || marketIntel?.sector_cagr || 14)
-  const returnScenarios = {
+  const sectorCagrVal = pData?.appreciation_potential_5yr ?? marketIntel?.sector_cagr ?? null
+  const sectorCagr = sectorCagrVal ? Math.round(sectorCagrVal) : null
+  const returnScenarios = sectorCagr ? {
     conservative: { label: 'Conservative', pct: `${sectorCagr - 4}-${sectorCagr - 1}%`, bg: 'bg-gray-50 dark:bg-white/5' },
     moderate: { label: 'Moderate', pct: `${sectorCagr}-${sectorCagr + 3}%`, bg: 'bg-emerald-50/60 dark:bg-emerald-950/20 text-emerald-700' },
     aggressive: { label: 'Aggressive', pct: `${sectorCagr + 5}-${sectorCagr + 9}%`, bg: 'bg-purple-50/60 dark:bg-purple-950/20 text-purple-700' }
-  }
+  } : null
 
   if (loading) {
     return (
@@ -312,40 +314,40 @@ export default function IntelligenceTab({
           </div>
         </div>
 
-        {/* 4 Core ROI Metrics (simplified, mobile-first stacking) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="space-y-1">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Appreciation (5-Yr)</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">
+        {/* Core ROI Metrics (clean responsive cards with equal weight) */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
+          <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">Appreciation (5-Yr)</p>
+            <p className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white truncate">
               {renderMetricVal(expectedAppreciation, loading, "w-20")}
             </p>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Rental Yield (Annual)</p>
-            <p className="text-[22px] font-black text-gray-900 dark:text-white leading-none">
+          <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">Rental Yield</p>
+            <p className="text-[18px] sm:text-[22px] font-black text-gray-900 dark:text-white leading-none truncate">
               {renderMetricVal(rentalYield, loading, "w-16")}
             </p>
-            <p className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold truncate">
               • Strong rental demand
             </p>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Investment Grade</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">{renderMetricVal(investmentGrade, loading, "w-12")}</p>
+          <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">Investment Grade</p>
+            <p className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white truncate">{renderMetricVal(investmentGrade, loading, "w-12")}</p>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Liquidity</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">
+          <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">Liquidity</p>
+            <p className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white truncate">
               {renderMetricVal(liquidityScore, loading, "w-16")}
             </p>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Lock-in / Break-even</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">
+          <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 col-span-2 sm:col-span-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">Lock-in / Break-even</p>
+            <p className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white truncate">
               {renderMetricVal(breakevenYrs, loading, "w-20")}
             </p>
           </div>
@@ -357,18 +359,20 @@ export default function IntelligenceTab({
           <PriceAppreciationChart pData={pData} pricePsf={pricePsf} />
 
           {/* Return Scenario Breakdown */}
-          <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4 flex flex-col justify-between">
-            <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Return Scenario (5 Years)</span>
-            <div className="space-y-2.5">
-              {Object.entries(returnScenarios).map(([key, sc]) => (
-                <div key={key} className={`p-3 rounded-xl border border-gray-100 dark:border-white/5 flex items-center justify-between ${sc.bg}`}>
-                  <span className="text-[12.5px] font-bold text-gray-800 dark:text-gray-200 capitalize">{sc.label}</span>
-                  <span className="text-[14px] font-black">{sc.pct}</span>
-                </div>
-              ))}
+          {returnScenarios && (
+            <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4 flex flex-col justify-between">
+              <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Return Scenario (5 Years)</span>
+              <div className="space-y-2.5">
+                {Object.entries(returnScenarios).map(([key, sc]) => (
+                  <div key={key} className={`p-3 rounded-xl border border-gray-100 dark:border-white/5 flex items-center justify-between ${sc.bg}`}>
+                    <span className="text-[12.5px] font-bold text-gray-800 dark:text-gray-200 capitalize">{sc.label}</span>
+                    <span className="text-[14px] font-black">{sc.pct}</span>
+                  </div>
+                ))}
+              </div>
+              <span className="text-[10px] text-gray-400 font-medium">Compound growth estimates updated monthly</span>
             </div>
-            <span className="text-[10px] text-gray-400 font-medium">Compound growth estimates updated monthly</span>
-          </div>
+          )}
         </div>
       </div>
 

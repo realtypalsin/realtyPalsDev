@@ -120,53 +120,66 @@ export default function OverviewTab({
         ? `${Math.ceil(metroConn.distance_km * 2.5)} mins`
         : null
     if (metroVal) {
+      const cleanMetroName = (metroConn.name || 'Nearest')
+        .replace(/\b(station|aqua line|blue line)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim()
       quickInfoItems.push({
         label: 'Metro',
         value: metroVal,
-        sublabel: `${metroConn.name || 'Nearest'} Metro`,
+        sublabel: `${cleanMetroName} Metro`.replace(/\s+/g, ' ').replace(/Metro Metro/gi, 'Metro'),
         icon: TrainFront,
         color: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
       })
     }
   }
 
-  // 3. Green certification / IGBC
-  const greenRatingVal = d?.green_rating || (d as any)?.green_certification || 'IGBC'
-  const greenRatingSub = greenRatingVal.toLowerCase().includes('gold') ? 'Gold Rated' : 'Gold Rated' // Force premium look from reference
-  quickInfoItems.push({
-    label: 'IGBC Rating',
-    value: 'IGBC',
-    sublabel: greenRatingSub,
-    icon: Leaf,
-    color: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
-  })
+  // 3. Green certification / IGBC (only show if data exists)
+  if (d?.green_rating || (d as any)?.green_certification) {
+    const greenRatingVal = d?.green_rating || (d as any)?.green_certification
+    const greenRatingSub = greenRatingVal.toLowerCase().includes('gold') ? 'Gold Rated' : (greenRatingVal.toLowerCase().includes('platinum') ? 'Platinum Rated' : 'Certified')
+    quickInfoItems.push({
+      label: 'IGBC Rating',
+      value: greenRatingVal.toUpperCase().substring(0, 4),
+      sublabel: greenRatingSub,
+      icon: Leaf,
+      color: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+    })
+  }
 
-  // 4. Low Density tag
-  quickInfoItems.push({
-    label: 'Density',
-    value: 'Low',
-    sublabel: 'Density Living',
-    icon: Users,
-    color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
-  })
+  // 4. Low Density tag (only show if open_space_pct >= 70)
+  if (lowDensityTag) {
+    quickInfoItems.push({
+      label: 'Density',
+      value: 'Low',
+      sublabel: 'Density Living',
+      icon: Users,
+      color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
+    })
+  }
 
-  // 5. Smart Units / Corner
-  quickInfoItems.push({
-    label: 'Smart Units',
-    value: 'Corner',
-    sublabel: 'Smart Units',
-    icon: Sparkles,
-    color: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400'
-  })
+  // 5. Smart Units / Corner (only show if smart unit count exists)
+  const smartUnitCount = (d as any)?.smart_units_count || null
+  if (smartUnitCount) {
+    quickInfoItems.push({
+      label: 'Smart Units',
+      value: `${smartUnitCount}+`,
+      sublabel: 'Smart Units',
+      icon: Sparkles,
+      color: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400'
+    })
+  }
 
-  // 6. RERA Badge
-  quickInfoItems.push({
-    label: 'RERA Registration',
-    value: 'RERA',
-    sublabel: d?.rera_number ? 'Registered' : 'Registered',
-    icon: Shield,
-    color: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400'
-  })
+  // 6. RERA Badge (only show if RERA number exists)
+  if (d?.rera_number) {
+    quickInfoItems.push({
+      label: 'RERA Registration',
+      value: 'RERA',
+      sublabel: 'Registered',
+      icon: Shield,
+      color: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400'
+    })
+  }
 
   const finalUspChips = quickInfoItems.slice(0, 6)
 
@@ -234,22 +247,22 @@ export default function OverviewTab({
   })) : []
 
   return (
-    <div className="p-4 md:p-8 space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
+    <div className="p-3 sm:p-4 md:p-8 space-y-6 sm:space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">
 
       {/* 2. USP Chips */}
       {finalUspChips.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
           {finalUspChips.map((item, i) => {
             const Icon = item.icon
             return (
-              <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-3 md:p-4 flex flex-col items-center justify-center text-center shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color} mb-2`}>
-                  <Icon size={18} />
+              <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-2.5 sm:p-4 flex flex-col items-center justify-center text-center shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5 min-h-[108px] h-full">
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color} mb-1.5`}>
+                  <Icon size={17} />
                 </div>
-                <span className="text-[14px] font-black text-gray-900 dark:text-white leading-tight">
+                <span className="text-[13px] sm:text-[14px] font-black text-gray-900 dark:text-white leading-tight truncate max-w-full">
                   {item.value}
                 </span>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold mt-1">
+                <span className="text-[9.5px] sm:text-[10px] text-gray-500 dark:text-gray-400 font-bold mt-1 leading-tight line-clamp-2 max-w-full text-center">
                   {item.sublabel}
                 </span>
               </div>
@@ -264,7 +277,7 @@ export default function OverviewTab({
           <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
             Perfect For
           </h2>
-          <div className={`grid gap-4 ${
+          <div className={`grid gap-3 sm:gap-4 ${
             perfectForItems.length === 1 ? 'grid-cols-1 max-w-md' :
             perfectForItems.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl' :
             perfectForItems.length === 3 ? 'grid-cols-1 sm:grid-cols-3' :
@@ -273,13 +286,13 @@ export default function OverviewTab({
             {perfectForItems.map((item, i) => {
               const Icon = item.icon
               return (
-                <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center gap-4 transition-all hover:-translate-y-0.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 flex-shrink-0">
+                <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[20px] p-4 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center gap-3.5 sm:gap-4 transition-all hover:-translate-y-0.5 min-w-0">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 flex-shrink-0">
                     <Icon size={20} />
                   </div>
-                  <div>
-                    <h4 className="text-[14.5px] font-black text-gray-900 dark:text-white leading-tight">{item.label}</h4>
-                    <p className="text-[11.5px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">{item.desc}</p>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-[14px] sm:text-[14.5px] font-black text-gray-900 dark:text-white leading-tight break-words">{item.label}</h4>
+                    <p className="text-[11px] sm:text-[11.5px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               )

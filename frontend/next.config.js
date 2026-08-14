@@ -14,6 +14,12 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@sentry/nextjs', '@sentry/node', '@apm-js-collab/tracing-hooks'],
   },
   transpilePackages: ['leaflet', 'react-leaflet'],
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.cache = false
+    }
+    return config
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

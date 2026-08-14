@@ -256,7 +256,7 @@ export default function ResidencesTab({
             <span className="text-[11.5px] text-gray-400 font-bold">{unitTypes.length} options available</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
             {filteredUnits.map((unit, idx) => {
               const isSelected = activeUnit?.id === unit.id
               const badgeLabel = unit.category_badge || (idx === 0 ? 'BEST VALUE' : idx === 1 ? 'MOST POPULAR' : idx === 2 ? 'PREMIUM CHOICE' : 'LUXURY')
@@ -266,7 +266,7 @@ export default function ResidencesTab({
                 <div
                   key={unit.id}
                   onClick={() => setSelectedUnitId(unit.id)}
-                  className={`p-4 md:p-5 rounded-[20px] bg-white dark:bg-[#111] border transition-all cursor-pointer space-y-3 relative ${
+                  className={`p-4 md:p-5 rounded-[20px] bg-white dark:bg-[#111] border transition-all cursor-pointer space-y-3 relative min-w-0 ${
                     isSelected
                       ? 'border-blue-600 dark:border-blue-500 ring-2 ring-blue-500/20 shadow-md'
                       : 'border-gray-100 dark:border-white/5 hover:border-gray-300'
@@ -276,11 +276,16 @@ export default function ResidencesTab({
                     <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md ${badgeBg}`}>
                       {badgeLabel}
                     </span>
+                    {isSelected && (
+                      <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-0.5">
+                        <CheckCircle2 size={11} /> Selected
+                      </span>
+                    )}
                   </div>
 
-                  <div>
-                    <h4 className="text-[18px] font-black text-gray-900 dark:text-white leading-tight">{unit.name}</h4>
-                    <div className="flex items-center gap-3 mt-1.5 text-[11.5px] text-gray-500 font-bold">
+                  <div className="min-w-0">
+                    <h4 className="text-[16px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-tight truncate">{unit.name}</h4>
+                    <div className="flex items-center gap-3 mt-1.5 text-[11px] sm:text-[11.5px] text-gray-500 font-bold">
                       <span className="flex items-center gap-1"><Bed size={12} /> {unit.bhk} Beds</span>
                       <span className="flex items-center gap-1"><Bath size={12} /> {unit.bathrooms || unit.bhk} Baths</span>
                       {areaSqft(unit) && <span className="flex items-center gap-1"><Ruler size={12} /> {areaSqft(unit)!.toLocaleString()} sqft</span>}
@@ -289,7 +294,7 @@ export default function ResidencesTab({
 
                   <div className="pt-2 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
                     <div>
-                      <p className="text-[18px] font-black text-gray-900 dark:text-white leading-none">{priceLabel(unit)}</p>
+                      <p className="text-[16px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-none">{priceLabel(unit)}</p>
                       <p className="text-[10px] text-gray-400 font-semibold mt-0.5">Starting Price</p>
                     </div>
                   </div>
@@ -300,7 +305,7 @@ export default function ResidencesTab({
 
           <button
             onClick={onGoToOverview}
-            className="w-full p-4 rounded-[20px] border border-dashed border-gray-300 dark:border-gray-800 bg-white/50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 hover:border-gray-400 text-[12.5px] font-extrabold transition-all flex items-center justify-center gap-2"
+            className="w-full p-3.5 rounded-[20px] border border-dashed border-gray-300 dark:border-gray-800 bg-white/50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 hover:border-gray-400 text-[12.5px] font-extrabold transition-all flex items-center justify-center gap-2"
           >
             <Columns size={16} /> Compare Configurations
           </button>
