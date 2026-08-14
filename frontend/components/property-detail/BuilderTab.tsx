@@ -150,10 +150,10 @@ export default function BuilderTab({ builder, project, loading }: BuilderTabProp
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {[
           { title: `${legacyYears}+`, label: 'Years of Legacy', icon: Clock, color: 'text-blue-600 bg-blue-50' },
-          { title: `${builder?.projects_delivered_count || 42}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' },
-          { title: `${builder?.delivered_units ? (builder.delivered_units / 1000000).toFixed(1) : '22.4'}M+`, label: 'Sq. Ft. Delivered', icon: Award, color: 'text-amber-600 bg-amber-50' },
-          { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count || 28}+`, label: 'Ongoing Projects', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' }
-        ].map((stat, i) => {
+          builder?.projects_delivered_count ? { title: `${builder.projects_delivered_count}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' } : null,
+          builder?.delivered_units ? { title: `${(builder.delivered_units / 1000000).toFixed(1)}M+`, label: 'Sq. Ft. Delivered', icon: Award, color: 'text-amber-600 bg-amber-50' } : null,
+          (builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count ? { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count}+`, label: 'Ongoing Projects', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' } : null
+        ].filter(Boolean).map((stat: any, i) => {
           const Icon = stat.icon
           return (
             <div key={i} className="p-4 rounded-2xl bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-2 flex items-center gap-3.5">

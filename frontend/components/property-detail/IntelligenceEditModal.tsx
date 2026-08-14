@@ -74,14 +74,14 @@ export default function IntelligenceEditModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90dvh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 flex items-center justify-between p-4 border-b bg-white">
-          <h2 className="text-lg font-semibold">{FIELD_LABELS[field]}</h2>
+        <div className="sticky top-0 flex items-center justify-between p-4 border-b bg-white dark:bg-slate-800 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{FIELD_LABELS[field]}</h2>
           <button
             onClick={onClose}
             disabled={saving}
-            className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded disabled:opacity-50"
           >
             <X size={20} />
           </button>
@@ -90,14 +90,14 @@ export default function IntelligenceEditModal({
         {/* Content */}
         <div className="p-6 space-y-4">
           {error && (
-            <div className="flex gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            <div className="flex gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg text-sm text-red-700 dark:text-red-400">
               <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
               {error}
             </div>
           )}
 
           {success && (
-            <div className="flex gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            <div className="flex gap-2 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-lg text-sm text-green-700 dark:text-green-400">
               <Check size={16} className="flex-shrink-0 mt-0.5" />
               Saved successfully
             </div>
@@ -107,7 +107,7 @@ export default function IntelligenceEditModal({
           <div className="space-y-3">
             {Object.entries(editData).map(([key, value]) => (
               <div key={key}>
-                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-1">
                   {key.replace(/_/g, ' ')}
                 </label>
                 {Array.isArray(value) ? (
@@ -116,7 +116,7 @@ export default function IntelligenceEditModal({
                     onChange={(e) =>
                       handleFieldChange(key, e.target.value.split('\n').filter(Boolean))
                     }
-                    className="w-full p-2 border border-gray-200 rounded text-sm font-mono"
+                    className="w-full p-2 border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded text-sm font-mono"
                     rows={3}
                     placeholder="Enter items, one per line"
                   />
@@ -130,7 +130,7 @@ export default function IntelligenceEditModal({
                         // Allow invalid JSON while editing
                       }
                     }}
-                    className="w-full p-2 border border-gray-200 rounded text-sm font-mono"
+                    className="w-full p-2 border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded text-sm font-mono"
                     rows={6}
                     placeholder={`${key} (JSON)`}
                   />
@@ -139,7 +139,7 @@ export default function IntelligenceEditModal({
                     type="text"
                     value={value || ''}
                     onChange={(e) => handleFieldChange(key, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded text-sm"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded text-sm"
                     placeholder={key}
                   />
                 )}
@@ -163,18 +163,18 @@ export default function IntelligenceEditModal({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 flex gap-2 p-4 border-t bg-gray-50">
+        <div className="sticky bottom-0 flex gap-2 p-4 border-t bg-gray-50 dark:bg-slate-800 dark:border-slate-700">
           <button
             onClick={onClose}
             disabled={saving}
-            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="flex-1 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="flex-1 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Changes'}
           </button>

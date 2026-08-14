@@ -85,19 +85,19 @@ function DocumentRow({ doc, onDownload, isPriority = false }: { doc: EnhancedDoc
       target="_blank"
       rel="noopener noreferrer"
       onClick={onDownload}
-      className={`group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-300 ${isPriority ? 'ring-1 ring-black/5' : ''}`}
+      className={`group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all duration-300 ${isPriority ? 'ring-1 ring-black/5 dark:ring-white/5' : ''}`}
     >
-      <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100/50 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+      <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-slate-700 border border-gray-100/50 dark:border-slate-600 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
         {doc.thumbnail_url ? (
           <Image src={doc.thumbnail_url} alt="" fill sizes="48px" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
         ) : (
-          <Icon size={20} className="text-gray-400 group-hover:text-gray-900 transition-colors" />
+          <Icon size={20} className="text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
         )}
       </div>
-      
+
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-[14px] font-semibold text-gray-900 truncate">
+          <p className="text-[14px] font-semibold text-gray-900 dark:text-white truncate">
             {doc.name ?? doc.doc_type}
           </p>
           {doc.file_format && (
@@ -106,22 +106,22 @@ function DocumentRow({ doc, onDownload, isPriority = false }: { doc: EnhancedDoc
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3 mt-1 text-[12px] text-gray-500">
-          <span className="flex items-center gap-1"><Clock size={12} className="text-gray-400"/> {formatDate(doc.created_at)}</span>
+        <div className="flex items-center gap-3 mt-1 text-[12px] text-gray-500 dark:text-gray-400">
+          <span className="flex items-center gap-1"><Clock size={12} className="text-gray-400 dark:text-gray-500"/> {formatDate(doc.created_at)}</span>
           {size && <span className="flex items-center gap-1">· {size}</span>}
           {doc.verified_by && (
-            <span className="flex items-center gap-1 text-emerald-600 font-medium">
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
               · <CheckCircle2 size={12} /> {doc.verified_by}
             </span>
           )}
         </div>
         {doc.description && (
-          <p className="text-[12px] text-gray-400 mt-1.5 truncate">{doc.description}</p>
+          <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-1.5 truncate">{doc.description}</p>
         )}
       </div>
-      
-      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
-        <Download size={14} className="text-gray-900" />
+
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-50 dark:bg-slate-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0 md:opacity-100">
+        <Download size={14} className="text-gray-900 dark:text-white" />
       </div>
     </m.a>
   )
@@ -158,9 +158,9 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
   if (loading) {
     return (
       <div className="p-6 md:p-10 space-y-8 animate-pulse max-w-5xl mx-auto">
-        <div className="h-12 bg-gray-100 rounded-2xl w-1/3 mb-8" />
+        <div className="h-12 bg-gray-100 dark:bg-slate-700 rounded-2xl w-1/3 mb-8" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="h-24 bg-gray-50 rounded-2xl" />)}
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-24 bg-gray-50 dark:bg-slate-700 rounded-2xl" />)}
         </div>
       </div>
     )
@@ -169,10 +169,10 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
   if (documents.length === 0) {
     return (
       <div className="p-6 md:p-10 max-w-5xl mx-auto">
-        <div className="flex flex-col items-center justify-center py-20 text-center rounded-[32px] border border-gray-100 bg-gray-50/50">
-          <FolderOpen size={48} className="text-gray-300 mb-4" strokeWidth={1} />
-          <h3 className="text-[18px] font-semibold text-gray-900">No documents found</h3>
-          <p className="text-[14px] text-gray-500 mt-2 max-w-sm">
+        <div className="flex flex-col items-center justify-center py-20 text-center rounded-[32px] border border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/50">
+          <FolderOpen size={48} className="text-gray-300 dark:text-gray-600 mb-4" strokeWidth={1} />
+          <h3 className="text-[18px] font-semibold text-gray-900 dark:text-white">No documents found</h3>
+          <p className="text-[14px] text-gray-500 dark:text-gray-400 mt-2 max-w-sm">
             Documents and resources for this project will appear here once they are published by the developer.
           </p>
         </div>
@@ -186,21 +186,21 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-[32px] font-bold text-gray-900 tracking-tight leading-tight">Document Center</h2>
-          <p className="text-[15px] text-gray-500 mt-2 max-w-xl">
+          <h2 className="text-[32px] font-bold text-gray-900 dark:text-white tracking-tight leading-tight">Document Center</h2>
+          <p className="text-[15px] text-gray-500 dark:text-gray-400 mt-2 max-w-xl">
             Access official brochures, pricing, legal paperwork, and layouts. All documents are sourced directly from the builder.
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="flex flex-col items-end">
-            <span className="text-[24px] font-black text-gray-900 leading-none">{documents.length}</span>
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mt-1">Total Files</span>
+            <span className="text-[24px] font-black text-gray-900 dark:text-white leading-none">{documents.length}</span>
+            <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">Total Files</span>
           </div>
-          <div className="w-px h-10 bg-gray-200" />
+          <div className="w-px h-10 bg-gray-200 dark:bg-slate-700" />
           <div className="flex flex-col items-start">
-            <span className="text-[24px] font-black text-gray-900 leading-none">{groups.length}</span>
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mt-1">Categories</span>
+            <span className="text-[24px] font-black text-gray-900 dark:text-white leading-none">{groups.length}</span>
+            <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">Categories</span>
           </div>
         </div>
       </div>
@@ -208,19 +208,19 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
       {/* ── Search Toolbar ── */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 group">
-          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
+          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 group-focus-within:text-gray-900 dark:group-focus-within:text-white transition-colors" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for 'Floor Plan' or 'Brochure'..."
-            className="w-full pl-12 pr-5 py-4 bg-gray-50 border border-transparent rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-gray-900/5 focus:border-gray-200 transition-all"
+            className="w-full pl-12 pr-5 py-4 bg-gray-50 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-2xl text-[15px] font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-slate-600 focus:ring-4 focus:ring-gray-900/5 dark:focus:ring-white/10 focus:border-gray-200 dark:focus:border-slate-500 transition-all"
           />
         </div>
         {types.length > 1 && (
           <select
             value={activeType}
             onChange={(e) => setActiveType(e.target.value)}
-            className="px-6 py-4 bg-gray-50 border border-transparent rounded-2xl text-[14px] font-semibold text-gray-700 outline-none cursor-pointer focus:bg-white focus:ring-4 focus:ring-gray-900/5 focus:border-gray-200 transition-all appearance-none"
+            className="px-6 py-4 bg-gray-50 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-2xl text-[14px] font-semibold text-gray-700 dark:text-gray-300 outline-none cursor-pointer focus:bg-white dark:focus:bg-slate-600 focus:ring-4 focus:ring-gray-900/5 dark:focus:ring-white/10 focus:border-gray-200 dark:focus:border-slate-500 transition-all appearance-none"
           >
             <option value="all">All Categories</option>
             {types.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -246,21 +246,21 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
       <section className="space-y-8">
         {filteredGroups.length === 0 ? (
           <div className="py-10 text-center">
-            <p className="text-[15px] text-gray-400">No results match your search criteria.</p>
+            <p className="text-[15px] text-gray-400 dark:text-gray-500">No results match your search criteria.</p>
           </div>
         ) : (
           filteredGroups.map((group) => (
-            <m.div 
-              key={group.docType} 
+            <m.div
+              key={group.docType}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-[18px] font-bold text-gray-900">{group.label}</h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-[12px] font-bold text-gray-500">{group.docs.length}</span>
+                <h3 className="text-[18px] font-bold text-gray-900 dark:text-white">{group.label}</h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-[12px] font-bold text-gray-500 dark:text-gray-400">{group.docs.length}</span>
               </div>
-              <p className="text-[14px] text-gray-500 mb-4">{group.description}</p>
+              <p className="text-[14px] text-gray-500 dark:text-gray-400 mb-4">{group.description}</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {group.docs.map(doc => (
@@ -274,13 +274,13 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
 
       {/* ── Transparency Section (Optional from DB) ── */}
       {transparency_checks && transparency_checks.length > 0 && (
-        <section className="pt-8 border-t border-gray-100">
-          <h3 className="text-[16px] font-bold text-gray-900 mb-4">Verification Checklist</h3>
+        <section className="pt-8 border-t border-gray-100 dark:border-slate-700">
+          <h3 className="text-[16px] font-bold text-gray-900 dark:text-white mb-4">Verification Checklist</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {transparency_checks.map((check) => (
-              <div key={check.label} className={`flex items-center gap-3 p-4 rounded-xl border ${check.ok ? 'border-emerald-100 bg-emerald-50/30' : 'border-gray-100 bg-gray-50'}`}>
-                {check.ok ? <CheckCircle2 size={18} className="text-emerald-500" /> : <div className="w-4.5 h-4.5 rounded-full border-2 border-gray-300" />}
-                <span className={`text-[14px] font-medium ${check.ok ? 'text-emerald-900' : 'text-gray-500'}`}>{check.label}</span>
+              <div key={check.label} className={`flex items-center gap-3 p-4 rounded-xl border ${check.ok ? 'border-emerald-100 dark:border-emerald-900 bg-emerald-50/30 dark:bg-emerald-950/20' : 'border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800'}`}>
+                {check.ok ? <CheckCircle2 size={18} className="text-emerald-500 dark:text-emerald-400" /> : <div className="w-4.5 h-4.5 rounded-full border-2 border-gray-300 dark:border-slate-600" />}
+                <span className={`text-[14px] font-medium ${check.ok ? 'text-emerald-900 dark:text-emerald-300' : 'text-gray-500 dark:text-gray-400'}`}>{check.label}</span>
               </div>
             ))}
           </div>

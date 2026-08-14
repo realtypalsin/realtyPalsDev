@@ -30,9 +30,9 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
 
   // Selected unit details
   const selectedUnit = unitTypes.find(u => `${u.bhk} BHK` === bhkFilter) || unitTypes[0]
-  const unitMinCr = selectedUnit?.price_min_cr ?? 2.01
-  const unitMaxCr = selectedUnit?.price_max_cr ?? (unitMinCr ? unitMinCr * 1.5 : 3.13)
-  const unitAreaSqft = selectedUnit?.super_area_sqft ?? 1397
+  const unitMinCr: number = selectedUnit?.price_min_cr ?? 2.01
+  const unitMaxCr: number = selectedUnit?.price_max_cr ?? (unitMinCr * 1.5)
+  const unitAreaSqft: number = selectedUnit?.super_area_sqft ?? 1397
 
   // Interactive EMI State (synced precisely with property price & selected unit)
   const [propertyPrice, setPropertyPrice] = useState<number>(unitMinCr * 10000000)
@@ -73,7 +73,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const waUrl = detail ? buildWhatsAppUrl(detail, 'panel') : null
   const reraNum = detail?.rera_number ?? 'UPRERAPRJ916631/02/2024'
   const possessionLabel = detail?.possession_label ?? (isRTM ? 'Delivered & Ready' : 'Dec 2028')
-  const pricePsf = selectedUnit?.super_area_sqft ? Math.round((unitMinCr * 10000000) / selectedUnit.super_area_sqft) : 14388
+  const pricePsf: number = selectedUnit?.super_area_sqft ? Math.round((unitMinCr * 10000000) / selectedUnit.super_area_sqft) : 14388
 
   // Extract all payment plans dynamically from DB (if present)
   const dbPlansList: any[] = Array.isArray((detail as any)?.payment_plans)

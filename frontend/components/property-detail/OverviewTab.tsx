@@ -623,12 +623,7 @@ export default function OverviewTab({
             </button>
           </div>
 
-          <div className={`grid gap-4 ${
-            documents.length === 1 ? 'grid-cols-1 max-w-md' :
-            documents.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl' :
-            documents.length === 3 ? 'grid-cols-1 sm:grid-cols-3' :
-            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
-          }`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { title: 'RERA Certificate', sub: 'Verified', bg: 'bg-emerald-50 text-emerald-600' },
               { title: 'Brochure', sub: 'Download', bg: 'bg-blue-50 text-blue-600' },

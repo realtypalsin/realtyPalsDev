@@ -732,7 +732,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             </div>
             <div className="min-w-0">
               <p className="text-[9.5px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider leading-none">Possession</p>
-              <p className="text-[12.5px] font-extrabold text-gray-900 dark:text-white mt-1 leading-snug truncate">{displayPossession}</p>
+              <p className="text-[12.5px] font-extrabold text-gray-900 dark:text-white mt-1 leading-snug truncate">{displayPossession ?? 'Not announced'}</p>
             </div>
           </div>
 
@@ -783,13 +783,13 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       }
     }
 
-    const displayPossession = d?.possession_label || 'Dec 2028'
-    const displayScore = detail?.recommendation_score?.total || (d as any)?.recommendation_score?.total || 86
-    const builderName = typeof d?.builder === 'object' ? (d.builder as any)?.name : (d?.builder || 'Elite Group')
+    const displayPossession = d?.possession_label ?? null
+    const displayScore = detail?.recommendation_score?.total ?? (d as any)?.recommendation_score?.total ?? null
+    const builderName = typeof d?.builder === 'object' ? (d.builder as any)?.name : (d?.builder ?? null)
 
     const rates = unitTypes.map((u: any) => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : null).filter(Boolean) as number[]
     const minRate = rates.length > 0 ? Math.min(...rates) : null
-    const perSqftRate = minRate ? minRate.toLocaleString('en-IN') : '15,942'
+    const perSqftRate = minRate ? minRate.toLocaleString('en-IN') : null
 
     return (
       <div className="relative w-full overflow-hidden flex-shrink-0" style={{ height: 'min(45vh, 340px)' }}>
@@ -864,11 +864,11 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         <div className="absolute bottom-3 left-3 right-3 z-10 bg-black/40 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 flex items-center justify-between shadow-xl">
           <div>
             <p className="text-lg font-black text-white leading-tight">{displayPrice}</p>
-            <p className="text-[10px] text-gray-300 font-semibold mt-0.5">Starts ₹{perSqftRate} / sq.ft</p>
+            {perSqftRate && <p className="text-[10px] text-gray-300 font-semibold mt-0.5">Starts ₹{perSqftRate} / sq.ft</p>}
           </div>
           <div className="text-right">
             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider leading-none">Possession</p>
-            <p className="text-[12.5px] font-extrabold text-white mt-1 leading-none">{displayPossession}</p>
+            <p className="text-[12.5px] font-extrabold text-white mt-1 leading-none">{displayPossession ?? 'Not announced'}</p>
           </div>
         </div>
 
@@ -960,7 +960,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                 exit={{ opacity: 0, scale: 0.96, y: 10 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
                 className="relative flex flex-col w-[95vw] max-w-[1200px] h-[90vh] max-h-[900px]
-                           rounded-3xl bg-gray-50 overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.4)]"
+                           rounded-3xl bg-gray-50 dark:bg-slate-800 overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.4)]"
                 onClick={(e) => e.stopPropagation()}
               >
               {/* 
