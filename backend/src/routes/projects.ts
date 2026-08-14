@@ -115,6 +115,7 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
       cost_sheet: true,
       construction_milestones: { orderBy: { sort_order: 'asc' } },
       channel_partners: { include: { channel_partner: true }, orderBy: { created_at: 'asc' } },
+      spec_items: { orderBy: [{ sort_order: 'asc' }, { category: 'asc' }] },
     },
   })
 
@@ -131,6 +132,7 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
     cost_sheet: (project as any).cost_sheet ?? null,
     construction_milestones: (project as any).construction_milestones ?? [],
     channel_partners: (project as any).channel_partners ?? [],
+    spec_items: (project as any).spec_items ?? [],
   }
 
   // Compute deterministic recommendation score from raw DNA scores

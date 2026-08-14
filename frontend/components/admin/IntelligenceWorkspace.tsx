@@ -1304,7 +1304,7 @@ export default function IntelligenceWorkspace({
       <div className="border-t pt-6 space-y-4">
         <SpecEditor
           projectId={projectId}
-          specs={specs}
+          initialSpecs={specs}
           onSpecsChange={setSpecs}
         />
       </div>

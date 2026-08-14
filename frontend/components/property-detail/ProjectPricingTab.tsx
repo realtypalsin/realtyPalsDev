@@ -315,16 +315,16 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
                 </div>
                 <input
                   type="range"
-                  min={10000000}
-                  max={50000000}
-                  step={500000}
+                  min={Math.max(1000000, Math.min(propertyPrice * 0.4, 5000000))}
+                  max={Math.max(60000000, Math.round(propertyPrice * 1.8))}
+                  step={200000}
                   value={propertyPrice}
                   onChange={(e) => setPropertyPrice(Number(e.target.value))}
-                  className="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg cursor-pointer"
+                  className="w-full accent-blue-600 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-gray-400 font-semibold">
-                  <span>₹1.0 Cr</span>
-                  <span>₹5.0 Cr</span>
+                  <span>{fmtRs(Math.max(1000000, Math.min(propertyPrice * 0.4, 5000000)))}</span>
+                  <span>{fmtRs(Math.max(60000000, Math.round(propertyPrice * 1.8)))}</span>
                 </div>
               </div>
 

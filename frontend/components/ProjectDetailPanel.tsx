@@ -1,7 +1,7 @@
 'use client'
 import {
   Building2, CheckCircle2, LineChart, BedDouble,
-  MapPin, Sparkles, CalendarDays, FileText, IndianRupee, X, ShieldCheck, Users
+  MapPin, Sparkles, CalendarDays, FileText, IndianRupee, X, ShieldCheck, Users, HardHat
 } from 'lucide-react'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -497,16 +497,16 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     'Floor Plans': <BedDouble size={17} />,
     Pricing: <IndianRupee size={17} />,
     Location: <MapPin size={17} />,
-    Builder: <FileText size={17} />
+    Builder: <HardHat size={17} />
   }
 
   const mobileTabLabels: Record<Tab, string> = {
     Overview: 'Overview',
     Analysis: 'Analysis',
-    'Floor Plans': 'Residences',
+    'Floor Plans': 'Floor Plans',
     Pricing: 'Pricing',
     Location: 'Location',
-    Builder: 'Docs'
+    Builder: 'Builder'
   }
 
   const mobileTabBar = (

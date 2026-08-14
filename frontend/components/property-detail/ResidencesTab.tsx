@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 'use client'
 import { useState } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
@@ -16,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 type FloorPlanImage = { id: string; url: string; caption?: string | null; bhk?: number | null; size_sqft?: number | null }
 type LazyState<T> = { loaded: boolean; available: boolean; data: T | null; message?: string }
+type AvailabilityRow = { tower: string; floor: string; unitNo: string; facing: string; view: string; price: string; status: string }
 
 // Resolve icon name from string to Lucide Icon component
 const ICON_MAP: Record<string, any> = {
@@ -43,6 +43,52 @@ function priceLabel(u: UnitTypeSummary): string {
   if (u.price_min_cr == null) return 'Price on Request'
   if (u.price_max_cr == null || u.price_min_cr === u.price_max_cr) return `₹${Number(u.price_min_cr).toFixed(2)} Cr`
   return `₹${Number(u.price_min_cr).toFixed(2)} – ${Number(u.price_max_cr).toFixed(2)} Cr`
+}
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+function AvailabilityTable({ rows }: { rows: AvailabilityRow[] }) {
+  return (
+    <div className="overflow-x-auto border border-gray-100 dark:border-white/5 rounded-2xl">
+      <table className="w-full min-w-[720px] text-left text-[12.5px] border-collapse">
+        <thead>
+          <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[10px] uppercase tracking-wider">
+            <th className="p-3.5 pl-4">Tower</th>
+            <th className="p-3.5">Floor</th>
+            <th className="p-3.5">Unit No.</th>
+            <th className="p-3.5">Facing</th>
+            <th className="p-3.5">View</th>
+            <th className="p-3.5">Price</th>
+            <th className="p-3.5 text-right pr-4">Status</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-semibold text-gray-800 dark:text-gray-200">
+          {rows.length > 0 ? (
+            rows.map((row, i) => (
+              <tr key={i} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                <td className="p-3.5 pl-4 font-bold">{row.tower}</td>
+                <td className="p-3.5">{row.floor}</td>
+                <td className="p-3.5 font-extrabold text-gray-900 dark:text-white">{row.unitNo}</td>
+                <td className="p-3.5">{row.facing}</td>
+                <td className="p-3.5">{row.view}</td>
+                <td className="p-3.5 font-black">{row.price}</td>
+                <td className="p-3.5 text-right pr-4">
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                    {row.status}
+                  </span>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={7} className="p-6 text-center text-gray-400 font-medium text-[12px]">
+                No active inventory rows found for this configuration. Contact advisor for offline availability.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 function areaSqft(u: UnitTypeSummary): number | null {
@@ -130,7 +176,6 @@ export default function ResidencesTab({
   // Unit availability from unit_inventory table, fallback to empty if no DB data
   const unitInventory = (detail as any)?.unit_inventory || []
   const filteredInventory = activeUnit?.id ? unitInventory.filter((u: any) => u.unit_type_id === activeUnit.id) : unitInventory
-  type AvailabilityRow = { tower: string; floor: string; unitNo: string; facing: string; view: string; price: string; status: string }
   const mockAvailability: AvailabilityRow[] = filteredInventory.map((u: any) => ({
     tower: u.tower_name || '—',
     floor: u.floor_number ? String(u.floor_number) : '—',
@@ -246,17 +291,40 @@ export default function ResidencesTab({
         )}
       </div>
 
-      {/* ── 2. MAIN EXPLORER WORKSPACE (Left List + Right Detail Card) ── */}
+      {/* ── 2. MAIN EXPLORER WORKSPACE (Left List on Desktop + Top Chips on Mobile + Right Detail Card) ── */}
+      {/* Mobile Unit Picker (Horizontal Scrollable Chips for Quick Switching) */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        {filteredUnits.map((unit) => {
+          const isSelected = activeUnit?.id === unit.id
+          return (
+            <button
+              key={unit.id}
+              onClick={() => setSelectedUnitId(unit.id)}
+              className={`px-4 py-2.5 rounded-2xl text-[12px] font-black whitespace-nowrap transition-all flex items-center gap-2 border flex-shrink-0 cursor-pointer ${
+                isSelected
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                  : 'bg-white dark:bg-[#111] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-gray-400'
+              }`}
+            >
+              <span>{unit.name}</span>
+              <span className={`text-[10.5px] font-bold ${isSelected ? 'text-blue-100' : 'text-gray-400'}`}>
+                {priceLabel(unit)}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-        {/* LEFT COLUMN: Configuration Selection Sidebar */}
-        <div className="lg:col-span-4 space-y-3.5">
+        {/* LEFT COLUMN: Configuration Selection Sidebar (Desktop Full Sidebar) */}
+        <div className="hidden lg:block lg:col-span-4 space-y-3.5">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-[14px] font-black text-gray-900 dark:text-white uppercase tracking-wider">All Configurations</h3>
             <span className="text-[11.5px] text-gray-400 font-bold">{unitTypes.length} options available</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {filteredUnits.map((unit, idx) => {
               const isSelected = activeUnit?.id === unit.id
               const badgeLabel = unit.category_badge || (idx === 0 ? 'BEST VALUE' : idx === 1 ? 'MOST POPULAR' : idx === 2 ? 'PREMIUM CHOICE' : 'LUXURY')
@@ -414,9 +482,10 @@ export default function ResidencesTab({
                         onChange={(e) => setSelectedTower(e.target.value)}
                         className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
                       >
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {((activeUnit as any)?.tower_association && (activeUnit as any).tower_association.length > 0
                           ? (activeUnit as any).tower_association
-                          : ['Tower A', 'Tower B', 'Tower C']
+                          : []
                         ).map((t: string) => (
                           <option key={t} value={t}>{t}</option>
                         ))}
@@ -554,119 +623,13 @@ export default function ResidencesTab({
                     </button>
                   </div>
 
-                  <div className="overflow-x-auto border border-gray-100 dark:border-white/5 rounded-2xl">
-                    <table className="w-full min-w-[720px] text-left text-[12.5px] border-collapse">
-                      <thead>
-                        <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[10px] uppercase tracking-wider">
-                          <th className="p-3.5 pl-4">Tower</th>
-                          <th className="p-3.5">Floor</th>
-                          <th className="p-3.5">Unit No.</th>
-                          <th className="p-3.5">Facing</th>
-                          <th className="p-3.5">View</th>
-                          <th className="p-3.5">Price</th>
-                          <th className="p-3.5 text-right pr-4">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-semibold text-gray-800 dark:text-gray-200">
-                        {mockAvailability.length > 0 ? (
-                          mockAvailability.map((row, i) => (
-                            <tr key={i} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                              <td className="p-3.5 pl-4 font-bold">{row.tower}</td>
-                              <td className="p-3.5">{row.floor}</td>
-                              <td className="p-3.5 font-extrabold text-gray-900 dark:text-white">{row.unitNo}</td>
-                              <td className="p-3.5">{row.facing}</td>
-                              <td className="p-3.5">{row.view}</td>
-                              <td className="p-3.5 font-black">{row.price}</td>
-                              <td className="p-3.5 text-right pr-4">
-                                <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                                  {row.status}
-                                </span>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={7} className="p-6 text-center text-gray-400 font-medium text-[12px]">
-                              No active inventory rows found for this configuration. Contact advisor for offline availability.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                  <AvailabilityTable rows={mockAvailability} />
                 </div>
               )}
 
             </div>
 
-            {/* ── 3. CONFIGURATION DETAILS GRID ── */}
-            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-              <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Configuration Details</h3>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Super Built-up Area</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{area ? `${area.toLocaleString()} sqft` : '—'}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Carpet Area</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{carpetArea ? `${carpetArea.toLocaleString()} sqft` : '—'}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Balcony Area</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{balconyArea ? `${balconyArea.toLocaleString()} sqft` : '—'}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Built-up Area</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{carpetArea ? `${Math.round(carpetArea * 1.18).toLocaleString()} sqft` : '—'}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Bedrooms</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bhk}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Bathrooms</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bathrooms || activeUnit.bhk}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Living / Dining</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kitchen</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Private Balcony</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.balconies || 1}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Utility Area</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.utility_room ? '1' : '1'}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Entry</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Floor Type</p>
-                  <p className="text-[16px] font-black text-gray-900 dark:text-white">{floorType}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* ── 4. KEY HIGHLIGHTS ── */}
+            {/* ── 3. KEY HIGHLIGHTS ── */}
             <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
               <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Key Highlights</h3>
 
@@ -885,39 +848,7 @@ export default function ResidencesTab({
                 </button>
               </div>
 
-              {/* Table */}
-              <div className="overflow-x-auto border border-gray-100 dark:border-white/5 rounded-2xl">
-                <table className="w-full min-w-[720px] text-left text-[12.5px] border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[10px] uppercase tracking-wider">
-                      <th className="p-3.5 pl-4">Tower</th>
-                      <th className="p-3.5">Floor</th>
-                      <th className="p-3.5">Unit No.</th>
-                      <th className="p-3.5">Facing</th>
-                      <th className="p-3.5">View</th>
-                      <th className="p-3.5">Price</th>
-                      <th className="p-3.5 text-right pr-4">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-semibold text-gray-800 dark:text-gray-200">
-                    {mockAvailability.map((row, i) => (
-                      <tr key={i} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                        <td className="p-3.5 pl-4 font-bold">{row.tower}</td>
-                        <td className="p-3.5">{row.floor}</td>
-                        <td className="p-3.5 font-extrabold text-gray-900 dark:text-white">{row.unitNo}</td>
-                        <td className="p-3.5">{row.facing}</td>
-                        <td className="p-3.5">{row.view}</td>
-                        <td className="p-3.5 font-black">{row.price}</td>
-                        <td className="p-3.5 text-right pr-4">
-                          <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                            {row.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <AvailabilityTable rows={mockAvailability} />
             </div>
 
             {/* ── 6. WHO IS THIS HOME PERFECT FOR ── */}

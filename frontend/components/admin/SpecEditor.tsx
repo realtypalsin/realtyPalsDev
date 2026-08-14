@@ -1,228 +1,414 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Trash2, Check, AlertCircle } from 'lucide-react'
-import { API_BASE } from '@/lib/env'
-import { adminAuthHeaders } from '@/lib/authedFetch'
+import { useState, useEffect } from 'react'
+import {
+  Plus, Trash2, Save, Sparkles, CheckCircle2, AlertCircle,
+  Building2, Shield, Layers, Tag, ChevronDown, RefreshCw, Star
+} from 'lucide-react'
+import { adminFetch } from '@/lib/adminFetch'
+import Toast from '@/components/Toast'
 
-const CATEGORIES = [
-  'structure',
-  'flooring',
-  'kitchen',
-  'bathrooms',
-  'doors_windows',
-  'electrical',
-  'plumbing',
-  'lifts',
-  'security',
-  'sustainability',
-  'parking',
+export const SPEC_CATEGORIES = [
+  { id: 'structure', label: 'Structure & Safety', icon: '🏗️', desc: 'Frame, seismic rating, foundation' },
+  { id: 'flooring', label: 'Flooring & Finishes', icon: '🏠', desc: 'Living, bedrooms, balconies, lobby' },
+  { id: 'kitchen', label: 'Kitchen & Countertops', icon: '🍴', desc: 'Modular kitchen, granite, gas pipeline' },
+  { id: 'bathrooms', label: 'Sanitary & CP Fittings', icon: '🚿', desc: 'Fixtures, CP fittings, geysers' },
+  { id: 'doors_windows', label: 'Doors & Windows', icon: '🚪', desc: 'Main door, UPVC/Aluminium windows' },
+  { id: 'electrical', label: 'Electrical & Switches', icon: '⚡', desc: 'Wiring, modular switches, power backup' },
+  { id: 'plumbing', label: 'Plumbing & Water', icon: '🚰', desc: 'Pipes, solar heating, treated water' },
+  { id: 'lifts', label: 'Elevators & Lifts', icon: '🛗', desc: 'High-speed passenger & service lifts' },
+  { id: 'security', label: 'Security & Automation', icon: '🔐', desc: 'CCTV, video door phone, smart locks' },
+  { id: 'sustainability', label: 'Green & Sustainability', icon: '🌿', desc: 'Rainwater harvesting, IGBC rating' },
+  { id: 'parking', label: 'Parking & EV', icon: '🅿️', desc: 'Covered parking, EV charging ports' },
 ] as const
 
-const TIERS = ['standard', 'premium', 'luxury'] as const
+export const SPEC_TIERS = [
+  { id: 'standard', label: 'Standard', color: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' },
+  { id: 'premium', label: 'Premium', color: 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300' },
+  { id: 'luxury', label: 'Luxury', color: 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300' },
+] as const
 
-interface SpecItem {
+export interface SpecItem {
   id?: string
+  project_id?: string
+  unit_type_id?: string | null
   category: string
   label: string
   value: string
   brand?: string | null
   tier?: string | null
   is_highlight?: boolean
-  verified_at?: Date | null
+  sort_order?: number
+  notes?: string | null
+  unit_type?: { id: string; name: string; bhk: number } | null
 }
 
 interface SpecEditorProps {
   projectId: string
-  specs: SpecItem[]
-  onSpecsChange: (specs: SpecItem[]) => void
+  unitTypes?: Array<{ id: string; name: string; bhk: number }>
+  initialSpecs?: SpecItem[]
+  specs?: SpecItem[]
+  onSpecsChange?: (specs: SpecItem[]) => void
+  onSaved?: () => void
 }
 
-export default function SpecEditor({ projectId, specs, onSpecsChange }: SpecEditorProps) {
-  const [localSpecs, setLocalSpecs] = useState<SpecItem[]>(specs)
+const COMMON_PRESETS: Array<Omit<SpecItem, 'id'>> = [
+  { category: 'structure', label: 'Structure Type', value: 'Earthquake Resistant Mivan RCC Shear Wall Construction (Zone IV)', brand: 'Mivan Tech', tier: 'premium', is_highlight: true },
+  { category: 'flooring', label: 'Living & Dining', value: 'Imported Italian Marble / Large Format Glazed Vitrified Tiles', brand: 'Kajaria / Imported', tier: 'luxury', is_highlight: true },
+  { category: 'flooring', label: 'Master Bedroom', value: 'Laminated Engineered Wooden Flooring with AC4 Grade', brand: 'Pergo / QuickStep', tier: 'premium', is_highlight: false },
+  { category: 'bathrooms', label: 'Sanitary Fixtures', value: 'Wall-hung EWCs with Concealed Dual-Flush Cisterns', brand: 'Kohler / Grohe', tier: 'luxury', is_highlight: true },
+  { category: 'doors_windows', label: 'Main Entrance Door', value: '8ft High Teak Wood Frame with Veneer Polished Flush Door & Digital Smart Lock', brand: 'Yale / Godrej', tier: 'luxury', is_highlight: true },
+  { category: 'kitchen', label: 'Countertop & Sink', value: 'Polished Granite Slab with Double Bowl Stainless Steel Sink & Piped Gas Provision', brand: 'Franke / Carysil', tier: 'premium', is_highlight: false },
+  { category: 'electrical', label: 'Switches & Wiring', value: 'Concealed FRLS Copper Wiring with Modular Smart Touch Switches & 100% DG Backup', brand: 'Schneider / Legrand', tier: 'premium', is_highlight: false },
+  { category: 'lifts', label: 'Passenger Elevators', value: 'High-Speed Automatic Elevators with Automatic Rescue Device (ARD)', brand: 'Schindler / Otis', tier: 'premium', is_highlight: false },
+  { category: 'security', label: 'Access & Surveillance', value: '3-Tier Security with 24x7 HD CCTV, Video Door Phone & RFID Boom Barrier', brand: 'Hikvision', tier: 'premium', is_highlight: false },
+]
+
+export default function SpecEditor({
+  projectId,
+  unitTypes = [],
+  initialSpecs = [],
+  specs: specsProp,
+  onSpecsChange,
+  onSaved,
+}: SpecEditorProps) {
+  const [specs, setSpecs] = useState<SpecItem[]>(
+    specsProp && specsProp.length > 0 ? specsProp : initialSpecs
+  )
+  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all')
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' } | null>(null)
 
-  const addSpec = () => {
-    setLocalSpecs([
-      ...localSpecs,
-      {
-        category: 'structure',
-        label: '',
-        value: '',
-        brand: null,
-        tier: null,
-        is_highlight: false,
-      },
-    ])
-  }
+  useEffect(() => {
+    if (specsProp && specsProp.length > 0) {
+      setSpecs(specsProp)
+    }
+  }, [specsProp])
 
-  const deleteSpec = (idx: number) => {
-    setLocalSpecs(localSpecs.filter((_, i) => i !== idx))
-  }
-
-  const updateSpec = (idx: number, field: keyof SpecItem, val: any) => {
-    setLocalSpecs(
-      localSpecs.map((s, i) =>
-        i === idx ? { ...s, [field]: val } : s
-      )
-    )
-  }
-
-  const saveSpecs = async () => {
-    setSaving(true)
-    setError(null)
-
+  const fetchSpecs = async () => {
+    setLoading(true)
     try {
-      const response = await fetch(`${API_BASE}/api/projects/${projectId}/specs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...adminAuthHeaders(),
-        },
-        body: JSON.stringify({ specs: localSpecs }),
+      const res = await adminFetch(`/admin/projects/${projectId}/specs`)
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data.specs)) {
+          setSpecs(data.specs)
+          onSpecsChange?.(data.specs)
+        }
+      }
+    } catch (err) {
+      console.error('[SpecEditor] fetch error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (projectId && initialSpecs.length === 0 && (!specsProp || specsProp.length === 0)) {
+      fetchSpecs()
+    }
+  }, [projectId])
+
+  const handleAddSpec = (category = 'structure') => {
+    const newSpec: SpecItem = {
+      category,
+      label: '',
+      value: '',
+      brand: null,
+      tier: 'premium',
+      is_highlight: false,
+      sort_order: specs.length + 1,
+      unit_type_id: null,
+    }
+    setSpecs(prev => [newSpec, ...prev])
+  }
+
+  const handleApplyPresets = () => {
+    if (specs.length > 0 && !confirm('Add standard luxury presets to existing specs?')) {
+      return
+    }
+    setSpecs(prev => [...prev, ...COMMON_PRESETS])
+    setToast({ message: 'Added standard specifications presets', type: 'success' })
+  }
+
+  const handleUpdate = (index: number, field: keyof SpecItem, value: any) => {
+    setSpecs(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: value }
+      return updated
+    })
+  }
+
+  const handleDelete = (index: number) => {
+    setSpecs(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await adminFetch(`/admin/projects/${projectId}/specs`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ specs }),
       })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Failed to save specs')
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}))
+        throw new Error(errJson.error || 'Failed to save specifications')
       }
 
-      const result = await response.json()
-      onSpecsChange(result.specs)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const data = await res.json()
+      if (Array.isArray(data.specs)) {
+        setSpecs(data.specs)
+        onSpecsChange?.(data.specs)
+      }
+      setToast({ message: 'Specifications saved successfully!', type: 'success' })
+      onSaved?.()
+    } catch (err: any) {
+      setToast({ message: err.message || 'Error saving specifications', type: 'error' })
     } finally {
       setSaving(false)
     }
   }
 
+  const filteredSpecs = selectedCategoryFilter === 'all'
+    ? specs
+    : specs.filter(s => s.category === selectedCategoryFilter)
+
   return (
-    <div className="space-y-4 text-gray-900 dark:text-gray-100">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Construction & Material Specifications</h3>
-        <button
-          type="button"
-          onClick={addSpec}
-          className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-100 dark:hover:bg-blue-950/70 transition border border-blue-200/60 dark:border-blue-800/60"
-        >
-          <Plus size={14} /> Add Spec
-        </button>
+    <div className="bg-white dark:bg-[#121214] rounded-3xl border border-gray-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8 space-y-6">
+      {toast && (
+        <Toast
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <Layers size={16} />
+            </div>
+            <h3 className="text-base font-black text-gray-900 dark:text-white">
+              Construction &amp; Material Specifications
+            </h3>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Define architectural materials, brands, fittings, and finishes. Highlight items show in the public buyer card.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleApplyPresets}
+            className="px-3 py-1.5 rounded-xl border border-dashed border-gray-300 dark:border-zinc-700 hover:border-blue-500 text-xs font-bold text-gray-700 dark:text-gray-300 transition-all flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5"
+          >
+            <Sparkles size={13} className="text-amber-500" />
+            <span>Load Presets</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAddSpec(selectedCategoryFilter === 'all' ? 'structure' : selectedCategoryFilter)}
+            className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Plus size={14} />
+            <span>Add Spec</span>
+          </button>
+        </div>
       </div>
 
-      {error && (
-        <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
-          <AlertCircle size={14} />
-          {error}
+      {/* Category Filter Chips */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-bold">
+        <button
+          type="button"
+          onClick={() => setSelectedCategoryFilter('all')}
+          className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+            selectedCategoryFilter === 'all'
+              ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xs'
+              : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200/70'
+          }`}
+        >
+          All Categories ({specs.length})
+        </button>
+        {SPEC_CATEGORIES.map(cat => {
+          const count = specs.filter(s => s.category === cat.id).length
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setSelectedCategoryFilter(cat.id)}
+              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                selectedCategoryFilter === cat.id
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200/70'
+              }`}
+            >
+              <span>{cat.icon}</span>
+              <span>{cat.label}</span>
+              {count > 0 && <span className="text-[10px] opacity-80">({count})</span>}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Specifications List */}
+      {filteredSpecs.length === 0 ? (
+        <div className="p-8 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 text-center space-y-3">
+          <p className="text-sm font-bold text-gray-500 dark:text-gray-400">No specifications added in this category yet.</p>
+          <button
+            type="button"
+            onClick={() => handleAddSpec(selectedCategoryFilter === 'all' ? 'structure' : selectedCategoryFilter)}
+            className="px-4 py-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 text-xs font-black rounded-xl border border-blue-200 dark:border-blue-800/40 hover:bg-blue-100 cursor-pointer"
+          >
+            + Add First Specification
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3.5 max-h-[600px] overflow-y-auto pr-1">
+          {filteredSpecs.map((spec, idx) => {
+            const catObj = SPEC_CATEGORIES.find(c => c.id === spec.category) || SPEC_CATEGORIES[0]
+            const realIdx = specs.indexOf(spec)
+
+            return (
+              <div
+                key={spec.id || realIdx}
+                className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-3 transition-all hover:border-gray-300 dark:hover:border-white/15"
+              >
+                {/* Top Row: Category, Tier, Highlight, Delete */}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={spec.category}
+                      onChange={e => handleUpdate(realIdx, 'category', e.target.value)}
+                      className="px-2.5 py-1 text-xs font-black rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white cursor-pointer"
+                    >
+                      {SPEC_CATEGORIES.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.icon} {c.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={spec.tier || 'premium'}
+                      onChange={e => handleUpdate(realIdx, 'tier', e.target.value)}
+                      className="px-2.5 py-1 text-xs font-bold rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white cursor-pointer"
+                    >
+                      {SPEC_TIERS.map(t => (
+                        <option key={t.id} value={t.id}>
+                          {t.label} Tier
+                        </option>
+                      ))}
+                    </select>
+
+                    {unitTypes.length > 0 && (
+                      <select
+                        value={spec.unit_type_id || ''}
+                        onChange={e => handleUpdate(realIdx, 'unit_type_id', e.target.value || null)}
+                        className="px-2.5 py-1 text-xs font-medium rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-300 cursor-pointer"
+                      >
+                        <option value="">All Units (Project-Wide)</option>
+                        {unitTypes.map(u => (
+                          <option key={u.id} value={u.id}>
+                            Only for {u.name} ({u.bhk} BHK)
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={spec.is_highlight || false}
+                        onChange={e => handleUpdate(realIdx, 'is_highlight', e.target.checked)}
+                        className="w-3.5 h-3.5 rounded accent-blue-600 cursor-pointer"
+                      />
+                      <span className="flex items-center gap-1">
+                        <Star size={11} className={spec.is_highlight ? 'text-amber-500 fill-amber-500' : 'text-gray-400'} />
+                        Highlight
+                      </span>
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(realIdx)}
+                      className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
+                      title="Delete specification"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Input Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                  <div className="md:col-span-4 space-y-1">
+                    <label className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider block">
+                      Feature / Component Label *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Master Bedroom Flooring"
+                      value={spec.label}
+                      onChange={e => handleUpdate(realIdx, 'label', e.target.value)}
+                      className="w-full px-3 py-2 text-xs font-extrabold border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400"
+                    />
+                  </div>
+
+                  <div className="md:col-span-5 space-y-1">
+                    <label className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider block">
+                      Specification &amp; Material Value *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Engineered laminated wooden flooring (AC4 grade)"
+                      value={spec.value}
+                      onChange={e => handleUpdate(realIdx, 'value', e.target.value)}
+                      className="w-full px-3 py-2 text-xs font-bold border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400"
+                    />
+                  </div>
+
+                  <div className="md:col-span-3 space-y-1">
+                    <label className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider block">
+                      Brand / Manufacturer
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Kohler, QuickStep"
+                      value={spec.brand || ''}
+                      onChange={e => handleUpdate(realIdx, 'brand', e.target.value || null)}
+                      className="w-full px-3 py-2 text-xs font-bold border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white placeholder:text-gray-400"
+                    />
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
 
-      <div className="space-y-3 max-h-96 overflow-y-auto">
-        {localSpecs.map((spec, idx) => (
-          <div key={idx} className="bg-gray-50 dark:bg-slate-800 p-3 rounded border border-gray-200 dark:border-slate-700 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Spec {idx + 1}</span>
-              <button
-                type="button"
-                onClick={() => deleteSpec(idx)}
-                className="p-1 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded transition"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
+      {/* Save Button Bar */}
+      <div className="pt-3 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+        <span className="text-xs font-bold text-gray-400">
+          {specs.length} total specifications ({specs.filter(s => s.is_highlight).length} highlighted)
+        </span>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
-                <select
-                  value={spec.category}
-                  onChange={e => updateSpec(idx, 'category', e.target.value)}
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-gray-900 dark:text-white"
-                >
-                  {CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>
-                      {cat.replace('_', ' ')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tier</label>
-                <select
-                  value={spec.tier || ''}
-                  onChange={e => updateSpec(idx, 'tier', e.target.value || null)}
-                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-gray-900 dark:text-white"
-                >
-                  <option value="">None</option>
-                  {TIERS.map(t => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Label *</label>
-              <input
-                type="text"
-                placeholder="e.g., Structure Type"
-                value={spec.label}
-                onChange={e => updateSpec(idx, 'label', e.target.value)}
-                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Value *</label>
-              <input
-                type="text"
-                placeholder="e.g., Mivan RCC, Seismic Zone 4"
-                value={spec.value}
-                onChange={e => updateSpec(idx, 'value', e.target.value)}
-                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Brand (Optional)</label>
-              <input
-                type="text"
-                placeholder="e.g., Kohler, Grohe"
-                value={spec.brand || ''}
-                onChange={e => updateSpec(idx, 'brand', e.target.value || null)}
-                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id={`highlight-${idx}`}
-                checked={spec.is_highlight || false}
-                onChange={e => updateSpec(idx, 'is_highlight', e.target.checked)}
-                className="rounded dark:bg-slate-900 dark:border-slate-600"
-              />
-              <label htmlFor={`highlight-${idx}`} className="text-xs text-gray-700 dark:text-gray-300">
-                Show in showcase grid
-              </label>
-            </div>
-          </div>
-        ))}
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
+        >
+          {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+          <span>{saving ? 'Saving Specs...' : 'Save Specifications'}</span>
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={saveSpecs}
-        disabled={saving}
-        className="w-full px-3 py-2 bg-green-600 dark:bg-green-700 text-white text-sm rounded hover:bg-green-700 dark:hover:bg-green-800 disabled:bg-gray-500 dark:disabled:bg-gray-600 disabled:text-gray-100 transition flex items-center justify-center gap-2"
-      >
-        {saving ? 'Saving...' : <>
-          <Check size={14} />
-          Save Specifications
-        </>}
-      </button>
     </div>
   )
 }

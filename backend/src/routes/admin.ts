@@ -314,7 +314,7 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
         persona_profile: true,
         recommendation_profile: true,
         competitors: { orderBy: { sort_order: 'asc' } },
-        spec_items: { orderBy: { sort_order: 'asc' } },
+        spec_items: { include: { unit_type: { select: { id: true, name: true, bhk: true } } }, orderBy: [{ sort_order: 'asc' }, { category: 'asc' }] },
         construction_milestones: { orderBy: { completion_pct: 'desc' } },
         construction_updates: { orderBy: { update_date: 'desc' } },
         lifecycle_updates: { orderBy: { update_date: 'desc' } },
@@ -341,6 +341,7 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
       construction_updates: p.construction_updates ?? [],
       lifecycle_updates: p.lifecycle_updates ?? [],
       price_history: p.price_history ?? [],
+      spec_items: p.spec_items ?? [],
       // Primary plan — the admin editor edits one plan at a time.
       payment_plan: p.payment_plans?.[0] ?? null,
     }
@@ -580,6 +581,138 @@ router.put('/projects/:id/milestones', requireAdmin, async (req: Request, res: R
   } catch (err) {
     console.error('[admin] update milestones failed:', err)
     res.status(500).json({ error: 'Failed to save construction milestones' })
+  }
+})
+
+// GET /api/v1/admin/projects/:id/specs — fetch project specifications and materials
+router.get('/projects/:id/specs', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true, slug: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    const specs = await prisma.projectSpecItem.findMany({
+      where: { project_id: project.id },
+      include: { unit_type: { select: { id: true, name: true, bhk: true } } },
+      orderBy: [{ sort_order: 'asc' }, { category: 'asc' }]
+    })
+
+    res.json({ specs })
+  } catch (err: any) {
+    console.error('[admin] fetch specs failed:', err)
+    res.status(500).json({ error: 'Failed to fetch project specifications' })
+  }
+})
+
+// PUT /api/v1/admin/projects/:id/specs — save/update project specifications
+router.put('/projects/:id/specs', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { specs } = req.body as { specs: any[] }
+
+  if (!Array.isArray(specs)) {
+    res.status(400).json({ error: 'specs array required' })
+    return
+  }
+
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true, slug: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.projectSpecItem.deleteMany({ where: { project_id: project.id } })
+      if (specs.length > 0) {
+        await tx.projectSpecItem.createMany({
+          data: specs.map((s, idx) => ({
+            project_id: project.id,
+            unit_type_id: s.unit_type_id || null,
+            category: s.category || 'structure',
+            label: s.label?.trim() || 'Specification',
+            value: s.value?.trim() || '',
+            brand: s.brand?.trim() || null,
+            tier: s.tier || null,
+            is_highlight: Boolean(s.is_highlight),
+            sort_order: s.sort_order ?? (idx + 1),
+            notes: s.notes?.trim() || null
+          }))
+        })
+      }
+    })
+
+    const updated = await prisma.projectSpecItem.findMany({
+      where: { project_id: project.id },
+      include: { unit_type: { select: { id: true, name: true, bhk: true } } },
+      orderBy: [{ sort_order: 'asc' }, { category: 'asc' }]
+    })
+
+    res.json({ ok: true, specs: updated })
+  } catch (err: any) {
+    console.error('[admin] update specs failed:', err)
+    res.status(500).json({ error: 'Failed to save specifications' })
+  }
+})
+
+// POST /api/v1/admin/projects/:id/specs — alias for saving specs
+router.post('/projects/:id/specs', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { specs } = req.body as { specs: any[] }
+
+  if (!Array.isArray(specs)) {
+    res.status(400).json({ error: 'specs array required' })
+    return
+  }
+
+  try {
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      select: { id: true, slug: true }
+    })
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.projectSpecItem.deleteMany({ where: { project_id: project.id } })
+      if (specs.length > 0) {
+        await tx.projectSpecItem.createMany({
+          data: specs.map((s, idx) => ({
+            project_id: project.id,
+            unit_type_id: s.unit_type_id || null,
+            category: s.category || 'structure',
+            label: s.label?.trim() || 'Specification',
+            value: s.value?.trim() || '',
+            brand: s.brand?.trim() || null,
+            tier: s.tier || null,
+            is_highlight: Boolean(s.is_highlight),
+            sort_order: s.sort_order ?? (idx + 1),
+            notes: s.notes?.trim() || null
+          }))
+        })
+      }
+    })
+
+    const updated = await prisma.projectSpecItem.findMany({
+      where: { project_id: project.id },
+      include: { unit_type: { select: { id: true, name: true, bhk: true } } },
+      orderBy: [{ sort_order: 'asc' }, { category: 'asc' }]
+    })
+
+    res.json({ ok: true, specs: updated })
+  } catch (err: any) {
+    console.error('[admin] post specs failed:', err)
+    res.status(500).json({ error: 'Failed to save specifications' })
   }
 })
 

@@ -377,7 +377,8 @@ export default function IntelligenceTab({
       </div>
 
       {/* ── 2. PRICE & VALUE ANALYSIS ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
+      {/* ── 2. PRICE & VALUE ANALYSIS ── */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-4 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5 sm:space-y-6">
         <div>
           <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
             Price & Value Analysis
@@ -387,84 +388,96 @@ export default function IntelligenceTab({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Price per sqft (All Inc.)</p>
-            <p className="text-[22px] font-black text-gray-900 dark:text-white">
+        {/* 4 Metrics in 2-a-row Mobile Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">Price / sqft (All Inc.)</p>
+            <p className="text-[17px] sm:text-[22px] font-black text-gray-900 dark:text-white truncate">
               {pricePsf ? `₹${pricePsf.toLocaleString('en-IN')}` : '--'}
-              {pricePsf && <span className="text-[13px] text-gray-400 font-normal">/sq.ft</span>}
+              {pricePsf && <span className="text-[11px] sm:text-[13px] text-gray-400 font-normal">/sq.ft</span>}
             </p>
-            <p className="text-[11px] text-gray-500 font-semibold mt-1">
-              {pData?.sector ? `Competitive in ${pData.sector}` : 'Competitive vs. micro-market'}
+            <p className="text-[10px] sm:text-[11px] text-gray-500 font-semibold mt-1 truncate">
+              {pData?.sector ? `Competitive in ${pData.sector}` : 'Competitive vs. market'}
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Value for Money Score</p>
-              <p className="text-[22px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                {valueForMoneyScore ? `${valueForMoneyScore}` : '--'}
-                {valueForMoneyScore && <span className="text-[13px] text-gray-400 font-normal">/100</span>}
-              </p>
-              <p className="text-[10.5px] text-emerald-600 font-bold">{valueForMoneyScore && valueForMoneyScore >= 80 ? 'Good' : 'Fair'}</p>
-            </div>
-            {valueForMoneyScore && (
-              <div className="w-14 h-14 rounded-full border-4 border-emerald-500 border-t-transparent flex items-center justify-center font-black text-emerald-600 text-sm">
-                {valueForMoneyScore}%
-              </div>
-            )}
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">Value For Money</p>
+            <p className="text-[17px] sm:text-[22px] font-black text-emerald-600 dark:text-emerald-400 truncate">
+              {valueForMoneyScore ? `${valueForMoneyScore}` : '--'}
+              {valueForMoneyScore && <span className="text-[11px] sm:text-[13px] text-gray-400 font-normal">/100</span>}
+            </p>
+            <p className="text-[10px] sm:text-[10.5px] text-emerald-600 dark:text-emerald-400 font-bold truncate flex items-center gap-1">
+              • {valueForMoneyScore && valueForMoneyScore >= 80 ? 'High Value Index' : 'Fair Market Value'}
+            </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Price Trend (Last 12 Months)</p>
-            <p className="text-[22px] font-black text-emerald-600 dark:text-emerald-400">{priceTrend12Mo ?? '--'}</p>
-            <p className="text-[11px] text-gray-500 font-semibold">Rising micro-market velocity</p>
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">Price Trend (12M)</p>
+            <p className="text-[17px] sm:text-[22px] font-black text-emerald-600 dark:text-emerald-400 truncate">{priceTrend12Mo ?? '--'}</p>
+            <p className="text-[10px] sm:text-[11px] text-gray-500 font-semibold truncate">Rising micro-market</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Demand Supply Ratio</p>
-            <p className="text-[22px] font-black text-gray-900 dark:text-white">{demandSupplyRatio ?? '--'}</p>
-            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">High Demand (Seller&apos;s Market)</p>
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
+            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">Demand / Supply</p>
+            <p className="text-[17px] sm:text-[22px] font-black text-gray-900 dark:text-white truncate">{demandSupplyRatio ?? '--'}</p>
+            <p className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-bold truncate">Seller&apos;s Market</p>
           </div>
         </div>
 
         {/* Price Positioning Bar & Price Includes Breakdown Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-5">
+          <div className="lg:col-span-2 p-4 sm:p-5 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Price Positioning</span>
-              <span className="text-[11px] text-gray-500 font-medium">Where {pData?.name || 'Project'} stands in the micro-market</span>
+              <span className="text-[12.5px] font-black text-gray-900 dark:text-white">Price Positioning in Micro-Market</span>
+              <span className="text-[11px] text-gray-500 font-medium">Segment benchmark for {pData?.name || 'Project'}</span>
             </div>
 
-            <div className="space-y-3 pt-6 pb-2">
-              <div className="h-3 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-600 rounded-full relative">
+            <div className="space-y-4 pt-6 pb-1">
+              {/* Segmented Gradient Visual Track */}
+              <div className="relative">
+                {/* Visual Segments Container */}
+                <div className="h-3.5 w-full rounded-full overflow-hidden flex bg-gray-200 dark:bg-gray-800 p-0.5 shadow-inner">
+                  <div className="w-1/4 h-full bg-emerald-400 rounded-l-full" title="Budget" />
+                  <div className="w-1/4 h-full bg-teal-400" title="Competitive" />
+                  <div className="w-1/4 h-full bg-blue-500" title="Premium" />
+                  <div className="w-1/4 h-full bg-indigo-600 rounded-r-full" title="Ultra Premium" />
+                </div>
+
                 {/* Dynamically position slider dot using dna price_score or fallback 65% */}
                 <div 
-                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center z-10"
-                  style={{ left: `${Math.min(Math.max(dna?.price_score ?? 65, 12), 88)}%` }}
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center z-10 pointer-events-none"
+                  style={{ left: `${Math.min(Math.max(dna?.price_score ?? 65, 14), 86)}%` }}
                 >
-                  <div className="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-[10px] font-black px-2.5 py-1 rounded-lg shadow-xl whitespace-nowrap -mt-10 border border-white/10">
-                    {pData?.name || 'Project'} · ₹{pricePsf ? pricePsf.toLocaleString('en-IN') : '--'}/sq.ft
+                  <div className="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-[9.5px] sm:text-[10px] font-black px-2.5 py-1 rounded-lg shadow-xl whitespace-nowrap -mt-9 border border-white/20 dark:border-black/10 flex items-center gap-1">
+                    <span>{pData?.name || 'Project'}</span>
+                    <span className="opacity-60">•</span>
+                    <span>₹{pricePsf ? pricePsf.toLocaleString('en-IN') : '--'}/sq.ft</span>
                   </div>
-                  <div className="w-4 h-4 bg-gray-900 dark:bg-white rounded-full ring-4 ring-white dark:ring-gray-900 shadow-md" />
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-5 h-5 bg-blue-600 dark:bg-white rounded-full ring-4 ring-white dark:ring-gray-900 shadow-md flex items-center justify-center" />
+                    <span className="w-2 h-2 bg-white dark:bg-blue-600 rounded-full absolute" />
+                  </div>
                 </div>
               </div>
-              <div className="flex justify-between text-[11px] text-gray-400 font-bold pt-1">
-                <span>Lower</span>
+
+              {/* Segment Labels */}
+              <div className="grid grid-cols-4 text-center text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 pt-1">
+                <span>Value</span>
                 <span>Competitive</span>
-                <span className="text-blue-600 font-black">Premium</span>
-                <span>Ultra Premium</span>
+                <span className="text-blue-600 dark:text-blue-400 font-black">Premium</span>
+                <span>Ultra Luxury</span>
               </div>
             </div>
           </div>
 
-          {/* Price Includes Card (Matching Screenshot 1 & 2) */}
-          <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 flex flex-col justify-between">
+          {/* Price Includes Card */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 flex flex-col justify-between">
             <div className="space-y-2.5">
-              <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Price Includes</span>
+              <span className="text-[12.5px] font-black text-gray-900 dark:text-white">Price Includes</span>
               <ul className="space-y-1.5 text-[12px] font-semibold text-gray-600 dark:text-gray-300">
                 <li className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 size={14} /> Base Price
+                  <CheckCircle2 size={14} /> Base Unit Price
                 </li>
                 <li className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                   <CheckCircle2 size={14} /> PLC Charges
@@ -473,16 +486,16 @@ export default function IntelligenceTab({
                   <CheckCircle2 size={14} /> Club Membership
                 </li>
                 <li className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 size={14} /> Govt. Charges & Taxes
+                  <CheckCircle2 size={14} /> Govt. Taxes &amp; GST
                 </li>
               </ul>
             </div>
 
             <button
               onClick={onGoToPricing}
-              className="text-[12.5px] font-black text-blue-600 hover:text-blue-700 flex items-center gap-1 pt-1 self-start"
+              className="text-[12px] font-black text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 pt-1 self-start cursor-pointer"
             >
-              View Full Breakdown <ChevronRight size={14} />
+              View Full Cost Sheet <ChevronRight size={14} />
             </button>
           </div>
         </div>

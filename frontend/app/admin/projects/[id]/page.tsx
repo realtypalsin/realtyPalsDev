@@ -10,6 +10,7 @@ import { adminFetch } from '@/lib/adminFetch'
 import ProjectForm from '@/components/admin/ProjectForm'
 import UnitsEditor from '@/components/admin/UnitsEditor'
 import AmenitiesEditor from '@/components/admin/AmenitiesEditor'
+import SpecEditor from '@/components/admin/SpecEditor'
 import ConnectivityEditor from '@/components/admin/ConnectivityEditor'
 import ImagesEditor from '@/components/admin/ImagesEditor'
 import DocumentsEditor from '@/components/admin/DocumentsEditor'
@@ -80,6 +81,9 @@ function getTabAuditDetails(
 
     if ((data?.amenities?.length || 0) >= 3) completed.push(`Amenities (${data.amenities.length} added)`)
     else missing.push(`Amenities (need 3+, currently ${data?.amenities?.length || 0})`)
+
+    if ((data?.spec_items?.length || 0) >= 3) completed.push(`Specifications (${data.spec_items.length} items)`)
+    else missing.push(`Specifications (need 3+, currently ${data?.spec_items?.length || 0})`)
   }
 
   if (tabId === 'pricing') {
@@ -686,6 +690,12 @@ export default function AdminProjectEditPage({
               <AmenitiesEditor
                 amenities={data.amenities ?? []}
                 projectId={id}
+                onSaved={handleSaved}
+              />
+              <SpecEditor
+                projectId={id}
+                unitTypes={data.unit_types ?? []}
+                initialSpecs={data.spec_items ?? []}
                 onSaved={handleSaved}
               />
             </div>
