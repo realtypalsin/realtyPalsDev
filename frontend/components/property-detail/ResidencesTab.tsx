@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { m, AnimatePresence } from 'framer-motion'
+import { motion as m, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
@@ -12,6 +12,7 @@ import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { resolveImgUrl } from '@/lib/utils'
 import InfoTooltip from '@/components/ui/InfoTooltip'
 import { Skeleton } from '@/components/ui/skeleton'
+import { CustomDropdown } from '@/components/ui/CustomDropdown'
 
 type FloorPlanImage = { id: string; url: string; caption?: string | null; bhk?: number | null; size_sqft?: number | null }
 type LazyState<T> = { loaded: boolean; available: boolean; data: T | null; message?: string }
@@ -119,9 +120,8 @@ export default function ResidencesTab({
   const [selectedUnitNo, setSelectedUnitNo] = useState<string>('Unit 3')
 
   // Conditional special configuration detection — only show if project actually has them!
-  const pAny = detail as any
-  const hasPenthouse = !!pAny?.has_penthouse || unitTypes.some(u => u.name?.toLowerCase().includes('penthouse'))
-  const hasDuplex = !!pAny?.has_duplex || unitTypes.some(u => u.name?.toLowerCase().includes('duplex'))
+  const hasPenthouse = (detail)?.has_penthouse || unitTypes.some(u => u.name?.toLowerCase().includes('penthouse'))
+  const hasDuplex = (detail)?.has_duplex || unitTypes.some(u => u.name?.toLowerCase().includes('duplex'))
   const hasVilla = unitTypes.some(u => u.name?.toLowerCase().includes('villa'))
 
   const bhkOptions = [...new Set(unitTypes.map((u) => u.bhk))].sort((a, b) => a - b)
@@ -174,7 +174,7 @@ export default function ResidencesTab({
   ]
 
   // Unit availability from unit_inventory table, fallback to empty if no DB data
-  const unitInventory = (detail as any)?.unit_inventory || []
+  const unitInventory = (detail)?.unit_inventory || []
   const filteredInventory = activeUnit?.id ? unitInventory.filter((u: any) => u.unit_type_id === activeUnit.id) : unitInventory
   const mockAvailability: AvailabilityRow[] = filteredInventory.map((u: any) => ({
     tower: u.tower_name || '—',
@@ -182,7 +182,7 @@ export default function ResidencesTab({
     unitNo: u.unit_number || '—',
     facing: u.facing || '—',
     view: u.view || '—',
-    price: priceLabel(activeUnit || {} as any),
+    price: priceLabel(activeUnit || {}),
     status: u.status === 'available' ? 'Available' : u.status === 'booked' ? 'Booked' : 'Hold'
   }))
 
@@ -418,7 +418,7 @@ export default function ResidencesTab({
                   ].map(tab => (
                     <button
                       key={tab.id}
-                      onClick={() => setActivePlanTab(tab.id as any)}
+                      onClick={() => setActivePlanTab(tab.id)}
                       className={`text-[13px] font-extrabold pb-2 border-b-2 transition-all ${
                         activePlanTab === tab.id
                           ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
@@ -465,47 +465,51 @@ export default function ResidencesTab({
                   </div>
 
                   {/* Viewport Action Controls Bar */}
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <select
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+                      <CustomDropdown
                         value={floorType}
-                        onChange={(e) => setFloorType(e.target.value)}
-                        className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
-                      >
-                        <option>Typical Floor</option>
-                        <option>Refuge Floor</option>
-                        <option>Penthouse Level</option>
-                      </select>
+                        onChange={(val) => setFloorType(val)}
+                        options={[
+                          { value: 'Typical Floor', label: 'Typical Floor' },
+                          { value: 'Refuge Floor', label: 'Refuge Floor' },
+                          { value: 'Penthouse Level', label: 'Penthouse Level' },
+                        ]}
+                        size="xs"
+                        triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[110px]"
+                      />
 
-                      <select
+                      <CustomDropdown
                         value={selectedTower}
-                        onChange={(e) => setSelectedTower(e.target.value)}
-                        className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
-                      >
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {((activeUnit as any)?.tower_association && (activeUnit as any).tower_association.length > 0
-                          ? (activeUnit as any).tower_association
-                          : []
-                        ).map((t: string) => (
-                          <option key={t} value={t}>{t}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setSelectedTower(val)}
+                        options={
+                          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                          ((activeUnit)?.tower_association && (activeUnit).tower_association.length > 0
+                            ? (activeUnit).tower_association
+                            : ['Tower A', 'Tower B']
+                          ).map((t: string) => ({ value: t, label: t }))
+                        }
+                        size="xs"
+                        triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[90px]"
+                      />
 
-                      <select
+                      <CustomDropdown
                         value={selectedUnitNo}
-                        onChange={(e) => setSelectedUnitNo(e.target.value)}
-                        className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-[12px] font-extrabold text-gray-800 dark:text-gray-200 cursor-pointer"
-                      >
-                        <option>Type C</option>
-                        <option>Type D</option>
-                      </select>
+                        onChange={(val) => setSelectedUnitNo(val)}
+                        options={[
+                          { value: 'Type C', label: 'Type C' },
+                          { value: 'Type D', label: 'Type D' },
+                        ]}
+                        size="xs"
+                        triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[85px]"
+                      />
                     </div>
 
                     <button
                       onClick={() => onViewFloorPlans(activeFloorPlans)}
-                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 text-[12px] font-black text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2 shadow-sm transition-all"
+                      className="w-full sm:w-auto px-4 py-2 rounded-xl border border-gray-200/90 dark:border-white/10 bg-white/90 dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-[11.5px] font-black text-gray-800 dark:text-gray-200 flex items-center justify-center gap-1.5 shadow-sm transition-all"
                     >
-                      <ZoomIn size={15} /> Download Plan
+                      <ZoomIn size={14} /> Download Plan
                     </button>
                   </div>
 
@@ -562,7 +566,7 @@ export default function ResidencesTab({
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Built-up Area</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.built_up_area_sqft ? `${(activeUnit as any).built_up_area_sqft.toLocaleString()} sqft` : (carpetArea ? `${Math.round(carpetArea * 1.18).toLocaleString()} sqft` : '—')}</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit)?.built_up_area_sqft ? `${(activeUnit).built_up_area_sqft.toLocaleString()} sqft` : (carpetArea ? `${Math.round(carpetArea * 1.18).toLocaleString()} sqft` : '—')}</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
@@ -587,17 +591,17 @@ export default function ResidencesTab({
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Private Balcony</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.balconies || 1}</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit)?.balconies || 1}</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Utility Area</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit as any)?.utility_area_sqft ? `${(activeUnit as any).utility_area_sqft} sqft` : '1'}</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit)?.utility_area_sqft ? `${(activeUnit).utility_area_sqft} sqft` : '1'}</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Efficiency Rating</p>
-                      <p className="text-[16px] font-black text-emerald-600 dark:text-emerald-400">{(activeUnit as any)?.efficiency_rating || 'Excellent'}</p>
+                      <p className="text-[16px] font-black text-emerald-600 dark:text-emerald-400">{(activeUnit)?.efficiency_rating || 'Excellent'}</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
@@ -810,7 +814,7 @@ export default function ResidencesTab({
                     </div>
                   </div>
                   <span className="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider">
-                    {(activeUnit as any)?.balconies || 2} Balconies
+                    {(activeUnit)?.balconies || 2} Balconies
                   </span>
                 </div>
 

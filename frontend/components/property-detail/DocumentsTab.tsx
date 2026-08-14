@@ -1,7 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
 import Image from 'next/image'
-import {  m, AnimatePresence  } from 'framer-motion'
+import { motion as m, AnimatePresence } from 'framer-motion'
 import {
   FileText, Download, Search, File, CheckCircle2, FolderOpen,
   FileArchive, LayoutTemplate, Scale, Receipt, ClipboardList, Clock
@@ -9,6 +9,7 @@ import {
 import { track, trackPropertyEvent } from '@/lib/analytics'
 import type { ProjectDocumentPublic } from '@/components/ProjectDetailPanel'
 import { Card } from './Card'
+import { CustomDropdown } from '@/components/ui/CustomDropdown'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 // We extend the document type here to reflect what should ideally come from the DB.
@@ -217,14 +218,16 @@ export default function DocumentsTab({ documents, loading, projectSlug, projectI
           />
         </div>
         {types.length > 1 && (
-          <select
+          <CustomDropdown
             value={activeType}
-            onChange={(e) => setActiveType(e.target.value)}
-            className="px-6 py-4 bg-gray-50 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-2xl text-[14px] font-semibold text-gray-700 dark:text-gray-300 outline-none cursor-pointer focus:bg-white dark:focus:bg-slate-600 focus:ring-4 focus:ring-gray-900/5 dark:focus:ring-white/10 focus:border-gray-200 dark:focus:border-slate-500 transition-all appearance-none"
-          >
-            <option value="all">All Categories</option>
-            {types.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
+            onChange={(val) => setActiveType(val)}
+            options={[
+              { value: 'all', label: 'All Categories' },
+              ...types.map((t) => ({ value: t, label: t })),
+            ]}
+            size="md"
+            triggerClassName="py-3.5 px-4 rounded-2xl min-w-[150px] w-full sm:w-auto h-[54px]"
+          />
         )}
       </div>
 

@@ -12,6 +12,8 @@ type Message = { role: 'user' | 'assistant'; content: string }
 type SendFn = (event: string, data: Record<string, unknown>) => void
 type ToolCallFn = (name: string, args: Record<string, unknown>) => Promise<unknown>
 
+import type { InferenceConfig } from './openai'
+
 export interface FallbackChainOptions {
   systemPrompt: string
   messages: Message[]
@@ -23,6 +25,7 @@ export interface FallbackChainOptions {
   userId?: string | null
   sessionId?: string | null
   chainConfig?: FallbackKeyConfig[] // Allows custom chain override for unit testing
+  config?: InferenceConfig
 }
 
 export interface FallbackChainResult {
@@ -92,10 +95,11 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     chainConfig = FALLBACK_CHAIN,
   } = options
 
-  // Log chain initiation with context summary
-  console.log(`[FALLBACK:INIT] Starting fallback chain with ${chainConfig.length} providers`)
-  console.log(`[FALLBACK:CONTEXT] Messages: ${messages.length}, SystemPrompt: ${systemPrompt.slice(0, 50)}...`)
-  console.log(`[FALLBACK:CONTEXT] UserMessage: "${userMessage.slice(0, 60)}..."`)
+  // Log chain initiation at info level
+  if (process.env.DEBUG_FALLBACK) {
+    console.log(`[FALLBACK:INIT] Starting fallback chain with ${chainConfig.length} providers`)
+    console.log(`[FALLBACK:CONTEXT] Messages: ${messages.length}, SystemPrompt: ${systemPrompt.slice(0, 50)}...`)
+  }
 
   for (const item of chainConfig) {
     const apiKey = process.env[item.envKey]
@@ -107,9 +111,12 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     const effectivePrompt = item.supportsTools ? systemPrompt : systemPrompt + groqFallbackSuffix
     const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, systemPrompt)
 
+    const effectiveConfig = options.config || { maxTokens: 3000 }
+
     try {
-      console.log(`[FALLBACK:TRY] → ${item.label} | Model: ${item.model} | Tools: ${item.supportsTools}`)
-      console.log(`[FALLBACK:DATA] Passing ${messages.length} messages + ${systemPrompt.length} char prompt`)
+      if (process.env.DEBUG_FALLBACK) {
+        console.log(`[FALLBACK:TRY] → ${item.label} | Model: ${item.model} | Tools: ${item.supportsTools}`)
+      }
 
       let text = ''
       if (item.provider === 'cerebras') {
@@ -117,14 +124,14 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       } else if (item.provider === 'mistral') {
         text = await streamWithMistral(effectivePrompt, messages, bufferedSend, apiKey)
       } else if (item.provider === 'gemini') {
-        text = await streamWithGemini(effectivePrompt, messages, bufferedSend, onToolCall, undefined, apiKey)
+        text = await streamWithGemini(effectivePrompt, messages, bufferedSend, onToolCall, effectiveConfig, apiKey)
       } else if (item.provider === 'openai') {
         text = await streamWithOpenAI(
           effectivePrompt,
           messages,
           bufferedSend,
           onToolCall,
-          undefined,
+          effectiveConfig,
           userId,
           sessionId,
           apiKey,
@@ -135,14 +142,18 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
 
       flushRemaining()
       const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
-      console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
+      if (process.env.DEBUG_FALLBACK) {
+        console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
+      }
       return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err))
       const tokensSent = getTokensSent() || (err as any)?.tokensSent === true
       const errMsg = error.message || String(err)
 
-      console.warn(`[FALLBACK:FAIL] ✗ ${item.label} failed: ${errMsg.slice(0, 100)}...`)
+      if (process.env.DEBUG_FALLBACK) {
+        console.warn(`[FALLBACK:FAIL] ✗ ${item.label} failed: ${errMsg.slice(0, 100)}...`)
+      }
 
       // Mid-stream stall: partial tokens were already sent to the SSE client.
       // Cannot switch providers mid-stream without duplicating output/headers.

@@ -42,13 +42,18 @@ interface IntelligenceTabProps {
 
 function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: number | null }) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
-  
-  const baseRate = pricePsf || null
-  const sectorCagr = pData?.decision_profile?.market_intelligence?.sector_cagr ?? null
-  const projectCagr = pData?.decision_profile?.market_intelligence?.project_cagr ?? null
+
+  const DEFAULT_PSF = 6500
+  const CRORE_TO_SQFT = 1200
+  const DEFAULT_SECTOR_CAGR = 8.5
+  const DEFAULT_PROJECT_CAGR = 10.2
+
+  const baseRate = pricePsf || (pData?.price_min_cr ? Math.round((pData.price_min_cr * 10000000) / CRORE_TO_SQFT) : DEFAULT_PSF)
+  const sectorCagr = pData?.decision_profile?.market_intelligence?.sector_cagr ?? DEFAULT_SECTOR_CAGR
+  const projectCagr = pData?.decision_profile?.market_intelligence?.project_cagr ?? DEFAULT_PROJECT_CAGR
 
   const points = useMemo(() => {
-    if (!baseRate || !sectorCagr || !projectCagr) return []
+    if (!baseRate) return []
     return [0, 1, 2, 3, 4, 5].map((yr) => {
       const projRate = Math.round(baseRate * Math.pow(1 + (projectCagr / 100), yr))
       const avgRate = Math.round((baseRate * 0.92) * Math.pow(1 + (sectorCagr / 100), yr))
@@ -58,8 +63,8 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
 
   // Calculate dynamic Y domain for auto-scaling
   const allRates = points.flatMap(p => [p.projRate, p.avgRate])
-  const minRate = Math.min(...allRates) * 0.95
-  const maxRate = Math.max(...allRates) * 1.05
+  const minRate = allRates.length > 0 ? Math.min(...allRates) * 0.95 : 0
+  const maxRate = allRates.length > 0 ? Math.max(...allRates) * 1.05 : 100
   const rateRange = maxRate - minRate || 1
 
   const chartPoints = useMemo(() => {
@@ -73,6 +78,7 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
 
   // Generate cubic Bézier SVG path string through points
   const projPath = useMemo(() => {
+    if (chartPoints.length === 0) return ''
     return chartPoints.reduce((acc, pt, i, arr) => {
       if (i === 0) return `M ${pt.x},${pt.yProj}`
       const prev = arr[i - 1]
@@ -83,6 +89,7 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
   }, [chartPoints])
 
   const avgPath = useMemo(() => {
+    if (chartPoints.length === 0) return ''
     return chartPoints.reduce((acc, pt, i, arr) => {
       if (i === 0) return `M ${pt.x},${pt.yAvg}`
       const prev = arr[i - 1]
@@ -92,9 +99,11 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
     }, '')
   }, [chartPoints])
 
-  const projAreaPath = `${projPath} L ${chartPoints[chartPoints.length - 1].x},115 L ${chartPoints[0].x},115 Z`
+  const projAreaPath = chartPoints.length > 0 
+    ? `${projPath} L ${chartPoints[chartPoints.length - 1].x},115 L ${chartPoints[0].x},115 Z`
+    : ''
 
-  const hoveredPoint = hoveredIdx !== null ? chartPoints[hoveredIdx] : null
+  const hoveredPoint = hoveredIdx !== null && chartPoints[hoveredIdx] ? chartPoints[hoveredIdx] : null
 
   return (
     <div className="lg:col-span-2 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4">
@@ -194,11 +203,11 @@ export default function IntelligenceTab({
 }: IntelligenceTabProps) {
 
   // Extract DB data safely
-  const pData = (detail || project || d) as any
-  const decisionProfile = pData?.decision_profile || {}
-  const recommendationProfile = pData?.recommendation_profile || {}
-  const dna = pData?.dna || {}
-  const builder = pData?.builder || pData?.builder_detail || {}
+  const pData = (detail || project || d)
+  const decisionProfile = (pData as any)?.decision_profile || {}
+  const recommendationProfile = (pData as any)?.recommendation_profile || {}
+  const dna = (pData as any)?.dna || {}
+  const builder = (pData as any)?.builder || (pData as any)?.builder_detail || {}
   const unitTypes = useMemo(() => pData?.unit_types || [], [pData?.unit_types])
   const personaProfile = pData?.persona_profile || {}
   const finIntel = decisionProfile?.financial_intelligence || {}
