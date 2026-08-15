@@ -30,7 +30,12 @@ export class GeminiStreamStallError extends Error {
 // Gemini's `contents` shape only knows 'user' and 'model' roles — system prompt
 // goes in systemInstruction separately, and our 'tool' role turns are injected
 // directly as functionResponse parts by the tool-call cycle below, not via this map.
-export function toGeminiContents(messages: Message[]) {
+interface GeminiContent {
+  role: 'user' | 'model'
+  parts: Array<{ text: string }>
+}
+
+export function toGeminiContents(messages: Message[]): GeminiContent[] {
   return messages
     .filter((m) => m.role === 'user' || m.role === 'assistant')
     .map((m) => ({
@@ -50,7 +55,7 @@ export async function streamWithGemini(
   const apiKey = apiKeyOverride ?? process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('No GEMINI_API_KEY configured')
   const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: INACTIVITY_MS } })
-  const contents: any[] = toGeminiContents(messages)
+  const contents: GeminiContent[] = toGeminiContents(messages)
   let fullText = ''
 
   async function runCycle(cycle: number): Promise<string> {

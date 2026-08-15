@@ -3,7 +3,13 @@ import { MODELS, AI_CONFIG } from '../config'
 import { recordUsage } from './cost'
 import { toOpenAITools, validateToolArgs, capToolResult } from './tools'
 
-type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null; name?: string; tool_calls?: any[], tool_call_id?: string };
+interface ToolCall {
+  id: string
+  type: string
+  function?: { name: string; arguments: string }
+}
+
+type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null; name?: string; tool_calls?: ToolCall[]; tool_call_id?: string };
 type SendFn = (event: string, data: Record<string, unknown>) => void;
 
 const MAX_TOOL_CYCLES = 3;
@@ -90,7 +96,7 @@ export async function streamWithOpenAI(
 
   console.log('[openai] using provider:', provider.name, provider.baseURL ? `(${provider.baseURL})` : '');
 
-  const msgs: any[] = [
+  const msgs: Message[] = [
     { role: 'system', content: system },
     ...messages.map(m => ({ role: m.role, content: m.content })),
   ];

@@ -14,6 +14,36 @@
  * padding every prompt.
  */
 
+interface ProjectInput {
+  id?: string
+  name?: string
+  sector?: string | { name: string }
+  city?: string
+  address?: string
+  status?: string
+  price_range_label?: string
+  price_min_cr?: number
+  possession_status?: string
+  possession_label?: string
+  concerns?: string[]
+  bhk?: number
+  builder?: { name: string }
+  rera_number?: string
+  project_risk_flag?: string
+  registry_status?: string
+  nclt_moratorium_active?: boolean
+  unit_types?: Array<{ bhk: number; carpet_area_sqft?: number }>
+  top_amenities?: Array<{ name: string }>
+  top_connectivity?: Array<{ name: string; distance_km?: number }>
+  payment_plans?: unknown[]
+  payment_plan?: unknown
+  [key: string]: unknown
+}
+
+interface PaymentPlan {
+  [key: string]: unknown
+}
+
 export interface TrimmedProperty {
   id: string;
   name: string;
