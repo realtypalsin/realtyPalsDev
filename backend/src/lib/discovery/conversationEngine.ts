@@ -60,6 +60,15 @@ export interface ConversationState {
   confidence: 'HIGH' | 'MEDIUM' | 'LOW'
 }
 
+export interface ChatMessage {
+  role: string
+  content?: string | null
+}
+
+function isChatMessage(msg: unknown): msg is ChatMessage {
+  return typeof msg === 'object' && msg !== null && 'role' in msg
+}
+
 // ─── Stage computation ────────────────────────────────────────────────────────
 
 function computeStage(
@@ -396,20 +405,21 @@ function getSearchRefinementChips(
   return chips.slice(0, 3)
 }
 
-function filterByHistory(pool: ChipAction[], chatHistory: any[]): ChipAction[] {
+function filterByHistory(pool: ChipAction[], chatHistory: unknown[]): ChipAction[] {
   const historyText = chatHistory
+    .filter((m): m is ChatMessage => isChatMessage(m))
     .filter(m => m.role === 'user')
     .map(m => String(m.content ?? '').toLowerCase())
     .join(' ')
   return pool.filter(c => {
     const labelLower = c.label.toLowerCase()
-    const isDiscussed = historyText.includes(labelLower) || 
+    const isDiscussed = historyText.includes(labelLower) ||
       ((c.payload?.text as string)?.toLowerCase() && historyText.includes((c.payload.text as string).toLowerCase()))
     return !isDiscussed
   })
 }
 
-function getFallbackChips(pool: ChipAction[], chips: ChipAction[], maxCount: number, chatHistory: any[]): ChipAction[] {
+function getFallbackChips(pool: ChipAction[], chips: ChipAction[], maxCount: number, chatHistory: unknown[]): ChipAction[] {
   const needed = maxCount - chips.length
   if (needed <= 0) return chips
   
