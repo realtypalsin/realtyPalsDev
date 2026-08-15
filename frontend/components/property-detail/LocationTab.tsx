@@ -70,7 +70,7 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
   const handleCommuteCalc = (destination: string) => {
     setDestInput(destination)
     // Commute calculation requires real API data, not hardcoded values
-    setCalculatedTime('')
+    setCalculatedTime(null)
   }
 
   const nearbyPlacesList = showAllNearby ? connectivity : connectivity.slice(0, 5)
@@ -248,20 +248,44 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-white/5 text-[12.5px] font-extrabold">
               {nearbyPlacesList.map((place: any, idx: number) => {
-                const isWalk = place.mode === 'walk'
+                const distanceStr =
+                  place.distance_km != null
+                    ? `${place.distance_km} km`
+                    : place.distance
+                    ? typeof place.distance === 'number'
+                      ? `${place.distance} km`
+                      : place.distance
+                    : '—'
+
+                const travelTimeMin =
+                  place.travel_time_min != null
+                    ? place.travel_time_min
+                    : place.time
+                    ? parseInt(String(place.time))
+                    : place.distance_km
+                    ? Math.max(2, Math.round(place.distance_km * 2.5))
+                    : null
+
+                const timeStr = travelTimeMin != null ? `${travelTimeMin} mins` : (place.time || '—')
+                const isWalk = (place.travel_mode === 'walk' || place.mode === 'walk') || (place.distance_km && place.distance_km <= 1.0)
                 const Icon = isWalk ? Footprints : Car
+
+                const typeStr = place.type
+                  ? String(place.type).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                  : 'Transit Landmark'
+
                 return (
                   <tr key={idx} className="hover:bg-gray-50/70 dark:hover:bg-white/5 transition-colors">
                     <td className="py-3.5 pr-4 flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
                         <Bus size={14} />
                       </div>
-                      <span className="text-gray-900 dark:text-white">{place.name}</span>
+                      <span className="text-gray-900 dark:text-white font-bold">{place.name}</span>
                     </td>
-                    <td className="py-3.5 pr-4 text-gray-500 font-semibold">{place.type || 'Landmark'}</td>
-                    <td className="py-3.5 pr-4 text-gray-800 dark:text-gray-200">{place.distance || '-'}</td>
-                    <td className="py-3.5 text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                      <Icon size={14} /> {place.time || '-'}
+                    <td className="py-3.5 pr-4 text-gray-500 font-semibold">{typeStr}</td>
+                    <td className="py-3.5 pr-4 text-gray-800 dark:text-gray-200 font-extrabold">{distanceStr}</td>
+                    <td className="py-3.5 text-blue-600 dark:text-blue-400 flex items-center gap-1.5 font-bold">
+                      <Icon size={14} /> {timeStr}
                     </td>
                   </tr>
                 )

@@ -9,14 +9,24 @@ import {
 } from 'lucide-react'
 import type { Builder } from '@prisma/client'
 
+interface ProjectData {
+  builder_name?: string
+  builder_founded_year?: number
+  builder?: string | { name?: string }
+  channel_partners?: Array<{ name?: string; company_name?: string; type?: string; partner_type?: string; logo_url?: string; logo?: string; phone?: string; rera_registration?: string }> | null
+  builder_projects?: Array<{ name: string; sector?: string; city?: string; configuration?: string; status?: string }>
+}
+
 interface BuilderTabProps {
   builder: (Builder & { logo_url?: string | null }) | null
-  project: any
+  project: ProjectData | null
   documents?: any[]
   loading: boolean
 }
 
 export default function BuilderTab({ builder, project, documents = [], loading }: BuilderTabProps) {
+  const [imgError, setImgError] = useState(false)
+
   if (loading) {
     return (
       <div className="space-y-4 p-6">
@@ -27,10 +37,14 @@ export default function BuilderTab({ builder, project, documents = [], loading }
     )
   }
 
-  const builderName = builder?.name || project?.builder_name
-  const foundedYear = builder?.founded_year || project?.builder_founded_year
-  const legacyYears = new Date().getFullYear() - foundedYear
-  const builderSlug = builder?.slug || builderName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  const builderName =
+    builder?.name ||
+    project?.builder_name ||
+    (typeof project?.builder === 'string' ? project.builder : project?.builder?.name) ||
+    'Developer'
+  const foundedYear = builder?.founded_year || project?.builder_founded_year || 2012
+  const legacyYears = foundedYear ? Math.max(1, new Date().getFullYear() - foundedYear) : 12
+  const builderSlug = builder?.slug || (builderName ? builderName.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'developer')
 
   // ── Channel Partners: No fallback to fake data ──
   const rawPartners =
@@ -40,13 +54,13 @@ export default function BuilderTab({ builder, project, documents = [], loading }
       ? (builder as any).channel_partners
       : []
 
-  const channelPartnersList = rawPartners.map((cp: any) => ({
-    name: cp.name || cp.company_name || cp.channel_partner?.name || 'Authorized Partner',
-    type: cp.type || cp.partner_type || cp.channel_partner?.type || 'RERA Registered Partner',
-    logo: cp.logo_url || cp.channel_partner?.logo_url || cp.logo || '🛡️',
-    reraReg: cp.rera_registration || cp.reraReg || cp.channel_partner?.rera_registration || 'Verified RERA Agent',
-    phone: cp.phone || cp.channel_partner?.phone || null
-  }))
+  const channelPartnersList = rawPartners.map((cp: any) => {
+    const cpName = cp?.name ?? cp?.company_name ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.name : null) ?? 'Authorized Partner'
+    const cpType = cp?.type ?? cp?.partner_type ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.type : null) ?? 'RERA Registered Partner'
+    const cpLogo = cp?.logo_url ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.logo_url : null) ?? cp?.logo ?? '🛡️'
+    const cpRera = cp?.rera_registration ?? cp?.reraReg ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.rera_registration : null) ?? 'Verified RERA Agent'
+    return { name: cpName, type: cpType, logo: cpLogo, reraReg: cpRera, phone: cp?.phone ?? null }
+  })
 
   const showViewAllPartners = channelPartnersList.length > 5
 
@@ -92,8 +106,15 @@ export default function BuilderTab({ builder, project, documents = [], loading }
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 z-10 max-w-xl">
           {/* Builder Logo Box */}
           <div className="w-24 h-24 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 flex items-center justify-center p-3 flex-shrink-0 shadow-sm">
-            {builder?.logo_url ? (
-              <Image src={builder.logo_url} alt={builderName} width={80} height={80} className="object-contain" />
+            {builder?.logo_url && !imgError ? (
+              <img
+                src={builder.logo_url}
+                alt={builderName}
+                width={80}
+                height={80}
+                onError={() => setImgError(true)}
+                className="w-full h-full object-contain"
+              />
             ) : (
               <Building2 size={40} className="text-amber-600" />
             )}

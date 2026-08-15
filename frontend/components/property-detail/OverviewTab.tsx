@@ -7,7 +7,7 @@ import {
   Download, CheckCircle2, BedDouble, Plane, CalendarDays, UserCheck, Users, TrendingUp, Award, Layers, Check, Phone, Mail
 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
-import type { ProjectDocumentPublic } from '@/components/ProjectDetailPanel'
+import type { ProjectDocumentPublic } from '@/lib/hooks/useProjectDetail'
 import { getProjectOverview, type ProjectOverviewData } from '@/lib/backend-api'
 
 import ConstructionTimeline from './ConstructionTimeline'
@@ -672,9 +672,10 @@ export default function OverviewTab({
       )}
 
       {/* 9. SPECIFICATIONS GRID */}
-      {(project as any)?.spec_items && (project as any).spec_items.length > 0 && (
-        <SpecificationGrid specs={(project as any).spec_items} />
-      )}
+      {(() => {
+        const specs = (detail as any)?.spec_items || (d as any)?.spec_items || (project as any)?.spec_items || []
+        return specs && specs.length > 0 ? <SpecificationGrid specs={specs} /> : null
+      })()}
 
       {/* 10. BOOK SITE VISIT CTA */}
       <div className="bg-gradient-to-r from-gray-900 to-black dark:from-[#1c1815] dark:to-[#0f0e0d] text-white rounded-[24px] p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">

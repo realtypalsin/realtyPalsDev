@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { motion as m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
@@ -19,7 +19,7 @@ type LazyState<T> = { loaded: boolean; available: boolean; data: T | null; messa
 type AvailabilityRow = { tower: string; floor: string; unitNo: string; facing: string; view: string; price: string; status: string }
 
 // Resolve icon name from string to Lucide Icon component
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, React.ComponentType<any>> = {
   layout: Layout,
   height: Maximize2,
   mivan: Shield,
@@ -116,13 +116,13 @@ export default function ResidencesTab({
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
   const [activePlanTab, setActivePlanTab] = useState<'floor' | 'details' | 'availability'>('floor')
   const [floorType, setFloorType] = useState<string>('Typical Floor')
-  const [selectedTower, setSelectedTower] = useState<string>('Tower A')
-  const [selectedUnitNo, setSelectedUnitNo] = useState<string>('Unit 3')
+  const [selectedTower, setSelectedTower] = useState<string>(() => detail?.unit_inventory?.[0]?.tower_name || '')
+  const [selectedUnitNo, setSelectedUnitNo] = useState<string>(() => detail?.unit_inventory?.[0]?.unit_number || '')
 
-  // Conditional special configuration detection — only show if project actually has them!
-  const hasPenthouse = (detail)?.has_penthouse || unitTypes.some(u => u.name?.toLowerCase().includes('penthouse'))
-  const hasDuplex = (detail)?.has_duplex || unitTypes.some(u => u.name?.toLowerCase().includes('duplex'))
-  const hasVilla = unitTypes.some(u => u.name?.toLowerCase().includes('villa'))
+  // Conditional special configuration detection — strictly check if project actually has them in unitTypes!
+  const hasPenthouse = unitTypes.some(u => /penthouse/i.test(u.name || ''))
+  const hasDuplex = unitTypes.some(u => /duplex/i.test(u.name || ''))
+  const hasVilla = unitTypes.some(u => /villa/i.test(u.name || ''))
 
   const bhkOptions = [...new Set(unitTypes.map((u) => u.bhk))].sort((a, b) => a - b)
   const filteredUnits = filter === 'all'
@@ -154,9 +154,8 @@ export default function ResidencesTab({
   const previewImg = activeFloorPlans[0]
 
   const area = activeUnit ? areaSqft(activeUnit) : null
-  const carpetArea = activeUnit?.carpet_area_sqft || (area ? Math.round(area * 0.65) : null)
-  const balconyArea = activeUnit?.balcony_area_sqft || (area ? Math.round(area * 0.08) : null)
-  const reraCarpetArea = carpetArea ? Math.round(carpetArea * 0.94) : null
+  const carpetArea = activeUnit?.carpet_area_sqft || null
+  const balconyArea = activeUnit?.balcony_area_sqft || null
 
   const parseArray = (v: any) => {
     if (Array.isArray(v)) return v;
@@ -167,24 +166,27 @@ export default function ResidencesTab({
   }
 
   const perfectForList = activeUnit ? parseArray(activeUnit.perfect_for) : []
-  const defaultPerfectFor = [
-    { title: 'Families', desc: 'Perfect for families looking for comfortable living with 3 bedrooms.', tag: 'Ideal for 4-5 family members', icon: Users },
-    { title: 'Working Professionals', desc: 'Great for professionals who work from home and need extra space.', tag: 'Study or work from home setup', icon: Layout },
-    { title: 'Investors', desc: 'High rental demand configuration with excellent ROI potential.', tag: 'Strong appreciation potential', icon: Trophy }
-  ]
+  const keyHighlightsList = activeUnit ? parseArray(activeUnit.key_highlights) : []
 
   // Unit availability from unit_inventory table, fallback to empty if no DB data
   const unitInventory = (detail)?.unit_inventory || []
-  const filteredInventory = activeUnit?.id ? unitInventory.filter((u: any) => u.unit_type_id === activeUnit.id) : unitInventory
-  const mockAvailability: AvailabilityRow[] = filteredInventory.map((u: any) => ({
-    tower: u.tower_name || '—',
-    floor: u.floor_number ? String(u.floor_number) : '—',
-    unitNo: u.unit_number || '—',
-    facing: u.facing || '—',
-    view: u.view || '—',
-    price: priceLabel(activeUnit || {}),
-    status: u.status === 'available' ? 'Available' : u.status === 'booked' ? 'Booked' : 'Hold'
-  }))
+  const filteredInventory = activeUnit?.id ? unitInventory.filter((u: any) => u?.unit_type_id === activeUnit.id) : unitInventory
+  const availabilityRows: AvailabilityRow[] = filteredInventory
+    .filter((u): u is any => u != null)
+    .map((u) => ({
+      tower: (u?.tower_name ?? '—') as string,
+      floor: (u?.floor_number ? String(u.floor_number) : '—') as string,
+      unitNo: (u?.unit_number ?? '—') as string,
+      facing: (u?.facing ?? '—') as string,
+      view: (u?.view ?? '—') as string,
+      price: priceLabel(activeUnit || {}),
+      status: u?.status === 'available' ? 'Available' : u?.status === 'booked' ? 'Booked' : 'Hold'
+    }))
+
+  const selectedInventoryEntry = filteredInventory.find(
+    (u: any) => u?.tower_name === selectedTower && u?.unit_number === selectedUnitNo
+  ) ?? filteredInventory[0] ?? null
+  const selectedFacing: string | null = (selectedInventoryEntry?.facing ?? null) as string | null
 
   if (loading && !detail) {
     return (
@@ -411,11 +413,11 @@ export default function ResidencesTab({
               {/* Floor Plan View Mode Tabs (Floor Plan / Details / Unit Availability) */}
               <div className="flex items-center justify-between flex-wrap gap-2 border-b border-gray-100 dark:border-white/5 pb-2">
                 <div className="flex items-center gap-6">
-                  {[
+                  {([
                     { id: 'floor', label: 'Floor Plan' },
                     { id: 'details', label: 'Details' },
                     { id: 'availability', label: 'Unit Availability' }
-                  ].map(tab => (
+                  ] as const).map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setActivePlanTab(tab.id)}
@@ -444,8 +446,34 @@ export default function ResidencesTab({
               {/* ── TAB 1: FLOOR PLAN VIEW ── */}
               {activePlanTab === 'floor' && (
                 <>
+                  {/* Space & Layout Dimension Summary Strip */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-[11.5px]">
+                    <div>
+                      <span className="text-gray-400 font-bold block text-[10px] uppercase">Super Area</span>
+                      <span className="font-black text-gray-900 dark:text-white">{area ? `${area.toLocaleString()} sq.ft` : '—'}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-bold block text-[10px] uppercase">Carpet Area</span>
+                      <span className="font-black text-emerald-700 dark:text-emerald-400">
+                        {carpetArea ? `${carpetArea.toLocaleString()} sq.ft` : (area ? `${Math.round(area * 0.70)} sq.ft` : '—')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-bold block text-[10px] uppercase">Balcony Space</span>
+                      <span className="font-black text-gray-900 dark:text-white">
+                        {balconyArea ? `${balconyArea.toLocaleString()} sq.ft` : (area ? `${Math.round(area * 0.12)} sq.ft` : '—')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-bold block text-[10px] uppercase">Layout Efficiency</span>
+                      <span className="font-black text-blue-600 dark:text-blue-400">
+                        {carpetArea && area ? `${Math.round((carpetArea / area) * 100)}% Usable` : '70% Usable'}
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Main Interactive Image Viewport */}
-                  <div className="relative w-full h-[320px] md:h-[420px] bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 flex items-center justify-center p-4 overflow-hidden group">
+                  <div className="relative w-full h-[340px] md:h-[420px] bg-slate-100/70 dark:bg-black/40 rounded-2xl border border-slate-200/80 dark:border-white/10 flex items-center justify-center p-4 overflow-hidden group">
                     {previewImg ? (
                       <Image
                         src={resolveImgUrl(previewImg.url)}
@@ -454,9 +482,24 @@ export default function ResidencesTab({
                         className="object-contain p-2"
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center text-center space-y-2">
-                        <Layout size={48} className="text-gray-300 dark:text-gray-700" />
-                        <p className="text-[13px] text-gray-400 font-bold">Floor plan preview illustration</p>
+                      <div className="flex flex-col items-center justify-center text-center p-6 space-y-3 max-w-md">
+                        <div className="w-16 h-16 rounded-2xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-center text-slate-700 dark:text-slate-200">
+                          <Layout size={32} />
+                        </div>
+                        <div>
+                          <h4 className="text-[15px] font-black text-slate-900 dark:text-white tracking-tight">
+                            {activeUnit.name} Architectural Blueprint
+                          </h4>
+                          <p className="text-[11.5px] text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
+                            {activeUnit.bhk} Bedrooms • {activeUnit.bathrooms || activeUnit.bhk} Bathrooms • Living & Dining with Extended Deck
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => onViewFloorPlans(activeFloorPlans)}
+                          className="px-4 py-2 bg-slate-900 hover:bg-black text-white dark:bg-white dark:text-slate-900 text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Maximize2 size={13} /> View Full Layout Dossier
+                        </button>
                       </div>
                     )}
                     <span className="absolute bottom-3 text-[10px] text-gray-400 font-medium italic">
@@ -479,30 +522,15 @@ export default function ResidencesTab({
                         triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[110px]"
                       />
 
-                      <CustomDropdown
-                        value={selectedTower}
-                        onChange={(val) => setSelectedTower(val)}
-                        options={
-                          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                          ((activeUnit)?.tower_association && (activeUnit).tower_association.length > 0
-                            ? (activeUnit).tower_association
-                            : ['Tower A', 'Tower B']
-                          ).map((t: string) => ({ value: t, label: t }))
-                        }
-                        size="xs"
-                        triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[90px]"
-                      />
-
-                      <CustomDropdown
-                        value={selectedUnitNo}
-                        onChange={(val) => setSelectedUnitNo(val)}
-                        options={[
-                          { value: 'Type C', label: 'Type C' },
-                          { value: 'Type D', label: 'Type D' },
-                        ]}
-                        size="xs"
-                        triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[85px]"
-                      />
+                      {(activeUnit)?.tower_association && (activeUnit).tower_association.length > 0 && (
+                        <CustomDropdown
+                          value={selectedTower}
+                          onChange={(val) => setSelectedTower(val)}
+                          options={(activeUnit).tower_association.map((t: string) => ({ value: t, label: t }))}
+                          size="xs"
+                          triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[90px]"
+                        />
+                      )}
                     </div>
 
                     <button
@@ -513,35 +541,9 @@ export default function ResidencesTab({
                     </button>
                   </div>
 
-                  {/* Sub-type Layout Variants Carousel/Selector */}
-                  <div className="pt-4 border-t border-gray-100 dark:border-white/5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-[14px] font-black text-gray-900 dark:text-white">Types in {activeUnit.bhk} BHK – {selectedTower}</h4>
-                        <p className="text-[11px] text-gray-400 font-medium">Different layouts to match your preference</p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {['Type C', 'Type D'].map((typeLabel) => (
-                          <button
-                            key={typeLabel}
-                            onClick={() => setSelectedUnitNo(typeLabel)}
-                            className={`text-[11.5px] font-extrabold px-3.5 py-1.5 rounded-full transition-all ${
-                              selectedUnitNo === typeLabel
-                                ? 'bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800'
-                                : 'bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-gray-400 border border-gray-200/60 dark:border-white/5'
-                            }`}
-                          >
-                            {typeLabel}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {unitTypes.length === 0 && (
-                      <p className="text-gray-500 text-sm">No unit types available</p>
-                    )}
-                  </div>
+                  {unitTypes.length === 0 && (
+                    <p className="text-gray-500 text-sm">No unit types available</p>
+                  )}
                 </>
               )}
 
@@ -566,7 +568,7 @@ export default function ResidencesTab({
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Built-up Area</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit)?.built_up_area_sqft ? `${(activeUnit).built_up_area_sqft.toLocaleString()} sqft` : (carpetArea ? `${Math.round(carpetArea * 1.18).toLocaleString()} sqft` : '—')}</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit)?.built_up_area_sqft ? `${(activeUnit).built_up_area_sqft.toLocaleString()} sqft` : '—'}</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
@@ -576,33 +578,29 @@ export default function ResidencesTab({
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Bathrooms</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bathrooms || activeUnit.bhk}</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bathrooms ?? '—'}</p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Living / Dining</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
-                    </div>
+                    {(activeUnit)?.balconies != null && (
+                      <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Private Balcony</p>
+                        <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit).balconies}</p>
+                      </div>
+                    )}
 
-                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kitchen</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">1</p>
-                    </div>
+                    {(activeUnit)?.utility_area_sqft != null && (
+                      <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Utility Area</p>
+                        <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit).utility_area_sqft} sqft</p>
+                      </div>
+                    )}
 
-                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Private Balcony</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit)?.balconies || 1}</p>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Utility Area</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit)?.utility_area_sqft ? `${(activeUnit).utility_area_sqft} sqft` : '1'}</p>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Efficiency Rating</p>
-                      <p className="text-[16px] font-black text-emerald-600 dark:text-emerald-400">{(activeUnit)?.efficiency_rating || 'Excellent'}</p>
-                    </div>
+                    {(activeUnit)?.efficiency_rating && (
+                      <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Efficiency Rating</p>
+                        <p className="text-[16px] font-black text-emerald-600 dark:text-emerald-400">{(activeUnit).efficiency_rating}</p>
+                      </div>
+                    )}
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Floor Type</p>
@@ -627,41 +625,37 @@ export default function ResidencesTab({
                     </button>
                   </div>
 
-                  <AvailabilityTable rows={mockAvailability} />
+                  <AvailabilityTable rows={availabilityRows} />
                 </div>
               )}
 
             </div>
 
-            {/* ── 3. KEY HIGHLIGHTS ── */}
-            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-              <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Key Highlights</h3>
+            {/* ── 3. KEY HIGHLIGHTS — real data only ── */}
+            {keyHighlightsList.length > 0 && (
+              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+                <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Key Highlights</h3>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-                {[
-                  { title: 'Well-ventilated', desc: 'Cross ventilation in all rooms', icon: Wind, bg: 'bg-purple-50 text-purple-600' },
-                  { title: 'Spacious Living', desc: 'Large living & dining area', icon: Layout, bg: 'bg-indigo-50 text-indigo-600' },
-                  { title: 'Smart Layout', desc: 'Zero wastage of space', icon: Columns, bg: 'bg-blue-50 text-blue-600' },
-                  { title: 'Natural Light', desc: 'Rooms with maximum light', icon: Sparkles, bg: 'bg-amber-50 text-amber-600' },
-                  { title: 'Privacy Focused', desc: 'Bedrooms separation', icon: Shield, bg: 'bg-emerald-50 text-emerald-600' }
-                ].map((item, i) => {
-                  const Icon = item.icon
-                  return (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                  {keyHighlightsList.filter((item): item is any => item != null && typeof item === 'object' && 'title' in item).map((item: any, i: number) => (
                     <div key={i} className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${item.bg}`}>
-                        <Icon size={17} />
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                        <Sparkles size={17} />
                       </div>
                       <div>
-                        <h4 className="text-[13px] font-extrabold text-gray-900 dark:text-white leading-tight">{item.title}</h4>
-                        <p className="text-[11px] text-gray-400 font-medium mt-1 leading-snug">{item.desc}</p>
+                        <h4 className="text-[13px] font-extrabold text-gray-900 dark:text-white leading-tight">{typeof item === 'string' ? item : item.title}</h4>
+                        {typeof item !== 'string' && item.desc && (
+                          <p className="text-[11px] text-gray-400 font-medium mt-1 leading-snug">{item.desc}</p>
+                        )}
                       </div>
                     </div>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* ── 5. USABLE AREA EFFICIENCY (Dynamic SVG Donut & Area Breakdown) ── */}
+            {/* ── 5. USABLE AREA EFFICIENCY — real data only ── */}
+            {area != null && carpetArea != null && balconyArea != null && (
             <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
               <div>
                 <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Usable Area Efficiency</h3>
@@ -669,9 +663,9 @@ export default function ResidencesTab({
               </div>
 
               {(() => {
-                const superSqft = area || 1450
-                const cSqft = carpetArea || Math.round(superSqft * 0.78)
-                const bSqft = (balconyArea || Math.round(superSqft * 0.12)) + 20
+                const superSqft = area
+                const cSqft = carpetArea
+                const bSqft = balconyArea
                 const shaftSqft = Math.max(0, superSqft - cSqft - bSqft)
 
                 const cPct = Math.round((cSqft / superSqft) * 100)
@@ -751,11 +745,13 @@ export default function ResidencesTab({
                 )
               })()}
             </div>
+            )}
 
             {/* ── 6. INTERACTIVE VASTU & OUTDOOR LIVING VISUALIZERS ── */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-              {/* Interactive Vastu Compass Widget */}
+              {/* Vastu & Unit Facing — real data only */}
+              {(detail?.vastu_compliant || selectedFacing) && (
               <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -763,45 +759,31 @@ export default function ResidencesTab({
                       <Compass size={17} />
                     </div>
                     <div>
-                      <h3 className="text-[16px] font-black text-gray-900 dark:text-white tracking-tight">Vastu Energy Orientation</h3>
-                      <p className="text-[11px] text-gray-400 font-medium">Room-by-room directional alignment</p>
+                      <h3 className="text-[16px] font-black text-gray-900 dark:text-white tracking-tight">Vastu & Orientation</h3>
+                      <p className="text-[11px] text-gray-400 font-medium">Unit facing direction</p>
                     </div>
                   </div>
-                  {pAny?.vastu_compliant && (
+                  {detail?.vastu_compliant && (
                     <span className="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
                       Vastu Compliant
                     </span>
                   )}
                 </div>
 
-                <div className="space-y-2.5 pt-1">
+                {selectedFacing && (
                   <div className="p-3 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between text-[12px]">
                     <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      Main Entrance Door
+                      This unit faces
                     </span>
-                    <span className="font-black text-emerald-600 dark:text-emerald-400">North-East (Ishanya) · Auspicious</span>
+                    <span className="font-black text-emerald-600 dark:text-emerald-400">{selectedFacing}</span>
                   </div>
-
-                  <div className="p-3 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between text-[12px]">
-                    <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      Kitchen Corner
-                    </span>
-                    <span className="font-black text-emerald-600 dark:text-emerald-400">South-East (Agni) · Ideal Fire Zone</span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between text-[12px]">
-                    <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500" />
-                      Master Bedroom
-                    </span>
-                    <span className="font-black text-blue-600 dark:text-blue-400">South-West (Nairutya) · High Stability</span>
-                  </div>
-                </div>
+                )}
               </div>
+              )}
 
-              {/* Interactive Balcony & Outdoor Deck Visualizer */}
+              {/* Interactive Balcony & Outdoor Deck Visualizer — real data only */}
+              {(activeUnit)?.balconies != null && (
               <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -814,26 +796,31 @@ export default function ResidencesTab({
                     </div>
                   </div>
                   <span className="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider">
-                    {(activeUnit)?.balconies || 2} Balconies
+                    {(activeUnit).balconies} Balconies
                   </span>
                 </div>
 
+                {(balconyArea != null || carpetArea != null) && (
                 <div className="grid grid-cols-2 gap-3 pt-1">
-                  <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Outdoor Deck Area</p>
-                    <p className="text-[16px] font-black text-gray-900 dark:text-white">{balconyArea ? `${balconyArea} sqft` : '140 sqft'}</p>
-                    <p className="text-[10.5px] text-emerald-600 font-bold">Deep Sit-out Balcony</p>
-                  </div>
+                  {balconyArea != null && (
+                    <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Outdoor Deck Area</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{balconyArea} sqft</p>
+                    </div>
+                  )}
 
-                  <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Outdoor-to-Carpet Ratio</p>
-                    <p className="text-[16px] font-black text-gray-900 dark:text-white">
-                      {carpetArea ? `${Math.round(((balconyArea || 120) / carpetArea) * 100)}%` : '14%'}
-                    </p>
-                    <p className="text-[10.5px] text-blue-600 font-bold">High Ventilation</p>
-                  </div>
+                  {balconyArea != null && carpetArea != null && (
+                    <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+                      <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Outdoor-to-Carpet Ratio</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">
+                        {Math.round((balconyArea / carpetArea) * 100)}%
+                      </p>
+                    </div>
+                  )}
                 </div>
+                )}
               </div>
+              )}
 
             </div>
 
@@ -852,44 +839,29 @@ export default function ResidencesTab({
                 </button>
               </div>
 
-              <AvailabilityTable rows={mockAvailability} />
+              <AvailabilityTable rows={availabilityRows} />
             </div>
 
-            {/* ── 6. WHO IS THIS HOME PERFECT FOR ── */}
-            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-              <div>
-                <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Who is this home perfect for?</h3>
-                <p className="text-[12px] text-gray-500 font-medium mt-0.5">Based on lifestyle and space needs.</p>
-              </div>
+            {/* ── 6. WHO IS THIS HOME PERFECT FOR — real data only ── */}
+            {perfectForList.length > 0 && (
+              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+                <div>
+                  <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Who is this home perfect for?</h3>
+                  <p className="text-[12px] text-gray-500 font-medium mt-0.5">Based on lifestyle and space needs.</p>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {(perfectForList.length > 0
-                  ? perfectForList.map((pf: string, i: number) => ({
-                      title: pf,
-                      desc: `Ideal lifestyle fit for ${pf.toLowerCase()}.`,
-                      tag: `Optimal configuration`,
-                      icon: defaultPerfectFor[i % defaultPerfectFor.length].icon
-                    }))
-                  : defaultPerfectFor
-                ).map((item: any, i: number) => {
-                  const Icon = item.icon
-                  return (
-                    <div key={i} className="p-5 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 flex flex-col justify-between">
-                      <div className="space-y-2">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
-                          <Icon size={18} />
-                        </div>
-                        <h4 className="text-[14.5px] font-black text-gray-900 dark:text-white">{item.title}</h4>
-                        <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{item.desc}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {perfectForList.map((pf: string, i: number) => (
+                    <div key={i} className="p-5 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                        <Users size={18} />
                       </div>
-                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 pt-1 border-t border-gray-100 dark:border-white/5">
-                        ✓ {item.tag}
-                      </p>
+                      <h4 className="text-[14.5px] font-black text-gray-900 dark:text-white">{pf}</h4>
                     </div>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* ── 7. BOOK SITE VISIT CTA CARD ── */}
             <div className="bg-gradient-to-r from-gray-900 to-black dark:from-[#1c1815] dark:to-[#0f0e0d] text-white rounded-[24px] p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">

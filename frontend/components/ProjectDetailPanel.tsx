@@ -14,6 +14,9 @@ import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { track, trackPropertyEvent } from '@/lib/analytics'
 import { getAqi, type AqiResult } from '@/lib/waqi'
 import { usePreferredImages } from '@/lib/hooks'
+import { useProjectDetailData, useProjectMediaDetection } from '@/lib/hooks/useProjectDetail'
+import type { ProjectDocumentPublic } from '@/lib/hooks/useProjectDetail'
+import { handleReraClick, handleEscapeKey, imageTypeRank } from '@/lib/projectDetailHandlers'
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
 import OverviewTab from '@/components/property-detail/OverviewTab'
@@ -27,19 +30,9 @@ import ProjectPricingTab from '@/components/property-detail/ProjectPricingTab'
 import LocationTab from '@/components/property-detail/LocationTab'
 import BuilderTab from '@/components/property-detail/BuilderTab'
 import PartnersTab from '@/components/property-detail/PartnersTab'
-import { API_BASE } from '@/lib/env'
-import { getPaymentPlan, getCostSheet } from '@/lib/backend-api'
 import { resolveImgUrl } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export interface ProjectDocumentPublic {
-  id: string
-  doc_type: string
-  name: string | null
-  storage_url: string
-  created_at: string
-  file_size_bytes: number | null
-}
 
 
 interface Props {
@@ -65,34 +58,24 @@ const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy'
 export default function ProjectDetailPanel({ project, onClose, inline, initialDetail, userId }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [detail, setDetail]           = useState<ProjectDetail | null>(initialDetail ?? null)
-  const [documents, setDocuments]     = useState<ProjectDocumentPublic[]>([])
-  const [loading, setLoading]         = useState(false)
+  const isMobile = useProjectMediaDetection()
   const [activeTab, setActiveTab]     = useState<Tab>(() => {
     const tab = searchParams.get('tab')
     return (SECTION_TABS.includes(tab as Tab) ? tab : 'Overview') as Tab
   })
-  const [paymentPlan, setPaymentPlan] = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; message?: string }>({ loaded: false, available: false, data: null })
-  const [costSheet, setCostSheet]     = useState<{ loaded: boolean; available: boolean; data: Record<string, unknown> | null; illustration: Record<string, number | null> | null; note?: string; message?: string }>({ loaded: false, available: false, data: null, illustration: null })
+  const { detail, documents, loading, paymentPlan, costSheet } = useProjectDetailData(project, initialDetail || null, 'Overview', userId, activeTab)
   const [showVisitScheduler, setShowVisitScheduler] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => setIsScrolled(e.currentTarget.scrollTop > 200)
   const [showFloorPlan, setShowFloorPlan] = useState<{ plans: Array<{ id: string; url: string; caption?: string | null }> } | null>(null)
   const [aqi, setAqi]                 = useState<AqiResult | null>(null)
   const [marketVisible, setMarketVisible] = useState(false)
-  const [isMobile, setIsMobile]       = useState(false)
   const [reraCopied, setReraCopied]   = useState(false)
   const [showBuilderPopover, setShowBuilderPopover] = useState(false)
   const [showReraPopover, setShowReraPopover]       = useState(false)
 
-  const handleReraClick = (reraNo: string, reraUrl?: string | null) => {
-    if (reraNo) {
-      navigator.clipboard.writeText(reraNo)
-      setReraCopied(true)
-      setTimeout(() => setReraCopied(false), 2000)
-    }
-    if (!reraUrl) return
-    window.open(reraUrl, '_blank')
+  const onReraClick = (reraNo: string, reraUrl?: string | null) => {
+    handleReraClick(reraNo, reraUrl, () => setReraCopied(true), () => setReraCopied(false))
   }
   const marketRef                     = useRef<HTMLDivElement>(null)
   const scrollContainerRef            = useRef<HTMLDivElement>(null)
@@ -119,14 +102,6 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   }, [activeTab, searchParams])
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
-    setIsMobile(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
-  useEffect(() => {
     const el = marketRef.current
     if (!el || marketVisible) return
     const observer = new IntersectionObserver(
@@ -138,54 +113,20 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   }, [activeTab, loading, marketVisible])
 
   useEffect(() => {
-    if (!project) { setDetail(null); setDocuments([]); setLoading(false); return }
+    if (!project) {
+      setAqi(null)
+      setMarketVisible(false)
+      return
+    }
     setActiveTab('Overview')
     setAqi(null)
     setMarketVisible(false)
-    setDetail(null)
-    setDocuments([])
-    setPaymentPlan({ loaded: false, available: false, data: null })
-    setCostSheet({ loaded: false, available: false, data: null, illustration: null })
-    if (initialDetail?.slug === project.slug) {
-      setDetail(initialDetail)
-      setLoading(false)
-      return
-    }
-    setLoading(true)
-    Promise.all([
-      fetch(`${API_BASE}/projects/${project.slug}`).then(r => {
-        console.log('[DETAIL:RESPONSE]', { status: r.status, slug: project.slug, url: r.url })
-        return r.json()
-      }),
-      fetch(`${API_BASE}/projects/${project.slug}/documents`).then(r => r.ok ? r.json() : { documents: [] }),
-    ])
-      .then(([data, docsData]) => {
-        console.log('[DETAIL:PAYLOAD]', {
-          project_name:     data.project?.name                                          ?? 'NULL',
-          rec_tier:         data.project?.recommendation_profile?.tier                 ?? 'MISSING',
-          persona:          data.project?.persona_profile?.primary_persona              ?? 'MISSING',
-          decision_thesis:  data.project?.decision_profile?.decision_thesis?.slice(0, 80) ?? 'MISSING',
-          competitor_count: data.project?.competitors?.length                           ?? 0,
-          doc_count:        docsData.documents?.length                                  ?? 0,
-        })
-        setDetail(data.project ?? null)
-        setDocuments(docsData.documents ?? [])
-      })
-      .catch(() => { setDetail(null); setDocuments([]) })
-
-      .finally(() => setLoading(false))
-  }, [initialDetail, project])
-
-  useEffect(() => {
-    if (!initialDetail || !project) return
-    if (initialDetail.slug !== project.slug) return
-    setDetail(initialDetail)
-    setLoading(false)
-  }, [initialDetail, project])
+  }, [project])
 
   const fetchAqi = useCallback(() => {
     if (!project) return
-    getAqi(project.lat, project.lng, 'noida').then(setAqi).catch(() => {})
+    const city = (project.city || 'noida').toLowerCase()
+    getAqi(project.lat, project.lng, city).then(setAqi).catch(() => {})
   }, [project])
 
   useEffect(() => {
@@ -202,58 +143,25 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     trackPropertyEvent(project.id, 'tab_opened', undefined, userId, undefined, { tab: activeTab }).catch(() => {})
   }, [activeTab, project, userId])
 
-  // Lazy-load payment plan when 'Pricing' or 'Residences' tab is opened.
-  useEffect(() => {
-    let mounted = true
-    if ((activeTab !== 'Pricing' && activeTab !== 'Floor Plans') || !project?.slug || paymentPlan.loaded) return
-    getPaymentPlan(project.slug).then((res) => {
-      if (mounted) setPaymentPlan({ loaded: true, available: res.available, data: res.plan ?? null, message: res.message })
-    }).catch(() => {
-      if (mounted) setPaymentPlan({ loaded: true, available: false, data: null, message: 'Unable to load payment plan.' })
-    })
-    return () => { mounted = false }
-  }, [activeTab, project?.slug, paymentPlan.loaded])
-
-  // Lazy-load cost sheet when 'Pricing' tab is opened.
-  useEffect(() => {
-    let mounted = true
-    if (activeTab !== 'Pricing' || !project?.slug || costSheet.loaded) return
-    getCostSheet(project.slug).then((res) => {
-      if (mounted) setCostSheet({ loaded: true, available: res.available, data: res.sheet ?? null, illustration: res.illustration ?? null, note: res.illustration_note, message: res.message })
-    }).catch(() => {
-      if (mounted) setCostSheet({ loaded: true, available: false, data: null, illustration: null, message: 'Unable to load cost sheet.' })
-    })
-    return () => { mounted = false }
-  }, [activeTab, project?.slug, costSheet.loaded])
 
   useEffect(() => {
     if (inline || !project) return
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handleKey)
+    const handler = handleEscapeKey(onClose)
+    window.addEventListener('keydown', handler)
     document.body.style.overflow = 'hidden'
     return () => {
-      window.removeEventListener('keydown', handleKey)
+      window.removeEventListener('keydown', handler)
       document.body.style.overflow = ''
     }
   }, [inline, onClose, project])
 
   const isOpen = !!project
 
-  // Same /saved endpoint ProjectCard already calls — reused, not reinvented.
-  const handleOpenSiteVisit = () => {
+  const onSiteVisitClick = useCallback(() => {
     if (project) trackPropertyEvent(project.id, 'site_visit', undefined, userId).catch(() => {})
     setShowVisitScheduler(true)
-  }
+  }, [project, userId])
 
-  // Hero/exterior images lead the carousel — same priority ProjectCard and the
-  // admin previews use — so the cover photo is never a floor plan/amenity shot.
-  // Falls back to `project.images` (already loaded from the search-result card)
-  // while `detail` is still fetching, instead of jumping straight to the legacy
-  // `hero_image_url` column, which can be a stale/deleted local path.
-  const imageTypeRank = (type: string) => {
-    const t = type.toLowerCase()
-    return t === 'hero' ? 0 : t === 'exterior' ? 1 : 2
-  }
   const allImages = [...(detail?.images ?? project?.images ?? [])].sort((a, b) => imageTypeRank(a.type) - imageTypeRank(b.type))
   const floorPlanImages = allImages.filter(i => i.type === 'floor_plan')
   const currentImg = activeUrl ? resolveImgUrl(activeUrl) : null
@@ -356,12 +264,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           <ProjectPricingTab
             unitTypes={d?.unit_types ?? []}
             detail={{
-              ...(detail as any),
-              payment_plan: paymentPlan.data || (detail as any)?.payment_plan || (detail as any)?.payment_plans?.[0] || null,
-              payment_plans: (detail as any)?.payment_plans || (paymentPlan.data ? [paymentPlan.data] : []),
-              cost_sheet: costSheet.data || (detail as any)?.cost_sheet || null
-            }}
-            onGoToCosts={() => handleOpenSiteVisit()}
+              ...detail,
+              payment_plan: paymentPlan.data || detail?.payment_plan || (detail?.payment_plans?.[0]) || null,
+              payment_plans: detail?.payment_plans || (paymentPlan.data ? [paymentPlan.data] : []),
+              cost_sheet: costSheet.data || detail?.cost_sheet || null
+            } as ProjectDetail}
+            onGoToCosts={() => onSiteVisitClick()}
           />
         </div>
       )}
@@ -378,7 +286,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       {activeTab === 'Builder' && (
         <div className="space-y-8 pb-12">
           <BuilderTab
-            builder={(d as any)?.builder || null}
+            builder={detail?.builder_detail || (typeof d?.builder === 'object' ? (d.builder as any) : null)}
             project={d as any}
             documents={documents}
             loading={loading && !detail}
@@ -393,7 +301,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const ctaFooter = (
     <div className="flex-shrink-0 border-t border-gray-100 p-4 bg-white space-y-2">
       <button
-        onClick={() => handleOpenSiteVisit()}
+        onClick={() => onSiteVisitClick()}
         className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl text-[14px] transition-colors flex items-center justify-center gap-2"
       >
         <CalendarDays size={16} />
@@ -442,8 +350,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           {d?.rera_number && (
             <div className="relative group hidden md:inline-block">
               <button
-                onClick={() => handleReraClick(d.rera_number!, d.rera_url)}
+                onClick={() => onReraClick(d.rera_number!, d.rera_url)}
                 title="Click to copy RERA No & Verify"
+                aria-label={`RERA Number ${d.rera_number}. Click to copy and verify`}
                 className="p-1 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-full text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
               >
                 <ShieldCheck size={15} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
@@ -483,7 +392,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
         <div className="flex items-center justify-end gap-2.5 flex-shrink-0 ml-1">
           <p className="text-[12px] font-bold text-gray-900 dark:text-white hidden xl:block whitespace-nowrap">{sanitizePriceLabel(d?.price_range_label || (d?.price_min_cr ? `₹${d.price_min_cr} Cr+` : ''))}</p>
-          <button onClick={() => handleOpenSiteVisit()} className="px-3.5 py-1.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-bold rounded-full text-[12px] transition-all whitespace-nowrap shadow-2xs cursor-pointer">
+          <button onClick={() => onSiteVisitClick()} className="px-3.5 py-1.5 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 hover:scale-105 active:scale-95 text-white dark:text-gray-900 font-bold rounded-full text-[12px] transition-all whitespace-nowrap shadow-2xs cursor-pointer">
             Book Site Visit
           </button>
         </div>
@@ -544,7 +453,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const mobileCtaFooter = (
     <div className="sticky bottom-0 z-40 w-full bg-white/95 dark:bg-[#120f0d]/95 backdrop-blur-md border-t border-gray-200/80 dark:border-gray-800/80 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] flex items-center gap-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex-shrink-0">
       <button
-        onClick={() => handleOpenSiteVisit()}
+        onClick={() => onSiteVisitClick()}
         className="w-full bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white font-extrabold py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-xs active:scale-[0.98]"
       >
         <CalendarDays size={16} />
@@ -599,7 +508,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                 {d?.rera_number && (
                   <div className="relative inline-block">
                     <button
-                      onClick={() => handleReraClick(d.rera_number!, d.rera_url)}
+                      onClick={() => onReraClick(d.rera_number!, d.rera_url)}
                       onMouseEnter={() => setShowReraPopover(true)}
                       onMouseLeave={() => setShowReraPopover(false)}
                       className="flex items-center gap-1.5 bg-[#E8F5E9] dark:bg-[#1b2f20] hover:bg-[#C8E6C9] dark:hover:bg-[#2a452f] text-[#2E7D32] dark:text-[#a5d6a7] text-[11px] font-bold px-3 py-1 rounded-full border border-[#C8E6C9] dark:border-[#2e7d32]/40 transition-all cursor-pointer shadow-sm"
@@ -640,6 +549,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                     className="relative inline-block cursor-pointer"
                     onMouseEnter={() => setShowBuilderPopover(true)}
                     onMouseLeave={() => setShowBuilderPopover(false)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Builder: ${builderName}. Hover for more information`}
                   >
                     <span className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                       <Building2 size={15} className="text-gray-400" />
@@ -758,7 +670,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           {/* Book Site Visit CTA */}
           <div className="md:col-span-2 py-4 md:py-0 md:pl-3 flex items-center justify-end">
             <button
-              onClick={() => handleOpenSiteVisit()}
+              onClick={() => onSiteVisitClick()}
               className="w-full py-3 px-3 bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-gray-900 font-extrabold rounded-2xl text-[12px] transition-all shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap"
             >
               <CalendarDays size={14} />
@@ -818,9 +730,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/25" />
 
         {/* Top-left: Dedicated Close Button with zero collision */}
-        <button 
-          onClick={onClose} 
-          aria-label="Close card"
+        <button
+          onClick={onClose}
+          aria-label="Close project details"
           className="absolute top-3.5 left-3.5 z-30 w-9 h-9 bg-black/50 hover:bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 shadow-md transition-all active:scale-95 cursor-pointer"
         >
           <X size={17} />
@@ -988,7 +900,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               {/* Floating Footer CTA (Pill Dock) */}
               <div className="absolute bottom-8 inset-x-0 z-50 hidden md:flex justify-center pointer-events-none">
                 <div className="flex gap-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl p-2 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-200/50 dark:border-white/10 pointer-events-auto">
-                  <button onClick={() => handleOpenSiteVisit()} className="px-8 py-3 bg-gray-900 hover:bg-black dark:bg-white dark:text-gray-900 text-white font-semibold rounded-full text-[14px] transition-all flex items-center gap-2 shadow-sm">
+                  <button onClick={() => onSiteVisitClick()} className="px-8 py-3 bg-gray-900 hover:bg-black dark:bg-white dark:text-gray-900 text-white font-semibold rounded-full text-[14px] transition-all flex items-center gap-2 shadow-sm">
                     <CalendarDays size={16} />
                     Book Site Visit
                   </button>

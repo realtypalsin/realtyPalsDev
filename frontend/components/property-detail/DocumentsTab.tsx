@@ -1,13 +1,13 @@
 'use client'
 import { useMemo, useState } from 'react'
 import Image from 'next/image'
-import { motion as m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import {
   FileText, Download, Search, File, CheckCircle2, FolderOpen,
   FileArchive, LayoutTemplate, Scale, Receipt, ClipboardList, Clock
 } from 'lucide-react'
 import { track, trackPropertyEvent } from '@/lib/analytics'
-import type { ProjectDocumentPublic } from '@/components/ProjectDetailPanel'
+import type { ProjectDocumentPublic } from '@/lib/hooks/useProjectDetail'
 import { Card } from './Card'
 import { CustomDropdown } from '@/components/ui/CustomDropdown'
 
@@ -51,7 +51,7 @@ function getIcon(docType: string, customIconName?: string) {
     payment_plan: Receipt, price_list: Receipt, legal: Scale, legal_document: Scale,
     specification: ClipboardList, other: File, archive: FileArchive,
   }
-  if (customIconName && map[customIconName]) return map[customIconName]
+  if (customIconName && customIconName in map) return map[customIconName]
   return map[docType] ?? File
 }
 
