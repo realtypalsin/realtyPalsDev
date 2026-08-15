@@ -17,6 +17,7 @@ export interface Intent {
   is_comparison_query?: boolean   // explicit: user asked to compare named projects
   gathering_loop_count?: number
   legal_check?: boolean
+  journeyStage?: 'relocation' | 'first_time_buyer' | 'yield_investor' | 'nri_investor' | 'upgrader' | 'market_evaluator' | 'general'
 
   // Phase 0: Query classification
   queryKind?: 'DISCOVERY' | 'DRILLDOWN' | 'RANKING' | 'COMPARISON' | 'SUMMARY' | 'ADVISORY' | 'CLARIFY'

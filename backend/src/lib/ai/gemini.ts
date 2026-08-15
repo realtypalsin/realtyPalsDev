@@ -32,7 +32,7 @@ export class GeminiStreamStallError extends Error {
 // directly as functionResponse parts by the tool-call cycle below, not via this map.
 interface GeminiContent {
   role: 'user' | 'model'
-  parts: Array<{ text: string }>
+  parts: Array<{ text?: string; functionCall?: any; functionResponse?: any }>
 }
 
 export function toGeminiContents(messages: Message[]): GeminiContent[] {
