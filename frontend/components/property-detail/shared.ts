@@ -1,5 +1,5 @@
 import {
-  Layout, Maximize2, Shield, Car, Columns, Award, Sparkles, Wind, Home, Compass, Droplet, Cpu, User
+  Layout, Maximize2, Shield, Car, Columns, Award, ShieldCheck, Wind, Home, Compass, Droplet, Cpu, User
 } from 'lucide-react'
 import type { UnitTypeSummary } from '@/types/project'
 
@@ -20,7 +20,7 @@ export const ICON_MAP: Record<string, any> = {
   parking: Car,
   utility: Columns,
   briefcase: Award,
-  sun: Sparkles,
+  sun: ShieldCheck,
   lock: Shield,
   ac: Wind,
   kitchen: Home,

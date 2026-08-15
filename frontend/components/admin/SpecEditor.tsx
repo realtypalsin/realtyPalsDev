@@ -299,7 +299,8 @@ export default function SpecEditor({
           </button>
         </div>
       ) : !loading && (
-        <div className="space-y-3.5 max-h-[600px] overflow-y-auto pr-1">
+        <div className="space-y-4">
+
           {filteredSpecs.map((spec, idx) => {
             const catObj = SPEC_CATEGORIES.find(c => c.id === spec.category) || SPEC_CATEGORIES[0]
             const realIdx = specs.indexOf(spec)

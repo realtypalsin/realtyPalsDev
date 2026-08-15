@@ -7,7 +7,34 @@ import { adminAuthHeaders } from '@/lib/authedFetch'
 import { toast } from 'sonner'
 import JsonEditor from './JsonEditor'
 
-export default function InvestmentInsightsEditor({ projectId, initialData }: { projectId: string, initialData?: any }) {
+interface InvestmentInsightsData {
+  appreciation_annual?: string
+  appreciation_desc?: string
+  rental_yield?: string
+  rental_desc?: string
+  market_trend?: string
+  market_desc?: string
+  liquidity_score?: string
+  liquidity_desc?: string
+  pricing?: {
+    investment_insights?: {
+      appreciation_annual?: string
+      appreciation_desc?: string
+      rental_yield?: string
+      rental_desc?: string
+      market_trend?: string
+      market_desc?: string
+      liquidity_score?: string
+      liquidity_desc?: string
+    }
+  }
+  decision_profile?: {
+    financial_intelligence?: Record<string, unknown>
+    intelligence_data?: Record<string, unknown>
+  }
+}
+
+export default function InvestmentInsightsEditor({ projectId, initialData }: { projectId: string, initialData?: InvestmentInsightsData }) {
   const [appreciationAnnual, setAppreciationAnnual] = useState(initialData?.appreciation_annual ?? initialData?.pricing?.investment_insights?.appreciation_annual ?? '12-15%')
   const [appreciationDesc, setAppreciationDesc] = useState(initialData?.appreciation_desc ?? initialData?.pricing?.investment_insights?.appreciation_desc ?? 'Annual capital growth estimate')
   const [rentalYield, setRentalYield] = useState(initialData?.rental_yield ?? initialData?.pricing?.investment_insights?.rental_yield ?? '4.2-4.8%')
@@ -17,11 +44,9 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
   const [liquidityScore, setLiquidityScore] = useState(initialData?.liquidity_score ?? initialData?.pricing?.investment_insights?.liquidity_score ?? 'High')
   const [liquidityDesc, setLiquidityDesc] = useState(initialData?.liquidity_desc ?? initialData?.pricing?.investment_insights?.liquidity_desc ?? 'Active resale market')
   
-  const [investmentReport, setInvestmentReport] = useState<any>(
-    initialData?.financial_intelligence?.investmentReport ||
-    initialData?.decision_profile?.financial_intelligence?.investmentReport ||
-    initialData?.intelligence_data?.investmentReport ||
-    initialData?.decision_profile?.intelligence_data?.investmentReport ||
+  const [investmentReport, setInvestmentReport] = useState<Record<string, unknown>>(
+    (initialData?.decision_profile?.financial_intelligence as any)?.investmentReport ||
+    (initialData?.decision_profile?.intelligence_data as any)?.investmentReport ||
     {
       appreciation_annual: '12-15%',
       appreciation_desc: 'Annual capital growth estimate based on regional infrastructure expansion',
@@ -36,6 +61,29 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
 
   const handleSave = async () => {
     try {
+      const parsedYield = parseFloat(String(rentalYield).replace(/[^0-9.]/g, '')) || null
+      const parsedAppreciation = parseFloat(String(appreciationAnnual).replace(/[^0-9.]/g, '')) || null
+
+      if (parsedYield !== null && (parsedYield < 0 || parsedYield > 20)) {
+        toast.error('Rental yield should be between 0-20%')
+        return
+      }
+      if (parsedAppreciation !== null && (parsedAppreciation < 0 || parsedAppreciation > 50)) {
+        toast.error('Appreciation should be between 0-50%')
+        return
+      }
+
+      const projectRes = await fetch(`${API_BASE}/admin/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
+        body: JSON.stringify({
+          rental_yield_annual_percent: parsedYield,
+          appreciation_potential_5yr: parsedAppreciation ? parsedAppreciation * 5 : null,
+          market_demand_score: marketTrend === 'Bullish' ? 92 : 82,
+        })
+      })
+      if (!projectRes.ok) throw new Error('Failed to save project metrics')
+
       const res = await fetch(`${API_BASE}/admin/projects/${projectId}/investment-insights`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...adminAuthHeaders() },
@@ -50,9 +98,8 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
           liquidity_desc: liquidityDesc || null,
         })
       })
-      if (!res.ok) throw new Error('Failed to save basic insights')
+      if (!res.ok) throw new Error('Failed to save investment insights')
 
-      // Also save investmentReport to decision_profile.intelligence_data
       const existingIntelligence = initialData?.decision_profile?.intelligence_data ?? {}
       const decisionRes = await fetch(`${API_BASE}/admin/projects/${projectId}/decision-profile`, {
         method: 'PATCH',
@@ -68,7 +115,8 @@ export default function InvestmentInsightsEditor({ projectId, initialData }: { p
 
       toast.success('Investment insights saved successfully')
     } catch (e) {
-      toast.error('Error saving investment insights')
+      console.error('[InvestmentInsightsEditor] Save failed:', e)
+      toast.error(e instanceof Error ? e.message : 'Error saving investment insights')
     }
   }
 

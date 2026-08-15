@@ -274,14 +274,15 @@ export async function generateDatabaseFallbackResponse(userMsg: string, projects
       return { message: replyText }
     }
 
-    // 2. Full Cost Sheet & Maintenance Breakdown
-    if (queryLower.includes('cost') || queryLower.includes('charge') || queryLower.includes('sheet') || queryLower.includes('breakdown') || queryLower.includes('gst') || queryLower.includes('stamp') || queryLower.includes('bsp') || queryLower.includes('maintenance') || queryLower.includes('society') || queryLower.includes('fee')) {
+    // 2. Full Cost Sheet & Maintenance Breakdown + Rental Yield
+    if (queryLower.includes('cost') || queryLower.includes('charge') || queryLower.includes('sheet') || queryLower.includes('breakdown') || queryLower.includes('gst') || queryLower.includes('stamp') || queryLower.includes('bsp') || queryLower.includes('maintenance') || queryLower.includes('society') || queryLower.includes('fee') || queryLower.includes('yield') || queryLower.includes('rental') || queryLower.includes('roi')) {
       const cs = p.cost_sheet || {}
       const bsp = cs.base_price_per_sqft ? `₹${cs.base_price_per_sqft}/sq.ft` : 'As per layout'
       const floorRise = cs.floor_rise_per_floor ? `₹${cs.floor_rise_per_floor}/sq.ft per floor` : 'Standard'
       const gstRate = cs.gst_rate_pct != null ? `${cs.gst_rate_pct}%` : (p.status === 'Ready to Move' ? '0% (RTM Exempt)' : '5% (Under Construction)')
       const stampDuty = cs.stamp_duty_pct != null ? `${cs.stamp_duty_pct}%` : '6.0% (Uttar Pradesh)'
       const maintenance = cs.maintenance_psf_monthly ? `₹${cs.maintenance_psf_monthly}/sq.ft per month` : '₹2.5 – ₹3.5/sq.ft'
+      const rentalYield = (p as any).rental_yield_annual_percent ? `${(p as any).rental_yield_annual_percent}% per annum` : 'Market-dependent'
 
       return {
         message: `### Cost Sheet & Additional Charges for **${name}** (${sector})\n\n` +
@@ -292,7 +293,8 @@ export async function generateDatabaseFallbackResponse(userMsg: string, projects
           `| **GST Applicable** | **${gstRate}** |\n` +
           `| **Stamp Duty & Registration** | **${stampDuty} + 1.0%** |\n` +
           `| **Maintenance Deposit** | ${maintenance} |\n` +
-          `| **Parking Allotment** | ${cs.parking_cost ? `₹${cs.parking_cost} Lakhs` : 'Included / Standard'} |`
+          `| **Parking Allotment** | ${cs.parking_cost ? `₹${cs.parking_cost} Lakhs` : 'Included / Standard'} |\n` +
+          `| **Estimated Rental Yield (Annual)** | **${rentalYield}** |`
       }
     }
 

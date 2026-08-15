@@ -198,7 +198,7 @@ export default function AdminProjects() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await adminFetch('/admin/projects')
+      const res = await adminFetch('/admin/projects?limit=1000')
       const data = await res.json()
       setProjects(data.projects ?? [])
     } catch {

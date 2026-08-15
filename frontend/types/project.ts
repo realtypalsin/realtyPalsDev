@@ -128,7 +128,12 @@ export interface UnitTypeSummary {
   key_highlights?: any
   whats_included?: any
   views?: any
-
+  balconies?: number | null
+  built_up_area_sqft?: number | null
+  utility_area_sqft?: number | null
+  efficiency_rating?: string | null
+  tower_association?: string[]
+  price_per_sqft?: number | null
 }
 
 export interface AmenitySummary {
@@ -207,6 +212,22 @@ export interface ProjectDetail extends ProjectCard {
   long_description: string | null
   design_theme: string | null
   total_units: number | null
+  has_penthouse?: boolean | null
+  has_duplex?: boolean | null
+  vastu_compliant?: boolean | null
+  price_per_sqft_current?: number | null
+  appreciation_potential_5yr?: number | null
+  rental_yield_annual_percent?: number | null
+  resale_lock_in_months?: number | null
+  market_demand_score?: number | null
+  competing_projects_nearby?: number | null
+  nri_eligible?: boolean | null
+  is_rera_approved?: boolean | null
+  nclt_moratorium_active?: boolean | null
+  escrow_verified?: boolean | null
+  escrow_bank_name?: string | null
+  land_title_clear?: boolean | null
+  litigation_count?: number | null
   marketing_claims: string[]
   all_amenities: { name: string; category: string }[]
   all_connectivity: { type: string; name: string; distance_km: number | null; data_source?: string | null }[]
@@ -220,6 +241,10 @@ export interface ProjectDetail extends ProjectCard {
   recommendation_profile: RecommendationProfilePublic | null
   competitors:            CompetitorSummary[]
   recommendation_score:   RecommendationScore | null
+  promotions: Promotion[]
+  payment_plan: PaymentPlan | null
+  payment_plans: PaymentPlan[]
+  cost_sheet: CostSheet | null
 }
 
 // ── Intelligence Engine Types ─────────────────────────────────────────
@@ -287,6 +312,58 @@ export interface RecommendationScore {
   total:      number
   tier:       string
   dimensions: ScoreDimension[]
+}
+
+export interface PaymentPlan {
+  id: string
+  plan_type: string
+  plan_name: string | null
+  description: string | null
+  milestones: Array<{ label: string; percent: number; due?: string }>
+  down_payment_pct: number | null
+  booking_amount_lakh: number | null
+  total_duration_months: number | null
+  discount_offered_pct: number | null
+  best_for: string | null
+  watch_out: string | null
+  sort_order: number
+}
+
+export interface CostSheet {
+  id: string
+  base_price_per_sqft: number | null
+  base_cost_cr: number | null
+  floor_rise_per_floor: number | null
+  plc_charges: Array<{ label: string; amount?: number; percent?: number }>
+  parking_cost: number | null
+  ifms: number | null
+  club_membership: number | null
+  other_charges: Array<{ label: string; amount?: number; percent?: number }>
+  gst_applicable: boolean | null
+  gst_rate_pct: number
+  gst_note: string | null
+  stamp_duty_pct: number
+  registration_pct: number
+  base_interest_rate: number | null
+  electricity_connection: number | null
+  water_sewer_connection: number | null
+  maintenance_psf_monthly: number | null
+  all_inclusive_price_cr: number | null
+  all_inclusive_per_sqft: number | null
+  assumptions: string[]
+  verified_at: string | null
+}
+
+export interface Promotion {
+  id: string
+  title: string
+  description: string | null
+  type: 'button' | 'toast_text' | 'news_feature'
+  content: string
+  image_url: string | null
+  icon_url: string | null
+  starts_at: string
+  ends_at: string
 }
 
 export interface CompetitorSummary {

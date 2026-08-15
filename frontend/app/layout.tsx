@@ -51,7 +51,8 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover' as const,
 };
 
@@ -75,8 +76,7 @@ export default function RootLayout({
         </a>
         <ProgressBar />
         <PingBackend />
-        <div className="noise-overlay" />
-        <LazyMotion features={domAnimation} strict>
+        <LazyMotion features={domAnimation}>
           <PostHogProvider>{children}</PostHogProvider>
         </LazyMotion>
         <Toaster position="bottom-right" richColors closeButton theme="light" />

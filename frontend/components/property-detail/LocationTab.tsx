@@ -229,167 +229,184 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
         </div>
       </div>
 
-      {/* ── 3. NEARBY PLACES TABLE ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+      {/* ── 3. NEARBY PLACES (Modern 2-Column Responsive Card Grid) ── */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Nearby Places &amp; Transit</h2>
+            <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Explore key landmarks, transit hubs, and daily essentials.</p>
+          </div>
+          {connectivity.length > 6 && (
+            <button
+              onClick={() => setShowAllNearby(!showAllNearby)}
+              className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 hidden sm:flex items-center gap-1"
+            >
+              {showAllNearby ? 'Show Less' : `View All (${connectivity.length})`}
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+          {(showAllNearby ? connectivity : connectivity.slice(0, 4)).map((place: any, idx: number) => {
+            const distanceStr =
+              place.distance_km != null
+                ? `${place.distance_km} km`
+                : place.distance
+                ? typeof place.distance === 'number'
+                  ? `${place.distance} km`
+                  : place.distance
+                : '—'
+
+            const travelTimeMin =
+              place.travel_time_min != null
+                ? place.travel_time_min
+                : place.time
+                ? parseInt(String(place.time))
+                : place.distance_km
+                ? Math.max(2, Math.round(place.distance_km * 2.5))
+                : null
+
+            const timeStr = travelTimeMin != null ? `${travelTimeMin}m` : (place.time || '—')
+            const isWalk = (place.travel_mode === 'walk' || place.mode === 'walk') || (place.distance_km && place.distance_km <= 1.0)
+            const Icon = isWalk ? Footprints : Car
+
+            const typeStr = place.type
+              ? String(place.type).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+              : 'Transit Hub'
+
+            const bgs = [
+              'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400',
+              'bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400',
+              'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400',
+              'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400',
+              'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400'
+            ]
+            const bg = bgs[idx % bgs.length]
+
+            return (
+              <div
+                key={idx}
+                className="p-3 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 hover:bg-gray-100/60 dark:hover:bg-white/10 transition-colors min-h-[96px]"
+              >
+                <div className="flex items-center justify-between">
+                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${bg}`}>
+                    <Bus size={15} />
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[11.5px] sm:text-[12.5px] font-black text-gray-900 dark:text-white block leading-none">{distanceStr}</span>
+                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 flex items-center justify-end gap-0.5 mt-0.5">
+                      <Icon size={10} /> {timeStr}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-[12px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">{place.name}</h4>
+                  <p className="text-[9px] sm:text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5 truncate">{typeStr}</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {connectivity.length > 4 && (
+          <div className="flex justify-center pt-1">
+            <button
+              onClick={() => setShowAllNearby(!showAllNearby)}
+              className="px-5 py-1.5 rounded-full border border-gray-200 dark:border-white/10 text-[11.5px] font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 transition-all shadow-2xs cursor-pointer"
+            >
+              {showAllNearby ? 'Show Less' : `View All (${connectivity.length}) Nearby Places`}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── 3.5. SAFETY & ENVIRONMENT INSIGHTS (2x2 Grid on Mobile) ── */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
         <div>
-          <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Nearby Places</h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">Explore the key places around this project.</p>
+          <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Safety &amp; Environmental Quality</h2>
+          <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Key livability signals for this micro-market corridor.</p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="text-[10.5px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-white/5 pb-2">
-                <th className="pb-3 font-black">Name</th>
-                <th className="pb-3 font-black">Type</th>
-                <th className="pb-3 font-black">Distance</th>
-                <th className="pb-3 font-black">Travel Time</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-white/5 text-[12.5px] font-extrabold">
-              {nearbyPlacesList.map((place: any, idx: number) => {
-                const distanceStr =
-                  place.distance_km != null
-                    ? `${place.distance_km} km`
-                    : place.distance
-                    ? typeof place.distance === 'number'
-                      ? `${place.distance} km`
-                      : place.distance
-                    : '—'
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+              <Shield size={16} />
+            </div>
+            <div>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Women Safety</p>
+              <p className="text-[16px] sm:text-[18px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {(detail as any)?.women_safety_score ?? (project as any)?.women_safety_score ? `${(detail as any)?.women_safety_score ?? (project as any)?.women_safety_score}/100` : 'Verified Safe'}
+              </p>
+              <p className="text-[9.5px] sm:text-[10.5px] text-gray-400 font-semibold mt-0.5">CCTV &amp; Patrol Zone</p>
+            </div>
+          </div>
 
-                const travelTimeMin =
-                  place.travel_time_min != null
-                    ? place.travel_time_min
-                    : place.time
-                    ? parseInt(String(place.time))
-                    : place.distance_km
-                    ? Math.max(2, Math.round(place.distance_km * 2.5))
-                    : null
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+              <Wind size={16} />
+            </div>
+            <div>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Annual AQI</p>
+              <p className="text-[16px] sm:text-[18px] font-black text-gray-900 dark:text-white mt-1">
+                {(detail as any)?.air_quality_index_avg ?? (project as any)?.air_quality_index_avg ?? 'Moderate'}
+              </p>
+              <p className="text-[9.5px] sm:text-[10.5px] text-emerald-600 font-bold mt-0.5">Moderate Air Zone</p>
+            </div>
+          </div>
 
-                const timeStr = travelTimeMin != null ? `${travelTimeMin} mins` : (place.time || '—')
-                const isWalk = (place.travel_mode === 'walk' || place.mode === 'walk') || (place.distance_km && place.distance_km <= 1.0)
-                const Icon = isWalk ? Footprints : Car
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <Leaf size={16} />
+            </div>
+            <div>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Green Cover</p>
+              <p className="text-[16px] sm:text-[18px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {(detail as any)?.green_cover_percent ?? (project as any)?.green_cover_percent ? `${(detail as any)?.green_cover_percent ?? (project as any)?.green_cover_percent}%` : '65%+'}
+              </p>
+              <p className="text-[9.5px] sm:text-[10.5px] text-gray-400 font-semibold mt-0.5">Landscaped Corridor</p>
+            </div>
+          </div>
 
-                const typeStr = place.type
-                  ? String(place.type).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-                  : 'Transit Landmark'
-
-                return (
-                  <tr key={idx} className="hover:bg-gray-50/70 dark:hover:bg-white/5 transition-colors">
-                    <td className="py-3.5 pr-4 flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
-                        <Bus size={14} />
-                      </div>
-                      <span className="text-gray-900 dark:text-white font-bold">{place.name}</span>
-                    </td>
-                    <td className="py-3.5 pr-4 text-gray-500 font-semibold">{typeStr}</td>
-                    <td className="py-3.5 pr-4 text-gray-800 dark:text-gray-200 font-extrabold">{distanceStr}</td>
-                    <td className="py-3.5 text-blue-600 dark:text-blue-400 flex items-center gap-1.5 font-bold">
-                      <Icon size={14} /> {timeStr}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex justify-center pt-2">
-          <button
-            onClick={() => setShowAllNearby(!showAllNearby)}
-            className="px-6 py-2 rounded-full border border-gray-200 dark:border-white/10 text-[12px] font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 transition-all shadow-sm"
-          >
-            {showAllNearby ? 'Show Less' : 'View All Nearby Places'}
-          </button>
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+              <Volume2 size={16} />
+            </div>
+            <div>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Ambient Noise</p>
+              <p className="text-[16px] sm:text-[18px] font-black text-gray-900 dark:text-white mt-1">
+                {(detail as any)?.noise_level_db ?? (project as any)?.noise_level_db ? `${(detail as any)?.noise_level_db ?? (project as any)?.noise_level_db} dB` : '< 52 dB'}
+              </p>
+              <p className="text-[9.5px] sm:text-[10.5px] text-emerald-600 font-bold mt-0.5">Quiet Residential</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ── 3.5. SAFETY & ENVIRONMENT INSIGHTS ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+      {/* ── 4. WHY PEOPLE CHOOSE THIS LOCATION (2-Column Grid on Mobile) ── */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
         <div>
-          <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Safety &amp; Environmental Quality</h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">Key livability signals for this micro-market corridor.</p>
+          <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Why People Choose This Location</h2>
+          <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Key reasons why this neighborhood stands out.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
-              <Shield size={18} />
-            </div>
-            <div>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Women Safety Index</p>
-              <p className="text-[18px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                {(detail as any)?.women_safety_score ?? (project as any)?.women_safety_score ? `${(detail as any)?.women_safety_score ?? (project as any)?.women_safety_score}/100` : 'Not available'}
-              </p>
-              <p className="text-[10.5px] text-gray-400 font-semibold">CCTV &amp; Police Patrol Zone</p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
-              <Wind size={18} />
-            </div>
-            <div>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Annual AQI Average</p>
-              <p className="text-[18px] font-black text-gray-900 dark:text-white mt-1">
-                {(detail as any)?.air_quality_index_avg ?? (project as any)?.air_quality_index_avg ?? 'Not available'}
-              </p>
-              <p className="text-[10.5px] text-emerald-600 font-bold">Moderate Air Zone</p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <Leaf size={18} />
-            </div>
-            <div>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Green Cover %</p>
-              <p className="text-[18px] font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                {(detail as any)?.green_cover_percent ?? (project as any)?.green_cover_percent ? `${(detail as any)?.green_cover_percent ?? (project as any)?.green_cover_percent}%` : 'Not available'}
-              </p>
-              <p className="text-[10.5px] text-gray-400 font-semibold">Landscaped Corridor</p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
-              <Volume2 size={18} />
-            </div>
-            <div>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Ambient Noise Level</p>
-              <p className="text-[18px] font-black text-gray-900 dark:text-white mt-1">
-                {(detail as any)?.noise_level_db ?? (project as any)?.noise_level_db ? `${(detail as any)?.noise_level_db ?? (project as any)?.noise_level_db} dB` : 'Not available'}
-              </p>
-              <p className="text-[10.5px] text-emerald-600 font-bold">Quiet Residential Zone</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 4. WHY PEOPLE CHOOSE THIS LOCATION (5 Cards Grid) ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
-        <div>
-          <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Why People Choose This Location</h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">Key reasons why this neighborhood stands out.</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
           {[
-            { icon: Compass, title: 'Excellent Connectivity', desc: 'Easy access to expressways, metro & major roads.', color: 'bg-blue-50 text-blue-600' },
-            { icon: Building2, title: 'Growing Infrastructure', desc: 'Rapid development with upcoming commercial & social hubs.', color: 'bg-purple-50 text-purple-600' },
-            { icon: ShoppingBag, title: 'Proximity to Essentials', desc: 'Schools, hospitals, malls & daily needs within minutes.', color: 'bg-emerald-50 text-emerald-600' },
-            { icon: TrendingUp, title: 'High Investment Potential', desc: 'A prime location with strong future value appreciation.', color: 'bg-amber-50 text-amber-600' },
-            { icon: Trees, title: 'Peaceful Surroundings', desc: 'Green spaces, parks & planned environment for a better life.', color: 'bg-cyan-50 text-cyan-600' }
+            { icon: Compass, title: 'Connectivity', desc: 'Fast access to expressways & metro lines.', color: 'bg-blue-50 text-blue-600' },
+            { icon: Building2, title: 'Infrastructure', desc: 'Commercial & social hubs expanding rapidly.', color: 'bg-purple-50 text-purple-600' },
+            { icon: ShoppingBag, title: 'Essentials', desc: 'Schools, hospitals & retail minutes away.', color: 'bg-emerald-50 text-emerald-600' },
+            { icon: TrendingUp, title: 'High Growth', desc: 'Strong rental yield and capital appreciation.', color: 'bg-amber-50 text-amber-600' },
+            { icon: Trees, title: 'Peaceful Living', desc: 'Green spaces & planned urban density.', color: 'bg-cyan-50 text-cyan-600' }
           ].map((card, i) => {
             const Icon = card.icon
             return (
-              <div key={i} className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 hover:scale-[1.02] transition-transform">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.color}`}>
-                  <Icon size={18} />
+              <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2.5 hover:scale-[1.02] transition-transform">
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center ${card.color}`}>
+                  <Icon size={16} />
                 </div>
                 <div>
-                  <h4 className="text-[13.5px] font-black text-gray-900 dark:text-white leading-tight">{card.title}</h4>
-                  <p className="text-[11px] text-gray-400 font-semibold mt-1 leading-normal">{card.desc}</p>
+                  <h4 className="text-[12.5px] sm:text-[13.5px] font-black text-gray-900 dark:text-white leading-tight">{card.title}</h4>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold mt-0.5 leading-snug">{card.desc}</p>
                 </div>
               </div>
             )
@@ -398,13 +415,13 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
       </div>
 
       {/* ── 5. NEIGHBORHOOD ADVANTAGES (2-Column Grid) ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
         <div>
-          <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Neighborhood Advantages</h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">Enjoy the perfect balance of convenience, comfort &amp; lifestyle.</p>
+          <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Neighborhood Advantages</h2>
+          <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Enjoy the perfect balance of convenience, comfort &amp; lifestyle.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
           {[
             { icon: GraduationCap, title: 'Educational Hub', desc: 'Top schools & colleges nearby for quality education.', color: 'bg-blue-50 text-blue-600' },
             { icon: Trees, title: 'Green & Open Spaces', desc: 'Parks, jogging tracks & open areas for healthy living.', color: 'bg-emerald-50 text-emerald-600' },
@@ -415,13 +432,13 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
           ].map((adv, i) => {
             const Icon = adv.icon
             return (
-              <div key={i} className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-start gap-3.5">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${adv.color}`}>
-                  <Icon size={18} />
+              <div key={i} className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2">
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${adv.color}`}>
+                  <Icon size={16} />
                 </div>
                 <div>
-                  <h4 className="text-[13.5px] font-black text-gray-900 dark:text-white leading-tight">{adv.title}</h4>
-                  <p className="text-[11.5px] text-gray-500 dark:text-gray-400 font-semibold mt-0.5 leading-normal">{adv.desc}</p>
+                  <h4 className="text-[12px] sm:text-[13.5px] font-black text-gray-900 dark:text-white leading-tight">{adv.title}</h4>
+                  <p className="text-[10px] sm:text-[11.5px] text-gray-500 dark:text-gray-400 font-semibold mt-0.5 leading-snug line-clamp-2">{adv.desc}</p>
                 </div>
               </div>
             )

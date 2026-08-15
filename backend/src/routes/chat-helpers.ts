@@ -85,24 +85,42 @@ export function canReuseCache(
 // ── Issue 4: Token budget protection — prevent OpenAI 413 ────────────────────
 
 const SAFE_TOKEN_CEILING = 100_000
-const estimateTokens = estimateTokensReal
+export const estimateTokens = estimateTokensReal
 
 export function trimMessagesToBudget(
   systemPrompt: string,
   msgs: Array<{ role: 'user' | 'assistant'; content: string }>,
+  intent?: Record<string, unknown>,
 ): Array<{ role: 'user' | 'assistant'; content: string }> {
-  const remaining = SAFE_TOKEN_CEILING - estimateTokens(systemPrompt)
+  const systemTokens = estimateTokens(systemPrompt)
+  const remaining = SAFE_TOKEN_CEILING - systemTokens - 2000 // Reserve 2K for response
+
   if (remaining <= 0) return msgs.slice(-2)
 
-  let trimmed = [...msgs]
+  // Intent-based window: search needs less context, advisory needs more
+  const queryKind = (intent as any)?.queryKind || 'DISCOVERY'
+  const windowMap: Record<string, number> = {
+    'DISCOVERY': 3,
+    'DRILLDOWN': 4,
+    'RANKING': 3,
+    'COMPARISON': 5,
+    'SUMMARY': 6,
+    'ADVISORY': 8,
+    'CLARIFY': 4,
+  }
+  const maxWindow = windowMap[queryKind] || 4
+  let windowed = msgs.slice(-maxWindow)
+
+  // Then trim to token budget
+  let trimmed = [...windowed]
   while (
-    trimmed.length > 2 &&
+    trimmed.length > 1 &&
     estimateTokens(trimmed.map((m) => m.content).join(' ')) > remaining
   ) {
-    // drop oldest user+assistant pair (priority: old history first)
-    trimmed = trimmed.slice(2)
+    trimmed = trimmed.slice(1)
   }
-  return trimmed
+
+  return trimmed.length === 0 ? msgs.slice(-1) : trimmed
 }
 
 export function sseWrite(res: Response, event: string, data: Record<string, unknown>): void {

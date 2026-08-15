@@ -244,28 +244,27 @@ async function seedAllMasterFiles() {
         }
 
         // 6. PROJECT DNA
-        if (proj.project_dna) {
-          await prisma.projectDna.upsert({
-            where: { project_id: project.id },
-            update: {
-              builder_score: proj.project_dna.builder_track_record_score || 90,
-              price_score: proj.project_dna.price_position_score || 88,
-              location_score: proj.project_dna.locality_score || 92,
-              legal_score: proj.project_dna.rera_compliance_score || 96,
-              amenity_score: proj.project_dna.amenity_depth_score || 90,
-              possession_score: proj.project_dna.possession_certainty_score || 95,
-            },
-            create: {
-              project_id: project.id,
-              builder_score: proj.project_dna.builder_track_record_score || 90,
-              price_score: proj.project_dna.price_position_score || 88,
-              location_score: proj.project_dna.locality_score || 92,
-              legal_score: proj.project_dna.rera_compliance_score || 96,
-              amenity_score: proj.project_dna.amenity_depth_score || 90,
-              possession_score: proj.project_dna.possession_certainty_score || 95,
-            },
-          });
-        }
+        const dnaData = proj.project_dna || proj.dna || {};
+        await prisma.projectDna.upsert({
+          where: { project_id: project.id },
+          update: {
+            builder_score: dnaData.builder_track_record_score || dnaData.luxury_score || 90,
+            price_score: dnaData.price_position_score || dnaData.connectivity_score || 88,
+            location_score: dnaData.locality_score || dnaData.greenery_score || 92,
+            legal_score: dnaData.rera_compliance_score || dnaData.safety_score || 96,
+            amenity_score: dnaData.amenity_depth_score || dnaData.luxury_score || 90,
+            possession_score: dnaData.possession_certainty_score || 95,
+          },
+          create: {
+            project_id: project.id,
+            builder_score: dnaData.builder_track_record_score || dnaData.luxury_score || 90,
+            price_score: dnaData.price_position_score || dnaData.connectivity_score || 88,
+            location_score: dnaData.locality_score || dnaData.greenery_score || 92,
+            legal_score: dnaData.rera_compliance_score || dnaData.safety_score || 96,
+            amenity_score: dnaData.amenity_depth_score || dnaData.luxury_score || 90,
+            possession_score: dnaData.possession_certainty_score || 95,
+          },
+        });
 
         // 7. DECISION PROFILE
         if (proj.decision_profile) {

@@ -586,6 +586,7 @@ model SectorIntelligence {
   id                    String   @id @default(uuid())
   city                  String
   sector                String
+  micro_market          String?  // e.g. "Expressway Corridor", "Central Belt", "Value Hub"
   sector_overview       String?
   // emerging | developing | established | saturated
   sector_stage          String?
@@ -594,10 +595,14 @@ model SectorIntelligence {
   price_5yr_cagr_pct    Float?
   rental_yield_pct      Float?
   avg_rent_3bhk_monthly Float?
+  lifestyle_tags        String[] @default([])
   sector_strengths      String[]
   sector_weaknesses     String[]
   who_should_buy        String?
   who_should_avoid      String?
+  commute_anchors       Json?    // {"delhi": 35, "airport": 40, "cyber_hub": 55}
+  utilities_profile     Json?    // {"water_source": "Ganga Pipeline", "tds_ppm": 250, "power_grid": "PVVNL", "dg_cost_unit": 17}
+  statutory_rates       Json?    // {"circle_rate_sqm": 55000, "amenity_surcharge_pct": 3, "floor_relief_pct": 2}
   infrastructure_pipeline Json?
   last_verified_at      DateTime?
   verified_by           String?
@@ -605,6 +610,7 @@ model SectorIntelligence {
   updated_at            DateTime @updatedAt
 
   @@unique([city, sector])
+  @@index([city, micro_market])
   @@map("sector_intelligence")
 }
 
@@ -931,6 +937,7 @@ model CostSheet {
   base_price_per_sqft   Float?
   base_cost_cr          Float?
   floor_rise_per_floor  Float?
+  base_interest_rate    Float? // Home loan interest rate benchmark (e.g. 8.5)
   plc_charges           Json     @default("[]")
   // ⚠️ parking_cost / ifms / club_membership store RUPEES, not lakhs.
   // See dictionary §11.7.2b. routes/projects.ts divides these by 1e7 to reach crores.
@@ -958,6 +965,8 @@ model CostSheet {
 
   @@map("cost_sheets")
 }
+
+
 
 enum DataSource {
   brochure
@@ -1678,9 +1687,7 @@ model ProjectSpecItem {
   @@index([project_id, category])
   @@index([project_id, is_highlight])
   @@index([brand])
-  @@index([project_slug])
-  @@index([reason_category])
-  @@map("lead_objections")
+  @@map("project_spec_items")
 }
 
 model GhostPoolAnalysis {

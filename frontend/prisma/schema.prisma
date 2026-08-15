@@ -586,6 +586,7 @@ model SectorIntelligence {
   id                    String   @id @default(uuid())
   city                  String
   sector                String
+  micro_market          String?  // e.g. "Expressway Corridor", "Central Belt", "Value Hub"
   sector_overview       String?
   // emerging | developing | established | saturated
   sector_stage          String?
@@ -594,10 +595,14 @@ model SectorIntelligence {
   price_5yr_cagr_pct    Float?
   rental_yield_pct      Float?
   avg_rent_3bhk_monthly Float?
+  lifestyle_tags        String[] @default([])
   sector_strengths      String[]
   sector_weaknesses     String[]
   who_should_buy        String?
   who_should_avoid      String?
+  commute_anchors       Json?    // {"delhi": 35, "airport": 40, "cyber_hub": 55}
+  utilities_profile     Json?    // {"water_source": "Ganga Pipeline", "tds_ppm": 250, "power_grid": "PVVNL", "dg_cost_unit": 17}
+  statutory_rates       Json?    // {"circle_rate_sqm": 55000, "amenity_surcharge_pct": 3, "floor_relief_pct": 2}
   infrastructure_pipeline Json?
   last_verified_at      DateTime?
   verified_by           String?
@@ -605,6 +610,7 @@ model SectorIntelligence {
   updated_at            DateTime @updatedAt
 
   @@unique([city, sector])
+  @@index([city, micro_market])
   @@map("sector_intelligence")
 }
 
@@ -994,6 +1000,7 @@ model CostSheet {
   gst_note              String?
   stamp_duty_pct        Float    @default(6.0)
   registration_pct      Float    @default(1.0)
+  base_interest_rate    Float?
   // Utilities — stage F (§5.3). Rupees, same convention as above.
   electricity_connection Float?
   water_sewer_connection Float?
@@ -1009,6 +1016,8 @@ model CostSheet {
 
   @@map("cost_sheets")
 }
+
+
 
 enum DataSource {
   brochure

@@ -48,7 +48,7 @@ router.get('/', routeCache(300), async (req: Request, res: Response) => {
 })
 
 router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
-  const project = await prisma.project.findUnique({
+  const project: any = await (prisma.project.findUnique as any)({
     where: { slug: req.params.slug },
     include: {
       builder: true,
@@ -116,10 +116,24 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
       construction_milestones: { orderBy: { sort_order: 'asc' } },
       channel_partners: { include: { channel_partner: true }, orderBy: { created_at: 'asc' } },
       spec_items: { orderBy: [{ sort_order: 'asc' }, { category: 'asc' }] },
+      price_history: { orderBy: { recorded_at: 'asc' } },
     },
   })
 
   if (!project) { res.status(404).json({ error: 'Not found' }); return }
+
+  // Fetch active promotions for this project or sector
+  const activePromotions = await prisma.promotional.findMany({
+    where: {
+      is_active: true,
+      OR: [
+        { link_type: 'project', link_target: project.id },
+        { target_sectors: { has: project.sector || '' } }
+      ]
+    },
+    take: 5,
+    orderBy: { created_at: 'desc' }
+  })
 
   // Gate unverified intelligence. Any DRAFT analysis is nulled so it does not
   // reach a buyer. The `status` field itself is stripped.
@@ -127,12 +141,14 @@ router.get('/:slug', routeCache(900), async (req: Request, res: Response) => {
     ...project,
     decision_profile: gatePublished(project.decision_profile),
     recommendation_profile: gatePublished(project.recommendation_profile),
-    payment_plan: (project as any).payment_plans?.[0] ?? null,
-    payment_plans: (project as any).payment_plans ?? [],
-    cost_sheet: (project as any).cost_sheet ?? null,
-    construction_milestones: (project as any).construction_milestones ?? [],
-    channel_partners: (project as any).channel_partners ?? [],
-    spec_items: (project as any).spec_items ?? [],
+    payment_plan: project.payment_plans?.[0] ?? null,
+    payment_plans: project.payment_plans ?? [],
+    cost_sheet: project.cost_sheet ?? null,
+    construction_milestones: project.construction_milestones ?? [],
+    channel_partners: project.channel_partners ?? [],
+    spec_items: project.spec_items ?? [],
+    price_history: project.price_history ?? [],
+    promotions: activePromotions ?? [],
   }
 
   // Compute deterministic recommendation score from raw DNA scores

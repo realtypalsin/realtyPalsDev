@@ -137,7 +137,7 @@ export default function ConstructionTimeline({
       {/* Main Timeline Card Grid (Expandable on demand) */}
       {isExpanded && list.length > 0 && (
         <div className="pt-2 pb-1 space-y-4 animate-in fade-in slide-in-from-top-3 duration-300">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
             {list.map((m: any, i: number) => {
               const isDone = m.status === 'completed'
               const isInProgress = m.status === 'in_progress'

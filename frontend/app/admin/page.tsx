@@ -37,9 +37,10 @@ export default function AdminDashboard() {
   async function load() {
     setLoading(true)
     try {
-      const res = await adminFetch('/admin/projects')
+      const res = await adminFetch('/admin/projects?limit=1000')
       const data = await res.json()
       const projects = data.projects ?? []
+      const totalCount = data.total ?? projects.length
 
       const builderCounts: Record<string, number> = {}
       projects.forEach((p: any) => {
@@ -53,7 +54,7 @@ export default function AdminDashboard() {
         .map(([name, count]) => ({ name: name.length > 14 ? name.substring(0, 14) + '...' : name, projects: Number(count) }))
 
       setStats({
-        total:              projects.length,
+        total:              totalCount,
         ready:              projects.filter((p: any) => p.status === 'ready_to_move').length,
         under_construction: projects.filter((p: any) => p.status === 'under_construction').length,
         new_launch:         projects.filter((p: any) => p.status === 'new_launch').length,

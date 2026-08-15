@@ -4,7 +4,7 @@ import { use, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, ChevronRight, Eye, LayoutPanelLeft, AlertCircle, CheckCircle2, Info,
-  Images, Cpu, Activity, IndianRupee, Users, ShieldCheck
+  Images, Cpu, Activity, IndianRupee, Users, ShieldCheck, Layers
 } from 'lucide-react'
 import { adminFetch } from '@/lib/adminFetch'
 import ProjectForm from '@/components/admin/ProjectForm'
@@ -29,7 +29,7 @@ import ProjectPreview from '@/components/admin/ProjectPreview'
 import { Skeleton } from '@/components/ui/skeleton'
 import Toast from '@/components/Toast'
 
-type AdminTab = 'core' | 'pricing' | 'media' | 'intelligence' | 'updates' | 'partners'
+type AdminTab = 'core' | 'specs' | 'pricing' | 'media' | 'intelligence' | 'updates' | 'partners'
 
 interface ProjectData {
   [key: string]: any
@@ -81,10 +81,28 @@ function getTabAuditDetails(
 
     if ((data?.amenities?.length || 0) >= 3) completed.push(`Amenities (${data.amenities.length} added)`)
     else missing.push(`Amenities (need 3+, currently ${data?.amenities?.length || 0})`)
-
-    if ((data?.spec_items?.length || 0) >= 3) completed.push(`Specifications (${data.spec_items.length} items)`)
-    else missing.push(`Specifications (need 3+, currently ${data?.spec_items?.length || 0})`)
   }
+
+  if (tabId === 'specs') {
+    if ((data?.spec_items?.length || 0) >= 1) completed.push(`Specifications (${data.spec_items.length} items configured)`)
+    else missing.push('Construction Specifications')
+
+    if (data?.spec_items?.some((s: any) => s.category === 'structure')) completed.push('Structure & Safety Specs')
+    else missing.push('Structure & Safety Specs')
+
+    if (data?.spec_items?.some((s: any) => s.category === 'flooring')) completed.push('Flooring & Finishes Specs')
+    else missing.push('Flooring Specs')
+
+    if (data?.spec_items?.some((s: any) => s.category === 'kitchen')) completed.push('Kitchen & Countertop Specs')
+    else missing.push('Kitchen Specs')
+
+    if (data?.spec_items?.some((s: any) => s.category === 'bathrooms')) completed.push('Sanitary & CP Fittings Specs')
+    else missing.push('Sanitary Specs')
+
+    if (data?.spec_items?.some((s: any) => s.is_highlight)) completed.push('Highlighted Buyer Card Specs')
+    else missing.push('Highlighted Buyer Card Specs')
+  }
+
 
   if (tabId === 'pricing') {
     if (data?.unit_types?.some((u: any) => u.price_min_cr != null)) completed.push('Priced Unit Configurations')
@@ -250,6 +268,7 @@ function SectionAuditSidebar({
         </div>
         <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
           {tabId === 'core' && 'Ensure project name, RERA registration number, status, hero image, unit configurations, and at least 3 amenities are configured.'}
+          {tabId === 'specs' && 'Configure material specifications, brand tiers, highlights, and unit-specific overrides across architectural categories.'}
           {tabId === 'pricing' && 'Ensure unit price ranges, cost sheet base price, 2+ payment plans with stage milestones, 3+ connectivity nodes, and quarterly price history are filled.'}
           {tabId === 'media' && 'Upload a hero image, at least 3 high-res gallery exterior/interior photos, and official brochure PDF documents.'}
           {tabId === 'intelligence' && 'Fill decision thesis, target buyer (best for), why buy/avoid points, buyer persona income ranges, recommendation tier, DNA scores, and competitors.'}
@@ -299,14 +318,22 @@ export default function AdminProjectEditPage({
         return
       }
 
-      const projectJson = await projectRes.json()
-      const docsJson = docsRes.ok ? await docsRes.json() : { documents: [] }
-      const completenessJson = completenessRes.ok ? await completenessRes.json() : null
+      const projectData = await projectRes.json()
+      const docsData = docsRes.ok ? await docsRes.json() : []
+      const compData = completenessRes.ok ? await completenessRes.json() : null
 
-      setData(projectJson.project)
-      setPreview(projectJson.project)
-      setDocuments(docsJson.documents ?? [])
-      setCompleteness(completenessJson)
+      setData(projectData)
+      setDocuments(Array.isArray(docsData) ? docsData : docsData.documents ?? [])
+      setCompleteness(compData)
+
+      // Fetch public preview object
+      if (projectData.slug) {
+        const pRes = await fetch(`/api/projects/${projectData.slug}`)
+        if (pRes.ok) {
+          const pData = await pRes.json()
+          setPreview(pData)
+        }
+      }
     } catch (err) {
       console.error('[AdminProjectEditPage] Failed to load data:', err)
       if (showError) {
@@ -431,6 +458,7 @@ export default function AdminProjectEditPage({
 
   const TAB_ITEMS: { id: AdminTab; label: string; icon: React.ElementType }[] = [
     { id: 'core',         label: 'Core Info',            icon: LayoutPanelLeft },
+    { id: 'specs',        label: 'Specifications',       icon: Layers },
     { id: 'pricing',      label: 'Pricing & Location',   icon: IndianRupee },
     { id: 'media',        label: 'Media',                icon: Images },
     { id: 'intelligence', label: 'Intelligence',         icon: Cpu },
@@ -441,6 +469,7 @@ export default function AdminProjectEditPage({
   // Pre-compute all tab audits once to avoid O(N) recalculation
   const tabAudits = {
     core: getTabAuditDetails('core', data, documents),
+    specs: getTabAuditDetails('specs', data, documents),
     pricing: getTabAuditDetails('pricing', data, documents),
     media: getTabAuditDetails('media', data, documents),
     intelligence: getTabAuditDetails('intelligence', data, documents),
@@ -456,6 +485,7 @@ export default function AdminProjectEditPage({
 
   const tabScores: Record<AdminTab, number> = {
     core: computeTabScore(tabAudits.core),
+    specs: computeTabScore(tabAudits.specs),
     pricing: computeTabScore(tabAudits.pricing),
     media: computeTabScore(tabAudits.media),
     intelligence: computeTabScore(tabAudits.intelligence),
@@ -464,13 +494,15 @@ export default function AdminProjectEditPage({
   }
 
   const overallHealth = Math.round(
-    (tabScores.core * 0.20) +
-    (tabScores.pricing * 0.25) +
+    (tabScores.core * 0.15) +
+    (tabScores.specs * 0.15) +
+    (tabScores.pricing * 0.20) +
     (tabScores.media * 0.15) +
-    (tabScores.intelligence * 0.20) +
+    (tabScores.intelligence * 0.15) +
     (tabScores.updates * 0.10) +
     (tabScores.partners * 0.10)
   )
+
 
   return (
     <>
@@ -692,12 +724,6 @@ export default function AdminProjectEditPage({
                 projectId={id}
                 onSaved={handleSaved}
               />
-              <SpecEditor
-                projectId={id}
-                unitTypes={data.unit_types ?? []}
-                initialSpecs={data.spec_items ?? []}
-                onSaved={handleSaved}
-              />
             </div>
             <div className="sticky top-24 space-y-4 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {/* Core Info Right View Switcher */}
@@ -748,6 +774,30 @@ export default function AdminProjectEditPage({
             </div>
           </div>
         )}
+
+        {/* 2. Specifications tab */}
+        {adminTab === 'specs' && (
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
+            <div className="space-y-6">
+              <SpecEditor
+                projectId={id}
+                unitTypes={data.unit_types ?? []}
+                initialSpecs={data.spec_items ?? []}
+                onSaved={handleSaved}
+              />
+            </div>
+            <div className="sticky top-24 space-y-4 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <SectionAuditSidebar
+                tabId="specs"
+                tabLabel="Specifications"
+                pct={tabScores.specs}
+                data={data}
+                documents={documents}
+              />
+            </div>
+          </div>
+        )}
+
 
         {/* 2. Pricing & Location tab */}
         {adminTab === 'pricing' && (

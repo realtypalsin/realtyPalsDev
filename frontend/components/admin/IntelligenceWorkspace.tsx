@@ -26,6 +26,16 @@ const DNA_DIMS = [
   { key: 'possession_certainty', label: 'Possession Certainty' },
 ] as const
 
+// Maps DNA_DIMS keys to the actual ProjectDna Prisma schema columns
+const DNA_SCHEMA_FIELD: Record<string, string> = {
+  builder_track_record: 'builder_score',
+  price_position:       'price_score',
+  locality:             'location_score',
+  rera_compliance:      'legal_score',
+  amenity_depth:        'amenity_score',
+  possession_certainty: 'possession_score',
+}
+
 // Score → label lookup. 5 bands: 0-20 / 21-40 / 41-60 / 61-80 / 81-100
 const DNA_LABEL_MAP: Record<string, [string, string, string, string, string]> = {
   builder_track_record: ['Unproven',      'Early Stage', 'Emerging',   'Established',      'Proven'],
@@ -437,10 +447,8 @@ export default function IntelligenceWorkspace({
     const payload: Record<string, any> = {}
     DNA_DIMS.forEach(({ key }) => {
       const score = d[`${key}_score`]
-      payload[`${key}_score`] = score === '' || score == null ? null : Number(score)
-      // label is computed — derive and persist so downstream consumers get it
       const numScore = score === '' || score == null ? null : Number(score)
-      payload[`${key}_label`] = computeLabel(key, numScore)
+      payload[DNA_SCHEMA_FIELD[key]] = numScore
     })
     payload.last_verified_at = (d.last_verified_at as string) || null
     payload.verified_by      = (d.verified_by as string) || null
@@ -1300,15 +1308,7 @@ export default function IntelligenceWorkspace({
         )}
       </div>
 
-      {/* Specifications */}
-      <div className="border-t pt-6 space-y-4">
-        <SpecEditor
-          projectId={projectId}
-          initialSpecs={specs}
-          onSpecsChange={setSpecs}
-        />
-      </div>
-
     </div>
   )
 }
+

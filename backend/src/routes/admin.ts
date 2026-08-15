@@ -169,7 +169,7 @@ router.get('/stats', requireAdmin, async (req: Request, res: Response) => {
 
 // GET /api/v1/admin/projects — list projects for dashboard & management
 router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
-  const { limit = '100', offset = '0', q, search } = req.query
+  const { limit = '1000', offset = '0', q, search } = req.query
   const searchTerm = (q || search) as string | undefined
 
   // Lightweight health check (layout.tsx calls this on mount; avoid heavy DB joins)
