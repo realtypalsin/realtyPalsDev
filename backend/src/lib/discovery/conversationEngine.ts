@@ -65,14 +65,15 @@ export interface ConversationState {
 function computeStage(
   intent: Intent,
   intentState: IntentState,
-  results: ScoredProject[],
-  isComparison: boolean,
+  results: ScoredProject[] = [],
+  isComparison: boolean = false,
   hasHistory: boolean = false,
   isUserMessage: boolean = false
 ): ConversationStage {
+  const safeResults = results || []
   if (isComparison) return 'COMPARING'
-  if (results.length > 0 && intentState === 'SHORTLISTED') return 'DECIDING'
-  if (results.length > 0) return 'RESEARCH'
+  if (safeResults.length > 0 && intentState === 'SHORTLISTED') return 'DECIDING'
+  if (safeResults.length > 0) return 'RESEARCH'
   if (intentState === 'READY_TO_SEARCH') return 'SEARCHING'
   
   // If the user has sent a message or there is history, we are actively conversing.
@@ -86,11 +87,10 @@ function computeStage(
 
 // ─── Missing field computation ────────────────────────────────────────────────
 
-function getMissingFields(intent: Intent, intentState: IntentState): string[] {
-  if (intentState === 'COLD') return ['location', 'bhk', 'budget']
+function getMissingFields(intent: Intent, intentState?: IntentState): string[] {
   const missing: string[] = []
   if (!intent.sector) missing.push('sector')
-  if (!intent.bhk?.length) missing.push('bhk')
+  if (!intent.bhk || intent.bhk.length === 0) missing.push('bhk')
   if (!intent.budgetMax && !intent.budgetMin) missing.push('budget')
   if (!intent.purpose) missing.push('purpose')
   return missing
@@ -131,69 +131,74 @@ export function getThinkingMessage(stage: ConversationStage, intent: Intent): st
 
 // ─── Chip generation ──────────────────────────────────────────────────────────
 
+function cleanLabel(s: string): string {
+  if (!s) return ''
+  return s
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{FE0F}]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export function chip(
   id: string,
   actionType: ConversationActionType,
   label: string,
   icon: string,
   payload: Record<string, unknown>,
-  priority: number,
-  group?: ChipGroup,
+  priority: number = 1,
+  group?: ChipGroup
 ): ChipAction {
-  return { id, actionType, label, icon, analyticsId: id, priority, payload, group }
+  return {
+    id,
+    actionType,
+    label: cleanLabel(label),
+    icon: '',
+    analyticsId: id.toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+    priority,
+    payload,
+    ...(group ? { group } : {}),
+  }
 }
 
 // ─── Homepage suggestion groups ────────────────────────────────────────────────
-// The engine owns grouping entirely: which groups exist, their order, their
-// visual weight, and how many chips land in each. The frontend just renders
-// whatever groups arrive, in the order given — it has no opinion on counts.
-/**
- * Discovery chips: offered proactively when entering chat to suggest typical starting queries.
- * Builds dynamically from live chip inventory (sectors, budget buckets, BHK options).
- */
 function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
-  if (!inventory) return []
-
   const chips: ChipAction[] = []
-  const sectorGroup: ChipGroup = { id: 'popular_sectors', label: `Popular sectors in ${inventory.city}`, order: 0, emphasis: 'primary' }
+  if (!inventory) return chips
 
-  // Top sectors by project count (Max 2)
-  for (const { sector, projectCount } of inventory.sectors.slice(0, 2)) {
+  const areaGroup: ChipGroup = { id: 'popular_areas', label: 'Explore Areas', order: 1, emphasis: 'primary' }
+  const topSectors = inventory.sectors.slice(0, 2)
+  for (const [idx, { sector, projectCount }] of topSectors.entries()) {
     chips.push(chip(
-      `INTENT_PATCH:sector:${sector.replace(/\s+/g, '_').toLowerCase()}`,
+      `INTENT_PATCH:sector:${sector}`,
       'INTENT_PATCH',
       `${sector} (${projectCount} projects)`,
-      '📍',
+      '',
       { patch: { sector }, label: sector },
-      chips.length + 1,
-      sectorGroup
+      idx + 1,
+      areaGroup
     ))
   }
 
-  // Budget buckets (Max 1)
   const budgetGroup: ChipGroup = { id: 'budget_buckets', label: 'Budget ranges', order: 1, emphasis: 'secondary' }
-  for (let i = 0; i < Math.min(1, inventory.budgetBuckets.length); i++) {
-    const bucket = inventory.budgetBuckets[i]
-    const budgetMax = bucket.max || 10
+  for (const bucket of inventory.budgetBuckets.slice(0, 1)) {
     chips.push(chip(
       `INTENT_PATCH:budget:${bucket.label.replace(/\W+/g, '_').toLowerCase()}`,
       'INTENT_PATCH',
       bucket.label,
-      '💰',
-      { patch: { budgetMax }, label: bucket.label },
+      '',
+      { patch: { budgetMax: bucket.max }, label: bucket.label },
       chips.length + 1,
       budgetGroup
     ))
   }
 
-  // BHK options (Max 1)
   const bhkGroup: ChipGroup = { id: 'bhk_options', label: 'BHK', order: 2, emphasis: 'tertiary' }
   for (const bhk of inventory.bhkOptions.slice(0, 1)) {
     chips.push(chip(
       `INTENT_PATCH:bhk:${bhk}`,
       'INTENT_PATCH',
       `${bhk} BHK`,
-      '🏠',
+      '',
       { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
       chips.length + 1,
       bhkGroup
@@ -203,48 +208,101 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
   return chips
 }
 
-function getClarifyingChips(
+async function getClarifyingChips(
   intent: Intent,
   missingFields: string[],
   results: ScoredProject[],
   chatHistory: { role: string; content: string }[],
-  inventory: ChipInventory | null
-): ChipAction[] {
+  inventory: ChipInventory | null,
+  usedProvider?: { provider: string; envKey: string }
+): Promise<ChipAction[]> {
   const chips: ChipAction[] = []
   let priority = 1
 
-  // Extract previously suggested or rejected text from history to avoid repeats (user messages only)
-  const historyText = chatHistory
-    .filter(m => m.role === 'user')
-    .map(m => String(m.content ?? '').toLowerCase())
-    .join(' ')
-
-  // Missing sector — offer sectors based on actual returned projects, fallback to inventory
-  if (missingFields.includes('sector') && !intent.sector) {
-    let candidateSectors = Array.from(new Set(results.map(r => r.sector)))
-      .filter(sector => sector && !historyText.includes(sector.toLowerCase()))
-
-    if (candidateSectors.length === 0 && inventory?.sectors) {
-      candidateSectors = inventory.sectors.map(s => s.sector)
-        .filter(sector => sector && !historyText.includes(sector.toLowerCase()))
+  // ─── 1. Dynamic Conversational Bridge (High Priority when history is present) ───
+  if (chatHistory.length > 0) {
+    try {
+      const llmChips = await generateContextualLLMChips(chatHistory, priority, usedProvider)
+      if (llmChips.length > 0) {
+        // If user already specified BHK, filter out any redundant BHK chips
+        const filtered = (intent.bhk && intent.bhk.length > 0)
+          ? llmChips.filter(c => !/^\d\s*bhk$/i.test(c.label.trim()))
+          : llmChips
+        if (filtered.length > 0) {
+          return filtered
+        }
+      }
+    } catch (llmErr) {
+      console.warn('[CONV_ENGINE:LLM_CHIPS:WARN]', llmErr)
     }
-
-    // Take top 3 sectors
-    const sectors = candidateSectors.slice(0, 3)
-
-    for (const sector of sectors) {
-      chips.push(chip(
-        `INTENT_PATCH:sector_clarify:${sector.replace(/\s/g, '_').toLowerCase()}`,
-        'INTENT_PATCH', sector, '',
-        { patch: { sector }, label: sector },
-        priority++,
-      ))
-    }
-    if (chips.length > 0) return chips
   }
 
-  // Missing BHK — offer from inventory
-  if (missingFields.includes('bhk') && !intent.bhk?.length && inventory?.bhkOptions) {
+  // ─── 2. Persona Specific Dynamic Clarification ───────────────────────────────
+  if (intent.journeyStage === 'yield_investor') {
+    chips.push(
+      chip('EXPLORE:yield_commercial', 'TEXT_MESSAGE', 'Commercial Retail (6-8% Yield)', '', { message: 'Tell me about commercial retail yields vs residential in Noida' }, priority++),
+      chip('EXPLORE:jewar_catalyst', 'TEXT_MESSAGE', 'Jewar Airport Impact', '', { message: 'How will Jewar Airport commercial flights impact property values?' }, priority++),
+      chip('EXPLORE:roi_5yr_model', 'TEXT_MESSAGE', '5-Yr ROI Projection', '', { message: 'Show me a 5-year ROI model comparing residential vs commercial' }, priority++)
+    )
+    return chips
+  }
+
+  if (intent.riskProfile === 'nri' || intent.journeyStage === 'nri_investor') {
+    chips.push(
+      chip('EXPLORE:nri_form7', 'TEXT_MESSAGE', 'Form-7 Escrow Compliant Only', '', { message: 'Show me projects with 100% UP RERA Form-7 escrow compliance' }, priority++),
+      chip('EXPLORE:nri_tripartite', 'TEXT_MESSAGE', 'Tripartite Agreement Info', '', { message: 'How does the mandatory Tripartite Sale Agreement protect me?' }, priority++),
+      chip('EXPLORE:nri_remote_spa', 'TEXT_MESSAGE', 'Remote Registry (SPA)', '', { message: 'How does remote registration via Special Power of Attorney work?' }, priority++)
+    )
+    return chips
+  }
+
+  if (intent.journeyStage === 'market_evaluator') {
+    chips.push(
+      chip('EXPLORE:sec75_vs_76', 'TEXT_MESSAGE', 'Sector 75 vs 76 Delta', '', { message: 'Why is Sector 75 more expensive than Sector 76?' }, priority++),
+      chip('EXPLORE:carpet_vs_super', 'TEXT_MESSAGE', 'Carpet vs Super Area', '', { message: 'How does RERA carpet area differ from builder super built-up area?' }, priority++),
+      chip('EXPLORE:circle_rate_duty', 'TEXT_MESSAGE', 'Circle Rate & Tax Rules', '', { message: 'How are circle rates and stamp duty calculated in Noida?' }, priority++)
+    )
+    return chips
+  }
+
+  // ─── 3. Relocators without a specific sector selected ─────────────────────────
+  if (intent.journeyStage === 'relocation' && !intent.sector) {
+    chips.push(
+      chip('INTENT_PATCH:corridor_exp', 'TEXT_MESSAGE', 'Noida Expressway (IT & Luxury)', '', { message: 'Tell me about living along the Noida Expressway corridor' }, priority++),
+      chip('INTENT_PATCH:corridor_central', 'TEXT_MESSAGE', 'Central Noida (Schools & Metro)', '', { message: 'Tell me about family living in Central Noida 7X sectors' }, priority++),
+      chip('INTENT_PATCH:corridor_gnw', 'TEXT_MESSAGE', 'Gr. Noida West (Value & Space)', '', { message: 'Tell me about Greater Noida West for spacious family flats' }, priority++),
+      chip('EXPLORE:lifestyle_commute_delhi', 'TEXT_MESSAGE', 'Commuting to Delhi/Gurgaon', '', { message: 'I need easy daily connectivity to Delhi and South Delhi' }, priority++)
+    )
+    return chips
+  }
+
+  // ─── 4. Sector is Known, but Configuration / BHK is missing (Only if user has NOT given BHK) ──
+  if (intent.sector && (!intent.bhk || intent.bhk.length === 0)) {
+    const sec = intent.sector
+    chips.push(
+      chip(`INTENT_PATCH:bhk_2:${sec}`, 'INTENT_PATCH', `2 BHK in ${sec}`, '', { patch: { sector: sec, bhk: [2] }, label: `2 BHK in ${sec}` }, priority++),
+      chip(`INTENT_PATCH:bhk_3:${sec}`, 'INTENT_PATCH', `3 BHK in ${sec}`, '', { patch: { sector: sec, bhk: [3] }, label: `3 BHK in ${sec}` }, priority++),
+      chip(`INTENT_PATCH:bhk_4:${sec}`, 'INTENT_PATCH', `4 BHK in ${sec}`, '', { patch: { sector: sec, bhk: [4] }, label: `4 BHK in ${sec}` }, priority++),
+      chip(`EXPLORE:rtm:${sec}`, 'TEXT_MESSAGE', `Ready to Move in ${sec}`, '', { message: `Show me ready-to-move projects with Occupancy Certificate in ${sec}` }, priority++)
+    )
+    return chips
+  }
+
+  // ─── 5. Sector & BHK Known, but Budget is missing ─────────────────────────────
+  if (intent.sector && intent.bhk?.length && !intent.budgetMax) {
+    const sec = intent.sector
+    const cleanSec = sec.startsWith('Sector') ? sec : `Sector ${sec}`
+    chips.push(
+      chip(`INTENT_PATCH:budget_low:${sec}`, 'INTENT_PATCH', `Under ₹1.2 Cr`, '', { patch: { sector: sec, bhk: intent.bhk, budgetMax: 1.2 }, label: `Under ₹1.2 Cr` }, priority++),
+      chip(`INTENT_PATCH:budget_mid:${sec}`, 'INTENT_PATCH', `₹1.2 – ₹1.6 Cr`, '', { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.2, budgetMax: 1.6 }, label: `₹1.2 – ₹1.6 Cr` }, priority++),
+      chip(`INTENT_PATCH:budget_high:${sec}`, 'INTENT_PATCH', `₹1.6 Cr+`, '', { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.6 }, label: `₹1.6 Cr+` }, priority++),
+      chip(`EXPLORE:tradeoffs:${sec}`, 'TEXT_MESSAGE', `${cleanSec} Pros & Cons`, '', { message: `What are the main advantages and drawbacks of living in ${cleanSec}?` }, priority++)
+    )
+    return chips
+  }
+
+  // Fallback missing field inventory chips
+  if (missingFields.includes('bhk') && (!intent.bhk || intent.bhk.length === 0) && inventory?.bhkOptions) {
     for (const bhk of inventory.bhkOptions) {
       chips.push(chip(
         `INTENT_PATCH:bhk_clarify:${bhk}`,
@@ -256,21 +314,7 @@ function getClarifyingChips(
     return chips
   }
 
-  // Missing budget — offer from inventory
-  if (missingFields.includes('budget') && !intent.budgetMax && !intent.budgetMin && inventory?.budgetBuckets) {
-    for (const bucket of inventory.budgetBuckets.slice(0, 3)) {
-      const budgetMax = bucket.max || 10
-      chips.push(chip(
-        `INTENT_PATCH:budget_clarify:${bucket.label.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
-        'INTENT_PATCH', bucket.label, '',
-        { patch: { budgetMax }, label: bucket.label },
-        priority++,
-      ))
-    }
-    return chips
-  }
-
-  return chips // Do not fallback to getDiscoveryChips, return whatever we built or empty
+  return chips
 }
 
 /**
@@ -396,10 +440,11 @@ function capChips(candidates: ChipAction[]): ChipAction[] {
   return picked.slice(0, 4)
 }
 
-function getFloorChips(intent: Intent, results: ScoredProject[]): ChipAction[] {
+function getFloorChips(intent: Intent, results: ScoredProject[] = []): ChipAction[] {
+  const safeResults = results || []
   // If we do have results, offer actions grounded in them.
-  if (results.length > 0) {
-    const projects = results.slice(0, 4).map(r => ({ id: r.id, name: r.name }))
+  if (safeResults.length > 0) {
+    const projects = safeResults.slice(0, 4).map(r => ({ id: r.id, name: r.name }))
     const pIds = projects.map(p => p.id).join(':')
     const out: ChipAction[] = [
       chip(`TEXT_MESSAGE:floor_tradeoffs:${pIds}`, 'TEXT_MESSAGE', 'What are the trade-offs?', '',
@@ -487,7 +532,7 @@ export async function computeConversationState(
     // Populate chips dynamically based on the conversation stage
     switch (stage) {
       case 'CLARIFYING':
-        chips = getClarifyingChips(intent, missingFields, results, chatHistory, chipInventory)
+        chips = await getClarifyingChips(intent, missingFields, results, chatHistory, chipInventory, usedProvider)
         break
       case 'DISCOVERY':
         chips = getDiscoveryChips(chipInventory)

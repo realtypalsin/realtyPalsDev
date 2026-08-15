@@ -29,6 +29,19 @@ import {
 
 export type DataSource = 'database' | 'google_maps' | 'calculator' | 'estimated' | 'derived'
 
+interface FloorPlanConfig {
+  name?: string
+  bhk?: number
+  price_min_cr?: number
+  price_max_cr?: number
+  carpet_area_sqft?: number
+  [key: string]: unknown
+}
+
+function isValidConfig(config: unknown): config is FloorPlanConfig {
+  return typeof config === 'object' && config !== null && ('name' in config || 'bhk' in config)
+}
+
 export interface FactValidation {
   fact: string
   value: unknown
@@ -212,7 +225,9 @@ async function getFloorPlansWithValidation(
   }
 
   // Validate each configuration
-  configs.forEach((config: any, idx: number) => {
+  configs.forEach((item: unknown, idx: number) => {
+    if (!isValidConfig(item)) return
+    const config = item
     if (!config.name || !config.bhk) return
 
     const prefix = `config_${idx}_${config.bhk}bhk`
@@ -530,7 +545,8 @@ async function getCostSheetWithValidation(
       }
     }
   } catch (err) {
-    // Ignore database fallback error and return default facts
+    const errMsg = err instanceof Error ? err.message : String(err)
+    console.error('Payment plan lookup failed, returning default facts:', errMsg)
   }
 
   return facts
@@ -671,16 +687,17 @@ export async function getProjectDataForQuery(params: {
     }
   }
 
-  const pAny = project as any
   const allFacts: Record<string, FactValidation> = {
     project_name: { fact: 'Project Name', value: project.name, source: 'database', confidence: 1.0, validated: true },
     sector: { fact: 'Sector / Location', value: project.sector, source: 'database', confidence: 1.0, validated: true },
-    city: { fact: 'City', value: pAny.city ?? 'Noida', source: 'database', confidence: 1.0, validated: true },
-    price_min_cr: { fact: 'Starting Price', value: pAny.price_min_cr ? `₹${pAny.price_min_cr} Cr` : 'Price on Request', source: 'database', confidence: 0.95, validated: !!pAny.price_min_cr },
-    price_max_cr: { fact: 'Maximum Price', value: pAny.price_max_cr ? `₹${pAny.price_max_cr} Cr` : 'Price on Request', source: 'database', confidence: 0.95, validated: !!pAny.price_max_cr },
-    project_status: { fact: 'Current Project Status', value: pAny.project_status || pAny.status || 'Under Construction', source: 'database', confidence: 1.0, validated: true },
-    possession_date: { fact: 'Expected Possession Date', value: pAny.possession_date ? new Date(pAny.possession_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'As per RERA schedule', source: 'database', confidence: 0.95, validated: !!pAny.possession_date },
-    rera_status: { fact: 'RERA Registration Status', value: pAny.is_rera_approved ? `RERA Approved (${pAny.rera_id || 'Verified'})` : 'RERA Approved & Verified', source: 'database', confidence: 0.98, validated: true }
+    city: { fact: 'City', value: (project as any).city ?? 'Noida', source: 'database', confidence: 1.0, validated: true },
+    price_min_cr: { fact: 'Starting Price', value: (project as any).price_min_cr ? `₹${(project as any).price_min_cr} Cr` : 'Price on Request', source: 'database', confidence: 0.95, validated: !!(project as any).price_min_cr },
+    price_max_cr: { fact: 'Maximum Price', value: (project as any).price_max_cr ? `₹${(project as any).price_max_cr} Cr` : 'Price on Request', source: 'database', confidence: 0.95, validated: !!(project as any).price_max_cr },
+    project_status: { fact: 'Current Project Status', value: (project as any).project_status || (project as any).status || 'Under Construction', source: 'database', confidence: 1.0, validated: true },
+    possession_date: { fact: 'Expected Possession Date', value: (project as any).possession_date ? new Date((project as any).possession_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'As per RERA schedule', source: 'database', confidence: 0.95, validated: !!(project as any).possession_date },
+    rera_status: { fact: 'RERA Registration Status', value: (project as any).is_rera_approved ? `RERA Approved (${(project as any).rera_id || 'Verified'})` : 'RERA Approved & Verified', source: 'database', confidence: 0.98, validated: true },
+    rental_yield_annual_percent: { fact: 'Estimated Annual Rental Yield', value: (project as any).rental_yield_annual_percent ? `${(project as any).rental_yield_annual_percent}% per annum` : 'Market-dependent', source: 'database', confidence: (project as any).rental_yield_annual_percent ? 0.85 : 0.6, validated: !!(project as any).rental_yield_annual_percent },
+    appreciation_potential_5yr: { fact: '5-Year Appreciation Potential', value: (project as any).appreciation_potential_5yr ? `${(project as any).appreciation_potential_5yr}% estimated` : 'Sector-dependent growth', source: 'database', confidence: (project as any).appreciation_potential_5yr ? 0.8 : 0.6, validated: !!(project as any).appreciation_potential_5yr }
   }
   const sources = new Set<DataSource>()
 

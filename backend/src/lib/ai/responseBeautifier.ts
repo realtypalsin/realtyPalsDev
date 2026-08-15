@@ -29,11 +29,11 @@ export function beautifyResponse(text: string): string {
     .replace(/\n{3,}/g, '\n\n')  // Max 2 consecutive line breaks
     .trim()
 
-  // ── Phase 2: Fix common spacing issues ──
+  // ── Phase 2: Fix common spacing issues (horizontal whitespace only) ──
   beautified = beautified
-    .replace(/\s+([.,!?;:])/g, '$1')  // No space before punctuation
-    .replace(/([.!?])\s+([a-z])/g, '$1 $2')  // Single space after punctuation before lowercase
-    .replace(/\s{2,}/g, ' ')  // Collapse multiple spaces to one
+    .replace(/[^\S\r\n]+([.,!?;:])/g, '$1')  // No space before punctuation
+    .replace(/([.!?])[^\S\r\n]+([a-z])/g, '$1 $2')  // Single space after punctuation before lowercase
+    .replace(/[^\S\r\n]{2,}/g, ' ')  // Collapse multiple horizontal spaces to one, preserving newlines
 
   // ── Phase 3: Enforce professional punctuation ──
   // Fix ellipsis
@@ -53,9 +53,6 @@ export function beautifyResponse(text: string): string {
     .replace(/\b(so|thus|therefore)\b(?!\s+it)/gi, 'This means')
     .replace(/\bplus\b/gi, 'Also,')
     .replace(/\bvery\s+\b/gi, '')  // Remove "very" — let the word stand alone
-
-  // Don't aggressively replace "and" — it's natural in prose
-  // beautified = beautified.replace(/\band\b/gi, '&')
 
   // ── Phase 6: Rewrite weak openers ──
   beautified = beautified.replace(/^It\s+(?:is|has|can)\s+/i, '')  // "It is important" → "Important"
@@ -80,16 +77,17 @@ export function beautifyResponse(text: string): string {
 
   // Remove common filler patterns (but preserve "also")
   beautified = beautified.replace(/\b(actually|basically|just|simply|really|literally|sort of|kind of)\b/gi, '')
-  beautified = beautified.replace(/\s{2,}/g, ' ')  // Re-collapse spaces after cleanup
+  beautified = beautified.replace(/[^\S\r\n]{2,}/g, ' ')  // Re-collapse horizontal spaces after cleanup
 
   // ── Phase 9: Enforce RealtyPals tone ──
-  // Convert weak language to confident advisor voice
+  // Convert weak language to confident advisor voice while preserving uncertainty signals
   beautified = beautified
-    .replace(/\b(might be|could be|seems to be|appears to be)\s+/gi, '')
+    .replace(/\b(might be|could be)\s+/gi, 'is likely ')
+    .replace(/\b(seems to be|appears to be)\s+/gi, 'seems ')
     .replace(/\bI think\s+/gi, '')
-    .replace(/\bmaybe\s+/gi, '')
+    .replace(/\bmaybe\s+/gi, 'likely ')
     .replace(/\bperhaps\s+/gi, '')
-    .replace(/\btends to\s+/gi, '')
+    .replace(/\btends to\s+/gi, 'typically ')
 
   // Strengthen recommendations
   beautified = beautified.replace(/\bgood option\b/gi, 'strong fit')
@@ -99,8 +97,8 @@ export function beautifyResponse(text: string): string {
   // ── Phase 10: Final cleanup ──
   beautified = beautified.trim()
 
-  // Ensure single trailing period if missing
-  if (beautified && !/[.!?…]$/.test(beautified)) {
+  // Ensure single trailing period if missing and not ending with table/header
+  if (beautified && !/[.!?…|#\-*]$/.test(beautified) && !beautified.endsWith('|')) {
     beautified += '.'
   }
 
