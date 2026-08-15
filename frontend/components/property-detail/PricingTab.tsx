@@ -6,8 +6,8 @@ import Image from 'next/image'
 import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
   Award, Maximize2, TrendingDown, CheckCircle2, Crown,
-  Sparkles, Lightbulb, Shield, Car, User, Wind, Cpu, Droplet,
-  Layout, Home, Users, Compass, Eye, Globe, Lock, DollarSign, FileCheck
+  Lightbulb, Shield, Car, User, Wind, Cpu, Droplet,
+  Layout, Home, Users, Compass, Eye, Globe, Lock, DollarSign, FileCheck, ShieldCheck, MessageSquare
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import dynamic from 'next/dynamic'
@@ -31,7 +31,7 @@ const ICON_MAP: Record<string, any> = {
   parking: Car,
   utility: Columns,
   briefcase: Award,
-  sun: Sparkles,
+  sun: ShieldCheck,
   lock: Shield,
   ac: Wind,
   kitchen: Home,
@@ -155,8 +155,7 @@ export default function PricingTab({
             return [];
           }
 
-          const perfectFor = parseArray(unit.perfect_for)
-          if (perfectFor.length === 0) perfectFor.push('Families', 'End Users')
+          const perfectFor = parseArray(unit.perfect_for).length > 0 ? parseArray(unit.perfect_for) : ['Families', 'End Users']
           
           const highlightsList = parseArray(unit.key_highlights)
           const includedList = parseArray(unit.whats_included)
@@ -276,7 +275,7 @@ export default function PricingTab({
                               </h4>
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {highlightsList.map((hl: any, idx: number) => {
-                                  const IconComponent = ICON_MAP[hl.icon] || Sparkles
+                                  const IconComponent = ICON_MAP[hl.icon] || CheckCircle2
                                   return (
                                     <div key={idx} className="flex gap-2">
                                       <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-900/50 flex items-center justify-center flex-shrink-0 text-amber-600 border border-amber-100/30 dark:border-amber-900/10">
@@ -586,36 +585,23 @@ export default function PricingTab({
           <p className="text-[12px] text-gray-500 mt-1">Designed for active well-being.</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {(detail?.all_amenities || []).slice(0, 6).map((am, idx) => {
-            const getIcon = (cat: string) => {
-              if (cat === 'sports') return TrophyIcon
-              if (cat === 'lifestyle') return Home
-              if (cat === 'wellness') return Sparkles
-              if (cat === 'kids') return Users
-              if (cat === 'security') return Shield
-              if (cat === 'parking') return Car
-              return Compass
-            }
-            const Icon = getIcon(am.category)
-            return (
-              <div key={idx} className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#131211] p-4 flex flex-col items-center text-center">
-                <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-600 dark:text-gray-300 mb-2.5">
-                  <Icon size={16} />
-                </div>
-                <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight">{am.name}</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 font-medium leading-none uppercase tracking-wider">{am.category}</p>
-              </div>
-            )
-          })}
+        <div className="flex flex-wrap gap-2.5 pt-1">
+          {(detail?.all_amenities || []).slice(0, 12).map((am, idx) => (
+            <span
+              key={idx}
+              className="px-4 py-2 rounded-xl border border-gray-200/70 dark:border-gray-800 bg-white dark:bg-[#131211] text-[12.5px] font-bold text-gray-850 dark:text-gray-200 shadow-2xs"
+            >
+              {am.name}
+            </span>
+          ))}
         </div>
 
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-start pt-1">
           <button
             onClick={onGoToOverview}
-            className="px-6 py-2 border border-gray-200 dark:border-gray-850 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-[12px] font-bold rounded-full transition-all"
+            className="text-[12.5px] font-extrabold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
           >
-            View All 40+ Amenities
+            View all amenities in Overview →
           </button>
         </div>
       </div>
@@ -630,35 +616,11 @@ export default function PricingTab({
           onClick={onGoToCosts}
           className="px-6 py-3 bg-gray-950 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-950 text-[13px] font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5"
         >
-          <Sparkles size={14} />
+          <MessageSquare size={14} />
           Ask AI Advisor
         </button>
       </div>
 
     </div>
-  )
-}
-
-// Simple fallback trophy icon if not imported
-function TrophyIcon(props: any) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-      <path d="M4 22h16" />
-      <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34" />
-      <path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z" />
-    </svg>
   )
 }

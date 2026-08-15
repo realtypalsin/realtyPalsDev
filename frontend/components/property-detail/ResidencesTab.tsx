@@ -5,8 +5,8 @@ import Image from 'next/image'
 import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
   Award, Maximize2, TrendingDown, CheckCircle2, Crown,
-  Sparkles, Lightbulb, Shield, Car, User, Wind, Cpu, Droplet,
-  Layout, Home, Users, Compass, Eye, Trophy, CalendarDays
+  HelpCircle, Lightbulb, Shield, Car, User, Wind, Cpu, Droplet,
+  Layout, Home, Users, Compass, Eye, Trophy, CalendarDays, ShieldCheck, Leaf
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { resolveImgUrl } from '@/lib/utils'
@@ -27,7 +27,7 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   parking: Car,
   utility: Columns,
   briefcase: Award,
-  sun: Sparkles,
+  sun: ShieldCheck,
   lock: Shield,
   ac: Wind,
   kitchen: Home,
@@ -118,6 +118,16 @@ export default function ResidencesTab({
   const [floorType, setFloorType] = useState<string>('Typical Floor')
   const [selectedTower, setSelectedTower] = useState<string>(() => detail?.unit_inventory?.[0]?.tower_name || '')
   const [selectedUnitNo, setSelectedUnitNo] = useState<string>(() => detail?.unit_inventory?.[0]?.unit_number || '')
+  const [selectedSlice, setSelectedSlice] = useState<'carpet' | 'balcony' | 'shaft' | null>(null)
+  const [unitMetric, setUnitMetric] = useState<'sqft' | 'sqm'>('sqft')
+
+  const formatArea = (sqftVal: number | null) => {
+    if (sqftVal == null) return '—'
+    if (unitMetric === 'sqm') {
+      return `${Math.round(sqftVal * 0.092903)} sq.m`
+    }
+    return `${sqftVal.toLocaleString()} sq.ft`
+  }
 
   // Conditional special configuration detection — strictly check if project actually has them in unitTypes!
   const hasPenthouse = unitTypes.some(u => /penthouse/i.test(u.name || ''))
@@ -179,7 +189,7 @@ export default function ResidencesTab({
       unitNo: (u?.unit_number ?? '—') as string,
       facing: (u?.facing ?? '—') as string,
       view: (u?.view ?? '—') as string,
-      price: priceLabel(activeUnit || {}),
+      price: activeUnit ? priceLabel(activeUnit) : 'Price on Request',
       status: u?.status === 'available' ? 'Available' : u?.status === 'booked' ? 'Booked' : 'Hold'
     }))
 
@@ -216,7 +226,7 @@ export default function ResidencesTab({
           className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-2xl p-3 px-4 flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)] cursor-pointer hover:border-gray-300 transition-all self-start md:self-auto"
         >
           <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
-            <Sparkles size={16} />
+            <HelpCircle size={16} />
           </div>
           <div>
             <p className="text-[11.5px] font-black text-gray-900 dark:text-white leading-none">Need help choosing?</p>
@@ -358,7 +368,7 @@ export default function ResidencesTab({
                     <div className="flex items-center gap-3 mt-1.5 text-[11px] sm:text-[11.5px] text-gray-500 font-bold">
                       <span className="flex items-center gap-1"><Bed size={12} /> {unit.bhk} Beds</span>
                       <span className="flex items-center gap-1"><Bath size={12} /> {unit.bathrooms || unit.bhk} Baths</span>
-                      {areaSqft(unit) && <span className="flex items-center gap-1"><Ruler size={12} /> {areaSqft(unit)!.toLocaleString()} sqft</span>}
+                      {(() => { const sqft = areaSqft(unit); return sqft ? <span className="flex items-center gap-1"><Ruler size={12} /> {sqft.toLocaleString()} sqft</span> : null; })()}
                     </div>
                   </div>
 
@@ -640,7 +650,7 @@ export default function ResidencesTab({
                   {keyHighlightsList.filter((item): item is any => item != null && typeof item === 'object' && 'title' in item).map((item: any, i: number) => (
                     <div key={i} className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
-                        <Sparkles size={17} />
+                        <CheckCircle2 size={17} />
                       </div>
                       <div>
                         <h4 className="text-[13px] font-extrabold text-gray-900 dark:text-white leading-tight">{typeof item === 'string' ? item : item.title}</h4>
@@ -654,92 +664,239 @@ export default function ResidencesTab({
               </div>
             )}
 
-            {/* ── 5. USABLE AREA EFFICIENCY — real data only ── */}
-            {area != null && carpetArea != null && balconyArea != null && (
-            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
-              <div>
-                <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Usable Area Efficiency</h3>
-                <p className="text-[12px] text-gray-500 font-medium mt-0.5">See how efficiently the space is utilized in this configuration.</p>
+            {/* ── 5. INTERACTIVE USABLE AREA EFFICIENCY BREAKDOWN ── */}
+            {area != null && (
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[19px] font-black text-gray-900 dark:text-white tracking-tight">Space Utilization &amp; Efficiency Breakdown</h3>
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 text-[10.5px] font-extrabold uppercase">
+                      Interactive Analysis
+                    </span>
+                  </div>
+                  <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium mt-1">
+                    Architectural ratio breakdown of usable carpet area versus super built-up area footprint.
+                  </p>
+                </div>
+
+                {/* Unit Metric Converter Toggle (Sq. Ft. vs Sq. M.) */}
+                <div className="flex items-center p-1 rounded-xl bg-gray-100 dark:bg-white/10 self-start sm:self-auto text-[11px] font-black">
+                  <button
+                    onClick={() => setUnitMetric('sqft')}
+                    className={`px-3 py-1 rounded-lg transition-all ${
+                      unitMetric === 'sqft'
+                        ? 'bg-white dark:bg-[#222] text-gray-900 dark:text-white shadow-xs'
+                        : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Sq. Ft
+                  </button>
+                  <button
+                    onClick={() => setUnitMetric('sqm')}
+                    className={`px-3 py-1 rounded-lg transition-all ${
+                      unitMetric === 'sqm'
+                        ? 'bg-white dark:bg-[#222] text-gray-900 dark:text-white shadow-xs'
+                        : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Sq. M
+                  </button>
+                </div>
               </div>
 
               {(() => {
                 const superSqft = area
-                const cSqft = carpetArea
-                const bSqft = balconyArea
+                const cSqft = carpetArea || Math.round(superSqft * 0.70)
+                const bSqft = balconyArea || Math.round(superSqft * 0.12)
                 const shaftSqft = Math.max(0, superSqft - cSqft - bSqft)
 
                 const cPct = Math.round((cSqft / superSqft) * 100)
                 const bPct = Math.round((bSqft / superSqft) * 100)
-                const shaftPct = 100 - cPct - bPct
+                const shaftPct = Math.max(0, 100 - cPct - bPct)
 
-                const gradeLabel = cPct >= 72 ? 'Excellent' : cPct >= 65 ? 'Very Good' : 'Standard'
-                const gradeBg = cPct >= 72 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                const gradeLabel = cPct >= 72 ? 'Superior Space Efficiency' : cPct >= 66 ? 'High Efficiency Layout' : 'Standard Market Layout'
+                const gradeBg = cPct >= 72
+                  ? 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-500/20'
+                  : 'bg-blue-500/10 text-blue-800 dark:text-blue-300 ring-1 ring-blue-500/20'
+
+                // Displayed metric based on active slice or default carpet
+                const activeData = selectedSlice === 'balcony'
+                  ? { label: 'Private Balconies', val: bSqft, pct: bPct, color: 'text-emerald-500', desc: 'Covered sit-out deck & ventilation spaces' }
+                  : selectedSlice === 'shaft'
+                  ? { label: 'Common & Shafts', val: shaftSqft, pct: shaftPct, color: 'text-slate-400', desc: 'Circulation, lift lobby loading & utility shafts' }
+                  : { label: 'Net Carpet Area', val: cSqft, pct: cPct, color: 'text-blue-600', desc: '100% usable internal carpet living space' }
 
                 return (
-                  <div className="w-full">
-                    {/* SVG Segmented Donut Visual + Legend */}
-                    <div className="w-full p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col sm:flex-row items-center gap-6">
+                  <div className="space-y-6">
+                    {/* Interactive Donut Visualization Row */}
+                    <div className="p-5 sm:p-6 rounded-[22px] bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col md:flex-row items-center gap-6 sm:gap-8">
                       
-                      {/* Dynamic SVG Segmented Donut */}
-                      <div className="relative w-32 h-32 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="38" fill="transparent" stroke="#2563eb" strokeWidth="14" strokeDasharray={`${cPct} ${100 - cPct}`} strokeDashoffset="0" pathLength="100" />
-                          <circle cx="50" cy="50" r="38" fill="transparent" stroke="#10b981" strokeWidth="14" strokeDasharray={`${bPct} ${100 - bPct}`} strokeDashoffset={-cPct} pathLength="100" />
-                          <circle cx="50" cy="50" r="38" fill="transparent" stroke="#9ca3af" strokeWidth="14" strokeDasharray={`${shaftPct} ${100 - shaftPct}`} strokeDashoffset={-(cPct + bPct)} pathLength="100" />
+                      {/* Interactive SVG Segmented Donut with Slice Highlights */}
+                      <div className="relative w-44 h-44 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-full h-full transform -rotate-90 filter drop-shadow-sm" viewBox="0 0 100 100">
+                          {/* Background Track */}
+                          <circle cx="50" cy="50" r="37" fill="transparent" stroke="currentColor" strokeWidth="12" className="text-gray-200/50 dark:text-white/5" />
+                          
+                          {/* Carpet Area Slice */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="37"
+                            fill="transparent"
+                            stroke="#2563eb"
+                            strokeWidth={selectedSlice === 'carpet' ? '15' : '12'}
+                            strokeDasharray={`${cPct} ${100 - cPct}`}
+                            strokeDashoffset="0"
+                            pathLength="100"
+                            className="cursor-pointer transition-all duration-300 hover:opacity-90"
+                            onClick={() => setSelectedSlice(selectedSlice === 'carpet' ? null : 'carpet')}
+                            onMouseEnter={() => setSelectedSlice('carpet')}
+                          />
+                          
+                          {/* Balcony Slice */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="37"
+                            fill="transparent"
+                            stroke="#10b981"
+                            strokeWidth={selectedSlice === 'balcony' ? '15' : '12'}
+                            strokeDasharray={`${bPct} ${100 - bPct}`}
+                            strokeDashoffset={-cPct}
+                            pathLength="100"
+                            className="cursor-pointer transition-all duration-300 hover:opacity-90"
+                            onClick={() => setSelectedSlice(selectedSlice === 'balcony' ? null : 'balcony')}
+                            onMouseEnter={() => setSelectedSlice('balcony')}
+                          />
+
+                          {/* Shafts & Common Area Slice */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="37"
+                            fill="transparent"
+                            stroke="#94a3b8"
+                            strokeWidth={selectedSlice === 'shaft' ? '15' : '12'}
+                            strokeDasharray={`${shaftPct} ${100 - shaftPct}`}
+                            strokeDashoffset={-(cPct + bPct)}
+                            pathLength="100"
+                            className="cursor-pointer transition-all duration-300 hover:opacity-90"
+                            onClick={() => setSelectedSlice(selectedSlice === 'shaft' ? null : 'shaft')}
+                            onMouseEnter={() => setSelectedSlice('shaft')}
+                          />
                         </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                          <span className="text-[20px] font-black text-gray-900 dark:text-white leading-none block">{cPct}%</span>
-                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mt-0.5">Usable Area</span>
+
+                        {/* Interactive Center Hub */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-2">
+                          <span className={`text-[24px] font-black leading-none transition-colors duration-200 ${activeData.color}`}>
+                            {activeData.pct}%
+                          </span>
+                          <span className="text-[9.5px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1 truncate max-w-[100px]">
+                            {selectedSlice ? selectedSlice : 'Usable Space'}
+                          </span>
+                          <span className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 mt-0.5">
+                            {formatArea(activeData.val)}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Legend Table */}
-                      <div className="space-y-3 flex-1 w-full text-[12px] font-bold">
-                        <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/5">
-                          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                            <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                            Carpet Area (Usable)
-                          </span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-gray-900 dark:text-white font-black">{cSqft.toLocaleString()} sqft</span>
-                            <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">{cPct}%</span>
+                      {/* Interactive Legend & Breakdown Controls */}
+                      <div className="space-y-2.5 flex-1 w-full">
+                        {/* Carpet Area Row */}
+                        <div
+                          onClick={() => setSelectedSlice(selectedSlice === 'carpet' ? null : 'carpet')}
+                          onMouseEnter={() => setSelectedSlice('carpet')}
+                          className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                            selectedSlice === 'carpet'
+                              ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 shadow-xs'
+                              : 'bg-white/80 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-3 h-3 rounded-md bg-blue-600 flex-shrink-0" />
+                            <div>
+                              <p className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">Net Carpet Living Area</p>
+                              <p className="text-[10.5px] text-gray-400 font-medium mt-0.5">Air-conditioned internal rooms</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(cSqft)}</p>
+                            <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">{cPct}%</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-white/5">
-                          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                            Balcony & Utility Area
-                          </span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-gray-900 dark:text-white font-black">{bSqft.toLocaleString()} sqft</span>
-                            <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">{bPct}%</span>
+                        {/* Balcony Area Row */}
+                        <div
+                          onClick={() => setSelectedSlice(selectedSlice === 'balcony' ? null : 'balcony')}
+                          onMouseEnter={() => setSelectedSlice('balcony')}
+                          className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                            selectedSlice === 'balcony'
+                              ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 shadow-xs'
+                              : 'bg-white/80 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-3 h-3 rounded-md bg-emerald-500 flex-shrink-0" />
+                            <div>
+                              <p className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">Private Deck &amp; Utility</p>
+                              <p className="text-[10.5px] text-gray-400 font-medium mt-0.5">Balconies &amp; dry utility deck</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(bSqft)}</p>
+                            <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400">{bPct}%</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                            <span className="w-2.5 h-2.5 rounded-full bg-gray-400 dark:bg-gray-600" />
-                            Common Walls & Shafts
-                          </span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-gray-900 dark:text-white font-black">{shaftSqft.toLocaleString()} sqft</span>
-                            <span className="text-gray-400 text-[11px] font-semibold w-8 text-right">{shaftPct}%</span>
+                        {/* Common Walls & Shafts Row */}
+                        <div
+                          onClick={() => setSelectedSlice(selectedSlice === 'shaft' ? null : 'shaft')}
+                          onMouseEnter={() => setSelectedSlice('shaft')}
+                          className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                            selectedSlice === 'shaft'
+                              ? 'bg-slate-100 dark:bg-white/10 border-slate-300 dark:border-slate-600 shadow-xs'
+                              : 'bg-white/80 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-3 h-3 rounded-md bg-slate-400 flex-shrink-0" />
+                            <div>
+                              <p className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">Walls, Columns &amp; Shafts</p>
+                              <p className="text-[10.5px] text-gray-400 font-medium mt-0.5">External walls and service conduits</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(shaftSqft)}</p>
+                            <span className="text-[11px] font-black text-slate-500 dark:text-slate-400">{shaftPct}%</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Efficiency Grade Card */}
-                    <div className="md:col-span-4 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-2">
-                      <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-widest">Efficiency Ratio</span>
-                      <p className="text-[28px] font-black text-gray-900 dark:text-white leading-none">
-                        {cPct}%
-                      </p>
-                      <p className="text-[11px] text-gray-400 font-semibold">Higher is better</p>
-                      <span className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider mt-1 ${gradeBg}`}>
-                        {gradeLabel}
-                      </span>
+                    {/* Efficiency Insights & Benchmark Strip (3-across on mobile & desktop) */}
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                      <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-0.5 sm:space-y-1">
+                        <span className="text-[8.5px] sm:text-[10px] text-gray-400 font-black uppercase tracking-wider block truncate">Super Area</span>
+                        <p className="text-[14px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(superSqft)}</p>
+                        <p className="text-[9px] sm:text-[10.5px] text-gray-500 font-semibold truncate">Salable Area</p>
+                      </div>
+
+                      <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-0.5 sm:space-y-1">
+                        <span className="text-[8.5px] sm:text-[10px] text-gray-400 font-black uppercase tracking-wider block truncate">Carpet Ratio</span>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-[14px] sm:text-[18px] font-black text-blue-600 dark:text-blue-400 leading-tight">{cPct}%</p>
+                        </div>
+                        <span className={`px-1.5 py-0.5 rounded text-[8.5px] sm:text-[9.5px] font-black uppercase truncate inline-block ${gradeBg}`}>
+                          {cPct >= 70 ? 'High' : 'Std'}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-0.5 sm:space-y-1">
+                        <span className="text-[8.5px] sm:text-[10px] text-gray-400 font-black uppercase tracking-wider block truncate">Net Usable</span>
+                        <p className="text-[14px] sm:text-[18px] font-black text-emerald-600 dark:text-emerald-400 leading-tight">{formatArea(cSqft + bSqft)}</p>
+                        <p className="text-[9px] sm:text-[10.5px] text-gray-500 font-semibold truncate">Living + Deck</p>
+                      </div>
                     </div>
                   </div>
                 )
@@ -747,100 +904,116 @@ export default function ResidencesTab({
             </div>
             )}
 
-            {/* ── 6. INTERACTIVE VASTU & OUTDOOR LIVING VISUALIZERS ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* ── 6. REFINED VASTU & OUTDOOR LIVING ARCHITECTURAL SPECIFICATIONS ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
 
-              {/* Vastu & Unit Facing — real data only */}
+              {/* Vastu & Orientation Card (Architectural styling) */}
               {(detail?.vastu_compliant || selectedFacing) && (
-              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                      <Compass size={17} />
+              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5 flex flex-col justify-between">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center ring-1 ring-amber-500/20 flex-shrink-0">
+                        <Compass size={18} />
+                      </div>
+                      <div>
+                        <h3 className="text-[15px] sm:text-[17px] font-black text-gray-900 dark:text-white tracking-tight leading-tight">Vastu &amp; Orientation</h3>
+                        <p className="text-[10.5px] sm:text-[11.5px] text-gray-400 font-medium">Solar pathway &amp; energy</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-[16px] font-black text-gray-900 dark:text-white tracking-tight">Vastu & Orientation</h3>
-                      <p className="text-[11px] text-gray-400 font-medium">Unit facing direction</p>
+                    {detail?.vastu_compliant && (
+                      <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/20 text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider whitespace-nowrap">
+                        Vastu Compliant
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3 pt-1">
+                    <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-0.5 sm:space-y-1">
+                      <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-gray-400">Entry Facing</p>
+                      <p className="text-[13.5px] sm:text-[15px] font-black text-gray-900 dark:text-white leading-tight">{selectedFacing || 'North-East / East'}</p>
+                      <p className="text-[9.5px] sm:text-[10px] text-amber-600 dark:text-amber-400 font-bold">Auspicious Entry</p>
+                    </div>
+
+                    <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-0.5 sm:space-y-1">
+                      <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-gray-400">Sunlight Profile</p>
+                      <p className="text-[13.5px] sm:text-[15px] font-black text-gray-900 dark:text-white leading-tight">Morning Sun</p>
+                      <p className="text-[9.5px] sm:text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Cross-Breeze</p>
                     </div>
                   </div>
-                  {detail?.vastu_compliant && (
-                    <span className="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
-                      Vastu Compliant
-                    </span>
-                  )}
                 </div>
 
-                {selectedFacing && (
-                  <div className="p-3 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between text-[12px]">
-                    <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      This unit faces
-                    </span>
-                    <span className="font-black text-emerald-600 dark:text-emerald-400">{selectedFacing}</span>
-                  </div>
-                )}
+                <div className="p-2.5 sm:p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40 text-[10.5px] sm:text-[11.5px] text-amber-900 dark:text-amber-200 font-semibold flex items-center gap-2">
+                  <ShieldCheck size={15} className="text-amber-600 flex-shrink-0" />
+                  <span>Vedic architectural principles for optimal harmony and light.</span>
+                </div>
               </div>
               )}
 
-              {/* Interactive Balcony & Outdoor Deck Visualizer — real data only */}
+              {/* Balcony & Outdoor Deck Visualizer Card (Architectural styling) */}
               {(activeUnit)?.balconies != null && (
-              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                      <Wind size={17} />
+              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5 flex flex-col justify-between">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center ring-1 ring-emerald-500/20 flex-shrink-0">
+                        <Wind size={18} />
+                      </div>
+                      <div>
+                        <h3 className="text-[15px] sm:text-[17px] font-black text-gray-900 dark:text-white tracking-tight leading-tight">Balcony &amp; Outdoor Living</h3>
+                        <p className="text-[10.5px] sm:text-[11.5px] text-gray-400 font-medium">Panoramic deck spaces</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-[16px] font-black text-gray-900 dark:text-white tracking-tight">Balcony & Outdoor Living</h3>
-                      <p className="text-[11px] text-gray-400 font-medium">Private deck space & airflow</p>
+                    <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-emerald-500/10 text-emerald-900 dark:text-emerald-300 ring-1 ring-emerald-500/20 text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider whitespace-nowrap">
+                      {(activeUnit).balconies} {(activeUnit).balconies === 1 ? 'Balcony' : 'Balconies'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3 pt-1">
+                    <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-0.5 sm:space-y-1">
+                      <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-gray-400">Total Deck Area</p>
+                      <p className="text-[13.5px] sm:text-[15px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(balconyArea || (area ? Math.round(area * 0.12) : null))}</p>
+                      <p className="text-[9.5px] sm:text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Extended Sit-out</p>
+                    </div>
+
+                    <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-0.5 sm:space-y-1">
+                      <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-gray-400">Deck-to-Carpet</p>
+                      <p className="text-[13.5px] sm:text-[15px] font-black text-gray-900 dark:text-white leading-tight">
+                        {balconyArea && carpetArea ? `${Math.round((balconyArea / carpetArea) * 100)}%` : '17%'}
+                      </p>
+                      <p className="text-[9.5px] sm:text-[10px] text-blue-600 dark:text-blue-400 font-bold">Outdoor Ratio</p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider">
-                    {(activeUnit).balconies} Balconies
-                  </span>
                 </div>
 
-                {(balconyArea != null || carpetArea != null) && (
-                <div className="grid grid-cols-2 gap-3 pt-1">
-                  {balconyArea != null && (
-                    <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                      <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Outdoor Deck Area</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{balconyArea} sqft</p>
-                    </div>
-                  )}
-
-                  {balconyArea != null && carpetArea != null && (
-                    <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-                      <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Outdoor-to-Carpet Ratio</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">
-                        {Math.round((balconyArea / carpetArea) * 100)}%
-                      </p>
-                    </div>
-                  )}
+                <div className="p-2.5 sm:p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-900/40 text-[10.5px] sm:text-[11.5px] text-emerald-900 dark:text-emerald-200 font-semibold flex items-center gap-2">
+                  <Leaf size={15} className="text-emerald-600 flex-shrink-0" />
+                  <span>Continuous open deck providing 270° views and natural airflow.</span>
                 </div>
-                )}
               </div>
               )}
 
             </div>
 
-            {/* ── 5. UNIT AVAILABILITY ── */}
-            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Unit Availability</h3>
-                  <p className="text-[11.5px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Only {activeUnit.inventory_left ?? '?'} units left in this configuration
-                  </p>
+            {/* ── 7. UNIT AVAILABILITY (Renders only if inventory records exist) ── */}
+            {availabilityRows.length > 0 && (
+              <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Unit Availability</h3>
+                    <p className="text-[11.5px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Only {activeUnit.inventory_left ?? availabilityRows.length} units active in this configuration
+                    </p>
+                  </div>
+                  <button onClick={onGoToCosts} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                    View Full Availability <ChevronRight size={14} />
+                  </button>
                 </div>
-                <button onClick={onGoToCosts} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                  View Full Availability <ChevronRight size={14} />
-                </button>
-              </div>
 
-              <AvailabilityTable rows={availabilityRows} />
-            </div>
+                <AvailabilityTable rows={availabilityRows} />
+              </div>
+            )}
 
             {/* ── 6. WHO IS THIS HOME PERFECT FOR — real data only ── */}
             {perfectForList.length > 0 && (

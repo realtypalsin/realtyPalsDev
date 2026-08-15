@@ -1,7 +1,7 @@
 'use client'
 import {
   Building2, CheckCircle2, LineChart, BedDouble,
-  MapPin, Sparkles, CalendarDays, FileText, IndianRupee, X, ShieldCheck, Users, HardHat
+  MapPin, Award, CalendarDays, FileText, IndianRupee, X, ShieldCheck, Users, HardHat
 } from 'lucide-react'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -126,7 +126,9 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   const fetchAqi = useCallback(() => {
     if (!project) return
     const city = (project.city || 'noida').toLowerCase()
-    getAqi(project.lat, project.lng, city).then(setAqi).catch(() => {})
+    getAqi(project.lat, project.lng, city).then(setAqi).catch((err) => {
+      console.error('Failed to fetch AQI:', err instanceof Error ? err.message : String(err))
+    })
   }, [project])
 
   useEffect(() => {
@@ -186,7 +188,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   // ── Tier + persona Notion-style callout (shared mobile/desktop) ─────────────────────
   const intelligenceChips = (tier || persona) && (
     <div className="flex items-start gap-md bg-surface-2 border border-border rounded-lg p-lg">
-      <Sparkles size={16} className="text-primary mt-0.5 flex-shrink-0" />
+      <Award size={16} className="text-primary mt-0.5 flex-shrink-0" />
       <div>
         <p className="text-xs font-bold text-text-primary mb-md">Investment Thesis</p>
         <p className="text-sm text-text-secondary leading-relaxed">

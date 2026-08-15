@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   Globe, Download, Building2, Users, TrendingUp, Award, CalendarDays,
-  ShieldCheck, ArrowUpRight, Sparkles, CheckCircle2, Clock, MapPin, BadgeCheck, Phone, FileText
+  ShieldCheck, ArrowUpRight, Leaf, CheckCircle2, Clock, MapPin, BadgeCheck, Phone, FileText
 } from 'lucide-react'
 import type { Builder } from '@prisma/client'
 
@@ -26,6 +26,8 @@ interface BuilderTabProps {
 
 export default function BuilderTab({ builder, project, documents = [], loading }: BuilderTabProps) {
   const [imgError, setImgError] = useState(false)
+  const [showAllPartners, setShowAllPartners] = useState(false)
+  const [showAllDocs, setShowAllDocs] = useState(false)
 
   if (loading) {
     return (
@@ -42,7 +44,7 @@ export default function BuilderTab({ builder, project, documents = [], loading }
     project?.builder_name ||
     (typeof project?.builder === 'string' ? project.builder : project?.builder?.name) ||
     'Developer'
-  const foundedYear = builder?.founded_year || project?.builder_founded_year || 2012
+  const foundedYear = builder?.founded_year ?? project?.builder_founded_year ?? 2012
   const legacyYears = foundedYear ? Math.max(1, new Date().getFullYear() - foundedYear) : 12
   const builderSlug = builder?.slug || (builderName ? builderName.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'developer')
 
@@ -168,58 +170,71 @@ export default function BuilderTab({ builder, project, documents = [], loading }
         </div>
       </div>
 
-      {/* ── 2. LEGACY & DELIVERED STAT METRICS BANNER ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        {[
+      {/* ── 2. LEGACY & DELIVERED STAT METRICS BANNER (Dynamically fits valid stats only) ── */}
+      {(() => {
+        const stats = [
           { title: `${legacyYears}+`, label: 'Years of Legacy', icon: Clock, color: 'text-blue-600 bg-blue-50' },
-          builder?.projects_delivered_count ? { title: `${builder.projects_delivered_count}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' } : null,
-          builder?.delivered_units ? { title: `${(builder.delivered_units / 1000000).toFixed(1)}M+`, label: 'Sq. Ft. Delivered', icon: Award, color: 'text-amber-600 bg-amber-50' } : null,
-          (builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count ? { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count}+`, label: 'Ongoing Projects', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' } : null
-        ].filter(Boolean).map((stat: any, i) => {
-          const Icon = stat.icon
-          return (
-            <div key={i} className="p-4 rounded-2xl bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-2 flex items-center gap-3.5">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${stat.color}`}>
-                <Icon size={18} />
-              </div>
-              <div>
-                <h3 className="text-[20px] font-black text-gray-900 dark:text-white leading-tight">{stat.title}</h3>
-                <p className="text-[10.5px] font-bold text-gray-400 leading-tight">{stat.label}</p>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+          (builder?.projects_delivered_count && Number(builder.projects_delivered_count) > 0) ? { title: `${builder.projects_delivered_count}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' } : null,
+          (builder?.delivered_units && Number(builder.delivered_units) >= 10000) ? { title: `${(Number(builder.delivered_units) >= 100000 ? (Number(builder.delivered_units) / 1000000).toFixed(1) + 'M+' : Number(builder.delivered_units).toLocaleString() + '+')}`, label: 'Sq. Ft. Delivered', icon: Award, color: 'text-amber-600 bg-amber-50' } : null,
+          (Number((builder as any)?.ongoing_projects) > 0 || Number((builder as any)?.ongoing_projects_count) > 0) ? { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count}+`, label: 'Ongoing Projects', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' } : null
+        ].filter(Boolean)
 
-      {/* ── 3. ABOUT BUILDER & FEATURED PROJECTS (2-Column Split) ── */}
+        if (stats.length === 0) return null
+
+        return (
+          <div className={`grid gap-2.5 sm:gap-4 ${
+            stats.length === 1 ? 'grid-cols-1 max-w-xs' :
+            stats.length === 2 ? 'grid-cols-2' :
+            stats.length === 3 ? 'grid-cols-3' :
+            'grid-cols-2 lg:grid-cols-4'
+          }`}>
+            {stats.map((stat: any, i: number) => {
+              const Icon = stat.icon
+              return (
+                <div key={i} className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3.5">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${stat.color}`}>
+                    <Icon size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] sm:text-[20px] font-black text-gray-900 dark:text-white leading-tight">{stat.title}</h3>
+                    <p className="text-[9.5px] sm:text-[10.5px] font-bold text-gray-400 leading-tight">{stat.label}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })()}
+
+      {/* ── 3. ABOUT BUILDER & FEATURED PROJECTS (Dynamically fills full width) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* About Builder (6 columns) */}
-        <div className="lg:col-span-6 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5 h-full flex flex-col justify-between">
+        {/* About Builder (Full width when no featured projects; 6 columns when projects exist) */}
+        <div className={`${featuredProjectsList.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'} bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5 flex flex-col justify-between`}>
           <div className="space-y-4">
             <div>
-              <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">About {builderName}</h2>
-              <p className="text-[12px] text-gray-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">About {builderName}</h2>
+              <p className="text-[12px] sm:text-[12.5px] text-gray-500 font-medium mt-1 leading-relaxed">
                 Founded in {foundedYear}, {builderName} has grown into one of India&apos;s most trusted real estate brands. Our vision is to craft spaces that combine innovation, quality, and sustainability to enhance lifestyles and communities.
               </p>
             </div>
 
-            <div className="space-y-3 pt-2">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 pt-2">
               {[
-                { title: 'Customer-Centric Approach', desc: 'Putting customers at the heart of everything we do.', icon: Users, color: 'bg-blue-50 text-blue-600' },
-                { title: 'Quality & Transparency', desc: 'Uncompromised quality with complete transparency.', icon: ShieldCheck, color: 'bg-emerald-50 text-emerald-600' },
+                { title: 'Customer-Centric', desc: 'Putting customers at the heart of everything.', icon: Users, color: 'bg-blue-50 text-blue-600' },
+                { title: 'Quality & Integrity', desc: 'Uncompromised quality with complete transparency.', icon: ShieldCheck, color: 'bg-emerald-50 text-emerald-600' },
                 { title: 'Timely Delivery', desc: 'Strong track record of delivering projects on time.', icon: Clock, color: 'bg-amber-50 text-amber-600' },
-                { title: 'Sustainable Development', desc: 'Building responsibly for a better tomorrow.', icon: Sparkles, color: 'bg-rose-50 text-rose-600' }
+                { title: 'Sustainable Dev', desc: 'Building responsibly for a better tomorrow.', icon: Leaf, color: 'bg-rose-50 text-rose-600' }
               ].map((item, idx) => {
                 const Icon = item.icon
                 return (
-                  <div key={idx} className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${item.color}`}>
-                      <Icon size={15} />
+                  <div key={idx} className="flex flex-col justify-between space-y-1.5 p-3 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100/80 dark:border-white/5 hover:border-gray-200 transition-colors min-h-[90px]">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.color}`}>
+                      <Icon size={14} />
                     </div>
                     <div>
-                      <h4 className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{item.title}</h4>
-                      <p className="text-[11px] text-gray-400 font-semibold">{item.desc}</p>
+                      <h4 className="text-[12px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight">{item.title}</h4>
+                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold mt-0.5 leading-snug line-clamp-2">{item.desc}</p>
                     </div>
                   </div>
                 )
@@ -235,7 +250,7 @@ export default function BuilderTab({ builder, project, documents = [], loading }
           </button>
         </div>
 
-        {/* Featured Projects (6 columns) */}
+        {/* Featured Projects (6 columns when present) */}
         {featuredProjectsList.length > 0 && (
           <div className="lg:col-span-6 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
             <div className="flex items-center justify-between">
@@ -273,26 +288,26 @@ export default function BuilderTab({ builder, project, documents = [], loading }
       </div>
 
       {/* ── 4. TRUST & CREDENTIALS ── */}
-      <div id="builder-credentials" className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+      <div id="builder-credentials" className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
         <div>
-          <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Trust &amp; Credentials</h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">Verified promoter status and industry memberships.</p>
+          <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Trust &amp; Credentials</h2>
+          <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Verified promoter status and industry memberships.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
           {[
             builder?.rera_promoter_id ? { title: 'RERA Registered', sub: builder.rera_promoter_id, tag: 'Registered', color: 'bg-blue-50 text-blue-600' } : null,
             builder?.iso_certified ? { title: 'ISO 9001:2015', sub: 'Quality Management', tag: 'Certified', color: 'bg-indigo-50 text-indigo-600' } : null,
             builder?.credai_member ? { title: 'CREDAI Member', sub: 'Confederation of Real Estate', tag: 'Member', color: 'bg-emerald-50 text-emerald-600' } : null
           ].filter(Boolean).map((item: any, i) => (
-            <div key={i} className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${item.color}`}>
-                <BadgeCheck size={16} />
+            <div key={i} className="p-3 sm:p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center ${item.color}`}>
+                <BadgeCheck size={15} />
               </div>
               <div>
-                <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">{item.title}</h4>
-                <p className="text-[10px] text-gray-400 font-semibold truncate mt-0.5">{item.sub}</p>
-                <span className="inline-block text-[9.5px] font-black text-emerald-600 dark:text-emerald-400 mt-1">{item.tag}</span>
+                <h4 className="text-[12px] sm:text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">{item.title}</h4>
+                <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-semibold truncate mt-0.5">{item.sub}</p>
+                <span className="inline-block text-[9px] sm:text-[9.5px] font-black text-emerald-600 dark:text-emerald-400 mt-0.5">{item.tag}</span>
               </div>
             </div>
           ))}
@@ -300,176 +315,219 @@ export default function BuilderTab({ builder, project, documents = [], loading }
       </div>
 
       {/* ── 5. OUR IMPACT SUMMARY ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
         <div>
-          <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Our Impact</h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">Numbers that reflect our commitment to excellence and trust.</p>
+          <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Our Impact</h2>
+          <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Numbers that reflect our commitment to excellence and trust.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
           {[
             { val: `${legacyYears}+`, label: 'Years of Legacy' },
             builder?.projects_delivered_count && { val: `${builder.projects_delivered_count}+`, label: 'Projects Delivered' },
             builder?.delivered_units && { val: `${(builder.delivered_units / 1000000).toFixed(1)}M+`, label: 'Sq. Ft. Delivered' }
           ].filter(Boolean).map((imp, i) => (
-            <div key={i} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-              <h3 className="text-[22px] font-black text-gray-900 dark:text-white">{(imp as any).val}</h3>
-              <p className="text-[11px] text-gray-400 font-extrabold">{(imp as any).label}</p>
+            <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+              <h3 className="text-[18px] sm:text-[22px] font-black text-gray-900 dark:text-white">{(imp as any).val}</h3>
+              <p className="text-[10px] sm:text-[11px] text-gray-400 font-extrabold">{(imp as any).label}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── 6. AWARDS & MEDIA ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Awards & Recognition */}
-        <div className="lg:col-span-6 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Awards &amp; Recognition</h2>
-              <p className="text-[11.5px] text-gray-500 font-medium">Honored for our commitment to quality and innovation.</p>
-            </div>
-            {showViewAllAwards && (
-              <button className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                View All Awards <ArrowUpRight size={14} />
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-3 pt-1">
-            {dbAwards.slice(0, 3).map((award: any, i: number) => (
-              <div key={i} className="p-3 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                  <Award size={16} />
-                </div>
+      {/* ── 6. AWARDS & MEDIA (Render only when verified data exists) ── */}
+      {(dbAwards.length > 0 || dbMedia.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* Awards & Recognition */}
+          {dbAwards.length > 0 && (
+            <div className={`${dbMedia.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'} bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4`}>
+              <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">{award.title}</h4>
-                  <p className="text-[10.5px] text-gray-400 font-semibold">{award.src}</p>
+                  <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Awards &amp; Recognition</h2>
+                  <p className="text-[11.5px] text-gray-500 font-medium">Honored for our commitment to quality and innovation.</p>
+                </div>
+                {showViewAllAwards && (
+                  <button className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                    View All Awards <ArrowUpRight size={14} />
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-3 pt-1">
+                {dbAwards.slice(0, 3).map((award: any, i: number) => (
+                  <div key={i} className="p-3 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                      <Award size={16} />
+                    </div>
+                    <div>
+                      <h4 className="text-[13px] font-black text-gray-900 dark:text-white">{award.title || award.name}</h4>
+                      <p className="text-[11px] text-gray-400 font-medium">{award.organization || award.year || 'National Real Estate Award'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* In The Media */}
+          {dbMedia.length > 0 && (
+            <div className={`${dbAwards.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'} bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">In The Media</h2>
+                  <p className="text-[11.5px] text-gray-500 font-medium">Featured in leading publications and real estate journals.</p>
+                </div>
+                {showViewAllMedia && (
+                  <button className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                    View All Press <ArrowUpRight size={14} />
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-3 pt-1">
+                {dbMedia.slice(0, 3).map((media: any, i: number) => (
+                  <div key={i} className="p-3 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Globe size={16} />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-[13px] font-black text-gray-900 dark:text-white truncate">{media.headline || media.title}</h4>
+                        <p className="text-[11px] text-gray-400 font-medium">{media.source || 'National Press'}</p>
+                      </div>
+                    </div>
+                    {media.url && (
+                      <a href={media.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-600 flex-shrink-0">
+                        <ArrowUpRight size={16} />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+
+      {/* ── 7. CHANNEL PARTNERS (Render only when partners exist) ── */}
+      {channelPartnersList.length > 0 && (
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Channel Partners</h2>
+              <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Our trusted network of sales &amp; distribution partners.</p>
+            </div>
+            {showViewAllPartners && (
+              <button className="text-[12px] font-extrabold text-blue-600 hover:underline">View All Partners</button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5 pt-1">
+            {(showAllPartners ? channelPartnersList : channelPartnersList.slice(0, 4)).map((partner: any, idx: number) => (
+              <div key={idx} className="p-3 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-2.5 sm:gap-3.5">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
+                  {partner.logo}
+                </div>
+                <div className="overflow-hidden min-w-0">
+                  <h4 className="text-[12px] sm:text-[12.5px] font-black text-gray-900 dark:text-white leading-tight truncate">{partner.name}</h4>
+                  <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-semibold truncate mt-0.5">{partner.type}</p>
+                  <span className="text-[9px] sm:text-[9.5px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 mt-0.5 truncate">
+                    <ShieldCheck size={10} /> Verified
+                  </span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* In The Media */}
-        <div className="lg:col-span-6 bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">In The Media</h2>
-              <p className="text-[11.5px] text-gray-500 font-medium">Featured in leading publications.</p>
-            </div>
-            {showViewAllMedia && (
-              <button className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                View All Features <ArrowUpRight size={14} />
+          {channelPartnersList.length > 4 && (
+            <div className="flex justify-center pt-1">
+              <button
+                onClick={() => setShowAllPartners(!showAllPartners)}
+                className="px-5 py-1.5 rounded-full border border-gray-200 dark:border-white/10 text-[11.5px] font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 transition-all shadow-2xs cursor-pointer"
+              >
+                {showAllPartners ? 'Show Less' : `View All (${channelPartnersList.length}) Partners`}
               </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            {dbMedia.slice(0, 4).map((pub: string, i: number) => (
-              <div key={i} className="h-16 rounded-xl bg-gray-50/80 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-center text-[13px] font-black text-gray-700 dark:text-gray-300">
-                {pub}
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
-
-      {/* ── 7. CHANNEL PARTNERS ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Channel Partners</h2>
-            <p className="text-[12px] text-gray-500 font-medium mt-0.5">Our trusted network of sales &amp; distribution partners.</p>
-          </div>
-          {showViewAllPartners && (
-            <button className="text-[12px] font-extrabold text-blue-600 hover:underline">View All Partners</button>
+            </div>
           )}
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 pt-1">
-          {channelPartnersList.map((partner: any, idx: number) => (
-            <div key={idx} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center text-xl flex-shrink-0">
-                {partner.logo}
-              </div>
-              <div className="overflow-hidden">
-                <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight truncate">{partner.name}</h4>
-                <p className="text-[10px] text-gray-400 font-semibold truncate mt-0.5">{partner.type}</p>
-                <span className="text-[9.5px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 mt-0.5">
-                  <ShieldCheck size={10} /> Verified RERA
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* ── 7.5. OFFICIAL DOCUMENTS & DOWNLOADS ── */}
       {documents.length > 0 && (
-        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Official Project Documents</h2>
-              <p className="text-[12px] text-gray-500 font-medium mt-0.5">Verified approvals, brochures, and legal disclosures.</p>
+              <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Official Project Documents</h2>
+              <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Verified approvals, brochures, and legal disclosures.</p>
             </div>
             <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
               {documents.length} Verified Docs
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
-            {documents.map((doc: any, idx: number) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5 pt-1">
+            {(showAllDocs ? documents : documents.slice(0, 3)).map((doc: any, idx: number) => (
               <a
                 key={doc.id || idx}
                 href={doc.storage_url || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between gap-3 hover:bg-gray-100/70 dark:hover:bg-white/10 transition-all cursor-pointer group"
+                className="p-3 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between gap-3 hover:bg-gray-100/70 dark:hover:bg-white/10 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
-                    <FileText size={18} />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+                    <FileText size={17} />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-[13px] font-black text-gray-900 dark:text-white truncate">{doc.name || doc.doc_type?.replace(/_/g, ' ') || 'Project Document'}</h4>
-                    <p className="text-[10.5px] text-gray-400 font-semibold truncate capitalize">{doc.doc_type?.replace(/_/g, ' ') || 'Official Clearance'}</p>
+                    <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-white truncate">{doc.name || doc.doc_type?.replace(/_/g, ' ') || 'Project Document'}</h4>
+                    <p className="text-[10px] sm:text-[10.5px] text-gray-400 font-semibold truncate capitalize">{doc.doc_type?.replace(/_/g, ' ') || 'Official Clearance'}</p>
                   </div>
                 </div>
-                <div className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform flex-shrink-0 shadow-2xs">
-                  <Download size={14} />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform flex-shrink-0 shadow-2xs">
+                  <Download size={13} />
                 </div>
               </a>
             ))}
           </div>
+
+          {documents.length > 3 && (
+            <div className="flex justify-center pt-1">
+              <button
+                onClick={() => setShowAllDocs(!showAllDocs)}
+                className="px-5 py-1.5 rounded-full border border-gray-200 dark:border-white/10 text-[11.5px] font-extrabold text-gray-700 dark:text-gray-300 hover:bg-gray-50 transition-all shadow-2xs cursor-pointer"
+              >
+                {showAllDocs ? 'Show Less' : `View All (${documents.length}) Documents`}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {/* ── 8. WHY CHOOSE BUILDER? GRID ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
         <div>
-          <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Why Choose {builderName}?</h2>
+          <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Why Choose {builderName}?</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
           {[
             { icon: Clock, title: 'Timely Delivery', desc: 'Track record of on-time project completion.', color: 'bg-blue-50 text-blue-600' },
             { icon: ShieldCheck, title: 'Superior Quality', desc: 'Premium materials and international standards.', color: 'bg-indigo-50 text-indigo-600' },
-            { icon: MapPin, title: 'Prime Locations', desc: 'Projects in high-growth corridors with excellent connectivity.', color: 'bg-purple-50 text-purple-600' },
-            { icon: Sparkles, title: 'Innovative Design', desc: 'Thoughtfully designed spaces for modern lifestyles.', color: 'bg-emerald-50 text-emerald-600' },
-            { icon: Users, title: 'After-Sales Support', desc: 'Dedicated support before, during & after possession.', color: 'bg-amber-50 text-amber-600' }
+            { icon: MapPin, title: 'Prime Locations', desc: 'Projects in high-growth corridors with connectivity.', color: 'bg-purple-50 text-purple-600' },
+            { icon: Building2, title: 'Innovative Design', desc: 'Thoughtfully designed spaces for modern living.', color: 'bg-emerald-50 text-emerald-600' },
+            { icon: Users, title: 'Support & Care', desc: 'Dedicated support before & after possession.', color: 'bg-amber-50 text-amber-600' }
           ].map((card, i) => {
             const Icon = card.icon
             return (
-              <div key={i} className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.color}`}>
-                  <Icon size={18} />
+              <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center ${card.color}`}>
+                  <Icon size={16} />
                 </div>
                 <div>
-                  <h4 className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{card.title}</h4>
-                  <p className="text-[11px] text-gray-400 font-semibold mt-1 leading-normal">{card.desc}</p>
+                  <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight">{card.title}</h4>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold mt-0.5 leading-snug">{card.desc}</p>
                 </div>
               </div>
             )

@@ -203,14 +203,14 @@ export default function IntelligenceTab({
 }: IntelligenceTabProps) {
 
   // Extract DB data safely
-  const pData = (detail || project || d)
-  const decisionProfile = (pData as any)?.decision_profile || {}
-  const recommendationProfile = (pData as any)?.recommendation_profile || {}
-  const dna = (pData as any)?.dna || {}
-  const builder = (pData as any)?.builder || (pData as any)?.builder_detail || {}
-  const unitTypes = useMemo(() => pData?.unit_types || [], [pData?.unit_types])
-  const personaProfile = pData?.persona_profile || {}
-  const finIntel = decisionProfile?.financial_intelligence || {}
+  const pData = (detail || project || d) as (ProjectDetail & Record<string, any>) | null
+  const decisionProfile = pData?.decision_profile || ({} as any)
+  const recommendationProfile = pData?.recommendation_profile || ({} as any)
+  const dna = pData?.dna || ({} as any)
+  const builder = pData?.builder || pData?.builder_detail || ({} as any)
+  const unitTypes = useMemo(() => pData?.unit_types ?? [], [pData?.unit_types])
+  const personaProfile = pData?.persona_profile || ({} as any)
+  const finIntel = decisionProfile?.financial_intelligence || ({} as any)
   const marketIntel = decisionProfile?.market_intelligence || {}
 
   // 1. ROI & Investment Snapshot Data
@@ -521,42 +521,42 @@ export default function IntelligenceTab({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Inventory in Micro-market</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">
-              {totalUnits ? totalUnits.toLocaleString() : '--'} {totalUnits && <span className="text-[12px] text-gray-400 font-normal">Units</span>}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+            <p className="text-[9.5px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Inventory in Sector</p>
+            <p className="text-[17px] sm:text-[20px] font-black text-gray-900 dark:text-white">
+              {totalUnits ? totalUnits.toLocaleString() : '--'} {totalUnits && <span className="text-[11px] text-gray-400 font-normal">Units</span>}
             </p>
-            <p className="text-[10.5px] text-emerald-600 font-bold">Moderate</p>
+            <p className="text-[10px] sm:text-[10.5px] text-emerald-600 font-bold">Moderate</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Absorption Rate</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">{absorptionRate ?? '--'}</p>
-            <p className="text-[10.5px] text-emerald-600 font-bold">Strong</p>
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+            <p className="text-[9.5px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Absorption Rate</p>
+            <p className="text-[17px] sm:text-[20px] font-black text-gray-900 dark:text-white">{absorptionRate ?? '--'}</p>
+            <p className="text-[10px] sm:text-[10.5px] text-emerald-600 font-bold">Strong</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">New Launches (Next 6 Months)</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">{upcomingLaunches ?? '--'}</p>
-            <p className="text-[10.5px] text-gray-400 font-medium">Upcoming Competition</p>
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+            <p className="text-[9.5px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">New Launches (6M)</p>
+            <p className="text-[17px] sm:text-[20px] font-black text-gray-900 dark:text-white">{upcomingLaunches ?? '--'}</p>
+            <p className="text-[10px] sm:text-[10.5px] text-gray-400 font-medium">Competition</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Unsold Inventory</p>
-            <p className="text-[20px] font-black text-gray-900 dark:text-white">{unsoldMonths ?? '--'}</p>
-            <p className="text-[10.5px] text-emerald-600 font-bold">Healthy</p>
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
+            <p className="text-[9.5px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Unsold Inventory</p>
+            <p className="text-[17px] sm:text-[20px] font-black text-gray-900 dark:text-white">{unsoldMonths ?? '--'}</p>
+            <p className="text-[10px] sm:text-[10.5px] text-emerald-600 font-bold">Healthy</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 flex items-center justify-between gap-4">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0">
-              <TrendingUp size={20} />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0">
+              <TrendingUp size={18} />
             </div>
             <div>
-              <h4 className="text-[13.5px] font-black text-emerald-950 dark:text-emerald-200">High Demand Zone</h4>
-              <p className="text-[11.5px] text-emerald-800 dark:text-emerald-300 font-medium">
+              <h4 className="text-[13px] sm:text-[13.5px] font-black text-emerald-950 dark:text-emerald-200">High Demand Zone</h4>
+              <p className="text-[11px] sm:text-[11.5px] text-emerald-800 dark:text-emerald-300 font-medium">
                 {pData?.name || 'Project'} is located in one of the highest demand pockets in {pData?.sector || 'the corridor'}.
               </p>
             </div>
@@ -566,17 +566,17 @@ export default function IntelligenceTab({
 
       {/* ── 4. BUYER PREFERENCE FIT (Hides if zero scores) ── */}
       {hasPreferenceFitData && (
-        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-6">
           <div>
             <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
               Buyer Preference Fit
             </h2>
-            <p className="text-[12px] text-gray-500 font-medium mt-0.5">
+            <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">
               How well {pData?.name || 'this project'} matches what buyers are looking for.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
             {[
               { label: 'Location Match', score: locationFit, tag: 'Excellent', hint: 'Proximity to metro, expressways, top schools, hospitals, and major IT/commercial hubs.' },
               { label: 'Budget Fit', score: budgetFit, tag: 'Very Good', hint: 'Position relative to micro-market average price/sqft and overall sector pricing trends.' },
@@ -584,15 +584,15 @@ export default function IntelligenceTab({
               { label: 'Unit Config Fit', score: configFit, tag: 'Very Good', hint: 'Layout efficiency, carpet ratio, orientation, and family stage suitabilities.' },
               { label: 'Lifestyle Fit', score: lifestyleFit, tag: 'Excellent', hint: 'Composite score incorporating air quality index, green cover %, safety, and noise levels.' }
             ].filter(item => item.score !== null).map((item, i) => (
-              <div key={i} className="p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-2 relative">
-                <div className="flex items-center justify-center gap-1.5 h-8">
-                  <p className="text-[11px] font-extrabold text-gray-500 dark:text-gray-400">{item.label}</p>
+              <div key={i} className="p-3.5 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-1.5 sm:space-y-2 relative">
+                <div className="flex items-center justify-center gap-1.5 h-6 sm:h-8">
+                  <p className="text-[10px] sm:text-[11px] font-extrabold text-gray-500 dark:text-gray-400">{item.label}</p>
                   <InfoTooltip content={item.hint} title={item.label} />
                 </div>
-                <div className="w-16 h-16 rounded-full border-4 border-emerald-500 border-t-transparent flex items-center justify-center font-black text-emerald-600 dark:text-emerald-400 text-lg">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-emerald-500 border-t-transparent flex items-center justify-center font-black text-emerald-600 dark:text-emerald-400 text-base sm:text-lg">
                   {item.score}%
                 </div>
-                <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400">{item.tag}</span>
+                <span className="text-[10px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400">{item.tag}</span>
               </div>
             ))}
           </div>
@@ -601,24 +601,24 @@ export default function IntelligenceTab({
 
       {/* ── 5. UNIT MIX & CONFIGURATION INSIGHTS (Hides if no unit_types) ── */}
       {unitTypes.length > 0 && (
-        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
+        <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-6">
           <div>
             <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
               Unit Mix & Configuration Insights
             </h2>
-            <p className="text-[12px] text-gray-500 font-medium mt-0.5">
+            <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">
               Distribution of units and most preferred configurations.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Unit Mix Distribution */}
-            <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4">
+            <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 sm:space-y-4">
               <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Unit Mix Distribution</span>
-              <div className="flex flex-col sm:flex-row items-center gap-6 pt-2">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-1 sm:pt-2">
                 
                 {/* SVG Segmented Donut Chart */}
-                <div className="relative w-32 h-32 flex items-center justify-center flex-shrink-0">
+                <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center flex-shrink-0">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                     {(() => {
                       let accumulatedPct = 0
@@ -652,14 +652,14 @@ export default function IntelligenceTab({
                     })()}
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Total Units</span>
-                    <span className="text-[17px] font-black text-gray-900 dark:text-white leading-none mt-0.5">{totalUnits ? totalUnits.toLocaleString('en-IN') : unitTypes.length}</span>
+                    <span className="text-[8.5px] sm:text-[9px] font-black text-gray-400 uppercase tracking-widest block">Total Units</span>
+                    <span className="text-[15px] sm:text-[17px] font-black text-gray-900 dark:text-white leading-none mt-0.5">{totalUnits ? totalUnits.toLocaleString('en-IN') : unitTypes.length}</span>
                   </div>
                 </div>
 
-                <div className="space-y-2.5 flex-1 w-full">
+                <div className="space-y-2 sm:space-y-2.5 flex-1 w-full">
                   {bhkDistribution.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between text-[12px] font-bold">
+                    <div key={i} className="flex items-center justify-between text-[11.5px] sm:text-[12px] font-bold">
                       <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                         <span className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
                         {item.label}
@@ -672,23 +672,23 @@ export default function IntelligenceTab({
             </div>
 
             {/* Most Preferred Configurations */}
-            <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
+            <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 sm:space-y-4 flex flex-col justify-between">
+              <div className="space-y-2.5 sm:space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Most Preferred Configurations</span>
                   <InfoTooltip title="Unit Mix Methodology" content="Calculated from real-time buyer search velocity, unit inventory allocation, and transaction demand across this micro-market. Percentages reflect total 100% inventory distribution." />
                 </div>
-                <div className="space-y-2 pt-1">
+                <div className="space-y-1.5 sm:space-y-2 pt-1">
                   {unitTypes.slice(0, 4).map((unit: any, i: number) => {
                     const matchedDist = bhkDistribution.find(d => d.label.includes(`${unit.bhk}`))
                     const calcPct = matchedDist ? matchedDist.pct : (i === 0 ? 45 : i === 1 ? 35 : 20)
                     return (
-                      <div key={i} className="p-3 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between">
-                        <span className="text-[12.5px] font-extrabold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-[10px] font-black flex items-center justify-center">{i + 1}</span>
-                          {unit.name || `${unit.bhk} BHK (${unit.super_area_sqft || '--'} sq.ft)`}
+                      <div key={i} className="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between">
+                        <span className="text-[11.5px] sm:text-[12.5px] font-extrabold text-gray-800 dark:text-gray-200 flex items-center gap-2 truncate">
+                          <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-[9.5px] sm:text-[10px] font-black flex items-center justify-center flex-shrink-0">{i + 1}</span>
+                          <span className="truncate">{unit.name || `${unit.bhk} BHK (${unit.super_area_sqft || '--'} sq.ft)`}</span>
                         </span>
-                        <span className="text-[12px] font-black text-gray-900 dark:text-white">
+                        <span className="text-[11.5px] sm:text-[12px] font-black text-gray-900 dark:text-white flex-shrink-0 pl-2">
                           {calcPct}%
                         </span>
                       </div>
@@ -697,7 +697,7 @@ export default function IntelligenceTab({
                 </div>
               </div>
 
-              <button onClick={onGoToPricing} className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 self-end flex items-center gap-1 pt-2">
+              <button onClick={onGoToPricing} className="text-[12px] font-extrabold text-blue-600 hover:text-blue-700 self-end flex items-center gap-1 pt-1 sm:pt-2">
                 View All Unit Types <ChevronRight size={14} />
               </button>
             </div>
@@ -706,75 +706,83 @@ export default function IntelligenceTab({
       )}
 
       {/* ── 6. INCOME & BUYER PROFILE INSIGHTS ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
         <div>
           <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
             Income & Buyer Profile Insights
           </h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">
+          <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">
             Who is buying in this micro-market?
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
-              <UserCheck size={18} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 min-h-[110px]">
+            <div className="flex items-center justify-between">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+                <UserCheck size={16} />
+              </div>
+              <span className="text-[9px] sm:text-[9.5px] text-gray-400 font-black uppercase tracking-wider">Avg. Age</span>
             </div>
             <div>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Avg. Buyer Age</p>
-              <p className="text-[16px] font-black text-gray-900 dark:text-white mt-1">{avgBuyerAge}</p>
-              <p className="text-[10.5px] text-gray-400 font-semibold">Primary Buyers</p>
+              <p className="text-[12.5px] sm:text-[14.5px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">{avgBuyerAge}</p>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-semibold mt-0.5 truncate">Primary Buyers</p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
-              <DollarSign size={18} />
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 min-h-[110px]">
+            <div className="flex items-center justify-between">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+                <DollarSign size={16} />
+              </div>
+              <span className="text-[9px] sm:text-[9.5px] text-gray-400 font-black uppercase tracking-wider">Income</span>
             </div>
             <div>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Income Bracket</p>
-              <p className="text-[16px] font-black text-gray-900 dark:text-white mt-1">{incomeBracket}</p>
-              <p className="text-[10.5px] text-gray-400 font-semibold">Annual Household</p>
+              <p className="text-[12.5px] sm:text-[14.5px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">{incomeBracket}</p>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-semibold mt-0.5 truncate">Annual Household</p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
-              <Users size={18} />
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 min-h-[110px]">
+            <div className="flex items-center justify-between">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+                <Users size={16} />
+              </div>
+              <span className="text-[9px] sm:text-[9.5px] text-gray-400 font-black uppercase tracking-wider">Buyer Type</span>
             </div>
             <div>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Buyer Type</p>
-              <p className="text-[14px] font-black text-gray-900 dark:text-white mt-1">{primaryBuyerType}</p>
-              <p className="text-[10.5px] text-gray-400 font-semibold">Target Audience</p>
+              <p className="text-[12.5px] sm:text-[14.5px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">{primaryBuyerType}</p>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-semibold mt-0.5 truncate">Target Audience</p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 flex items-center justify-center flex-shrink-0">
-              <Award size={18} />
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 min-h-[110px]">
+            <div className="flex items-center justify-between">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 flex items-center justify-center flex-shrink-0">
+                <Award size={16} />
+              </div>
+              <span className="text-[9px] sm:text-[9.5px] text-gray-400 font-black uppercase tracking-wider">Locality</span>
             </div>
             <div>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider leading-none">Locality Preference</p>
-              <p className="text-[15px] font-black text-gray-900 dark:text-white mt-1">{sectorPreference || '--'}</p>
-              <p className="text-[10.5px] text-gray-400 font-semibold">Top Choice</p>
+              <p className="text-[12.5px] sm:text-[14.5px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">{sectorPreference || '--'}</p>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-semibold mt-0.5 truncate">Top Choice</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── 7. RISK & COMPLIANCE CHECK ── */}
-      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
+      {/* ── 7. RISK & COMPLIANCE CHECK (2-Column Grid on Mobile) ── */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
         <div>
           <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">
             Risk & Compliance Check
           </h2>
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5">
+          <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">
             All critical checks before you decide.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
           {[
             { label: 'RERA Status', val: pData?.rera_number || pData?.is_rera_approved, displayVal: pData?.rera_number ? 'RERA Registered' : (pData?.is_rera_approved ? 'Approved' : 'Verified'), color: 'text-emerald-600' },
             { label: 'NCLT Standing', val: pData?.nclt_moratorium_active, displayVal: pData?.nclt_moratorium_active ? 'Moratorium Active' : 'Clean / Clear', color: pData?.nclt_moratorium_active ? 'text-rose-600' : 'text-emerald-600' },
@@ -782,19 +790,19 @@ export default function IntelligenceTab({
             { label: 'Land Title Deed', val: pData?.land_title_clear, displayVal: pData?.land_title_clear !== false ? 'Clear Title' : 'Verification Pending', color: pData?.land_title_clear !== false ? 'text-emerald-600' : 'text-amber-600' },
             { label: 'Litigation History', val: (pData?.litigation_count || builder?.litigation_count), displayVal: (pData?.litigation_count || builder?.litigation_count) ? `${pData?.litigation_count || builder?.litigation_count} Active Flags` : '0 Active Flags', color: (pData?.litigation_count || builder?.litigation_count) ? 'text-amber-600' : 'text-emerald-600' }
           ].map((item, i) => (
-            <div key={i} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 size={16} />
+            <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-2.5 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 size={15} />
               </div>
-              <div>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{item.label}</p>
-                <p className={`text-[13px] font-black ${item.color}`}>{item.displayVal}</p>
+              <div className="min-w-0">
+                <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wider truncate">{item.label}</p>
+                <p className={`text-[12px] sm:text-[13px] font-black truncate ${item.color}`}>{item.displayVal}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <p className="text-[11px] text-gray-400 font-medium">ⓘ Verified from official documents and third-party validation.</p>
+        <p className="text-[10.5px] sm:text-[11px] text-gray-400 font-medium">ⓘ Verified from official documents and third-party validation.</p>
       </div>
 
       {/* ── 8. ADVISOR INSIGHT & CTA ── */}
