@@ -8,7 +8,8 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   Search, Plus, CheckCircle2, Clock, Zap, Trash2, Building2, ChevronRight, CornerDownLeft,
-  X, ArrowUpDown, ArrowUp, ArrowDown, MapPin, Layers, Filter, RefreshCw, ChevronDown, Check
+  X, ArrowUpDown, ArrowUp, ArrowDown, MapPin, Layers, Filter, RefreshCw, ChevronDown, Check,
+  Download, Upload, AlertTriangle, FileSpreadsheet, FileText
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { adminFetch } from '@/lib/adminFetch'
@@ -42,7 +43,7 @@ function CustomSelect<T extends string>({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-200 rounded-xl shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-600 transition-all cursor-pointer select-none active:scale-[0.98] ${
+        className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-200 rounded-xl shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-600 transition-all cursor-pointer select-none active:scale-[0.98] ${
           isOpen ? 'ring-2 ring-blue-500/20 border-blue-500' : ''
         }`}
       >
@@ -101,6 +102,7 @@ interface Project {
   connectivity?: { id: string }[]
   images?: { url: string; type: string }[]
   completenessScore?: number
+  tabScores?: Record<string, number>
 }
 
 export interface FilterToken {
@@ -112,6 +114,20 @@ export interface FilterToken {
 
 type SortField = 'name' | 'builder' | 'status' | 'price' | 'health'
 type SortOrder = 'asc' | 'desc'
+
+function getNonMediaScore(p: Project): number {
+  if (p.tabScores) {
+    const ts = p.tabScores
+    return Math.round(
+      ((ts.core ?? 100) * 0.20) +
+      ((ts.pricing ?? 100) * 0.25) +
+      ((ts.intelligence ?? 100) * 0.25) +
+      ((ts.updates ?? 100) * 0.15) +
+      ((ts.partners ?? 100) * 0.15)
+    )
+  }
+  return p.completenessScore ?? 100
+}
 
 function ProjectThumbnail({ src, alt }: { src?: string | null; alt: string }) {
   const [error, setError] = useState(false)
@@ -178,7 +194,7 @@ export default function AdminProjects() {
   const [projects, setProjects] = useState<Project[]>([])
   const [query, setQuery] = useState('')
   const [activeTokens, setActiveTokens] = useState<FilterToken[]>([])
-  const [statusFilter, setStatusFilter] = useState<'all' | 'ready_to_move' | 'under_construction' | 'new_launch'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'ready_to_move' | 'under_construction' | 'new_launch' | 'partially_filled'>('all')
   const [healthFilter, setHealthFilter] = useState<'all' | 'excellent' | 'good' | 'needs_fix'>('all')
   const [priceFilter, setPriceFilter] = useState<'all' | 'under_1cr' | '1_2cr' | '2_4cr' | 'above_4cr'>('all')
 
@@ -189,11 +205,19 @@ export default function AdminProjects() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   
+  // Bulk Import Modal State
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const [bulkCsvText, setBulkCsvText] = useState('')
+  const [bulkParsedRows, setBulkParsedRows] = useState<any[]>([])
+  const [isImporting, setIsImporting] = useState(false)
+  const [bulkImportResult, setBulkImportResult] = useState<{ updated: number; skipped: number; errors: any[] } | null>(null)
+
   // Autocomplete Popover
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
+
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -266,8 +290,12 @@ export default function AdminProjects() {
   // Multi-faceted Filter Evaluation
   const filtered = useMemo(() => {
     return projects.filter(p => {
-      // 1. Status Filter
-      if (statusFilter !== 'all' && p.status !== statusFilter) return false
+      // 1. Status Filter (including partially_filled)
+      if (statusFilter === 'partially_filled') {
+        if (getNonMediaScore(p) >= 70) return false
+      } else if (statusFilter !== 'all' && p.status !== statusFilter) {
+        return false
+      }
 
       // 2. Health Filter
       const score = typeof p.completenessScore === 'number' ? p.completenessScore : quickHealth(p).score
@@ -294,7 +322,7 @@ export default function AdminProjects() {
         const q = query.toLowerCase().trim()
         const matchesName = p.name.toLowerCase().includes(q)
         const matchesSector = p.sector.toLowerCase().includes(q)
-        const matchesBuilder = p.builder.name.toLowerCase().includes(q)
+        const matchesBuilder = p.builder?.name?.toLowerCase().includes(q)
         if (!matchesName && !matchesSector && !matchesBuilder) return false
       }
 
@@ -368,6 +396,113 @@ export default function AdminProjects() {
     })
   }, [])
 
+  // Export CSV Handler
+  const handleExportCSV = () => {
+    const headers = [
+      'Name', 'Slug', 'Builder', 'Sector', 'City', 'Status',
+      'Min Price (Cr)', 'Price Range Display', 'RERA No', 'Non-Media Score (%)', 'Total Score (%)'
+    ]
+    const rows = sortedAndFiltered.map(p => [
+      `"${(p.name || '').replace(/"/g, '""')}"`,
+      `"${(p.slug || '').replace(/"/g, '""')}"`,
+      `"${(p.builder?.name || '').replace(/"/g, '""')}"`,
+      `"${(p.sector || '').replace(/"/g, '""')}"`,
+      `"${(p.city || '').replace(/"/g, '""')}"`,
+      `"${(p.status || '').replace(/"/g, '""')}"`,
+      p.unit_types && p.unit_types.length ? Math.min(...p.unit_types.map(u => u.price_min_cr).filter((v): v is number => v !== null)) || '' : '',
+      `"${priceRange(p.unit_types)}"`,
+      `"${(p.rera_number || '').replace(/"/g, '""')}"`,
+      getNonMediaScore(p),
+      p.completenessScore ?? quickHealth(p).score
+    ])
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `realtypals_projects_${statusFilter}_${Date.now()}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success(`Exported ${sortedAndFiltered.length} projects to CSV`)
+  }
+
+  // Handle CSV file drop or upload for Bulk Import
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const text = event.target?.result as string
+      setBulkCsvText(text)
+      parseCsvData(text)
+    }
+    reader.readAsText(file)
+  }
+
+  const parseCsvData = (text: string) => {
+    try {
+      const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0)
+      if (lines.length < 2) {
+        setBulkParsedRows([])
+        return
+      }
+      const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase())
+      const rows = []
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.replace(/^["']|["']$/g, '').trim())
+        const rowObj: any = {}
+        headers.forEach((h, idx) => {
+          rowObj[h] = values[idx] || ''
+        })
+        rows.push(rowObj)
+      }
+      setBulkParsedRows(rows)
+    } catch (err) {
+      toast.error('Failed to parse CSV data')
+    }
+  }
+
+  const handleDownloadTemplate = () => {
+    const headers = ['slug', 'price_min_cr', 'price_range_label', 'status', 'possession_label', 'rera_number']
+    const sampleRows = [
+      'mahagun-moderne-sector-78,1.45,₹1.45–2.80 Cr,ready_to_move,Ready to Move,UPRERAPRJ1234',
+      'ats-kingston-heath-sector-150,2.10,₹2.10–4.50 Cr,under_construction,Q4 2026,UPRERAPRJ5678'
+    ]
+    const content = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...sampleRows].join('\n')
+    const link = document.createElement('a')
+    link.setAttribute('href', encodeURI(content))
+    link.setAttribute('download', 'bulk_projects_update_template.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleExecuteBulkImport = async () => {
+    if (bulkParsedRows.length === 0) return
+    setIsImporting(true)
+    setBulkImportResult(null)
+
+    try {
+      const res = await adminFetch('/admin/projects/bulk-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows: bulkParsedRows })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setBulkImportResult(data)
+        toast.success(`Successfully updated ${data.updated} projects!`)
+        load()
+      } else {
+        toast.error(data.error || 'Bulk import failed')
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Bulk import network error')
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -405,6 +540,7 @@ export default function AdminProjects() {
       ready: projects.filter(p => p.status === 'ready_to_move').length,
       under: projects.filter(p => p.status === 'under_construction').length,
       new: projects.filter(p => p.status === 'new_launch').length,
+      partially: projects.filter(p => getNonMediaScore(p) < 70).length,
     }
   }, [projects])
 
@@ -434,7 +570,7 @@ export default function AdminProjects() {
             Manage properties, completeness scores, pricing details, and RERA compliance.
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center flex-wrap gap-2.5">
           <button
             onClick={load}
             disabled={loading}
@@ -443,6 +579,25 @@ export default function AdminProjects() {
             <RefreshCw size={14} className={loading ? 'animate-spin text-blue-500' : 'text-zinc-500'} />
             <span>Reload</span>
           </button>
+
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 rounded-xl shadow-xs hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-[0.98]"
+            title="Export filtered project list as CSV"
+          >
+            <Download size={14} className="text-zinc-500" />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            onClick={() => setIsBulkModalOpen(true)}
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/60 rounded-xl shadow-xs hover:bg-blue-100/80 transition-all cursor-pointer active:scale-[0.98]"
+            title="Bulk upload spreadsheet to update prices, possession, and statuses"
+          >
+            <Upload size={14} className="text-blue-600 dark:text-blue-400" />
+            <span>Bulk Update</span>
+          </button>
+
           <Link
             href="/admin/projects/new"
             className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-xs transition-all active:scale-[0.98]"
@@ -452,6 +607,7 @@ export default function AdminProjects() {
           </Link>
         </div>
       </div>
+
 
       {/* ── Tokenized Intelligent Search Bar ───────────────────────────────── */}
       <div className="relative" ref={popoverRef}>
@@ -535,6 +691,7 @@ export default function AdminProjects() {
             { id: 'ready_to_move', label: 'Ready to Move', count: counts.ready },
             { id: 'under_construction', label: 'Under Construction', count: counts.under },
             { id: 'new_launch', label: 'New Launch', count: counts.new },
+            { id: 'partially_filled', label: '⚠ Partially Filled', count: counts.partially },
           ].map(tab => (
             <button
               key={tab.id}
@@ -548,7 +705,7 @@ export default function AdminProjects() {
               <span>{tab.label}</span>
               <span className={`px-1.5 py-0.2 text-[10px] font-bold rounded-md ${
                 statusFilter === tab.id
-                  ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white'
+                  ? (tab.id === 'partially_filled' ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white')
                   : 'bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-600 dark:text-zinc-400'
               }`}>
                 {tab.count}
@@ -785,6 +942,177 @@ export default function AdminProjects() {
         </div>
       </div>
 
+      {/* ── Bulk CSV Import & Update Modal ──────────────────────────────────── */}
+      {isBulkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 animate-in zoom-in-95 duration-150">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <FileSpreadsheet size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                    Bulk Update Projects (CSV)
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Batch update Base Price, status, possession dates, or RERA numbers.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBulkModalOpen(false)
+                  setBulkParsedRows([])
+                  setBulkCsvText('')
+                  setBulkImportResult(null)
+                }}
+                className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Template Download Prompt */}
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/80 dark:border-zinc-700/60 text-xs">
+              <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
+                <FileText size={16} className="text-blue-500" />
+                <span>Need the standard CSV format? Download the sample template.</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadTemplate}
+                className="font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <Download size={13} />
+                <span>Template.csv</span>
+              </button>
+            </div>
+
+            {/* File Upload / Paste Area */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                Upload CSV File or Paste Data
+              </label>
+
+              <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 text-center hover:border-blue-500 transition-colors bg-zinc-50/50 dark:bg-zinc-800/30">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="bulk-csv-input"
+                />
+                <label
+                  htmlFor="bulk-csv-input"
+                  className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-2xs hover:bg-zinc-50 transition-all"
+                >
+                  <Upload size={14} className="text-blue-500" />
+                  <span>Choose CSV File</span>
+                </label>
+                <p className="text-[11px] text-zinc-400 mt-2">
+                  Columns: <code className="font-mono text-zinc-600 dark:text-zinc-300">slug, price_min_cr, price_range_label, status, possession_label, rera_number</code>
+                </p>
+              </div>
+            </div>
+
+            {/* Rows Preview */}
+            {bulkParsedRows.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 size={14} />
+                    <span>Parsed {bulkParsedRows.length} project updates ready to apply</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBulkParsedRows([])
+                      setBulkCsvText('')
+                    }}
+                    className="text-[11px] text-zinc-400 hover:text-rose-500"
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <div className="max-h-40 overflow-y-auto rounded-xl border border-zinc-200 dark:border-zinc-700 text-[11px] divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {bulkParsedRows.slice(0, 5).map((row, idx) => (
+                    <div key={idx} className="p-2 flex items-center justify-between bg-white dark:bg-zinc-900 font-mono">
+                      <span className="font-bold text-zinc-800 dark:text-zinc-200">{row.slug || row.id}</span>
+                      <div className="flex items-center gap-2 text-zinc-500">
+                        {row.price_min_cr && <span>₹{row.price_min_cr} Cr</span>}
+                        {row.status && <span className="px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-zinc-800">{row.status}</span>}
+                      </div>
+                    </div>
+                  ))}
+                  {bulkParsedRows.length > 5 && (
+                    <div className="p-2 text-center text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                      + {bulkParsedRows.length - 5} more rows
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Import Result Notification */}
+            {bulkImportResult && (
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs space-y-1">
+                <div className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                  <CheckCircle2 size={15} />
+                  <span>Bulk update complete: {bulkImportResult.updated} updated, {bulkImportResult.skipped} skipped</span>
+                </div>
+                {bulkImportResult.errors?.length > 0 && (
+                  <p className="text-[11px] text-rose-600 dark:text-rose-400">
+                    {bulkImportResult.errors.length} rows had errors. Check audit changelog for details.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBulkModalOpen(false)
+                  setBulkParsedRows([])
+                  setBulkImportResult(null)
+                }}
+                className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                disabled={bulkParsedRows.length === 0 || isImporting}
+                onClick={handleExecuteBulkImport}
+                className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-2"
+              >
+                {isImporting ? (
+                  <>
+                    <RefreshCw size={13} className="animate-spin" />
+                    <span>Applying Updates...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={13} />
+                    <span>Apply {bulkParsedRows.length} Updates</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
+

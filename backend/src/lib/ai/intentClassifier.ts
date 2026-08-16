@@ -132,13 +132,20 @@ function detectProjectDetail(userMessage: string, activeProjectName?: string): P
  * Returns full IntentClassification object with routing hints.
  */
 export function classifyIntent(userMessage: string, intent?: Intent): IntentClassification {
-  // 1. Check for PROJECT_DETAIL intent (highest priority)
-  const activeProject = intent?.projectNames && intent.projectNames.length > 0 ? intent.projectNames[0] : undefined
-  const projectDetail = detectProjectDetail(userMessage, activeProject)
-  if (projectDetail) {
-    return {
-      category: 'project_detail',
-      projectDetail,
+  const msg = userMessage.toLowerCase().trim()
+  const isDiscoverySearch =
+    /\b(looking to invest|looking for|options in|show me|find|suggest|properties in|flats in|projects in|recommend|in sector \d+|in noida|in greater noida|invest \d+)\b/i.test(msg) ||
+    (Boolean(intent?.sector || intent?.bhk?.length || intent?.budgetMax) && (!intent?.projectNames || intent.projectNames.length === 0))
+
+  // 1. Check for PROJECT_DETAIL intent only if NOT an open discovery search
+  if (!isDiscoverySearch) {
+    const activeProject = intent?.projectNames && intent.projectNames.length > 0 ? intent.projectNames[0] : undefined
+    const projectDetail = detectProjectDetail(userMessage, activeProject)
+    if (projectDetail) {
+      return {
+        category: 'project_detail',
+        projectDetail,
+      }
     }
   }
 

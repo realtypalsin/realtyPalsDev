@@ -973,7 +973,7 @@ EXECUTIVE INSTRUCTIONS:
     // ─── PROJECT DETAIL PIPELINE (Phase 5 Integration) ───────────────────────
     // If user is asking about a specific project detail (EMI, investment, location, etc.),
     // bypass discovery and use verified data pipeline instead.
-    const classification = classifyIntent(message)
+    const classification = classifyIntent(message, intent)
 
     // Track intent classification (Phase 11)
     trackEvent(userId ?? null, ANALYTICS_EVENTS.INTENT_CLASSIFIED, {
@@ -1653,8 +1653,10 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       send('token', { token: fullText })
     } else if (isPropertySearchWithResults) {
       const bhkLabel = intent.bhk?.length ? `${intent.bhk.join('/')} BHK ` : ''
-      const sectorLabel = intent.sector ? ` in ${intent.sector}` : ''
-      const cityLabel = projects[0]?.city ? `, ${projects[0].city}` : ''
+      const sector = intent.sector || ''
+      const city = projects[0]?.city || ''
+      const sectorLabel = sector ? ` in ${sector}` : ''
+      const cityLabel = city && !sector.toLowerCase().includes(city.toLowerCase()) ? `, ${city}` : ''
       fullText = `Here are ${projects.length} verified ${bhkLabel}properties matching your search${sectorLabel}${cityLabel}:`
       console.log('[CHAT:SEARCH_LEAD_IN] deterministic search lead-in, skipping LLM project hallucination', { fullText })
       send('token', { token: fullText })
@@ -2049,6 +2051,72 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     let postChips = postSearchUiState.chips
     if (postSearchUiState.stage !== 'CLARIFYING') {
       postChips = filterNewChipsWithFloor(currentSessionId, postSearchUiState.chips, 0)
+    }
+
+    // High quality adaptive floor fallback if deduplication or zero inventory yielded 0 chips
+    if (postChips.length === 0) {
+      const sec = intent.sector || 'this sector'
+      if (discoveryExpansion?.reason === 'no_inventory_in_exact_sector_nofallback') {
+        postChips = [
+          {
+            id: `rec_sec_config_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: `Check other configurations in ${sec}`,
+            icon: '',
+            analyticsId: 'recovery_sector_config',
+            priority: 1,
+            payload: { text: `What configurations and price ranges are available in ${sec}?` },
+          },
+          {
+            id: `rec_adj_sec_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: 'Explore nearby sectors',
+            icon: '',
+            analyticsId: 'recovery_adjacent_sectors',
+            priority: 2,
+            payload: { text: `Show me alternatives in adjacent sectors near ${sec}.` },
+          },
+          {
+            id: `rec_budget_noida_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: 'Show popular budget homes',
+            icon: '',
+            analyticsId: 'recovery_budget_homes',
+            priority: 3,
+            payload: { text: `Show me popular budget homes in Noida under ₹1.5 Cr.` },
+          },
+        ]
+      } else if (projects.length > 0) {
+        postChips = [
+          {
+            id: `floor_rtm_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: 'Are these ready to move?',
+            icon: '',
+            analyticsId: 'floor_ready_to_move',
+            priority: 1,
+            payload: { text: 'Which of these projects are ready to move in?' },
+          },
+          {
+            id: `floor_rera_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: 'Check RERA & Legal status',
+            icon: '',
+            analyticsId: 'floor_rera_check',
+            priority: 2,
+            payload: { text: 'Are all these projects RERA approved with clear land titles?' },
+          },
+          {
+            id: `floor_cost_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: 'Compare all-inclusive pricing',
+            icon: '',
+            analyticsId: 'floor_all_inclusive_pricing',
+            priority: 3,
+            payload: { text: 'What is the all-inclusive price breakdown including GST and registry?' },
+          },
+        ]
+      }
     }
 
     postChips.forEach(c => markChipShown(currentSessionId, c.id, c.label))

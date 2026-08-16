@@ -1156,8 +1156,8 @@ async function seedRemainingTargets() {
     });
 
     // 5. Specs
-    await prisma.projectSpecItem.deleteMany({ where: { project_id: project.id } });
-    await prisma.projectSpecItem.createMany({
+    await (prisma as any).projectSpecItem.deleteMany({ where: { project_id: project.id } });
+    await (prisma as any).projectSpecItem.createMany({
       data: SPECS_LIST.map((s, idx) => ({
         project_id: project.id,
         category: s.category,

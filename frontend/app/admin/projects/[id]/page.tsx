@@ -4,7 +4,7 @@ import { use, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, ChevronRight, Eye, LayoutPanelLeft, AlertCircle, CheckCircle2, Info,
-  Images, Cpu, Activity, IndianRupee, Users, ShieldCheck, Layers
+  Images, Cpu, Activity, IndianRupee, Users, ShieldCheck, Layers, History
 } from 'lucide-react'
 import { adminFetch } from '@/lib/adminFetch'
 import ProjectForm from '@/components/admin/ProjectForm'
@@ -26,10 +26,12 @@ import LifecycleUpdatesEditor from '@/components/admin/LifecycleUpdatesEditor'
 import ChannelPartnersEditor from '@/components/admin/ChannelPartnersEditor'
 import CompletenessBar from '@/components/admin/CompletenessBar'
 import ProjectPreview from '@/components/admin/ProjectPreview'
+import AuditChangelogTab from '@/components/admin/AuditChangelogTab'
 import { Skeleton } from '@/components/ui/skeleton'
 import Toast from '@/components/Toast'
 
-type AdminTab = 'core' | 'specs' | 'pricing' | 'media' | 'intelligence' | 'updates' | 'partners'
+type AdminTab = 'core' | 'specs' | 'pricing' | 'media' | 'intelligence' | 'updates' | 'partners' | 'audit'
+
 
 interface ProjectData {
   [key: string]: any
@@ -464,6 +466,7 @@ export default function AdminProjectEditPage({
     { id: 'intelligence', label: 'Intelligence',         icon: Cpu },
     { id: 'updates',      label: 'Updates & Timeline',   icon: Activity },
     { id: 'partners',     label: 'Channel Partners',     icon: Users },
+    { id: 'audit',        label: 'Changelog',            icon: History },
   ]
 
   // Pre-compute all tab audits once to avoid O(N) recalculation
@@ -475,6 +478,7 @@ export default function AdminProjectEditPage({
     intelligence: getTabAuditDetails('intelligence', data, documents),
     updates: getTabAuditDetails('updates', data, documents),
     partners: getTabAuditDetails('partners', data, documents),
+    audit: { completed: ['Change Tracking Active'], missing: [] },
   } as Record<AdminTab, ReturnType<typeof getTabAuditDetails>>
 
   const computeTabScore = (audit: ReturnType<typeof getTabAuditDetails>): number => {
@@ -491,6 +495,7 @@ export default function AdminProjectEditPage({
     intelligence: computeTabScore(tabAudits.intelligence),
     updates: computeTabScore(tabAudits.updates),
     partners: computeTabScore(tabAudits.partners),
+    audit: 100,
   }
 
   const overallHealth = Math.round(
@@ -928,6 +933,14 @@ export default function AdminProjectEditPage({
             </div>
           </div>
         )}
+
+        {/* 7. Audit Changelog tab */}
+        {adminTab === 'audit' && (
+          <div className="max-w-6xl mx-auto">
+            <AuditChangelogTab projectId={id} projectName={data.name} />
+          </div>
+        )}
+
 
       </div>
 

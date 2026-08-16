@@ -21,6 +21,116 @@ async function findProjectDocuments(idOrSlug: string) {
   return { project, documents }
 }
 
+// Human-friendly labels for project fields
+const FIELD_LABELS: Record<string, string> = {
+  name: 'Project Name',
+  slug: 'URL Slug',
+  status: 'Project Status',
+  price_min_cr: 'Min Price (Cr)',
+  price_range_label: 'Price Range Display',
+  possession_date: 'Possession Date',
+  possession_label: 'Possession Quarter',
+  rera_number: 'RERA Registration No',
+  rera_url: 'RERA Portal URL',
+  oc_obtained: 'Occupancy Certificate (OC)',
+  description: 'Project Overview',
+  long_description: 'Extended Description',
+  sector: 'Sector Location',
+  city: 'City',
+  address: 'Full Address',
+  total_units: 'Total Units Count',
+  total_towers: 'Total Towers Count',
+  land_area_acres: 'Land Area (Acres)',
+  open_space_pct: 'Open Green Space %',
+  hero_image_url: 'Hero Image Asset',
+  legal_flag: 'Legal Compliance Status',
+  walkability_score: 'Walkability Score',
+  green_cover_percent: 'Green Cover %',
+  women_safety_score: 'Women Safety Score',
+  air_quality_index_avg: 'Average AQI',
+  nri_eligible: 'NRI Eligibility',
+  vastu_compliant: 'Vastu Compliance',
+}
+
+const HIGH_IMPACT_FIELDS = new Set([
+  'price_min_cr',
+  'price_range_label',
+  'status',
+  'possession_date',
+  'possession_label',
+  'rera_number',
+  'oc_obtained',
+  'legal_flag',
+])
+
+export interface FieldDiff {
+  field: string
+  label: string
+  old_value: any
+  new_value: any
+  is_high_impact: boolean
+}
+
+export function computeFieldDiffs(oldObj: Record<string, any>, newObj: Record<string, any>): FieldDiff[] {
+  const diffs: FieldDiff[] = []
+  for (const [key, newVal] of Object.entries(newObj)) {
+    if (newVal === undefined) continue
+    const oldVal = oldObj[key]
+    
+    // Normalize Dates
+    const normalizedOld = oldVal instanceof Date ? oldVal.toISOString() : oldVal
+    const normalizedNew = newVal instanceof Date ? newVal.toISOString() : newVal
+
+    if (JSON.stringify(normalizedOld) !== JSON.stringify(normalizedNew)) {
+      diffs.push({
+        field: key,
+        label: FIELD_LABELS[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        old_value: oldVal ?? null,
+        new_value: newVal ?? null,
+        is_high_impact: HIGH_IMPACT_FIELDS.has(key),
+      })
+    }
+  }
+  return diffs
+}
+
+export async function recordAuditLog({
+  entity_type,
+  entity_id,
+  entity_name,
+  action,
+  actor = 'Admin',
+  summary,
+  changes,
+  ip_address,
+}: {
+  entity_type: string
+  entity_id: string
+  entity_name?: string
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'BULK_UPDATE'
+  actor?: string
+  summary: string
+  changes?: FieldDiff[]
+  ip_address?: string
+}) {
+  try {
+    await prisma.auditLog.create({
+      data: {
+        entity_type,
+        entity_id,
+        entity_name: entity_name || null,
+        action,
+        actor,
+        summary,
+        changes: changes && changes.length > 0 ? changes : undefined,
+        ip_address: ip_address || null,
+      },
+    })
+  } catch (err) {
+    console.error('[audit] failed to record audit log:', err)
+  }
+}
+
 const router = Router()
 
 // Constant-time password compare — avoids leaking length/match via timing.
@@ -417,12 +527,273 @@ router.get('/projects/:id/completeness', requireAdmin, async (req: Request, res:
   }
 })
 
+// GET /api/v1/admin/audit-logs — list audit history and changelogs
+router.get('/audit-logs', requireAdmin, async (req: Request, res: Response) => {
+  const { entity_type, entity_id, mode = 'detailed', field, limit = '50', offset = '0' } = req.query
+  try {
+    const where: any = {}
+    if (entity_type && entity_type !== 'all') where.entity_type = entity_type as string
+    if (entity_id && entity_id !== 'all') where.entity_id = entity_id as string
+
+    const take = Math.min(parseInt(limit as string) || 50, 100)
+    const skip = parseInt(offset as string) || 0
+
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        take,
+        skip,
+      }),
+      prisma.auditLog.count({ where }),
+    ])
+
+    // If mode is precise, filter changes to high-impact fields only or entries with high-impact changes
+    let processedLogs = logs
+    if (mode === 'precise') {
+      processedLogs = logs.map(log => {
+        const changes = Array.isArray(log.changes) ? (log.changes as any[]) : []
+        const highImpactChanges = changes.filter(c => c.is_high_impact || HIGH_IMPACT_FIELDS.has(c.field))
+        return {
+          ...log,
+          changes: highImpactChanges,
+        }
+      }).filter(log => log.action !== 'UPDATE' || (Array.isArray(log.changes) && log.changes.length > 0))
+    }
+
+    if (field && typeof field === 'string' && field !== 'all') {
+      processedLogs = processedLogs.filter(log => {
+        const changes = Array.isArray(log.changes) ? (log.changes as any[]) : []
+        return changes.some(c => c.field?.toLowerCase()?.includes((field as string).toLowerCase()))
+      })
+    }
+
+    res.json({ logs: processedLogs, total, limit: take, offset: skip })
+  } catch (err) {
+    console.error('[admin] audit-logs failed:', err)
+    res.status(500).json({ error: 'Failed to fetch audit logs' })
+  }
+})
+
+// GET /api/v1/admin/projects/export — export projects as CSV or JSON
+router.get('/projects/export', requireAdmin, async (req: Request, res: Response) => {
+  const { filter = 'all', format = 'json' } = req.query
+  try {
+    const projects = await prisma.project.findMany({
+      include: {
+        builder: { select: { name: true } },
+        unit_types: true,
+        images: true,
+        amenities: true,
+        connectivity: true,
+        dna: true,
+        decision_profile: true,
+        persona_profile: true,
+        recommendation_profile: true,
+        competitors: true,
+        cost_sheet: true,
+        payment_plans: true,
+        construction_milestones: true,
+        construction_updates: true,
+        lifecycle_updates: true,
+        price_history: true,
+        channel_partners: true,
+      },
+      orderBy: { name: 'asc' },
+    })
+
+    const mapped = projects.map(p => {
+      const completeness = computeCompleteness(p as any)
+      // Non-media completeness: weighted average excluding media tab
+      const tabScores = completeness.tabScores
+      const nonMediaScore = Math.round(
+        (tabScores.core * 0.20) +
+        (tabScores.pricing * 0.25) +
+        (tabScores.intelligence * 0.25) +
+        (tabScores.updates * 0.15) +
+        (tabScores.partners * 0.15)
+      )
+
+      const allMissing = [
+        ...completeness.missing.overview,
+        ...completeness.missing.units,
+        ...completeness.missing.builder,
+        ...completeness.missing.intelligence,
+        ...completeness.missing.competitors,
+        ...completeness.missing.updates,
+        ...completeness.missing.partners,
+      ]
+
+      return {
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        builder: p.builder?.name || '',
+        sector: p.sector,
+        city: p.city,
+        status: p.status,
+        price_min_cr: p.price_min_cr,
+        price_range_label: p.price_range_label,
+        rera_number: p.rera_number || '',
+        possession_date: p.possession_date ? p.possession_date.toISOString().split('T')[0] : '',
+        possession_label: p.possession_label || '',
+        total_units: p.total_units || 0,
+        total_towers: p.total_towers || 0,
+        land_area_acres: p.land_area_acres || 0,
+        unit_types_count: p.unit_types.length,
+        images_count: p.images.length,
+        completeness_score: completeness.totalScore,
+        non_media_score: nonMediaScore,
+        is_partially_filled: nonMediaScore < 70,
+        missing_fields: allMissing.join('; '),
+      }
+    })
+
+    let result = mapped
+    if (filter === 'partially_filled') {
+      result = mapped.filter(p => p.is_partially_filled)
+    }
+
+    if (format === 'csv') {
+      const headers = [
+        'id', 'slug', 'name', 'builder', 'sector', 'city', 'status',
+        'price_min_cr', 'price_range_label', 'rera_number', 'possession_date', 'possession_label',
+        'total_units', 'total_towers', 'land_area_acres', 'unit_types_count',
+        'completeness_score', 'non_media_score', 'is_partially_filled', 'missing_fields'
+      ]
+
+      const csvRows = [headers.join(',')]
+      for (const r of result) {
+        const row = headers.map(h => {
+          const val = (r as any)[h] ?? ''
+          const escaped = String(val).replace(/"/g, '""')
+          return `"${escaped}"`
+        })
+        csvRows.push(row.join(','))
+      }
+
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader('Content-Disposition', `attachment; filename="realtypals-projects-${filter}-${Date.now()}.csv"`)
+      res.send(csvRows.join('\n'))
+      return
+    }
+
+    res.json({ projects: result, total: result.length })
+  } catch (err) {
+    console.error('[admin] export projects failed:', err)
+    res.status(500).json({ error: 'Failed to export projects' })
+  }
+})
+
+// POST /api/v1/admin/projects/bulk-import — bulk update prices, statuses, possession
+router.post('/projects/bulk-import', requireAdmin, async (req: Request, res: Response) => {
+  const { rows, updatePricingOnly = false } = req.body
+  if (!Array.isArray(rows) || rows.length === 0) {
+    res.status(400).json({ error: 'rows must be a non-empty array' })
+    return
+  }
+
+  const rawIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
+  let updated = 0
+  let skipped = 0
+  const errors: Array<{ row: number; slug?: string; reason: string }> = []
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+    const slug = row.slug?.trim() || row.id?.trim()
+    if (!slug) {
+      errors.push({ row: i + 1, reason: 'Missing slug or id identifier' })
+      skipped++
+      continue
+    }
+
+    try {
+      const existing = await prisma.project.findFirst({
+        where: { OR: [{ id: slug }, { slug }] },
+      })
+
+      if (!existing) {
+        errors.push({ row: i + 1, slug, reason: `Project with identifier '${slug}' not found` })
+        skipped++
+        continue
+      }
+
+      const updateData: any = {}
+      if (row.price_min_cr !== undefined && row.price_min_cr !== '') {
+        const parsed = parseFloat(row.price_min_cr)
+        if (!isNaN(parsed)) updateData.price_min_cr = parsed
+      }
+      if (row.price_range_label) updateData.price_range_label = row.price_range_label.trim()
+      if (row.possession_label) updateData.possession_label = row.possession_label.trim()
+      if (row.possession_date) {
+        const d = new Date(row.possession_date)
+        if (!isNaN(d.getTime())) updateData.possession_date = d
+      }
+      if (row.status && ['ready_to_move', 'under_construction', 'new_launch'].includes(row.status.trim())) {
+        updateData.status = row.status.trim()
+      }
+      if (row.rera_number) updateData.rera_number = row.rera_number.trim()
+      if (!updatePricingOnly) {
+        if (row.description) updateData.description = row.description.trim()
+        if (row.total_units) {
+          const u = parseInt(row.total_units)
+          if (!isNaN(u)) updateData.total_units = u
+        }
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        skipped++
+        continue
+      }
+
+      const diffs = computeFieldDiffs(existing as any, updateData)
+      if (diffs.length > 0) {
+        await prisma.project.update({
+          where: { id: existing.id },
+          data: updateData,
+        })
+
+        const summaryParts = diffs.map(d => `${d.label} (${d.old_value ?? '—'} → ${d.new_value ?? '—'})`)
+        await recordAuditLog({
+          entity_type: 'project',
+          entity_id: existing.id,
+          entity_name: existing.name,
+          action: 'BULK_UPDATE',
+          actor: 'BulkCSV',
+          summary: `Bulk CSV updated: ${summaryParts.join(', ')}`,
+          changes: diffs,
+          ip_address: rawIp,
+        })
+
+        updated++
+      } else {
+        skipped++
+      }
+    } catch (err: any) {
+      errors.push({ row: i + 1, slug, reason: err?.message || 'Database update failed' })
+      skipped++
+    }
+  }
+
+  res.json({ updated, skipped, errors, totalRows: rows.length })
+})
+
 // PATCH /api/v1/admin/projects/:id — update project
 router.patch('/projects/:id', requireAdmin, async (req: Request, res: Response) => {
   const { id } = req.params
   const updates = req.body
+  const rawIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
 
   try {
+    const existing = await prisma.project.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+    })
+
+    if (!existing) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
     const { id: _, created_at: __, updated_at: ___, builder: ____, unit_types: _____, images: ______, ...validFields } = updates
 
     if (validFields.possession_date) {
@@ -432,8 +803,10 @@ router.patch('/projects/:id', requireAdmin, async (req: Request, res: Response) 
       validFields.launch_date = new Date(validFields.launch_date)
     }
 
+    const diffs = computeFieldDiffs(existing as any, validFields)
+
     const project = await prisma.project.update({
-      where: { id },
+      where: { id: existing.id },
       data: validFields,
       include: {
         builder: { select: { id: true, name: true, slug: true } },
@@ -441,6 +814,20 @@ router.patch('/projects/:id', requireAdmin, async (req: Request, res: Response) 
         images: true,
       },
     })
+
+    if (diffs.length > 0) {
+      const changedNames = diffs.map(d => d.label).slice(0, 3).join(', ') + (diffs.length > 3 ? ` and ${diffs.length - 3} more` : '')
+      await recordAuditLog({
+        entity_type: 'project',
+        entity_id: project.id,
+        entity_name: project.name,
+        action: 'UPDATE',
+        actor: 'Admin',
+        summary: `Admin updated ${changedNames}`,
+        changes: diffs,
+        ip_address: rawIp,
+      })
+    }
 
     const safeProject = {
       ...project,
@@ -458,15 +845,27 @@ router.patch('/projects/:id', requireAdmin, async (req: Request, res: Response) 
 // DELETE /api/v1/admin/projects/:id — delete project with cascading cleanup
 router.delete('/projects/:id', requireAdmin, async (req: Request, res: Response) => {
   const { id } = req.params
+  const rawIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown'
   try {
     const project = await prisma.project.findFirst({
       where: { OR: [{ id }, { slug: id }] },
-      select: { id: true }
+      select: { id: true, name: true }
     })
     if (!project) {
       res.status(404).json({ error: 'Project not found' })
       return
     }
+
+    await recordAuditLog({
+      entity_type: 'project',
+      entity_id: project.id,
+      entity_name: project.name,
+      action: 'DELETE',
+      actor: 'Admin',
+      summary: `Admin deleted project "${project.name}"`,
+      ip_address: rawIp,
+    })
+
 
     const targetId = project.id
 
@@ -1632,10 +2031,30 @@ router.put('/projects/:id/cost-sheet', requireAdmin, async (req: Request, res: R
     })
     if (!project) return res.status(404).json({ error: 'Project not found' })
 
+    const bsp = data.base_price_per_sqft || 6500
+    const parking = data.parking_cost || 350000
+    const club = data.club_membership || 150000
+    const ifms = data.ifms || 50
+    const gstRate = (data.gst_rate_pct ?? 5) / 100
+    const stampRate = (data.stamp_duty_pct ?? 7) / 100
+    const regRate = (data.registration_pct ?? 1) / 100
+    const avgSqft = 1350
+    const baseTotal = (bsp * avgSqft) + parking + club + (ifms * avgSqft)
+    const taxes = baseTotal * (gstRate + stampRate + regRate)
+    const calculatedAllIncCr = Math.round(((baseTotal + taxes) / 10000000) * 100) / 100
+    const calculatedAllIncPsf = Math.round((baseTotal + taxes) / avgSqft)
+
+    const payload = {
+      ...data,
+      all_inclusive_price_cr: data.all_inclusive_price_cr ?? calculatedAllIncCr,
+      all_inclusive_per_sqft: data.all_inclusive_per_sqft ?? calculatedAllIncPsf,
+      updated_at: new Date()
+    }
+
     const updated = await (prisma as any).costSheet.upsert({
       where: { project_id: project.id },
-      update: { ...data, updated_at: new Date() },
-      create: { project_id: project.id, ...data }
+      update: payload,
+      create: { project_id: project.id, ...payload }
     })
     res.json({ success: true, data: updated })
   } catch (err) {
@@ -1833,13 +2252,24 @@ router.post('/projects/:id/units', requireAdmin, async (req: Request, res: Respo
     })
     if (!project) return res.status(404).json({ error: 'Project not found' })
 
+    const superArea = data.super_area_sqft ? parseInt(data.super_area_sqft) : null
+    const carpetArea = data.carpet_area_sqft ? parseInt(data.carpet_area_sqft) : null
+    let ratio = data.carpet_to_super_ratio_pct ? parseFloat(data.carpet_to_super_ratio_pct) : null
+    if (!ratio && superArea && carpetArea && superArea > 0) {
+      ratio = Math.round((carpetArea / superArea) * 1000) / 10
+    }
+
     const unit = await (prisma as any).unitType.create({
       data: {
         project_id: project.id,
         name: data.name || `${data.bhk || 2} BHK Unit`,
         bhk: data.bhk ? parseInt(data.bhk) : 2,
-        super_area_sqft: data.super_area_sqft ? parseInt(data.super_area_sqft) : null,
-        carpet_area_sqft: data.carpet_area_sqft ? parseInt(data.carpet_area_sqft) : null,
+        super_area_sqft: superArea,
+        carpet_area_sqft: carpetArea,
+        carpet_to_super_ratio_pct: ratio,
+        built_up_area_sqft: data.built_up_area_sqft ? parseInt(data.built_up_area_sqft) : (carpetArea ? Math.round(carpetArea * 1.15) : null),
+        layout_efficiency_pct: data.layout_efficiency_pct ? parseFloat(data.layout_efficiency_pct) : ratio,
+        unit_orientations: Array.isArray(data.unit_orientations) ? data.unit_orientations : ['east_facing', 'north_facing'],
         balconies: data.balconies ? parseInt(data.balconies) : null,
         balcony_area_sqft: data.balcony_area_sqft ? parseInt(data.balcony_area_sqft) : null,
         bathrooms: data.bathrooms ? parseInt(data.bathrooms) : null,
@@ -1862,13 +2292,25 @@ router.patch('/units/:id', requireAdmin, async (req: Request, res: Response) => 
   const { id } = req.params
   const data = req.body
   try {
+    const superArea = data.super_area_sqft !== undefined ? (data.super_area_sqft ? parseInt(data.super_area_sqft) : null) : undefined
+    const carpetArea = data.carpet_area_sqft !== undefined ? (data.carpet_area_sqft ? parseInt(data.carpet_area_sqft) : null) : undefined
+    
+    let ratio = data.carpet_to_super_ratio_pct !== undefined ? (data.carpet_to_super_ratio_pct ? parseFloat(data.carpet_to_super_ratio_pct) : null) : undefined
+    if (ratio === undefined && superArea !== undefined && carpetArea !== undefined && superArea && carpetArea) {
+      ratio = Math.round((carpetArea / superArea) * 1000) / 10
+    }
+
     const unit = await (prisma as any).unitType.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.bhk !== undefined && { bhk: parseInt(data.bhk) }),
-        ...(data.super_area_sqft !== undefined && { super_area_sqft: data.super_area_sqft ? parseInt(data.super_area_sqft) : null }),
-        ...(data.carpet_area_sqft !== undefined && { carpet_area_sqft: data.carpet_area_sqft ? parseInt(data.carpet_area_sqft) : null }),
+        ...(superArea !== undefined && { super_area_sqft: superArea }),
+        ...(carpetArea !== undefined && { carpet_area_sqft: carpetArea }),
+        ...(ratio !== undefined && { carpet_to_super_ratio_pct: ratio }),
+        ...(data.built_up_area_sqft !== undefined && { built_up_area_sqft: data.built_up_area_sqft ? parseInt(data.built_up_area_sqft) : null }),
+        ...(data.layout_efficiency_pct !== undefined && { layout_efficiency_pct: data.layout_efficiency_pct ? parseFloat(data.layout_efficiency_pct) : null }),
+        ...(data.unit_orientations !== undefined && { unit_orientations: Array.isArray(data.unit_orientations) ? data.unit_orientations : [] }),
         ...(data.balconies !== undefined && { balconies: data.balconies ? parseInt(data.balconies) : null }),
         ...(data.balcony_area_sqft !== undefined && { balcony_area_sqft: data.balcony_area_sqft ? parseInt(data.balcony_area_sqft) : null }),
         ...(data.bathrooms !== undefined && { bathrooms: data.bathrooms ? parseInt(data.bathrooms) : null }),

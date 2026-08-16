@@ -70,11 +70,6 @@ const PROJECT_INCLUDE = {
   images: { take: 3, orderBy: { sort_order: 'asc' as const } },
   amenities: { take: 10 },
   connectivity: { take: 5, orderBy: { distance_km: 'asc' as const } },
-  spec_items: {
-    where: { is_highlight: true, unit_type_id: null },
-    take: 12,
-    orderBy: { sort_order: 'asc' as const },
-  },
   // `status` is selected purely so gatePublished() can drop DRAFT profiles —
   // it is stripped again before the project leaves mapToScored().
   recommendation_profile: {
@@ -689,7 +684,7 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
           nearbyResults: [],
           disambiguation: {
             query,
-            candidates: byName.map((p) => ({ name: p.name, sector: p.sector, builder: p.builder.name })),
+            candidates: byName.map((p) => ({ name: p.name, sector: p.sector, builder: (p as any).builder?.name || '' })),
           },
         }
         await setCached(cacheKey, res, 300)
@@ -780,8 +775,8 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
           const exactSector = projectsWithDistance.filter((p) => p.sector === effectiveIntent.sector)
           const nearbySectors = projectsWithDistance.filter((p) => p.sector !== effectiveIntent.sector)
 
-          const scoredExact = scoreAndSort(exactSector, effectiveIntent, SCORE_THRESHOLD)
-          const scoredNearby = scoreAndSort(nearbySectors, effectiveIntent, SCORE_THRESHOLD)
+          const scoredExact = scoreAndSort(exactSector as RawProject[], effectiveIntent, SCORE_THRESHOLD)
+          const scoredNearby = scoreAndSort(nearbySectors as RawProject[], effectiveIntent, SCORE_THRESHOLD)
 
           const hasMore = projectsWithDistance.length >= RESULTS_PER_PAGE
           const res: DiscoveryResult = {

@@ -18,7 +18,8 @@ import {
   ExternalLink, 
   AlertCircle,
   FileText,
-  Megaphone
+  Megaphone,
+  Download
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { AnimatePresence, m } from 'framer-motion'
@@ -40,7 +41,8 @@ interface BuilderNews {
   builder?: { id: string; name: string; slug: string } | null
 }
 
-type StatusFilter = 'all' | 'published' | 'pending_approval' | 'promos' | 'draft'
+type StatusFilter = 'all' | 'published' | 'pending_approval' | 'promos' | 'draft' | 'partially_filled'
+
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
   published: {
@@ -184,6 +186,7 @@ export default function BuilderNewsPage() {
       else if (filter === 'pending_approval') matchesFilter = item.status === 'pending_approval'
       else if (filter === 'promos') matchesFilter = item.run_as_promo
       else if (filter === 'draft') matchesFilter = item.status === 'draft'
+      else if (filter === 'partially_filled') matchesFilter = item.status === 'draft' || !item.description || !item.title || !item.builder
 
       return matchesSearch && matchesFilter
     })
@@ -194,8 +197,29 @@ export default function BuilderNewsPage() {
     const published = news.filter(n => n.status === 'published').length
     const pending = news.filter(n => n.status === 'pending_approval').length
     const promos = news.filter(n => n.run_as_promo).length
-    return { total, published, pending, promos }
+    const partiallyFilled = news.filter(n => n.status === 'draft' || !n.description || !n.title || !n.builder).length
+    return { total, published, pending, promos, partiallyFilled }
   }, [news])
+
+  const handleExportNewsCSV = () => {
+    const headers = ['ID', 'Title', 'Status', 'Builder', 'Is Promo', 'Link Target', 'Created At']
+    const rows = filteredNews.map(n => [
+      `"${n.id}"`,
+      `"${(n.title || '').replace(/"/g, '""')}"`,
+      `"${n.status}"`,
+      `"${(n.builder?.name || '').replace(/"/g, '""')}"`,
+      n.run_as_promo ? 'Yes' : 'No',
+      `"${(n.link_target || '').replace(/"/g, '""')}"`,
+      `"${n.created_at}"`
+    ])
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const link = document.createElement('a')
+    link.setAttribute('href', encodeURI(csvContent))
+    link.setAttribute('download', `realtypals_news_${filter}_${Date.now()}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   return (
     <div className="space-y-6 pb-16 font-sans select-none max-w-6xl mx-auto py-8">
@@ -216,8 +240,8 @@ export default function BuilderNewsPage() {
           </p>
         </div>
 
-        {/* Refresh & Create Post Buttons */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Refresh, Export & Create Post Buttons */}
+        <div className="flex items-center flex-wrap gap-2.5 shrink-0">
           <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 hidden sm:inline-block">
             Updated {formatDistanceToNow(lastRefreshedAt, { addSuffix: true })}
           </span>
@@ -233,6 +257,15 @@ export default function BuilderNewsPage() {
           </button>
 
           <button
+            onClick={handleExportNewsCSV}
+            className="flex items-center gap-2 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200/80 dark:border-zinc-800 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
+            title="Export filtered news as CSV"
+          >
+            <Download size={14} className="text-zinc-500" />
+            <span>Export CSV</span>
+          </button>
+
+          <button
             onClick={() => {
               setEditingItem(null)
               setShowModal(true)
@@ -244,6 +277,7 @@ export default function BuilderNewsPage() {
           </button>
         </div>
       </div>
+
 
       {/* KPI Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -349,7 +383,7 @@ export default function BuilderNewsPage() {
 
         {/* Segmented Filter Pills */}
         <div className="flex items-center p-1 bg-zinc-100 dark:bg-zinc-800/60 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 shrink-0 overflow-x-auto">
-          {(['all', 'published', 'pending_approval', 'promos', 'draft'] as const).map(st => (
+          {(['all', 'published', 'pending_approval', 'promos', 'draft', 'partially_filled'] as const).map(st => (
             <button
               key={st}
               onClick={() => setFilter(st)}
@@ -359,7 +393,7 @@ export default function BuilderNewsPage() {
                   : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
-              {st === 'all' ? 'All Posts' : st === 'pending_approval' ? 'Under Review' : st}
+              {st === 'all' ? 'All Posts' : st === 'pending_approval' ? 'Under Review' : st === 'partially_filled' ? '⚠ Partially Filled' : st}
             </button>
           ))}
         </div>
