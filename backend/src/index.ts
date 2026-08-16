@@ -31,6 +31,7 @@ import builderRegistrationRouter from './routes/builderRegistration'
 import builderApplicationsRouter from './routes/builderApplications'
 import analyticsRouter from './routes/analytics'
 import adminIntelligenceRouter from './routes/admin-intelligence'
+import { initializeCaches } from './lib/projectDataGateway.cache'
 
 // Initialize Sentry for error tracking and monitoring
 if (process.env.SENTRY_DSN) {
@@ -228,6 +229,10 @@ async function startup() {
   } else {
     logger.info('redis: not configured (rate limiting uses in-memory fallback)')
   }
+
+  // Phase 2.1: Initialize in-memory caches for project data and query planning
+  initializeCaches()
+  logger.info('caches initialized')
 
   const server = app.listen(PORT, () => {
     const elapsed = Date.now() - startTime

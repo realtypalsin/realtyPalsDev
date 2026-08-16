@@ -103,43 +103,43 @@ function buildDynamicRules(
   // Memory block (if any)
   if (memory) {
     const memoryStr = typeof memory === 'string' ? memory : JSON.stringify(memory)
-    dynamic += `\n\n## SESSION MEMORY\n${memoryStr}`
+    dynamic += `\n\n## MEMORY\n${memoryStr}`
   }
 
   // Sector context (if any)
   if (sectorCtx) {
-    dynamic += `\n\n## SECTOR CONTEXT\n${sectorCtx}`
+    dynamic += `\n\n## SECTOR\n${sectorCtx}`
   }
 
   // Sectors overview (if any)
   if (sectorsOverview) {
-    dynamic += `\n\n## SECTORS OVERVIEW\n${sectorsOverview}`
+    dynamic += `\n\n## SECTORS\n${sectorsOverview}`
   }
 
   // Discovery expansion (if any)
   if (discoveryExpansion && Object.keys(discoveryExpansion).length > 0) {
-    dynamic += `\n\n## DISCOVERY EXPANSION\n${JSON.stringify(discoveryExpansion, null, 2)}`
+    dynamic += `\n\n## EXPANSION\n${JSON.stringify(discoveryExpansion)}`
   }
 
   // Nearby projects (if any)
   if (nearbyProjects && nearbyProjects.length > 0) {
-    dynamic += `\n\n## NEARBY ALTERNATIVES\n${JSON.stringify(nearbyProjects.slice(0, 3), null, 2)}`
+    dynamic += `\n\n## NEARBY\n${JSON.stringify(nearbyProjects.slice(0, 3))}`
   }
 
   // Not found sentinel (if any)
   if (notFoundNames.length > 0) {
-    dynamic += `\n\n## NOT FOUND PROJECTS\n${notFoundNames.map(n => `- PROJECT_NOT_FOUND: "${n}"`).join('\n')}`
+    dynamic += `\n\n## NOT_FOUND\n${notFoundNames.map(n => `- "${n}"`).join(',')}`
   }
 
   // Blocked builders (legal/compliance flags)
   if (blockedBuilders && blockedBuilders.length > 0) {
-    dynamic += `\n\n## COMPLIANCE FLAGS\nThese builders have legal/regulatory flags:\n`
-    dynamic += blockedBuilders.map((b: any) => `- ${b.name}${b.legal_flag ? ` (${b.legal_flag})` : ''}`).join('\n')
+    dynamic += `\n\n## LEGAL_FLAGS\n`
+    dynamic += blockedBuilders.map((b: any) => `- ${b.name}${b.legal_flag ? `(${b.legal_flag})` : ''}`).join(',')
   }
 
   // Intent state (for routing)
   if (intentState) {
-    dynamic += `\n\n## INTENT STATE\n${intentState}`
+    dynamic += `\n\n## INTENT\n${intentState}`
   }
 
   return dynamic

@@ -4,7 +4,7 @@
 export const MODELS = {
   MAIN: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
-  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-3.5-flash',
+  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-2.0-flash',
   GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-flash-latest',
   OPENAI_AZURE: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   OPENAI_FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',

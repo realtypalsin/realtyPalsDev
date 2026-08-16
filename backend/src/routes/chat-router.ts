@@ -366,11 +366,11 @@ router.post('/', async (req: Request, res: Response) => {
       rawIntentResult = await extractIntent(message, prevIntent)
     }
 
-    // Phase 0: Hydrate intent from prior conversation
+    // Phase 2: Parallelize intent extraction with DB prefetch — while LLM generates intent, prefetch DB data
     const baseIntent = rawIntentResult.intent
-    hydratedIntent = sessionId ? await hydrateIntentFromMemory(sessionId, baseIntent) : baseIntent
-
-    const [memory, sessionData] = await Promise.all([
+    const [, memory, sessionData] = await Promise.all([
+      // Hydrate intent after DB data arrives (depend only on intent result)
+      hydrateIntentFromMemory(sessionId ?? '', baseIntent).then(h => (hydratedIntent = h)),
       getMemory(userId, guestToken),
       sessionId ? prisma.chatSession.findUnique({
         where: { id: sessionId },
@@ -467,16 +467,59 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Exact project name detection & active session focus persistence
     try {
-      const dbProjects = await prisma.project.findMany({
-        select: { id: true, name: true, slug: true },
-      });
       const lowerMsg = message.toLowerCase();
-      const matched = dbProjects.find(p => {
-        const lowerName = p.name.toLowerCase();
-        return lowerMsg.includes(lowerName) || (lowerName.length > 3 && lowerName.split(' ').every(part => part.length > 2 && lowerMsg.includes(part)));
-      });
+
+      // Phase 4.2: pg_trgm native similarity search (if extension enabled)
+      let matched = null;
+      try {
+        const trgmResults = await (prisma as any).$queryRaw`
+          SELECT id, name, slug FROM "Project"
+          WHERE name % ${lowerMsg}
+          ORDER BY similarity(name, ${lowerMsg}) DESC
+          LIMIT 1
+        `;
+        if (Array.isArray(trgmResults) && trgmResults.length > 0) {
+          matched = trgmResults[0];
+          console.log('[CHAT:TRGM_MATCH]', matched.name);
+        }
+      } catch (e) {
+        // pg_trgm not available or extension not enabled, fall through to JS matching
+        console.log('[CHAT:TRGM_UNAVAILABLE]', (e as any)?.message?.slice(0, 50));
+      }
+
+      // Exact match fallback
+      if (!matched) {
+        const dbProjects = await prisma.project.findMany({
+          select: { id: true, name: true, slug: true },
+        });
+        matched = dbProjects.find(p => {
+          const lowerName = p.name.toLowerCase();
+          return lowerMsg.includes(lowerName) || (lowerName.length > 3 && lowerName.split(' ').every(part => part.length > 2 && lowerMsg.includes(part)));
+        });
+
+        // JS-based Levenshtein distance if no exact match
+        if (!matched) {
+          const tokens = lowerMsg.split(/\s+/).filter(t => t.length > 2);
+          const scored = dbProjects.map(p => {
+            const pLower = p.name.toLowerCase();
+            const maxDist = Math.max(...tokens.map(t => {
+              const dist = Math.min(...pLower.split(/\s+/).map(pToken => {
+                let d = 0;
+                for (let i = 0; i < Math.max(t.length, pToken.length); i++) {
+                  if (t[i] !== pToken[i]) d++;
+                }
+                return d;
+              }));
+              return dist;
+            }));
+            return { p, score: maxDist <= 2 ? 100 - maxDist * 20 : 0 };
+          }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+          if (scored.length > 0) matched = scored[0].p;
+        }
+      }
+
       if (matched) {
-        console.log('[CHAT] Exact project match detected in query:', matched.name);
+        console.log('[CHAT] Project match detected in query:', matched.name);
         intent.projectNames = [matched.name];
         (intent as any).targetProjectId = matched.id;
       } else {
@@ -791,9 +834,10 @@ router.post('/', async (req: Request, res: Response) => {
                 baseObj.session_inquiry_count = mentions
                 baseObj.session_interest_weightage_pct = weightagePct
               }
-              return baseObj
+              // ponytail: strip undefined values before JSON.stringify to reduce token size
+              return Object.fromEntries(Object.entries(baseObj).filter(([, v]) => v !== undefined))
             })
-          })
+          }).replace(/\s+/g, ' ')
 
           const transparentClarificationText = fuzzyMatchedNotes.length > 0 ? `\nTRANSPARENT MATCH NOTE:\n${fuzzyMatchedNotes.join('\n')}\n` : ''
 
@@ -1571,13 +1615,34 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     let fullText = ''
     let usedProvider: { provider: string; envKey: string } = { provider: 'database', envKey: 'FALLBACK_MODE' }
 
-    const isPropertySearchWithResults = projects.length > 0 && 
-      queryClassification.queryKind !== 'DRILLDOWN' && 
-      queryClassification.renderTarget !== 'text' && 
+    // Phase 5.4: Meta-awareness handler — user asking "what have you assumed about me?"
+    const isMetaQuestion = /what.*(assum|remember|know).*about.*me|what.*constraints.*i|what.*filters|what.*do you.*think|what.*my.*profile/i.test(message)
+
+    const isPropertySearchWithResults = projects.length > 0 &&
+      queryClassification.queryKind !== 'DRILLDOWN' &&
+      queryClassification.renderTarget !== 'text' &&
       !skipForCachedQuery &&
       (queryClassification.queryKind === 'DISCOVERY' || queryClassification.queryKind === 'RANKING')
 
-    if (needsClarification) {
+    if (isMetaQuestion && hydratedIntent) {
+      const constraints = []
+      if (hydratedIntent.bhk?.length) constraints.push(`${hydratedIntent.bhk.join('/')} BHK`)
+      if (hydratedIntent.budgetMin || hydratedIntent.budgetMax) {
+        const min = hydratedIntent.budgetMin ? `₹${hydratedIntent.budgetMin}Cr` : ''
+        const max = hydratedIntent.budgetMax ? `₹${hydratedIntent.budgetMax}Cr` : ''
+        constraints.push(`Budget: ${min}${min && max ? '–' : ''}${max}`.replace(/Cr$/, '').trim() + 'Cr')
+      }
+      if (hydratedIntent.sector) constraints.push(`${hydratedIntent.sector}`)
+      if (hydratedIntent.possession) constraints.push(`Possession: ${hydratedIntent.possession}`)
+      if (hydratedIntent.lifestyleKeywords?.length) constraints.push(`Lifestyle: ${hydratedIntent.lifestyleKeywords.join(', ')}`)
+      if (hydratedIntent.purpose) constraints.push(`Purpose: ${hydratedIntent.purpose === 'endUse' ? 'Own Use' : 'Investment'}`)
+
+      fullText = constraints.length > 0
+        ? `You've told me: ${constraints.join(', ')}. You can correct any of these with "actually..." or add more details.`
+        : `You haven't given me specific constraints yet. Tell me: budget, location, BHK size, or timeline, and I'll find what works.`
+      console.log('[CHAT:META_AWARE]', { constraints, response: fullText })
+      send('token', { token: fullText })
+    } else if (needsClarification) {
       const confidence = computeConfidence(intent)
       const clarification = buildClarificationOptions(intent, chipInventory)
       fullText = clarification.question
@@ -1903,6 +1968,10 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     // Stream generation with dynamic provider chain selection
     // Phase 4: Route factual queries to 8B models, advisory/project_detail to 70B+
     const dynamicChainConfig = undefined
+
+    // Phase 2.2: Emit early "thinking" status before LLM inference to reduce perceived latency
+    send('status', { status: 'thinking', message: 'Searching verified properties and analyzing your requirements...' })
+
     const fallbackResult = await executeWithFallbackChain({
       systemPrompt,
       messages,
@@ -2062,6 +2131,19 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
     // Phase 1: Capture response for grading
     responseText = fullText
+
+    // Phase 5.7: Emit proactive follow-up suggestion after response
+    if (fullText && projects.length > 0) {
+      const followupSuggestions = []
+      if (projects.length > 1 && !intent.is_comparison_query) followupSuggestions.push(`Compare **${projects[0].name}** with **${projects[1].name}**?`)
+      if (nearbyProjects.length > 0) followupSuggestions.push(`See alternatives in ${nearbyProjects[0].sector || 'nearby sectors'}?`)
+      if (projects[0]?.builder) followupSuggestions.push(`Want to know about **${projects[0].builder.name}**'s other projects?`)
+      if (projects.length > 0 && !intent.sector) followupSuggestions.push(`Interested in **${projects[0].sector || 'this sector'}**?`)
+      if (followupSuggestions.length > 0) {
+        const suggestion = followupSuggestions[Math.floor(Math.random() * followupSuggestions.length)]
+        send('followup', { suggestion })
+      }
+    }
 
     const persistPromises: Promise<unknown>[] = []
 

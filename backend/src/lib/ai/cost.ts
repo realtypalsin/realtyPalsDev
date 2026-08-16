@@ -7,6 +7,10 @@ const PRICE: Record<string, { in: number; out: number }> = {
   'gpt-4o': { in: 2.5, out: 10.0 },
   'gpt-4o-mini': { in: 0.15, out: 0.6 },
   'claude-3-5-sonnet-20241022': { in: 3.0, out: 15.0 },
+  'gemini-2.0-flash': { in: 0.075, out: 0.3 },
+  'gemini-flash-latest': { in: 0.075, out: 0.3 },
+  'mistral-small-latest': { in: 0.14, out: 0.42 },
+  'llama3.3-70b': { in: 0.5, out: 1.5 },
 }
 
 export async function recordUsage(args: {

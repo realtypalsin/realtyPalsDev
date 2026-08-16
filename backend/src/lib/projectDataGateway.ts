@@ -693,9 +693,9 @@ export async function getProjectDataForQuery(params: {
     city: { fact: 'City', value: (project as any).city ?? 'Noida', source: 'database', confidence: 1.0, validated: true },
     price_min_cr: { fact: 'Starting Price', value: (project as any).price_min_cr ? `₹${(project as any).price_min_cr} Cr` : 'Price on Request', source: 'database', confidence: 0.95, validated: !!(project as any).price_min_cr },
     price_max_cr: { fact: 'Maximum Price', value: (project as any).price_max_cr ? `₹${(project as any).price_max_cr} Cr` : 'Price on Request', source: 'database', confidence: 0.95, validated: !!(project as any).price_max_cr },
-    project_status: { fact: 'Current Project Status', value: (project as any).project_status || (project as any).status || 'Under Construction', source: 'database', confidence: 1.0, validated: true },
-    possession_date: { fact: 'Expected Possession Date', value: (project as any).possession_date ? new Date((project as any).possession_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'As per RERA schedule', source: 'database', confidence: 0.95, validated: !!(project as any).possession_date },
-    rera_status: { fact: 'RERA Registration Status', value: (project as any).is_rera_approved ? `RERA Approved (${(project as any).rera_id || 'Verified'})` : 'RERA Approved & Verified', source: 'database', confidence: 0.98, validated: true },
+    project_status: { fact: 'Current Project Status', value: (project as any).project_status || (project as any).status || null, source: 'database', confidence: 1.0, validated: !!(project as any).project_status || !!(project as any).status },
+    possession_date: { fact: 'Expected Possession Date', value: (project as any).possession_date ? new Date((project as any).possession_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : null, source: 'database', confidence: 0.95, validated: !!(project as any).possession_date },
+    rera_status: { fact: 'RERA Registration Status', value: (project as any).is_rera_approved ? `RERA Approved (${(project as any).rera_id || 'Verified'})` : null, source: 'database', confidence: 0.98, validated: !!(project as any).is_rera_approved },
     rental_yield_annual_percent: { fact: 'Estimated Annual Rental Yield', value: (project as any).rental_yield_annual_percent ? `${(project as any).rental_yield_annual_percent}% per annum` : 'Market-dependent', source: 'database', confidence: (project as any).rental_yield_annual_percent ? 0.85 : 0.6, validated: !!(project as any).rental_yield_annual_percent },
     appreciation_potential_5yr: { fact: '5-Year Appreciation Potential', value: (project as any).appreciation_potential_5yr ? `${(project as any).appreciation_potential_5yr}% estimated` : 'Sector-dependent growth', source: 'database', confidence: (project as any).appreciation_potential_5yr ? 0.8 : 0.6, validated: !!(project as any).appreciation_potential_5yr }
   }
@@ -762,8 +762,8 @@ async function getBuilderWithValidation(
       facts['insolvency_status'] = { fact: 'Insolvency History', value: b.insolvency_history ? 'Flagged' : 'Clean (No NCLT / Insolvency filings)', source: 'database', confidence: 1.0, validated: true }
       facts['rera_registration'] = { fact: 'RERA Standing', value: `Verified RERA Approved Project (RERA Compliance Score: ${b.rera_compliance_score ?? 90}/100)`, source: 'database', confidence: 1.0, validated: true }
     } else {
-      facts['builder_name'] = { fact: 'Builder Name', value: 'Reputed Regional Developer', source: 'database', confidence: 0.8, validated: true }
-      facts['rera_registration'] = { fact: 'RERA Status', value: 'Verified RERA Approved Project', source: 'database', confidence: 0.9, validated: true }
+      facts['builder_name'] = { fact: 'Builder Name', value: null, source: 'database', confidence: 0, validated: false }
+      facts['rera_registration'] = { fact: 'RERA Status', value: null, source: 'database', confidence: 0, validated: false }
     }
   } catch (err) {
     console.error('[GATEWAY:BUILDER_FETCH_ERROR]', err)

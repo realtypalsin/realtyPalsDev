@@ -27,6 +27,21 @@ export class GeminiStreamStallError extends Error {
   }
 }
 
+// Phase 1.4: Simple hash-based system prompt cache (foundation for Gemini cachedContent)
+const systemPromptCache = new Map<string, { hash: string; ttl: number }>()
+function hashSystemPrompt(system: string): string {
+  const crypto = require('crypto')
+  return crypto.createHash('sha256').update(system).digest('hex').slice(0, 16)
+}
+function getSystemPromptCacheKey(system: string): string {
+  const hash = hashSystemPrompt(system)
+  const existing = Array.from(systemPromptCache.entries()).find(([_, v]) => v.hash === hash && v.ttl > Date.now())
+  if (existing) return existing[0]
+  const key = `sp_${hash}_${Date.now()}`
+  systemPromptCache.set(key, { hash, ttl: Date.now() + 3600000 }) // 1h TTL
+  return key
+}
+
 // Gemini's `contents` shape only knows 'user' and 'model' roles — system prompt
 // goes in systemInstruction separately, and our 'tool' role turns are injected
 // directly as functionResponse parts by the tool-call cycle below, not via this map.

@@ -6,8 +6,8 @@ import OpenAI from 'openai'
 import { GoogleGenAI } from '@google/genai'
 import { MODELS } from '../config'
 
-const COMPRESSION_THRESHOLD = 14
-const KEEP_RECENT = 8
+const COMPRESSION_THRESHOLD = 8
+const KEEP_RECENT = 6
 const MAX_SUMMARY_CHARS = 250
 
 type Message = { role: 'user' | 'assistant'; content: string }
