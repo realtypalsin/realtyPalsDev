@@ -58,6 +58,7 @@ export const viewport = {
 
 import { Toaster } from "sonner";
 import { PingBackend } from "@/components/PingBackend";
+import CookiesBanner from "@/components/CookiesBanner";
 
 
 import { LazyMotion, domAnimation } from 'framer-motion'
@@ -80,6 +81,7 @@ export default function RootLayout({
           <PostHogProvider>{children}</PostHogProvider>
         </LazyMotion>
         <Toaster position="bottom-right" richColors closeButton theme="light" />
+        <CookiesBanner />
 
       </body>
     </html>
