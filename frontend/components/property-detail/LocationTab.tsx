@@ -229,6 +229,43 @@ export default function LocationTab({ project, detail, d, projectAddress }: Loca
         </div>
       </div>
 
+      {/* ── 2.5. KEY EMPLOYMENT HUBS & COMMUTE CORRIDORS ── */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
+        <div>
+          <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Key Employment Hubs &amp; Commute Matrix</h2>
+          <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Average driving and transit travel times to major NCR commercial centers.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {((detail as any)?.commute_matrix && Array.isArray((detail as any).commute_matrix)
+            ? (detail as any).commute_matrix
+            : []
+          ).map((c: any, i: number) => (
+            <div key={i} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-3 hover:border-gray-200 transition-all">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center text-[12px] font-black">
+                  <Car size={16} />
+                </div>
+                <span className="text-[10.5px] font-black text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2 py-0.5 rounded-full">
+                  {c.mode || 'Drive'}
+                </span>
+              </div>
+
+              <div>
+                <h4 className="text-[13px] font-black text-gray-900 dark:text-white leading-snug line-clamp-2">{c.destination}</h4>
+                <div className="flex items-center justify-between text-[11px] font-bold text-gray-400 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
+                  <span>{c.distance_km ? `${c.distance_km} km` : 'Direct corridor'}</span>
+                  <span className="text-gray-900 dark:text-white font-black text-[12px]">{c.travel_time_min} mins</span>
+                </div>
+                {c.peak_time_min && (
+                  <p className="text-[9.5px] text-gray-400 font-medium mt-0.5">Peak traffic: ~{c.peak_time_min} mins</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ── 3. NEARBY PLACES (Modern 2-Column Responsive Card Grid) ── */}
       <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5">
         <div className="flex items-center justify-between">

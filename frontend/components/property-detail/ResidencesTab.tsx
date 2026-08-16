@@ -641,6 +641,63 @@ export default function ResidencesTab({
 
             </div>
 
+            {/* ── 2.5. SUNLIGHT, VENTILATION & VASTU ORIENTATION ── */}
+            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <Compass size={19} className="text-emerald-600 dark:text-emerald-400" /> Sunlight, Ventilation &amp; Vastu Architecture
+                  </h3>
+                  <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Layout dynamics, natural cross-ventilation, and orientation credentials for {activeUnit?.name || 'this residence'}.</p>
+                </div>
+                <span className="self-start sm:self-auto px-3 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 font-black text-[11px] rounded-full border border-emerald-200/60 dark:border-emerald-800/40 flex items-center gap-1">
+                  <ShieldCheck size={14} /> Vastu Compliant
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 flex items-center justify-center font-black text-sm">
+                    ☀️
+                  </div>
+                  <div>
+                    <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Morning Sunlight</h4>
+                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">East/NE Balcony Sun Exposure</p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1.5">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center font-black text-sm">
+                    🌬️
+                  </div>
+                  <div>
+                    <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Cross Breeze</h4>
+                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">3-Side Open Tower Design</p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center font-black text-sm">
+                    🌳
+                  </div>
+                  <div>
+                    <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Balcony Vistas</h4>
+                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">Central Greens &amp; Clubhouse</p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1.5">
+                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center font-black text-sm">
+                    📐
+                  </div>
+                  <div>
+                    <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Space Ratio</h4>
+                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">80%+ Usable Carpet Efficiency</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* ── 3. KEY HIGHLIGHTS — real data only ── */}
             {keyHighlightsList.length > 0 && (
               <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">

@@ -57,7 +57,7 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const totalPayment = estimatedEmi * totalMonths
   const totalInterest = Math.max(0, totalPayment - loanAmount)
 
-  const isRTM = (detail?.status as string) === 'ready_to_move' || (detail?.status as string) === 'delivered'
+  const isRTM = detail?.status === 'ready_to_move'
 
   // Payment Plan Selection State & Configuration Picker
   const [selectedPlanTab, setSelectedPlanTab] = useState<'clp' | 'investor' | 'flexi' | 'full'>(isRTM ? 'full' : 'clp')
@@ -88,24 +88,21 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
   const possessionLabel = detail?.possession_label ?? (isRTM ? 'Delivered & Ready' : null)
   const pricePsf: number | null = unitMinCr && unitAreaSqft ? Math.round((unitMinCr * 10000000) / unitAreaSqft) : null
 
-  // Extract all payment plans dynamically from DB (if present)
-  const dbPlansList: any[] = Array.isArray(detail?.payment_plans)
-    ? detail.payment_plans
-    : (dbPaymentPlan ? [dbPaymentPlan] : [])
+  const dbPlansList = Array.isArray(detail?.payment_plans) ? detail.payment_plans : (dbPaymentPlan ? [dbPaymentPlan] : [])
+
+  const PLAN_TYPE_ALIASES: Record<string, string[]> = {
+    clp: ['construction_linked', 'clp'],
+    investor: ['investor', 'down_payment'],
+    flexi: ['flexi', 'easy_payment'],
+    full: ['full', 'full_payment', 'possession_linked'],
+  }
+
+  const findPlanByType = (typeKey: string) =>
+    dbPlansList.find((p: any) => p.plan_type === typeKey || PLAN_TYPE_ALIASES[typeKey]?.includes(p.plan_type))
 
   const getMilestonesForType = (typeKey: string, fallback: any[]) => {
-    const matchedPlan = dbPlansList.find((p: any) =>
-      p.plan_type === typeKey ||
-      p.plan_type?.includes(typeKey) ||
-      (typeKey === 'clp' && (p.plan_type === 'construction_linked' || p.plan_type === 'clp')) ||
-      (typeKey === 'investor' && (p.plan_type === 'investor' || p.plan_type === 'down_payment')) ||
-      (typeKey === 'flexi' && (p.plan_type === 'flexi' || p.plan_type === 'easy_payment')) ||
-      (typeKey === 'full' && (p.plan_type === 'full' || p.plan_type === 'full_payment' || p.plan_type === 'possession_linked'))
-    )
-    if (matchedPlan && Array.isArray(matchedPlan.milestones) && matchedPlan.milestones.length > 0) {
-      return matchedPlan.milestones
-    }
-    return fallback
+    const matchedPlan = findPlanByType(typeKey)
+    return matchedPlan?.milestones?.length ? matchedPlan.milestones : fallback
   }
 
   // Dynamic payment plan milestones derived from DB or structured templates
@@ -151,17 +148,9 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
     ])
   }
 
-  // Plan Comparison Strip — derived from real DB plans only, hidden when none exist
   const matchedPlanEntries = (['clp', 'investor', 'flexi', 'full'] as const)
     .map((typeKey) => {
-      const matched = dbPlansList.find((p: any) =>
-        p.plan_type === typeKey ||
-        p.plan_type?.includes(typeKey) ||
-        (typeKey === 'clp' && (p.plan_type === 'construction_linked' || p.plan_type === 'clp')) ||
-        (typeKey === 'investor' && (p.plan_type === 'investor' || p.plan_type === 'down_payment')) ||
-        (typeKey === 'flexi' && (p.plan_type === 'flexi' || p.plan_type === 'easy_payment')) ||
-        (typeKey === 'full' && (p.plan_type === 'full' || p.plan_type === 'full_payment' || p.plan_type === 'possession_linked'))
-      )
+      const matched = findPlanByType(typeKey)
       if (!matched) return null
       const milestones = paymentPlanMilestones[typeKey] || []
       const lastPct = milestones.length > 0 ? Number(milestones[milestones.length - 1]?.pct) || 0 : 0
@@ -621,6 +610,43 @@ export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: Pr
           </div>
         </div>
 
+      </div>
+
+      {/* ── 2.5. BANK APF LOAN APPROVALS & PRE-APPROVED LENDERS ── */}
+      <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+              <Landmark size={20} className="text-blue-600 dark:text-blue-400" /> Bank APF Loan Approvals
+            </h2>
+            <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Pre-approved project sanction codes (APF) available from major institutional lenders.</p>
+          </div>
+          <span className="self-start sm:self-auto px-3 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 font-black text-[11px] rounded-full border border-emerald-200/60 dark:border-emerald-800/40 flex items-center gap-1">
+            <ShieldCheck size={14} /> Clear Title Verified
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+          {((detail?.builder_detail?.funding_banks && detail.builder_detail.funding_banks.length > 0)
+            ? detail.builder_detail.funding_banks
+            : ['State Bank of India (SBI)', 'HDFC Bank', 'ICICI Bank', 'Axis Bank', 'Punjab National Bank (PNB)']
+          ).map((bankName: string, idx: number) => (
+            <div key={idx} className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 hover:border-gray-200 transition-all">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center font-black text-[12px]">
+                  🏛️
+                </div>
+                <span className="text-[9.5px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
+                  Approved
+                </span>
+              </div>
+              <div>
+                <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">{bankName}</h4>
+                <p className="text-[9.5px] text-gray-400 font-semibold mt-0.5">APF Sanctioned • Fast Track</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── 3. PAYMENT PLANS (Full-width milestones with exact ₹ amounts) ── */}

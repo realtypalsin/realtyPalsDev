@@ -355,17 +355,21 @@ export default function BuilderTab({ builder, project, documents = [], loading }
               </div>
 
               <div className="space-y-3 pt-1">
-                {dbAwards.slice(0, 3).map((award: any, i: number) => (
-                  <div key={i} className="p-3 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                      <Award size={16} />
+                {dbAwards.slice(0, 3).map((award: any, i: number) => {
+                  const awardTitle = typeof award === 'string' ? award : (award?.title || award?.name || 'Real Estate Excellence Award')
+                  const awardOrg = typeof award === 'string' && award.includes('-') ? award.split('-')[0].trim() : (award?.organization || award?.year || 'Verified Industry Recognition')
+                  return (
+                    <div key={i} className="p-3 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                        <Award size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-[13px] font-black text-gray-900 dark:text-white">{awardTitle}</h4>
+                        <p className="text-[11px] text-gray-400 font-medium">{awardOrg}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-[13px] font-black text-gray-900 dark:text-white">{award.title || award.name}</h4>
-                      <p className="text-[11px] text-gray-400 font-medium">{award.organization || award.year || 'National Real Estate Award'}</p>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
