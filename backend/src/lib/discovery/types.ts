@@ -7,6 +7,7 @@ export interface Intent {
   budgetMax?: number
   possession?: 'immediate' | '1year' | '2year' | '3year+'
   sector?: string
+  city?: string
   areaMin?: number
   areaMax?: number
   purpose?: 'endUse' | 'investment'
@@ -34,7 +35,7 @@ export type BudgetStatus = 'within' | 'slightly_over' | 'over'
 export interface NearbyExpansion {
   requestedSector: string
   searchedSectors: string[]
-  reason: 'no_results_in_requested_sector'
+  reason: 'no_results_in_requested_sector' | 'no_inventory_in_exact_sector_nofallback'
 }
 
 export interface UnitTypeSummary {

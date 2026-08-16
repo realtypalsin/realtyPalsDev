@@ -42,6 +42,12 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
   // we want to ensure we don't accidentally constrain it to highly specific previous filters
   // unless explicitly provided in the new query.
   const isSectorSwitch = update.sector && previous.sector && update.sector !== previous.sector
+
+  // Default spatialScope to EXACT when sector is present and not explicitly PROXIMITY
+  let spatialScope = update.spatialScope || previous.spatialScope
+  if (update.sector && !update.spatialScope) {
+    spatialScope = 'EXACT'
+  }
   
   const result = {
     ...previous,
@@ -58,6 +64,7 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
         areaMax: undefined
     } : {}),
     ...Object.fromEntries(Object.entries(update).filter(([, v]) => v !== undefined)),
+    ...(spatialScope ? { spatialScope } : {}),
   } as Intent
 
   console.log('[INTENT:MERGE]', JSON.stringify({
@@ -301,16 +308,24 @@ function extractIntentHeuristic(message: string, previousIntent: Intent): Intent
 
   // Spatial scope detection: distinguish "in Sector X" (EXACT) vs "near Sector X" (PROXIMITY) vs "Noida" (BROAD)
   if (fallback.sector) {
+    // Check for proximity keywords before the sector mention
     const proximityMatch = /\b(near|around|close\s+to|nearby|vicinity|adjacent\s+to)\s+/i.test(message)
-    const exactMatch = /\b(in|at|inside)\s+/i.test(message.substring(0, message.indexOf(fallback.sector) + fallback.sector.length + 20))
+
+    // For exact match, look around sector mention (before and after)
+    const sectorIndex = message.toLowerCase().indexOf(fallback.sector.toLowerCase())
+    const contextStart = Math.max(0, sectorIndex - 50)
+    const contextEnd = Math.min(message.length, sectorIndex + fallback.sector.length + 30)
+    const context = message.substring(contextStart, contextEnd)
+    const exactMatch = /\b(in|at|inside)\s+/i.test(context)
 
     if (proximityMatch) {
       fallback.spatialScope = 'PROXIMITY'
-      fallback.radiusKm = 3.5 // Default radius for proximity searches
+      fallback.radiusKm = 3.5
     } else if (exactMatch) {
       fallback.spatialScope = 'EXACT'
     }
-  } else if (/\b(noida|greater\s+noida|yamuna\s+expressway)\b/i.test(message) && !fallback.sector) {
+  } else if (/\b(noida|greater\s+noida|yamuna\s+expressway)\b/i.test(message)) {
+    // City-level query without sector
     fallback.spatialScope = 'BROAD'
   }
 

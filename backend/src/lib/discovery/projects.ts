@@ -464,6 +464,7 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     })),
     matchScore,
     matchReason: buildMatchReason(p, intent, budgetStatus),
+    distance_km: (p as any).distance_km ?? null,
     market_tier: marketTierValue, // Phase 5: market tier tag
     ...buildMatchSignals(
       {
@@ -722,11 +723,18 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
 
   // ── Branch 2: Spatial scope handling (EXACT vs PROXIMITY vs BROAD) ──────
   // Import geospatial utilities
-  const { getSectorCentroid, getProjectsWithinRadius, calculateHaversineDistanceKm } = await import('./geo')
+  const { getSectorCentroid, getProjectsWithinRadius } = await import('./geo')
 
-  let spatialContext: any = {}
-  let rawProjectsFromSpatial: any[] = []
-  const spatialScope = effectiveIntent.spatialScope || (effectiveIntent.sector ? 'EXACT' : 'BROAD')
+  interface SpatialCtx {
+    anchorSector?: string
+    anchorCoords?: { lat: number; lng: number }
+    radiusKm?: number
+    spatialScope?: 'EXACT' | 'PROXIMITY' | 'BROAD'
+  }
+
+  let spatialContext: SpatialCtx = {}
+  let rawProjectsFromSpatial: Array<{ id: string; name: string; lat: number; lng: number; sector: string; distance_km: number }> = []
+  let spatialScope: 'EXACT' | 'PROXIMITY' | 'BROAD' = effectiveIntent.spatialScope || (effectiveIntent.sector ? 'EXACT' : 'BROAD')
 
   if (spatialScope === 'PROXIMITY' && effectiveIntent.sector) {
     // PROXIMITY mode: radial search within radiusKm (default 3.5 km)
@@ -760,14 +768,13 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
         })
 
         if (fullProjects.length > 0) {
-          // Enrich with distance_km from radial search
-          const projectsWithDistance = fullProjects.map((p) => {
-            const radiusData = rawProjectsFromSpatial.find((r) => r.id === p.id)
-            return {
-              ...p,
-              distance_km: radiusData?.distance_km || null,
-            }
-          })
+          // Build distance map for O(1) lookup (avoid O(n²) with find())
+          const distanceMap = new Map(rawProjectsFromSpatial.map((r) => [r.id, r.distance_km]))
+
+          const projectsWithDistance = fullProjects.map((p) => ({
+            ...p,
+            distance_km: distanceMap.get(p.id) || null,
+          }))
 
           // Partition: exact sector vs nearby sectors
           const exactSector = projectsWithDistance.filter((p) => p.sector === effectiveIntent.sector)
@@ -822,13 +829,13 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
   let rawProjects = rawProjectsUnpaginated
 
   // Fallback: if sector-only query returned 0 results, try simplified sector-only search
-  // This catches cases where complex hard filters (BHK, budget combinations) fail but
-  // the sector itself has projects.
+  // Only applies when spatialScope is NOT EXACT or when query had no hard constraints (BHK/budget)
   if (
     rawProjects.length === 0 &&
     effectiveIntent.sector &&
     !isCityLevel(effectiveIntent.sector) &&
-    !effectiveIntent.projectNames?.length
+    !effectiveIntent.projectNames?.length &&
+    (spatialScope !== 'EXACT' || (!effectiveIntent.bhk?.length && !effectiveIntent.budgetMax))
   ) {
     console.log(`[DISCOVERY:B2-FALLBACK] No results with full filters. Trying sector-only query for "${effectiveIntent.sector}"`)
     try {

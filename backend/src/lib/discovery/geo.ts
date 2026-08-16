@@ -1,5 +1,7 @@
 // Geospatial utilities: Haversine distance, sector centroids, radial search
+import { Prisma } from '@prisma/client'
 import { prisma } from '../db'
+import type { ScoredProject } from './types'
 
 const EARTH_RADIUS_KM = 6371
 
@@ -112,26 +114,26 @@ export async function getSectorCentroid(
   sector: string,
   city?: string
 ): Promise<{ lat: number; lng: number } | null> {
-  // Check cache first
-  if (SECTOR_CENTROID_CACHE[sector]) {
-    return SECTOR_CENTROID_CACHE[sector]
-  }
-
   try {
-    // Fallback to DB: compute average lat/lng from projects in this sector
+    // 1. Prioritize real database project coordinates
     const result = await prisma.$queryRaw<Array<{ lat: number; lng: number }>>`
-      SELECT AVG(lat) as lat, AVG(lng) as lng
+      SELECT AVG(lat)::float as lat, AVG(lng)::float as lng
       FROM projects
       WHERE sector ILIKE ${sector}
-      ${city ? prisma.$raw`AND city ILIKE ${city}` : prisma.$empty}
+      ${city ? Prisma.sql`AND city ILIKE ${city}` : Prisma.empty}
       AND lat IS NOT NULL AND lng IS NOT NULL
     `
 
-    if (result && result.length > 0 && result[0].lat && result[0].lng) {
-      return { lat: result[0].lat, lng: result[0].lng }
+    if (result && result.length > 0 && result[0]) {
+      return result[0]
     }
   } catch (err) {
-    console.error(`Failed to compute sector centroid for ${sector}:`, err)
+    console.error(`Failed to compute sector centroid for ${sector} from DB:`, err)
+  }
+
+  // 2. Fallback to pre-computed static cache
+  if (SECTOR_CENTROID_CACHE[sector]) {
+    return SECTOR_CENTROID_CACHE[sector]
   }
 
   return null
@@ -145,7 +147,7 @@ export async function getProjectsWithinRadius(
   anchorLat: number,
   anchorLng: number,
   radiusKm: number,
-  whereFilter?: any
+  whereFilter?: Prisma.ProjectWhereInput
 ): Promise<
   Array<{
     id: string
@@ -167,7 +169,7 @@ export async function getProjectsWithinRadius(
 
   try {
     // Fetch all projects in bounding box, then filter by Haversine in-app
-    const projects = await prisma.projects.findMany({
+    const projects = await prisma.project.findMany({
       where: {
         lat: { gte: minLat, lte: maxLat },
         lng: { gte: minLng, lte: maxLng },
@@ -184,9 +186,14 @@ export async function getProjectsWithinRadius(
 
     // Calculate distance and filter to radiusKm
     const withDistance = projects
+      .filter((p) => p.lat !== null && p.lng !== null)
       .map((p) => ({
-        ...p,
-        distance_km: calculateHaversineDistanceKm(anchorLat, anchorLng, p.lat || 0, p.lng || 0),
+        id: p.id,
+        name: p.name,
+        lat: p.lat!,
+        lng: p.lng!,
+        sector: p.sector,
+        distance_km: calculateHaversineDistanceKm(anchorLat, anchorLng, p.lat!, p.lng!),
       }))
       .filter((p) => p.distance_km <= radiusKm)
 
