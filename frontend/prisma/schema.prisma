@@ -726,15 +726,16 @@ model ChatSession {
 }
 
 model ChatMessage {
-  id              String      @id @default(uuid())
-  session_id      String
-  role            MessageRole
-  content         String
-  intent_snapshot Json?
-  created_at      DateTime    @default(now())
-  artifacts       Json?
-  chips           Json?       @default("[]")
-  session         ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  id                    String      @id @default(uuid())
+  session_id            String
+  role                  MessageRole
+  content               String
+  intent_snapshot       Json?
+  created_at            DateTime    @default(now())
+  edited_at             DateTime?
+  artifacts             Json?
+  chips                 Json?       @default("[]")
+  session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
   @@index([session_id, created_at])
   @@map("chat_messages")
@@ -825,58 +826,6 @@ model CallbackRequest {
   @@index([lead_tier])
   @@index([created_at])
   @@map("callback_requests")
-}
-
-model LeadObjection {
-  id                       String    @id @default(uuid())
-  callback_request_id      String
-  project_slug             String
-  project_name             String?
-  reason_category          String
-  reason_text              String
-  confidence_score         Float?
-  extracted_from_message_id String?
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  callbackRequest CallbackRequest @relation(fields: [callback_request_id], references: [id], onDelete: Cascade)
-
-  @@index([callback_request_id])
-  @@index([project_slug])
-  @@index([reason_category])
-  @@map("lead_objections")
-}
-
-model ProjectSpecItem {
-  id           String    @id @default(uuid())
-  project_id   String
-  unit_type_id String?
-
-  category     String
-  label        String
-  value        String
-  brand        String?
-  tier         String?    // standard | premium | luxury
-
-  source       DataSource @default(brochure)
-  verified_at  DateTime?
-  verified_by  String?
-
-  is_highlight Boolean   @default(false)
-  sort_order   Int       @default(0)
-  notes        String?
-
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-
-  project      Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  unit_type    UnitType? @relation(fields: [unit_type_id], references: [id], onDelete: Cascade)
-
-  @@index([project_id, category])
-  @@index([project_id, is_highlight])
-  @@index([brand])
-  @@map("project_spec_items")
 }
 
 model PriceAlert {
@@ -988,6 +937,7 @@ model CostSheet {
   base_price_per_sqft   Float?
   base_cost_cr          Float?
   floor_rise_per_floor  Float?
+  base_interest_rate    Float? // Home loan interest rate benchmark (e.g. 8.5)
   plc_charges           Json     @default("[]")
   // ⚠️ parking_cost / ifms / club_membership store RUPEES, not lakhs.
   // See dictionary §11.7.2b. routes/projects.ts divides these by 1e7 to reach crores.
@@ -1000,7 +950,6 @@ model CostSheet {
   gst_note              String?
   stamp_duty_pct        Float    @default(6.0)
   registration_pct      Float    @default(1.0)
-  base_interest_rate    Float?
   // Utilities — stage F (§5.3). Rupees, same convention as above.
   electricity_connection Float?
   water_sewer_connection Float?
@@ -1687,6 +1636,74 @@ model ResponseGrade {
   @@index([outcome_achieved])
   @@index([grade_score])
   @@map("response_grades")
+}
+
+model LeadObjection {
+  id                       String    @id @default(uuid())
+  callback_request_id      String
+  project_slug             String
+  project_name             String?
+  reason_category          String    // "possession", "price", "product_mix", "location", "legal", "financing"
+  reason_text              String
+  confidence_score         Float?
+  extracted_from_message_id String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  callbackRequest CallbackRequest @relation(fields: [callback_request_id], references: [id], onDelete: Cascade)
+
+  @@index([callback_request_id])
+  @@index([project_slug])
+  @@index([reason_category])
+  @@map("lead_objections")
+}
+
+model ProjectSpecItem {
+  id           String    @id @default(uuid())
+  project_id   String
+  unit_type_id String?
+
+  category     String
+  label        String
+  value        String
+  brand        String?
+  tier         String?
+
+  source       DataSource @default(brochure)
+  verified_at  DateTime?
+  verified_by  String?
+
+  is_highlight Boolean   @default(false)
+  sort_order   Int       @default(0)
+  notes        String?
+
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  project      Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  unit_type    UnitType? @relation(fields: [unit_type_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, category])
+  @@index([project_id, is_highlight])
+  @@index([brand])
+  @@map("project_spec_items")
+}
+
+model GhostPoolAnalysis {
+  id           String   @id @default(uuid())
+  project_id   String
+  week_start   DateTime
+  total_matched Int      @default(0)
+  total_converted Int    @default(0)
+  by_reason    Json     @default("{}")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@unique([project_id, week_start])
+  @@index([project_id])
+  @@index([week_start])
+  @@map("ghost_pool_analysis")
 }
 
 model AuditLog {

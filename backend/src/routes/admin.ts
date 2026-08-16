@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { timingSafeEqual } from 'crypto'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/db'
 import { createAdminSession, requireAdmin, destroyAdminSession } from '../lib/adminAuth'
 import { computeCompleteness } from '../lib/completeness'
@@ -66,12 +67,12 @@ const HIGH_IMPACT_FIELDS = new Set([
 export interface FieldDiff {
   field: string
   label: string
-  old_value: any
-  new_value: any
+  old_value: unknown
+  new_value: unknown
   is_high_impact: boolean
 }
 
-export function computeFieldDiffs(oldObj: Record<string, any>, newObj: Record<string, any>): FieldDiff[] {
+export function computeFieldDiffs(oldObj: Record<string, unknown>, newObj: Record<string, unknown>): FieldDiff[] {
   const diffs: FieldDiff[] = []
   for (const [key, newVal] of Object.entries(newObj)) {
     if (newVal === undefined) continue
@@ -122,7 +123,7 @@ export async function recordAuditLog({
         action,
         actor,
         summary,
-        changes: changes && changes.length > 0 ? changes : undefined,
+        changes: changes && changes.length > 0 ? (changes as unknown as Prisma.InputJsonValue) : undefined,
         ip_address: ip_address || null,
       },
     })
@@ -531,7 +532,7 @@ router.get('/projects/:id/completeness', requireAdmin, async (req: Request, res:
 router.get('/audit-logs', requireAdmin, async (req: Request, res: Response) => {
   const { entity_type, entity_id, mode = 'detailed', field, limit = '50', offset = '0' } = req.query
   try {
-    const where: any = {}
+    const where: Prisma.AuditLogWhereInput = {}
     if (entity_type && entity_type !== 'all') where.entity_type = entity_type as string
     if (entity_id && entity_id !== 'all') where.entity_id = entity_id as string
 
@@ -551,20 +552,20 @@ router.get('/audit-logs', requireAdmin, async (req: Request, res: Response) => {
     // If mode is precise, filter changes to high-impact fields only or entries with high-impact changes
     let processedLogs = logs
     if (mode === 'precise') {
-      processedLogs = logs.map(log => {
-        const changes = Array.isArray(log.changes) ? (log.changes as any[]) : []
-        const highImpactChanges = changes.filter(c => c.is_high_impact || HIGH_IMPACT_FIELDS.has(c.field))
+      processedLogs = logs.map((log: typeof logs[0]) => {
+        const changes = Array.isArray(log.changes) ? (log.changes as Array<{ field: string; is_high_impact?: boolean }>) : []
+        const highImpactChanges = changes.filter((c) => c.is_high_impact || HIGH_IMPACT_FIELDS.has(c.field))
         return {
           ...log,
           changes: highImpactChanges,
         }
-      }).filter(log => log.action !== 'UPDATE' || (Array.isArray(log.changes) && log.changes.length > 0))
+      }).filter((log) => log.action !== 'UPDATE' || (Array.isArray(log.changes) && log.changes.length > 0))
     }
 
     if (field && typeof field === 'string' && field !== 'all') {
-      processedLogs = processedLogs.filter(log => {
-        const changes = Array.isArray(log.changes) ? (log.changes as any[]) : []
-        return changes.some(c => c.field?.toLowerCase()?.includes((field as string).toLowerCase()))
+      processedLogs = processedLogs.filter((log) => {
+        const changes = Array.isArray(log.changes) ? (log.changes as Array<{ field?: string }>) : []
+        return changes.some((c) => c.field?.toLowerCase().includes((field as string).toLowerCase()))
       })
     }
 
@@ -602,8 +603,8 @@ router.get('/projects/export', requireAdmin, async (req: Request, res: Response)
       orderBy: { name: 'asc' },
     })
 
-    const mapped = projects.map(p => {
-      const completeness = computeCompleteness(p as any)
+    const mapped = projects.map((p) => {
+      const completeness = computeCompleteness(p)
       // Non-media completeness: weighted average excluding media tab
       const tabScores = completeness.tabScores
       const nonMediaScore = Math.round(
@@ -1118,65 +1119,6 @@ router.post('/projects/:id/specs', requireAdmin, async (req: Request, res: Respo
   } catch (err: any) {
     console.error('[admin] post specs failed:', err)
     res.status(500).json({ error: 'Failed to save specifications' })
-  }
-})
-
-// POST /api/v1/admin/projects/:id/specs — same as PUT
-router.post('/projects/:id/specs', requireAdmin, async (req: Request, res: Response) => {
-  const { id } = req.params
-  const { specs } = req.body as { specs: any[] }
-
-  if (!Array.isArray(specs)) {
-    res.status(400).json({ error: 'specs array required' })
-    return
-  }
-
-  const invalidSpecs = specs.filter(s => !s.label?.trim() || !s.value?.trim())
-  if (invalidSpecs.length > 0) {
-    res.status(400).json({ error: 'Label and value are required for all specifications' })
-    return
-  }
-
-  try {
-    const project = await prisma.project.findFirst({
-      where: { OR: [{ id }, { slug: id }] },
-      select: { id: true }
-    })
-    if (!project) {
-      res.status(404).json({ error: 'Project not found' })
-      return
-    }
-
-    await prisma.$transaction(async (tx) => {
-      await tx.projectSpecItem.deleteMany({ where: { project_id: project.id } })
-      if (specs.length > 0) {
-        await tx.projectSpecItem.createMany({
-          data: specs.map((s, idx) => ({
-            project_id: project.id,
-            unit_type_id: s.unit_type_id || null,
-            category: s.category || 'structure',
-            label: s.label.trim(),
-            value: s.value.trim(),
-            brand: s.brand?.trim() || null,
-            tier: s.tier || null,
-            is_highlight: Boolean(s.is_highlight),
-            sort_order: s.sort_order ?? (idx + 1),
-            notes: s.notes?.trim() || null
-          }))
-        })
-      }
-    })
-
-    const updated = await prisma.projectSpecItem.findMany({
-      where: { project_id: project.id },
-      include: { unit_type: { select: { id: true, name: true, bhk: true } } },
-      orderBy: [{ sort_order: 'asc' }, { category: 'asc' }]
-    })
-
-    res.json({ ok: true, specs: updated })
-  } catch (err: any) {
-    console.error('[admin] post specs failed:', err)
-    res.status(400).json({ error: err.message || 'Failed to save specifications' })
   }
 })
 

@@ -778,7 +778,7 @@ function MessageBubbleInner({
                   <div className="flex-shrink-0 text-2xl">⚠️</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                      We're experiencing high traffic
+                      We&apos;re experiencing high traffic
                     </p>
                     <p className="text-xs text-amber-800 dark:text-amber-200 mt-1.5 leading-relaxed">
                       No inventory is currently available in <strong>{message.spatialContext?.anchorSector}</strong> for your criteria, or our data systems are temporarily unavailable. Please try again in a few moments.
