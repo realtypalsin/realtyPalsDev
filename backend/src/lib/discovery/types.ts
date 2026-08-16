@@ -21,6 +21,10 @@ export interface Intent {
 
   // Phase 0: Query classification
   queryKind?: 'DISCOVERY' | 'DRILLDOWN' | 'RANKING' | 'COMPARISON' | 'SUMMARY' | 'ADVISORY' | 'CLARIFY'
+
+  // Spatial scope: disambiguate "in Sector 75" (EXACT) vs "near Sector 75" (PROXIMITY)
+  spatialScope?: 'EXACT' | 'PROXIMITY' | 'BROAD'
+  radiusKm?: number
 }
 
 export type IntentState = 'COLD' | 'GATHERING' | 'READY_TO_SEARCH' | 'SHORTLISTED'
@@ -154,6 +158,7 @@ export interface ScoredProject {
   intelligenceCompleteness?: import('../ai/intelligence').IntelligenceCompleteness | null
   buyerPersonas?: import('../ai/intelligence').BuyerPersona[] | null
   dealBreakers?: import('../ai/intelligence').DealBreaker[] | null
+  distance_km?: number | null
 }
 
 export interface DiscoveryResult {
@@ -181,6 +186,13 @@ export interface DiscoveryResult {
   pageIndex?: number
   totalCount?: number
   hasMore?: boolean
+  /** Spatial context: sector anchor, coordinates, search radius used */
+  spatialContext?: {
+    anchorSector?: string
+    anchorCoords?: { lat: number; lng: number }
+    radiusKm?: number
+    spatialScope?: 'EXACT' | 'PROXIMITY' | 'BROAD'
+  }
 }
 
 export interface SectorContext {

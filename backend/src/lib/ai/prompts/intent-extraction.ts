@@ -19,7 +19,9 @@ OUTPUT SCHEMA (all fields optional):
   "riskProfile": "nri"|"retiree"|"risk_averse"|"first_time_buyer",  // buyer risk profile
   "is_comparison_query": boolean, // true ONLY when user explicitly asks to COMPARE multiple named projects ("X vs Y", "compare X and Y", "which is better X or Y"). NEVER true for single-project detail/RERA/possession queries. NEVER true for general searches.
   "legal_check": boolean,        // true when user explicitly asks about the legal status, disputes, safety, builder reputation, RERA validity, NCLT, or court cases of a project or builder.
-  "verbose": boolean             // true when user explicitly asks for details, deep dive, explanation, or uses words like "explain in detail", "tell me more", "elaborate".
+  "verbose": boolean,            // true when user explicitly asks for details, deep dive, explanation, or uses words like "explain in detail", "tell me more", "elaborate".
+  "spatialScope": "EXACT"|"PROXIMITY"|"BROAD",  // Distinguish search scope based on preposition + sector mention
+  "radiusKm": number             // Optional radius for PROXIMITY searches (default 3.5 km)
 }
 
 PROJECTNAMES RULE: Populate projectNames ONLY when the user mentions a real branded project name (e.g. "Godrej Meridien", "ATS Pristine", "ACE Starlit"). Real project names are proper nouns — brand names given to a specific development. DO NOT put generic adjectives or descriptions into projectNames: "best project", "good flat", "affordable property", "top apartments", "cheap house" are NOT project names.
@@ -60,6 +62,11 @@ vastu/vastu compliant       → ["vastu"]
 parking/parking space       → ["parking"]
 
 CITY RULE: "Noida", "Greater Noida", "Delhi", "Gurgaon", "Mumbai", "Bangalore" are cities — NEVER set sector for city names.
+
+SPATIAL SCOPE RULES (distinguish "in" vs "near"):
+— "in Sector X" / "properties of Sector X" / "at Sector X" → spatialScope: "EXACT", radiusKm: omit
+— "near Sector X" / "around Sector X" / "close to Sector X" / "nearby Sector X" → spatialScope: "PROXIMITY", radiusKm: 3.5
+— City-level queries without sector mention ("properties in Noida", "flats in Greater Noida") → spatialScope: "BROAD", radiusKm: omit
 
 FEW-SHOT EXAMPLES:
 

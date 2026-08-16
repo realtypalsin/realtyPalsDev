@@ -23,6 +23,10 @@ export const IntentSchema = z.object({
 
   // Phase 0: Query classification
   queryKind: z.enum(['DISCOVERY', 'DRILLDOWN', 'RANKING', 'COMPARISON', 'SUMMARY', 'ADVISORY', 'CLARIFY']).nullable().optional(),
+
+  // Spatial scope: "in Sector X" (EXACT) vs "near Sector X" (PROXIMITY) vs "Noida" (BROAD)
+  spatialScope: z.enum(['EXACT', 'PROXIMITY', 'BROAD']).nullable().optional(),
+  radiusKm: z.number().nullable().optional(),
 }).partial().passthrough()
 
 export function isCityLevel(sector: string): boolean {

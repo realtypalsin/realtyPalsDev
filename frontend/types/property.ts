@@ -3,7 +3,7 @@ import type { ProjectCard } from './project'
 export interface NearbyExpansion {
   requestedSector: string
   searchedSectors: string[]
-  reason: 'no_results_in_requested_sector'
+  reason: 'no_results_in_requested_sector' | 'no_inventory_in_exact_sector_nofallback'
 }
 
 export interface Sector {
@@ -185,6 +185,12 @@ export interface ChatMessage {
   exactResults?: ProjectCard[];
   nearbyResults?: ProjectCard[];
   expansion?: NearbyExpansion | null;
+  spatialContext?: {
+    anchorSector?: string;
+    anchorCoords?: { lat: number; lng: number };
+    radiusKm?: number;
+    spatialScope?: 'EXACT' | 'PROXIMITY' | 'BROAD';
+  } | null;
   images?: { url: string; caption?: string; type: string }[];
   highlights?: string[];
   amenities?: string[];

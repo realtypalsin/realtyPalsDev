@@ -762,6 +762,36 @@ function MessageBubbleInner({
         </div>
       )}
 
+      {/* NO-FALLBACK Error State: no inventory in exact sector */}
+      {(() => {
+        const expansion = message.expansion
+        if (expansion?.reason === 'no_inventory_in_exact_sector_nofallback' && message.spatialContext?.spatialScope === 'EXACT') {
+          return (
+            <div className="mt-4 w-full">
+              <m.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/40 shadow-[0_4px_20px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+              >
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 text-2xl">⚠️</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                      We're experiencing high traffic
+                    </p>
+                    <p className="text-xs text-amber-800 dark:text-amber-200 mt-1.5 leading-relaxed">
+                      No inventory is currently available in <strong>{message.spatialContext?.anchorSector}</strong> for your criteria, or our data systems are temporarily unavailable. Please try again in a few moments.
+                    </p>
+                  </div>
+                </div>
+              </m.div>
+            </div>
+          )
+        }
+        return null
+      })()}
+
       {/* Property cards — suppressed in comparison mode (ComparisonTable owns that UI) */}
       {(() => {
         if (message.responseMode === 'comparison') return null
@@ -772,6 +802,9 @@ function MessageBubbleInner({
         const rawNearbyList = message.nearbyResults ?? []
         const expansion = message.expansion
         const rawLegacyList = message.properties ?? []
+
+        // Skip rendering if this is the NO-FALLBACK error state
+        if (expansion?.reason === 'no_inventory_in_exact_sector_nofallback') return null
 
         // Pagination (limit to 6 cards initially)
         const MAX_CARDS = 6
@@ -795,9 +828,19 @@ function MessageBubbleInner({
         const primaryCards = useNewFormat ? (hasExact ? exactList : nearbyList) : legacyList
         const fullCardsForCompare = useNewFormat ? (hasExact ? rawExactList : rawNearbyList) : rawLegacyList
 
-        const headerLabel = useNewFormat && !hasExact && hasNearby
+        // Build header label based on spatial scope
+        let headerLabel = useNewFormat && !hasExact && hasNearby
           ? `${totalCards} nearby ${totalCards === 1 ? 'alternative' : 'alternatives'}`
           : `${totalCards} ${totalCards === 1 ? 'property' : 'properties'} found`
+
+        // NO-FALLBACK for EXACT scope: show error message if no results
+        if (message.spatialContext?.spatialScope === 'EXACT' && totalCards === 0) {
+          headerLabel = 'No inventory found in requested sector'
+        } else if (message.spatialContext?.spatialScope === 'PROXIMITY') {
+          headerLabel = hasExact && !hasNearby
+            ? `${totalCards} ${totalCards === 1 ? 'property' : 'properties'} in ${message.spatialContext?.anchorSector}`
+            : `${totalCards} ${totalCards === 1 ? 'property' : 'properties'} in & around ${message.spatialContext?.anchorSector}`
+        }
 
         const headerSector = useNewFormat && !hasExact && hasNearby
           ? expansion?.searchedSectors.join(', ')

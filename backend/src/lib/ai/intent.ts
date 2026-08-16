@@ -299,5 +299,20 @@ function extractIntentHeuristic(message: string, previousIntent: Intent): Intent
     fallback.builderName = builderMatch[1].trim()
   }
 
+  // Spatial scope detection: distinguish "in Sector X" (EXACT) vs "near Sector X" (PROXIMITY) vs "Noida" (BROAD)
+  if (fallback.sector) {
+    const proximityMatch = /\b(near|around|close\s+to|nearby|vicinity|adjacent\s+to)\s+/i.test(message)
+    const exactMatch = /\b(in|at|inside)\s+/i.test(message.substring(0, message.indexOf(fallback.sector) + fallback.sector.length + 20))
+
+    if (proximityMatch) {
+      fallback.spatialScope = 'PROXIMITY'
+      fallback.radiusKm = 3.5 // Default radius for proximity searches
+    } else if (exactMatch) {
+      fallback.spatialScope = 'EXACT'
+    }
+  } else if (/\b(noida|greater\s+noida|yamuna\s+expressway)\b/i.test(message) && !fallback.sector) {
+    fallback.spatialScope = 'BROAD'
+  }
+
   return fallback
 }

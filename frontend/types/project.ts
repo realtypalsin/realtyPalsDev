@@ -106,6 +106,8 @@ export interface ProjectCard {
   intelligenceCompleteness?: IntelligenceCompleteness | null
   buyerPersonas?: BuyerPersonaScore[] | null
   dealBreakers?: DealBreaker[] | null
+  // Spatial context: distance in km (for PROXIMITY/BROAD searches with radial ranking)
+  distance_km?: number | null
 }
 
 export interface UnitTypeSummary {

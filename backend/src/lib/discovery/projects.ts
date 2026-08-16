@@ -720,7 +720,82 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     return res
   }
 
-  // ── Branch 2: primary hard-filter query ────────────────────────────────
+  // ── Branch 2: Spatial scope handling (EXACT vs PROXIMITY vs BROAD) ──────
+  // Import geospatial utilities
+  const { getSectorCentroid, getProjectsWithinRadius, calculateHaversineDistanceKm } = await import('./geo')
+
+  let spatialContext: any = {}
+  let rawProjectsFromSpatial: any[] = []
+  const spatialScope = effectiveIntent.spatialScope || (effectiveIntent.sector ? 'EXACT' : 'BROAD')
+
+  if (spatialScope === 'PROXIMITY' && effectiveIntent.sector) {
+    // PROXIMITY mode: radial search within radiusKm (default 3.5 km)
+    console.log(`[DISCOVERY:SPATIAL] PROXIMITY mode for "${effectiveIntent.sector}"`)
+    const centroid = await getSectorCentroid(effectiveIntent.sector, effectiveIntent.city)
+
+    if (centroid) {
+      spatialContext = {
+        anchorSector: effectiveIntent.sector,
+        anchorCoords: centroid,
+        radiusKm: effectiveIntent.radiusKm || 3.5,
+        spatialScope: 'PROXIMITY',
+      }
+
+      const baseWhereClause = buildHardFilters({ ...effectiveIntent, sector: undefined }, undefined)
+      rawProjectsFromSpatial = await getProjectsWithinRadius(
+        centroid.lat,
+        centroid.lng,
+        effectiveIntent.radiusKm || 3.5,
+        baseWhereClause
+      )
+      console.log(`[DISCOVERY:SPATIAL] Found ${rawProjectsFromSpatial.length} projects within ${effectiveIntent.radiusKm || 3.5}km of ${effectiveIntent.sector}`)
+
+      // Process PROXIMITY results: fetch full project data, partition into exact + nearby, return early
+      if (rawProjectsFromSpatial.length > 0) {
+        const projectIds = rawProjectsFromSpatial.map((p) => p.id)
+        const fullProjects = await prisma.project.findMany({
+          where: { id: { in: projectIds } },
+          include: PROJECT_INCLUDE,
+          take: RESULTS_PER_PAGE,
+        })
+
+        if (fullProjects.length > 0) {
+          // Enrich with distance_km from radial search
+          const projectsWithDistance = fullProjects.map((p) => {
+            const radiusData = rawProjectsFromSpatial.find((r) => r.id === p.id)
+            return {
+              ...p,
+              distance_km: radiusData?.distance_km || null,
+            }
+          })
+
+          // Partition: exact sector vs nearby sectors
+          const exactSector = projectsWithDistance.filter((p) => p.sector === effectiveIntent.sector)
+          const nearbySectors = projectsWithDistance.filter((p) => p.sector !== effectiveIntent.sector)
+
+          const scoredExact = scoreAndSort(exactSector, effectiveIntent, SCORE_THRESHOLD)
+          const scoredNearby = scoreAndSort(nearbySectors, effectiveIntent, SCORE_THRESHOLD)
+
+          const hasMore = projectsWithDistance.length >= RESULTS_PER_PAGE
+          const res: DiscoveryResult = {
+            exactResults: scoredExact,
+            nearbyResults: scoredNearby,
+            spatialContext,
+            pageIndex: 0,
+            totalCount: projectsWithDistance.length,
+            hasMore,
+          }
+          await setCached(cacheKey, res, 300)
+          return res
+        }
+      }
+    } else {
+      console.warn(`[DISCOVERY:SPATIAL] Failed to get centroid for "${effectiveIntent.sector}" — falling back to EXACT`)
+      spatialScope = 'EXACT'
+    }
+  }
+
+  // ── Branch 3: primary hard-filter query ────────────────────────────────
   // Use effectiveIntent so budget/sector signals still apply even when
   // generic names were stripped from projectNames above.
   const where = buildHardFilters(effectiveIntent)
@@ -854,16 +929,28 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
       pageIndex,
       totalCount,
       hasMore,
+      spatialContext: {
+        ...spatialContext,
+        spatialScope: spatialScope || 'BROAD',
+      },
     }
     await setCached(cacheKey, res, 300)
     return res
   }
 
   // ── Branch 3: nearby sector expansion (parallel) ─────────────────────
-  // Only fires when an explicit (non-city-level) sector was in the intent.
+  // Only fires when:
+  // 1. spatialScope !== 'EXACT' (user didn't strictly request "in Sector X")
+  // 2. spatialScope !== 'PROXIMITY' (handled above with radial search)
+  // 3. An explicit (non-city-level) sector was in the intent
   // Queries all adjacent sectors in parallel → collects all candidates →
   // scores and returns the best across the entire neighbourhood.
-  if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)) {
+  if (
+    effectiveIntent.sector &&
+    !isCityLevel(effectiveIntent.sector) &&
+    spatialScope !== 'EXACT' &&
+    spatialScope !== 'PROXIMITY'
+  ) {
     const nearbySectors = getNearbySectors(effectiveIntent.sector)
     if (nearbySectors.length > 0) {
       const nearbyWhere = buildHardFilters({ ...effectiveIntent, sector: undefined }, nearbySectors)
@@ -894,6 +981,7 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
             pageIndex,
             totalCount: nearbyTotalCount,
             hasMore,
+            spatialContext,
           }
           await setCached(cacheKey, res, 300)
           return res
@@ -902,9 +990,36 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     }
   }
 
+  // ── Branch 4: NO-FALLBACK enforcement for EXACT spatial scope ──────────
+  // If user explicitly asked for "in Sector X" (EXACT scope) and we have zero results,
+  // DO NOT fall back to city-wide recommendations. This prevents false positives and
+  // maintains trust. Show empty state with error messaging in frontend.
+  if (effectiveIntent.sector && spatialScope === 'EXACT') {
+    console.warn(
+      `[DISCOVERY:NOFALLBACK] EXACT scope query for "${effectiveIntent.sector}" yielded no results — refusing fallback per trust policy`
+    )
+    const res: DiscoveryResult = {
+      exactResults: [],
+      nearbyResults: [],
+      expansion: {
+        requestedSector: effectiveIntent.sector,
+        searchedSectors: [effectiveIntent.sector],
+        reason: 'no_inventory_in_exact_sector_nofallback',
+      },
+      spatialContext: {
+        ...spatialContext,
+        spatialScope: 'EXACT',
+        anchorSector: effectiveIntent.sector,
+      },
+    }
+    await setCached(cacheKey, res, 300)
+    return res
+  }
+
   // ── Branch 4: Fallback to top city projects ─────────────────────────────
   // If the sector was completely unknown, fetch top projects across the city
   // so we can still push our own inventory instead of a dead end.
+  // NOTE: This fallback is ONLY for BROAD scope queries (region-level searches)
   const fallbackWhere = { city: { equals: DISCOVERY.DEFAULT_CITY, mode: 'insensitive' as const } }
   const [fallbackTotalCount, fallbackRaw] = await Promise.all([
     prisma.project.count({ where: fallbackWhere }),
@@ -932,6 +1047,10 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     pageIndex,
     totalCount: fallbackTotalCount,
     hasMore,
+    spatialContext: {
+      ...spatialContext,
+      spatialScope: 'BROAD',
+    },
   }
   await setCached(cacheKey, res, 300)
   return res

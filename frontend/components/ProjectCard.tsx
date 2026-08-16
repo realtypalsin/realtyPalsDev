@@ -300,17 +300,25 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
       {/* ── Body ── */}
       <div className="px-5 pt-4 pb-5 flex-1 flex flex-col bg-white dark:bg-[#111]">
 
-        {/* Name row + RERA */}
+        {/* Name row + RERA + Distance */}
         <div className="flex items-start justify-between gap-2 mb-0.5">
           <h3 className="text-[17px] font-semibold text-gray-900 dark:text-gray-100 tracking-tight leading-snug truncate">
             {project.name}
           </h3>
-          {project.rera_number && (
-            <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 tracking-wide uppercase">
-              <ShieldCheck size={12} weight="fill" className="text-emerald-500" />
-              RERA
-            </span>
-          )}
+          <div className="flex-shrink-0 flex gap-1">
+            {project.distance_km && project.distance_km > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 text-[10px] font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                <MapPinLine size={10} weight="fill" />
+                {project.distance_km.toFixed(1)} km
+              </span>
+            )}
+            {project.rera_number && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 tracking-wide uppercase">
+                <ShieldCheck size={12} weight="fill" className="text-emerald-500" />
+                RERA
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Builder · Sector · Possession */}
