@@ -2,24 +2,25 @@
 
 import { useState, useEffect } from 'react'
 import {
-  Plus, Trash2, Save, Sparkles, CheckCircle2, AlertCircle,
-  Building2, Shield, Layers, Tag, ChevronDown, RefreshCw, Star
+  Plus, Trash2, Save, CheckCircle2, AlertCircle,
+  Building2, Shield, Layers, Tag, ChevronDown, RefreshCw
 } from 'lucide-react'
 import { adminFetch } from '@/lib/adminFetch'
 import Toast from '@/components/Toast'
+import CustomSelect from './CustomSelect'
 
 export const SPEC_CATEGORIES = [
-  { id: 'structure', label: 'Structure & Safety', icon: '🏗️', desc: 'Frame, seismic rating, foundation' },
-  { id: 'flooring', label: 'Flooring & Finishes', icon: '🏠', desc: 'Living, bedrooms, balconies, lobby' },
-  { id: 'kitchen', label: 'Kitchen & Countertops', icon: '🍴', desc: 'Modular kitchen, granite, gas pipeline' },
-  { id: 'bathrooms', label: 'Sanitary & CP Fittings', icon: '🚿', desc: 'Fixtures, CP fittings, geysers' },
-  { id: 'doors_windows', label: 'Doors & Windows', icon: '🚪', desc: 'Main door, UPVC/Aluminium windows' },
-  { id: 'electrical', label: 'Electrical & Switches', icon: '⚡', desc: 'Wiring, modular switches, power backup' },
-  { id: 'plumbing', label: 'Plumbing & Water', icon: '🚰', desc: 'Pipes, solar heating, treated water' },
-  { id: 'lifts', label: 'Elevators & Lifts', icon: '🛗', desc: 'High-speed passenger & service lifts' },
-  { id: 'security', label: 'Security & Automation', icon: '🔐', desc: 'CCTV, video door phone, smart locks' },
-  { id: 'sustainability', label: 'Green & Sustainability', icon: '🌿', desc: 'Rainwater harvesting, IGBC rating' },
-  { id: 'parking', label: 'Parking & EV', icon: '🅿️', desc: 'Covered parking, EV charging ports' },
+  { id: 'structure', label: 'Structure & Safety', desc: 'Frame, seismic rating, foundation' },
+  { id: 'flooring', label: 'Flooring & Finishes', desc: 'Living, bedrooms, balconies, lobby' },
+  { id: 'kitchen', label: 'Kitchen & Countertops', desc: 'Modular kitchen, granite, gas pipeline' },
+  { id: 'bathrooms', label: 'Sanitary & CP Fittings', desc: 'Fixtures, CP fittings, geysers' },
+  { id: 'doors_windows', label: 'Doors & Windows', desc: 'Main door, UPVC/Aluminium windows' },
+  { id: 'electrical', label: 'Electrical & Switches', desc: 'Wiring, modular switches, power backup' },
+  { id: 'plumbing', label: 'Plumbing & Water', desc: 'Pipes, solar heating, treated water' },
+  { id: 'lifts', label: 'Elevators & Lifts', desc: 'High-speed passenger & service lifts' },
+  { id: 'security', label: 'Security & Automation', desc: 'CCTV, video door phone, smart locks' },
+  { id: 'sustainability', label: 'Green & Sustainability', desc: 'Rainwater harvesting, IGBC rating' },
+  { id: 'parking', label: 'Parking & EV', desc: 'Covered parking, EV charging ports' },
 ] as const
 
 export const SPEC_TIERS = [
@@ -228,7 +229,7 @@ export default function SpecEditor({
             onClick={handleApplyPresets}
             className="px-3 py-1.5 rounded-xl border border-dashed border-gray-300 dark:border-zinc-700 hover:border-blue-500 text-xs font-bold text-gray-700 dark:text-gray-300 transition-all flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5"
           >
-            <Sparkles size={13} className="text-amber-500" />
+            <Layers size={13} className="text-blue-500" />
             <span>Load Presets</span>
           </button>
           <button
@@ -242,15 +243,15 @@ export default function SpecEditor({
         </div>
       </div>
 
-      {/* Category Filter Chips */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-bold">
+      {/* Category Filter Chips - Wrapped Cleanly Without Horizontal Scroll */}
+      <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
         <button
           type="button"
           onClick={() => setSelectedCategoryFilter('all')}
-          className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+          className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
             selectedCategoryFilter === 'all'
-              ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xs'
-              : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200/70'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xs font-bold'
+              : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/70 dark:hover:bg-zinc-700/70'
           }`}
         >
           All Categories ({specs.length})
@@ -262,15 +263,14 @@ export default function SpecEditor({
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategoryFilter(cat.id)}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                 selectedCategoryFilter === cat.id
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200/70'
+                  ? 'bg-blue-600 text-white shadow-xs font-bold'
+                  : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/70 dark:hover:bg-zinc-700/70'
               }`}
             >
-              <span>{cat.icon}</span>
               <span>{cat.label}</span>
-              {count > 0 && <span className="text-[10px] opacity-80">({count})</span>}
+              {count > 0 && <span className="text-[10px] opacity-80 font-bold">({count})</span>}
             </button>
           )
         })}
@@ -308,69 +308,56 @@ export default function SpecEditor({
             return (
               <div
                 key={spec.id || realIdx}
-                className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-3 transition-all hover:border-gray-300 dark:hover:border-white/15"
+                className="p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-800/30 border border-zinc-200/80 dark:border-zinc-700/60 space-y-3 transition-all hover:border-zinc-300 dark:hover:border-zinc-600"
               >
-                {/* Top Row: Category, Tier, Highlight, Delete */}
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <select
+                {/* Top Row: Category, Tier, Unit, Highlight, Delete */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CustomSelect
                       value={spec.category}
-                      onChange={e => handleUpdate(realIdx, 'category', e.target.value)}
-                      className="px-2.5 py-1 text-xs font-black rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white cursor-pointer"
-                    >
-                      {SPEC_CATEGORIES.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.icon} {c.label}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={val => handleUpdate(realIdx, 'category', val)}
+                      options={SPEC_CATEGORIES.map(c => ({ value: c.id, label: c.label }))}
+                      size="sm"
+                      className="w-48"
+                    />
 
-                    <select
+                    <CustomSelect
                       value={spec.tier || 'premium'}
-                      onChange={e => handleUpdate(realIdx, 'tier', e.target.value)}
-                      className="px-2.5 py-1 text-xs font-bold rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white cursor-pointer"
-                    >
-                      {SPEC_TIERS.map(t => (
-                        <option key={t.id} value={t.id}>
-                          {t.label} Tier
-                        </option>
-                      ))}
-                    </select>
+                      onChange={val => handleUpdate(realIdx, 'tier', val)}
+                      options={SPEC_TIERS.map(t => ({ value: t.id, label: `${t.label} Tier` }))}
+                      size="sm"
+                      className="w-36"
+                    />
 
                     {unitTypes.length > 0 && (
-                      <select
+                      <CustomSelect
                         value={spec.unit_type_id || ''}
-                        onChange={e => handleUpdate(realIdx, 'unit_type_id', e.target.value || null)}
-                        className="px-2.5 py-1 text-xs font-medium rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-300 cursor-pointer"
-                      >
-                        <option value="">All Units (Project-Wide)</option>
-                        {unitTypes.map(u => (
-                          <option key={u.id} value={u.id}>
-                            Only for {u.name} ({u.bhk} BHK)
-                          </option>
-                        ))}
-                      </select>
+                        onChange={val => handleUpdate(realIdx, 'unit_type_id', val || null)}
+                        options={[
+                          { value: '', label: 'All Units (Project-Wide)' },
+                          ...unitTypes.map(u => ({ value: u.id, label: `Only for ${u.name} (${u.bhk} BHK)` }))
+                        ]}
+                        size="sm"
+                        className="w-56"
+                      />
                     )}
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={spec.is_highlight || false}
                         onChange={e => handleUpdate(realIdx, 'is_highlight', e.target.checked)}
                         className="w-3.5 h-3.5 rounded accent-blue-600 cursor-pointer"
                       />
-                      <span className="flex items-center gap-1">
-                        <Star size={11} className={spec.is_highlight ? 'text-amber-500 fill-amber-500' : 'text-gray-400'} />
-                        Highlight
-                      </span>
+                      <span>Highlight</span>
                     </label>
 
                     <button
                       type="button"
                       onClick={() => handleDelete(realIdx)}
-                      className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
+                      className="p-1 text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
                       title="Delete specification"
                     >
                       <Trash2 size={15} />

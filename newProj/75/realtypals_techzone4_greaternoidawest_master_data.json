@@ -666,7 +666,6 @@
     "decision_profile": {
       "id": "129a98bd-83ea-48d5-bc23-b5e70aa102a2",
       "project_id": "ecae9f5d-aabf-4ef0-b1b1-2f92dbb2af0b",
-      "status": "PUBLISHED",
       "decision_thesis": "ABA Cherry County is a premier institutional-grade investment in Techzone 4, offering high appreciation and top-tier livability.",
       "why_buy": [
         "Strategic location with rapid capital appreciation trajectory",
@@ -678,46 +677,16 @@
         "Under construction timeline requires 24-36 months gestation for end possession"
       ],
       "best_for": "End users and long-term investors seeking high quality & strong capital gains.",
-      "not_ideal_for": "Buyers seeking unverified budget floor units.",
-      "financial_intelligence": {},
-      "market_intelligence": {},
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA",
-        "Project Documents",
-        "Site Visit"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:19.995Z",
-      "updated_at": "2026-08-14T17:08:15.851Z"
+      "not_ideal_for": "Buyers seeking unverified budget floor units."
     },
     "persona_profile": {
       "id": "b74878e0-df16-4cd8-ad74-4d57709ebadf",
       "project_id": "ecae9f5d-aabf-4ef0-b1b1-2f92dbb2af0b",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3-4 BHK layouts."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:20.041Z",
-      "updated_at": "2026-08-14T17:08:15.882Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "cf8bf7bd-12ae-4101-b2e4-78b78ae647d2",
@@ -925,30 +894,15 @@
       "ifms": 65,
       "club_membership": 250000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:19.247Z",
-      "updated_at": "2026-08-14T15:54:43.679Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "7a3e01d5-21ff-4f96-9731-74a68e23c97b",
         "project_id": "ecae9f5d-aabf-4ef0-b1b1-2f92dbb2af0b",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -970,28 +924,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:33.158Z",
-        "updated_at": "2026-08-14T19:13:33.158Z"
+        ]
       },
       {
         "id": "30485ebd-52d1-4b3b-a2d0-deb183695582",
         "project_id": "ecae9f5d-aabf-4ef0-b1b1-2f92dbb2af0b",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -1003,21 +943,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:33.198Z",
-        "updated_at": "2026-08-14T19:13:33.198Z"
+        ]
       }
     ],
     "images": [
@@ -1185,75 +1111,20 @@
     ],
     "channel_partners": [
       {
-        "id": "38bafede-9eff-48e4-a829-ff017bf6337f",
-        "project_id": "ecae9f5d-aabf-4ef0-b1b1-2f92dbb2af0b",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:54:45.040Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "9f626c6f-35c7-44e6-951c-d28e5582cbb5",
-        "project_id": "ecae9f5d-aabf-4ef0-b1b1-2f92dbb2af0b",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:08:16.375Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   },
@@ -1878,7 +1749,6 @@
     "decision_profile": {
       "id": "a1c554c5-1ed3-4eb0-b4d6-6cae06fcb0da",
       "project_id": "85329d53-6771-46a5-9629-88321784ba86",
-      "status": "PUBLISHED",
       "decision_thesis": "Amrapali Enchante is a premier institutional-grade investment in Techzone 4, offering high appreciation and top-tier livability.",
       "why_buy": [
         "Strategic location with rapid capital appreciation trajectory",
@@ -1890,46 +1760,16 @@
         "Under construction timeline requires 24-36 months gestation for end possession"
       ],
       "best_for": "End users and long-term investors seeking high quality & strong capital gains.",
-      "not_ideal_for": "Buyers seeking unverified budget floor units.",
-      "financial_intelligence": {},
-      "market_intelligence": {},
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA",
-        "Project Documents",
-        "Site Visit"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:16.024Z",
-      "updated_at": "2026-08-14T17:08:17.015Z"
+      "not_ideal_for": "Buyers seeking unverified budget floor units."
     },
     "persona_profile": {
       "id": "006c4632-1e00-46aa-9b40-366600d3c238",
       "project_id": "85329d53-6771-46a5-9629-88321784ba86",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3-4 BHK layouts."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:16.065Z",
-      "updated_at": "2026-08-14T17:08:17.049Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "9842f220-977c-4707-a62c-aac93ae605bd",
@@ -2137,30 +1977,15 @@
       "ifms": 40,
       "club_membership": 150000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:15.249Z",
-      "updated_at": "2026-08-14T15:54:40.576Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "bae248a1-1167-4149-bb17-583a22fb131e",
         "project_id": "85329d53-6771-46a5-9629-88321784ba86",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -2182,28 +2007,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:24.906Z",
-        "updated_at": "2026-08-14T19:13:24.906Z"
+        ]
       },
       {
         "id": "5c1f310b-2689-4c33-a30a-8370f5a92b06",
         "project_id": "85329d53-6771-46a5-9629-88321784ba86",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -2215,21 +2026,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:24.971Z",
-        "updated_at": "2026-08-14T19:13:24.971Z"
+        ]
       }
     ],
     "images": [
@@ -2397,75 +2194,20 @@
     ],
     "channel_partners": [
       {
-        "id": "a8683337-494a-4e60-9e87-6349c311e1da",
-        "project_id": "85329d53-6771-46a5-9629-88321784ba86",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:54:41.896Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "33862d5c-1d45-47aa-885f-a200abb683c1",
-        "project_id": "85329d53-6771-46a5-9629-88321784ba86",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:08:17.531Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   },
@@ -3107,7 +2849,6 @@
     "decision_profile": {
       "id": "00a53b68-ba2b-47b3-9fa6-27be3e0a6c94",
       "project_id": "fdc5f12f-f5ec-47e5-9ec7-32099a0ed60f",
-      "status": "DRAFT",
       "decision_thesis": "Gaur Saundaryam combines ready-to-move peace of mind with green surroundings and prime NCR connectivity.",
       "why_buy": [
         "100% Ready to Move with Full Occupancy Certificate (OC)",
@@ -3120,40 +2861,16 @@
         "Peak hour traffic at major sector entry exit gates"
       ],
       "best_for": "End-use buyers seeking immediate possession and proven society management.",
-      "not_ideal_for": null,
-      "financial_intelligence": null,
-      "market_intelligence": null,
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-15T08:16:53.867Z",
-      "updated_at": "2026-08-15T08:16:53.867Z"
+      "not_ideal_for": null
     },
     "persona_profile": {
       "id": "d52cc0af-543d-4f3e-b0ae-a31c5eb98fdf",
       "project_id": "fdc5f12f-f5ec-47e5-9ec7-32099a0ed60f",
       "primary_persona": "Tech Professionals & Growing NCR Families",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": null,
       "income_range": "₹25L - ₹80L Annual Household Income",
       "family_stage": "Nuclear Family with School-Going Children",
       "work_location": "Noida Expressway / Central Noida / Tech Zone",
-      "risk_appetite": "Low risk — delivered development with OC",
-      "timeline_horizon": "Immediate end-use family occupancy",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-15T08:16:53.808Z",
-      "updated_at": "2026-08-15T08:16:53.808Z"
+      "risk_appetite": "Low risk — delivered development with OC"
     },
     "recommendation_profile": {
       "id": "5013ef5e-4668-4219-9441-5efab087f3d0",
@@ -3399,30 +3116,15 @@
       "ifms": 50,
       "club_membership": 150000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-15T08:16:52.164Z",
-      "updated_at": "2026-08-15T08:16:52.164Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "64e2ad9e-8efb-428c-a878-0bc55b5c4e37",
         "project_id": "fdc5f12f-f5ec-47e5-9ec7-32099a0ed60f",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -3444,28 +3146,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-15T08:16:52.100Z",
-        "updated_at": "2026-08-15T08:16:52.100Z"
+        ]
       },
       {
         "id": "f39c1eec-8f1a-48be-a46f-8fc90fc76017",
         "project_id": "fdc5f12f-f5ec-47e5-9ec7-32099a0ed60f",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -3477,21 +3165,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-15T08:16:52.136Z",
-        "updated_at": "2026-08-15T08:16:52.136Z"
+        ]
       }
     ],
     "images": [
@@ -3713,46 +3387,12 @@
     ],
     "channel_partners": [
       {
-        "id": "b40614d5-9eb8-4d46-ad4d-3fd4bd12dc98",
-        "project_id": "fdc5f12f-f5ec-47e5-9ec7-32099a0ed60f",
-        "channel_partner_id": "fc750910-8309-41f9-ab30-90b2c3b6fa55",
-        "is_featured": true,
-        "created_at": "2026-08-15T08:16:51.980Z",
-        "channel_partner": {
-          "id": "fc750910-8309-41f9-ab30-90b2c3b6fa55",
-          "name": "RealtyPals Authorized Channel Partner",
-          "slug": "realtypals-authorized-partner",
-          "type": "broker",
-          "description": "Verified RealtyPals Partner Advisory Network",
-          "website": null,
-          "phone": "+91-9876543210",
-          "email": "partners@realtypals.in",
-          "operating_cities": [
-            "Noida",
-            "Greater Noida",
-            "Yamuna Expressway"
-          ],
-          "primary_contact": "RealtyPals Advisory Team",
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [
-            "luxury",
-            "residential",
-            "nri"
-          ],
-          "commission_rate_pct": 2,
-          "payment_terms": "on_conversion",
-          "is_active": true,
-          "created_at": "2026-08-14T19:13:20.205Z",
-          "updated_at": "2026-08-14T19:13:20.205Z"
-        }
+        "id": "fc750910-8309-41f9-ab30-90b2c3b6fa55",
+        "name": "RealtyPals Authorized Channel Partner",
+        "phone": "+91-9876543210",
+        "email": "partners@realtypals.in",
+        "rera_compliant": true,
+        "type": "broker"
       }
     ]
   },
@@ -4423,7 +4063,6 @@
     "decision_profile": {
       "id": "32f415e0-7463-46d1-98d8-2457ec59ef3a",
       "project_id": "87b14ab9-7ffe-4960-9080-7e154261e456",
-      "status": "PUBLISHED",
       "decision_thesis": "Himalaya Pride is a premier institutional-grade investment in Techzone 4, offering high appreciation and top-tier livability.",
       "why_buy": [
         "Strategic location with rapid capital appreciation trajectory",
@@ -4435,46 +4074,16 @@
         "Under construction timeline requires 24-36 months gestation for end possession"
       ],
       "best_for": "End users and long-term investors seeking high quality & strong capital gains.",
-      "not_ideal_for": "Buyers seeking unverified budget floor units.",
-      "financial_intelligence": {},
-      "market_intelligence": {},
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA",
-        "Project Documents",
-        "Site Visit"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:14.045Z",
-      "updated_at": "2026-08-14T17:08:18.196Z"
+      "not_ideal_for": "Buyers seeking unverified budget floor units."
     },
     "persona_profile": {
       "id": "2a9bd9bd-fabf-4520-a9e8-910247bbaf7c",
       "project_id": "87b14ab9-7ffe-4960-9080-7e154261e456",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3-4 BHK layouts."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:14.125Z",
-      "updated_at": "2026-08-14T17:08:18.229Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "543caa13-f51e-4226-969f-617e5cc84d0c",
@@ -4682,30 +4291,15 @@
       "ifms": 45,
       "club_membership": 150000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:13.275Z",
-      "updated_at": "2026-08-14T15:54:38.984Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "80825fde-3043-4bab-8a26-ce538dba786f",
         "project_id": "87b14ab9-7ffe-4960-9080-7e154261e456",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -4727,28 +4321,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:32.732Z",
-        "updated_at": "2026-08-14T19:13:32.732Z"
+        ]
       },
       {
         "id": "9e480a54-75c3-4ed3-ab52-595308de394f",
         "project_id": "87b14ab9-7ffe-4960-9080-7e154261e456",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -4760,21 +4340,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:32.769Z",
-        "updated_at": "2026-08-14T19:13:32.769Z"
+        ]
       }
     ],
     "images": [
@@ -4942,75 +4508,20 @@
     ],
     "channel_partners": [
       {
-        "id": "f3f20d21-6d31-4dda-b5eb-a64257987cc2",
-        "project_id": "87b14ab9-7ffe-4960-9080-7e154261e456",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:54:40.362Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "ac53766e-f9b9-4969-9311-9b0a94acea6d",
-        "project_id": "87b14ab9-7ffe-4960-9080-7e154261e456",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:08:18.772Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   },
@@ -5681,7 +5192,6 @@
     "decision_profile": {
       "id": "b5a8556f-31f6-426a-8617-b923f18321c1",
       "project_id": "5c10b8e6-d026-454e-8de1-bcf7a048e8d8",
-      "status": "PUBLISHED",
       "decision_thesis": "NBCC Aspire Dream Valley is a premier institutional-grade investment in Techzone 4, offering high appreciation and top-tier livability.",
       "why_buy": [
         "Strategic location with rapid capital appreciation trajectory",
@@ -5693,46 +5203,16 @@
         "Under construction timeline requires 24-36 months gestation for end possession"
       ],
       "best_for": "End users and long-term investors seeking high quality & strong capital gains.",
-      "not_ideal_for": "Buyers seeking unverified budget floor units.",
-      "financial_intelligence": {},
-      "market_intelligence": {},
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA",
-        "Project Documents",
-        "Site Visit"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:54:00.649Z",
-      "updated_at": "2026-08-14T17:08:19.458Z"
+      "not_ideal_for": "Buyers seeking unverified budget floor units."
     },
     "persona_profile": {
       "id": "4337a0ab-2fa9-401a-8d01-60f61d81a895",
       "project_id": "5c10b8e6-d026-454e-8de1-bcf7a048e8d8",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3-4 BHK layouts."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:54:00.682Z",
-      "updated_at": "2026-08-14T17:08:19.490Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "ffe43500-71b8-4895-89ca-f3929bdfb42e",
@@ -5940,30 +5420,15 @@
       "ifms": 45,
       "club_membership": 150000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:51:57.947Z",
-      "updated_at": "2026-08-14T15:54:35.593Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "db52ffe7-5052-4298-bb6e-a5787c392c9c",
         "project_id": "5c10b8e6-d026-454e-8de1-bcf7a048e8d8",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -5985,28 +5450,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:45.154Z",
-        "updated_at": "2026-08-14T19:13:45.154Z"
+        ]
       },
       {
         "id": "623ddc60-535b-4f0c-94e9-7b94407c651b",
         "project_id": "5c10b8e6-d026-454e-8de1-bcf7a048e8d8",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -6018,21 +5469,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:45.198Z",
-        "updated_at": "2026-08-14T19:13:45.198Z"
+        ]
       }
     ],
     "images": [
@@ -6200,75 +5637,20 @@
     ],
     "channel_partners": [
       {
-        "id": "5daae453-4198-449b-990c-03b8c9720a3f",
-        "project_id": "5c10b8e6-d026-454e-8de1-bcf7a048e8d8",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:54:37.068Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "ad50c0e1-c8fe-4175-94c3-cd25ff0c0e51",
-        "project_id": "5c10b8e6-d026-454e-8de1-bcf7a048e8d8",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:08:20.017Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   },
@@ -6893,7 +6275,6 @@
     "decision_profile": {
       "id": "9726f011-c76c-44ca-beee-b670cccee394",
       "project_id": "a907482a-bebb-4861-9d94-869aeab1c13b",
-      "status": "PUBLISHED",
       "decision_thesis": "NBCC Aspire Eternia is a premier institutional-grade investment in Techzone 4, offering high appreciation and top-tier livability.",
       "why_buy": [
         "Strategic location with rapid capital appreciation trajectory",
@@ -6905,46 +6286,16 @@
         "Under construction timeline requires 24-36 months gestation for end possession"
       ],
       "best_for": "End users and long-term investors seeking high quality & strong capital gains.",
-      "not_ideal_for": "Buyers seeking unverified budget floor units.",
-      "financial_intelligence": {},
-      "market_intelligence": {},
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA",
-        "Project Documents",
-        "Site Visit"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:53:59.856Z",
-      "updated_at": "2026-08-14T17:08:20.657Z"
+      "not_ideal_for": "Buyers seeking unverified budget floor units."
     },
     "persona_profile": {
       "id": "90eac333-57a1-4c0e-a74d-a5e1cbf5abba",
       "project_id": "a907482a-bebb-4861-9d94-869aeab1c13b",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3-4 BHK layouts."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:53:59.897Z",
-      "updated_at": "2026-08-14T17:08:20.689Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "a3436819-a785-4ba1-bacd-c4cb6d355cc1",
@@ -7152,30 +6503,15 @@
       "ifms": 60,
       "club_membership": 200000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:51:57.402Z",
-      "updated_at": "2026-08-14T15:54:33.915Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "1a9f117d-6c1b-4eaf-aad4-69491ee185ca",
         "project_id": "a907482a-bebb-4861-9d94-869aeab1c13b",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -7197,28 +6533,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:48.382Z",
-        "updated_at": "2026-08-14T19:13:48.382Z"
+        ]
       },
       {
         "id": "18acef53-9fb3-4309-abda-14cce11ac6a3",
         "project_id": "a907482a-bebb-4861-9d94-869aeab1c13b",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -7230,21 +6552,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:48.423Z",
-        "updated_at": "2026-08-14T19:13:48.423Z"
+        ]
       }
     ],
     "images": [
@@ -7412,75 +6720,20 @@
     ],
     "channel_partners": [
       {
-        "id": "5c737457-e56c-46d5-b92c-0d2f754a6163",
-        "project_id": "a907482a-bebb-4861-9d94-869aeab1c13b",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:54:35.370Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "fd1d3e70-72da-4d64-8689-7e9fccbb13b3",
-        "project_id": "a907482a-bebb-4861-9d94-869aeab1c13b",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:08:21.194Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   },
@@ -8101,7 +7354,6 @@
     "decision_profile": {
       "id": "6755d4e0-c7ad-476d-b10c-eeef11936594",
       "project_id": "22e34043-37b8-47fe-95a9-b8c43c1bea1d",
-      "status": "PUBLISHED",
       "decision_thesis": "Nirala Estate Phase 1 & 2 represents an exceptional residential acquisition in Techzone 4, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
       "why_buy": [
         "Prime Connectivity: Located in Techzone 4 with fast access to metro and major expressways.",
@@ -8115,79 +7367,16 @@
         "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
       ],
       "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
-      "financial_intelligence": {
-        "legalSafety": {
-          "score": 96,
-          "status": "Fully Clear Title"
-        },
-        "builderTrust": {
-          "score": 92,
-          "status": "Excellent"
-        },
-        "valueForMoney": {
-          "score": 86,
-          "status": "High Value"
-        },
-        "locationQuality": {
-          "score": 90,
-          "status": "Prime"
-        },
-        "lifestyleAmenities": {
-          "score": 88,
-          "status": "Operational"
-        },
-        "appreciationPotential": {
-          "score": 88,
-          "status": "Strong Growth"
-        }
-      },
-      "market_intelligence": {
-        "tier": "STRONG_BUY",
-        "overallScore": 88,
-        "priceAdvantage": "Fair Market Value",
-        "confidenceLabel": "Verified via RERA",
-        "confidenceLevel": "High",
-        "investmentGrade": "A+",
-        "priceAdvantageSubtext": "Strong Growth Corridor"
-      },
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA Official Filings",
-        "Municipal Survey Data",
-        "Market Transaction Registries"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:53:59.049Z",
-      "updated_at": "2026-08-14T17:08:21.862Z"
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
     },
     "persona_profile": {
       "id": "470808f2-0b26-4315-a71e-5eb97997c2dc",
       "project_id": "22e34043-37b8-47fe-95a9-b8c43c1bea1d",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:53:59.085Z",
-      "updated_at": "2026-08-14T17:08:21.898Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "4aee618d-628f-49ed-b5f6-7cd04115abc7",
@@ -8377,32 +7566,15 @@
       "ifms": 85,
       "club_membership": 200000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [
-        "Ready-to-move resale purchase. GST is 0%."
-      ],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:51:56.884Z",
-      "updated_at": "2026-08-14T15:54:32.331Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "e706b893-92c1-4ef3-86b9-600b7039daaa",
         "project_id": "22e34043-37b8-47fe-95a9-b8c43c1bea1d",
-        "plan_type": "construction_linked",
         "plan_name": "Construction-Linked Plan (CLP)",
-        "description": null,
+        "plan_type": "construction_linked",
+        "down_payment_pct": null,
         "milestones": [
           {
             "amt": "₹6.5 Lakhs",
@@ -8449,28 +7621,14 @@
             "timeline": "At Possession",
             "milestone": "On Notice of Possession & Keys Handover"
           }
-        ],
-        "down_payment_pct": null,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
-        "created_at": "2026-08-14T17:08:21.607Z",
-        "updated_at": "2026-08-14T17:08:21.607Z"
+        ]
       },
       {
         "id": "e82edcb4-8c09-4740-9974-41ede10c3651",
         "project_id": "22e34043-37b8-47fe-95a9-b8c43c1bea1d",
-        "plan_type": "possession_linked",
         "plan_name": "Possession-Linked Plan (30:70 PLP)",
-        "description": null,
+        "plan_type": "possession_linked",
+        "down_payment_pct": null,
         "milestones": [
           {
             "amt": "₹19.5 Lakhs",
@@ -8490,21 +7648,7 @@
             "timeline": "At Handover",
             "milestone": "On Notice of Possession & Keys Handover"
           }
-        ],
-        "down_payment_pct": null,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": "Pay 30% now, 70% at possession handover.",
-        "created_at": "2026-08-14T17:08:21.639Z",
-        "updated_at": "2026-08-14T17:08:21.639Z"
+        ]
       }
     ],
     "images": [
@@ -8672,75 +7816,20 @@
     ],
     "channel_partners": [
       {
-        "id": "d7216dd6-e484-42ed-a58b-3ce1087dd31c",
-        "project_id": "22e34043-37b8-47fe-95a9-b8c43c1bea1d",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:54:33.719Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "f2d6b389-c441-4d2d-a0e7-75be226e58ee",
-        "project_id": "22e34043-37b8-47fe-95a9-b8c43c1bea1d",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:08:22.436Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   },
@@ -9411,7 +8500,6 @@
     "decision_profile": {
       "id": "c5d52b56-a189-4be8-ba25-4d468a08ea12",
       "project_id": "87b169a7-f43a-45f0-8b53-e973d8439067",
-      "status": "PUBLISHED",
       "decision_thesis": "Saviour Greenarch is a premier institutional-grade investment in Techzone 4, offering high appreciation and top-tier livability.",
       "why_buy": [
         "Strategic location with rapid capital appreciation trajectory",
@@ -9423,46 +8511,16 @@
         "Under construction timeline requires 24-36 months gestation for end possession"
       ],
       "best_for": "End users and long-term investors seeking high quality & strong capital gains.",
-      "not_ideal_for": "Buyers seeking unverified budget floor units.",
-      "financial_intelligence": {},
-      "market_intelligence": {},
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA",
-        "Project Documents",
-        "Site Visit"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:12.070Z",
-      "updated_at": "2026-08-14T17:08:23.114Z"
+      "not_ideal_for": "Buyers seeking unverified budget floor units."
     },
     "persona_profile": {
       "id": "6624576d-0ed3-4497-b94f-b15bf7fd63a0",
       "project_id": "87b169a7-f43a-45f0-8b53-e973d8439067",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3-4 BHK layouts."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:12.111Z",
-      "updated_at": "2026-08-14T17:08:23.147Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "4c73c0c1-18c2-4b15-b071-f8723f30987c",
@@ -9670,30 +8728,15 @@
       "ifms": 55,
       "club_membership": 180000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:11.304Z",
-      "updated_at": "2026-08-14T15:54:37.306Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "cc8efd52-c128-4fe9-96eb-b1983280f524",
         "project_id": "87b169a7-f43a-45f0-8b53-e973d8439067",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -9715,28 +8758,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:32.000Z",
-        "updated_at": "2026-08-14T19:13:32.000Z"
+        ]
       },
       {
         "id": "194e9631-2ae8-475d-b3c1-6cbaa08b349f",
         "project_id": "87b169a7-f43a-45f0-8b53-e973d8439067",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -9748,21 +8777,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:32.033Z",
-        "updated_at": "2026-08-14T19:13:32.033Z"
+        ]
       }
     ],
     "images": [
@@ -9930,75 +8945,20 @@
     ],
     "channel_partners": [
       {
-        "id": "10bcb729-f8e9-479f-82cc-b11476d0475f",
-        "project_id": "87b169a7-f43a-45f0-8b53-e973d8439067",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:54:38.761Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "9a5260ef-932f-4979-b54f-1b29294142fc",
-        "project_id": "87b169a7-f43a-45f0-8b53-e973d8439067",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:08:23.649Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   },
@@ -10623,7 +9583,6 @@
     "decision_profile": {
       "id": "29974f69-c23a-4e7f-96c7-1da641cff546",
       "project_id": "d76fa457-5ab4-4b35-8c87-100e5fa32d6c",
-      "status": "PUBLISHED",
       "decision_thesis": "Supercity Mayfair is a premier institutional-grade investment in Techzone 4, offering high appreciation and top-tier livability.",
       "why_buy": [
         "Strategic location with rapid capital appreciation trajectory",
@@ -10635,46 +9594,16 @@
         "Under construction timeline requires 24-36 months gestation for end possession"
       ],
       "best_for": "End users and long-term investors seeking high quality & strong capital gains.",
-      "not_ideal_for": "Buyers seeking unverified budget floor units.",
-      "financial_intelligence": {},
-      "market_intelligence": {},
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA",
-        "Project Documents",
-        "Site Visit"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:17.995Z",
-      "updated_at": "2026-08-14T17:08:24.289Z"
+      "not_ideal_for": "Buyers seeking unverified budget floor units."
     },
     "persona_profile": {
       "id": "87cbf543-3f43-446a-973e-28bd694c908f",
       "project_id": "d76fa457-5ab4-4b35-8c87-100e5fa32d6c",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3-4 BHK layouts."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:18.032Z",
-      "updated_at": "2026-08-14T17:08:24.325Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "28f363ab-1367-492e-9005-9094c96c10f1",
@@ -10882,30 +9811,15 @@
       "ifms": 45,
       "club_membership": 150000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "base_interest_rate": null,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T11:16:17.225Z",
-      "updated_at": "2026-08-14T15:54:42.098Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "b28f9c53-8198-4841-8791-6356b96637d5",
         "project_id": "d76fa457-5ab4-4b35-8c87-100e5fa32d6c",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -10927,28 +9841,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:25.719Z",
-        "updated_at": "2026-08-14T19:13:25.719Z"
+        ]
       },
       {
         "id": "4c46c696-8006-4f1d-9938-12f2b9468f56",
         "project_id": "d76fa457-5ab4-4b35-8c87-100e5fa32d6c",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -10960,21 +9860,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:25.761Z",
-        "updated_at": "2026-08-14T19:13:25.761Z"
+        ]
       }
     ],
     "images": [
@@ -11142,75 +10028,20 @@
     ],
     "channel_partners": [
       {
-        "id": "93aed8d6-8312-4f36-bd33-a66c16a595a8",
-        "project_id": "d76fa457-5ab4-4b35-8c87-100e5fa32d6c",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:54:43.451Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "897254d7-0ef8-4740-851f-7dbf52677191",
-        "project_id": "d76fa457-5ab4-4b35-8c87-100e5fa32d6c",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:08:24.854Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   }

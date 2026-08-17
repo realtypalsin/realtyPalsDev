@@ -34,6 +34,10 @@ export const DISCOVERY = {
   CHIP_INVENTORY_CACHE_MINUTES: 10,
 }
 
+export const FEATURES = {
+  ENABLE_GEMINI_FALLBACK: process.env.ENABLE_GEMINI_FALLBACK !== 'false', // Default: true
+}
+
 export const VALIDATION = {
   MIN_DISCOVERY_SCORE: 10, // Minimum score threshold for fallback results
 }

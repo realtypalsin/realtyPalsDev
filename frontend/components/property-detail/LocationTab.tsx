@@ -9,12 +9,14 @@ import {
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import SectorMap, { SECTOR_CENTROIDS } from '@/components/SectorMap'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
+import { LocationTabSkeleton } from '@/components/skeletons'
 
 export interface LocationTabProps {
   project: ProjectCardType | null
   detail: ProjectDetail | null
   d: (ProjectCardType | ProjectDetail) | null
   projectAddress: string
+  loading?: boolean
 }
 
 const ICONS: Record<string, any> = {
@@ -26,7 +28,10 @@ const ICONS: Record<string, any> = {
   "map-pin": MapPin,
 }
 
-export default function LocationTab({ project, detail, d, projectAddress }: LocationTabProps) {
+export default function LocationTab({ project, detail, d, projectAddress, loading }: LocationTabProps) {
+  if (loading && !detail && !d) {
+    return <LocationTabSkeleton />
+  }
   const waUrl = d ? buildWhatsAppUrl(d, 'panel') : 'https://wa.me/'
 
   // State handles

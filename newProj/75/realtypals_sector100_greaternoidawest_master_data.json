@@ -7,7 +7,7 @@
     "builder_id": "18acb21d-1827-4ea3-b194-422569dd2016",
     "rera_number": "UPRERAPRJ2019",
     "rera_url": "https://www.up-rera.in/",
-    "city": "Greater Noida West",
+    "city": "Noida",
     "state": "Uttar Pradesh",
     "country": "India",
     "sector": "Sector 100",
@@ -290,31 +290,15 @@
       "ifms": 85,
       "club_membership": 200000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [
-        "Ready-to-move resale purchase. GST is 0%."
-      ],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:51:37.266Z",
-      "updated_at": "2026-08-14T15:52:41.799Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "6a592e58-15fc-4816-a502-3c647cc8d611",
         "project_id": "9521a90f-1ad2-4de1-bcc8-198a6e6f2713",
-        "plan_type": "construction_linked",
         "plan_name": "Construction-Linked Plan (CLP)",
-        "description": null,
+        "plan_type": "construction_linked",
+        "down_payment_pct": null,
         "milestones": [
           {
             "amt": "₹11.0 Lakhs",
@@ -361,28 +345,14 @@
             "timeline": "At Possession",
             "milestone": "On Notice of Possession & Keys Handover"
           }
-        ],
-        "down_payment_pct": null,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
-        "created_at": "2026-08-14T17:04:33.918Z",
-        "updated_at": "2026-08-14T17:04:33.918Z"
+        ]
       },
       {
         "id": "3561d221-ec61-4ffa-9ecf-599c0f2b0f64",
         "project_id": "9521a90f-1ad2-4de1-bcc8-198a6e6f2713",
-        "plan_type": "possession_linked",
         "plan_name": "Possession-Linked Plan (30:70 PLP)",
-        "description": null,
+        "plan_type": "possession_linked",
+        "down_payment_pct": null,
         "milestones": [
           {
             "amt": "₹33.0 Lakhs",
@@ -402,21 +372,7 @@
             "timeline": "At Handover",
             "milestone": "On Notice of Possession & Keys Handover"
           }
-        ],
-        "down_payment_pct": null,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": "Pay 30% now, 70% at possession handover.",
-        "created_at": "2026-08-14T17:04:33.988Z",
-        "updated_at": "2026-08-14T17:04:33.988Z"
+        ]
       }
     ],
     "price_history": [
@@ -1037,23 +993,10 @@
       "id": "499492f5-5541-49bc-a915-b56580805ee7",
       "project_id": "9521a90f-1ad2-4de1-bcc8-198a6e6f2713",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:53:27.021Z",
-      "updated_at": "2026-08-14T17:04:34.424Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "ce2a5fdb-36ff-4747-8b0e-48024e78549f",
@@ -1079,7 +1022,6 @@
     "decision_profile": {
       "id": "62c7ea3d-9bd6-44fa-a7e1-67f4f49b2241",
       "project_id": "9521a90f-1ad2-4de1-bcc8-198a6e6f2713",
-      "status": "PUBLISHED",
       "decision_thesis": "Lotus Boulevard represents an exceptional residential acquisition in Sector 100, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
       "why_buy": [
         "Prime Connectivity: Located in Sector 100 with fast access to metro and major expressways.",
@@ -1093,57 +1035,7 @@
         "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
       ],
       "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
-      "financial_intelligence": {
-        "legalSafety": {
-          "score": 96,
-          "status": "Fully Clear Title"
-        },
-        "builderTrust": {
-          "score": 92,
-          "status": "Excellent"
-        },
-        "valueForMoney": {
-          "score": 86,
-          "status": "High Value"
-        },
-        "locationQuality": {
-          "score": 90,
-          "status": "Prime"
-        },
-        "lifestyleAmenities": {
-          "score": 88,
-          "status": "Operational"
-        },
-        "appreciationPotential": {
-          "score": 88,
-          "status": "Strong Growth"
-        }
-      },
-      "market_intelligence": {
-        "tier": "STRONG_BUY",
-        "overallScore": 88,
-        "priceAdvantage": "Fair Market Value",
-        "confidenceLabel": "Verified via RERA",
-        "confidenceLevel": "High",
-        "investmentGrade": "A+",
-        "priceAdvantageSubtext": "Strong Growth Corridor"
-      },
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA Official Filings",
-        "Municipal Survey Data",
-        "Market Transaction Registries"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:53:26.988Z",
-      "updated_at": "2026-08-14T17:04:34.350Z"
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
     },
     "dna": {
       "id": "064d067e-2233-46ae-a4bb-883d807e4131",
@@ -1186,75 +1078,20 @@
     ],
     "channel_partners": [
       {
-        "id": "97f64464-1948-4570-a504-60ab88a7aa8c",
-        "project_id": "9521a90f-1ad2-4de1-bcc8-198a6e6f2713",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:04:35.189Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       },
       {
-        "id": "b84f314b-2c4f-45b4-89a0-897e241b07fa",
-        "project_id": "9521a90f-1ad2-4de1-bcc8-198a6e6f2713",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:52:43.217Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       }
     ]
   },
@@ -1266,7 +1103,7 @@
     "builder_id": "18acb21d-1827-4ea3-b194-422569dd2016",
     "rera_number": "UPRERAPRJ2025",
     "rera_url": "https://www.up-rera.in/",
-    "city": "Greater Noida West",
+    "city": "Noida",
     "state": "Uttar Pradesh",
     "country": "India",
     "sector": "Sector 100",
@@ -1549,31 +1386,15 @@
       "ifms": 85,
       "club_membership": 200000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [
-        "Ready-to-move resale purchase. GST is 0%."
-      ],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:51:37.676Z",
-      "updated_at": "2026-08-14T15:52:43.436Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "1fc877ce-61eb-4e72-8daf-ced7ec7915ac",
         "project_id": "02efcac2-114b-47c2-b486-f9e73c3c6dd8",
-        "plan_type": "construction_linked",
         "plan_name": "Construction-Linked Plan (CLP)",
-        "description": null,
+        "plan_type": "construction_linked",
+        "down_payment_pct": null,
         "milestones": [
           {
             "amt": "₹22.6 Lakhs",
@@ -1620,28 +1441,14 @@
             "timeline": "At Possession",
             "milestone": "On Notice of Possession & Keys Handover"
           }
-        ],
-        "down_payment_pct": null,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": "Standard 10% booking, 80% milestone linked, 10% on possession handover.",
-        "created_at": "2026-08-14T17:04:35.784Z",
-        "updated_at": "2026-08-14T17:04:35.784Z"
+        ]
       },
       {
         "id": "d5fdf8b9-148e-4ab1-9140-b59f15c8df4a",
         "project_id": "02efcac2-114b-47c2-b486-f9e73c3c6dd8",
-        "plan_type": "possession_linked",
         "plan_name": "Possession-Linked Plan (30:70 PLP)",
-        "description": null,
+        "plan_type": "possession_linked",
+        "down_payment_pct": null,
         "milestones": [
           {
             "amt": "₹67.8 Lakhs",
@@ -1661,21 +1468,7 @@
             "timeline": "At Handover",
             "milestone": "On Notice of Possession & Keys Handover"
           }
-        ],
-        "down_payment_pct": null,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": "Pay 30% now, 70% at possession handover.",
-        "created_at": "2026-08-14T17:04:35.825Z",
-        "updated_at": "2026-08-14T17:04:35.825Z"
+        ]
       }
     ],
     "price_history": [
@@ -2296,23 +2089,10 @@
       "id": "4658c63a-4a08-42ea-95b9-27b6c20e44fa",
       "project_id": "02efcac2-114b-47c2-b486-f9e73c3c6dd8",
       "primary_persona": "Corporate Managers & IT Executives",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": {
-        "UPGRADER": "Families seeking spacious 3 BHK and 4 BHK layouts in a secure gated township."
-      },
       "income_range": "₹25 Lakh - ₹60 Lakh per annum",
       "family_stage": "Nuclear families with school-going children",
       "work_location": "Noida Expressway / Sector 62 IT Hub / South Delhi",
-      "risk_appetite": "Low risk — ready OC obtained development",
-      "timeline_horizon": "Immediate family end-use and 5-year capital appreciation",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:53:27.785Z",
-      "updated_at": "2026-08-14T17:04:36.130Z"
+      "risk_appetite": "Low risk — ready OC obtained development"
     },
     "recommendation_profile": {
       "id": "20323422-717e-4da3-9f69-07b71d3f5aff",
@@ -2338,7 +2118,6 @@
     "decision_profile": {
       "id": "3daffc59-4cc6-468d-abd1-dad351278447",
       "project_id": "02efcac2-114b-47c2-b486-f9e73c3c6dd8",
-      "status": "PUBLISHED",
       "decision_thesis": "Lotus Boulevard Espacia represents an exceptional residential acquisition in Sector 100, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
       "why_buy": [
         "Prime Connectivity: Located in Sector 100 with fast access to metro and major expressways.",
@@ -2352,57 +2131,7 @@
         "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
       ],
       "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges.",
-      "financial_intelligence": {
-        "legalSafety": {
-          "score": 96,
-          "status": "Fully Clear Title"
-        },
-        "builderTrust": {
-          "score": 92,
-          "status": "Excellent"
-        },
-        "valueForMoney": {
-          "score": 86,
-          "status": "High Value"
-        },
-        "locationQuality": {
-          "score": 90,
-          "status": "Prime"
-        },
-        "lifestyleAmenities": {
-          "score": 88,
-          "status": "Operational"
-        },
-        "appreciationPotential": {
-          "score": 88,
-          "status": "Strong Growth"
-        }
-      },
-      "market_intelligence": {
-        "tier": "STRONG_BUY",
-        "overallScore": 88,
-        "priceAdvantage": "Fair Market Value",
-        "confidenceLabel": "Verified via RERA",
-        "confidenceLevel": "High",
-        "investmentGrade": "A+",
-        "priceAdvantageSubtext": "Strong Growth Corridor"
-      },
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [
-        "RERA Official Filings",
-        "Municipal Survey Data",
-        "Market Transaction Registries"
-      ],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-13T07:53:27.752Z",
-      "updated_at": "2026-08-14T17:04:36.090Z"
+      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
     },
     "dna": {
       "id": "cf479e1e-da74-41c2-b73b-fc77867bcab2",
@@ -2445,75 +2174,20 @@
     ],
     "channel_partners": [
       {
-        "id": "244bb105-9cd9-43fe-956c-bbcbb8b9ab47",
-        "project_id": "02efcac2-114b-47c2-b486-f9e73c3c6dd8",
-        "channel_partner_id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-        "is_featured": true,
-        "created_at": "2026-08-14T15:52:46.149Z",
-        "channel_partner": {
-          "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
-          "name": "Space Realty Network",
-          "slug": "space-realty-network",
-          "type": "agency",
-          "description": null,
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": false,
-          "credai_member": false,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-13T07:54:03.397Z",
-          "updated_at": "2026-08-14T15:54:44.976Z"
-        }
+        "id": "bdf8afc5-9eab-4d71-b8af-da0fa22d1701",
+        "name": "Space Realty Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": false,
+        "type": "agency"
       },
       {
-        "id": "3ec62183-b91e-4bf7-afc0-784a28007616",
-        "project_id": "02efcac2-114b-47c2-b486-f9e73c3c6dd8",
-        "channel_partner_id": "7b070055-4e68-4833-83c7-06a741420edb",
-        "is_featured": true,
-        "created_at": "2026-08-14T17:04:36.712Z",
-        "channel_partner": {
-          "id": "7b070055-4e68-4833-83c7-06a741420edb",
-          "name": "RealtyPals Verified Partner Network",
-          "slug": "realtypals-direct-partner-network",
-          "type": "agency",
-          "description": "Official verified broker network for NCR developments.",
-          "website": null,
-          "phone": null,
-          "email": null,
-          "operating_cities": [
-            "Noida",
-            "Greater Noida"
-          ],
-          "primary_contact": null,
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [],
-          "commission_rate_pct": null,
-          "payment_terms": null,
-          "is_active": true,
-          "created_at": "2026-08-14T16:17:11.398Z",
-          "updated_at": "2026-08-14T16:17:11.398Z"
-        }
+        "id": "7b070055-4e68-4833-83c7-06a741420edb",
+        "name": "RealtyPals Verified Partner Network",
+        "phone": null,
+        "email": null,
+        "rera_compliant": true,
+        "type": "agency"
       }
     ]
   }

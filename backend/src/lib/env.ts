@@ -39,6 +39,9 @@ const EnvSchema = z.object({
 
   // CORS — set to your Vercel frontend URL
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
+
+  // Feature flags
+  ENABLE_GEMINI_FALLBACK: z.enum(['true', 'false']).optional().default('true'),
 })
 
 let envParsed: z.infer<typeof EnvSchema>

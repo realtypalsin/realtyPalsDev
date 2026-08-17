@@ -5,6 +5,7 @@ import { Plus, Trash2, Save, RefreshCw, CheckCircle2, Clock, Calendar, Eye, Acti
 import { toast } from 'sonner';
 import { adminAuthHeaders } from '@/lib/authedFetch';
 import { API_BASE } from '@/lib/env';
+import CustomSelect from './CustomSelect';
 
 export interface MilestoneItem {
   id?: string;
@@ -197,15 +198,17 @@ export default function ConstructionMilestonesEditor({ projectId }: Construction
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                     Status
                   </label>
-                  <select
+                  <CustomSelect
                     value={m.status}
-                    onChange={(e) => updateMilestone(idx, 'status', e.target.value as any)}
-                    className="w-full text-xs font-semibold bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1.5 text-slate-900 dark:text-white"
-                  >
-                    <option value="completed">✓ Completed</option>
-                    <option value="in_progress">⚙ In Progress</option>
-                    <option value="upcoming">○ Upcoming</option>
-                  </select>
+                    onChange={(val) => updateMilestone(idx, 'status', val as any)}
+                    options={[
+                      { value: 'completed', label: 'Completed', dotColor: 'bg-emerald-500' },
+                      { value: 'in_progress', label: 'In Progress', dotColor: 'bg-amber-500' },
+                      { value: 'upcoming', label: 'Upcoming', dotColor: 'bg-zinc-400' },
+                    ]}
+                    size="sm"
+                    className="w-full"
+                  />
                 </div>
 
                 <div>

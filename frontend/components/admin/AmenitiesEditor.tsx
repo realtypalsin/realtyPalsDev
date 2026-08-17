@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Plus, Trash2, Save, Loader2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import CustomSelect from './CustomSelect'
 
 type AmenityCategory = 'sports' | 'lifestyle' | 'wellness' | 'kids' | 'security' | 'parking'
 
@@ -106,17 +107,15 @@ export default function AmenitiesEditor({ amenities: initial, projectId, onSaved
             value={newRow.name}
             onChange={e => setNewRow(r => ({ ...r, name: e.target.value }))}
             placeholder="Amenity name (e.g. Swimming Pool)"
-            className="flex-1 text-[13px] bg-white border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
+            className="flex-1 text-[13px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 outline-none focus:border-blue-400"
           />
-          <select
+          <CustomSelect
             value={newRow.category}
-            onChange={e => setNewRow(r => ({ ...r, category: e.target.value as AmenityCategory }))}
-            className="text-[13px] bg-white border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
-          >
-            {CATEGORIES.map(c => (
-              <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
-            ))}
-          </select>
+            onChange={val => setNewRow(r => ({ ...r, category: val as AmenityCategory }))}
+            options={CATEGORIES.map(c => ({ value: c, label: CATEGORY_LABELS[c] }))}
+            size="sm"
+            className="w-40"
+          />
           <button
             onClick={handleAdd}
             disabled={saving || !newRow.name.trim()}

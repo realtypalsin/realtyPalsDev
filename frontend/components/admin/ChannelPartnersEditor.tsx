@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Save, Star } from 'lucide-react'
+import { Plus, Trash2, Save, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import { API_BASE } from '@/lib/env'
@@ -135,13 +135,15 @@ export default function ChannelPartnersEditor({ projectId, initialPartners = [],
               {selectedPartners.has(partner.id) && (
                 <button
                   onClick={() => handleToggleFeatured(partner.id)}
-                  className={`p-2 rounded transition ${
+                  title={selectedPartners.get(partner.id) ? 'Featured Channel Partner' : 'Mark as Featured'}
+                  className={`p-2 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-semibold ${
                     selectedPartners.get(partner.id)
-                      ? 'bg-yellow-100 text-yellow-600'
-                      : 'bg-gray-100 text-gray-400'
+                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                      : 'bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300'
                   }`}
                 >
-                  <Star size={16} fill="currentColor" />
+                  <ShieldCheck size={16} />
+                  <span className="text-[11px]">{selectedPartners.get(partner.id) ? 'Featured' : 'Standard'}</span>
                 </button>
               )}
             </div>

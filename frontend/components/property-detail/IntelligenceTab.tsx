@@ -7,6 +7,7 @@ import {
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import InfoTooltip from '@/components/ui/InfoTooltip'
 import { Skeleton } from '@/components/ui/skeleton'
+import { IntelligenceTabSkeleton } from '@/components/skeletons'
 
 // Design token system for consistency
 const TOKEN = {
@@ -298,13 +299,7 @@ export default function IntelligenceTab({
   } : null
 
   if (loading) {
-    return (
-      <div className="p-8 space-y-6">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="h-32 bg-gray-100 dark:bg-white/5 rounded-3xl animate-pulse" />
-        ))}
-      </div>
-    )
+    return <IntelligenceTabSkeleton />
   }
 
   return (

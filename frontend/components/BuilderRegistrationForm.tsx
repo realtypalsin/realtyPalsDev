@@ -28,6 +28,7 @@ import { m, AnimatePresence } from 'framer-motion'
 import Toast from './Toast'
 import Image from 'next/image'
 import Link from 'next/link'
+import CustomSelect from './admin/CustomSelect'
 
 type FormStep = 'company' | 'legal' | 'team' | 'projects' | 'media' | 'review'
 const STEPS: FormStep[] = ['company', 'legal', 'team', 'projects', 'media', 'review']
@@ -822,25 +823,27 @@ export default function BuilderRegistrationForm() {
 
                             <div>
                               <label className={labelBase}>Title / Designation *</label>
-                              <select 
+                              <CustomSelect 
                                 value={exec.title} 
-                                onChange={(e) => { 
+                                onChange={(val) => { 
                                   const n = [...formData.executives]
-                                  n[i].title = e.target.value
+                                  n[i].title = val
                                   setFormData(p => ({...p, executives: n})) 
                                 }} 
-                                className={inputBase}
-                              >
-                                <option value="">Select Title...</option>
-                                <option value="Chairman">Chairman</option>
-                                <option value="Managing Director">Managing Director</option>
-                                <option value="CEO">CEO</option>
-                                <option value="Director">Director</option>
-                                <option value="President">President</option>
-                                <option value="Vice President">Vice President</option>
-                                <option value="COO">COO</option>
-                                <option value="CFO">CFO</option>
-                              </select>
+                                options={[
+                                  { value: '', label: 'Select Title...' },
+                                  { value: 'Chairman', label: 'Chairman' },
+                                  { value: 'Managing Director', label: 'Managing Director' },
+                                  { value: 'CEO', label: 'CEO' },
+                                  { value: 'Director', label: 'Director' },
+                                  { value: 'President', label: 'President' },
+                                  { value: 'Vice President', label: 'Vice President' },
+                                  { value: 'COO', label: 'COO' },
+                                  { value: 'CFO', label: 'CFO' },
+                                ]}
+                                size="md"
+                                className="w-full"
+                              />
                             </div>
 
                             <div>

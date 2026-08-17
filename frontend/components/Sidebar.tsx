@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChatSidebarGroupedSkeleton } from "@/components/skeletons";
 import { API_BASE } from "@/lib/env";
 import { useSessions, Session } from "@/hooks/useSessions";
 import { SessionItem } from "@/components/Sidebar/SessionItem";
@@ -351,17 +352,7 @@ export default function Sidebar({
             {(userId || guestToken) && (
               <div className="mb-6">
                 {sessionsLoading ? (
-                  <div className="space-y-1">
-                    {[1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
-                      >
-                        <Skeleton className="w-4 h-4 rounded flex-shrink-0" />
-                        <Skeleton className="h-3 rounded flex-1" />
-                      </div>
-                    ))}
-                  </div>
+                  <ChatSidebarGroupedSkeleton />
                 ) : sessionsError ? (
                   <div className="px-3 py-2 text-[12px] text-gray-500 flex items-center justify-between">
                     <span>Couldn&apos;t load chats</span>

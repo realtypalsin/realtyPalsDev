@@ -333,29 +333,15 @@
       "ifms": 60,
       "club_membership": 200000,
       "other_charges": [],
-      "gst_applicable": null,
-      "gst_rate_pct": 0,
-      "gst_note": null,
-      "stamp_duty_pct": 7,
-      "registration_pct": 1,
-      "electricity_connection": null,
-      "water_sewer_connection": null,
-      "maintenance_psf_monthly": null,
-      "all_inclusive_price_cr": null,
-      "all_inclusive_per_sqft": null,
-      "assumptions": [],
-      "verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-14T18:05:39.997Z",
-      "updated_at": "2026-08-14T18:10:30.312Z"
+      "gst_rate_pct": 5
     },
     "payment_plans": [
       {
         "id": "8585bacf-cc6e-405e-84e2-7c5ac9286f68",
         "project_id": "15427615-3a81-4214-a172-6c847a91fc75",
-        "plan_type": "construction_linked",
         "plan_name": "Construction Linked Payment Plan (CLP)",
-        "description": "Stage-wise payment tied to construction progress",
+        "plan_type": "construction_linked",
+        "down_payment_pct": 10,
         "milestones": [
           {
             "pct": 10,
@@ -377,28 +363,14 @@
             "stage": "Possession",
             "milestone": "On Offer of Possession"
           }
-        ],
-        "down_payment_pct": 10,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:38.710Z",
-        "updated_at": "2026-08-14T19:13:38.710Z"
+        ]
       },
       {
         "id": "e3e20c11-0a8c-4acb-a492-b748a3dba299",
         "project_id": "15427615-3a81-4214-a172-6c847a91fc75",
-        "plan_type": "resale_down_payment",
         "plan_name": "Ready Resale Down Payment Plan",
-        "description": "100% Payment on Registry & Possession Handover",
+        "plan_type": "resale_down_payment",
+        "down_payment_pct": 100,
         "milestones": [
           {
             "pct": 10,
@@ -410,21 +382,7 @@
             "stage": "Handover",
             "milestone": "At Registry & Key Handover"
           }
-        ],
-        "down_payment_pct": 100,
-        "booking_amount_lakh": null,
-        "total_duration_months": null,
-        "discount_offered_pct": null,
-        "best_for": null,
-        "watch_out": null,
-        "sort_order": 0,
-        "source": null,
-        "source_url": null,
-        "verified_at": null,
-        "verified_by": null,
-        "notes": null,
-        "created_at": "2026-08-14T19:13:38.754Z",
-        "updated_at": "2026-08-14T19:13:38.754Z"
+        ]
       }
     ],
     "price_history": [
@@ -1050,21 +1008,10 @@
       "id": "d4894d34-7b1e-4735-846b-08c442c6d038",
       "project_id": "15427615-3a81-4214-a172-6c847a91fc75",
       "primary_persona": "Tech Professionals & Growing NCR Families",
-      "secondary_personas": [
-        "Senior Working Professionals",
-        "NCR Buyers Seeking Upgrades"
-      ],
-      "persona_descriptions": null,
       "income_range": "₹22L - ₹65L Annual Household Income",
       "family_stage": "Nuclear Family with School-Going Children",
       "work_location": "Noida Expressway / Central Noida / Tech Zone",
-      "risk_appetite": "Low risk — delivered development with OC",
-      "timeline_horizon": "Immediate end-use family occupancy",
-      "motivation_note": "Seeking high usable space, low commute times, and gated security.",
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-14T18:05:41.593Z",
-      "updated_at": "2026-08-14T18:10:32.099Z"
+      "risk_appetite": "Low risk — delivered development with OC"
     },
     "recommendation_profile": {
       "id": "55cb3e40-47c7-4578-819b-1802801d6b89",
@@ -1090,7 +1037,6 @@
     "decision_profile": {
       "id": "c3324549-510d-4cf4-b770-c72aa7a502b6",
       "project_id": "15427615-3a81-4214-a172-6c847a91fc75",
-      "status": "DRAFT",
       "decision_thesis": "Sikka Kaamna Greens combines ready-to-move peace of mind with 80%+ green surroundings and prime NCR connectivity.",
       "why_buy": [
         "100% Ready to Move with Full Occupancy Certificate (OC)",
@@ -1103,20 +1049,7 @@
         "Peak hour traffic at major sector entry exit gates"
       ],
       "best_for": "End-use buyers seeking immediate possession and proven society management.",
-      "not_ideal_for": null,
-      "financial_intelligence": null,
-      "market_intelligence": null,
-      "builder_intelligence": null,
-      "property_intelligence": null,
-      "comparative_analysis": null,
-      "resources_documents": null,
-      "confidence_sources": [],
-      "recommendation_notes": null,
-      "advisor_notes": null,
-      "last_verified_at": null,
-      "verified_by": null,
-      "created_at": "2026-08-14T18:05:41.667Z",
-      "updated_at": "2026-08-14T18:10:32.199Z"
+      "not_ideal_for": null
     },
     "dna": {
       "id": "def4968c-c9a0-4656-ab84-76a15e1d16d9",
@@ -1159,46 +1092,12 @@
     ],
     "channel_partners": [
       {
-        "id": "7116f151-9ea7-4f2a-942f-abc218500204",
-        "project_id": "15427615-3a81-4214-a172-6c847a91fc75",
-        "channel_partner_id": "fc750910-8309-41f9-ab30-90b2c3b6fa55",
-        "is_featured": true,
-        "created_at": "2026-08-14T19:13:38.549Z",
-        "channel_partner": {
-          "id": "fc750910-8309-41f9-ab30-90b2c3b6fa55",
-          "name": "RealtyPals Authorized Channel Partner",
-          "slug": "realtypals-authorized-partner",
-          "type": "broker",
-          "description": "Verified RealtyPals Partner Advisory Network",
-          "website": null,
-          "phone": "+91-9876543210",
-          "email": "partners@realtypals.in",
-          "operating_cities": [
-            "Noida",
-            "Greater Noida",
-            "Yamuna Expressway"
-          ],
-          "primary_contact": "RealtyPals Advisory Team",
-          "contact_phone": null,
-          "contact_email": null,
-          "is_verified": true,
-          "verification_date": null,
-          "total_leads": 0,
-          "total_conversions": 0,
-          "conversion_rate_pct": null,
-          "rera_compliant": true,
-          "credai_member": true,
-          "specializations": [
-            "luxury",
-            "residential",
-            "nri"
-          ],
-          "commission_rate_pct": 2,
-          "payment_terms": "on_conversion",
-          "is_active": true,
-          "created_at": "2026-08-14T19:13:20.205Z",
-          "updated_at": "2026-08-14T19:13:20.205Z"
-        }
+        "id": "fc750910-8309-41f9-ab30-90b2c3b6fa55",
+        "name": "RealtyPals Authorized Channel Partner",
+        "phone": "+91-9876543210",
+        "email": "partners@realtypals.in",
+        "rera_compliant": true,
+        "type": "broker"
       }
     ]
   }

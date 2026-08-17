@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Plus, Trash2, Save, Loader2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import CustomSelect from './CustomSelect'
 
 type ConnType = 'metro' | 'road' | 'expressway' | 'school' | 'hospital' | 'mall' | 'landmark' | 'airport' | 'university'
 type DataSource = 'brochure' | 'google' | 'estimated' | 'manual'
@@ -114,19 +115,19 @@ export default function ConnectivityEditor({ connectivity: initial, projectId, o
       {error && <p className="text-[12px] text-red-500 mb-3">{error}</p>}
 
       {adding && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 p-3 bg-blue-50/60 rounded-xl border border-blue-100">
-          <select
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4 p-3.5 bg-blue-50/60 dark:bg-blue-950/20 rounded-2xl border border-blue-100 dark:border-blue-900/40">
+          <CustomSelect
             value={newRow.type}
-            onChange={e => setNewRow(r => ({ ...r, type: e.target.value as ConnType }))}
-            className="text-[13px] bg-white border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
-          >
-            {TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-          </select>
+            onChange={val => setNewRow(r => ({ ...r, type: val as ConnType }))}
+            options={TYPES.map(t => ({ value: t, label: TYPE_LABELS[t] }))}
+            size="sm"
+            className="w-full"
+          />
           <input
             value={newRow.name}
             onChange={e => setNewRow(r => ({ ...r, name: e.target.value }))}
             placeholder="Name (e.g. Botanical Garden Metro)"
-            className="text-[13px] bg-white border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
+            className="text-[13px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 outline-none focus:border-blue-400"
           />
           <input
             value={newRow.distance_km}
@@ -134,15 +135,15 @@ export default function ConnectivityEditor({ connectivity: initial, projectId, o
             placeholder="Distance (km)"
             type="number"
             step="0.1"
-            className="text-[13px] bg-white border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
+            className="text-[13px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 outline-none focus:border-blue-400"
           />
-          <select
+          <CustomSelect
             value={newRow.data_source}
-            onChange={e => setNewRow(r => ({ ...r, data_source: e.target.value as DataSource }))}
-            className="text-[13px] bg-white border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
-          >
-            {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+            onChange={val => setNewRow(r => ({ ...r, data_source: val as DataSource }))}
+            options={SOURCES.map(s => ({ value: s, label: s.replace(/\b\w/g, l => l.toUpperCase()) }))}
+            size="sm"
+            className="w-full"
+          />
           <div className="col-span-2 flex gap-2">
             <input
               value={newRow.notes}

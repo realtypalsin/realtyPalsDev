@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   CheckCircle2, Clock, Zap, Shield, MapPin, Building2,
   BedDouble, ExternalLink, RefreshCw, Smartphone, Layers,
-  CalendarDays, FileText, IndianRupee, LineChart, Sparkles,
+  CalendarDays, FileText, IndianRupee, LineChart, Maximize2,
   TrainFront, Leaf, Users
 } from 'lucide-react'
 
@@ -303,7 +303,7 @@ export default function ProjectPreview({ project, onRefresh, refreshing }: Props
                       { value: '3 mins', sub: 'Aqua Metro', icon: TrainFront, color: 'bg-blue-950 text-blue-400' },
                       { value: 'IGBC', sub: 'Gold Rated', icon: Leaf, color: 'bg-amber-950 text-amber-400' },
                       { value: 'Low', sub: 'Density Living', icon: Users, color: 'bg-purple-950 text-purple-400' },
-                      { value: 'Corner', sub: 'Smart Units', icon: Sparkles, color: 'bg-orange-950 text-orange-400' },
+                      { value: 'Corner', sub: 'Smart Units', icon: Maximize2, color: 'bg-orange-950 text-orange-400' },
                       { value: 'RERA', sub: 'Registered', icon: Shield, color: 'bg-teal-950 text-teal-400' }
                     ].map((item, idx) => {
                       const Icon = item.icon

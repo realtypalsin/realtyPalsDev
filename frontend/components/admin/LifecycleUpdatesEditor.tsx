@@ -5,6 +5,7 @@ import { Plus, Trash2, Save, Home, CheckCircle2, Shield, Calendar, Bell } from '
 import { toast } from 'sonner'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import { API_BASE } from '@/lib/env'
+import CustomSelect from './CustomSelect'
 
 export interface LifecycleItem {
   id?: string
@@ -121,17 +122,15 @@ export default function LifecycleUpdatesEditor({ projectId }: { projectId: strin
 
       <div className="space-y-3">
         {updates.map((item, i) => (
-          <div key={i} className="p-3 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
-            <div className="flex gap-2">
-              <select
+          <div key={i} className="p-3.5 bg-gray-50 dark:bg-zinc-800/40 rounded-2xl border border-gray-100 dark:border-zinc-700/60 space-y-2.5">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <CustomSelect
                 value={item.update_type}
-                onChange={(e) => updateItem(i, 'update_type', e.target.value)}
-                className="px-3 py-1.5 text-xs font-bold border rounded-lg bg-white"
-              >
-                {UPDATE_TYPES.map(t => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
+                onChange={(val) => updateItem(i, 'update_type', val)}
+                options={UPDATE_TYPES.map(t => ({ value: t.id, label: t.name }))}
+                size="sm"
+                className="w-full sm:w-64 shrink-0"
+              />
               <input
                 type="text"
                 placeholder="Update Title"

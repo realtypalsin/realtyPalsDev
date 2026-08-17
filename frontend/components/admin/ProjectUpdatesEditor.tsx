@@ -5,6 +5,7 @@ import { Plus, Trash2, Save, RefreshCw, CheckCircle2, Clock, Calendar, Rss } fro
 import { toast } from 'sonner'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 import { API_BASE } from '@/lib/env'
+import CustomSelect from './CustomSelect'
 
 export interface UpdateItem {
   id?: string
@@ -140,20 +141,22 @@ export default function ProjectUpdatesEditor({ projectId, projectStatus = 'under
 
       <div className="space-y-2.5">
         {updates.map((update, i) => (
-          <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3 bg-slate-50/70 rounded-xl border border-slate-200/60 hover:bg-slate-50 transition-all">
-            <select
+          <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 hover:bg-slate-50 dark:hover:bg-zinc-800/70 transition-all">
+            <CustomSelect
               value={update.status}
-              onChange={(e) => {
+              onChange={(val) => {
                 const newUpdates = [...updates]
-                newUpdates[i].status = e.target.value as any
+                newUpdates[i].status = val as any
                 setUpdates(newUpdates)
               }}
-              className="px-3 py-1.5 text-xs font-bold border border-slate-200 rounded-lg bg-white text-slate-900"
-            >
-              <option value="completed">✓ Completed</option>
-              <option value="in_progress">⚙ In Progress</option>
-              <option value="upcoming">○ Upcoming</option>
-            </select>
+              options={[
+                { value: 'completed', label: 'Completed', dotColor: 'bg-emerald-500' },
+                { value: 'in_progress', label: 'In Progress', dotColor: 'bg-amber-500' },
+                { value: 'upcoming', label: 'Upcoming', dotColor: 'bg-zinc-400' },
+              ]}
+              size="sm"
+              className="w-40 shrink-0"
+            />
 
             <input
               type="text"

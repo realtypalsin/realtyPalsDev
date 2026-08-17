@@ -12,6 +12,7 @@ import { getProjectOverview, type ProjectOverviewData } from '@/lib/backend-api'
 
 import ConstructionTimeline from './ConstructionTimeline'
 import { SpecificationGrid } from './SpecificationGrid'
+import { OverviewBentoSkeleton } from '@/components/skeletons'
 
 // Color token system for consistency
 const TOKEN = {
@@ -234,6 +235,10 @@ export default function OverviewTab({
     rera_registration: cp.rera_registration || cp.rera_registration_number || cp.channel_partner?.rera_registration || 'Verified RERA Agent',
     phone: cp.phone || cp.channel_partner?.phone || null,
   })) : []
+
+  if (loading && !d) {
+    return <OverviewBentoSkeleton />
+  }
 
   return (
     <div className="p-3 sm:p-4 md:p-8 space-y-6 sm:space-y-8 bg-[#F7F9FB] dark:bg-[#0f0e0d] text-gray-900 dark:text-gray-100 font-sans">

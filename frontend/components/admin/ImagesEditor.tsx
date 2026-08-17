@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Plus, Trash2, Pencil, Save, Loader2, CheckCircle2, GripVertical } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import CustomSelect from './CustomSelect'
 
 type ImageType = 'hero' | 'exterior' | 'interior' | 'floor_plan' | 'amenity' | 'master_plan' | 'clubhouse' | 'pool' | 'location_map' | 'view'
 
@@ -209,17 +210,17 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
     <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8">
       <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
         <div>
-          <h2 className="text-[20px] font-serif font-black text-slate-900 tracking-tight">Image Gallery</h2>
-          <p className="text-[13px] text-slate-400 font-medium mt-1">{rows.length} total · drag to reorder</p>
+          <h2 className="text-[18px] font-sans font-bold text-zinc-900 dark:text-white tracking-tight">Image Gallery</h2>
+          <p className="text-[13px] text-zinc-500 font-medium mt-0.5">{rows.length} total · drag to reorder</p>
         </div>
         <div className="flex items-center gap-3">
-          <select 
+          <CustomSelect
             value={uploadType}
-            onChange={e => setUploadType(e.target.value as ImageType)}
-            className="text-[13px] font-bold text-slate-700 bg-slate-50 border border-transparent rounded-xl px-4 py-2 outline-none hover:bg-slate-100 focus:bg-white focus:border-slate-200 transition-all cursor-pointer"
-          >
-            {IMAGE_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-          </select>
+            onChange={val => setUploadType(val as ImageType)}
+            options={IMAGE_TYPES.map(t => ({ value: t, label: TYPE_LABELS[t] }))}
+            size="sm"
+            className="w-44"
+          />
           {uploadType === 'floor_plan' && (
             <>
               <input
@@ -284,13 +285,13 @@ export default function ImagesEditor({ images: initial, projectId, slug, onSaved
               </div>
               {editState?.id === img.id ? (
                 <div className="p-2 space-y-1.5">
-                  <select
+                  <CustomSelect
                     value={editState.type}
-                    onChange={e => setEditState(s => s ? { ...s, type: e.target.value as ImageType } : s)}
-                    className="w-full text-[11px] border border-zinc-200 rounded-lg px-2 py-1 outline-none"
-                  >
-                    {IMAGE_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-                  </select>
+                    onChange={val => setEditState(s => s ? { ...s, type: val as ImageType } : s)}
+                    options={IMAGE_TYPES.map(t => ({ value: t, label: TYPE_LABELS[t] }))}
+                    size="sm"
+                    className="w-full"
+                  />
                   <input
                     value={editState.caption}
                     onChange={e => setEditState(s => s ? { ...s, caption: e.target.value } : s)}

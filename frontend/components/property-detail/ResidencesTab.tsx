@@ -12,6 +12,7 @@ import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { resolveImgUrl } from '@/lib/utils'
 import InfoTooltip from '@/components/ui/InfoTooltip'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ResidencesSkeletonFull } from '@/components/skeletons'
 import { CustomDropdown } from '@/components/ui/CustomDropdown'
 
 type FloorPlanImage = { id: string; url: string; caption?: string | null; bhk?: number | null; size_sqft?: number | null }
@@ -199,15 +200,7 @@ export default function ResidencesTab({
   const selectedFacing: string | null = (selectedInventoryEntry?.facing ?? null) as string | null
 
   if (loading && !detail) {
-    return (
-      <div className="p-8 space-y-6">
-        <div className="h-20 bg-gray-100 dark:bg-gray-800 rounded-3xl animate-pulse" />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-4 h-96 bg-gray-100 dark:bg-gray-800 rounded-3xl animate-pulse" />
-          <div className="lg:col-span-8 h-96 bg-gray-100 dark:bg-gray-800 rounded-3xl animate-pulse" />
-        </div>
-      </div>
-    )
+    return <ResidencesSkeletonFull />
   }
 
   return (

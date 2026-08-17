@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { X, Calculator, Receipt, TrendingDown } from 'lucide-react'
 import { calculateEmi, calculateStampDuty, calculateGst } from '@/lib/calculators'
 import { formatInr } from '@/lib/format'
+import CustomSelect from './admin/CustomSelect'
 
 
 interface Props {
@@ -150,11 +151,17 @@ export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props
                 </div>
                 <div>
                   <label className={labelCls}>Buyer</label>
-                  <select value={gender} onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'joint')} className={inputCls}>
-                    <option value="male">Male (7%)</option>
-                    <option value="female">Female (6%)</option>
-                    <option value="joint">Joint (6.5%)</option>
-                  </select>
+                  <CustomSelect
+                    value={gender}
+                    onChange={(val) => setGender(val as 'male' | 'female' | 'joint')}
+                    options={[
+                      { value: 'male', label: 'Male (7%)' },
+                      { value: 'female', label: 'Female (6%)' },
+                      { value: 'joint', label: 'Joint (6.5%)' },
+                    ]}
+                    size="sm"
+                    className="w-full"
+                  />
                 </div>
               </div>
 
@@ -189,10 +196,16 @@ export default function CalculatorPanel({ onClose, defaultPriceCr = 1.5 }: Props
                 </div>
                 <div>
                   <label className={labelCls}>Status</label>
-                  <select value={gstStatus} onChange={(e) => setGstStatus(e.target.value as 'under_construction' | 'ready_to_move')} className={inputCls}>
-                    <option value="under_construction">Under Construction</option>
-                    <option value="ready_to_move">Ready to Move</option>
-                  </select>
+                  <CustomSelect
+                    value={gstStatus}
+                    onChange={(val) => setGstStatus(val as 'under_construction' | 'ready_to_move')}
+                    options={[
+                      { value: 'under_construction', label: 'Under Construction' },
+                      { value: 'ready_to_move', label: 'Ready to Move' },
+                    ]}
+                    size="sm"
+                    className="w-full"
+                  />
                 </div>
               </div>
               {gstStatus === 'under_construction' && (

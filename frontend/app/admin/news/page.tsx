@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { AnimatePresence, m } from 'framer-motion'
+import CustomSelect from '@/components/admin/CustomSelect'
 import { adminFetch } from '@/lib/adminFetch'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -686,14 +687,16 @@ function NewsModal({
               <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">
                 Link Target Type
               </label>
-              <select
+              <CustomSelect
                 value={formData.link_type}
-                onChange={e => setFormData({ ...formData, link_type: e.target.value })}
-                className="w-full px-3 py-2 bg-white dark:bg-zinc-800/80 border border-zinc-200/90 dark:border-zinc-700/80 rounded-xl outline-none text-zinc-900 dark:text-white font-medium"
-              >
-                <option value="project">Project Slug</option>
-                <option value="external_url">External URL</option>
-              </select>
+                onChange={val => setFormData({ ...formData, link_type: val })}
+                options={[
+                  { value: 'project', label: 'Project Slug' },
+                  { value: 'external_url', label: 'External URL' },
+                ]}
+                size="sm"
+                className="w-full"
+              />
             </div>
 
             <div>

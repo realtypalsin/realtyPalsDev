@@ -7,10 +7,12 @@ import {
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
+import { PricingTabSkeleton } from '@/components/skeletons'
 
 export interface ProjectPricingTabProps {
   unitTypes: UnitTypeSummary[]
   detail: ProjectDetail | null
+  loading?: boolean
   onGoToCosts: () => void
 }
 
@@ -23,7 +25,11 @@ function fmtRs(num: number): string {
   return `₹${Math.round(num).toLocaleString('en-IN')}`
 }
 
-export default function ProjectPricingTab({ unitTypes, detail, onGoToCosts }: ProjectPricingTabProps) {
+export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCosts }: ProjectPricingTabProps) {
+  if (loading && !detail) {
+    return <PricingTabSkeleton />
+  }
+
   const availableBhks = unitTypes.length > 0 ? Array.from(new Set(unitTypes.map(u => `${u.bhk} BHK`))) : []
   const [bhkFilterState, setBhkFilter] = useState<string>(availableBhks[0] ?? '')
   const bhkFilter = availableBhks.includes(bhkFilterState) ? bhkFilterState : (availableBhks[0] ?? '')

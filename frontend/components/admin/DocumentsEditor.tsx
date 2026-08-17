@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Trash2, Upload, Loader2, FileText, CheckCircle2 } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import CustomSelect from './CustomSelect'
 
 interface ProjectDocument {
   id:          string
@@ -97,17 +98,17 @@ export default function DocumentsEditor({ documents: initial, projectId, slug, o
     <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8">
       <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
         <div>
-          <h2 className="text-[20px] font-serif font-black text-slate-900 tracking-tight">Project Documents</h2>
-          <p className="text-[13px] text-slate-400 font-medium mt-1">{rows.length} files attached</p>
+          <h2 className="text-[18px] font-sans font-bold text-zinc-900 dark:text-white tracking-tight">Project Documents</h2>
+          <p className="text-[13px] text-zinc-500 font-medium mt-0.5">{rows.length} files attached</p>
         </div>
         <div className="flex items-center gap-3">
-          <select
+          <CustomSelect
             value={docType}
-            onChange={e => setDocType(e.target.value)}
-            className="text-[13px] font-bold text-slate-700 bg-slate-50 border border-transparent rounded-xl px-4 py-2 outline-none hover:bg-slate-100 focus:bg-white focus:border-slate-200 transition-all cursor-pointer capitalize"
-          >
-            {DOC_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
-          </select>
+            onChange={val => setDocType(val)}
+            options={DOC_TYPES.map(t => ({ value: t, label: t.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }))}
+            size="sm"
+            className="w-44"
+          />
           <label className="flex items-center gap-2 text-[13px] font-bold text-white bg-slate-900 hover:bg-black px-5 py-2.5 rounded-full transition-all cursor-pointer shadow-sm">
             {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
             Upload Document

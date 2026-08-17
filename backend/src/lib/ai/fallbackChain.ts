@@ -30,12 +30,15 @@ export interface FallbackChainOptions {
 
 export interface FallbackChainResult {
   text: string
-  provider: string // Provider that succeeded (e.g. 'cerebras', 'mistral', 'groq', 'openai', 'gemini')
+  provider: string // Provider that succeeded (e.g. 'cerebras', 'mistral', 'groq', 'openai', 'gemini', 'database')
   model: string
   envKey: string
+  is_verified: boolean // true if from verified database, false if from AI provider
 }
 
 import { validateAgainstFactsSync } from './guardrails-v2'
+import { trackEvent } from '../monitoring/posthog'
+import { env } from './env'
 
 function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLimit = 50) {
   let buffer = ''
@@ -95,13 +98,20 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     chainConfig = FALLBACK_CHAIN,
   } = options
 
+  // Feature flag: disable Gemini fallback if disabled (defaults to enabled)
+  const enableGeminiFallback = env.ENABLE_GEMINI_FALLBACK === 'true'
+  const effectiveChainConfig = enableGeminiFallback
+    ? chainConfig
+    : chainConfig.filter(item => item.provider !== 'gemini')
+
   // Log chain initiation at info level
   if (process.env.DEBUG_FALLBACK) {
-    console.log(`[FALLBACK:INIT] Starting fallback chain with ${chainConfig.length} providers`)
+    console.log(`[FALLBACK:INIT] Starting fallback chain with ${effectiveChainConfig.length} providers`)
     console.log(`[FALLBACK:CONTEXT] Messages: ${messages.length}, SystemPrompt: ${systemPrompt.slice(0, 50)}...`)
+    if (!enableGeminiFallback) console.log(`[FALLBACK:FEATURE_FLAG] Gemini fallback disabled`)
   }
 
-  for (const item of chainConfig) {
+  for (const item of effectiveChainConfig) {
     const apiKey = process.env[item.envKey]
     if (!apiKey) {
       console.log(`[FALLBACK:SKIP] ${item.label} (${item.envKey}) — no API key configured`)
@@ -145,7 +155,22 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       if (process.env.DEBUG_FALLBACK) {
         console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
       }
-      return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey }
+
+      // Track fallback response
+      if (userId && sessionId) {
+        try {
+          await trackEvent('fallback_response_generated', userId, {
+            provider: item.provider,
+            model: item.model,
+            text_length: text.length,
+            session_id: sessionId,
+          })
+        } catch (e) {
+          console.warn('[FALLBACK:TRACKING_ERROR]', e)
+        }
+      }
+
+      return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey, is_verified: false }
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err))
       const tokensSent = getTokensSent() || (err as any)?.tokensSent === true
@@ -163,7 +188,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         console.error(`[FALLBACK:MID_STREAM_STALL] Cannot switch providers — context ${messages.length} msgs + prompt already streamed`)
         const truncationNotice = '\n\n[Response truncated due to high traffic. Please ask me to continue.]'
         send('token', { token: truncationNotice })
-        return { text: truncationNotice, provider: 'database', model: 'fallback', envKey: 'FALLBACK_MODE' }
+        return { text: truncationNotice, provider: 'database', model: 'fallback', envKey: 'FALLBACK_MODE', is_verified: true }
       }
 
       // Pre-first-token failure: seamless rollover to next provider with same context.
@@ -190,5 +215,5 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
   }
 
   send('token', { token: fallbackMessage })
-  return { text: fallbackMessage, provider: 'database', model: 'fallback', envKey: 'FALLBACK_MODE' }
+  return { text: fallbackMessage, provider: 'database', model: 'fallback', envKey: 'FALLBACK_MODE', is_verified: true }
 }

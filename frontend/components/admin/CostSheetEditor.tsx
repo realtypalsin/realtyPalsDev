@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, Save, IndianRupee, Layers, ShieldCheck, Zap, Info, Calculator, Sparkles } from 'lucide-react'
+import { Plus, X, Save, IndianRupee, Layers, ShieldCheck, Zap, Info, Calculator } from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { toast } from 'sonner'
 import { adminAuthHeaders } from '@/lib/authedFetch'
@@ -123,8 +123,8 @@ export default function CostSheetEditor({ projectId, initialData }: { projectId:
               <Calculator size={18} />
             </div>
             <div>
-              <span className="text-[11px] font-black text-purple-300 uppercase tracking-widest flex items-center gap-1">
-                <Sparkles size={11} />
+              <span className="text-[11px] font-black text-purple-300 uppercase tracking-widest flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Live All-Inclusive Calculator (1,350 sqft Benchmark)
               </span>
               <h4 className="text-[18px] font-extrabold text-white">
@@ -193,7 +193,7 @@ export default function CostSheetEditor({ projectId, initialData }: { projectId:
       {/* 2. Possession & Utility Charges */}
       <div>
         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Possession & Utility One-Time Charges (₹)</label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <div>
             <span className="text-[11px] text-gray-600 font-bold">Covered Parking (₹)</span>
             <input value={parkingCost} onChange={(e) => setParkingCost(e.target.value)} className="w-full bg-slate-50 rounded-lg px-3 py-1.5 text-[13px] font-medium border border-gray-200 focus:outline-none focus:border-purple-500" type="number" placeholder="350000" />

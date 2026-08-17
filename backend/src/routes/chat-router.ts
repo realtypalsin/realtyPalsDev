@@ -601,6 +601,7 @@ router.post('/', async (req: Request, res: Response) => {
               phone: phone,
               project_name: targetProj?.name || 'General Inquiry',
               project_slug: targetProj?.slug || undefined,
+              chat_session_id: sessionId || undefined,
             }
           })
           const redactedPhone = phone.length > 4 ? `${phone.slice(0, 2)}******${phone.slice(-2)}` : '***'
@@ -1612,6 +1613,7 @@ EXECUTIVE INSTRUCTIONS:
                   session_id: currentSessionId,
                   role: 'assistant',
                   content: fallbackResult.text || '[streamed]',
+                  is_verified: fallbackResult.is_verified,
                 },
               ]
             })
@@ -2960,6 +2962,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
                 session_id: newId,
                 role: 'assistant',
                 content: fullText || '[streamed]',
+                is_verified: fallbackResult.is_verified,
                 ...(messageArtifacts.length > 0
                   ? { artifacts: messageArtifacts as unknown as Prisma.InputJsonValue }
                   : {}),
@@ -3047,6 +3050,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
               session_id: currentSessionId!,
               role: 'assistant',
               content: fullText || '[streamed]',
+              is_verified: fallbackResult.is_verified,
               ...(messageArtifacts.length > 0
                 ? { artifacts: messageArtifacts as unknown as Prisma.InputJsonValue }
                 : {}),

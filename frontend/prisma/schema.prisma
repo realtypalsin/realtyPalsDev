@@ -710,6 +710,7 @@ model ChatSession {
   property_reactions Json?       @default("[]") // [{projectId, sentiment: "interested"|"concerned"|"rejected", signals: [...], timestamp}]
 
   messages         ChatMessage[]
+  callbackRequests CallbackRequest[]
 
   // Analytics relations
   analytics        ChatAnalytics[]
@@ -735,6 +736,7 @@ model ChatMessage {
   edited_at             DateTime?
   artifacts             Json?
   chips                 Json?       @default("[]")
+  is_verified           Boolean     @default(true)
   session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
   @@index([session_id, created_at])
@@ -817,14 +819,17 @@ model CallbackRequest {
   budget_min_cr     Float?
   budget_max_cr     Float?
   source_intent     Json?
+  chat_session_id   String?
 
   created_at   DateTime @default(now())
 
   objections LeadObjection[]
+  chatSession ChatSession? @relation(fields: [chat_session_id], references: [id], onDelete: SetNull)
 
   @@index([project_slug])
   @@index([lead_tier])
   @@index([created_at])
+  @@index([chat_session_id])
   @@map("callback_requests")
 }
 

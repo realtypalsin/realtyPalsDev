@@ -28,6 +28,7 @@ import CompletenessBar from '@/components/admin/CompletenessBar'
 import ProjectPreview from '@/components/admin/ProjectPreview'
 import AuditChangelogTab from '@/components/admin/AuditChangelogTab'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AdminProjectEditorSkeleton } from '@/components/skeletons'
 import Toast from '@/components/Toast'
 
 type AdminTab = 'core' | 'specs' | 'pricing' | 'media' | 'intelligence' | 'updates' | 'partners' | 'audit'
@@ -74,9 +75,6 @@ function getTabAuditDetails(
 
     if (data?.description) completed.push('Project Description')
     else missing.push('Project Description')
-
-    if (data?.hero_image_url) completed.push('Hero Image')
-    else missing.push('Hero Image')
 
     if ((data?.unit_types?.length || 0) >= 1) completed.push(`Unit Configurations (${data.unit_types.length} types)`)
     else missing.push('Unit Types / Configurations')
@@ -294,7 +292,6 @@ export default function AdminProjectEditPage({
   const [completeness, setCompleteness] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [adminTab, setAdminTab] = useState<AdminTab>('core')
-  const [hoveredTab, setHoveredTab] = useState<AdminTab | null>(null)
   const [preview, setPreview] = useState<any>(null)
   const [coreRightView, setCoreRightView] = useState<'audit' | 'preview'>('audit')
   const [showCompleteness, setShowCompleteness] = useState(true)
@@ -413,14 +410,12 @@ export default function AdminProjectEditPage({
           <Skeleton className="h-10 w-1/4 rounded-lg" />
           <Skeleton className="h-6 w-1/3 rounded-lg" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-32 rounded-lg" />
+            <Skeleton key={i} className="h-10 w-32 rounded-lg shrink-0" />
           ))}
         </div>
-        <div className="bg-white rounded-3xl border border-gray-100 p-8 min-h-[500px]">
-          <Skeleton className="h-full w-full rounded-2xl min-h-[400px]" />
-        </div>
+        <AdminProjectEditorSkeleton />
       </div>
     )
   }
@@ -514,9 +509,9 @@ export default function AdminProjectEditPage({
 
 
   return (
-    <>
+    <div className="w-full overflow-x-hidden">
       {/* ── Sticky Project Sub-Header ───────────────────────────────────────────── */}
-      <div className="sticky top-0 z-30 w-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shadow-xs px-4 md:px-8 py-3 transition-all">
+      <div className="sticky top-0 z-30 w-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shadow-xs px-4 md:px-8 py-3 transition-all overflow-x-hidden">
         <div className="max-w-[1400px] mx-auto space-y-3">
 
           {/* Identity row */}
@@ -546,6 +541,15 @@ export default function AdminProjectEditPage({
                     data.status === 'ready_to_move' ? 'bg-emerald-500' : data.status === 'under_construction' ? 'bg-amber-500 animate-pulse' : 'bg-blue-500'
                   }`} />
                   {data.status?.replace('_', ' ')}
+                </span>
+                <span className={`px-2 py-0.5 text-[9.5px] font-mono font-bold rounded-md border shadow-2xs flex-shrink-0 ${
+                  overallHealth >= 90
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
+                    : overallHealth >= 70
+                    ? 'bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60'
+                    : 'bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800/60'
+                }`}>
+                  {overallHealth}% Health
                 </span>
               </div>
             </div>
@@ -581,23 +585,19 @@ export default function AdminProjectEditPage({
                 const pct = tabScores[tabId] ?? 100
                 const isComplete = pct >= 90
                 const isMedium = pct >= 60 && pct < 90
-                const audit = getTabAuditDetails(tabId, data, documents)
-                const isHovered = hoveredTab === tabId
 
                 return (
                   <div key={tabId} className="relative">
                     <button
                       onClick={() => setAdminTab(tabId)}
-                      onMouseEnter={() => setHoveredTab(tabId)}
-                      onMouseLeave={() => setHoveredTab(null)}
-                      className={`relative flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl transition-all duration-200 cursor-pointer select-none ${
+                      className={`relative flex items-center gap-2 px-3.5 py-2 text-xs rounded-xl transition-all duration-200 cursor-pointer select-none ${
                         isActive
                           ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/70 dark:hover:bg-zinc-800/70 font-medium'
                       }`}
                     >
                       <Icon
-                        size={13}
+                        size={14}
                         className={`transition-colors ${
                           isActive
                             ? 'text-blue-600 dark:text-blue-400'
@@ -635,65 +635,6 @@ export default function AdminProjectEditPage({
                         </div>
                       )}
                     </button>
-
-                    {/* Hover Popover Tooltip showing missing / incomplete details */}
-                    {isHovered && (
-                      <div className="absolute top-full left-0 mt-2 w-72 p-3.5 bg-zinc-900/95 dark:bg-zinc-950/95 backdrop-blur-md text-white text-xs rounded-2xl shadow-2xl z-50 border border-zinc-700/80 animate-in fade-in slide-in-from-top-2 duration-150 pointer-events-none text-left font-normal">
-                        <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-2">
-                          <span className="font-bold text-zinc-100 flex items-center gap-1.5">
-                            <Icon size={14} className="text-blue-400" />
-                            {label} Status
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                            isComplete ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : isMedium ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                          }`}>
-                            {pct}% Complete
-                          </span>
-                        </div>
-
-                        {audit.missing.length > 0 ? (
-                          <div className="mb-2">
-                            <p className="text-[10.5px] uppercase font-bold text-rose-400 tracking-wider mb-1 flex items-center gap-1">
-                              <AlertCircle size={11} /> Missing / Incomplete ({audit.missing.length}):
-                            </p>
-                            <ul className="space-y-1 pl-1">
-                              {audit.missing.map((item, idx) => (
-                                <li key={idx} className="flex items-start gap-1.5 text-zinc-300 text-[11px]">
-                                  <span className="text-rose-400 font-bold shrink-0">•</span>
-                                  <span>{item}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : (
-                          <div className="mb-2 flex items-center gap-1.5 text-emerald-400 font-semibold text-[11px] bg-emerald-950/40 border border-emerald-800/60 p-2 rounded-xl">
-                            <CheckCircle2 size={13} className="shrink-0" />
-                            <span>All fields in this section are 100% complete!</span>
-                          </div>
-                        )}
-
-                        {audit.completed.length > 0 && (
-                          <div className="pt-1 border-t border-zinc-800/60">
-                            <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider mb-1 flex items-center gap-1">
-                              <CheckCircle2 size={10} className="text-emerald-400" /> Verified Sub-Sections ({audit.completed.length}):
-                            </p>
-                            <ul className="space-y-0.5 pl-1 max-h-24 overflow-y-auto">
-                              {audit.completed.slice(0, 5).map((item, idx) => (
-                                <li key={idx} className="flex items-center gap-1.5 text-zinc-400 text-[10.5px]">
-                                  <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                                  <span className="truncate">{item}</span>
-                                </li>
-                              ))}
-                              {audit.completed.length > 5 && (
-                                <li className="text-[9.5px] text-zinc-500 italic pl-3">
-                                  + {audit.completed.length - 5} more items verified
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 )
               })}
@@ -949,6 +890,6 @@ export default function AdminProjectEditPage({
       </div>
 
       {toast && <Toast message={toast.message} onClose={() => setToast(null)} />}
-    </>
+    </div>
   )
 }

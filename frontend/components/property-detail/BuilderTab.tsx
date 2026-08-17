@@ -8,6 +8,7 @@ import {
   ShieldCheck, ArrowUpRight, Leaf, CheckCircle2, Clock, MapPin, BadgeCheck, Phone, FileText
 } from 'lucide-react'
 import type { Builder } from '@prisma/client'
+import { BuilderTabSkeleton } from '@/components/skeletons'
 
 interface ProjectData {
   builder_name?: string
@@ -30,13 +31,7 @@ export default function BuilderTab({ builder, project, documents = [], loading }
   const [showAllDocs, setShowAllDocs] = useState(false)
 
   if (loading) {
-    return (
-      <div className="space-y-4 p-6">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="h-24 bg-gray-200 dark:bg-gray-800 rounded-2xl animate-pulse" />
-        ))}
-      </div>
-    )
+    return <BuilderTabSkeleton />
   }
 
   const builderName =

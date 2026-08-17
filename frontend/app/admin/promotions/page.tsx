@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Clock, Eye, MousePointerClick, TrendingUp } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDistanceToNow } from 'date-fns'
+import CustomSelect from '@/components/admin/CustomSelect'
 
 interface Promotion {
   id: string
@@ -306,15 +307,17 @@ function PromotionForm({
           required
         />
 
-        <select
+        <CustomSelect
           value={formData.type}
-          onChange={e => setFormData({ ...formData, type: e.target.value as any })}
-          className="px-3 py-2 border dark:border-slate-700 rounded dark:bg-slate-800"
-        >
-          <option value="button">Button</option>
-          <option value="toast_text">Scrolling Text</option>
-          <option value="news_feature">News Feature</option>
-        </select>
+          onChange={val => setFormData({ ...formData, type: val as any })}
+          options={[
+            { value: 'button', label: 'Button' },
+            { value: 'toast_text', label: 'Scrolling Text' },
+            { value: 'news_feature', label: 'News Feature' },
+          ]}
+          size="sm"
+          className="w-48"
+        />
       </div>
 
       <textarea

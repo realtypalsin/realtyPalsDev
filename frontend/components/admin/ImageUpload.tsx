@@ -6,6 +6,7 @@ import { Upload, Trash2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
+import CustomSelect from './CustomSelect'
 
 interface UploadedImage {
   url: string
@@ -125,17 +126,19 @@ export default function ImageUpload({ projectId, onImagesChange, existing = [] }
 
           {/* Type Selector + Delete */}
           <div className="flex items-center justify-between gap-2">
-            <select
+            <CustomSelect
               value={images[previewIdx].type}
-              onChange={(e) => changeType(previewIdx, e.target.value as UploadedImage['type'])}
-              className="text-sm border border-zinc-300 rounded px-2 py-1"
-            >
-              <option value="hero">Hero (Primary)</option>
-              <option value="exterior">Exterior</option>
-              <option value="interior">Interior</option>
-              <option value="amenity">Amenity</option>
-              <option value="other">Other</option>
-            </select>
+              onChange={(val) => changeType(previewIdx, val as UploadedImage['type'])}
+              options={[
+                { value: 'hero', label: 'Hero (Primary)' },
+                { value: 'exterior', label: 'Exterior' },
+                { value: 'interior', label: 'Interior' },
+                { value: 'amenity', label: 'Amenity' },
+                { value: 'other', label: 'Other' },
+              ]}
+              size="sm"
+              className="w-44"
+            />
 
             <button
               onClick={() => removeImage(previewIdx)}

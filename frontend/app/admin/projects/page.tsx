@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AdminTableRowSkeleton } from '@/components/skeletons'
 import UniversalLoader from '@/components/ui/universal-loader'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import {
   Search, Plus, CheckCircle2, Clock, Zap, Trash2, Building2, ChevronRight, CornerDownLeft,
   X, ArrowUpDown, ArrowUp, ArrowDown, MapPin, Layers, Filter, RefreshCw, ChevronDown, Check,
-  Download, Upload, AlertTriangle, FileSpreadsheet, FileText, Copy, CheckCheck, FileJson, Sliders,
+  Download, Upload, AlertTriangle, AlertCircle, FileSpreadsheet, FileText, Copy, CheckCheck, FileJson, Sliders,
   CheckSquare, Square, SlidersHorizontal, ArrowRight, ShieldAlert, Cpu
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -44,9 +46,8 @@ function CustomSelect<T extends string>({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-200 rounded-xl shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-600 transition-all cursor-pointer select-none active:scale-[0.98] ${
-          isOpen ? 'ring-2 ring-blue-500/20 border-blue-500' : ''
-        }`}
+        className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-200 rounded-xl shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-600 transition-all cursor-pointer select-none active:scale-[0.98] ${isOpen ? 'ring-2 ring-blue-500/20 border-blue-500' : ''
+          }`}
       >
         {selected.icon}
         <span>{selected.label}</span>
@@ -65,11 +66,10 @@ function CustomSelect<T extends string>({
                   onChange(opt.value)
                   setIsOpen(false)
                 }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
-                  isSelected
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${isSelected
                     ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 font-bold'
                     : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   {opt.icon}
@@ -130,18 +130,180 @@ const PROPERTY_TABS_CONFIG: Array<{ id: ProjectTabKey; label: string; descriptio
   { id: 'partners', label: 'Channel Partners', description: 'Direct Sales Office, Broker Commission Schedule' },
 ]
 
-function getNonMediaScore(p: Project): number {
-  if (p.tabScores) {
-    const ts = p.tabScores
-    return Math.round(
-      ((ts.core ?? 100) * 0.20) +
-      ((ts.pricing ?? 100) * 0.25) +
-      ((ts.intelligence ?? 100) * 0.25) +
-      ((ts.updates ?? 100) * 0.15) +
-      ((ts.partners ?? 100) * 0.15)
-    )
+function computeProjectCompleteness(data: any): {
+  overallHealth: number
+  tabScores: Record<string, number>
+  tabAudits: Record<string, { completed: string[]; missing: string[] }>
+  allMissing: { tab: string; item: string }[]
+  allCompleted: { tab: string; item: string }[]
+} {
+  const documents = data?.documents || []
+  const images = data?.images || []
+  const galleryImages = images.filter((i: any) => i.type !== 'hero')
+
+  // 1. Core Info
+  const coreCompleted: string[] = []
+  const coreMissing: string[] = []
+  if (data?.name) coreCompleted.push('Project Name')
+  else coreMissing.push('Project Name')
+  if (data?.status) coreCompleted.push('Project Status')
+  else coreMissing.push('Project Status')
+  if (data?.possession_date) coreCompleted.push('Possession Date')
+  else coreMissing.push('Possession Date')
+  if (data?.rera_number) coreCompleted.push('RERA Number')
+  else coreMissing.push('RERA Number')
+  if (data?.description && data.description.trim().length >= 10) coreCompleted.push('Project Description')
+  else coreMissing.push('Project Description')
+  if ((data?.unit_types?.length || 0) >= 1) coreCompleted.push(`Unit Configurations (${data.unit_types.length} types)`)
+  else coreMissing.push('Unit Configurations')
+  if ((data?.amenities?.length || 0) >= 3) coreCompleted.push(`Amenities (${data.amenities.length} added)`)
+  else coreMissing.push(`Amenities (need 3+, currently ${data?.amenities?.length || 0})`)
+
+  // 2. Specifications
+  const specsCompleted: string[] = []
+  const specsMissing: string[] = []
+  if ((data?.spec_items?.length || 0) >= 1) specsCompleted.push(`Specifications (${data.spec_items.length} items configured)`)
+  else specsMissing.push('Construction Specifications')
+  if (data?.spec_items?.some((s: any) => s.category === 'structure')) specsCompleted.push('Structure & Safety Specs')
+  else specsMissing.push('Structure & Safety Specs')
+  if (data?.spec_items?.some((s: any) => s.category === 'flooring')) specsCompleted.push('Flooring & Finishes Specs')
+  else specsMissing.push('Flooring Specs')
+  if (data?.spec_items?.some((s: any) => s.category === 'kitchen')) specsCompleted.push('Kitchen & Countertop Specs')
+  else specsMissing.push('Kitchen Specs')
+  if (data?.spec_items?.some((s: any) => s.category === 'bathrooms')) specsCompleted.push('Sanitary & CP Fittings Specs')
+  else specsMissing.push('Sanitary Specs')
+  if (data?.spec_items?.some((s: any) => s.is_highlight)) specsCompleted.push('Highlighted Buyer Card Specs')
+  else specsMissing.push('Highlighted Buyer Card Specs')
+
+  // 3. Pricing & Location
+  const pricingCompleted: string[] = []
+  const pricingMissing: string[] = []
+  if (data?.unit_types?.some((u: any) => u.price_min_cr != null)) pricingCompleted.push('Priced Unit Configurations')
+  else pricingMissing.push('Priced Unit Configurations')
+  if (data?.cost_sheet?.base_price_per_sqft) pricingCompleted.push('Cost Sheet Base Price')
+  else pricingMissing.push('Cost Sheet Base Price')
+  if ((data?.payment_plans?.length || 0) >= 2) pricingCompleted.push(`Payment Plans (${data.payment_plans.length} active)`)
+  else pricingMissing.push(`Payment Plans (need 2+, currently ${data?.payment_plans?.length || 0})`)
+  if ((data?.connectivity?.length || 0) >= 3) pricingCompleted.push(`Connectivity Points (${data.connectivity.length} mapped)`)
+  else pricingMissing.push(`Connectivity Points (need 3+, currently ${data?.connectivity?.length || 0})`)
+  if ((data?.price_history?.length || 0) >= 1) pricingCompleted.push('Quarterly Price History')
+  else pricingMissing.push('Price History Snapshots')
+
+  // 4. Media
+  const mediaCompleted: string[] = []
+  const mediaMissing: string[] = []
+  const hasHero = !!data?.hero_image_url || images.some((i: any) => i.type === 'hero')
+  if (hasHero) mediaCompleted.push('Hero Image')
+  else mediaMissing.push('Hero Image')
+  if (galleryImages.length >= 3) mediaCompleted.push(`Gallery Photos (${galleryImages.length} uploaded)`)
+  else mediaMissing.push(`Gallery Photos (need 3+, currently ${galleryImages.length})`)
+  if (documents?.some((d: any) => d.doc_type === 'brochure') || data?.brochure_url) mediaCompleted.push('Official Project Brochure')
+  else mediaMissing.push('Official Project Brochure document')
+
+  // 5. Intelligence
+  const intelCompleted: string[] = []
+  const intelMissing: string[] = []
+  if (data?.decision_profile?.decision_thesis) intelCompleted.push('Decision Thesis')
+  else intelMissing.push('Decision Thesis')
+  if (data?.decision_profile?.best_for) intelCompleted.push('Target Buyer Profile')
+  else intelMissing.push('Target Buyer Profile')
+  if ((data?.decision_profile?.why_buy?.length || 0) >= 1) intelCompleted.push('Why Buy Highlights')
+  else intelMissing.push('Why Buy Highlights')
+  if ((data?.decision_profile?.why_avoid?.length || 0) >= 1) intelCompleted.push('Why Avoid Risk Points')
+  else intelMissing.push('Why Avoid Risk Points')
+  if (data?.persona_profile?.primary_persona) intelCompleted.push('Primary Buyer Persona')
+  else intelMissing.push('Primary Buyer Persona')
+  if (data?.persona_profile?.income_range) intelCompleted.push('Persona Income Range')
+  else intelMissing.push('Persona Income Range')
+  if (data?.recommendation_profile?.tier) intelCompleted.push(`Recommendation Tier (${data.recommendation_profile.tier})`)
+  else intelMissing.push('Recommendation Tier')
+  if (data?.dna || data?.project_dna) intelCompleted.push('Project DNA Scores')
+  else intelMissing.push('Project DNA Scores')
+  if ((data?.competitors?.length || 0) >= 1) intelCompleted.push('Competitor Analysis')
+  else intelMissing.push('Competitor Analysis')
+
+  // 6. Updates & Timeline
+  const updatesCompleted: string[] = []
+  const updatesMissing: string[] = []
+  if ((data?.construction_milestones?.length || 0) >= 4) updatesCompleted.push(`Construction Milestones (${data.construction_milestones.length} stages)`)
+  else updatesMissing.push(`Construction Milestones (need 4+, currently ${data?.construction_milestones?.length || 0})`)
+  const isReady = data?.status === 'ready_to_move'
+  const hasUpdates = isReady
+    ? (data?.lifecycle_updates?.length || 0) >= 1
+    : (data?.construction_updates?.length || 0) >= 1
+  if (hasUpdates) updatesCompleted.push(isReady ? 'RWA & Handover Feed' : 'Construction Progress Feed')
+  else updatesMissing.push(isReady ? 'RWA & Handover Feed' : 'Construction Progress Feed')
+
+  // 7. Channel Partners
+  const partnersCompleted: string[] = []
+  const partnersMissing: string[] = []
+  if ((data?.channel_partners?.length || 0) >= 1) partnersCompleted.push(`Channel Partners (${data.channel_partners.length} linked)`)
+  else partnersMissing.push('Linked Channel Partners')
+
+  const scoreOf = (c: string[], m: string[]) => {
+    const t = c.length + m.length
+    return t === 0 ? 100 : Math.round((c.length / t) * 100)
   }
-  return typeof p.completenessScore === 'number' ? p.completenessScore : quickHealth(p).score
+
+  const tabScores: Record<string, number> = {
+    core: scoreOf(coreCompleted, coreMissing),
+    specs: scoreOf(specsCompleted, specsMissing),
+    pricing: scoreOf(pricingCompleted, pricingMissing),
+    media: scoreOf(mediaCompleted, mediaMissing),
+    intelligence: scoreOf(intelCompleted, intelMissing),
+    updates: scoreOf(updatesCompleted, updatesMissing),
+    partners: scoreOf(partnersCompleted, partnersMissing),
+  }
+
+  const overallHealth = Math.round(
+    (tabScores.core * 0.15) +
+    (tabScores.specs * 0.15) +
+    (tabScores.pricing * 0.20) +
+    (tabScores.media * 0.15) +
+    (tabScores.intelligence * 0.15) +
+    (tabScores.updates * 0.10) +
+    (tabScores.partners * 0.10)
+  )
+
+  const allMissing = [
+    ...coreMissing.map(item => ({ tab: 'Core', item })),
+    ...specsMissing.map(item => ({ tab: 'Specs', item })),
+    ...pricingMissing.map(item => ({ tab: 'Pricing', item })),
+    ...mediaMissing.map(item => ({ tab: 'Media', item })),
+    ...intelMissing.map(item => ({ tab: 'Intelligence', item })),
+    ...updatesMissing.map(item => ({ tab: 'Updates', item })),
+    ...partnersMissing.map(item => ({ tab: 'Partners', item })),
+  ]
+
+  const allCompleted = [
+    ...coreCompleted.map(item => ({ tab: 'Core', item })),
+    ...specsCompleted.map(item => ({ tab: 'Specs', item })),
+    ...pricingCompleted.map(item => ({ tab: 'Pricing', item })),
+    ...mediaCompleted.map(item => ({ tab: 'Media', item })),
+    ...intelCompleted.map(item => ({ tab: 'Intelligence', item })),
+    ...updatesCompleted.map(item => ({ tab: 'Updates', item })),
+    ...partnersCompleted.map(item => ({ tab: 'Partners', item })),
+  ]
+
+  return {
+    overallHealth,
+    tabScores,
+    tabAudits: {
+      core: { completed: coreCompleted, missing: coreMissing },
+      specs: { completed: specsCompleted, missing: specsMissing },
+      pricing: { completed: pricingCompleted, missing: pricingMissing },
+      media: { completed: mediaCompleted, missing: mediaMissing },
+      intelligence: { completed: intelCompleted, missing: intelMissing },
+      updates: { completed: updatesCompleted, missing: updatesMissing },
+      partners: { completed: partnersCompleted, missing: partnersMissing },
+    },
+    allMissing,
+    allCompleted,
+  }
+}
+
+function getNonMediaScore(p: Project): number {
+  return computeProjectCompleteness(p).overallHealth
 }
 
 function ProjectThumbnail({ src, alt }: { src?: string | null; alt: string }) {
@@ -160,23 +322,14 @@ function ProjectThumbnail({ src, alt }: { src?: string | null; alt: string }) {
   )
 }
 
-function quickHealth(p: Project): { score: number; missing: string[] } {
-  const images = p.images || []
-  const unitTypes = p.unit_types || []
-  const hasImage = images.length > 0 || !!p.hero_image_url
-  const checks = [
-    { ok: hasImage, label: 'Hero image' },
-    { ok: !!p.rera_number, label: 'RERA number' },
-    { ok: !!p.builder?.name, label: 'Builder' },
-    { ok: unitTypes.length > 0, label: 'Unit types' },
-    { ok: unitTypes.some(u => u.price_min_cr != null), label: 'Pricing' },
-    { ok: !!p.description, label: 'Description' },
-    { ok: (p.amenities?.length || 0) >= 3, label: 'Amenities' },
-    { ok: (p.connectivity?.length || 0) >= 3, label: 'Connectivity' },
-  ]
-  const missing = checks.filter(c => !c.ok).map(c => c.label)
-  const scorePct = Math.round((checks.filter(c => c.ok).length / checks.length) * 100)
-  return { score: typeof p.completenessScore === 'number' ? p.completenessScore : scorePct, missing }
+function quickHealth(p: Project) {
+  const res = computeProjectCompleteness(p)
+  return {
+    score: res.overallHealth,
+    missing: res.allMissing.map(m => `[${m.tab}] ${m.item}`),
+    completed: res.allCompleted.map(c => `[${c.tab}] ${c.item}`),
+    tabScores: res.tabScores,
+  }
 }
 
 function getMissingFieldsForSelectedTabs(p: Project, tabs: Set<ProjectTabKey>): string[] {
@@ -216,9 +369,9 @@ function priceMinVal(units: UnitType[] = []): number {
 }
 
 const STATUS_MAP: Record<string, { label: string; chip: string; icon: typeof CheckCircle2 }> = {
-  ready_to_move:      { label: 'Ready to Move',       chip: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60',  icon: CheckCircle2 },
-  under_construction: { label: 'Under Construction',  chip: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60',       icon: Clock },
-  new_launch:         { label: 'New Launch',          chip: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/60',          icon: Zap },
+  ready_to_move: { label: 'Ready to Move', chip: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60', icon: CheckCircle2 },
+  under_construction: { label: 'Under Construction', chip: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60', icon: Clock },
+  new_launch: { label: 'New Launch', chip: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/60', icon: Zap },
 }
 
 function priceRange(units: UnitType[] = []): string {
@@ -231,12 +384,324 @@ function priceRange(units: UnitType[] = []): string {
   return hi ? `₹${lo}–${hi} Cr` : `₹${lo}+ Cr`
 }
 
+function HealthBadgeWithTooltip({ project }: { project: Project }) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const badgeRef = useRef<HTMLDivElement>(null)
+  const comp = computeProjectCompleteness(project)
+  const score = comp.overallHealth
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleMouseEnter = () => {
+    if (badgeRef.current) {
+      const rect = badgeRef.current.getBoundingClientRect()
+      const CARD_WIDTH = 340
+      const CARD_HEIGHT = 350
+
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+
+      // If there is enough room below (>= 350px) or more room below than above, position below; otherwise above
+      let top: number
+      if (spaceBelow >= CARD_HEIGHT || spaceBelow >= spaceAbove) {
+        top = rect.bottom + 8
+      } else {
+        top = rect.top - CARD_HEIGHT - 8
+      }
+
+      // Safety clamp: ensure the card is always completely visible on screen
+      top = Math.max(16, Math.min(window.innerHeight - CARD_HEIGHT - 16, top))
+
+      // Align right edge with badge right edge, clamped with 16px margins
+      let left = rect.right - CARD_WIDTH
+      left = Math.max(16, Math.min(window.innerWidth - CARD_WIDTH - 16, left))
+
+      setCoords({ top, left })
+    }
+    setIsHovered(true)
+  }
+
+  const handleMouseLeave = () => {
+    setIsHovered(false)
+  }
+
+  return (
+    <div
+      ref={badgeRef}
+      className="relative inline-block"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <span className={`px-2.5 py-0.5 text-xs font-mono font-bold rounded-full border transition-all select-none cursor-help ${score >= 90
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60'
+          : score >= 70
+            ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/60'
+            : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60'
+        }`}>
+        {score}%
+      </span>
+
+      {/* Global Body Portal Tooltip — Immune to table overflow, z-index clipping & parent stacking contexts */}
+      {mounted && isHovered && coords && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+            width: '340px',
+            zIndex: 999999,
+          }}
+          className="p-4 bg-slate-900 text-slate-100 text-xs rounded-2xl shadow-2xl border border-slate-700/90 animate-in fade-in zoom-in-95 duration-150 pointer-events-none text-left font-normal"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-2.5">
+            <span className="font-black text-white text-[12.5px] truncate max-w-[190px]">{project.name}</span>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-black tracking-wide ${score >= 90
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                : score >= 70
+                  ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+              }`}>
+              {score}% Health
+            </span>
+          </div>
+
+          {/* 7 Tab Mini Scores Grid */}
+          <div className="grid grid-cols-4 gap-1.5 pb-2.5 mb-2.5 border-b border-slate-800 text-[9.5px]">
+            {Object.entries(comp.tabScores).map(([tab, sc]) => (
+              <div key={tab} className="flex items-center justify-between px-2 py-1 rounded-lg bg-slate-800/90 border border-slate-700/60">
+                <span className="text-slate-400 capitalize truncate max-w-[34px] font-semibold">{tab}</span>
+                <span className={`font-mono font-black ${sc >= 90 ? 'text-emerald-400' : sc >= 60 ? 'text-amber-400' : 'text-rose-400'}`}>
+                  {sc}%
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Missing / Incomplete Items */}
+          {comp.allMissing.length > 0 ? (
+            <div>
+              <p className="text-[10px] uppercase font-black text-rose-400 tracking-wider mb-2 flex items-center justify-between">
+                <span className="flex items-center gap-1">
+                  <AlertCircle size={12} className="shrink-0" /> Incomplete Fields:
+                </span>
+                <span className="text-[9.5px] font-mono font-bold bg-rose-950/80 text-rose-300 px-1.5 py-0.2 rounded border border-rose-800/60">
+                  {comp.allMissing.length} pending
+                </span>
+              </p>
+              <ul className="space-y-1.5 pl-0.5 max-h-48 overflow-y-auto pr-1">
+                {comp.allMissing.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-slate-200 text-[11px] leading-snug">
+                    <span className="text-rose-400 font-bold shrink-0 mt-0.5">•</span>
+                    <span>
+                      <strong className="text-slate-300 font-bold bg-slate-800 px-1.5 py-0.5 rounded text-[10px] mr-1.5">
+                        {item.tab}
+                      </strong>
+                      {item.item}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-emerald-400 font-bold text-[11.5px] py-1.5">
+              <CheckCircle2 size={15} className="shrink-0" />
+              <span>All 7 project tabs are 100% complete and verified!</span>
+            </div>
+          )}
+
+          {comp.allCompleted.length > 0 && comp.allMissing.length > 0 && (
+            <div className="pt-2.5 mt-2.5 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+              <span>{comp.allCompleted.length} of {comp.allCompleted.length + comp.allMissing.length} fields verified</span>
+              <span className="text-emerald-400 font-bold">✓ Verified</span>
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
+function PartiallyFilledMyntraDropdown({
+  isActive,
+  threshold,
+  count,
+  countsByThreshold,
+  onSelect,
+}: {
+  isActive: boolean
+  threshold: number
+  count: number
+  countsByThreshold: Record<number, number>
+  onSelect: (threshold: number) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setIsOpen(true)
+  }
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false)
+    }, 180)
+  }
+
+  const PRESETS = [
+    { value: 100, label: 'All Incomplete Projects', sub: '< 100%' },
+    { value: 95, label: 'Projects under 95% Health', sub: '< 95%' },
+    { value: 90, label: 'Projects under 90% Health', sub: '< 90%' },
+    { value: 85, label: 'Projects under 85% Health', sub: '< 85%' },
+    { value: 80, label: 'Projects under 80% Health', sub: '< 80%' },
+    { value: 70, label: 'Projects under 70% Health', sub: '< 70%' },
+    { value: 60, label: 'Projects under 60% Health', sub: '< 60%' },
+    { value: 50, label: 'Critical Health Only', sub: '< 50%' },
+  ]
+
+  const displayLabel = isActive
+    ? (threshold < 100 ? `Health < ${threshold}%` : 'Partially Filled')
+    : 'Partially Filled'
+
+  return (
+    <div
+      className="relative inline-block"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Trigger Button */}
+      <button
+        type="button"
+        onClick={() => {
+          onSelect(threshold)
+          setIsOpen(prev => !prev)
+        }}
+        className={`flex items-center gap-2 px-3.5 py-1.5 text-xs rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap shadow-2xs active:scale-[0.98] ${isActive
+            ? 'bg-amber-50 dark:bg-amber-950/70 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700/80 ring-2 ring-amber-500/10'
+            : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-white'
+          }`}
+      >
+        <span className="flex items-center gap-1.5">
+          {isActive && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
+          <span>{displayLabel}</span>
+        </span>
+        <span className={`px-2 py-0.5 text-[11px] font-mono font-bold rounded-lg ${isActive
+            ? 'bg-amber-200/90 dark:bg-amber-900/80 text-amber-950 dark:text-amber-100'
+            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+          }`}>
+          {count}
+        </span>
+        <ChevronDown size={14} className={`text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-amber-600 dark:text-amber-400' : ''}`} />
+      </button>
+
+      {/* Expandable Popover Card */}
+      {isOpen && (
+        <div className="absolute left-0 top-full mt-2 w-[360px] bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-2xl z-[9999] animate-in fade-in slide-in-from-top-2 duration-150 overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+          
+          {/* Header */}
+          <div className="px-4 py-3 bg-zinc-50/80 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Health Threshold Filter</span>
+            </div>
+            <span className="text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800/60">
+              &lt; {threshold}% Active
+            </span>
+          </div>
+
+          {/* Presets List */}
+          <div className="py-1.5 max-h-72 overflow-y-auto divide-y divide-zinc-100/60 dark:divide-zinc-800/40">
+            {PRESETS.map((p) => {
+              const isSelected = isActive && threshold === p.value
+              const matchCount = countsByThreshold[p.value] ?? count
+              const isZero = matchCount === 0
+
+              return (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => {
+                    onSelect(p.value)
+                    setIsOpen(false)
+                  }}
+                  className={`w-full px-4 py-2.5 text-left text-xs transition-all flex items-center justify-between group cursor-pointer ${isSelected
+                      ? 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-950 dark:text-amber-100 font-bold border-l-4 border-amber-500 pl-3'
+                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-white font-medium pl-4'
+                    }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${isSelected
+                        ? 'border-amber-500 bg-amber-500 dark:border-amber-400 dark:bg-amber-400'
+                        : 'border-zinc-300 dark:border-zinc-600 group-hover:border-zinc-400'
+                      }`}>
+                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-900" />}
+                    </div>
+                    <span className="truncate whitespace-nowrap">{p.label}</span>
+                  </div>
+
+                  <span className={`text-[11px] font-mono px-2 py-0.5 rounded-md shrink-0 transition-colors whitespace-nowrap ${isSelected
+                      ? 'bg-amber-500 text-white font-bold shadow-xs'
+                      : isZero
+                        ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500'
+                        : 'bg-zinc-100 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-300 font-semibold group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700'
+                    }`}>
+                    {matchCount} {matchCount === 1 ? 'project' : 'projects'}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Bottom Interactive Range Slider Box */}
+          <div className="p-4 border-t border-zinc-200/80 dark:border-zinc-800 bg-gradient-to-b from-zinc-50/90 to-zinc-100/50 dark:from-zinc-900 dark:to-zinc-800/40 space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-zinc-700 dark:text-zinc-300">Custom Slider:</span>
+              <span className="font-mono font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60">
+                &lt; {threshold}% ({count} projects)
+              </span>
+            </div>
+
+            <input
+              type="range"
+              min="50"
+              max="100"
+              step="1"
+              value={threshold}
+              onChange={(e) => onSelect(parseInt(e.target.value))}
+              className="w-full accent-amber-500 cursor-pointer h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg transition-all"
+            />
+
+            {/* Slider Scale Endpoints */}
+            <div className="flex items-center justify-between text-[10px] font-mono font-bold text-zinc-400 dark:text-zinc-500 px-0.5">
+              <span>50%</span>
+              <span>60%</span>
+              <span>70%</span>
+              <span>80%</span>
+              <span>90%</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminProjects() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [query, setQuery] = useState('')
   const [activeTokens, setActiveTokens] = useState<FilterToken[]>([])
   const [statusFilter, setStatusFilter] = useState<'all' | 'ready_to_move' | 'under_construction' | 'new_launch' | 'partially_filled'>('all')
+  const [partialThreshold, setPartialThreshold] = useState<number>(100)
+  const [showThresholdSlider, setShowThresholdSlider] = useState(false)
   const [healthFilter, setHealthFilter] = useState<'all' | 'under_60' | 'under_80' | 'under_90' | 'critical' | 'good' | 'excellent'>('all')
   const [priceFilter, setPriceFilter] = useState<'all' | 'under_1cr' | '1_2cr' | '2_4cr' | 'above_4cr'>('all')
 
@@ -249,7 +714,7 @@ export default function AdminProjects() {
 
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
-  
+
   // Bulk Import Modal State
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
   const [bulkCsvText, setBulkCsvText] = useState('')
@@ -281,20 +746,21 @@ export default function AdminProjects() {
         if (parsed.query !== undefined) setQuery(parsed.query)
         if (parsed.activeTokens) setActiveTokens(parsed.activeTokens)
         if (parsed.statusFilter) setStatusFilter(parsed.statusFilter)
+        if (parsed.partialThreshold !== undefined) setPartialThreshold(parsed.partialThreshold)
         if (parsed.healthFilter) setHealthFilter(parsed.healthFilter)
         if (parsed.priceFilter) setPriceFilter(parsed.priceFilter)
         if (parsed.sortField) setSortField(parsed.sortField)
         if (parsed.sortOrder) setSortOrder(parsed.sortOrder)
       }
-    } catch {}
+    } catch { }
   }, [])
 
   useEffect(() => {
     try {
-      const stateToSave = { query, activeTokens, statusFilter, healthFilter, priceFilter, sortField, sortOrder }
+      const stateToSave = { query, activeTokens, statusFilter, partialThreshold, healthFilter, priceFilter, sortField, sortOrder }
       sessionStorage.setItem('realtypals_admin_projects_filters', JSON.stringify(stateToSave))
-    } catch {}
-  }, [query, activeTokens, statusFilter, healthFilter, priceFilter, sortField, sortOrder])
+    } catch { }
+  }, [query, activeTokens, statusFilter, partialThreshold, healthFilter, priceFilter, sortField, sortOrder])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -316,7 +782,7 @@ export default function AdminProjects() {
     if (!query || query.trim().length < 2) return []
     const q = query.toLowerCase().trim()
     const out: { type: 'builder' | 'sector' | 'name'; value: string; label: string; count?: number }[] = []
-    
+
     const builderCounts = new Map<string, number>()
     const sectorCounts = new Map<string, number>()
 
@@ -367,7 +833,7 @@ export default function AdminProjects() {
       .filter((p) => {
         // Status filter
         if (statusFilter === 'partially_filled') {
-          if (getNonMediaScore(p) >= 100) return false
+          if (getNonMediaScore(p) >= partialThreshold) return false
         } else if (statusFilter !== 'all' && p.status !== statusFilter) {
           return false
         }
@@ -415,7 +881,7 @@ export default function AdminProjects() {
         else if (sortField === 'health') diff = getNonMediaScore(a) - getNonMediaScore(b)
         return sortOrder === 'asc' ? diff : -diff
       })
-  }, [projects, statusFilter, healthFilter, priceFilter, activeTokens, query, sortField, sortOrder])
+  }, [projects, statusFilter, partialThreshold, healthFilter, priceFilter, activeTokens, query, sortField, sortOrder])
 
   // Multi-Selection Handlers
   const handleToggleSelectAll = () => {
@@ -461,8 +927,17 @@ export default function AdminProjects() {
       ready: projects.filter(p => p.status === 'ready_to_move').length,
       under: projects.filter(p => p.status === 'under_construction').length,
       new: projects.filter(p => p.status === 'new_launch').length,
-      partially: projects.filter(p => getNonMediaScore(p) < 100).length,
+      partially: projects.filter(p => getNonMediaScore(p) < partialThreshold).length,
     }
+  }, [projects, partialThreshold])
+
+  const countsByThreshold = useMemo(() => {
+    const result: Record<number, number> = {}
+    const thresholds = [100, 95, 90, 85, 80, 70, 60, 50]
+    for (const t of thresholds) {
+      result[t] = projects.filter(p => getNonMediaScore(p) < t).length
+    }
+    return result
   }, [projects])
 
   // ── AI Agent Enrichment Target Project Computation ───────────────────────
@@ -695,7 +1170,7 @@ Provide structured JSON with the exact verified data for each project so it can 
       <div className="relative" ref={popoverRef}>
         <div className="group flex items-center flex-wrap gap-2 px-3.5 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xs focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
           <Search size={16} className="text-zinc-400 group-focus-within:text-blue-500 transition-colors shrink-0 ml-1" />
-          
+
           {/* Active Token Chips */}
           {activeTokens.map(t => (
             <span
@@ -771,35 +1246,46 @@ Provide structured JSON with the exact verified data for each project so it can 
 
       {/* ── Segmented Micro-Filter Bar ─────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-1.5 bg-zinc-100/80 dark:bg-zinc-800/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-700/60">
-        
+
         {/* Status Segmented Buttons */}
-        <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-1 overflow-visible max-w-full pb-1 sm:pb-0 flex-wrap sm:flex-nowrap">
           {[
             { id: 'all', label: 'All Statuses', count: counts.all },
             { id: 'ready_to_move', label: 'Ready to Move', count: counts.ready },
             { id: 'under_construction', label: 'Under Construction', count: counts.under },
             { id: 'new_launch', label: 'New Launch', count: counts.new },
-            { id: 'partially_filled', label: '⚠ Partially Filled', count: counts.partially },
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setStatusFilter(tab.id as any)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                statusFilter === tab.id
+              onClick={() => {
+                setStatusFilter(tab.id as any)
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${statusFilter === tab.id
                   ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-              }`}
+                }`}
             >
               <span>{tab.label}</span>
-              <span className={`px-1.5 py-0.2 text-[10px] font-bold rounded-md ${
-                statusFilter === tab.id
-                  ? (tab.id === 'partially_filled' ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white')
+              <span className={`px-1.5 py-0.2 text-[10px] font-bold rounded-md ${statusFilter === tab.id
+                  ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white'
                   : 'bg-zinc-200/60 dark:bg-zinc-700/60 text-zinc-600 dark:text-zinc-400'
-              }`}>
+                }`}>
                 {tab.count}
               </span>
             </button>
           ))}
+
+          {/* Myntra-Style Partially Filled Expandable Dropdown */}
+          <PartiallyFilledMyntraDropdown
+            isActive={statusFilter === 'partially_filled'}
+            threshold={partialThreshold}
+            count={counts.partially}
+            countsByThreshold={countsByThreshold}
+            onSelect={(val) => {
+              setPartialThreshold(val)
+              setStatusFilter('partially_filled')
+            }}
+          />
         </div>
 
         {/* Health & Price Custom Dropdowns */}
@@ -844,12 +1330,12 @@ Provide structured JSON with the exact verified data for each project so it can 
 
       </div>
 
-      {/* ── Table Container ────────────────────────────────────────────────── */}
+      {/* ── Table & Responsive Card Container ───────────────────────────────── */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs overflow-hidden">
-        
-        {/* Table Header with Interactive Column Sorting & Master Checkbox */}
-        <div className="flex items-center px-6 py-3 bg-zinc-50/80 dark:bg-zinc-800/50 border-b border-zinc-200/80 dark:border-zinc-800/80 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider select-none">
-          
+
+        {/* Table Header with Interactive Column Sorting & Master Checkbox (Desktop only) */}
+        <div className="hidden md:flex items-center px-6 py-3 bg-zinc-50/80 dark:bg-zinc-800/50 border-b border-zinc-200/80 dark:border-zinc-800/80 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider select-none">
+
           {/* Select All Checkbox */}
           <button
             type="button"
@@ -869,7 +1355,7 @@ Provide structured JSON with the exact verified data for each project so it can 
           </button>
 
           <div className="w-8 mr-4" /> {/* Thumbnail space */}
-          
+
           <button
             onClick={() => toggleSort('name')}
             className="flex-1 flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer text-left"
@@ -884,7 +1370,7 @@ Provide structured JSON with the exact verified data for each project so it can 
 
           <button
             onClick={() => toggleSort('status')}
-            className="w-[140px] hidden md:flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="w-[140px] flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             <span>Status</span>
             {sortField === 'status' ? (
@@ -896,7 +1382,7 @@ Provide structured JSON with the exact verified data for each project so it can 
 
           <button
             onClick={() => toggleSort('price')}
-            className="w-[120px] hidden sm:flex items-center justify-end gap-1.5 pr-6 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="w-[120px] flex items-center justify-end gap-1.5 pr-6 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             <span>Pricing</span>
             {sortField === 'price' ? (
@@ -908,7 +1394,7 @@ Provide structured JSON with the exact verified data for each project so it can 
 
           <button
             onClick={() => toggleSort('health')}
-            className="w-[90px] hidden sm:flex items-center justify-end gap-1.5 pr-6 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="w-[90px] flex items-center justify-end gap-1.5 pr-6 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             <span>Health</span>
             {sortField === 'health' ? (
@@ -921,10 +1407,29 @@ Provide structured JSON with the exact verified data for each project so it can 
           <div className="w-[60px]" /> {/* Actions */}
         </div>
 
-        {/* Table Body */}
+        {/* Master Select Bar on Mobile */}
+        <div className="flex md:hidden items-center justify-between px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/40 border-b border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-600 dark:text-zinc-400">
+          <button
+            type="button"
+            onClick={handleToggleSelectAll}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            {selectedIds.size > 0 && selectedIds.size === sortedAndFiltered.length ? (
+              <CheckSquare size={16} className="text-blue-600" />
+            ) : (
+              <Square size={16} />
+            )}
+            <span>Select All ({sortedAndFiltered.length})</span>
+          </button>
+          <span>{selectedIds.size} selected</span>
+        </div>
+
+        {/* Table / Mobile Cards Body */}
         <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
           {loading ? (
-            <div className="p-6"><UniversalLoader variant="skeleton-list" rows={10} /></div>
+            Array.from({ length: 10 }).map((_, i) => (
+              <AdminTableRowSkeleton key={i} />
+            ))
           ) : sortedAndFiltered.length === 0 ? (
             <div className="py-16 flex flex-col items-center justify-center text-center px-4">
               <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mb-3">
@@ -945,78 +1450,115 @@ Provide structured JSON with the exact verified data for each project so it can 
             sortedAndFiltered.map((project) => {
               const statusCfg = STATUS_MAP[project.status] || STATUS_MAP.ready_to_move
               const StatusIcon = statusCfg.icon
-              const healthScore = getNonMediaScore(project)
               const isSelected = selectedIds.has(project.id)
 
               return (
-                <div
-                  key={project.id}
-                  onClick={() => router.push(`/admin/projects/${project.id}`)}
-                  className={`flex items-center px-6 py-3.5 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer group ${
-                    isSelected ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
-                  }`}
-                >
-                  {/* Row Checkbox */}
-                  <button
-                    type="button"
-                    onClick={(e) => handleToggleSelectRow(project.id, e)}
-                    className="mr-3 p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                <div key={project.id}>
+                  {/* Desktop Tabular Row */}
+                  <div
+                    onClick={() => router.push(`/admin/projects/${project.id}`)}
+                    className={`hidden md:flex items-center px-6 py-3.5 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer group ${isSelected ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
+                      }`}
                   >
-                    {isSelected ? (
-                      <CheckSquare size={16} className="text-blue-600 dark:text-blue-400" />
-                    ) : (
-                      <Square size={16} />
-                    )}
-                  </button>
+                    {/* Row Checkbox */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleSelectRow(project.id, e)}
+                      className="mr-3 p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                    >
+                      {isSelected ? (
+                        <CheckSquare size={16} className="text-blue-600 dark:text-blue-400" />
+                      ) : (
+                        <Square size={16} />
+                      )}
+                    </button>
 
-                  {/* Thumbnail */}
-                  <div className="mr-4">
-                    <ProjectThumbnail src={project.hero_image_url} alt={project.name} />
-                  </div>
+                    {/* Thumbnail */}
+                    <div className="mr-4">
+                      <ProjectThumbnail src={project.hero_image_url} alt={project.name} />
+                    </div>
 
-                  {/* Name, Developer & Sector */}
-                  <div className="flex-1 min-w-0 pr-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                        {project.name}
+                    {/* Name, Developer & Sector */}
+                    <div className="flex-1 min-w-0 pr-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                          {project.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-0.5 truncate">
+                        <span>{project.builder?.name || 'Unknown Developer'}</span>
+                        <span>•</span>
+                        <span>{project.sector}, {project.city}</span>
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="w-[140px] flex items-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-lg border ${statusCfg.chip}`}>
+                        <StatusIcon size={12} />
+                        <span>{statusCfg.label}</span>
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-0.5 truncate">
-                      <span>{project.builder?.name || 'Unknown Developer'}</span>
-                      <span>•</span>
-                      <span>{project.sector}, {project.city}</span>
+
+                    {/* Pricing Range */}
+                    <div className="w-[120px] flex items-center justify-end pr-6 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                      {priceRange(project.unit_types)}
+                    </div>
+
+                    {/* Health Score with Hover Tooltip */}
+                    <div className="w-[90px] flex items-center justify-end pr-6">
+                      <HealthBadgeWithTooltip project={project} />
+                    </div>
+
+                    {/* Row Action Arrow */}
+                    <div className="w-[60px] flex items-center justify-end">
+                      <ChevronRight size={15} className="text-zinc-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </div>
 
-                  {/* Status Badge */}
-                  <div className="w-[140px] hidden md:flex items-center">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-lg border ${statusCfg.chip}`}>
-                      <StatusIcon size={12} />
-                      <span>{statusCfg.label}</span>
-                    </span>
-                  </div>
+                  {/* Mobile & Tablet Card Layout */}
+                  <div
+                    onClick={() => router.push(`/admin/projects/${project.id}`)}
+                    className={`flex md:hidden flex-col p-4 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer space-y-3 ${isSelected ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
+                      }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleSelectRow(project.id, e)}
+                          className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 cursor-pointer shrink-0"
+                        >
+                          {isSelected ? (
+                            <CheckSquare size={16} className="text-blue-600" />
+                          ) : (
+                            <Square size={16} />
+                          )}
+                        </button>
+                        <ProjectThumbnail src={project.hero_image_url} alt={project.name} />
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{project.name}</h4>
+                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                            {project.builder?.name || 'Unknown'} • {project.sector}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight size={16} className="text-zinc-400 shrink-0 mt-1" />
+                    </div>
 
-                  {/* Pricing Range */}
-                  <div className="w-[120px] hidden sm:flex items-center justify-end pr-6 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                    {priceRange(project.unit_types)}
-                  </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800/60">
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[10.5px] font-semibold rounded-md border ${statusCfg.chip}`}>
+                        <StatusIcon size={11} />
+                        <span>{statusCfg.label}</span>
+                      </span>
 
-                  {/* Health Score */}
-                  <div className="w-[90px] hidden sm:flex items-center justify-end pr-6">
-                    <span className={`px-2 py-0.5 text-xs font-mono font-bold rounded-full border ${
-                      healthScore >= 90
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60'
-                        : healthScore >= 70
-                        ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/60'
-                        : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60'
-                    }`}>
-                      {healthScore}%
-                    </span>
-                  </div>
-
-                  {/* Row Action Arrow */}
-                  <div className="w-[60px] flex items-center justify-end">
-                    <ChevronRight size={15} className="text-zinc-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                          {priceRange(project.unit_types)}
+                        </span>
+                        <HealthBadgeWithTooltip project={project} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )
@@ -1068,15 +1610,15 @@ Provide structured JSON with the exact verified data for each project so it can 
 
       {/* ── Catalog Data Enrichment & Export Modal (Refined & Spacious) ───── */}
       {isAgentExportOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
           onClick={() => setIsAgentExportOpen(false)}
         >
-          <div 
+          <div
             className="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            
+
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
               <div className="flex items-center gap-3.5">
@@ -1103,7 +1645,7 @@ Provide structured JSON with the exact verified data for each project so it can 
 
             {/* Modal Scrollable Body */}
             <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              
+
               {/* Target Scope Selection & Quick Threshold Chips */}
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1116,22 +1658,20 @@ Provide structured JSON with the exact verified data for each project so it can 
                     <button
                       type="button"
                       onClick={() => setExportScope('threshold')}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        exportScope === 'threshold'
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${exportScope === 'threshold'
                           ? 'bg-indigo-600 text-white shadow-xs font-bold'
                           : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900'
-                      }`}
+                        }`}
                     >
                       By Health Threshold
                     </button>
                     <button
                       type="button"
                       onClick={() => setExportScope('selected')}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        exportScope === 'selected'
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${exportScope === 'selected'
                           ? 'bg-indigo-600 text-white shadow-xs font-bold'
                           : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900'
-                      }`}
+                        }`}
                     >
                       Selected ({selectedIds.size})
                     </button>
@@ -1151,11 +1691,10 @@ Provide structured JSON with the exact verified data for each project so it can 
                         key={t.val}
                         type="button"
                         onClick={() => setHealthThreshold(t.val)}
-                        className={`px-3 py-1 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
-                          healthThreshold === t.val
+                        className={`px-3 py-1 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${healthThreshold === t.val
                             ? 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-200 dark:border-indigo-700 font-bold'
                             : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-indigo-200'
-                        }`}
+                          }`}
                       >
                         {t.label}
                       </button>
@@ -1188,19 +1727,17 @@ Provide structured JSON with the exact verified data for each project so it can 
                         key={tab.id}
                         type="button"
                         onClick={() => toggleTabFilter(tab.id)}
-                        className={`p-3 text-left rounded-2xl border transition-all cursor-pointer ${
-                          isChecked
+                        className={`p-3 text-left rounded-2xl border transition-all cursor-pointer ${isChecked
                             ? 'bg-indigo-50/70 border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-800/80 text-zinc-900 dark:text-white shadow-2xs'
                             : 'bg-zinc-50/50 dark:bg-zinc-800/30 border-zinc-200/60 dark:border-zinc-800 text-zinc-400 opacity-60'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className={`text-xs font-bold ${isChecked ? 'text-indigo-900 dark:text-indigo-200' : 'text-zinc-500'}`}>
                             {tab.label}
                           </span>
-                          <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[10px] ${
-                            isChecked ? 'bg-indigo-600 text-white' : 'border border-zinc-300 dark:border-zinc-600'
-                          }`}>
+                          <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[10px] ${isChecked ? 'bg-indigo-600 text-white' : 'border border-zinc-300 dark:border-zinc-600'
+                            }`}>
                             {isChecked && <Check size={11} strokeWidth={3} />}
                           </div>
                         </div>
@@ -1235,7 +1772,7 @@ Provide structured JSON with the exact verified data for each project so it can 
                             {p.score}%
                           </span>
                         </div>
-                        
+
                         {/* Missing Fields Pills */}
                         <div className="flex items-center flex-wrap gap-1.5">
                           {p.missingFields.map((f, i) => (
@@ -1350,7 +1887,7 @@ Provide structured JSON with the exact verified data for each project so it can 
                     return { slug: parts[0], price_min_cr: parts[1] ? parseFloat(parts[1]) : undefined, status: parts[2] }
                   }).filter(p => p.slug)
                   setBulkParsedRows(parsed)
-                } catch {}
+                } catch { }
               }}
               placeholder="slug,price_min_cr,status&#10;ace-aspire-techzone-4,0.92,ready_to_move&#10;cleo-county-sector-121,1.65,ready_to_move"
               className="w-full h-40 p-3 font-mono text-xs bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none"

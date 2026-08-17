@@ -2,21 +2,24 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Plus, Trash2, Save, Loader2, Check, Compass, Sparkles, X } from 'lucide-react'
+import {
+  Plus, Trash2, Save, Loader2, Check, Compass, X,
+  Sun, ShieldCheck, Trees, Leaf, Waves, Flag, Maximize2, Sunset, Route
+} from 'lucide-react'
 import { API_BASE } from '@/lib/env'
 import { adminAuthHeaders } from '@/lib/authedFetch'
 
 const PRESET_ORIENTATIONS = [
-  { id: 'east_facing', label: 'East Facing 🌅' },
-  { id: 'north_facing', label: 'North Facing 🧭' },
-  { id: 'north_east_facing', label: 'NE Facing (Vastu) ☀️' },
-  { id: 'park_facing', label: 'Park View 🌳' },
-  { id: 'garden_view', label: 'Garden View 🌿' },
-  { id: 'pool_view', label: 'Pool View 🏊' },
-  { id: 'golf_view', label: 'Golf View ⛳' },
-  { id: 'corner_unit', label: 'Corner Unit 🏢' },
-  { id: 'wide_balcony', label: 'Wide Balcony 🌄' },
-  { id: 'road_facing', label: 'Expressway View 🛣️' },
+  { id: 'east_facing', label: 'East Facing', icon: Sun },
+  { id: 'north_facing', label: 'North Facing', icon: Compass },
+  { id: 'north_east_facing', label: 'NE Facing (Vastu)', icon: ShieldCheck },
+  { id: 'park_facing', label: 'Park View', icon: Trees },
+  { id: 'garden_view', label: 'Garden View', icon: Leaf },
+  { id: 'pool_view', label: 'Pool View', icon: Waves },
+  { id: 'golf_view', label: 'Golf View', icon: Flag },
+  { id: 'corner_unit', label: 'Corner Unit', icon: Maximize2 },
+  { id: 'wide_balcony', label: 'Wide Balcony', icon: Sunset },
+  { id: 'road_facing', label: 'Expressway View', icon: Route },
 ]
 
 interface UnitRow {
@@ -93,7 +96,7 @@ function toLocal(u: UnitRow): LocalRow {
 }
 
 function inp(cls?: string) {
-  return `w-full border border-zinc-200/80 rounded-xl px-3 py-2 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-200 ${cls ?? ''}`
+  return `w-full min-w-0 border border-zinc-200/80 dark:border-zinc-700/80 rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-zinc-900 shadow-2xs transition-all ${cls ?? ''}`
 }
 
 const EMPTY_ADD = {
@@ -301,24 +304,29 @@ export default function UnitsEditor({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-100 dark:border-zinc-800/80">
         <div>
-          <h2 className="text-[18px] font-bold text-zinc-900 flex items-center gap-2">
-            Unit Configurations & Floor Plans
-            <span className="text-[12px] font-medium bg-purple-50 text-purple-700 px-2.5 py-0.5 rounded-full border border-purple-200">
+          <h2 className="text-base sm:text-lg font-black text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+            <span>Unit Configurations & Floor Plans</span>
+            <span className="text-[11px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2.5 py-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
               {rows.length} Configs
             </span>
           </h2>
-          <p className="text-[13px] text-zinc-500 mt-0.5">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             Manage carpet area efficiency, sunlight orientation, Vastu layout direction, prices, and tower mappings.
           </p>
         </div>
         <button
+          type="button"
           onClick={() => setShowAdd(v => !v)}
-          className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition-all shadow-sm"
+          className={`self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap ${
+            showAdd
+              ? 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700'
+              : 'bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100'
+          }`}
         >
-          <Plus size={15} />
-          {showAdd ? 'Cancel' : 'Add Unit Type'}
+          {showAdd ? <X size={14} /> : <Plus size={14} />}
+          <span>{showAdd ? 'Cancel' : 'Add Unit Type'}</span>
         </button>
       </div>
 
@@ -337,27 +345,27 @@ export default function UnitsEditor({
           return (
             <div
               key={row.id}
-              className={`p-5 rounded-2xl border transition-all duration-200 bg-white ${
+              className={`p-5 md:p-6 rounded-2xl border transition-all duration-200 bg-white dark:bg-[#121214] ${
                 dirty.has(row.id)
-                  ? 'border-amber-300 shadow-md ring-2 ring-amber-100'
-                  : 'border-zinc-200/80 shadow-sm hover:border-zinc-300'
+                  ? 'border-amber-300 dark:border-amber-700 shadow-md ring-2 ring-amber-100 dark:ring-amber-950/40'
+                  : 'border-zinc-200/80 dark:border-zinc-800 shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-700'
               }`}
             >
               {/* Header */}
-              <div className="flex items-center justify-between pb-4 mb-4 border-b border-zinc-100">
-                <div className="flex items-center gap-3">
-                  <span className="text-[15px] font-bold text-zinc-900">{row.name || `${row.bhk} BHK Unit`}</span>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+              <div className="flex items-center justify-between pb-4 mb-4 border-b border-zinc-100 dark:border-zinc-800/80">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-base font-bold text-zinc-900 dark:text-white">{row.name || `${row.bhk} BHK Unit`}</span>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200/60 dark:border-zinc-700/60">
                     {row._bhk} BHK
                   </span>
                   {row._ratio && (
-                    <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 border ${
                       isHealthyRatio
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
+                        : 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60'
                     }`}>
-                      <Sparkles size={11} />
-                      {row._ratio}% Efficiency ({isHealthyRatio ? 'Optimal' : 'Check Loading'})
+                      <span className={`w-1.5 h-1.5 rounded-full ${isHealthyRatio ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                      <span>{row._ratio}% Efficiency ({isHealthyRatio ? 'Optimal' : 'Check Loading'})</span>
                     </span>
                   )}
                 </div>
@@ -366,7 +374,7 @@ export default function UnitsEditor({
                   <button
                     onClick={() => saveRow(row)}
                     disabled={!dirty.has(row.id) || saving.has(row.id)}
-                    className="flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-bold rounded-xl bg-zinc-900 text-white hover:bg-black disabled:opacity-40 transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-zinc-100 disabled:opacity-40 transition-all shadow-xs cursor-pointer"
                   >
                     {saving.has(row.id) ? (
                       <Loader2 size={13} className="animate-spin" />
@@ -381,7 +389,8 @@ export default function UnitsEditor({
                   <button
                     onClick={() => deleteRow(row.id)}
                     disabled={deleting.has(row.id)}
-                    className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-1.5 text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
+                    title="Delete unit type"
                   >
                     {deleting.has(row.id) ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
                   </button>
@@ -389,9 +398,9 @@ export default function UnitsEditor({
               </div>
 
               {/* Core Attributes Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-700 mb-1">BHK</label>
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">BHK</label>
                   <input
                     type="number" min="1" max="10"
                     value={row._bhk}
@@ -400,52 +409,52 @@ export default function UnitsEditor({
                     placeholder="3"
                   />
                 </div>
-                <div className="col-span-2">
-                  <label className="block text-[11px] font-bold text-zinc-700 mb-1">Name</label>
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Unit Name / Type</label>
                   <input
                     type="text"
                     value={row.name}
                     onChange={e => patchRow(row.id, 'name', e.target.value)}
                     className={inp()}
-                    placeholder="3 BHK Premium"
+                    placeholder="3 BHK Sky Duplex"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-700 mb-1">Super Area (sqft)</label>
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Super Area (sqft)</label>
                   <input
                     type="number" min="0" step="1"
                     value={row._super}
                     onChange={e => patchRow(row.id, '_super', e.target.value)}
-                    className={inp('font-bold')}
+                    className={inp('font-semibold')}
                     placeholder="1850"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-700 mb-1">Carpet Area (sqft)</label>
+                  <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Carpet Area (sqft)</label>
                   <input
                     type="number" min="0" step="1"
                     value={row._carpet}
                     onChange={e => patchRow(row.id, '_carpet', e.target.value)}
-                    className={inp('font-bold')}
+                    className={inp('font-semibold')}
                     placeholder="1350"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-purple-700 mb-1">Carpet Efficiency %</label>
+                  <label className="block text-[11px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-1.5">Carpet Efficiency %</label>
                   <input
                     type="number" min="0" max="100" step="0.1"
                     value={row._ratio}
                     onChange={e => patchRow(row.id, '_ratio', e.target.value)}
-                    className={inp('bg-purple-50/50 font-black text-purple-900 border-purple-200')}
+                    className={inp('bg-blue-50/50 dark:bg-blue-950/30 font-bold text-blue-900 dark:text-blue-200 border-blue-200 dark:border-blue-800/60')}
                     placeholder="68.5"
                   />
                 </div>
               </div>
 
-              {/* Second Row: Balconies, Baths, Price, Towers */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mt-3">
+              {/* Second Row: Built-Up, Balconies, Baths, Price, Towers */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 mt-3.5">
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 mb-1">Built-Up Area (sqft)</label>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">Built-Up Area (sqft)</label>
                   <input
                     type="number" min="0" step="1"
                     value={row._built_up}
@@ -455,7 +464,7 @@ export default function UnitsEditor({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 mb-1">Balconies</label>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">Balconies</label>
                   <input
                     type="number" min="0"
                     value={row._balconies_count}
@@ -465,7 +474,7 @@ export default function UnitsEditor({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 mb-1">Bathrooms</label>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">Bathrooms</label>
                   <input
                     type="number" min="1"
                     value={row._baths}
@@ -475,7 +484,7 @@ export default function UnitsEditor({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 mb-1">Price Min (₹ Cr)</label>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">Price Min (₹ Cr)</label>
                   <input
                     type="number" min="0" step="0.01"
                     value={row._min}
@@ -485,7 +494,7 @@ export default function UnitsEditor({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 mb-1">Price Max (₹ Cr)</label>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">Price Max (₹ Cr)</label>
                   <input
                     type="number" min="0" step="0.01"
                     value={row._max}
@@ -495,7 +504,7 @@ export default function UnitsEditor({
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 mb-1">Towers Association</label>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">Towers Association</label>
                   <input
                     type="text"
                     value={row._towers_str}
@@ -507,33 +516,37 @@ export default function UnitsEditor({
               </div>
 
               {/* Sun Orientation & Vastu Layout Direction Section */}
-              <div className="pt-4 mt-4 border-t border-zinc-100">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Compass size={14} className="text-purple-600" />
-                    <span className="text-[11px] font-black uppercase tracking-wider text-zinc-700">
-                      Sun Orientation, Vastu & Views
+              <div className="pt-4 mt-4 border-t border-zinc-100 dark:border-zinc-800/80">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                      <Compass size={14} />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+                      Sun Orientation, Vastu &amp; Views
                     </span>
                   </div>
-                  <span className="text-[11px] text-zinc-400">Click chips to toggle orientations</span>
+                  <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Click chips to toggle orientations</span>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5 items-center">
+                <div className="flex flex-wrap gap-2 items-center">
                   {PRESET_ORIENTATIONS.map(preset => {
                     const isSelected = row._orientations.includes(preset.id)
+                    const IconComp = preset.icon
                     return (
                       <button
                         key={preset.id}
                         type="button"
                         onClick={() => toggleOrientation(row.id, preset.id)}
-                        className={`text-[11px] font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1 border ${
+                        className={`text-xs font-semibold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 border cursor-pointer ${
                           isSelected
-                            ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                            : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                            ? 'bg-blue-600 dark:bg-blue-600 text-white border-blue-600 shadow-xs'
+                            : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200/80 dark:border-zinc-700/80 hover:bg-zinc-200/70 dark:hover:bg-zinc-700/70'
                         }`}
                       >
-                        {preset.label}
-                        {isSelected && <Check size={11} className="stroke-[3]" />}
+                        <IconComp size={13} className={isSelected ? 'text-white' : 'text-zinc-500 dark:text-zinc-400'} />
+                        <span>{preset.label}</span>
+                        {isSelected && <Check size={12} className="stroke-[2.5]" />}
                       </button>
                     )
                   })}
@@ -544,13 +557,13 @@ export default function UnitsEditor({
                     .map(custom => (
                       <span
                         key={custom}
-                        className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 flex items-center gap-1.5"
+                        className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 flex items-center gap-1.5 shadow-2xs"
                       >
-                        {custom.replace(/_/g, ' ')}
+                        <span>{custom.replace(/_/g, ' ')}</span>
                         <button
                           type="button"
                           onClick={() => toggleOrientation(row.id, custom)}
-                          className="hover:text-red-600"
+                          className="hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
                         >
                           <X size={12} />
                         </button>
@@ -558,7 +571,7 @@ export default function UnitsEditor({
                     ))}
 
                   {/* Custom Tag Adder */}
-                  <div className="flex items-center gap-1 ml-1">
+                  <div className="flex items-center gap-1.5">
                     <input
                       type="text"
                       placeholder="+ Custom orientation"
@@ -570,13 +583,13 @@ export default function UnitsEditor({
                           addCustomOrientation(row.id)
                         }
                       }}
-                      className="border border-zinc-200 rounded-full px-3 py-1 text-[11px] text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 w-36 bg-zinc-50"
+                      className="border border-zinc-200/80 dark:border-zinc-700/80 rounded-xl px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-44 bg-zinc-50 dark:bg-zinc-900 shadow-2xs"
                     />
                     {(customTagInput[row.id] || '').trim() && (
                       <button
                         type="button"
                         onClick={() => addCustomOrientation(row.id)}
-                        className="bg-purple-600 text-white rounded-full p-1 hover:bg-purple-700"
+                        className="bg-blue-600 text-white rounded-xl p-1.5 hover:bg-blue-700 shadow-xs cursor-pointer"
                       >
                         <Plus size={12} />
                       </button>

@@ -654,7 +654,7 @@ export default function IntelligenceWorkspace({
               )
             })}
 
-            <div className="grid grid-cols-2 gap-3 pt-3 mt-1 border-t border-gray-50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 mt-1 border-t border-gray-50">
               <FL label="Verified By">
                 <input
                   type="text"
@@ -712,7 +712,7 @@ export default function IntelligenceWorkspace({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-medium text-gray-500 mb-1.5">Why Buy</label>
                 {([0, 1, 2] as const).map(i => (
@@ -756,7 +756,7 @@ export default function IntelligenceWorkspace({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FL label="Best For">
                 <input
                   type="text"
@@ -831,7 +831,7 @@ export default function IntelligenceWorkspace({
               />
             </FL>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FL label="Verified By">
                 <input
                   type="text"
@@ -941,7 +941,7 @@ export default function IntelligenceWorkspace({
               )
             })()}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FL label="Income Range">
                 <input
                   type="text"
@@ -953,18 +953,17 @@ export default function IntelligenceWorkspace({
                 />
               </FL>
               <FL label="Risk Appetite">
-                <select
-                  value={per.risk_appetite}
-                  onChange={e => { const v = { ...per, risk_appetite: e.target.value }; setPer(v); savePersona(v) }}
-                  className={`${selectCls} w-full`}
-                >
-                  <option value="">Select…</option>
-                  {RISK_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
+                <CustomSelect
+                  value={per.risk_appetite || ''}
+                  onChange={val => { const v = { ...per, risk_appetite: val }; setPer(v); savePersona(v) }}
+                  options={[{ value: '', label: 'Select…' }, ...RISK_OPTS.map(o => ({ value: o, label: o }))]}
+                  size="sm"
+                  className="w-full"
+                />
               </FL>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FL label="Family Stage">
                 <input
                   type="text"
@@ -1037,21 +1036,20 @@ export default function IntelligenceWorkspace({
           <div className="px-5 pt-3 pb-4 space-y-3">
 
             <div className="flex items-center gap-2 flex-wrap">
-              <select
-                value={rec.tier}
-                onChange={e => { const v = { ...rec, tier: e.target.value }; setRec(v); saveRec(v) }}
-                className={selectCls}
-              >
-                <option value="">No verdict yet</option>
-                {TIER_OPTS.map(o => <option key={o} value={o}>{o.replace('_', ' ')}</option>)}
-              </select>
-              <select
-                value={rec.status}
-                onChange={e => { const v = { ...rec, status: e.target.value }; setRec(v); saveRec(v) }}
-                className={selectCls}
-              >
-                {STATUS_OPTS.map(o => <option key={o} value={o}>{o.replace('_', ' ')}</option>)}
-              </select>
+              <CustomSelect
+                value={rec.tier || ''}
+                onChange={val => { const v = { ...rec, tier: val }; setRec(v); saveRec(v) }}
+                options={[{ value: '', label: 'No verdict yet' }, ...TIER_OPTS.map(o => ({ value: o, label: o.replace('_', ' ') }))]}
+                size="sm"
+                className="w-44"
+              />
+              <CustomSelect
+                value={rec.status || ''}
+                onChange={val => { const v = { ...rec, status: val }; setRec(v); saveRec(v) }}
+                options={STATUS_OPTS.map(o => ({ value: o, label: o.replace('_', ' ') }))}
+                size="sm"
+                className="w-36"
+              />
               {rec.tier && (
                 <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md ${
                   rec.tier === 'STRONG_BUY' ? 'bg-emerald-600 text-white'
@@ -1076,7 +1074,7 @@ export default function IntelligenceWorkspace({
               />
             </FL>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FL label="End-Use Thesis">
                 <textarea
                   value={rec.end_use_thesis}
@@ -1099,7 +1097,7 @@ export default function IntelligenceWorkspace({
               </FL>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {([
                 { field: 'family_thesis'   as const, label: 'Family Lens' },
                 { field: 'investor_thesis' as const, label: 'Investor Lens' },
@@ -1119,7 +1117,7 @@ export default function IntelligenceWorkspace({
               ))}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FL label="Walk Away Conditions">
                 <div className="space-y-1.5">
                   {([0, 1, 2] as const).map(i => (
@@ -1174,16 +1172,15 @@ export default function IntelligenceWorkspace({
 
             <AdminDivider />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FL label="Internal Confidence">
-                <select
-                  value={rec.internal_confidence}
-                  onChange={e => { const v = { ...rec, internal_confidence: e.target.value }; setRec(v); saveRec(v) }}
-                  className={`${selectCls} w-full`}
-                >
-                  <option value="">Select…</option>
-                  {CONF_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
+                <CustomSelect
+                  value={rec.internal_confidence || ''}
+                  onChange={val => { const v = { ...rec, internal_confidence: val }; setRec(v); saveRec(v) }}
+                  options={[{ value: '', label: 'Select…' }, ...CONF_OPTS.map(o => ({ value: o, label: o }))]}
+                  size="sm"
+                  className="w-full"
+                />
               </FL>
             </div>
 
@@ -1227,7 +1224,7 @@ export default function IntelligenceWorkspace({
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <FL label="Name *">
                     <input
                       type="text"
@@ -1250,7 +1247,7 @@ export default function IntelligenceWorkspace({
                   </FL>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <FL label="Our Advantage">
                     <textarea
                       value={comp.this_project_advantage}

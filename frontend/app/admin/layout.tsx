@@ -282,7 +282,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-slate-50/70 dark:bg-zinc-950/70">
+      <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden bg-slate-50/70 dark:bg-zinc-950/70">
 
         {/* Top bar */}
         <header className="h-14 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shrink-0 px-4 md:px-6 flex items-center justify-between z-40 transition-colors">
@@ -329,7 +329,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Page */}
-        <main className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-zinc-950/50 relative">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 w-full bg-slate-50/50 dark:bg-zinc-950/50 relative">{children}</main>
       </div>
     </div>
   )

@@ -115,7 +115,7 @@ export async function recordAuditLog({
   ip_address?: string
 }) {
   try {
-    await prisma.auditLog.create({
+    await (prisma as any).auditLog.create({
       data: {
         entity_type,
         entity_id,
@@ -311,7 +311,7 @@ router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
     while (retries <= maxRetries) {
       try {
         [projects, total] = await Promise.all([
-          prisma.project.findMany({
+          (prisma.project.findMany as any)({
             where,
             include: {
               builder: { select: { id: true, name: true, slug: true } },
@@ -331,6 +331,7 @@ router.get('/projects', requireAdmin, async (req: Request, res: Response) => {
               lifecycle_updates: true,
               price_history: true,
               channel_partners: true,
+              spec_items: true,
             },
             orderBy: { name: 'asc' },
             take: parseInt(limit as string),
@@ -410,7 +411,7 @@ router.get('/projects/:id', requireAdmin, async (req: Request, res: Response) =>
   const { id } = req.params
 
   try {
-    const project = await prisma.project.findFirst({
+    const project = await (prisma.project.findFirst as any)({
       where: {
         OR: [{ id }, { slug: id }]
       },
@@ -532,7 +533,7 @@ router.get('/projects/:id/completeness', requireAdmin, async (req: Request, res:
 router.get('/audit-logs', requireAdmin, async (req: Request, res: Response) => {
   const { entity_type, entity_id, mode = 'detailed', field, limit = '50', offset = '0' } = req.query
   try {
-    const where: Prisma.AuditLogWhereInput = {}
+    const where: any = {}
     if (entity_type && entity_type !== 'all') where.entity_type = entity_type as string
     if (entity_id && entity_id !== 'all') where.entity_id = entity_id as string
 
@@ -540,30 +541,30 @@ router.get('/audit-logs', requireAdmin, async (req: Request, res: Response) => {
     const skip = parseInt(offset as string) || 0
 
     const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
+      (prisma as any).auditLog.findMany({
         where,
         orderBy: { created_at: 'desc' },
         take,
         skip,
       }),
-      prisma.auditLog.count({ where }),
+      (prisma as any).auditLog.count({ where }),
     ])
 
     // If mode is precise, filter changes to high-impact fields only or entries with high-impact changes
     let processedLogs = logs
     if (mode === 'precise') {
-      processedLogs = logs.map((log: typeof logs[0]) => {
+      processedLogs = logs.map((log: any) => {
         const changes = Array.isArray(log.changes) ? (log.changes as Array<{ field: string; is_high_impact?: boolean }>) : []
         const highImpactChanges = changes.filter((c) => c.is_high_impact || HIGH_IMPACT_FIELDS.has(c.field))
         return {
           ...log,
           changes: highImpactChanges,
         }
-      }).filter((log) => log.action !== 'UPDATE' || (Array.isArray(log.changes) && log.changes.length > 0))
+      }).filter((log: any) => log.action !== 'UPDATE' || (Array.isArray(log.changes) && log.changes.length > 0))
     }
 
     if (field && typeof field === 'string' && field !== 'all') {
-      processedLogs = processedLogs.filter((log) => {
+      processedLogs = processedLogs.filter((log: any) => {
         const changes = Array.isArray(log.changes) ? (log.changes as Array<{ field?: string }>) : []
         return changes.some((c) => c.field?.toLowerCase().includes((field as string).toLowerCase()))
       })
@@ -997,7 +998,7 @@ router.get('/projects/:id/specs', requireAdmin, async (req: Request, res: Respon
       return
     }
 
-    const specs = await prisma.projectSpecItem.findMany({
+    const specs = await (prisma as any).projectSpecItem.findMany({
       where: { project_id: project.id },
       include: { unit_type: { select: { id: true, name: true, bhk: true } } },
       orderBy: [{ sort_order: 'asc' }, { category: 'asc' }]
@@ -1037,9 +1038,9 @@ router.put('/projects/:id/specs', requireAdmin, async (req: Request, res: Respon
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.projectSpecItem.deleteMany({ where: { project_id: project.id } })
+      await (tx as any).projectSpecItem.deleteMany({ where: { project_id: project.id } })
       if (specs.length > 0) {
-        await tx.projectSpecItem.createMany({
+        await (tx as any).projectSpecItem.createMany({
           data: specs.map((s, idx) => ({
             project_id: project.id,
             unit_type_id: s.unit_type_id || null,
@@ -1056,7 +1057,7 @@ router.put('/projects/:id/specs', requireAdmin, async (req: Request, res: Respon
       }
     })
 
-    const updated = await prisma.projectSpecItem.findMany({
+    const updated = await (prisma as any).projectSpecItem.findMany({
       where: { project_id: project.id },
       include: { unit_type: { select: { id: true, name: true, bhk: true } } },
       orderBy: [{ sort_order: 'asc' }, { category: 'asc' }]
@@ -1090,9 +1091,9 @@ router.post('/projects/:id/specs', requireAdmin, async (req: Request, res: Respo
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.projectSpecItem.deleteMany({ where: { project_id: project.id } })
+      await (tx as any).projectSpecItem.deleteMany({ where: { project_id: project.id } })
       if (specs.length > 0) {
-        await tx.projectSpecItem.createMany({
+        await (tx as any).projectSpecItem.createMany({
           data: specs.map((s, idx) => ({
             project_id: project.id,
             unit_type_id: s.unit_type_id || null,
@@ -1109,7 +1110,7 @@ router.post('/projects/:id/specs', requireAdmin, async (req: Request, res: Respo
       }
     })
 
-    const updated = await prisma.projectSpecItem.findMany({
+    const updated = await (prisma as any).projectSpecItem.findMany({
       where: { project_id: project.id },
       include: { unit_type: { select: { id: true, name: true, bhk: true } } },
       orderBy: [{ sort_order: 'asc' }, { category: 'asc' }]

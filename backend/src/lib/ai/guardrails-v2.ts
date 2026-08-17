@@ -81,6 +81,15 @@ export function validateAgainstFactsSync(
     return { blocked: false, confidence: 0, violations: [] }
   }
 
+  // Exempt explicit advisory / external market responses containing advisory disclaimer
+  if (
+    response.includes('Market Advisory Note') ||
+    response.includes('This estimate is based on general market indicators') ||
+    response.includes('not verified RERA database records')
+  ) {
+    return { blocked: false, confidence: 0, violations: [] }
+  }
+
   const facts = extractFactsFromPrompt(systemPrompt)
 
   // Extract project names from response

@@ -227,4 +227,5 @@ export interface ChatMessage {
     is_general_query?: boolean;
   };
   chips?: unknown[]; // ChipAction[] from backend
+  is_verified?: boolean; // true if from database, false if from AI fallback provider
 }

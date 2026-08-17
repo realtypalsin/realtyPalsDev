@@ -158,6 +158,7 @@ router.post('/callback', async (req: Request, res: Response) => {
       project_slug: finalProjectSlug,
       user_id: userId,
       guest_token: guestToken,
+      chat_session_id: session_id || undefined,
       intent_tier: intent_tier ?? null,
       loan_pre_approved: loanPreApproved,
       consent_given: consent_given ?? false,

@@ -528,6 +528,11 @@ function MessageBubbleInner({
                           <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">AI Advisor</span>
                         </div>
                       )}
+                      {message.is_verified === false && (
+                        <div className="mb-3 pb-3 border-b border-amber-200 dark:border-amber-800/40">
+                          <p className="text-[11px] text-amber-900 dark:text-amber-50 font-medium">⚠️ This data is not verified by us. Please confirm with our team before making decisions.</p>
+                        </div>
+                      )}
                       <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

@@ -14,7 +14,7 @@ import {
   Calendar,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
+  ListFilter,
   RefreshCw,
   SlidersHorizontal,
   ChevronDown,
@@ -235,7 +235,7 @@ export default function AuditChangelogTab({ projectId, projectName }: AuditChang
                     : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
-                <Sparkles size={13} className={mode === 'precise' ? 'text-blue-500' : ''} />
+                <ListFilter size={13} className={mode === 'precise' ? 'text-blue-500' : ''} />
                 <span>Precise Log</span>
               </button>
               <button

@@ -84,9 +84,8 @@ function SectionHeader({ title }: { title: string }) {
   return (
     <div className="col-span-1 sm:col-span-2 pt-6 mt-4 first:pt-0 first:mt-0">
       <div className="flex items-center gap-4">
-        <span className="text-[16px] font-serif font-black text-slate-900 dark:text-white tracking-tight">{title}</span>
-        <div className="flex-1 h-px bg-slate-100 dark:bg-slate-700" />
-
+        <span className="text-[15px] font-sans font-bold text-zinc-900 dark:text-white tracking-tight">{title}</span>
+        <div className="flex-1 h-px bg-zinc-200/80 dark:bg-zinc-800" />
       </div>
     </div>
   )
@@ -125,21 +124,6 @@ function Input({ value, onChange, ...rest }: Omit<React.InputHTMLAttributes<HTML
   )
 }
 
-function Select({ value, onChange, children }: {
-  value: string
-  onChange: (v: string) => void
-  children: React.ReactNode
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="admin-select w-full bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 hover:bg-slate-100/80 dark:hover:bg-zinc-800 focus:bg-white dark:focus:bg-zinc-900 rounded-xl px-4 py-3 text-[14px] font-semibold text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500/80 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 shadow-2xs cursor-pointer"
-    >
-      {children}
-    </select>
-  )
-}
 
 function Textarea({ value, onChange, rows = 3, placeholder }: {
   value: string

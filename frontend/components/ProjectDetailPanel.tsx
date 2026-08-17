@@ -20,10 +20,11 @@ import { handleReraClick, handleEscapeKey, imageTypeRank } from '@/lib/projectDe
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
 import OverviewTab from '@/components/property-detail/OverviewTab'
+import { IntelligenceTabSkeleton } from '@/components/skeletons'
 import dynamic from 'next/dynamic'
 const IntelligenceTab = dynamic(() => import('@/components/property-detail/IntelligenceTab'), {
   ssr: false,
-  loading: () => <Skeleton className="w-full h-[600px] rounded-xl" />
+  loading: () => <IntelligenceTabSkeleton />
 })
 import ResidencesTab from '@/components/property-detail/ResidencesTab'
 import ProjectPricingTab from '@/components/property-detail/ProjectPricingTab'
@@ -271,6 +272,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               payment_plans: detail?.payment_plans || (paymentPlan.data ? [paymentPlan.data] : []),
               cost_sheet: costSheet.data || detail?.cost_sheet || null
             } as ProjectDetail}
+            loading={loading}
             onGoToCosts={() => onSiteVisitClick()}
           />
         </div>
@@ -282,6 +284,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           detail={detail}
           d={d}
           projectAddress={`${d?.address ?? d?.name}, ${d?.sector}, ${d?.city}, India`}
+          loading={loading}
         />
       )}
 
