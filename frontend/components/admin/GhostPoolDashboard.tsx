@@ -23,6 +23,8 @@ const REASON_LABELS: Record<string, string> = {
   other: '❓ Other',
 }
 
+import { adminFetch } from '@/lib/adminFetch'
+
 export function GhostPoolDashboard({ projectId }: { projectId: string }) {
   const [data, setData] = useState<GhostPoolData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -30,7 +32,7 @@ export function GhostPoolDashboard({ projectId }: { projectId: string }) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await window.fetch(`/api/leads/projects/${projectId}/ghost-pool`)
+        const res = await adminFetch(`/leads/projects/${projectId}/ghost-pool`)
         const json = await res.json()
         setData(json)
       } catch (err) {

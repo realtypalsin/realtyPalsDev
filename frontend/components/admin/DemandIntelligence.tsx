@@ -18,6 +18,8 @@ interface DemandData {
   sampleSize: number
 }
 
+import { adminFetch } from '@/lib/adminFetch'
+
 export function DemandIntelligence({ projectId }: { projectId: string }) {
   const [data, setData] = useState<DemandData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -25,7 +27,7 @@ export function DemandIntelligence({ projectId }: { projectId: string }) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await window.fetch(`/api/leads/projects/${projectId}/demand`)
+        const res = await adminFetch(`/leads/projects/${projectId}/demand`)
         const json = await res.json()
         setData(json)
       } catch (err) {

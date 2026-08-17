@@ -1,104 +1,234 @@
-'use client'
-
-import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { ArrowLeft, Shield, Scale, FileText, AlertTriangle, Building2, UserCheck, HelpCircle, CheckCircle2 } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Terms of Service | RealtyPals',
+  description: 'Terms of service, RERA regulatory disclosures, and platform usage guidelines for RealtyPals real estate advisory.',
+}
 
 export default function TermsOfService() {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <Link href="/" className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 mb-8">
-          <ArrowLeft size={18} />
-          Back to home
-        </Link>
+  const lastUpdated = 'August 16, 2026'
 
-        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Terms of Service</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-8">Last updated: {new Date().toLocaleDateString()}</p>
-
-        <div className="prose dark:prose-invert max-w-none space-y-6 text-slate-700 dark:text-slate-300">
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">1. Agreement to Terms</h2>
-            <p>
-              By accessing and using the RealtyPals platform, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">2. Use License</h2>
-            <p>Permission is granted to temporarily download one copy of the materials (information or software) on RealtyPals platform for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
-            <ul className="list-disc list-inside space-y-2 ml-4">
-              <li>Modify or copy the materials</li>
-              <li>Use the materials for any commercial purpose or for any public display</li>
-              <li>Attempt to decompile or reverse engineer any software contained on the platform</li>
-              <li>Remove any copyright or other proprietary notations from the materials</li>
-              <li>Transfer the materials to another person or &quot;mirror&quot; the materials on any other server</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">3. Disclaimer</h2>
-            <p>
-              The materials on RealtyPals platform are provided on an &apos;as is&apos; basis. RealtyPals makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">4. Limitations</h2>
-            <p>
-              In no event shall RealtyPals or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on RealtyPals platform.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">5. Accuracy of Materials</h2>
-            <p>
-              The materials appearing on RealtyPals platform could include technical, typographical, or photographic errors. RealtyPals does not warrant that any of the materials on the platform are accurate, complete, or current. RealtyPals may make changes to the materials contained on its platform at any time without notice.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">6. User Responsibilities</h2>
-            <p>You agree to:</p>
-            <ul className="list-disc list-inside space-y-2 ml-4">
-              <li>Provide accurate, current, and complete information</li>
-              <li>Not engage in any conduct that restricts or inhibits anyone&apos;s use or enjoyment of the service</li>
-              <li>Not post or transmit hateful, threatening, or abusive content</li>
-              <li>Not attempt to gain unauthorized access to our systems</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">7. Links</h2>
-            <p>
-              RealtyPals has not reviewed all of the sites linked to its platform and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by RealtyPals of the site. Use of any such linked website is at the user&apos;s own risk.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">8. Modifications</h2>
-            <p>
-              RealtyPals may revise these terms of service for its platform at any time without notice. By using this platform, you are agreeing to be bound by the then current version of these terms of service.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">9. Governing Law</h2>
-            <p>
-              These terms and conditions are governed by and construed in accordance with the laws of India, and you irrevocably submit to the exclusive jurisdiction of the courts in Noida.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mt-8 mb-4">10. Contact</h2>
-            <p>If you have any questions about these Terms of Service, please contact us at:</p>
-            <div className="mt-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
-              <p className="font-semibold">RealtyPals Support</p>
-              <p>Email: support@realtypals.com</p>
-              <p>Location: Noida, Uttar Pradesh, India</p>
-            </div>
-          </section>
+  const sections = [
+    {
+      id: 'agreement',
+      icon: FileText,
+      title: '1. Acceptance of Terms & Intermediary Status',
+      content: (
+        <div className="space-y-3">
+          <p>
+            By accessing, browsing, or using RealtyPals (&quot;Platform&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;), including our AI-assisted advisory engine, multi-dimensional search matrix, property indices, and valuation models, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+          </p>
+          <p>
+            RealtyPals operates as an analytical technology platform and digital intermediary under Section 79 of the Information Technology Act, 2000 and the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, as amended. If you do not agree with any part of these terms, you must immediately discontinue use of the platform.
+          </p>
         </div>
-      </div>
+      ),
+    },
+    {
+      id: 'advisory-disclaimer',
+      icon: AlertTriangle,
+      title: '2. AI Real Estate Advisory & Analytical Disclaimer',
+      badge: 'Critical Notice',
+      content: (
+        <div className="space-y-3">
+          <p className="font-medium text-slate-900 dark:text-slate-100">
+            RealtyPals provides AI-powered real estate intelligence, historical market trajectory analysis, and comparative project evaluations strictly for informational, educational, and preliminary research purposes.
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Not Financial, Legal, or Investment Advice:</strong> Recommendations, calculations (including estimated EMIs, tax offsets, or capital appreciation projections), and fit scores generated by our platform do not constitute certified financial, legal, taxation, or certified investment advisory under SEBI or ICAI guidelines.
+            </li>
+            <li>
+              <strong>Mandatory Independent Due Diligence:</strong> Property buyers and investors are strongly advised to independently verify all developer claims, encumbrance certificates, approved building sanctions, land title deeds, and environmental clearances through certified legal and technical counsel before executing agreements or making monetary commitments.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'rera-compliance',
+      icon: Shield,
+      title: '3. RERA & Regulatory Disclosures',
+      badge: 'UP-RERA Aligned',
+      content: (
+        <div className="space-y-3">
+          <p>
+            RealtyPals indexes and evaluates projects registered under the Real Estate (Regulation and Development) Act, 2016 (RERA) and registered with the Uttar Pradesh Real Estate Regulatory Authority (UP-RERA) for Noida, Greater Noida, and Yamuna Expressway micro-markets.
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Verified Public RERA Identifiers:</strong> Project RERA registration numbers and promoter details displayed across project cards, decision matrices, and detail drawers are referenced directly from public UP-RERA disclosures. Users are encouraged to cross-verify all statutory filings on the official government portal (<a href="https://up-rera.in" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">up-rera.in</a>).
+            </li>
+            <li>
+              <strong>Technology Aggregator Status:</strong> RealtyPals functions strictly as an analytical intelligence layer. We do not solicit investments, underwrite developments, or act as an escrow agent.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'platform-use',
+      icon: UserCheck,
+      title: '4. Permitted Use & User Obligations',
+      content: (
+        <div className="space-y-3">
+          <p>As a condition of your use of the Platform, you agree to:</p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>Provide authentic, accurate, and current contact details when scheduling site visits, requesting developer callbacks, or saving property shortlists.</li>
+            <li>Not scrape, crawl, reverse engineer, or programmatically query our conversational AI engine, verified database, or pricing indices without prior explicit written consent.</li>
+            <li>Not misrepresent your identity or attempt to gain unauthorized administrative access to our systems, APIs, or developer consoles.</li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'builder-relationships',
+      icon: Building2,
+      title: '5. Builder Specifications & Timeline Variations',
+      content: (
+        <div className="space-y-3">
+          <p>
+            Floor plans, master layouts, 3D renderings, specifications, construction milestones, and possession timelines are gathered from developer brochures, official RERA quarterly progress reports (QPRs), and verified site audits. While we apply continuous validation pipelines:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>Developers reserve the statutory right to modify unit layouts, finishings, and payment milestone structures subject to applicable RERA approvals and buyer consent rules.</li>
+            <li>RealtyPals is not liable for project completion delays, deviation in promised amenities, force majeure disruptions, or contractual disputes between buyers and builders.</li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'limitation-liability',
+      icon: Scale,
+      title: '6. Limitation of Liability',
+      content: (
+        <div className="space-y-3">
+          <p>
+            To the maximum extent permitted by applicable Indian law (including the Consumer Protection Act, 2019 and relevant e-commerce guidelines), RealtyPals, its directors, officers, employees, and technology partners shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, property valuation differences, or business interruption arising from your access to or reliance upon platform insights.
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: 'governing-law',
+      icon: CheckCircle2,
+      title: '7. Governing Law & Dispute Resolution',
+      content: (
+        <div className="space-y-3">
+          <p>
+            These Terms shall be governed by, construed, and enforced in accordance with the laws of the Republic of India. Any legal action, dispute, or proceeding arising out of or related to the Platform shall be subject to the exclusive jurisdiction of the competent courts located in <strong>Gautam Buddh Nagar (Noida), Uttar Pradesh, India</strong>.
+          </p>
+        </div>
+      ),
+    },
+  ]
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] text-slate-800 dark:text-slate-200 transition-colors">
+      {/* Header Banner */}
+      <header className="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span>Back to Home</span>
+          </Link>
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+            Last Updated: {lastUpdated}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Title Hero */}
+        <div className="mb-10 text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/60 mb-4">
+            <Scale size={13} /> Legal & Regulatory Governance
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Terms of Service
+          </h1>
+          <p className="mt-3 text-base text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
+            Please read these terms carefully before utilizing RealtyPals. They outline the regulatory status of our AI advisory tools, RERA compliance standards, and mutual responsibilities.
+          </p>
+        </div>
+
+        {/* Highlight Callout */}
+        <div className="mb-10 p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200/80 dark:border-blue-800/60 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+            <Shield size={20} />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-sm font-bold text-blue-900 dark:text-blue-200">
+              RERA Compliant & Independent Real Estate Intelligence
+            </h2>
+            <p className="text-xs sm:text-sm text-blue-800/80 dark:text-blue-300/80 mt-0.5">
+              RealtyPals indices verified public UP-RERA records for Noida & Greater Noida. We maintain strict editorial and analytical neutrality.
+            </p>
+          </div>
+        </div>
+
+        {/* Section Cards */}
+        <div className="space-y-6">
+          {sections.map((section) => {
+            const Icon = section.icon
+            return (
+              <section
+                key={section.id}
+                id={section.id}
+                className="p-6 sm:p-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                      <Icon size={18} />
+                    </div>
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                      {section.title}
+                    </h2>
+                  </div>
+                  {section.badge && (
+                    <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60">
+                      {section.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {section.content}
+                </div>
+              </section>
+            )
+          })}
+        </div>
+
+        {/* Contact Support Section */}
+        <div className="mt-10 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+              <HelpCircle size={20} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Questions regarding these Terms?
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Reach out to our compliance and legal desk anytime.
+              </p>
+            </div>
+          </div>
+          <a
+            href="mailto:support@realtypals.in"
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold tracking-wide shadow-sm transition-all"
+          >
+            Contact Legal Desk
+          </a>
+        </div>
+      </main>
     </div>
   )
 }
+

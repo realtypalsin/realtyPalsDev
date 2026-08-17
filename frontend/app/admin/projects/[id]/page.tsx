@@ -328,12 +328,16 @@ export default function AdminProjectEditPage({
       setDocuments(Array.isArray(docsData) ? docsData : docsData.documents ?? [])
       setCompleteness(compData)
 
-      // Fetch public preview object
+      // Fetch public preview object via API_BASE
       if (projectData.slug) {
-        const pRes = await fetch(`/api/projects/${projectData.slug}`)
-        if (pRes.ok) {
-          const pData = await pRes.json()
-          setPreview(pData)
+        try {
+          const pRes = await adminFetch(`/projects/${projectData.slug}`)
+          if (pRes.ok) {
+            const pData = await pRes.json()
+            setPreview(pData)
+          }
+        } catch {
+          // Preview fetch optional
         }
       }
     } catch (err) {
@@ -569,9 +573,9 @@ export default function AdminProjectEditPage({
 
           </div>
 
-          {/* Tab rail with polished completion indicators */}
-          <div className="flex items-center p-1.5 bg-zinc-100/90 dark:bg-zinc-800/80 backdrop-blur-xl rounded-2xl border border-zinc-200/80 dark:border-zinc-700/70 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shadow-xs">
-            <div className="flex items-center gap-1.5 min-w-full sm:min-w-0 justify-between sm:justify-start w-full">
+          {/* Tab rail with polished completion indicators (Wrapped in one go) */}
+          <div className="p-1.5 bg-zinc-100/90 dark:bg-zinc-800/80 backdrop-blur-xl rounded-2xl border border-zinc-200/80 dark:border-zinc-700/70 shadow-xs">
+            <div className="flex flex-wrap items-center gap-1.5 w-full">
               {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
                 const isActive = adminTab === tabId
                 const pct = tabScores[tabId] ?? 100
@@ -586,14 +590,14 @@ export default function AdminProjectEditPage({
                       onClick={() => setAdminTab(tabId)}
                       onMouseEnter={() => setHoveredTab(tabId)}
                       onMouseLeave={() => setHoveredTab(null)}
-                      className={`relative flex items-center gap-2 px-3.5 py-2 text-xs rounded-xl transition-all duration-200 whitespace-nowrap cursor-pointer select-none ${
+                      className={`relative flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl transition-all duration-200 cursor-pointer select-none ${
                         isActive
-                          ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-md ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold scale-[1.01]'
+                          ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs ring-1 ring-zinc-950/5 dark:ring-white/10 font-bold'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/70 dark:hover:bg-zinc-800/70 font-medium'
                       }`}
                     >
                       <Icon
-                        size={14}
+                        size={13}
                         className={`transition-colors ${
                           isActive
                             ? 'text-blue-600 dark:text-blue-400'
@@ -603,7 +607,7 @@ export default function AdminProjectEditPage({
                       <span>{label}</span>
 
                       <span
-                        className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all ${
+                        className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg border transition-all ${
                           isComplete
                             ? (isActive
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-300/80 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/80'
@@ -619,15 +623,15 @@ export default function AdminProjectEditPage({
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            isComplete ? 'bg-emerald-500 animate-pulse' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
+                            isComplete ? 'bg-emerald-500' : isMedium ? 'bg-amber-500' : 'bg-rose-500'
                           }`}
                         />
                         <span>{pct}%</span>
                       </span>
 
                       {isActive && (
-                        <div className="absolute bottom-0 left-3 right-3 h-[2.5px] bg-gray-200 dark:bg-gray-700 rounded-full shadow-xs overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
+                        <div className="absolute bottom-0 left-2.5 right-2.5 h-[2px] bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-600 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
                         </div>
                       )}
                     </button>

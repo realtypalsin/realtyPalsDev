@@ -59,7 +59,7 @@ function buildAdaptiveThinkingLabel(userMessage: string | undefined, intent: Rec
   const hasBudget = /(\d+\s*(cr|crore|lakh|lac))/i.test(userMessage || '')
   const hasMetro = /metro|station|proximity|near/i.test(msg)
   const hasFamily = /family|kids|children|school/i.test(msg)
-  const hasInvestment = /invest|invest|appreciation|roi/i.test(msg)
+  const hasInvestment = /invest|appreciation|roi/i.test(msg)
 
   // Build context phrase
   let context = ''
@@ -181,14 +181,15 @@ export function SuggestionChipGroups({
 }) {
   if (chips.length === 0) return null
 
-  // Belt-and-suspenders dedup: normalize label text, cap at 4
-  const seen = new Set<string>()
-  const deduped = chips.filter(c => {
+  // Belt-and-suspenders dedup: normalize label text across ALL chips, then cap at 4
+  const dedupedMap = new Map<string, import('./types').ChipAction>()
+  chips.forEach(c => {
     const normalized = c.label.toLowerCase().trim()
-    if (seen.has(normalized)) return false
-    seen.add(normalized)
-    return true
-  }).slice(0, 4)
+    if (!dedupedMap.has(normalized)) {
+      dedupedMap.set(normalized, c)
+    }
+  })
+  const deduped = Array.from(dedupedMap.values()).slice(0, 4)
 
   const sorted = deduped.sort((a, b) => a.priority - b.priority)
 
@@ -298,6 +299,10 @@ function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
     prev.message.exactResults === next.message.exactResults &&
     prev.message.nearbyResults === next.message.nearbyResults &&
     prev.message.isSearching === next.message.isSearching &&
+    prev.message.expansion === next.message.expansion &&
+    prev.message.componentResponse === next.message.componentResponse &&
+    prev.message.responseMode === next.message.responseMode &&
+    prev.message.showComparisonTable === next.message.showComparisonTable &&
     prev.isExpanded === next.isExpanded &&
     prev.carouselIndex === next.carouselIndex &&
     prev.chips === next.chips &&
@@ -347,9 +352,11 @@ function MessageBubbleInner({
 
   useEffect(() => {
     if (!message.showComparisonTable || !message.comparisonProjects?.length) return
-    message.comparisonProjects.forEach(p => {
-      trackPropertyEvent(p.id, 'compare', sessionId, userId).catch(() => {})
-    })
+    Promise.all(message.comparisonProjects.map(p =>
+      trackPropertyEvent(p.id, 'compare', sessionId, userId).catch(e => {
+        console.warn('[TRACKING_ERROR]', e)
+      })
+    )).catch(() => {})
   }, [message.showComparisonTable, message.comparisonProjects, sessionId, userId])
 
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -395,14 +402,15 @@ function MessageBubbleInner({
             <div className="relative z-10">
               {(() => {
                 const hasProperties = (message.exactResults?.length ?? 0) > 0 || (message.nearbyResults?.length ?? 0) > 0
-                const phase = message.streamingPhase
-                const intent = message.streamingIntent
-                const resultCount = message.streamingResultCount
+                const phaseStr = message.streamingPhase ?? ''
+                const intent = message.streamingIntent ?? null
+                const resultCount = message.streamingResultCount ?? 0
+                const phase = (phaseStr || undefined) as 'searching' | 'generating' | 'extracting' | undefined
 
                 // Stage A: waiting — no properties, no content yet
                 if (!hasProperties && !message.content) {
-                  const { label, sublabel } = buildAdaptiveThinkingLabel(message.content ?? undefined, intent ?? null, phase ?? '')
-                  const showCards = phase === 'searching' || phase === 'generating'
+                  const { label, sublabel } = buildAdaptiveThinkingLabel(message.content ?? undefined, intent, phaseStr)
+                  const showCards = phaseStr === 'searching' || phaseStr === 'generating'
 
                   return (
                     <UniversalLoader
@@ -537,21 +545,21 @@ function MessageBubbleInner({
                                 'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
                                 'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
                                 table: ({ node, ...props }: any) => (
-                                  <div className="my-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#151b27] shadow-sm">
-                                    <table className="w-full border-collapse text-left text-sm text-gray-500 dark:text-gray-400" {...props} />
+                                  <div className="my-3.5 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xs">
+                                    <table className="w-full border-collapse text-left text-xs sm:text-sm text-slate-700 dark:text-slate-300" {...props} />
                                   </div>
                                 ),
                                 thead: ({ node, ...props }: any) => (
-                                  <thead className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800" {...props} />
+                                  <thead className="bg-slate-100/90 dark:bg-slate-800/80 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700/80" {...props} />
                                 ),
                                 th: ({ node, ...props }: any) => (
-                                  <th className="px-4 py-3 font-semibold text-gray-900 dark:text-white" {...props} />
+                                  <th className="px-4 py-3 font-bold text-slate-900 dark:text-white" {...props} />
                                 ),
                                 td: ({ node, ...props }: any) => (
-                                  <td className="px-4 py-3 border-b border-gray-100 dark:border-gray-800/50 last:border-0 text-gray-700 dark:text-gray-300" {...props} />
+                                  <td className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 last:border-0 leading-relaxed font-normal" {...props} />
                                 ),
                                 tr: ({ node, ...props }: any) => (
-                                  <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors" {...props} />
+                                  <tr className="hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-colors even:bg-slate-50/40 dark:even:bg-slate-900/30" {...props} />
                                 ),
                                 a: ({ node, ...props }: any) => {
                                   const href = props.href || ''
@@ -641,9 +649,9 @@ function MessageBubbleInner({
         </div>
       </div>
 
-      <div className={`mt-1.5 flex items-center w-full ${isUser ? 'justify-end' : 'justify-start'} gap-2 px-1`}>
+      <div className={`mt-2 flex items-center w-full ${isUser ? 'justify-end' : 'justify-start'} gap-2.5 px-1`}>
         {message.timestamp && (
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 select-none">
             {new Date(message.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
           </span>
         )}
@@ -651,36 +659,38 @@ function MessageBubbleInner({
           <button
             onClick={() => inlineEdit.setIsEditing(true)}
             title="Edit message"
-            className="text-gray-400 hover:text-blue-500 transition-colors opacity-0 group-hover/msg:opacity-100"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200/70 dark:border-slate-700/70 text-[11px] font-semibold shadow-2xs transition-all active:scale-95 cursor-pointer"
             disabled={inlineEdit.isLoading}
           >
-            <Edit2 size={12} />
+            <Edit2 size={12} className="text-slate-500 dark:text-slate-400" />
+            <span>Edit</span>
           </button>
         )}
         {!isUser && displayContent && (
-          <>
+          <div className="inline-flex items-center gap-1 p-0.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
             <button
               onClick={() => { onCopy(displayContent); onToast('Copied to clipboard'); }}
               title="Copy response"
-              className="text-gray-400 hover:text-blue-500 transition-colors opacity-0 group-hover/msg:opacity-100"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
             >
-              <Copy size={12} />
+              <Copy size={13} />
             </button>
+            <div className="w-[1px] h-3.5 bg-slate-200 dark:bg-slate-700" />
             <button
               onClick={() => { track('answer_feedback', { helpful: true, session_id: sessionId }); onToast('Thanks for the feedback'); }}
               title="Helpful"
-              className="text-gray-400 hover:text-green-500 transition-colors opacity-0 group-hover/msg:opacity-100"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
             >
-              <ThumbsUp size={12} />
+              <ThumbsUp size={13} />
             </button>
             <button
               onClick={() => { track('answer_feedback', { helpful: false, session_id: sessionId }); onToast('Thanks for the feedback'); }}
               title="Not helpful"
-              className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover/msg:opacity-100"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
             >
-              <ThumbsDown size={12} />
+              <ThumbsDown size={13} />
             </button>
-          </>
+          </div>
         )}
       </div>
 
@@ -792,9 +802,59 @@ function MessageBubbleInner({
         return null
       })()}
 
-      {/* Property cards — suppressed in comparison mode (ComparisonTable owns that UI) */}
+      {/* Property cards — in comparison mode, render compared projects grid */}
       {(() => {
-        if (message.responseMode === 'comparison') return null
+        if (message.responseMode === 'comparison') {
+          const compProjects = message.comparisonProjects ?? message.properties ?? []
+          if (compProjects.length === 0) return null
+
+          return (
+            <div className="mt-4 w-full">
+              <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-gradient-header dark:bg-gradient-header-dark border border-blue-500/15 dark:border-blue-400/20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-blue-600/10 dark:bg-blue-400/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs shadow-2xs">
+                    ⚖️
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13.5px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                      Comparing {compProjects.length} Properties
+                    </span>
+                    <span className="hidden sm:inline-flex items-center gap-1 text-[9.5px] font-black text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-950/80 border border-blue-200/80 dark:border-blue-800/80 px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-2xs">
+                      Side-by-Side
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                {compProjects.map((property, pi) => (
+                  <m.div
+                    key={property.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: pi * 0.07, ease: 'easeOut' }}
+                    className="w-full h-full flex flex-col"
+                  >
+                    <ProjectCard
+                      project={property}
+                      userId={userId}
+                      sessionId={sessionId}
+                      index={pi}
+                      isSelectable={false}
+                      isSelected={false}
+                      onToggleSelect={() => {}}
+                      onDetailOpen={onDetailOpen}
+                      onToast={onToast}
+                      onAskAI={() => {}}
+                      onSetSiteVisit={onSetSiteVisit}
+                      onCall={onCallback}
+                    />
+                  </m.div>
+                ))}
+              </div>
+            </div>
+          )
+        }
 
         // New format: exactResults / nearbyResults (set on all fresh messages)
         const useNewFormat = message.exactResults !== undefined
@@ -916,7 +976,7 @@ function MessageBubbleInner({
             </m.div>
 
             {/* Empty sector banner — shown when requested sector has no exact matches */}
-            {useNewFormat && !hasExact && hasNearby && expansion && (
+            {useNewFormat && !hasExact && hasNearby && expansion && typeof expansion === 'object' && 'requestedSector' in expansion && (
               <m.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -926,7 +986,7 @@ function MessageBubbleInner({
                 <span className="text-amber-500 text-base mt-0.5 flex-shrink-0">⚠️</span>
                 <div>
                   <p className="text-[13px] font-semibold text-amber-800 dark:text-amber-300">
-                    We couldn&apos;t find an exact match in {expansion.requestedSector}
+                    We couldn&apos;t find an exact match in {String(expansion.requestedSector)}
                   </p>
                   <p className="text-[12px] text-amber-700 dark:text-amber-400 mt-0.5 font-medium">
                     Verified --
@@ -955,7 +1015,11 @@ function MessageBubbleInner({
                             sessionId={sessionId}
                             index={pi}
                             isSelectable={comparingMessageId === message.id}
-                            isSelected={Boolean(selectedCompareIds && (selectedCompareIds.has(String(property.id)) || (property.slug && selectedCompareIds.has(property.slug)) || selectedCompareIds.has(property.id as any)))}
+                            isSelected={Boolean(selectedCompareIds && (
+                              selectedCompareIds.has(String(property.id)) ||
+                              (property.slug !== undefined && property.slug !== null && selectedCompareIds.has(property.slug)) ||
+                              selectedCompareIds.has(property.id as any)
+                            ))}
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
@@ -994,7 +1058,11 @@ function MessageBubbleInner({
                             sessionId={sessionId}
                             index={pi}
                             isSelectable={comparingMessageId === message.id}
-                            isSelected={Boolean(selectedCompareIds && (selectedCompareIds.has(String(property.id)) || (property.slug && selectedCompareIds.has(property.slug)) || selectedCompareIds.has(property.id as any)))}
+                            isSelected={Boolean(selectedCompareIds && (
+                              selectedCompareIds.has(String(property.id)) ||
+                              (property.slug !== undefined && property.slug !== null && selectedCompareIds.has(property.slug)) ||
+                              selectedCompareIds.has(property.id as any)
+                            ))}
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}

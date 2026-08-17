@@ -812,7 +812,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
       >
-        <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-2xl rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col border border-gray-200/50 dark:border-gray-700/50">
+        <div className="bg-white dark:bg-[#120f0d] rounded-3xl overflow-hidden flex flex-col">
           {isMobile ? renderMobileHero() : renderHero()}
 
           {/* Tab strip — unified header */}

@@ -4,7 +4,7 @@
 export const MODELS = {
   MAIN: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
-  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-2.0-flash',
+  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-flash-latest',
   GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-flash-latest',
   OPENAI_AZURE: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   OPENAI_FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
@@ -29,6 +29,8 @@ export const DISCOVERY = {
   DEFAULT_CITY: process.env.DEFAULT_CITY || 'Noida',
   SAFE_TOKEN_CEILING: parseInt(process.env.SAFE_TOKEN_CEILING || '2000', 10),
   MAX_TOKENS_RESPONSE: parseInt(process.env.MAX_TOKENS_RESPONSE || '1500', 10),
+  MAX_TOKENS_ADVISORY: parseInt(process.env.MAX_TOKENS_ADVISORY || '400', 10),
+  MAX_TOKENS_COMPARISON: parseInt(process.env.MAX_TOKENS_COMPARISON || '800', 10),
   CHIP_INVENTORY_CACHE_MINUTES: 10,
 }
 

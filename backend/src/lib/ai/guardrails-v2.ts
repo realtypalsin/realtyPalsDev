@@ -183,8 +183,12 @@ export function validateAgainstFactsSync(
     return { blocked: false, confidence: 0, violations: [] }
   }
 
+  // Observe mode: violations are logged with CRITICAL/WARNING telemetry, but responses are not blocked.
+  // Set GUARDRAILS_V2_OBSERVE_MODE=false to enable active blocking once fact markers are fully populated.
+  const observeMode = process.env.GUARDRAILS_V2_OBSERVE_MODE !== 'false'
+
   return {
-    blocked: true,
+    blocked: observeMode ? false : true,
     confidence: 0.95,
     violations,
   }

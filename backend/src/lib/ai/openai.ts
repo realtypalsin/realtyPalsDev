@@ -48,6 +48,7 @@ function getOpenAIProvider(apiKeyOverride?: string): OpenAIProvider {
 // the cap prevents runaway generation and unexpected billing surprises.
 export interface InferenceConfig {
   maxTokens: number
+  model?: string
 }
 
 export const INFERENCE_DEFAULTS: InferenceConfig = {

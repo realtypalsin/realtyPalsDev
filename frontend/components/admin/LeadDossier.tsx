@@ -64,6 +64,8 @@ interface LeadDossierData {
   }
 }
 
+import { adminFetch } from '@/lib/adminFetch'
+
 export function LeadDossier({ leadId }: { leadId: string }) {
   const [dossier, setDossier] = useState<LeadDossierData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -73,7 +75,7 @@ export function LeadDossier({ leadId }: { leadId: string }) {
   useEffect(() => {
     async function fetchDossier() {
       try {
-        const res = await fetch(`/api/leads/callback/${leadId}/dossier`)
+        const res = await adminFetch(`/leads/callback/${leadId}/dossier`)
         if (!res.ok) throw new Error('Failed to fetch dossier')
         const data = await res.json()
         setDossier(data)

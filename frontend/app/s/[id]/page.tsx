@@ -50,46 +50,54 @@ export default function SharedShortlistPage() {
   }, [id])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-6xl mx-auto p-4 sm:p-6">
+    <div className="min-h-screen bg-[#ECEEF2] dark:bg-[#090D16] text-slate-900 dark:text-slate-100">
+      <div className="w-full max-w-[1800px] mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 mb-3 bg-white/80 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs transition-colors"
+            >
+              <ArrowLeft size={15} />
+              Back to RealtyPals
+            </a>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Shared Property Shortlist
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {projects.length} verified {projects.length === 1 ? 'property' : 'properties'} curated with RealtyPals AI
+            </p>
+          </div>
           <a
-            href="/"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 mb-4"
+            href="/discover"
+            className="self-start sm:self-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all active:scale-95"
           >
-            <ArrowLeft size={18} />
-            Back to RealtyPal
+            Explore More Properties
           </a>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Shared Shortlist
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {projects.length} properties recommended with RealtyPal AI
-          </p>
         </div>
 
         {/* Loading */}
         {loading && (
-          <div className="text-center py-12">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
-            <p className="text-gray-600 dark:text-gray-300 mt-4">Loading shortlist...</p>
+          <div className="text-center py-20 bg-white/60 dark:bg-slate-900/60 rounded-3xl border border-slate-200/80 dark:border-slate-800">
+            <div className="w-10 h-10 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+            <p className="text-slate-600 dark:text-slate-400 text-xs font-bold mt-4">Loading shortlist...</p>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
-            <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
-            <a href="/" className="text-red-600 dark:text-red-400 hover:underline mt-2 inline-block">
-              Start fresh →
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-8 text-center max-w-xl mx-auto">
+            <p className="text-red-700 dark:text-red-300 font-bold text-sm">{error}</p>
+            <a href="/" className="text-blue-600 dark:text-blue-400 hover:underline text-xs font-bold mt-3 inline-block">
+              Start fresh search →
             </a>
           </div>
         )}
 
-        {/* Projects grid */}
+        {/* Projects grid — 1 col on mobile, 2 on tablet, 3 on desktop, 4 on ultrawide */}
         {!loading && !error && projects.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {projects.map((project) => (
               <ProjectCard key={project.id} project={project} userId={userId} />
             ))}
@@ -98,8 +106,8 @@ export default function SharedShortlistPage() {
 
         {/* Empty */}
         {!loading && projects.length === 0 && !error && (
-          <div className="text-center py-12">
-            <p className="text-gray-600 dark:text-gray-300">No projects found</p>
+          <div className="text-center py-16 bg-white/60 dark:bg-slate-900/60 rounded-3xl border border-slate-200/80 dark:border-slate-800">
+            <p className="text-slate-600 dark:text-slate-400 text-sm font-semibold">No projects found in this shortlist.</p>
           </div>
         )}
 

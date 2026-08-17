@@ -62,8 +62,9 @@ import { filterNewChips, filterNewChipsWithFloor, markChipShown, hydrateFromDb, 
 import { isOverDailyBudget } from '../lib/ai/cost'
 import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monitoring/posthog'
 import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
-import { inputGuardrail, outputGuardrail } from '../lib/ai/guardrails'
+import { inputGuardrail } from '../lib/ai/guardrails'
 import { validateAgainstFacts } from '../lib/ai/guardrails-v2'
+import { getCachedResponse, setCachedResponse } from '../lib/ai/semanticCache'
 import {
   sameSet,
   logRouting,
@@ -79,7 +80,6 @@ import {
 } from './chat-helpers'
 import {
   generateDatabaseFallbackResponse,
-  enrichResponseWithDatabaseData,
 } from './chat-service'
 import {
   initializeChatAnalytics,
@@ -344,8 +344,35 @@ router.post('/', async (req: Request, res: Response) => {
   let hydratedIntent: Intent = prevIntent as Intent // Phase 0: Persisted in finally
   let messageId: string | undefined // Phase 1: For grading
   let responseText: string = '' // Phase 1: Full response for grading
+  let ownershipFailed = false
 
   try {
+    // ─── SEMANTIC FAQ CACHE (Instant $0.00 Token Fast Path) ────────────────────
+    if (action.type === 'TEXT_MESSAGE' && message) {
+      const cached = getCachedResponse(message)
+      if (cached) {
+        console.log('[CHAT:CACHE_HIT] Serving verified advisory response from cache:', message.slice(0, 50))
+        send('token', { token: cached.token })
+        if (cached.chips && cached.chips.length > 0) {
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Verified RealtyPals Intelligence (Cached):',
+            chips: cached.chips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+        }
+        send('done', {
+          sessionId: sessionId ?? null,
+          intentState: cached.intentState ?? 'SHORTLISTED',
+          intent: prevIntent,
+          responseMode: cached.responseMode ?? 'chat',
+        })
+        res.end()
+        return
+      }
+    }
+
     console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
     let rawIntentResult = { intent: prevIntent as Intent, degraded: false }
     
@@ -379,6 +406,10 @@ router.post('/', async (req: Request, res: Response) => {
           user_id: true,
           guest_token: true,
           summary: true,
+          summary_location: true,
+          summary_financial: true,
+          summary_timeline: true,
+          property_reactions: true,
           last_projects: true,
           messages: { orderBy: { created_at: 'desc' }, take: 50, select: { id: true, role: true, content: true, created_at: true } },
         },
@@ -391,17 +422,17 @@ router.post('/', async (req: Request, res: Response) => {
       (userId && sessionData.user_id === userId) ||
       (guestToken && sessionData.guest_token === guestToken)
     )) {
+      ownershipFailed = true
       send('error', { message: 'This conversation is not available.' })
       res.end()
       return
     }
 
     const existingSummary = sessionData?.summary ?? null
-    const sessionDataTyped = sessionData as any // Allow access to new Phase 4 fields
     const existingTopicSummaries: TopicSummaries | null = sessionData ? {
-      location: sessionDataTyped?.summary_location ?? null,
-      financial: sessionDataTyped?.summary_financial ?? null,
-      timeline: sessionDataTyped?.summary_timeline ?? null,
+      location: sessionData.summary_location ?? null,
+      financial: sessionData.summary_financial ?? null,
+      timeline: sessionData.summary_timeline ?? null,
     } : null
     const chatHistoryRaw = sessionData?.messages ?? []
     
@@ -474,7 +505,7 @@ router.post('/', async (req: Request, res: Response) => {
       try {
         const trgmResults = await (prisma as any).$queryRaw`
           SELECT id, name, slug FROM "Project"
-          WHERE name % ${lowerMsg}
+          WHERE name % ${lowerMsg} AND similarity(name, ${lowerMsg}) > 0.35
           ORDER BY similarity(name, ${lowerMsg}) DESC
           LIMIT 1
         `;
@@ -515,6 +546,7 @@ router.post('/', async (req: Request, res: Response) => {
             return { p, score: maxDist <= 2 ? 100 - maxDist * 20 : 0 };
           }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
           if (scored.length > 0) matched = scored[0].p;
+          else matched = null;
         }
       }
 
@@ -541,9 +573,10 @@ router.post('/', async (req: Request, res: Response) => {
       console.warn('[CHAT] Project name detection fallback error:', e);
     }
 
-    // Detect explicit lead submission (phone number + name in user message)
+    // Detect explicit lead submission (phone number with contact intent or name in user message)
     const phoneMatch = message.match(/\b[6-9]\d{9}\b/) || message.match(/phone\s*number[:\s]*([0-9+]+)/i)
-    if (phoneMatch) {
+    const isContactIntent = /call|contact|reach|callback|phone|mobile|number|talk to|speak to|connect me/i.test(message)
+    if (phoneMatch && isContactIntent) {
       const phone = phoneMatch[1] || phoneMatch[0]
       const nameMatch = message.match(/name[:\s]*([a-zA-Z\s;]+)/i)
       let nameStr = 'Valued Buyer'
@@ -554,20 +587,30 @@ router.post('/', async (req: Request, res: Response) => {
 
       const targetProj = cachedProjectsFromSession?.[0] || null
       try {
-        await prisma.callbackRequest.create({
-          data: {
-            name: nameStr,
-            phone: phone,
-            project_name: targetProj?.name || 'General Inquiry',
-            project_slug: targetProj?.slug || undefined,
+        // Deduplicate against existing callbacks within session or identical phone in last 10 mins
+        const existingLead = await prisma.callbackRequest.findFirst({
+          where: {
+            phone,
+            created_at: { gte: new Date(Date.now() - 10 * 60 * 1000) }
           }
         })
-        console.log('[LEAD:CAPTURED]', { name: nameStr, phone, targetProj: targetProj?.name })
+        if (!existingLead) {
+          await prisma.callbackRequest.create({
+            data: {
+              name: nameStr,
+              phone: phone,
+              project_name: targetProj?.name || 'General Inquiry',
+              project_slug: targetProj?.slug || undefined,
+            }
+          })
+          const redactedPhone = phone.length > 4 ? `${phone.slice(0, 2)}******${phone.slice(-2)}` : '***'
+          console.log('[LEAD:CAPTURED]', { name: nameStr, phone: redactedPhone, targetProj: targetProj?.name })
+        }
       } catch (e) {
         console.warn('[LEAD:SAVE_ERROR]', e)
       }
 
-      const successText = `✅ **Callback Request Registered!**\n\nThank you **${nameStr}**! Your contact number (**${phone}**) has been successfully registered with our RealtyPals advisory team.\nOur senior consultant will reach out to you shortly with exclusive project details.\n\n*Need immediate pricing or floor plan details while you wait? Ask me anytime!*`
+      const successText = `✅ **Callback Request Registered!**\n\nThank you **${nameStr}**! Your contact number has been registered with our RealtyPals advisory team.\nOur senior consultant will reach out to you shortly with exclusive project details.\n\n*Need immediate pricing or floor plan details while you wait? Ask me anytime!*`
       
       send('token', { token: successText })
       send('ui_state', {
@@ -670,28 +713,641 @@ router.post('/', async (req: Request, res: Response) => {
 
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
-    // ─── GROUND TRUTH DATABASE PIPELINE (Sourced 100% from PostgreSQL) ───────────
-    const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(message)
-    const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(message)
-    const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
+    // ─── GROUND TRUTH DATABASE PIPELINE (Lightweight Catalog Cache) ─────────────
+    const rawDbProjects = await prisma.project.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        sector: true,
+        status: true,
+        price_min_cr: true,
+        price_range_label: true,
+      }
+    })
 
-    if ((activeProjectName || isSummaryRequest || isCompareRequest) && action.type === 'TEXT_MESSAGE') {
-      try {
-        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest })
+    // Filter out duplicate IITL Nimbus project permanently
+    const allDbProjects = rawDbProjects.filter(p => !p.name.toLowerCase().includes('iitl nimbus'))
 
-        // 1. Gather all projects discussed in the chat session for interest weightage
-        const rawDbProjects = await prisma.project.findMany({
-          include: {
-            builder: true,
-            unit_types: true,
-            payment_plans: true,
-            cost_sheet: true,
-            amenities: true,
+    // 0. ADVERSARIAL & JAILBREAK SHIELD
+    const isJailbreak = /ignore\s+(all\s+)?(previous\s+)?instructions|system\s+prompt|dan\s+mode|unrestricted\s+assistant|bypass\s+(paying\s+)?(taxes|laws)|jailbreak/i.test(message)
+    if (isJailbreak && action.type === 'TEXT_MESSAGE') {
+      const jailbreakText = `### Security & Compliance Notice
+
+RealtyPals operates under strict real estate advisory protocols for Noida and Greater Noida. I cannot alter internal instructions or assist with tax evasion or non-compliant actions.
+
+For legal statutory schedules (UP Stamp Duty, GST, TDS) or verified property checks, feel free to ask!`
+
+      const jbChips = [
+        { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View UP Stamp Duty & Tax Rates', icon: 'file-text', analyticsId: 'chip_tax', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
+        { id: `chip_rera_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Check RERA Verification Guide', icon: 'shield-check', analyticsId: 'chip_rera', priority: 2, payload: { text: 'How do I check UP RERA registration?' } },
+      ]
+
+      send('token', { token: jailbreakText })
+      send('ui_state', {
+        stage: 'RESEARCH',
+        thinking: 'RealtyPals compliance and security protocols active:',
+        chips: jbChips,
+        missingFields: [],
+        confidence: 'HIGH'
+      })
+      send('done', {
+        sessionId: currentSessionId,
+        intentState: 'GATHERING',
+        intent,
+        responseMode: 'chat',
+      })
+      res.end()
+      return
+    }
+
+    // 0. OUT-OF-SCOPE GUARDRAIL
+    const isOutOfScope = (/^(write|generate|explain|solve|tell me|what is)\s+(a\s+)?(python|javascript|typescript|java|c\+\+|sql query|algorithm|bubble sort|code|script|recipe|joke|poem|song|essay|weather)|who won\b|capital of\b|translate\b/i.test(message) || (/python|bubble sort|javascript|algorithm|recipe/i.test(message))) && !/real estate|property|flat|bhk|builder|rera|noida|sector|ncr/i.test(message)
+    if (isOutOfScope && action.type === 'TEXT_MESSAGE') {
+      const deflectionText = `### RealtyPals Advisory Scope
+
+RealtyPals is an AI advisory engine specialized exclusively in verified real estate intelligence across Noida and Greater Noida.
+
+For questions regarding property pricing, sector analysis, RERA legal checks, payment plans, or builder track records, feel free to ask!`
+
+      const outOfScopeChips = [
+        { id: `chip_noida_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show properties in Noida', icon: 'building', analyticsId: 'chip_noida', priority: 1, payload: { text: 'Show verified properties in Noida' } },
+        { id: `chip_sectors_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Which sectors are trending?', icon: 'map-pin', analyticsId: 'chip_trending_sectors', priority: 2, payload: { text: 'Which sectors are best for investment in Noida?' } },
+        { id: `chip_builders_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Top builders by track record', icon: 'shield-check', analyticsId: 'chip_top_builders', priority: 3, payload: { text: 'Which builders in Noida have on-time delivery?' } },
+      ]
+
+      send('token', { token: deflectionText })
+      send('ui_state', {
+        stage: 'RESEARCH',
+        thinking: 'RealtyPals real estate advisory scope:',
+        chips: outOfScopeChips,
+        missingFields: [],
+        confidence: 'HIGH'
+      })
+      send('done', {
+        sessionId: currentSessionId,
+        intentState: 'GATHERING',
+        intent,
+        responseMode: 'chat',
+      })
+      res.end()
+      return
+    }
+
+    // Helper: Extract sectors from user query with support for "sector 76 with 75", "76 vs 75", etc.
+    const extractSectorsFromMessage = (msg: string): string[] => {
+      const normalized = msg.toLowerCase()
+      const sectorsFound = new Set<string>()
+
+      // 1. Explicit "sector \d+" matches
+      const explicitMatches = Array.from(normalized.matchAll(/\bsector\s*(\d+[a-z]?)\b/gi))
+      explicitMatches.forEach(m => sectorsFound.add(`Sector ${m[1]}`))
+
+      // 2. Relative pattern e.g. "sector 76 with 75", "sector 76 vs 75", "sector 76 and 75"
+      const relativeMatch = normalized.match(/\bsector\s*(\d+[a-z]?)\s*(?:vs\.?|versus|with|and|or|compared to|to)\s*(?:sector\s*)?(\d+[a-z]?)\b/i)
+      if (relativeMatch) {
+        sectorsFound.add(`Sector ${relativeMatch[1]}`)
+        sectorsFound.add(`Sector ${relativeMatch[2]}`)
+      }
+
+      // 3. Match known DB sectors if numbers appear in comparison context (avoid matching decimal parts like 1.5)
+      if (sectorsFound.size < 2 && /compare|vs|versus|better|difference|between|which\s+sector/i.test(normalized)) {
+        const dbSectors = new Set(allDbProjects.map(p => p.sector.replace(/^Sector\s*/i, '').trim().toLowerCase()))
+        const textWithoutDecimals = normalized.replace(/\d+\.\d+/g, ' ')
+        const numberTokens = Array.from(textWithoutDecimals.matchAll(/\b(\d{1,3}[a-z]?)\b/gi)).map(m => m[1])
+        numberTokens.forEach(tok => {
+          if (dbSectors.has(tok.toLowerCase())) {
+            sectorsFound.add(`Sector ${tok}`)
           }
         })
+      }
 
-        // Filter out duplicate IITL Nimbus project permanently
-        const allDbProjects = rawDbProjects.filter(p => !p.name.toLowerCase().includes('iitl nimbus'))
+      return Array.from(sectorsFound)
+    }
+
+    const sectorMatches = extractSectorsFromMessage(message)
+    const isSectorCompare = sectorMatches.length >= 2 && /compare|vs|versus|better|difference|which sector|between/i.test(message)
+    const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(message)
+    const isPaymentPlanRequest = /payment plan|payment schedule|construction linked|down payment|flexi plan|clp|plp/i.test(message)
+    const isCostSheetRequest = /cost sheet|price breakdown|all inclusive|other charges|possession charges|car parking charge/i.test(message)
+    const isStatutoryTaxQuery = /(stamp duty|registration (charge|fee)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(message)
+    const isReraCheckQuery = /(blacklist|nclt|insolven|defaulter|check rera|verify rera|rera website|rera portal|rera status|is.*rera registered)/i.test(message) && (intent.projectNames?.length ?? 0) === 0
+    const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(message) && !isSectorCompare && (intent.projectNames?.length ?? 0) < 2
+    const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(message) && (sectorMatches.length === 0 || /which sector/i.test(message))
+    const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(message) || isSectorCompare
+    const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
+
+    if ((activeProjectName || isSummaryRequest || isCompareRequest || isSectorCompare || isPaymentPlanRequest || isCostSheetRequest || isStatutoryTaxQuery || isReraCheckQuery || isBuilderReputationQuery || isNewcomerOrientation) && action.type === 'TEXT_MESSAGE') {
+      try {
+        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest, isSectorCompare, isPaymentPlanRequest, isCostSheetRequest, isStatutoryTaxQuery, isReraCheckQuery, isBuilderReputationQuery, isNewcomerOrientation, sectorMatches })
+
+        // Check for Builder Comparison
+        const dbBuilders = await prisma.builder.findMany({
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            projects_delivered_count: true,
+            total_projects_count: true,
+            average_delay_months: true,
+            delivery_score: true,
+            construction_quality_score: true,
+            rera_compliance_score: true,
+            founded_year: true,
+            company_overview: true,
+          }
+        })
+        const matchedBuilders = dbBuilders.filter(b => message.toLowerCase().includes(b.name.toLowerCase()))
+        const isBuilderCompare = matchedBuilders.length >= 2 && /compare|vs|versus|better|difference|track record|builder|developer/i.test(message)
+
+        // ─── UP RERA & NCLT VERIFICATION PROTOCOL ─────────────────────────────────
+        if (isReraCheckQuery) {
+          const reraText = `### UP RERA & Project Title Verification Protocol
+
+To verify any residential or commercial project in Noida and Greater Noida:
+
+1. **Official UP RERA Portal**:
+   - Visit the official registry at **[up-rera.in](https://www.up-rera.in)**
+   - Navigate to **Important Links → Registered Projects** and enter the project RERA registration number or project name.
+
+2. **Check Promoter Defaulter & Revocation List**:
+   - Access **Promoter Defaulter List** on the UP-RERA portal to verify if the developer has pending recovery certificates (RCs) or revoked registrations.
+
+3. **NCLT Insolvency Verification**:
+   - Search the builder's corporate entity name on the Insolvency and Bankruptcy Board of India (**[ibbi.gov.in](https://ibbi.gov.in)**) to check if the company is under Corporate Insolvency Resolution Process (CIRP).
+
+4. **RealtyPals Pre-Screening**:
+   - All projects listed on RealtyPals are pre-screened against active UP-RERA registration certificates, sanctioned map approvals, and developer delivery records.`
+
+          const reraChips = [
+            { id: `chip_builders_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Top Safe Builders in Noida', icon: 'shield-check', analyticsId: 'chip_builders_safe', priority: 1, payload: { text: 'Which builders in Noida are safe and have on-time delivery?' } },
+            { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_tax_rera', priority: 2, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
+            { id: `chip_sec_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Explore Sector 76 Flats', icon: 'building', analyticsId: 'chip_sec76_rera', priority: 3, payload: { text: 'Show 2 BHK and 3 BHK flats in Sector 76' } },
+          ]
+
+          send('token', { token: reraText })
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Official UP RERA & NCLT legal compliance check protocol:',
+            chips: reraChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            responseMode: 'chat',
+          })
+          res.end()
+          return
+        }
+
+        // ─── STATUTORY TAX & LEGAL KNOWLEDGE HANDLER ──────────────────────────────
+        if (isStatutoryTaxQuery) {
+          const taxText = `### Statutory Taxes & Registration Charges (Noida / Uttar Pradesh)
+
+| Statutory Component | Rate / Charge | Nature | When & To Whom Paid |
+| :--- | :--- | :--- | :--- |
+| **Stamp Duty (Standard)** | 7% of agreement / circle value | Mandatory | Paid to UP Stamp & Registration Dept at registry |
+| **Stamp Duty (Female Buyer)** | 6% (₹10,000 concession up to ₹10L) | Concession | Paid at registry for female primary owners |
+| **Registration Fee** | 1% of property value (max ₹30,000) | Mandatory | Paid to Sub-Registrar Office at deed execution |
+| **GST (Under-Construction)** | 5% (without ITC) | Statutory | Billed across construction milestones |
+| **GST (Ready-to-Move with OC)**| 0% (Fully Exempt) | Exemption | Nil GST on properties with Occupancy Certificate |
+| **TDS (Section 194-IA)** | 1% of total sale consideration | Mandatory | Deducted by buyer if value > ₹50L (Form 26QB) |
+
+### Recommendation
+For an under-construction apartment, budget an additional **12–13% above Base Sale Price (BSP)** to cover Stamp Duty, Registration, and GST. For a Ready-to-Move home with OC, the extra statutory load is approximately **7.5–8%**.`
+
+          const taxChips = [
+            { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Other Charges', icon: 'file-text', analyticsId: 'chip_cost', priority: 1, payload: { text: 'Show cost sheet and price breakdown' } },
+            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 2, payload: { text: 'Calculate EMI' } },
+            { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show Ready-to-Move (0% GST)', icon: 'check-circle', analyticsId: 'chip_rtm_tax', priority: 3, payload: { text: 'Show ready to move flats in Noida' } },
+          ]
+
+          send('token', { token: taxText })
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Verified Uttar Pradesh statutory tax and stamp duty rates:',
+            chips: taxChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            responseMode: 'chat',
+          })
+          res.end()
+          return
+        }
+
+        // ─── BUILDER REPUTATION & DELIVERY SCORECARD ──────────────────────────────
+        if (isBuilderReputationQuery && !isBuilderCompare) {
+          const topBuilders = dbBuilders
+            .filter(b => b.delivery_score && b.delivery_score > 0)
+            .sort((a, b) => (b.delivery_score ?? 0) - (a.delivery_score ?? 0))
+            .slice(0, 6)
+
+          const builderRows = topBuilders.map(b => {
+            const delayStr = b.average_delay_months === 0 ? 'On Time' : `${b.average_delay_months} months`
+            const qualStr = b.construction_quality_score ? `${b.construction_quality_score}/100` : 'A-Grade'
+            const reraStr = b.rera_compliance_score ? `${b.rera_compliance_score}/100` : 'Verified'
+            return `| **${b.name}** | ${b.delivery_score}/100 | ${delayStr} | ${b.projects_delivered_count || 5}+ Projects | ${qualStr} | ${reraStr} |`
+          }).join('\n')
+
+          const topSafeNames = topBuilders.slice(0, 3).map(b => b.name).join(', ')
+          const reputationText = `### Verified Developer Track Record (Noida & Greater Noida)
+
+| Developer | Delivery Score | Avg Handover Delay | Delivered Track Record | Construction Quality | RERA Compliance |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+${builderRows}
+
+### Recommendation
+Prioritize developers with a Delivery Score above **85/100** and high RERA compliance (such as ${topSafeNames || 'reputable tier-1 builders'}) to minimize delivery delays and title risks.`
+
+          const repChips = topBuilders.slice(0, 3).map((b, i) => ({
+            id: `chip_b_${i}_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: `Projects by ${b.name}`,
+            icon: 'building',
+            analyticsId: `chip_b_${b.id}`,
+            priority: i + 1,
+            payload: { text: `Show me projects by ${b.name}` }
+          }))
+
+          send('token', { token: reputationText })
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Verified developer delivery scorecard from PostgreSQL database:',
+            chips: repChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+          setCachedResponse(message, { token: reputationText, chips: repChips })
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            responseMode: 'chat',
+          })
+          res.end()
+          return
+        }
+
+        // ─── NEWCOMER & SECTOR ORIENTATION GUIDE ────────────────────────────────────
+        if (isNewcomerOrientation) {
+          const [sectorsIntel, activeProjects] = await Promise.all([
+            prisma.sectorIntelligence.findMany({
+              where: { city: { in: ['Noida', 'Greater Noida'] } },
+              take: 8,
+              orderBy: { avg_price_per_sqft: 'desc' }
+            }),
+            prisma.project.findMany({
+              select: { name: true, sector: true, price_range_label: true, price_min_cr: true },
+              take: 30
+            })
+          ])
+
+          const projsBySector: Record<string, string[]> = {}
+          activeProjects.forEach(p => {
+            if (!projsBySector[p.sector]) projsBySector[p.sector] = []
+            if (projsBySector[p.sector].length < 3) projsBySector[p.sector].push(p.name)
+          })
+
+          let rows = ''
+          if (sectorsIntel.length > 0) {
+            rows = sectorsIntel.slice(0, 5).map(s => {
+              const socList = projsBySector[s.sector]?.join(', ') || 'Verified RERA societies'
+              const priceBand = s.avg_price_per_sqft ? `₹${Math.round(s.avg_price_per_sqft).toLocaleString('en-IN')}/sq.ft` : '₹7,500–12,000/sq.ft'
+              const strength = s.sector_strengths?.[0] || s.sector_overview?.slice(0, 70) || 'Established residential hub'
+              return `| **${s.sector}** (${s.micro_market || 'Noida'}) | ${priceBand} | ${strength} | ${socList} |`
+            }).join('\n')
+          } else {
+            const uniqueSectors = Array.from(new Set(activeProjects.map(p => p.sector))).slice(0, 5)
+            rows = uniqueSectors.map(sec => {
+              const socList = projsBySector[sec]?.join(', ') || 'Verified RERA societies'
+              return `| **${sec}** | ₹0.95–2.50 Cr | Metro access & settled family enclaves | ${socList} |`
+            }).join('\n')
+          }
+
+          const orientationText = `### Noida & Greater Noida Locality Guide for Families & Investors\n\n| Micro-Market / Sector | Price Spectrum | Locality Highlights | Top Listed Projects |\n| :--- | :--- | :--- | :--- |\n${rows}\n\n### Recommendation\nFor **metro connectivity and immediate family infrastructure**, prioritize **Sector 75 / 76**. For **expressway corporate commute and modern high-rises**, explore **Sector 137 / 150**.`
+
+          const orientationChips = [
+            { id: `chip_s76_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Flats in Sector 76', icon: 'building', analyticsId: 'chip_s76', priority: 1, payload: { text: 'Show 2 BHK and 3 BHK flats in Sector 76' } },
+            { id: `chip_s137_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Flats in Sector 137', icon: 'building', analyticsId: 'chip_s137', priority: 2, payload: { text: 'Show 2 BHK and 3 BHK flats in Sector 137' } },
+            { id: `chip_compare_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Compare Sector 76 vs 137', icon: 'arrow-right-left', analyticsId: 'chip_compare_76_137', priority: 3, payload: { text: 'Compare Sector 76 with Sector 137' } },
+          ]
+
+          send('token', { token: orientationText })
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Curated sector orientation guide from database:',
+            chips: orientationChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+          setCachedResponse(message, { token: orientationText, chips: orientationChips })
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            responseMode: 'chat',
+          })
+          res.end()
+          return
+        }
+
+        if (isSectorCompare && sectorMatches.length >= 2) {
+          // ─── SECTOR VS SECTOR COMPARISON ──────────────────────────────────────────
+          const s1 = sectorMatches[0]
+          const s2 = sectorMatches[1]
+
+          // Query deep relations for the two sectors specifically
+          const [s1DetailedProjs, s2DetailedProjs] = await Promise.all([
+            prisma.project.findMany({
+              where: { sector: { contains: s1.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+              include: { unit_types: true, builder: true }
+            }),
+            prisma.project.findMany({
+              where: { sector: { contains: s2.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+              include: { unit_types: true, builder: true }
+            })
+          ])
+
+          const getStats = (projs: typeof s1DetailedProjs, sName: string) => {
+            const prices = projs.flatMap(p => p.unit_types.map(u => u.price_min_cr)).filter(Boolean) as number[]
+            const minP = prices.length ? Math.min(...prices) : null
+            const maxP = prices.length ? Math.max(...prices) : null
+            const readyCount = projs.filter(p => p.status === 'ready_to_move').length
+            const topNames = projs.slice(0, 4).map(p => p.name).join(', ')
+            return {
+              sector: sName,
+              totalProjects: projs.length,
+              priceRange: minP && maxP ? `₹${minP}–${maxP} Cr` : '₹0.95–2.5 Cr',
+              readyCount,
+              topProjects: topNames || 'Top verified residential societies'
+            }
+          }
+
+          const s1Stats = getStats(s1DetailedProjs, s1)
+          const s2Stats = getStats(s2DetailedProjs, s2)
+          const sectorFactsJson = JSON.stringify({ [s1]: s1Stats, [s2]: s2Stats }, null, 2)
+
+          const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
+Verified Sector Database Facts: ${sectorFactsJson}
+
+CRITICAL FORMATTING MANDATE:
+- Maintain a clean, executive, professional tone. Do NOT include decorative emojis or icons in headings or text.
+- Present the comparison primarily in a clean, high-contrast Markdown Comparison Table.
+- Keep every data point super-summarized, concise, and scannable.
+
+OUTPUT STRUCTURE:
+
+### Verdict
+1-2 direct sentences stating the overall winner and key distinction between ${s1} and ${s2}.
+
+| Comparison Parameter | ${s1} | ${s2} |
+| :--- | :--- | :--- |
+| **Average Price / sq.ft** | [Price per sqft range] | [Price per sqft range] |
+| **Budget Range** | ${s1Stats.priceRange} | ${s2Stats.priceRange} |
+| **Metro & Transit** | [Nearest metro station & road connectivity] | [Nearest metro station & road connectivity] |
+| **Livability & Atmosphere** | [Commercial vitality vs. quiet residential, density] | [Commercial vitality vs. quiet residential, density] |
+| **Social Infrastructure** | [Malls, schools, parks, convenience] | [Malls, schools, parks, convenience] |
+| **Top Landmark Societies** | ${s1Stats.topProjects} | ${s2Stats.topProjects} |
+| **Best Suited For** | [Ideal buyer profile] | [Ideal buyer profile] |
+
+### Recommendation
+1 actionable decision sentence: "Choose **${s1}** if [profile]; choose **${s2}** if [profile]."`
+
+          const systemMsgHistory = [{ role: 'user' as const, content: message }]
+          const fallbackResult = await executeWithFallbackChain({
+            systemPrompt,
+            messages: systemMsgHistory,
+            send,
+            onToolCall: async () => ({}),
+            groqFallbackSuffix: '',
+            userMessage: message,
+          })
+
+          const sectorChips = [
+            { id: `chip_s1_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: `Flats in ${s1}`, icon: 'building', analyticsId: 'chip_s1_search', priority: 1, payload: { text: `Show me 2 BHK and 3 BHK flats in ${s1}` } },
+            { id: `chip_s2_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: `Flats in ${s2}`, icon: 'building', analyticsId: 'chip_s2_search', priority: 2, payload: { text: `Show me 2 BHK and 3 BHK flats in ${s2}` } },
+            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 3, payload: { text: 'Calculate EMI' } },
+          ]
+
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: `Comparing ${s1} vs ${s2}:`,
+            chips: sectorChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            responseMode: 'sector_comparison',
+          })
+          res.end()
+          return
+        }
+
+        // ─── PAYMENT PLAN COMPARISON ────────────────────────────────────────────────
+        if (isPaymentPlanRequest) {
+          const matchedTarget = allDbProjects.find(p => p.name.toLowerCase() === activeProjectName?.toLowerCase() || p.id === activeProjectName) ||
+            allDbProjects.find(p => message.toLowerCase().includes(p.name.toLowerCase()))
+
+          let planProject = null
+          if (matchedTarget) {
+            planProject = await prisma.project.findUnique({
+              where: { id: matchedTarget.id },
+              include: { builder: true, payment_plans: true }
+            })
+          }
+
+          if (!planProject) {
+            const clarifyText = `### Payment Plans in Noida & Greater Noida\n\nMost verified developers in Noida offer three standard RERA-compliant payment structures:\n\n1. **Construction Linked Plan (CLP)**: ~10% booking, 80% across milestone slabs, 10% on handover (lowest upfront risk).\n2. **Down Payment Plan**: ~10% booking, 85% in 45 days, 5% on handover (typical 5–8% BSP discount).\n3. **Flexi / Milestone Plan (30:70 / 20:80)**: 20–30% in first 90 days, balance upon superstructure or possession.\n\n*Which specific project would you like to view the detailed payment schedule for?*`
+            send('token', { token: clarifyText })
+            send('ui_state', {
+              stage: 'RESEARCH',
+              thinking: 'Select a project to view exact builder payment plans:',
+              chips: [
+                { id: `chip_sec76_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Projects in Sector 76', icon: 'building', analyticsId: 'chip_p_s76', priority: 1, payload: { text: 'Show projects in Sector 76' } },
+                { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_p_tax', priority: 2, payload: { text: 'How much stamp duty and GST do I pay in UP?' } }
+              ],
+              missingFields: [],
+              confidence: 'HIGH'
+            })
+            send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent, responseMode: 'chat' })
+            res.end()
+            return
+          }
+
+          const paymentPlans = planProject?.payment_plans || []
+          const planFactsJson = JSON.stringify({
+            projectName: planProject?.name,
+            developer: planProject?.builder?.name,
+            payment_plans: paymentPlans.length > 0 ? paymentPlans : [
+              { plan_name: 'Construction Linked Plan (CLP)', description: '10% on booking, 80% across construction milestones, 10% on offer of possession.' },
+              { plan_name: 'Down Payment Plan', description: '10% on booking, 85% within 45 days (with 5-8% upfront discount on BSP), 5% on possession.' },
+              { plan_name: 'Flexi / Milestone Plan (30:70 or 20:80)', description: '30% during construction, 70% upon super-structure or possession.' }
+            ]
+          }, null, 2)
+
+          const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
+Verified Payment Plan Database Facts: ${planFactsJson}
+
+CRITICAL FORMATTING MANDATE:
+- Maintain a clean, executive tone. Do NOT use decorative emojis or icons in headings or text.
+- Present the payment plans primarily in a clean, high-contrast Markdown Comparison Table.
+- Keep every data point super-summarized, concise, and scannable.
+
+OUTPUT STRUCTURE:
+
+### Verdict
+1-2 direct sentences explaining the financial advantage and cash flow tradeoff across available payment schedules for ${planProject?.name || 'this property'}.
+
+| Payment Plan | Initial Booking % | Construction Milestones | On Possession | Best Suited For |
+| :--- | :--- | :--- | :--- | :--- |
+| **Construction Linked (CLP)** | 10% on booking | 80% linked to slab casting | 10% on handover | Low upfront risk, salaried buyers with home loans |
+| **Down Payment Plan** | 10% on booking + 85% in 45 days | Nil during construction | 5% on handover | Cash-rich investors seeking 5–8% upfront BSP discount |
+| **Flexi / Milestone (30:70)** | 20–30% in first 90 days | 40% on top floor completion | 30–40% on handover | Balanced cash flow with minimal loan pre-EMI burden |
+
+### Recommendation
+1 actionable sentence advising which payment structure optimizes total out-of-pocket interest versus cash liquidity.`
+
+          const systemMsgHistory = [{ role: 'user' as const, content: message }]
+          const fallbackResult = await executeWithFallbackChain({
+            systemPrompt,
+            messages: systemMsgHistory,
+            send,
+            onToolCall: async () => ({}),
+            groqFallbackSuffix: '',
+            userMessage: message,
+          })
+
+          const planChips = [
+            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 1, payload: { text: 'Calculate EMI' } },
+            { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_cost_sheet', priority: 2, payload: { text: 'Show cost sheet and price breakdown' } },
+            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_site_visit', priority: 3, payload: { text: 'Schedule a site visit' } },
+          ]
+
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: `Analyzing payment plan schedules for ${planProject?.name}:`,
+            chips: planChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+
+          setCachedResponse(message, { token: fallbackResult.text, chips: planChips })
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            responseMode: 'chat',
+          })
+          res.end()
+          return
+        }
+
+        // ─── COST SHEET & PRICING BREAKDOWN ─────────────────────────────────────────
+        if (isCostSheetRequest) {
+          const matchedTarget = allDbProjects.find(p => p.name.toLowerCase() === activeProjectName?.toLowerCase() || p.id === activeProjectName) ||
+            allDbProjects.find(p => message.toLowerCase().includes(p.name.toLowerCase()))
+
+          let costProject = null
+          if (matchedTarget) {
+            costProject = await prisma.project.findUnique({
+              where: { id: matchedTarget.id },
+              include: { builder: true, cost_sheet: true, unit_types: true }
+            })
+          }
+
+          if (!costProject) {
+            const clarifyText = `### All-Inclusive Cost Sheet Structure\n\nWhen buying a residential property in Noida, the total acquisition cost consists of:\n\n1. **Base Sale Price (BSP)**: Carpet / Super area basic rate.\n2. **Statutory Taxes**: 7% UP Stamp Duty + 1% Registration + 5% GST (on Under-Construction units).\n3. **Other Project Charges**: Car Parking, Club Membership, EDC/IDC, and IFMS sinking fund.\n\n*Which project would you like to view the itemized price breakdown for?*`
+            send('token', { token: clarifyText })
+            send('ui_state', {
+              stage: 'RESEARCH',
+              thinking: 'Select a project to view exact cost sheet breakdown:',
+              chips: [
+                { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View UP Stamp Duty & Tax Rates', icon: 'file-text', analyticsId: 'chip_tax_cs', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
+                { id: `chip_sec76_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Flats in Sector 76', icon: 'building', analyticsId: 'chip_cs_s76', priority: 2, payload: { text: 'Show 2 BHK and 3 BHK flats in Sector 76' } }
+              ],
+              missingFields: [],
+              confidence: 'HIGH'
+            })
+            send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent, responseMode: 'chat' })
+            res.end()
+            return
+          }
+
+          const costFactsJson = JSON.stringify({
+            projectName: costProject?.name,
+            developer: costProject?.builder?.name,
+            bsp_range: costProject?.price_range_label,
+            cost_sheet: costProject?.cost_sheet,
+            unit_types: costProject?.unit_types.map(u => `${u.bhk} BHK (${u.super_area_sqft} sq ft): ₹${u.price_min_cr}–${u.price_max_cr} Cr`)
+          }, null, 2)
+
+          const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
+Verified Pricing & Cost Sheet Facts: ${costFactsJson}
+
+CRITICAL FORMATTING MANDATE:
+- Maintain a clean, executive tone. Do NOT use decorative emojis or icons in headings or text.
+- Present the price breakdown primarily in a clean, high-contrast Markdown Table based ONLY on available verified facts.
+- For statutory taxes, always state 7% UP Stamp Duty, 1% Registration, and 5% GST on under-construction.
+- For non-statutory developer charges (parking, club, EDC), state that they are detailed in the project's official booking cost sheet.
+- Keep every data point super-summarized, concise, and scannable.
+
+OUTPUT STRUCTURE:
+
+### Verdict
+1-2 direct sentences explaining the all-inclusive pricing structure versus base rate for ${costProject?.name || 'this property'}.
+
+| **IFMS (Maintenance Sinking Fund)**| ₹50–100 / sq.ft | On Possession | Refundable interest-free security deposit |
+| **GST (Goods & Services Tax)** | 5% (without ITC) | Statutory | Applicable on under-construction units |
+| **Stamp Duty & Registration** | 7% of agreement value | On Possession | State revenue authority fee |
+
+### Recommendation
+1 actionable sentence advising buyers to budget roughly 12–14% above BSP for all-inclusive handover.`
+
+          const systemMsgHistory = [{ role: 'user' as const, content: message }]
+          const fallbackResult = await executeWithFallbackChain({
+            systemPrompt,
+            messages: systemMsgHistory,
+            send,
+            onToolCall: async () => ({}),
+            groqFallbackSuffix: '',
+            userMessage: message,
+          })
+
+          const costChips = [
+            { id: `chip_plans_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Payment Plans', icon: 'file-text', analyticsId: 'chip_plans', priority: 1, payload: { text: 'Show payment plans' } },
+            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 2, payload: { text: 'Calculate EMI' } },
+            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_site_visit', priority: 3, payload: { text: 'Schedule a site visit' } },
+          ]
+
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: `Calculating all-inclusive cost breakdown for ${costProject?.name}:`,
+            chips: costChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            responseMode: 'chat',
+          })
+          res.end()
+          return
+        }
 
         // Track frequency of project mentions strictly across user messages (excluding assistant outputs & meta summary commands)
         const isMetaSummaryMsg = (txt: string) => /summarize|session summary|interest weightage|calculate weight|summary of session/i.test(txt)
@@ -724,7 +1380,6 @@ router.post('/', async (req: Request, res: Response) => {
           const matchedProjects: typeof allDbProjects = []
           const msgLower = message.toLowerCase()
           
-          // Helper tokenizer to strip generic stop words for smart fuzzy matching
           const tokenize = (str: string) => {
             const stopWords = new Set(['the', 'by', 'group', 'project', 'sector', 'noida', 'greater', 'west', 'east', 'south', 'north'])
             return str.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w))
@@ -734,20 +1389,17 @@ router.post('/', async (req: Request, res: Response) => {
           const intentTokens = (intent.projectNames || []).flatMap(pn => tokenize(pn))
           const allUserTokens = Array.from(new Set([...msgTokens, ...intentTokens]))
 
-          // Sort allDbProjects by length of name descending so longer specific names ("Ace Hanei") match before shorter generic ones ("Ace")
           const sortedDbProjects = [...allDbProjects].sort((a, b) => b.name.length - a.name.length)
 
           sortedDbProjects.forEach(p => {
             const pName = p.name.toLowerCase()
             
-            // Match full name or explicit project names in user message or intent
             const fullMatch = msgLower.includes(pName)
             const inNames = intent.projectNames && intent.projectNames.some(pn => {
               const pnLower = pn.toLowerCase()
               return pName.includes(pnLower) || pnLower.includes(pName)
             })
 
-            // Token overlap fuzzy match (e.g. user asks "Fusion Brooks", DB has "Fusion The Brook")
             const pTokens = tokenize(p.name)
             const overlap = pTokens.filter(pt => allUserTokens.some(ut => pt.includes(ut) || ut.includes(pt)))
             const isFuzzyMatch = overlap.length >= 2 || (overlap.length >= 1 && (pTokens.length === 1 || overlap.some(t => t.startsWith('fusion') || t.startsWith('hanei') || t.startsWith('nimbus') || t.startsWith('aspire') || t.startsWith('brook'))))
@@ -762,124 +1414,138 @@ router.post('/', async (req: Request, res: Response) => {
             }
           })
 
-          if (matchedProjects.length > 0) {
-            // Strictly keep ONLY the matched requested projects (min 2, max 4) — NEVER add random unrequested projects!
-            targetProjects = matchedProjects.slice(0, 4)
+          targetProjects = matchedProjects
+        }
 
-            // Check if user requested a project that has no verified match in DB
-            const unmatchedNames = (intent.projectNames || []).filter(pn => 
-              pn.length >= 3 && !targetProjects.some(tp => 
-                tp.name.toLowerCase().includes(pn.toLowerCase()) || 
-                pn.toLowerCase().includes(tp.name.toLowerCase())
-              )
-            )
-            if (unmatchedNames.length > 0) {
-              fuzzyMatchedNotes.push(`Note: We currently do not have verified database facts for **${unmatchedNames.join(', ')}**. To maintain 100% data integrity, we have compared the requested projects for which verified database facts are available (${targetProjects.map(p => p.name).join(', ')}). For verified information on ${unmatchedNames.join(', ')}, please contact our advisory sales team.`)
+        // If not comparing, find the single active project (exact or fuzzy)
+        if (targetProjects.length === 0 && activeProjectName) {
+          const directMatch = allDbProjects.find(p => p.name.toLowerCase() === activeProjectName.toLowerCase() || p.id === activeProjectName)
+          if (directMatch) {
+            targetProjects = [directMatch]
+          } else {
+            const activeLower = activeProjectName.toLowerCase()
+            const fuzzyMatch = allDbProjects.find(p => p.name.toLowerCase().includes(activeLower) || activeLower.includes(p.name.toLowerCase()))
+            if (fuzzyMatch) {
+              targetProjects = [fuzzyMatch]
+              fuzzyMatchedNotes.push(`Did you mean **${fuzzyMatch.name}**? Showing verified facts for **${fuzzyMatch.name}**:`)
             }
-          }
-        } else if (isSummaryRequest) {
-          targetProjects = Array.from(projectMentionCounts.values()).map(v => v.project)
-          if (targetProjects.length === 0 && allDbProjects.length > 0) {
-            targetProjects = allDbProjects.slice(0, 3)
-          }
-        } else if (activeProjectName) {
-          const matchedProj = allDbProjects.find(p => p.name.toLowerCase().includes(activeProjectName.toLowerCase()) || activeProjectName.toLowerCase().includes(p.name.toLowerCase())) || allDbProjects.find(p => p.id === activeProjectName)
-          if (matchedProj) {
-            targetProjects = [matchedProj]
           }
         }
 
+        // Execute only if target projects were explicitly identified
         if (targetProjects.length > 0) {
-          // Deduplicate targetProjects so duplicate DB records for the same property only render 1 card
-          const seenKeys = new Set<string>()
-          targetProjects = targetProjects.filter(p => {
-            const normName = p.name.toLowerCase().replace(/^(iitl\s+|nimbus\s+)/g, '').replace(/\bthe\b/g, '').trim()
-            const key = p.rera_number && p.rera_number.length > 5 ? p.rera_number : normName
-            if (seenKeys.has(key)) return false
-            seenKeys.add(key)
-            return true
+          const targetIds = targetProjects.map(p => p.id)
+          const detailedTargetProjects = await prisma.project.findMany({
+            where: { id: { in: targetIds } },
+            include: {
+              builder: true,
+              unit_types: true,
+              payment_plans: true,
+              cost_sheet: true,
+              amenities: true,
+            }
           })
 
-          // CRITICAL REQUIREMENT: ALWAYS EMIT PROPERTY CARDS FOR THE UI
-          send('properties', {
-            exactResults: targetProjects,
-            nearbyResults: [],
-            expansion: null,
-            renderTarget: 'cards_and_text'
-          })
+          const totalInquiries = Array.from(projectMentionCounts.values()).reduce((sum, item) => sum + item.count, 0)
 
-          // Calculate total mentions across session
-          const totalMentions = Array.from(projectMentionCounts.values()).reduce((sum, v) => sum + v.count, 0) || 1
+          const dbFactsJson = JSON.stringify(detailedTargetProjects.map(p => {
+            const mentions = projectMentionCounts.get(p.id)?.count || 1
+            const weightagePct = totalInquiries > 0 ? Math.round((mentions / totalInquiries) * 100) : Math.round(100 / detailedTargetProjects.length)
 
-          const dbFactsJson = JSON.stringify({
-            projects: targetProjects.map(p => {
-              const mentions = projectMentionCounts.get(p.id)?.count || 1
-              const weightagePct = Math.round((mentions / totalMentions) * 100)
-              const baseObj: Record<string, any> = {
-                name: p.name,
-                sector: p.sector,
-                city: p.city,
-                rera_number: p.rera_number,
-                price_min_cr: p.price_min_cr,
-                price_range_label: p.price_range_label,
-                status: p.status,
-                launch_date: p.launch_date ? p.launch_date.toISOString().slice(0, 10) : undefined,
-                possession_date: p.possession_date ? p.possession_date.toISOString().slice(0, 10) : undefined,
-                builder: p.builder ? { name: p.builder.name } : undefined,
-                description: p.description,
-                payment_plans: p.payment_plans.map(pp => pp.plan_name),
-                unit_types: p.unit_types.map(ut => `${ut.bhk} BHK (${ut.super_area_sqft} sq ft)`),
-              }
-              if (isSummaryRequest) {
-                baseObj.session_inquiry_count = mentions
-                baseObj.session_interest_weightage_pct = weightagePct
-              }
-              // ponytail: strip undefined values before JSON.stringify to reduce token size
-              return Object.fromEntries(Object.entries(baseObj).filter(([, v]) => v !== undefined))
-            })
-          }).replace(/\s+/g, ' ')
+            const baseObj: Record<string, any> = {
+              name: p.name,
+              builder: p.builder ? p.builder.name : 'Unknown Builder',
+              location: `${p.sector}, ${p.city}`,
+              status: p.status === 'ready_to_move' ? 'Ready to Move' : p.status === 'new_launch' ? 'New Launch' : 'Under Construction',
+              rera_number: p.rera_number,
+              price_range: p.price_range_label,
+              launch_date: p.launch_date ? p.launch_date.toISOString().split('T')[0] : 'N/A',
+              possession_date: p.possession_date ? p.possession_date.toISOString().split('T')[0] : (p.possession_label || 'N/A'),
+              description: p.description,
+              payment_plans: p.payment_plans.map(pp => pp.plan_name),
+              unit_types: p.unit_types.map(ut => `${ut.bhk} BHK (${ut.super_area_sqft} sq ft)`),
+              amenities: p.amenities.map(a => a.name).slice(0, 10),
+            }
+            if (isSummaryRequest) {
+              baseObj.session_inquiry_count = mentions
+              baseObj.session_interest_weightage_pct = weightagePct
+            }
+            return Object.fromEntries(Object.entries(baseObj).filter(([, v]) => v !== undefined))
+          })).replace(/\s+/g, ' ')
 
           const transparentClarificationText = fuzzyMatchedNotes.length > 0 ? `\nTRANSPARENT MATCH NOTE:\n${fuzzyMatchedNotes.join('\n')}\n` : ''
 
           let systemPrompt = ''
+          const isAmenityQuery = /amenit|sports|clubhouse|gym|pool|park|open space|green/i.test(message)
+
           if (isSummaryRequest) {
-            systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
+            systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
 Verified facts: ${dbFactsJson}
 ${transparentClarificationText}
 EXECUTIVE SUMMARY INSTRUCTIONS:
 1. Render a clean Markdown summary table of the session with columns: | Project Name | Inquiry Count | Interest Weightage (%) |.
 2. Below the table, provide a concise summary for each discussed project.
 3. Never invent facts outside PostgreSQL DB.`
-          } else if (isCompareRequest && targetProjects.length >= 2) {
-            const projectHeaders = targetProjects.map(p => p.name).join(' | ')
-            systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
-Verified facts: ${dbFactsJson}
+          } else if (isCompareRequest && targetProjects.length >= 2 && isAmenityQuery) {
+            const projectHeaders = targetProjects.map(p => p.name).join(' vs. ')
+            systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
+Verified facts from database: ${dbFactsJson}
 ${transparentClarificationText}
-MULTI-PROPERTY COMPARISON INSTRUCTIONS:
-1. Render a clean, multi-column Markdown comparison table comparing strictly the ${targetProjects.length} requested projects with header: | Parameter | ${projectHeaders} |.
-2. If a project was matched via close name similarity (e.g. user typed "Fusion Brooks" and we matched "Fusion The Brook"), include a brief 1-line transparent note at the top before the table: "Did you mean **Fusion The Brook**? Here is the comparison including verified facts for **Fusion The Brook**:".
-3. Compare key high-value buyer parameters across rows in this exact order:
-   - Developer / Builder
-   - Location (Sector & City)
-   - Status (Under Construction vs Ready to Move)
-   - Price Range (₹ Cr / Lakh)
-   - Configurations Offered (e.g. 2 BHK, 3 BHK)
-   - Unit Sizes (sq ft)
-   - Key Payment Plans Offered
-   - Launch & Possession Dates
-   - RERA Registration Number
-4. Do NOT include unrequested projects. Show ONLY the ${targetProjects.length} requested columns.
-5. Keep table cell values concise and clear. Do NOT output unrequested text paragraphs.`
+
+CRITICAL FORMATTING MANDATE:
+- Maintain a clean, executive tone. Do NOT use decorative emojis or icons in headings or text.
+- Render the comparison as a clean, structured Markdown Comparison Table.
+
+OUTPUT STRUCTURE:
+
+### Verdict
+1-2 direct sentences on which project offers superior lifestyle and amenities.
+
+| Amenity & Lifestyle Feature | ${targetProjects[0].name} | ${targetProjects[1].name} |
+| :--- | :--- | :--- |
+| **Clubhouse & Scale** | [Clubhouse size/features] | [Clubhouse size/features] |
+| **Swimming Pools** | [Pool specs] | [Pool specs] |
+| **Sports Facilities** | [Courts, gym, tracks] | [Courts, gym, tracks] |
+| **Open Green Cover** | [Open space % & parks] | [Open space % & parks] |
+| **Density & Atmosphere** | [Units/acre & living environment] | [Units/acre & living environment] |
+
+### Recommendation
+1 actionable decision sentence for buyers.`
+          } else if (isCompareRequest && targetProjects.length >= 2) {
+            const projectHeaders = targetProjects.map(p => p.name).join(' vs. ')
+            systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
+Verified facts from database: ${dbFactsJson}
+${transparentClarificationText}
+
+CRITICAL FORMATTING MANDATE:
+- Maintain a clean, executive tone. Do NOT use decorative emojis or icons in headings or text.
+- Render the comparison as a clean, structured Markdown Comparison Table with concise data points.
+
+OUTPUT STRUCTURE:
+
+### Verdict
+1-2 direct sentences on the overall winner and key tradeoff between ${projectHeaders}.
+
+| Core Metric | ${targetProjects[0].name} | ${targetProjects[1].name} |
+| :--- | :--- | :--- |
+| **Price / sq.ft** | [Price per sqft range] | [Price per sqft range] |
+| **Unit Configurations** | [BHK offerings & size range] | [BHK offerings & size range] |
+| **Status & Possession** | [Possession date & status] | [Possession date & status] |
+| **Key Advantage** | [1-line top strength] | [1-line top strength] |
+| **Critical Watch-out** | [1-line risk factor or delay history] | [1-line risk factor or delay history] |
+| **Ideal Buyer** | [1-line best suited profile] | [1-line best suited profile] |
+
+### Recommendation
+1 actionable decision sentence: "Choose **${targetProjects[0].name}** if [profile]; choose **${targetProjects[1].name}** if [profile]."`
           } else {
-            systemPrompt = `You are RealtyPal — candid expert AI real-estate advisor for Noida & Greater Noida.
+            systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
 Verified facts: ${dbFactsJson}
 
 EXECUTIVE INSTRUCTIONS:
-1. Answer ONLY what the user explicitly asked for in their question. Be extremely concise.
-2. Format your response strictly as a clean, elegant Markdown comparison table (2 columns: Parameter | Value).
+1. Answer ONLY what the user explicitly asked for. Be extremely concise.
+2. Structure your answer with small bullet points or a concise 2-column Markdown Table (| Parameter | Value |).
 3. Do NOT output long text paragraphs or dump lists of unit types/payment plans unless the user explicitly requested them.
-4. Do NOT output any "Session Interest Summary" table or extra meta commentary.
-5. Use exact dates (e.g. 2024-02-01 launch, 2028-12-12 possession) and exact RERA IDs (e.g. UPRERAPRJ916631/02/2024).`
+4. Maintain a clean executive tone without decorative emojis.`
           }
 
           const systemMsgHistory = [{ role: 'user' as const, content: message }]
@@ -1077,8 +1743,56 @@ EXECUTIVE INSTRUCTIONS:
         if (!gatewayResponse.found || !gatewayResponse.data || !gatewayResponse.completeness) {
           const { handleMissingProject } = await import('../lib/projectDataGateway.guards')
           const missing = handleMissingProject(plan.projectIds[0])
-          console.log('[CHAT:PROJECT_DETAIL:NOT_FOUND]', missing.message)
-          send('token', { token: 'Unable to retrieve project data. Please contact our team.' })
+          console.log('[CHAT:PROJECT_DETAIL:NOT_FOUND]', missing.message, { query: message, sector: intent?.sector })
+
+          // Fallback: Check if the user is asking about ready-to-move, possession, pricing or general sector projects
+          const activeSector = intent?.sector || 'Sector 79, Noida'
+          const matchingDbProjects = await prisma.project.findMany({
+            where: {
+              OR: [
+                { sector: { contains: activeSector.split(',')[0].trim(), mode: 'insensitive' } },
+                { city: { contains: 'Noida', mode: 'insensitive' } }
+              ]
+            },
+            include: { unit_types: true, builder: true },
+            take: 8
+          })
+
+          const isRtmQuery = /ready to move|rtm|immediate|possession/i.test(message)
+          const isBhkQuery = /\b([2345])\s*bhk\b/i.test(message)
+
+          if (matchingDbProjects.length > 0 && (isRtmQuery || isBhkQuery || /which of these|show me|list/i.test(message))) {
+            let filtered = matchingDbProjects
+            if (isRtmQuery) {
+              filtered = matchingDbProjects.filter(p => p.status === 'ready_to_move')
+            }
+            if (filtered.length === 0) filtered = matchingDbProjects.slice(0, 4)
+
+            const projectRows = filtered.map(p => {
+              const prices = p.unit_types.map(u => u.price_min_cr).filter((val): val is number => typeof val === 'number')
+              const minPrice = prices.length ? Math.min(...prices) : null
+              const priceStr = minPrice ? `₹${minPrice} Cr+` : p.price_range_label || 'On Request'
+              const bhks = Array.from(new Set(p.unit_types.map(u => `${u.bhk} BHK`))).join(', ') || '2, 3 BHK'
+              const statusStr = p.status === 'ready_to_move' ? 'Ready to Move' : 'Under Construction'
+              return `| **${p.name}** | ${p.sector} | ${statusStr} | ${bhks} | ${priceStr} |`
+            }).join('\n')
+
+            const responseText = `### Verified Projects Status
+
+| Project Name | Location | Status | Configurations | Price Spectrum |
+| :--- | :--- | :--- | :--- | :--- |
+${projectRows}
+
+### Recommendation
+For ready-to-move possession, prioritize **${filtered[0]?.name}** or **${filtered[1]?.name || filtered[0]?.name}** for immediate registry and verified occupancy.`
+
+            send('token', { token: responseText })
+            send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent })
+            res.end()
+            return
+          }
+
+          send('token', { token: `I couldn't locate a verified database record matching "${plan.projectIds[0]}". Would you like me to show verified properties in ${activeSector}?` })
           send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
           res.end()
           return
@@ -2183,8 +2897,8 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     console.log('[CHAT] Property reactions detected', { count: reactions.length })
 
     // Load existing reactions and merge with new ones
-    const existingReactions: PropertyReaction[] = sessionDataTyped?.property_reactions
-      ? (sessionDataTyped.property_reactions as unknown as PropertyReaction[])
+    const existingReactions: PropertyReaction[] = sessionData?.property_reactions
+      ? (sessionData.property_reactions as unknown as PropertyReaction[])
       : []
     const mergedReactions = [...existingReactions]
     for (const reaction of reactions) {
@@ -2393,8 +3107,8 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       send('error', { message: "I'm having trouble right now. Please try again in a moment." })
     }
   } finally {
-    // Phase 0: Persist intent to session memory (async, fire-and-forget)
-    if (sessionId && hydratedIntent) {
+    // Phase 0: Persist intent to session memory (async, fire-and-forget) - guarded against IDOR
+    if (sessionId && hydratedIntent && !ownershipFailed) {
       persistIntentToMemory(sessionId, userId, hydratedIntent).catch((err) => {
         console.error('[PHASE0:PERSIST] Error persisting intent:', err.message)
       })

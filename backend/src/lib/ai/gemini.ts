@@ -104,7 +104,7 @@ export async function streamWithGemini(
       }
 
       const stream = await client.models.generateContentStream({
-        model: MODELS.GEMINI_MAIN,
+        model: config.model || MODELS.GEMINI_MAIN,
         contents,
         config: genConfig,
       })

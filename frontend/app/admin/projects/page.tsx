@@ -9,7 +9,8 @@ import { useRouter } from 'next/navigation'
 import {
   Search, Plus, CheckCircle2, Clock, Zap, Trash2, Building2, ChevronRight, CornerDownLeft,
   X, ArrowUpDown, ArrowUp, ArrowDown, MapPin, Layers, Filter, RefreshCw, ChevronDown, Check,
-  Download, Upload, AlertTriangle, FileSpreadsheet, FileText
+  Download, Upload, AlertTriangle, FileSpreadsheet, FileText, Copy, CheckCheck, FileJson, Sliders,
+  CheckSquare, Square, SlidersHorizontal, ArrowRight, ShieldAlert, Cpu
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { adminFetch } from '@/lib/adminFetch'
@@ -84,7 +85,7 @@ function CustomSelect<T extends string>({
   )
 }
 
-interface UnitType { bhk: number; price_min_cr: number | null; price_max_cr: number | null }
+interface UnitType { bhk: number; price_min_cr: number | null; price_max_cr: number | null; super_area_sqft?: number | null; carpet_area_sqft?: number | null }
 
 interface Project {
   id: string
@@ -96,6 +97,8 @@ interface Project {
   hero_image_url: string | null
   rera_number: string | null
   description?: string | null
+  address?: string | null
+  possession_label?: string | null
   builder: { name: string }
   unit_types: UnitType[]
   amenities?: { id: string }[]
@@ -115,6 +118,18 @@ export interface FilterToken {
 type SortField = 'name' | 'builder' | 'status' | 'price' | 'health'
 type SortOrder = 'asc' | 'desc'
 
+export type ProjectTabKey = 'core' | 'specifications' | 'pricing' | 'location' | 'intelligence' | 'updates' | 'partners'
+
+const PROPERTY_TABS_CONFIG: Array<{ id: ProjectTabKey; label: string; description: string }> = [
+  { id: 'core', label: 'Core Info', description: 'Name, Builder, UP RERA No., Tagline, Overview' },
+  { id: 'specifications', label: 'Specifications', description: 'BHK Units, Carpet Area, Super Area, Bathrooms' },
+  { id: 'pricing', label: 'Pricing & Cost Sheet', description: 'Price Range, Base Rate, EDC/IDC, Parking, Payment Plans' },
+  { id: 'location', label: 'Location & Connectivity', description: 'Address, GPS Coordinates, Metro, Highway Distance' },
+  { id: 'intelligence', label: 'Intelligence & Analysis', description: 'Sector Stage, 5-Yr CAGR, Livability, Why Buy/Avoid' },
+  { id: 'updates', label: 'Updates & Timeline', description: 'Launch Date, Possession Date, Construction Stage, RERA Expiry' },
+  { id: 'partners', label: 'Channel Partners', description: 'Direct Sales Office, Broker Commission Schedule' },
+]
+
 function getNonMediaScore(p: Project): number {
   if (p.tabScores) {
     const ts = p.tabScores
@@ -126,7 +141,7 @@ function getNonMediaScore(p: Project): number {
       ((ts.partners ?? 100) * 0.15)
     )
   }
-  return p.completenessScore ?? 100
+  return typeof p.completenessScore === 'number' ? p.completenessScore : quickHealth(p).score
 }
 
 function ProjectThumbnail({ src, alt }: { src?: string | null; alt: string }) {
@@ -146,9 +161,6 @@ function ProjectThumbnail({ src, alt }: { src?: string | null; alt: string }) {
 }
 
 function quickHealth(p: Project): { score: number; missing: string[] } {
-  if (typeof p.completenessScore === 'number') {
-    return { score: p.completenessScore, missing: [] }
-  }
   const images = p.images || []
   const unitTypes = p.unit_types || []
   const hasImage = images.length > 0 || !!p.hero_image_url
@@ -164,7 +176,37 @@ function quickHealth(p: Project): { score: number; missing: string[] } {
   ]
   const missing = checks.filter(c => !c.ok).map(c => c.label)
   const scorePct = Math.round((checks.filter(c => c.ok).length / checks.length) * 100)
-  return { score: scorePct, missing }
+  return { score: typeof p.completenessScore === 'number' ? p.completenessScore : scorePct, missing }
+}
+
+function getMissingFieldsForSelectedTabs(p: Project, tabs: Set<ProjectTabKey>): string[] {
+  const missing: string[] = []
+  const unitTypes = p.unit_types || []
+
+  if (tabs.has('core')) {
+    if (!p.rera_number) missing.push('UP RERA Number')
+    if (!p.builder?.name) missing.push('Builder / Developer Name')
+    if (!p.description || p.description.length < 20) missing.push('Project Overview / Tagline')
+  }
+  if (tabs.has('specifications')) {
+    if (unitTypes.length === 0) missing.push('BHK Unit Configurations & Floor Plans')
+    else if (!unitTypes.some(u => u.super_area_sqft)) missing.push('Super Area & Carpet Area (sq.ft)')
+  }
+  if (tabs.has('pricing')) {
+    if (!unitTypes.some(u => u.price_min_cr != null)) missing.push('Price Range & Base Rate per sq.ft')
+  }
+  if (tabs.has('location')) {
+    if (!p.address) missing.push('Exact Plot Address & GPS Coordinates')
+    if (!p.connectivity || p.connectivity.length < 2) missing.push('Nearest Metro & Expressway Connectivity')
+  }
+  if (tabs.has('intelligence')) {
+    if (!p.amenities || p.amenities.length < 3) missing.push('Project Amenities & Lifestyle Highlights')
+  }
+  if (tabs.has('updates')) {
+    if (p.status !== 'ready_to_move' && !p.possession_label) missing.push('Possession Timeline & Construction Milestone')
+  }
+
+  return Array.from(new Set(missing))
 }
 
 function priceMinVal(units: UnitType[] = []): number {
@@ -195,8 +237,11 @@ export default function AdminProjects() {
   const [query, setQuery] = useState('')
   const [activeTokens, setActiveTokens] = useState<FilterToken[]>([])
   const [statusFilter, setStatusFilter] = useState<'all' | 'ready_to_move' | 'under_construction' | 'new_launch' | 'partially_filled'>('all')
-  const [healthFilter, setHealthFilter] = useState<'all' | 'excellent' | 'good' | 'needs_fix'>('all')
+  const [healthFilter, setHealthFilter] = useState<'all' | 'under_60' | 'under_80' | 'under_90' | 'critical' | 'good' | 'excellent'>('all')
   const [priceFilter, setPriceFilter] = useState<'all' | 'under_1cr' | '1_2cr' | '2_4cr' | 'above_4cr'>('all')
+
+  // Multi-Selection State
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   // Sorting
   const [sortField, setSortField] = useState<SortField>('name')
@@ -212,12 +257,44 @@ export default function AdminProjects() {
   const [isImporting, setIsImporting] = useState(false)
   const [bulkImportResult, setBulkImportResult] = useState<{ updated: number; skipped: number; errors: any[] } | null>(null)
 
+  // AI Data Enrichment Modal State
+  const [isAgentExportOpen, setIsAgentExportOpen] = useState(false)
+  const [healthThreshold, setHealthThreshold] = useState<number>(80)
+  const [exportScope, setExportScope] = useState<'threshold' | 'selected'>('threshold')
+  const [selectedTabs, setSelectedTabs] = useState<Set<ProjectTabKey>>(
+    new Set(['core', 'specifications', 'pricing', 'location', 'intelligence', 'updates', 'partners'])
+  )
+  const [copiedPrompt, setCopiedPrompt] = useState(false)
+
   // Autocomplete Popover
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
 
+  // ── Session Storage Persistence ──────────────────────────────────────────
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('realtypals_admin_projects_filters')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.query !== undefined) setQuery(parsed.query)
+        if (parsed.activeTokens) setActiveTokens(parsed.activeTokens)
+        if (parsed.statusFilter) setStatusFilter(parsed.statusFilter)
+        if (parsed.healthFilter) setHealthFilter(parsed.healthFilter)
+        if (parsed.priceFilter) setPriceFilter(parsed.priceFilter)
+        if (parsed.sortField) setSortField(parsed.sortField)
+        if (parsed.sortOrder) setSortOrder(parsed.sortOrder)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    try {
+      const stateToSave = { query, activeTokens, statusFilter, healthFilter, priceFilter, sortField, sortOrder }
+      sessionStorage.setItem('realtypals_admin_projects_filters', JSON.stringify(stateToSave))
+    } catch {}
+  }, [query, activeTokens, statusFilter, healthFilter, priceFilter, sortField, sortOrder])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -240,7 +317,6 @@ export default function AdminProjects() {
     const q = query.toLowerCase().trim()
     const out: { type: 'builder' | 'sector' | 'name'; value: string; label: string; count?: number }[] = []
     
-    // Unique Builders matching q
     const builderCounts = new Map<string, number>()
     const sectorCounts = new Map<string, number>()
 
@@ -276,79 +352,6 @@ export default function AdminProjects() {
     setActiveTokens(prev => prev.filter(t => t.id !== id))
   }
 
-  // Handle Outside Click for Popover
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setIsPopoverOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleOutsideClick)
-    return () => document.removeEventListener('mousedown', handleOutsideClick)
-  }, [])
-
-  // Multi-faceted Filter Evaluation
-  const filtered = useMemo(() => {
-    return projects.filter(p => {
-      // 1. Status Filter (including partially_filled)
-      if (statusFilter === 'partially_filled') {
-        if (getNonMediaScore(p) >= 70) return false
-      } else if (statusFilter !== 'all' && p.status !== statusFilter) {
-        return false
-      }
-
-      // 2. Health Filter
-      const score = typeof p.completenessScore === 'number' ? p.completenessScore : quickHealth(p).score
-      if (healthFilter === 'excellent' && score < 95) return false
-      if (healthFilter === 'good' && (score < 80 || score >= 95)) return false
-      if (healthFilter === 'needs_fix' && score >= 80) return false
-
-      // 3. Price Filter
-      const minP = priceMinVal(p.unit_types)
-      if (priceFilter === 'under_1cr' && (minP === 0 || minP >= 1.0)) return false
-      if (priceFilter === '1_2cr' && (minP < 1.0 || minP >= 2.0)) return false
-      if (priceFilter === '2_4cr' && (minP < 2.0 || minP >= 4.0)) return false
-      if (priceFilter === 'above_4cr' && minP < 4.0) return false
-
-      // 4. Token Filters
-      for (const token of activeTokens) {
-        if (token.type === 'builder' && p.builder?.name?.toLowerCase() !== token.value.toLowerCase()) return false
-        if (token.type === 'sector' && p.sector?.toLowerCase() !== token.value.toLowerCase()) return false
-        if (token.type === 'name' && !p.name?.toLowerCase().includes(token.value.toLowerCase())) return false
-      }
-
-      // 5. Query Search String
-      if (query.trim()) {
-        const q = query.toLowerCase().trim()
-        const matchesName = p.name.toLowerCase().includes(q)
-        const matchesSector = p.sector.toLowerCase().includes(q)
-        const matchesBuilder = p.builder?.name?.toLowerCase().includes(q)
-        if (!matchesName && !matchesSector && !matchesBuilder) return false
-      }
-
-      return true
-    })
-  }, [projects, statusFilter, healthFilter, priceFilter, activeTokens, query])
-
-  // Sorting
-  const sortedAndFiltered = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      let cmp = 0
-      if (sortField === 'name') {
-        cmp = a.name.localeCompare(b.name)
-      } else if (sortField === 'builder') {
-        cmp = (a.builder?.name || '').localeCompare(b.builder?.name || '')
-      } else if (sortField === 'status') {
-        cmp = a.status.localeCompare(b.status)
-      } else if (sortField === 'price') {
-        cmp = priceMinVal(a.unit_types) - priceMinVal(b.unit_types)
-      } else if (sortField === 'health') {
-        cmp = quickHealth(a).score - quickHealth(b).score
-      }
-      return sortOrder === 'asc' ? cmp : -cmp
-    })
-  }, [filtered, sortField, sortOrder])
-
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
       setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
@@ -358,181 +361,99 @@ export default function AdminProjects() {
     }
   }
 
-  const getProjectImage = useCallback((p: Project): string | null => {
-    return p.images?.find(i => i.type === 'hero')?.url
-      ?? p.images?.[0]?.url
-      ?? p.hero_image_url
-      ?? null
-  }, [])
-
-  const handleDelete = useCallback(async (id: string, name: string) => {
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
-    setDeleting(id)
-
-    const deletePromise = async () => {
-      try {
-        const res = await adminFetch(`/admin/projects/${id}`, { method: 'DELETE' })
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}))
-          throw new Error(errData.error || 'Failed to delete project')
+  // ── Combined Filtering and Sorting ───────────────────────────────────────
+  const sortedAndFiltered = useMemo(() => {
+    return projects
+      .filter((p) => {
+        // Status filter
+        if (statusFilter === 'partially_filled') {
+          if (getNonMediaScore(p) >= 100) return false
+        } else if (statusFilter !== 'all' && p.status !== statusFilter) {
+          return false
         }
-        setProjects((p) => p.filter((x) => x.id !== id))
-        return `Deleted ${name}`
-      } finally {
-        setDeleting('')
-      }
-    }
 
-    toast.promise(deletePromise(), {
-      loading: 'Deleting project...',
-      success: (msg) => {
-        setDeleting(null)
-        return msg
-      },
-      error: (err: any) => {
-        setDeleting(null)
-        return err?.message || 'Failed to delete project'
-      }
-    })
-  }, [])
+        // Health filter
+        const health = getNonMediaScore(p)
+        if (healthFilter === 'under_60' && health >= 60) return false
+        if (healthFilter === 'under_80' && health >= 80) return false
+        if (healthFilter === 'under_90' && health >= 90) return false
+        if (healthFilter === 'critical' && health >= 70) return false
+        if (healthFilter === 'good' && (health < 70 || health >= 90)) return false
+        if (healthFilter === 'excellent' && health < 90) return false
 
-  // Export CSV Handler
-  const handleExportCSV = () => {
-    const headers = [
-      'Name', 'Slug', 'Builder', 'Sector', 'City', 'Status',
-      'Min Price (Cr)', 'Price Range Display', 'RERA No', 'Non-Media Score (%)', 'Total Score (%)'
-    ]
-    const rows = sortedAndFiltered.map(p => [
-      `"${(p.name || '').replace(/"/g, '""')}"`,
-      `"${(p.slug || '').replace(/"/g, '""')}"`,
-      `"${(p.builder?.name || '').replace(/"/g, '""')}"`,
-      `"${(p.sector || '').replace(/"/g, '""')}"`,
-      `"${(p.city || '').replace(/"/g, '""')}"`,
-      `"${(p.status || '').replace(/"/g, '""')}"`,
-      p.unit_types && p.unit_types.length ? Math.min(...p.unit_types.map(u => u.price_min_cr).filter((v): v is number => v !== null)) || '' : '',
-      `"${priceRange(p.unit_types)}"`,
-      `"${(p.rera_number || '').replace(/"/g, '""')}"`,
-      getNonMediaScore(p),
-      p.completenessScore ?? quickHealth(p).score
-    ])
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement('a')
-    link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `realtypals_projects_${statusFilter}_${Date.now()}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    toast.success(`Exported ${sortedAndFiltered.length} projects to CSV`)
-  }
+        // Price filter
+        const minP = priceMinVal(p.unit_types)
+        if (priceFilter === 'under_1cr' && (minP === 0 || minP >= 1.0)) return false
+        if (priceFilter === '1_2cr' && (minP < 1.0 || minP >= 2.0)) return false
+        if (priceFilter === '2_4cr' && (minP < 2.0 || minP >= 4.0)) return false
+        if (priceFilter === 'above_4cr' && minP < 4.0) return false
 
-  // Handle CSV file drop or upload for Bulk Import
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const text = event.target?.result as string
-      setBulkCsvText(text)
-      parseCsvData(text)
-    }
-    reader.readAsText(file)
-  }
+        // Active tokens filter
+        for (const token of activeTokens) {
+          if (token.type === 'builder' && p.builder?.name?.toLowerCase() !== token.value.toLowerCase()) return false
+          if (token.type === 'sector' && p.sector?.toLowerCase() !== token.value.toLowerCase()) return false
+          if (token.type === 'name' && !p.name.toLowerCase().includes(token.value.toLowerCase())) return false
+        }
 
-  const parseCsvData = (text: string) => {
-    try {
-      const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0)
-      if (lines.length < 2) {
-        setBulkParsedRows([])
-        return
-      }
-      const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase())
-      const rows = []
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.replace(/^["']|["']$/g, '').trim())
-        const rowObj: any = {}
-        headers.forEach((h, idx) => {
-          rowObj[h] = values[idx] || ''
-        })
-        rows.push(rowObj)
-      }
-      setBulkParsedRows(rows)
-    } catch (err) {
-      toast.error('Failed to parse CSV data')
-    }
-  }
+        // Plaintext query filter
+        if (query.trim()) {
+          const q = query.toLowerCase().trim()
+          const matchName = p.name.toLowerCase().includes(q)
+          const matchBuilder = p.builder?.name?.toLowerCase().includes(q)
+          const matchSector = p.sector?.toLowerCase().includes(q)
+          if (!matchName && !matchBuilder && !matchSector) return false
+        }
 
-  const handleDownloadTemplate = () => {
-    const headers = ['slug', 'price_min_cr', 'price_range_label', 'status', 'possession_label', 'rera_number']
-    const sampleRows = [
-      'mahagun-moderne-sector-78,1.45,₹1.45–2.80 Cr,ready_to_move,Ready to Move,UPRERAPRJ1234',
-      'ats-kingston-heath-sector-150,2.10,₹2.10–4.50 Cr,under_construction,Q4 2026,UPRERAPRJ5678'
-    ]
-    const content = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...sampleRows].join('\n')
-    const link = document.createElement('a')
-    link.setAttribute('href', encodeURI(content))
-    link.setAttribute('download', 'bulk_projects_update_template.csv')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  const handleExecuteBulkImport = async () => {
-    if (bulkParsedRows.length === 0) return
-    setIsImporting(true)
-    setBulkImportResult(null)
-
-    try {
-      const res = await adminFetch('/admin/projects/bulk-import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows: bulkParsedRows })
+        return true
       })
-      const data = await res.json()
-      if (res.ok) {
-        setBulkImportResult(data)
-        toast.success(`Successfully updated ${data.updated} projects!`)
-        load()
-      } else {
-        toast.error(data.error || 'Bulk import failed')
-      }
-    } catch (err: any) {
-      toast.error(err?.message || 'Bulk import network error')
-    } finally {
-      setIsImporting(false)
+      .sort((a, b) => {
+        let diff = 0
+        if (sortField === 'name') diff = a.name.localeCompare(b.name)
+        else if (sortField === 'builder') diff = (a.builder?.name || '').localeCompare(b.builder?.name || '')
+        else if (sortField === 'status') diff = a.status.localeCompare(b.status)
+        else if (sortField === 'price') diff = priceMinVal(a.unit_types) - priceMinVal(b.unit_types)
+        else if (sortField === 'health') diff = getNonMediaScore(a) - getNonMediaScore(b)
+        return sortOrder === 'asc' ? diff : -diff
+      })
+  }, [projects, statusFilter, healthFilter, priceFilter, activeTokens, query, sortField, sortOrder])
+
+  // Multi-Selection Handlers
+  const handleToggleSelectAll = () => {
+    if (selectedIds.size === sortedAndFiltered.length && sortedAndFiltered.length > 0) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(sortedAndFiltered.map(p => p.id)))
     }
   }
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const activeEl = document.activeElement as HTMLElement | null
-      const isEditable = activeEl?.tagName === 'INPUT' || activeEl?.tagName === 'TEXTAREA' || activeEl?.contentEditable === 'true'
-      if (isEditable && !['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) return
+  const handleToggleSelectRow = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
-      if (e.key === '/') {
-        e.preventDefault()
-        searchInputRef.current?.focus()
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        setSelectedIndex(prev => Math.min(sortedAndFiltered.length - 1, prev + 1))
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        setSelectedIndex(prev => Math.max(0, prev - 1))
-      } else if (e.key === 'Enter' && selectedIndex >= 0 && selectedIndex < sortedAndFiltered.length) {
-        e.preventDefault()
-        router.push(`/admin/projects/${sortedAndFiltered[selectedIndex].id}`)
-      } else if (e.key === 'Escape') {
-        searchInputRef.current?.blur()
-        setIsPopoverOpen(false)
-        setSelectedIndex(-1)
+  const handleSelectAllDeficient = (threshold: number) => {
+    const ids = projects.filter(p => getNonMediaScore(p) < threshold).map(p => p.id)
+    setSelectedIds(new Set(ids))
+    toast.success(`Selected ${ids.length} projects under ${threshold}% health`)
+  }
+
+  const toggleTabFilter = (tabId: ProjectTabKey) => {
+    setSelectedTabs(prev => {
+      const next = new Set(prev)
+      if (next.has(tabId)) {
+        if (next.size > 1) next.delete(tabId)
+        else toast.error('At least one tab must remain selected')
+      } else {
+        next.add(tabId)
       }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [sortedAndFiltered, selectedIndex, router])
-
-  useEffect(() => setSelectedIndex(-1), [query, activeTokens, statusFilter])
+      return next
+    })
+  }
 
   const counts = useMemo(() => {
     return {
@@ -540,9 +461,159 @@ export default function AdminProjects() {
       ready: projects.filter(p => p.status === 'ready_to_move').length,
       under: projects.filter(p => p.status === 'under_construction').length,
       new: projects.filter(p => p.status === 'new_launch').length,
-      partially: projects.filter(p => getNonMediaScore(p) < 70).length,
+      partially: projects.filter(p => getNonMediaScore(p) < 100).length,
     }
   }, [projects])
+
+  // ── AI Agent Enrichment Target Project Computation ───────────────────────
+  const targetAgentProjects = useMemo(() => {
+    let pool = projects
+    if (exportScope === 'selected' && selectedIds.size > 0) {
+      pool = projects.filter(p => selectedIds.has(p.id))
+    } else {
+      pool = projects.filter(p => getNonMediaScore(p) < healthThreshold)
+    }
+
+    return pool
+      .map((p) => {
+        const score = getNonMediaScore(p)
+        const missing = getMissingFieldsForSelectedTabs(p, selectedTabs)
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          builder: p.builder?.name || 'Unknown Developer',
+          sector: p.sector || 'Noida',
+          city: p.city || 'Noida',
+          status: p.status,
+          priceRange: priceRange(p.unit_types),
+          score,
+          missingFields: missing.length > 0 ? missing : ['Specification & Detail Verification'],
+        }
+      })
+      .sort((a, b) => a.score - b.score)
+  }, [projects, healthThreshold, exportScope, selectedIds, selectedTabs])
+
+  const generateAgentPromptText = useCallback(() => {
+    const projectList = targetAgentProjects.map((p) => ({
+      projectName: p.name,
+      slug: p.slug,
+      developer: p.builder,
+      sector: p.sector,
+      city: p.city,
+      status: p.status,
+      priceRange: p.priceRange,
+      currentHealthScore: `${p.score}%`,
+      missingOrIncompleteFields: p.missingFields,
+    }))
+
+    const tabNames = Array.from(selectedTabs).map(t => PROPERTY_TABS_CONFIG.find(c => c.id === t)?.label).filter(Boolean).join(', ')
+
+    return `You are an Expert Real Estate Research Agent specializing in verified property intelligence for Noida and Greater Noida (NCR).
+
+We have ${targetAgentProjects.length} property projects in our database requiring verified enrichment for the following property tabs:
+[${tabNames}].
+
+Please research and provide verified, RERA-compliant details strictly for the missing/incomplete fields listed for each project:
+
+TARGET PROJECTS FOR ENRICHMENT (${targetAgentProjects.length}):
+\`\`\`json
+${JSON.stringify(projectList, null, 2)}
+\`\`\`
+
+OUTPUT FORMAT REQUIREMENT:
+Provide structured JSON with the exact verified data for each project so it can be updated directly into the database.`
+  }, [targetAgentProjects, selectedTabs])
+
+  const handleCopyAgentPrompt = () => {
+    const text = generateAgentPromptText()
+    navigator.clipboard.writeText(text)
+    setCopiedPrompt(true)
+    toast.success(`Copied enrichment prompt for ${targetAgentProjects.length} projects!`)
+    setTimeout(() => setCopiedPrompt(false), 2500)
+  }
+
+  const handleDownloadAgentJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(targetAgentProjects, null, 2))
+    const downloadAnchor = document.createElement('a')
+    downloadAnchor.setAttribute("href", dataStr)
+    downloadAnchor.setAttribute("download", `realtypals-enrichment-${targetAgentProjects.length}-projects.json`)
+    document.body.appendChild(downloadAnchor)
+    downloadAnchor.click()
+    downloadAnchor.remove()
+    toast.success(`Downloaded JSON for ${targetAgentProjects.length} projects`)
+  }
+
+  const handleDownloadAgentCSV = () => {
+    const headers = ['Project Name', 'Slug', 'Developer', 'Sector', 'City', 'Status', 'Health Score %', 'Missing Fields']
+    const rows = targetAgentProjects.map(p => [
+      `"${p.name.replace(/"/g, '""')}"`,
+      `"${p.slug}"`,
+      `"${p.builder.replace(/"/g, '""')}"`,
+      `"${p.sector}"`,
+      `"${p.city}"`,
+      `"${p.status}"`,
+      `${p.score}%`,
+      `"${p.missingFields.join('; ').replace(/"/g, '""')}"`,
+    ])
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `realtypals-enrichment-${targetAgentProjects.length}-projects.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    toast.success(`Exported ${targetAgentProjects.length} projects to CSV`)
+  }
+
+  const handleExportCSV = () => {
+    const headers = ['Name', 'Slug', 'Builder', 'Sector', 'Status', 'Pricing', 'Health %']
+    const rows = sortedAndFiltered.map(p => [
+      `"${p.name.replace(/"/g, '""')}"`,
+      `"${p.slug}"`,
+      `"${(p.builder?.name || '').replace(/"/g, '""')}"`,
+      `"${p.sector}"`,
+      `"${p.status}"`,
+      `"${priceRange(p.unit_types)}"`,
+      `${getNonMediaScore(p)}%`,
+    ])
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `projects-catalog-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    toast.success(`Exported ${sortedAndFiltered.length} projects to CSV`)
+  }
+
+  const handleExecuteBulkImport = async () => {
+    if (bulkParsedRows.length === 0) return
+    setIsImporting(true)
+    try {
+      const res = await adminFetch('/admin/projects/bulk-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates: bulkParsedRows }),
+      })
+      const result = await res.json()
+      if (res.ok) {
+        setBulkImportResult(result)
+        toast.success(`Bulk updated ${result.updated} projects successfully!`)
+        load()
+      } else {
+        toast.error(result.error || 'Bulk update failed')
+      }
+    } catch {
+      toast.error('Network error during bulk update')
+    } finally {
+      setIsImporting(false)
+    }
+  }
 
   const clearAllFilters = () => {
     setQuery('')
@@ -590,6 +661,18 @@ export default function AdminProjects() {
           </button>
 
           <button
+            onClick={() => {
+              setExportScope(selectedIds.size > 0 ? 'selected' : 'threshold')
+              setIsAgentExportOpen(true)
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800/60 rounded-xl shadow-xs hover:bg-indigo-100/80 dark:hover:bg-indigo-900/40 transition-all cursor-pointer active:scale-[0.98]"
+            title="Export incomplete projects & missing tab fields for data enrichment"
+          >
+            <SlidersHorizontal size={14} className="text-indigo-600 dark:text-indigo-400" />
+            <span>Export Incomplete Data {selectedIds.size > 0 ? `(${selectedIds.size} Selected)` : ''}</span>
+          </button>
+
+          <button
             onClick={() => setIsBulkModalOpen(true)}
             className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/60 rounded-xl shadow-xs hover:bg-blue-100/80 transition-all cursor-pointer active:scale-[0.98]"
             title="Bulk upload spreadsheet to update prices, possession, and statuses"
@@ -600,14 +683,13 @@ export default function AdminProjects() {
 
           <Link
             href="/admin/projects/new"
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-xs transition-all active:scale-[0.98]"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-xs transition-all cursor-pointer active:scale-[0.98]"
           >
-            <Plus size={15} />
+            <Plus size={14} />
             <span>New Project</span>
           </Link>
         </div>
       </div>
-
 
       {/* ── Tokenized Intelligent Search Bar ───────────────────────────────── */}
       <div className="relative" ref={popoverRef}>
@@ -637,37 +719,43 @@ export default function AdminProjects() {
             ref={searchInputRef}
             type="text"
             value={query}
-            onFocus={() => setIsPopoverOpen(true)}
             onChange={(e) => {
               setQuery(e.target.value)
               setIsPopoverOpen(true)
             }}
-            placeholder={activeTokens.length === 0 ? "Type builder name, sector (e.g. Mahagun, Sector 79), or project title..." : "Add filter..."}
-            className="flex-1 min-w-[200px] bg-transparent border-none outline-none text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 py-1"
+            onFocus={() => setIsPopoverOpen(true)}
+            placeholder={activeTokens.length === 0 ? "Type builder name, sector (e.g. Mahagun, Sector 75), or project title..." : "Add more filters..."}
+            className="flex-1 bg-transparent border-none outline-none text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 min-w-[200px]"
           />
 
-          <div className="hidden sm:flex items-center gap-2 opacity-60 shrink-0 mr-1">
-            <kbd className="px-2 py-0.5 text-[10px] font-bold font-mono rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">/</kbd>
-            <span className="text-[11px] text-zinc-500">shortcut</span>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 border border-zinc-200 dark:border-zinc-800 rounded">/ shortcut</span>
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
 
         {/* Autocomplete Suggestions Popover */}
         {isPopoverOpen && suggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 overflow-hidden p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 px-3 py-1.5">
-              Suggested Filter Matches
-            </div>
+          <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 p-2 space-y-1 animate-in fade-in duration-150">
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Quick Filters</div>
             {suggestions.map((s, idx) => (
               <button
-                key={`${s.type}_${s.value}_${idx}`}
+                key={idx}
                 type="button"
                 onClick={() => addFilterToken(s)}
-                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center justify-between group cursor-pointer"
+                className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center justify-between group cursor-pointer"
               >
-                <div className="flex items-center gap-2.5">
-                  {s.type === 'builder' && <Building2 size={14} className="text-zinc-600 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />}
-                  {s.type === 'sector' && <MapPin size={14} className="text-zinc-600 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />}
+                <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                  {s.type === 'builder' && <Building2 size={13} className="text-zinc-400 group-hover:text-blue-500" />}
+                  {s.type === 'sector' && <MapPin size={13} className="text-zinc-400 group-hover:text-blue-500" />}
                   <span>{s.label}</span>
                 </div>
                 {s.count && (
@@ -722,9 +810,10 @@ export default function AdminProjects() {
             onChange={(val) => setHealthFilter(val)}
             options={[
               { value: 'all', label: 'Health: All' },
-              { value: 'excellent', label: 'Excellent (95–100%)', icon: <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> },
-              { value: 'good', label: 'Good (80–94%)', icon: <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" /> },
-              { value: 'needs_fix', label: 'Needs Action (<80%)', icon: <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" /> },
+              { value: 'under_60', label: 'Target < 60% Health', icon: <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0" /> },
+              { value: 'under_80', label: 'Target < 80% Health', icon: <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" /> },
+              { value: 'under_90', label: 'Target < 90% Health', icon: <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" /> },
+              { value: 'excellent', label: 'Complete (90–100%)', icon: <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> },
             ]}
           />
 
@@ -758,8 +847,27 @@ export default function AdminProjects() {
       {/* ── Table Container ────────────────────────────────────────────────── */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs overflow-hidden">
         
-        {/* Table Header with Interactive Column Sorting */}
+        {/* Table Header with Interactive Column Sorting & Master Checkbox */}
         <div className="flex items-center px-6 py-3 bg-zinc-50/80 dark:bg-zinc-800/50 border-b border-zinc-200/80 dark:border-zinc-800/80 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider select-none">
+          
+          {/* Select All Checkbox */}
+          <button
+            type="button"
+            onClick={handleToggleSelectAll}
+            className="mr-3 p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+            title="Select all visible projects"
+          >
+            {selectedIds.size > 0 && selectedIds.size === sortedAndFiltered.length ? (
+              <CheckSquare size={16} className="text-blue-600 dark:text-blue-400" />
+            ) : selectedIds.size > 0 ? (
+              <div className="w-4 h-4 rounded bg-blue-600 text-white flex items-center justify-center text-[10px] font-black leading-none">
+                -
+              </div>
+            ) : (
+              <Square size={16} />
+            )}
+          </button>
+
           <div className="w-8 mr-4" /> {/* Thumbnail space */}
           
           <button
@@ -822,292 +930,450 @@ export default function AdminProjects() {
               <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mb-3">
                 <Building2 size={24} />
               </div>
-              <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">No properties match active filters</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm">
-                Try removing filter tags or expanding your price/status selections.
-              </p>
-              <button
-                onClick={clearAllFilters}
-                className="mt-4 px-4 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded-xl hover:bg-blue-100 transition-colors"
-              >
-                Clear all filters
-              </button>
+              <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">No properties found</h3>
+              <p className="text-xs text-zinc-400 mt-1 max-w-sm">No properties match your current search and filter combination.</p>
+              {isFilteringActive && (
+                <button
+                  onClick={clearAllFilters}
+                  className="mt-4 px-4 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           ) : (
-            sortedAndFiltered.map((p, idx) => {
-              const s = STATUS_MAP[p.status] ?? STATUS_MAP.ready_to_move
-              const { score, missing } = quickHealth(p)
-              const pct = score
-              const isSelected = selectedIndex === idx
+            sortedAndFiltered.map((project) => {
+              const statusCfg = STATUS_MAP[project.status] || STATUS_MAP.ready_to_move
+              const StatusIcon = statusCfg.icon
+              const healthScore = getNonMediaScore(project)
+              const isSelected = selectedIds.has(project.id)
 
               return (
-                <Link
-                  key={p.id}
-                  href={`/admin/projects/${p.id}`}
-                  className={`group flex items-center px-6 py-3.5 transition-colors outline-none ${
-                    isSelected ? 'bg-blue-50/50 dark:bg-blue-950/30' : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40'
+                <div
+                  key={project.id}
+                  onClick={() => router.push(`/admin/projects/${project.id}`)}
+                  className={`flex items-center px-6 py-3.5 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer group ${
+                    isSelected ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
                   }`}
-                  onClick={() => setSelectedIndex(idx)}
                 >
+                  {/* Row Checkbox */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleToggleSelectRow(project.id, e)}
+                    className="mr-3 p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                  >
+                    {isSelected ? (
+                      <CheckSquare size={16} className="text-blue-600 dark:text-blue-400" />
+                    ) : (
+                      <Square size={16} />
+                    )}
+                  </button>
+
                   {/* Thumbnail */}
                   <div className="mr-4">
-                    <ProjectThumbnail
-                      src={getProjectImage(p)}
-                      alt={p.name}
-                    />
+                    <ProjectThumbnail src={project.hero_image_url} alt={project.name} />
                   </div>
-                  
-                  {/* Title & Location */}
+
+                  {/* Name, Developer & Sector */}
                   <div className="flex-1 min-w-0 pr-4">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {p.name}
-                      </p>
-                      {isSelected && <CornerDownLeft size={13} className="text-blue-500 shrink-0" />}
+                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                        {project.name}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-zinc-500 dark:text-zinc-400 truncate font-medium">
-                      <span className="truncate">{p.builder?.name || 'Unknown Builder'}</span>
-                      <span className="w-1 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
-                      <span className="truncate">{p.sector}</span>
+                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-0.5 truncate">
+                      <span>{project.builder?.name || 'Unknown Developer'}</span>
+                      <span>•</span>
+                      <span>{project.sector}, {project.city}</span>
                     </div>
                   </div>
 
                   {/* Status Badge */}
                   <div className="w-[140px] hidden md:flex items-center">
-                    <div className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${s.chip} flex items-center gap-1.5 shadow-2xs`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                      <span>{s.label}</span>
-                    </div>
-                  </div>
-
-                  {/* Pricing */}
-                  <div className="w-[120px] hidden sm:block text-right pr-6">
-                    <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 font-mono tracking-tight">
-                      {priceRange(p.unit_types)}
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-lg border ${statusCfg.chip}`}>
+                      <StatusIcon size={12} />
+                      <span>{statusCfg.label}</span>
                     </span>
                   </div>
 
+                  {/* Pricing Range */}
+                  <div className="w-[120px] hidden sm:flex items-center justify-end pr-6 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                    {priceRange(project.unit_types)}
+                  </div>
+
                   {/* Health Score */}
-                  <div className="w-[100px] hidden sm:flex justify-end pr-6 relative group/health">
-                    <div
-                      className={`flex items-center gap-1.5 text-xs font-bold tabular-nums px-2.5 py-1 rounded-xl border shadow-2xs transition-all ${
-                        pct >= 95
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
-                          : pct >= 80
-                          ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60'
-                          : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800/60'
-                      }`}
-                    >
-                      {pct >= 95 && <CheckCircle2 size={12} className="text-emerald-500" strokeWidth={2.5} />}
-                      <span>{pct}%</span>
-                    </div>
-
-                    {/* Section Breakdown Tooltip */}
-                    <div className="absolute right-0 bottom-full mb-2 hidden group-hover/health:block w-48 bg-zinc-900 text-white rounded-2xl p-3 shadow-xl z-50 text-[10px] space-y-1.5 border border-zinc-700/60 animate-in fade-in duration-150">
-                      <div className="font-bold border-b border-zinc-800 pb-1 text-zinc-400 uppercase tracking-wider flex justify-between">
-                        <span>Section Health</span>
-                        <span>{pct}%</span>
-                      </div>
-                      <div className="flex justify-between font-medium"><span>Core Info:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.core ?? 100}%</span></div>
-                      <div className="flex justify-between font-medium"><span>Pricing & Loc:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.pricing ?? 100}%</span></div>
-                      <div className="flex justify-between font-medium"><span>Media:</span><span className="font-mono font-bold text-amber-400">{(p as any).tabScores?.media ?? 70}%</span></div>
-                      <div className="flex justify-between font-medium"><span>Intelligence:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.intelligence ?? 100}%</span></div>
-                      <div className="flex justify-between font-medium"><span>Updates:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.updates ?? 100}%</span></div>
-                      <div className="flex justify-between font-medium"><span>Partners:</span><span className="font-mono font-bold text-emerald-400">{(p as any).tabScores?.partners ?? 100}%</span></div>
-                    </div>
+                  <div className="w-[90px] hidden sm:flex items-center justify-end pr-6">
+                    <span className={`px-2 py-0.5 text-xs font-mono font-bold rounded-full border ${
+                      healthScore >= 90
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60'
+                        : healthScore >= 70
+                        ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/60'
+                        : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60'
+                    }`}>
+                      {healthScore}%
+                    </span>
                   </div>
 
-                  {/* Actions */}
-                  <div className="w-[60px] flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={(e) => {
-                        e.preventDefault()
-                        handleDelete(p.id, p.name)
-                      }} 
-                      disabled={deleting === p.id}
-                      className="p-1.5 text-zinc-600 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer dark:text-zinc-400"
-                      aria-label="Delete"
-                      title="Delete property"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                    <div className="p-1.5 text-zinc-400">
-                      <ChevronRight size={14} />
-                    </div>
+                  {/* Row Action Arrow */}
+                  <div className="w-[60px] flex items-center justify-end">
+                    <ChevronRight size={15} className="text-zinc-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
                   </div>
-                </Link>
+                </div>
               )
             })
           )}
         </div>
       </div>
 
-      {/* ── Bulk CSV Import & Update Modal ──────────────────────────────────── */}
-      {isBulkModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 animate-in zoom-in-95 duration-150">
+      {/* ── Sticky Multi-Select Action Bar ─────────────────────────────────── */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-5 py-3 rounded-2xl shadow-2xl border border-zinc-800 dark:border-zinc-200 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="flex items-center gap-2 text-xs font-bold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>{selectedIds.size} Projects Selected</span>
+          </div>
+
+          <div className="h-4 w-px bg-zinc-700 dark:bg-zinc-300" />
+
+          <button
+            type="button"
+            onClick={() => {
+              setExportScope('selected')
+              setIsAgentExportOpen(true)
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-xs transition-all cursor-pointer"
+          >
+            <SlidersHorizontal size={13} />
+            <span>Export Incomplete Data</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectAllDeficient(80)}
+            className="text-xs font-semibold text-zinc-400 hover:text-white dark:hover:text-zinc-900 transition-colors"
+          >
+            Select All &lt;80%
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="p-1 text-zinc-400 hover:text-rose-400 transition-colors"
+            title="Deselect all"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* ── Catalog Data Enrichment & Export Modal (Refined & Spacious) ───── */}
+      {isAgentExportOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setIsAgentExportOpen(false)}
+        >
+          <div 
+            className="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                  <FileSpreadsheet size={20} />
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-2xs">
+                  <SlidersHorizontal size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                    Bulk Update Projects (CSV)
+                  <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-50 tracking-tight">
+                    Catalog Data Enrichment & Export
                   </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Batch update Base Price, status, possession dates, or RERA numbers.
+                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    Select target projects and data categories to extract missing fields for research & bulk update
                   </p>
                 </div>
               </div>
-
               <button
                 type="button"
-                onClick={() => {
-                  setIsBulkModalOpen(false)
-                  setBulkParsedRows([])
-                  setBulkCsvText('')
-                  setBulkImportResult(null)
-                }}
-                className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
+                onClick={() => setIsAgentExportOpen(false)}
+                className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Template Download Prompt */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/80 dark:border-zinc-700/60 text-xs">
-              <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
-                <FileText size={16} className="text-blue-500" />
-                <span>Need the standard CSV format? Download the sample template.</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleDownloadTemplate}
-                className="font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer shrink-0"
-              >
-                <Download size={13} />
-                <span>Template.csv</span>
-              </button>
-            </div>
+            {/* Modal Scrollable Body */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              
+              {/* Target Scope Selection & Quick Threshold Chips */}
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Target Scope:</span>
+                    <span className="text-[11px] text-zinc-400">Choose which projects to analyze</span>
+                  </div>
 
-            {/* File Upload / Paste Area */}
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                Upload CSV File or Paste Data
-              </label>
-
-              <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 text-center hover:border-blue-500 transition-colors bg-zinc-50/50 dark:bg-zinc-800/30">
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="bulk-csv-input"
-                />
-                <label
-                  htmlFor="bulk-csv-input"
-                  className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-200 shadow-2xs hover:bg-zinc-50 transition-all"
-                >
-                  <Upload size={14} className="text-blue-500" />
-                  <span>Choose CSV File</span>
-                </label>
-                <p className="text-[11px] text-zinc-400 mt-2">
-                  Columns: <code className="font-mono text-zinc-600 dark:text-zinc-300">slug, price_min_cr, price_range_label, status, possession_label, rera_number</code>
-                </p>
-              </div>
-            </div>
-
-            {/* Rows Preview */}
-            {bulkParsedRows.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 size={14} />
-                    <span>Parsed {bulkParsedRows.length} project updates ready to apply</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setBulkParsedRows([])
-                      setBulkCsvText('')
-                    }}
-                    className="text-[11px] text-zinc-400 hover:text-rose-500"
-                  >
-                    Clear
-                  </button>
+                  <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                    <button
+                      type="button"
+                      onClick={() => setExportScope('threshold')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        exportScope === 'threshold'
+                          ? 'bg-indigo-600 text-white shadow-xs font-bold'
+                          : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900'
+                      }`}
+                    >
+                      By Health Threshold
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExportScope('selected')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        exportScope === 'selected'
+                          ? 'bg-indigo-600 text-white shadow-xs font-bold'
+                          : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900'
+                      }`}
+                    >
+                      Selected ({selectedIds.size})
+                    </button>
+                  </div>
                 </div>
 
-                <div className="max-h-40 overflow-y-auto rounded-xl border border-zinc-200 dark:border-zinc-700 text-[11px] divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {bulkParsedRows.slice(0, 5).map((row, idx) => (
-                    <div key={idx} className="p-2 flex items-center justify-between bg-white dark:bg-zinc-900 font-mono">
-                      <span className="font-bold text-zinc-800 dark:text-zinc-200">{row.slug || row.id}</span>
-                      <div className="flex items-center gap-2 text-zinc-500">
-                        {row.price_min_cr && <span>₹{row.price_min_cr} Cr</span>}
-                        {row.status && <span className="px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-zinc-800">{row.status}</span>}
+                {exportScope === 'threshold' && (
+                  <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/60">
+                    <span className="text-[11px] font-bold text-zinc-500">Quick Thresholds:</span>
+                    {[
+                      { label: '< 60% (Critical)', val: 60 },
+                      { label: '< 80% (Standard)', val: 80 },
+                      { label: '< 90% (Refine)', val: 90 },
+                      { label: '< 100% (All Incomplete)', val: 100 },
+                    ].map((t) => (
+                      <button
+                        key={t.val}
+                        type="button"
+                        onClick={() => setHealthThreshold(t.val)}
+                        className={`px-3 py-1 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                          healthThreshold === t.val
+                            ? 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-200 dark:border-indigo-700 font-bold'
+                            : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-indigo-200'
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Granular Property Tab Selector */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                      Select Data Categories to Inspect:
+                    </h4>
+                    <p className="text-[11px] text-zinc-400">
+                      Missing fields will be checked and exported only for the selected categories
+                    </p>
+                  </div>
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-md">
+                    Media / Images Excluded
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {PROPERTY_TABS_CONFIG.map((tab) => {
+                    const isChecked = selectedTabs.has(tab.id)
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => toggleTabFilter(tab.id)}
+                        className={`p-3 text-left rounded-2xl border transition-all cursor-pointer ${
+                          isChecked
+                            ? 'bg-indigo-50/70 border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-800/80 text-zinc-900 dark:text-white shadow-2xs'
+                            : 'bg-zinc-50/50 dark:bg-zinc-800/30 border-zinc-200/60 dark:border-zinc-800 text-zinc-400 opacity-60'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`text-xs font-bold ${isChecked ? 'text-indigo-900 dark:text-indigo-200' : 'text-zinc-500'}`}>
+                            {tab.label}
+                          </span>
+                          <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[10px] ${
+                            isChecked ? 'bg-indigo-600 text-white' : 'border border-zinc-300 dark:border-zinc-600'
+                          }`}>
+                            {isChecked && <Check size={11} strokeWidth={3} />}
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                          {tab.description}
+                        </p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Target Projects Preview List */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                    Target Projects ({targetAgentProjects.length} Records)
+                  </span>
+                  <span className="text-[11px] text-zinc-400">Sorted by lowest health first</span>
+                </div>
+
+                <div className="max-h-72 overflow-y-auto rounded-2xl border border-zinc-200/80 dark:border-zinc-800 divide-y divide-zinc-100 dark:divide-zinc-800/80 bg-white dark:bg-zinc-900">
+                  {targetAgentProjects.length > 0 ? (
+                    targetAgentProjects.map((p) => (
+                      <div key={p.id} className="p-3.5 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{p.name}</span>
+                            <span className="text-[11px] text-zinc-400 font-medium">• {p.builder} • {p.sector}</span>
+                          </div>
+                          <span className="px-2 py-0.5 text-xs font-mono font-black rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60">
+                            {p.score}%
+                          </span>
+                        </div>
+                        
+                        {/* Missing Fields Pills */}
+                        <div className="flex items-center flex-wrap gap-1.5">
+                          {p.missingFields.map((f, i) => (
+                            <span key={i} className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/60">
+                              ✕ {f}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {bulkParsedRows.length > 5 && (
-                    <div className="p-2 text-center text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
-                      + {bulkParsedRows.length - 5} more rows
+                    ))
+                  ) : (
+                    <div className="p-10 text-center text-xs text-zinc-400">
+                      No projects match the current threshold and selection!
                     </div>
                   )}
                 </div>
               </div>
-            )}
 
-            {/* Import Result Notification */}
-            {bulkImportResult && (
-              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs space-y-1">
-                <div className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                  <CheckCircle2 size={15} />
-                  <span>Bulk update complete: {bulkImportResult.updated} updated, {bulkImportResult.skipped} skipped</span>
-                </div>
-                {bulkImportResult.errors?.length > 0 && (
-                  <p className="text-[11px] text-rose-600 dark:text-rose-400">
-                    {bulkImportResult.errors.length} rows had errors. Check audit changelog for details.
-                  </p>
-                )}
+            </div>
+
+            {/* Modal Actions Footer */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/80 shrink-0">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={handleDownloadAgentJSON}
+                  disabled={targetAgentProjects.length === 0}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+                  title="Download structured JSON"
+                >
+                  <FileJson size={14} className="text-zinc-500" />
+                  <span>Download JSON</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadAgentCSV}
+                  disabled={targetAgentProjects.length === 0}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+                  title="Download spreadsheet CSV"
+                >
+                  <FileSpreadsheet size={14} className="text-zinc-500" />
+                  <span>Download CSV</span>
+                </button>
               </div>
-            )}
 
-            {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsAgentExportOpen(false)}
+                  className="px-4 py-2.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+
+                <button
+                  type="button"
+                  disabled={targetAgentProjects.length === 0}
+                  onClick={handleCopyAgentPrompt}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-xl shadow-sm transition-all cursor-pointer active:scale-[0.98]"
+                >
+                  {copiedPrompt ? (
+                    <>
+                      <CheckCheck size={14} className="text-white" />
+                      <span>Copied Prompt!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={14} />
+                      <span>Copy Enrichment Prompt ({targetAgentProjects.length})</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Update Modal */}
+      {isBulkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="relative w-full max-w-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <Upload size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Bulk Update Projects</h3>
+                  <p className="text-[11px] text-zinc-500">Paste CSV or JSON with slug, price, possession, or status</p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => {
-                  setIsBulkModalOpen(false)
-                  setBulkParsedRows([])
-                  setBulkImportResult(null)
-                }}
-                className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer"
+                onClick={() => setIsBulkModalOpen(false)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <textarea
+              value={bulkCsvText}
+              onChange={(e) => {
+                setBulkCsvText(e.target.value)
+                try {
+                  const lines = e.target.value.trim().split('\n')
+                  const parsed = lines.map(line => {
+                    const parts = line.split(',').map(s => s.trim())
+                    return { slug: parts[0], price_min_cr: parts[1] ? parseFloat(parts[1]) : undefined, status: parts[2] }
+                  }).filter(p => p.slug)
+                  setBulkParsedRows(parsed)
+                } catch {}
+              }}
+              placeholder="slug,price_min_cr,status&#10;ace-aspire-techzone-4,0.92,ready_to_move&#10;cleo-county-sector-121,1.65,ready_to_move"
+              className="w-full h-40 p-3 font-mono text-xs bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none"
+            />
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsBulkModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 rounded-xl"
               >
                 Cancel
               </button>
-
               <button
                 type="button"
                 disabled={bulkParsedRows.length === 0 || isImporting}
                 onClick={handleExecuteBulkImport}
-                className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-2"
+                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl disabled:opacity-50 flex items-center gap-1.5"
               >
-                {isImporting ? (
-                  <>
-                    <RefreshCw size={13} className="animate-spin" />
-                    <span>Applying Updates...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload size={13} />
-                    <span>Apply {bulkParsedRows.length} Updates</span>
-                  </>
-                )}
+                <Upload size={13} />
+                <span>Apply {bulkParsedRows.length} Updates</span>
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -1115,4 +1381,3 @@ export default function AdminProjects() {
     </div>
   )
 }
-

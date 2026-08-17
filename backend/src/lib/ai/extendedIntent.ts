@@ -103,7 +103,7 @@ const ExtendedIntentSchema = z.object({
   expectedROI: z.number().optional(), // annual ROI % expected
 
   // LOCATION DIMENSION
-  sectorPreference: z.string().optional(),
+  sectorPreference: z.union([z.string(), z.array(z.string())]).optional().transform(v => Array.isArray(v) ? v[0] : v),
   metroDistance: z.number().optional(), // km
   commuteTo: z.string().optional(),
   schoolPriority: z.boolean().optional(),
