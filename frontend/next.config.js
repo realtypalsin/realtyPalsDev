@@ -10,7 +10,7 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', '@phosphor-icons/react'],
     serverComponentsExternalPackages: ['@sentry/nextjs', '@sentry/node', '@apm-js-collab/tracing-hooks'],
   },
-  transpilePackages: ['leaflet', 'react-leaflet'],
+  transpilePackages: ['leaflet', 'react-leaflet', 'recharts', 'react-is'],
   webpack: (config, { dev }) => {
     if (dev) {
       config.cache = false
