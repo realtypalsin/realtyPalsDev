@@ -851,19 +851,20 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const sectorMatches = extractSectorsFromMessage(message)
     const isSectorCompare = sectorMatches.length >= 2 && /compare|vs|versus|better|difference|which sector|between/i.test(message)
     const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(message)
-    const isPaymentPlanRequest = /payment plan|payment schedule|construction linked|down payment|flexi plan|clp|plp/i.test(message)
-    const isCostSheetRequest = /cost sheet|price breakdown|all inclusive|other charges|possession charges|car parking charge/i.test(message)
+    const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(message) || isSectorCompare
+    const isInventorySearch = /\b(\d\s*bhk|flats?|apartments?|villas?|penthouses?|show\s+me|find\s+me|options\s+in|available\s+in)\b/i.test(message) && !isCompareRequest && !isSectorCompare
+    const isPaymentPlanRequest = /\b(payment plan|payment schedule|construction linked|down payment|flexi plan|clp|plp)\b/i.test(message)
+    const isCostSheetRequest = /\b(cost sheet|price breakdown|all inclusive|other charges|possession charges|car parking charge)\b/i.test(message)
     const isStatutoryTaxQuery = /(stamp duty|registration (charge|fee)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(message)
     const isReraCheckQuery = /(blacklist|nclt|insolven|defaulter|check rera|verify rera|rera website|rera portal|rera status|is.*rera registered)/i.test(message) && (intent.projectNames?.length ?? 0) === 0
     const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(message) && !isSectorCompare && (intent.projectNames?.length ?? 0) < 2
     const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(message) && (sectorMatches.length === 0 || /which sector/i.test(message))
-    const isReadyToMoveQuery = /(ready to move|rtm|move.?in|occupancy certificate|which.*ready|ready property|ready flat)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isAmenityQuery = /(amenit|sports|clubhouse|gym|pool|swimming|green cover|open space|which society has the best|best amenit|lifestyle)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isConnectivityQuery = /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(message) && !isPaymentPlanRequest
-    const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(message) || isSectorCompare
+    const isReadyToMoveQuery = !isInventorySearch && /\b(ready to move|rtm|occupancy certificate|which.*ready|ready property|ready flat)\b/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|gym|pool|swimming|green cover|open space|which society has the best|best amenit|lifestyle)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isConnectivityQuery = !isInventorySearch && /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(message) && !isPaymentPlanRequest
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
-    if ((activeProjectName || isSummaryRequest || isCompareRequest || isSectorCompare || isPaymentPlanRequest || isCostSheetRequest || isStatutoryTaxQuery || isReraCheckQuery || isBuilderReputationQuery || isNewcomerOrientation || isReadyToMoveQuery || isAmenityQuery || isConnectivityQuery) && action.type === 'TEXT_MESSAGE') {
+    if (!isInventorySearch && (activeProjectName || isSummaryRequest || isCompareRequest || isSectorCompare || isPaymentPlanRequest || isCostSheetRequest || isStatutoryTaxQuery || isReraCheckQuery || isBuilderReputationQuery || isNewcomerOrientation || isReadyToMoveQuery || isAmenityQuery || isConnectivityQuery) && action.type === 'TEXT_MESSAGE') {
       try {
         console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest, isSectorCompare, isPaymentPlanRequest, isCostSheetRequest, isStatutoryTaxQuery, isReraCheckQuery, isBuilderReputationQuery, isNewcomerOrientation, isReadyToMoveQuery, isAmenityQuery, isConnectivityQuery, sectorMatches })
 
@@ -1087,11 +1088,15 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
 
         // ─── READY-TO-MOVE VS UNDER-CONSTRUCTION STATUS GUIDE ──────────────────────
         if (isReadyToMoveQuery) {
-          const sec = intent.sector || 'Sector 76'
+          const secMatch = message.match(/Sector\s*(\d+[A-Za-z]?)/i)
+          const sec = secMatch ? `Sector ${secMatch[1]}` : (intent.sector || 'Sector 76')
+          const numOnly = sec.replace(/Sector\s*/i, '').trim()
+
           const relevantProjects = await prisma.project.findMany({
             where: {
               OR: [
-                { sector: { contains: sec.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+                { sector: { contains: numOnly, mode: 'insensitive' } },
+                { sector: { contains: sec, mode: 'insensitive' } },
                 { id: { in: (cachedProjectsFromSession || []).map(p => p.id) } }
               ]
             },
@@ -1099,7 +1104,8 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             take: 6
           })
 
-          const rows = (relevantProjects.length > 0 ? relevantProjects : cachedProjectsFromSession || []).slice(0, 6).map(p => {
+          const displayProjects = relevantProjects.length > 0 ? relevantProjects : (cachedProjectsFromSession || [])
+          const rows = displayProjects.slice(0, 6).map(p => {
             const isRtm = p.status === 'ready_to_move' || p.possession_label?.toLowerCase().includes('delivered')
             const moveStatus = isRtm ? 'Ready-to-Move' : (p.possession_label || 'Under Construction')
             const ageStr = isRtm ? 'Delivered & occupied' : 'Under active construction'
@@ -1108,7 +1114,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             return `| **${p.name}** | ${moveStatus} | ${ageStr} | ${reraStr} | ${gstStr} |`
           }).join('\n')
 
-          const rtmText = `### Ready-to-Move vs. Delivery Status Guide (${sec})\n\n| Project Name | Move-in Status | Occupancy / Delivery Stage | RERA Status | GST Impact |\n| :--- | :--- | :--- | :--- | :--- |\n${rows}\n\n### Fiduciary Advisory on Ready Resale Units\nReady-to-Move units with Occupancy Certificate (OC) attract **0% GST**. Before token transfer, ensure the seller provides an executed Sub-Lease deed (Registry) or builder transfer NOC confirming zero pending authority penalties.`
+          const rtmText = `### Ready-to-Move vs. Delivery Status Guide (${sec})\n\n| Project Name | Move-in Status | Occupancy / Delivery Stage | RERA Status | GST Impact |\n| :--- | :--- | :--- | :--- | :--- |\n${rows || '| *Consult verified listings* | Available on request | Verified RERA | Active | 0%–5% |'}\n\n### Fiduciary Advisory on Ready Resale Units\nReady-to-Move units with Occupancy Certificate (OC) attract **0% GST**. Before token transfer, ensure the seller provides an executed Sub-Lease deed (Registry) or builder transfer NOC confirming zero pending authority penalties.`
 
           const rtmChips = [
             { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_tax_rtm', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
@@ -1120,11 +1126,18 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           send('ui_state', {
             stage: 'RESEARCH',
             thinking: 'Verified ready-to-move and delivery status matrix:',
+            projects: displayProjects,
             chips: rtmChips,
             missingFields: [],
             confidence: 'HIGH'
           })
-          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
+          send('done', {
+            sessionId: currentSessionId,
+            intentState: 'SHORTLISTED',
+            intent,
+            projects: displayProjects,
+            responseMode: 'chat'
+          })
           res.end()
           return
         }
