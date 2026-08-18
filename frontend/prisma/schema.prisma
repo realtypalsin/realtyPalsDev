@@ -238,6 +238,21 @@ model Project {
   fir_against_project             Boolean?
   approvals_status                String?
 
+  // 12. Utilities, Civic Infra & Architectural Specs (2026 Comprehensive Living Standards)
+  water_source                    String?
+  dg_power_rate_per_unit          Float?
+  maintenance_per_sqft_monthly    Float?
+  has_png_gas_pipeline            Boolean?               @default(true)
+  mobile_network_rating           Int?                   @default(4)
+  ceiling_height_ft               Float?                 @default(10.2)
+  lifts_per_tower                 Int?                   @default(3)
+  has_service_lift                Boolean?               @default(true)
+  shared_walls_type               String?
+  authority_dues_cleared          Boolean?               @default(true)
+  land_tenure                     String?                @default("99-Year Authority Leasehold")
+  pet_friendly                    Boolean?               @default(true)
+  bachelor_tenants_allowed        Boolean?               @default(true)
+
   // Relations
   amenities                Amenity[]
   connectivity             Connectivity[]
@@ -261,6 +276,7 @@ model Project {
   channel_partners         ProjectChannelPartner[]
   chat_sessions            ChatSession[]          @relation("ProjectFocusedChats")
   spec_items               ProjectSpecItem[]
+  property_feedback        PropertyFeedback[]     @relation("PropertyFeedback")
 
   @@index([city, sector])
   @@index([status])
@@ -711,6 +727,7 @@ model ChatSession {
 
   messages         ChatMessage[]
   callbackRequests CallbackRequest[]
+  property_feedback PropertyFeedback[] @relation("PropertyFeedback")
 
   // Analytics relations
   analytics        ChatAnalytics[]
@@ -1726,5 +1743,26 @@ model AuditLog {
   @@index([entity_type, entity_id])
   @@index([created_at])
   @@map("audit_logs")
+}
+
+model PropertyFeedback {
+  id         String   @id @default(uuid())
+  session_id String
+  project_id String
+
+  sentiment  String   // "good" | "bad"
+  reasons    String[] // JSON array: ["too_expensive", "possession_far", "wrong_location"]
+  rating     Int?     // Optional 1-5 star rating
+  comment    String?  // Optional user comment
+
+  created_at DateTime @default(now())
+
+  session    ChatSession @relation("PropertyFeedback", fields: [session_id], references: [id], onDelete: Cascade)
+  project    Project? @relation("PropertyFeedback", fields: [project_id], references: [id], onDelete: SetNull)
+
+  @@index([session_id])
+  @@index([project_id])
+  @@index([sentiment])
+  @@map("property_feedback")
 }
 

@@ -60,6 +60,21 @@ interface ProjectData {
   approvals_status?: string
   escrow_verified?: boolean
   registry_status?: string
+
+  // Living Specs & 2026 Comprehensive Standards
+  water_source?: string
+  dg_power_rate_per_unit?: string
+  maintenance_per_sqft_monthly?: string
+  has_png_gas_pipeline?: boolean
+  mobile_network_rating?: string
+  ceiling_height_ft?: string
+  lifts_per_tower?: string
+  has_service_lift?: boolean
+  shared_walls_type?: string
+  authority_dues_cleared?: boolean
+  land_tenure?: string
+  pet_friendly?: boolean
+  bachelor_tenants_allowed?: boolean
 }
 
 const EMPTY: ProjectData = {
@@ -73,7 +88,21 @@ const EMPTY: ProjectData = {
   nri_eligible: true, vastu_compliant: true, has_penthouse: false, has_duplex: false,
   women_safety_score: '92', air_quality_index_avg: '155', noise_level_db: '45', green_cover_percent: '75',
   market_demand_score: '90', appreciation_potential_5yr: '14.5', rental_yield_annual_percent: '4.5',
-  resale_lock_in_months: '36', approvals_status: 'Fully Approved by RERA', escrow_verified: true, registry_status: 'open'
+  resale_lock_in_months: '36', approvals_status: 'Fully Approved by RERA', escrow_verified: true, registry_status: 'open',
+
+  water_source: 'Ganga Jal Pipeline (Noida Authority) + Centralized WTP',
+  dg_power_rate_per_unit: '21.00',
+  maintenance_per_sqft_monthly: '2.75',
+  has_png_gas_pipeline: true,
+  mobile_network_rating: '4',
+  ceiling_height_ft: '10.2',
+  lifts_per_tower: '3',
+  has_service_lift: true,
+  shared_walls_type: 'Zero Shared Walls / 3-Side Open Layout',
+  authority_dues_cleared: true,
+  land_tenure: '99-Year Authority Leasehold',
+  pet_friendly: true,
+  bachelor_tenants_allowed: true,
 }
 
 function toSlug(name: string): string {
@@ -273,6 +302,21 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
       approvals_status:            form.approvals_status || undefined,
       escrow_verified:             form.escrow_verified,
       registry_status:             form.registry_status || undefined,
+
+      // Living Specs & 2026 Standards
+      water_source:                 form.water_source || undefined,
+      dg_power_rate_per_unit:       form.dg_power_rate_per_unit ? parseFloat(form.dg_power_rate_per_unit) : undefined,
+      maintenance_per_sqft_monthly: form.maintenance_per_sqft_monthly ? parseFloat(form.maintenance_per_sqft_monthly) : undefined,
+      has_png_gas_pipeline:         form.has_png_gas_pipeline,
+      mobile_network_rating:        form.mobile_network_rating ? parseInt(form.mobile_network_rating) : undefined,
+      ceiling_height_ft:            form.ceiling_height_ft ? parseFloat(form.ceiling_height_ft) : undefined,
+      lifts_per_tower:              form.lifts_per_tower ? parseInt(form.lifts_per_tower) : undefined,
+      has_service_lift:             form.has_service_lift,
+      shared_walls_type:            form.shared_walls_type || undefined,
+      authority_dues_cleared:       form.authority_dues_cleared,
+      land_tenure:                  form.land_tenure || undefined,
+      pet_friendly:                 form.pet_friendly,
+      bachelor_tenants_allowed:     form.bachelor_tenants_allowed,
     }
 
     const url    = projectId ? `${API_BASE}/admin/projects/${projectId}` : `${API_BASE}/admin/projects`
@@ -535,6 +579,100 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
 
         <Field label="Registry Status">
           <Input value={form.registry_status || ''} onChange={set('registry_status')} placeholder="open" />
+        </Field>
+
+        <SectionHeader title="Living Infrastructure, Utilities & Architecture (2026 Standards)" />
+
+        <Field label="Water Supply Source" hint="e.g. Ganga Jal Pipeline (Noida Authority) + Centralized WTP">
+          <Input value={form.water_source || ''} onChange={set('water_source')} placeholder="Ganga Jal Pipeline + Centralized WTP" />
+        </Field>
+
+        <Field label="DG Power Backup Rate (₹/kWh)" hint="Tariff charged per unit on generator power">
+          <Input value={form.dg_power_rate_per_unit || ''} onChange={set('dg_power_rate_per_unit')} placeholder="21.00" type="number" step="0.5" />
+        </Field>
+
+        <Field label="Monthly Maintenance (₹/sq.ft)" hint="Recurring maintenance rate per sq.ft per month">
+          <Input value={form.maintenance_per_sqft_monthly || ''} onChange={set('maintenance_per_sqft_monthly')} placeholder="2.75" type="number" step="0.1" />
+        </Field>
+
+        <Field label="Clear Ceiling Height (ft)" hint="Internal floor-to-ceiling slab height">
+          <Input value={form.ceiling_height_ft || ''} onChange={set('ceiling_height_ft')} placeholder="10.2" type="number" step="0.1" />
+        </Field>
+
+        <Field label="Lifts Per Tower" hint="Passenger / high-speed elevators count">
+          <Input value={form.lifts_per_tower || ''} onChange={set('lifts_per_tower')} placeholder="3" type="number" />
+        </Field>
+
+        <Field label="Privacy & Shared Walls Layout" hint="e.g. Zero Shared Walls / 3-Side Open Layout">
+          <Input value={form.shared_walls_type || ''} onChange={set('shared_walls_type')} placeholder="Zero Shared Walls / 3-Side Open Layout" />
+        </Field>
+
+        <Field label="Land Tenure" hint="e.g. 99-Year Authority Leasehold or Freehold">
+          <Input value={form.land_tenure || ''} onChange={set('land_tenure')} placeholder="99-Year Authority Leasehold" />
+        </Field>
+
+        <Field label="Mobile Network Rating (1-5)" hint="Airtel/Jio 5G connectivity score inside towers">
+          <Input value={form.mobile_network_rating || ''} onChange={set('mobile_network_rating')} placeholder="4" type="number" min="1" max="5" />
+        </Field>
+
+        <Field label="Service Elevator">
+          <label className="flex items-center gap-2 cursor-pointer pt-2">
+            <input
+              type="checkbox"
+              checked={!!form.has_service_lift}
+              onChange={(e) => setForm((f) => ({ ...f, has_service_lift: e.target.checked }))}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Dedicated Service / Stretcher Lift Available</span>
+          </label>
+        </Field>
+
+        <Field label="PNG Gas Pipeline">
+          <label className="flex items-center gap-2 cursor-pointer pt-2">
+            <input
+              type="checkbox"
+              checked={!!form.has_png_gas_pipeline}
+              onChange={(e) => setForm((f) => ({ ...f, has_png_gas_pipeline: e.target.checked }))}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Piped Natural Gas (PNG) Connection Active</span>
+          </label>
+        </Field>
+
+        <Field label="Authority Dues Cleared">
+          <label className="flex items-center gap-2 cursor-pointer pt-2">
+            <input
+              type="checkbox"
+              checked={!!form.authority_dues_cleared}
+              onChange={(e) => setForm((f) => ({ ...f, authority_dues_cleared: e.target.checked }))}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Authority Land Dues 100% Cleared by Builder</span>
+          </label>
+        </Field>
+
+        <Field label="Pet Friendly">
+          <label className="flex items-center gap-2 cursor-pointer pt-2">
+            <input
+              type="checkbox"
+              checked={!!form.pet_friendly}
+              onChange={(e) => setForm((f) => ({ ...f, pet_friendly: e.target.checked }))}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Society Permits Pets</span>
+          </label>
+        </Field>
+
+        <Field label="Bachelor Tenants Allowed">
+          <label className="flex items-center gap-2 cursor-pointer pt-2">
+            <input
+              type="checkbox"
+              checked={!!form.bachelor_tenants_allowed}
+              onChange={(e) => setForm((f) => ({ ...f, bachelor_tenants_allowed: e.target.checked }))}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">RWA Permits Bachelor Tenants</span>
+          </label>
         </Field>
 
         <SectionHeader title="AI & Marketing" />

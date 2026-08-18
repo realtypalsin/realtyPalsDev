@@ -81,6 +81,18 @@ function getTabAuditDetails(
 
     if ((data?.amenities?.length || 0) >= 3) completed.push(`Amenities (${data.amenities.length} added)`)
     else missing.push(`Amenities (need 3+, currently ${data?.amenities?.length || 0})`)
+
+    if (data?.water_source) completed.push('Water Supply Source')
+    else missing.push('Water Supply Source')
+
+    if (data?.dg_power_rate_per_unit != null && data?.maintenance_per_sqft_monthly != null) completed.push('DG Power & Maintenance Rates')
+    else missing.push('DG Power & Maintenance Rates')
+
+    if (data?.ceiling_height_ft != null && data?.lifts_per_tower != null) completed.push('Ceiling Height & Elevators')
+    else missing.push('Ceiling Height & Elevators')
+
+    if (data?.shared_walls_type) completed.push('Privacy & Core Layout')
+    else missing.push('Privacy & Core Layout')
   }
 
   if (tabId === 'specs') {

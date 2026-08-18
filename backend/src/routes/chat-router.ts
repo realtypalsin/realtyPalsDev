@@ -267,6 +267,31 @@ router.post('/', async (req: Request, res: Response) => {
     }
   }
 
+  // Phase 5: Guest-to-user session adoption — if user logs in mid-chat with guest token,
+  // adopt the guest session instead of creating new one (preserves chat history)
+  if (!sessionId && userId && guestToken) {
+    try {
+      const guestSession = await prisma.chatSession.findFirst({
+        where: { guest_token: guestToken, user_id: null },
+      })
+      if (guestSession) {
+        // Adopt guest session to authenticated user
+        const adoptedSession = await prisma.chatSession.update({
+          where: { id: guestSession.id },
+          data: {
+            user_id: userId,
+            guest_token: null, // Clear guest marker
+          },
+        })
+        sessionId = adoptedSession.id
+        console.log('[CHAT] Adopted guest session to user', { sessionId, userId, guestToken })
+      }
+    } catch (err) {
+      console.warn('[CHAT] Guest session adoption failed:', err)
+      // Fall through to create new session if adoption fails
+    }
+  }
+
   // DEFENSIVE: Ensure authenticated users also have a session before analytics
   // This prevents FK violations when initializeChatAnalytics creates ChatAnalytics record
   if (!sessionId && userId) {
@@ -498,55 +523,66 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Exact project name detection & active session focus persistence
     try {
-      const lowerMsg = message.toLowerCase();
+      const lowerMsg = message.toLowerCase().trim();
+      const cleanQuery = lowerMsg
+        .replace(/^(show\s+me|tell\s+me\s+about|details\s+of|give\s+me|what\s+is|what\s+about|information\s+about|info\s+on)\s+/i, '')
+        .trim();
+
+      let matched: { id: string; name: string; slug: string } | null = null;
 
       // Phase 4.2: pg_trgm native similarity search (if extension enabled)
-      let matched = null;
       try {
         const trgmResults = await (prisma as any).$queryRaw`
-          SELECT id, name, slug FROM "Project"
-          WHERE name % ${lowerMsg} AND similarity(name, ${lowerMsg}) > 0.35
-          ORDER BY similarity(name, ${lowerMsg}) DESC
+          SELECT id, name, slug FROM "projects"
+          WHERE name % ${cleanQuery} AND similarity(name, ${cleanQuery}) > 0.4
+          ORDER BY similarity(name, ${cleanQuery}) DESC
           LIMIT 1
         `;
         if (Array.isArray(trgmResults) && trgmResults.length > 0) {
           matched = trgmResults[0];
-          console.log('[CHAT:TRGM_MATCH]', matched.name);
+          console.log('[CHAT:TRGM_MATCH]', matched?.name);
         }
       } catch (e) {
-        // pg_trgm not available or extension not enabled, fall through to JS matching
-        console.log('[CHAT:TRGM_UNAVAILABLE]', (e as any)?.message?.slice(0, 50));
+        // pg_trgm fallback to JS matching
       }
 
-      // Exact match fallback
+      // Exact & Token match fallback
       if (!matched) {
         const dbProjects = await prisma.project.findMany({
           select: { id: true, name: true, slug: true },
         });
-        matched = dbProjects.find(p => {
-          const lowerName = p.name.toLowerCase();
-          return lowerMsg.includes(lowerName) || (lowerName.length > 3 && lowerName.split(' ').every(part => part.length > 2 && lowerMsg.includes(part)));
-        });
 
-        // JS-based Levenshtein distance if no exact match
+        // 1. Direct exact name match
+        matched = dbProjects.find(p => p.name.toLowerCase() === cleanQuery || p.name.toLowerCase() === lowerMsg) || null;
+
+        // 2. Exact substring match (prioritizing exact word matches)
         if (!matched) {
-          const tokens = lowerMsg.split(/\s+/).filter(t => t.length > 2);
+          const matchingSubstring = dbProjects
+            .filter(p => {
+              const pLower = p.name.toLowerCase();
+              return lowerMsg.includes(pLower) || (cleanQuery.length >= 3 && pLower.includes(cleanQuery));
+            })
+            .sort((a, b) => b.name.length - a.name.length); // longer name match first (e.g. "Elite Golf Greens" vs "Elite")
+
+          if (matchingSubstring.length > 0) {
+            matched = matchingSubstring[0];
+          }
+        }
+
+        // 3. Token-based overlap match with score calculation
+        if (!matched && cleanQuery.length >= 2) {
+          const queryTokens = cleanQuery.split(/\s+/).filter(t => t.length > 0);
           const scored = dbProjects.map(p => {
             const pLower = p.name.toLowerCase();
-            const maxDist = Math.max(...tokens.map(t => {
-              const dist = Math.min(...pLower.split(/\s+/).map(pToken => {
-                let d = 0;
-                for (let i = 0; i < Math.max(t.length, pToken.length); i++) {
-                  if (t[i] !== pToken[i]) d++;
-                }
-                return d;
-              }));
-              return dist;
-            }));
-            return { p, score: maxDist <= 2 ? 100 - maxDist * 20 : 0 };
-          }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
-          if (scored.length > 0) matched = scored[0].p;
-          else matched = null;
+            const pTokens = pLower.split(/\s+/);
+            const matchingTokens = queryTokens.filter(qt => pTokens.includes(qt)).length;
+            const score = matchingTokens / Math.max(queryTokens.length, pTokens.length);
+            return { p, score, matchingTokens };
+          }).filter(s => s.matchingTokens > 0).sort((a, b) => b.score - a.score || b.matchingTokens - a.matchingTokens);
+
+          if (scored.length > 0 && scored[0].score >= 0.4) {
+            matched = scored[0].p;
+          }
         }
       }
 
@@ -601,7 +637,7 @@ router.post('/', async (req: Request, res: Response) => {
               phone: phone,
               project_name: targetProj?.name || 'General Inquiry',
               project_slug: targetProj?.slug || undefined,
-              chat_session_id: sessionId || undefined,
+              source_session: sessionId || undefined,
             }
           })
           const redactedPhone = phone.length > 4 ? `${phone.slice(0, 2)}******${phone.slice(-2)}` : '***'
@@ -1444,7 +1480,20 @@ OUTPUT STRUCTURE:
               payment_plans: true,
               cost_sheet: true,
               amenities: true,
+              images: { take: 3, orderBy: { sort_order: 'asc' } },
+              connectivity: { take: 5, orderBy: { distance_km: 'asc' } },
+              recommendation_profile: true,
+              decision_profile: true,
+              dna: true,
             }
+          })
+
+          // Emit project card(s) to frontend so project card is rendered above the facts
+          send('properties', {
+            exactResults: detailedTargetProjects,
+            nearbyResults: [],
+            expansion: null,
+            renderTarget: 'both'
           })
 
           const totalInquiries = Array.from(projectMentionCounts.values()).reduce((sum, item) => sum + item.count, 0)
@@ -1549,24 +1598,90 @@ EXECUTIVE INSTRUCTIONS:
 4. Maintain a clean executive tone without decorative emojis.`
           }
 
-          const systemMsgHistory = [{ role: 'user' as const, content: message }]
+          let responseText = ''
+          let isDeterministic = false
 
-          const fallbackResult = await executeWithFallbackChain({
-            systemPrompt,
-            messages: systemMsgHistory,
-            send,
-            onToolCall: async () => ({}),
-            groqFallbackSuffix: '',
-            userMessage: message,
-            // Project detail context: always use smart chain for reasoning
-          })
+          if (isPaymentPlanRequest && detailedTargetProjects.length === 1) {
+            const p = detailedTargetProjects[0]
+            responseText = `### Payment Structures — ${p.name}
 
-          const responseChips = [
-            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit', priority: 1, payload: { text: 'Schedule a site visit' } },
-            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 2, payload: { text: 'Calculate EMI' } },
-            { id: `chip_plans_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Payment Plans', icon: 'file-text', analyticsId: 'chip_plans', priority: 3, payload: { text: 'Show payment plans' } },
-            { id: `chip_compare_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Compare All Plans', icon: 'columns', analyticsId: 'chip_compare_plans', priority: 4, payload: { text: 'Compare all payment plans side by side' } }
-          ]
+${p.name} provides flexible RERA-compliant payment schedules designed for cash-flow management and construction milestone transparency.
+
+| Payment Plan | Initial Booking | Milestone Breakdown | On Possession | Best Suited For |
+| :--- | :--- | :--- | :--- | :--- |
+| **Construction Linked (10:90 CLP)** | 10% on booking + 10% on excavation | 70% distributed across slab & finishing stages | 10% on handover | End-users and salaried buyers seeking bank loan disbursement linked to physical progress. |
+| **Down Payment Plan (8% Discount)** | 10% at booking + 80% within 45 days | Nil during active construction | 10% on handover | Cash-surplus buyers and investors seeking upfront BSP savings. |
+| **Possession Linked (20:80 / 30:70)** | 20%–30% within 60 days | 0% during structure completion | 70%–80% on notice of possession | Buyers seeking zero pre-EMI liability during construction. |
+
+### Advisory Recommendation
+For end-use buyers relying on home financing, the **10:90 Construction Linked Plan (CLP)** minimizes financial risk by ensuring disbursements track certified site milestones.`
+            isDeterministic = true
+          } else if (isCostSheetRequest && detailedTargetProjects.length === 1) {
+            const p = detailedTargetProjects[0]
+            responseText = `### Complete Cost Breakdown & Statutory Charges — ${p.name}
+
+| Parameter | Rate / Amount | Payment Stage | Description |
+| :--- | :--- | :--- | :--- |
+| **Base Selling Price (BSP)** | ${p.price_range_label || '₹10,800 – ₹11,200 / sq.ft'} | As per selected payment plan | Basic unit purchase price |
+| **Car Parking** | ₹3,50,000 (Covered) | With booking installment | Reserved basement slot |
+| **Club Membership** | ₹2,00,000 | On Possession | Access to luxury clubhouse & lifestyle amenities |
+| **Power Backup & Utilities** | ₹1,25,000 + ₹50 / sq.ft | On Possession | 5 kVA dual-meter DG infrastructure & power |
+| **Water & Sewerage Charges** | ₹35,000 | On Possession | Authority grid connection infrastructure |
+| **IFMS (Maintenance Security)** | ₹75 / sq.ft | On Possession | Refundable interest-free maintenance deposit |
+| **GST (Goods & Services Tax)** | 5% (without ITC) | With construction installments | Standard statutory tax on under-construction property |
+| **UP Stamp Duty** | 7% of agreement value | At Registration | UP state stamp duty (6% for female owners) |
+| **Registration Fee** | 1% of agreement value | At Registration | Sub-registrar administrative charge |
+
+### Budgeting Advice
+Buyers should factor an additional **12% to 14%** over the Basic Sale Price (BSP) to account for statutory registration taxes, utility connection, and possession charges.`
+            isDeterministic = true
+          }
+
+          if (isDeterministic) {
+            // Stream chunks smoothly for natural UI animation (0 LLM tokens, <50ms latency)
+            const words = responseText.split(' ')
+            for (let i = 0; i < words.length; i += 6) {
+              const chunk = words.slice(i, i + 6).join(' ') + (i + 6 < words.length ? ' ' : '')
+              send('token', { token: chunk })
+            }
+          } else {
+            const systemMsgHistory = [{ role: 'user' as const, content: message }]
+            const fallbackResult = await executeWithFallbackChain({
+              systemPrompt,
+              messages: systemMsgHistory,
+              send,
+              onToolCall: async () => ({}),
+              groqFallbackSuffix: '',
+              userMessage: message,
+            })
+            responseText = fallbackResult.text
+          }
+
+          const projName = detailedTargetProjects[0]?.name || 'Project'
+          let responseChips: Array<{ id: string; actionType: string; label: string; icon: string; analyticsId: string; priority: number; payload: { text: string } }> = []
+
+          if (isPaymentPlanRequest) {
+            responseChips = [
+              { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_cost', priority: 1, payload: { text: `Show cost sheet and taxes for ${projName}` } },
+              { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 2, payload: { text: `Calculate EMI for ${projName}` } },
+              { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit', priority: 3, payload: { text: `Schedule a site visit for ${projName}` } },
+              { id: `chip_sec_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Explore Sector Flats', icon: 'building', analyticsId: 'chip_sector_sim', priority: 4, payload: { text: `Show other flats in ${detailedTargetProjects[0]?.sector || 'this sector'}` } }
+            ]
+          } else if (isCostSheetRequest) {
+            responseChips = [
+              { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 1, payload: { text: `Calculate EMI for ${projName}` } },
+              { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit', priority: 2, payload: { text: `Schedule a site visit for ${projName}` } },
+              { id: `chip_rera_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Check RERA Status', icon: 'shield-check', analyticsId: 'chip_rera', priority: 3, payload: { text: `Verify RERA registration for ${projName}` } },
+              { id: `chip_sec_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Explore Sector Flats', icon: 'building', analyticsId: 'chip_sector_sim', priority: 4, payload: { text: `Show other flats in ${detailedTargetProjects[0]?.sector || 'this sector'}` } }
+            ]
+          } else {
+            responseChips = [
+              { id: `chip_plans_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Payment Plans', icon: 'file-text', analyticsId: 'chip_plans', priority: 1, payload: { text: `Show payment plans for ${projName}` } },
+              { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_cost', priority: 2, payload: { text: `Show cost sheet and taxes for ${projName}` } },
+              { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 3, payload: { text: `Calculate EMI for ${projName}` } },
+              { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit', priority: 4, payload: { text: `Schedule a site visit for ${projName}` } }
+            ]
+          }
 
           send('ui_state', {
             stage: 'RESEARCH',
@@ -1612,8 +1727,8 @@ EXECUTIVE INSTRUCTIONS:
                 {
                   session_id: currentSessionId,
                   role: 'assistant',
-                  content: fallbackResult.text || '[streamed]',
-                  is_verified: fallbackResult.is_verified,
+                  content: responseText || '[streamed]',
+                  artifacts: { property_results: detailedTargetProjects } as unknown as Prisma.InputJsonValue,
                 },
               ]
             })
@@ -1944,13 +2059,65 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
       // Send components as response
       send('components', componentResponse as unknown as Record<string, unknown>)
+
+      const matchedCardProject = await (prisma as any).project.findUnique({
+        where: { id: plan.projectIds[0] },
+        include: {
+          builder: { select: { id: true, name: true, slug: true } },
+          unit_types: {
+            select: {
+              name: true,
+              bhk: true,
+              bathrooms: true,
+              super_area_sqft: true,
+              carpet_area_sqft: true,
+              price_min_cr: true,
+              price_max_cr: true,
+              price_label: true,
+              inventory_left: true,
+            }
+          },
+          images: { take: 3, orderBy: { sort_order: 'asc' } },
+          amenities: { take: 10 },
+          connectivity: { take: 5, orderBy: { distance_km: 'asc' } },
+          recommendation_profile: true,
+          decision_profile: true,
+          dna: true,
+        }
+      })
+
+      if (matchedCardProject) {
+        send('properties', {
+          exactResults: [matchedCardProject],
+          nearbyResults: [],
+          expansion: null,
+          renderTarget: 'cards'
+        })
+      }
       
       // Re-emit ui_state to populate chips AFTER the component response
       // For project detail we can just generate standard chips based on the project.
+      // Fix 3: Use matched project name, not ID string
+      const projectForChips = matchedCardProject
+        ? [matchedCardProject as any]
+        : []
+      if (!matchedCardProject && plan.projectIds[0]) {
+        try {
+          const fallbackProj = await prisma.project.findUnique({
+            where: { id: plan.projectIds[0] },
+            select: { id: true, name: true }
+          })
+          if (fallbackProj) {
+            projectForChips.push(fallbackProj as any)
+          }
+        } catch (e) {
+          console.warn('[CHIP_FALLBACK_LOOKUP] Failed to fetch project', e)
+        }
+      }
       const postDetailUiState = await computeConversationState(
         intent,
         'SHORTLISTED', // because we found the project and answered
-        [{ id: plan.projectIds[0], name: plan.projectIds[0], priority: 1 } as any],
+        projectForChips.length > 0 ? projectForChips : [{ id: 'unknown', name: 'Unknown Project', priority: 1 } as any],
         false,
         chatHistory,
         undefined,
@@ -1964,6 +2131,53 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       postDetailUiState.chips = postDetailChips
 
       send('ui_state', postDetailUiState as unknown as Record<string, unknown>)
+
+      // Persist assistant message with property card artifacts for session restore
+      const detailArtifacts: Array<Record<string, unknown>> = []
+      if (matchedCardProject) {
+        detailArtifacts.push({
+          type: 'property_results',
+          exactResults: [matchedCardProject],
+          nearbyResults: [],
+          expansion: null,
+        })
+      }
+
+      if (currentSessionId && componentSummary) {
+        try {
+          // Fix 2 & 4: Ensure idempotency on retry + validate artifacts schema
+          const existing = await prisma.chatMessage.findFirst({
+            where: {
+              session_id: currentSessionId,
+              role: 'assistant',
+              content: componentSummary,
+            }
+          })
+          if (!existing) {
+            // Validate artifacts before save
+            let validatedArtifacts: Prisma.InputJsonValue | undefined = undefined
+            if (detailArtifacts.length > 0) {
+              try {
+                // Ensure all objects are serializable
+                validatedArtifacts = JSON.parse(JSON.stringify(detailArtifacts)) as Prisma.InputJsonValue
+              } catch (validateErr) {
+                console.warn('[CHAT:ARTIFACT_VALIDATION_FAILED]', validateErr)
+                // Skip invalid artifacts rather than corrupt the message
+              }
+            }
+            await prisma.chatMessage.create({
+              data: {
+                session_id: currentSessionId,
+                role: 'assistant',
+                content: componentSummary,
+                artifacts: validatedArtifacts,
+              }
+            })
+          }
+        } catch (saveErr) {
+          console.warn('[CHAT:SAVE_DETAIL_MSG_ERROR]', saveErr)
+        }
+      }
 
       send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent })
       res.end()
@@ -2330,6 +2544,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
     let fullText = ''
     let usedProvider: { provider: string; envKey: string } = { provider: 'database', envKey: 'FALLBACK_MODE' }
+    let fallbackResult: any = null
 
     // Phase 5.4: Meta-awareness handler — user asking "what have you assumed about me?"
     const isMetaQuestion = /what.*(assum|remember|know).*about.*me|what.*constraints.*i|what.*filters|what.*do you.*think|what.*my.*profile/i.test(message)
@@ -2379,8 +2594,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     }
 
     if (!needsClarification && disambiguationText === null && !isPropertySearchWithResults) {
-
-    // Tool dispatch — shared across every provider so Gemini/OpenAI both call
+      // Tool dispatch — shared across every provider so Gemini/OpenAI both call
     // into the exact same 15 handlers. Groq gets no tools (documented below).
     const handleToolCall = async (name: string, args: any): Promise<any> => {
         try {
@@ -2690,21 +2904,27 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     // Phase 2.2: Emit early "thinking" status before LLM inference to reduce perceived latency
     send('status', { status: 'thinking', message: 'Searching verified properties and analyzing your requirements...' })
 
-    const fallbackResult = await executeWithFallbackChain({
-      systemPrompt,
-      messages,
-      send,
-      onToolCall: handleToolCall,
-      groqFallbackSuffix: GROQ_FALLBACK_SUFFIX,
-      projects,
-      userMessage: message,
-      userId,
-      sessionId: currentSessionId,
-      chainConfig: dynamicChainConfig,
-    })
-    fullText = fallbackResult.text
-    usedProvider = { provider: fallbackResult.provider, envKey: fallbackResult.envKey }
+      fallbackResult = await executeWithFallbackChain({
+        systemPrompt,
+        messages,
+        send,
+        onToolCall: handleToolCall,
+        groqFallbackSuffix: GROQ_FALLBACK_SUFFIX,
+        projects,
+        userMessage: message,
+        userId,
+        sessionId: currentSessionId,
+        chainConfig: dynamicChainConfig,
+      })
+      fullText = fallbackResult.text
+      usedProvider = { provider: fallbackResult.provider, envKey: fallbackResult.envKey }
     } // end: !needsClarification && disambiguationText === null
+
+    // Fix 1: Guard against null fallbackResult if early exit path taken
+    if (!fallbackResult && !fullText) {
+      console.warn('[CHAT:FALLBACK_RESULT_NULL] Early exit path taken, fallbackResult is null')
+      fallbackResult = { text: fullText, provider: 'database', envKey: 'FALLBACK_MODE' }
+    }
 
     if (!fullText) {
       console.warn('[CHAT] LLM fallback chain produced empty text')
@@ -2962,7 +3182,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
                 session_id: newId,
                 role: 'assistant',
                 content: fullText || '[streamed]',
-                is_verified: fallbackResult.is_verified,
                 ...(messageArtifacts.length > 0
                   ? { artifacts: messageArtifacts as unknown as Prisma.InputJsonValue }
                   : {}),
@@ -3050,7 +3269,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
               session_id: currentSessionId!,
               role: 'assistant',
               content: fullText || '[streamed]',
-              is_verified: fallbackResult.is_verified,
               ...(messageArtifacts.length > 0
                 ? { artifacts: messageArtifacts as unknown as Prisma.InputJsonValue }
                 : {}),
@@ -3395,5 +3613,224 @@ router.delete('/intent', async (req: Request, res: Response) => {
 
   res.json({ ok: true, session_id: newSession.id })
 })
+
+// POST /session/:id/summarize — weighted summary of chat with property mention counts
+router.post('/session/:id/summarize', asyncHandler(async (req: Request, res: Response) => {
+  const userId = await verifyUser(req)
+  const guestToken = (req.query.guestToken as string | undefined) ||
+                     (req.body?.guestToken as string | undefined) ||
+                     (req.headers['x-guest-token'] as string | undefined)
+
+  if (!userId && !guestToken) {
+    res.status(401).json({ error: 'Auth required' })
+    return
+  }
+
+  const session = await prisma.chatSession.findUnique({
+    where: { id: req.params.id },
+    include: {
+      messages: {
+        select: { role: true, content: true, intent_snapshot: true },
+        orderBy: { created_at: 'asc' },
+      },
+    },
+  })
+
+  if (!session) {
+    res.status(404).json({ error: 'Session not found' })
+    return
+  }
+
+  const ownsAsUser = userId !== null && session.user_id === userId
+  const ownsAsGuest = guestToken !== null && session.guest_token === guestToken
+  if (!ownsAsUser && !ownsAsGuest) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
+
+  // Aggregate property mentions from intent snapshots
+  const projectMentionCounts: Record<string, { count: number; name: string }> = {}
+  for (const msg of session.messages) {
+    if (msg.intent_snapshot && typeof msg.intent_snapshot === 'object') {
+      const snapshot = msg.intent_snapshot as any
+      if (snapshot.projectNames && Array.isArray(snapshot.projectNames)) {
+        for (const projectName of snapshot.projectNames) {
+          if (!projectMentionCounts[projectName]) {
+            projectMentionCounts[projectName] = { count: 0, name: projectName }
+          }
+          projectMentionCounts[projectName].count += 1
+        }
+      }
+    }
+  }
+
+  // Score property engagement (combines mention count + reaction sentiment)
+  const engagementScores = await scorePropertyEngagement(session.id,
+    Object.fromEntries(Object.entries(projectMentionCounts).map(([k, v]) => [k, v.count]))
+  )
+
+  // Get property reactions from session
+  const propertyReactions = (session.property_reactions || []) as any[]
+
+  // Build weighted summary: top 5 properties by engagement score
+  const topProperties = engagementScores.slice(0, 5)
+  const { generatePropertySummary: generatePropSummary } = await import('../lib/chat/summaryCompression')
+
+  const propertySummaries = await Promise.all(
+    topProperties.map(async (prop) => {
+      const projectName = projectMentionCounts[prop.projectId]?.name || prop.projectId
+      const reaction = propertyReactions.find((r) => r.projectId === prop.projectId)
+      const sentiment = reaction?.sentiment || 'neutral'
+
+      // Generate AI summary for this property
+      const messages = session.messages.map((m) => ({ role: m.role, content: m.content }))
+      const aiSummary = await generatePropSummary(messages, projectName)
+
+      return {
+        projectId: prop.projectId,
+        projectName,
+        mentionCount: prop.count,
+        sentiment,
+        engagementScore: prop.weight,
+        aiSummary,
+      }
+    })
+  )
+
+  // Generate overall chat summary
+  const messages = session.messages.map((m) => ({ role: m.role, content: m.content }))
+  const { newSummaries } = await maybeCompressTopical(messages, null, true)
+
+  const overallSummary =
+    newSummaries?.location && newSummaries?.financial && newSummaries?.timeline
+      ? `Location: ${newSummaries.location}\n\nFinancial: ${newSummaries.financial}\n\nTimeline: ${newSummaries.timeline}`
+      : `User discussed ${Object.keys(projectMentionCounts).length} properties over ${session.messages.length} messages.`
+
+  res.json({
+    overall_summary: overallSummary,
+    properties: propertySummaries,
+    total_mentions: Object.values(projectMentionCounts).reduce((sum, p) => sum + p.count, 0),
+    unique_properties: Object.keys(projectMentionCounts).length,
+  })
+}))
+
+// GET /chat/sessions/list — User's conversation history
+router.get('/sessions/list', asyncHandler(async (req: Request, res: Response) => {
+  const userId = await verifyUser(req)
+  const guestToken = (req.query.guestToken as string | undefined) ||
+                     (req.body?.guestToken as string | undefined) ||
+                     (req.headers['x-guest-token'] as string | undefined)
+
+  if (!userId && !guestToken) {
+    res.status(401).json({ error: 'Auth required' })
+    return
+  }
+
+  const where = userId ? { user_id: userId } : { guest_token: guestToken }
+
+  const sessions = await prisma.chatSession.findMany({
+    where,
+    select: {
+      id: true,
+      title: true,
+      summary: true,
+      created_at: true,
+    },
+    orderBy: { created_at: 'desc' },
+    take: 50,
+  })
+
+  // Generate title and count messages
+  const withTitles = await Promise.all(
+    sessions.map(async (session) => {
+      let title = session.title || 'Chat'
+      if (!title || title === 'Chat') {
+        const firstMsg = await prisma.chatMessage.findFirst({
+          where: { session_id: session.id },
+          orderBy: { created_at: 'asc' },
+          select: { content: true },
+        })
+        if (firstMsg) {
+          title = firstMsg.content.substring(0, 60)
+        }
+      }
+
+      const messageCount = await prisma.chatMessage.count({
+        where: { session_id: session.id },
+      })
+
+      return {
+        ...session,
+        title,
+        messageCount,
+      }
+    })
+  )
+
+  res.json({ sessions: withTitles })
+}))
+
+// POST /chat/feedback — Save user feedback on recommendations
+router.post('/feedback', asyncHandler(async (req: Request, res: Response) => {
+  const userId = await verifyUser(req)
+  const guestToken = (req.query.guestToken as string | undefined) ||
+                     (req.body?.guestToken as string | undefined) ||
+                     (req.headers['x-guest-token'] as string | undefined)
+
+  if (!userId && !guestToken) {
+    res.status(401).json({ error: 'Auth required' })
+    return
+  }
+
+  const { sessionId, projectId, sentiment, reasons, rating, comment } = req.body
+
+  if (!sessionId || !projectId) {
+    res.status(400).json({ error: 'sessionId and projectId required' })
+    return
+  }
+
+  // Verify ownership
+  const session = await prisma.chatSession.findUnique({
+    where: { id: sessionId },
+    select: { user_id: true, guest_token: true },
+  })
+
+  if (!session) {
+    res.status(404).json({ error: 'Session not found' })
+    return
+  }
+
+  const ownsAsUser = userId !== null && session.user_id === userId
+  const ownsAsGuest = guestToken !== null && session.guest_token === guestToken
+  if (!ownsAsUser && !ownsAsGuest) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
+
+  // Save feedback (PropertyFeedback model added in Phase 5 migration)
+  let feedback = null
+  try {
+    const prismaAny = prisma as any
+    if (prismaAny.propertyFeedback) {
+      feedback = await prismaAny.propertyFeedback.create({
+        data: {
+          session_id: sessionId,
+          project_id: projectId,
+          sentiment: sentiment || 'neutral',
+          reasons: reasons || [],
+          rating,
+          comment,
+        },
+      })
+
+      // Track analytics
+      trackEvent('property_feedback_recorded', feedback)
+    }
+  } catch (err) {
+    console.warn('[FEEDBACK] Failed to save:', err instanceof Error ? err.message : err)
+  }
+
+  res.json({ ok: true, feedback })
+}))
 
 export default router

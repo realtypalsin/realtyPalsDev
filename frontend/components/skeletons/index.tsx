@@ -465,3 +465,69 @@ export function DiscoverySkeleton() {
   )
 }
 
+/** Rich Bento & Message Stream Skeleton for Chat Interface (Phase 2) */
+export function ChatPhase2Skeleton() {
+  return (
+    <div className="flex-1 flex flex-col justify-between max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6 animate-in fade-in duration-200">
+      {/* Message stream skeleton */}
+      <div className="space-y-6 flex-1">
+        {/* 1. AI Welcome / Context Header Card */}
+        <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-black/5 dark:border-white/10 shadow-xs space-y-3 max-w-xl">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-lg img-skeleton shrink-0" />
+            <div className="w-24 h-3.5 img-skeleton rounded-md" />
+            <div className="w-16 h-4 img-skeleton rounded-full ml-auto" />
+          </div>
+          <div className="w-3/4 h-3 img-skeleton rounded" />
+          <div className="w-1/2 h-2.5 img-skeleton rounded opacity-70" />
+        </div>
+
+        {/* 2. User Query Bubble (Right-aligned) */}
+        <div className="flex justify-end">
+          <div className="bg-blue-600/10 dark:bg-blue-500/10 border border-blue-500/20 rounded-2xl px-5 py-3.5 max-w-xs sm:max-w-md space-y-2">
+            <div className="w-40 h-3.5 img-skeleton rounded" />
+          </div>
+        </div>
+
+        {/* 3. AI Structured Fact / Comparison Response Card */}
+        <div className="bg-white dark:bg-zinc-900/90 rounded-2xl p-5 border border-black/5 dark:border-white/10 shadow-sm space-y-4 max-w-2xl">
+          <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-md img-skeleton" />
+              <div className="w-36 h-3.5 img-skeleton rounded" />
+            </div>
+            <div className="w-20 h-5 img-skeleton rounded-full" />
+          </div>
+          
+          {/* Table / Key Fact rows */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between py-1 border-b border-zinc-50 dark:border-zinc-800/40">
+              <div className="w-28 h-3 img-skeleton rounded" />
+              <div className="w-36 h-3 img-skeleton rounded" />
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-zinc-50 dark:border-zinc-800/40">
+              <div className="w-24 h-3 img-skeleton rounded" />
+              <div className="w-44 h-3 img-skeleton rounded" />
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-zinc-50 dark:border-zinc-800/40">
+              <div className="w-32 h-3 img-skeleton rounded" />
+              <div className="w-28 h-3 img-skeleton rounded" />
+            </div>
+          </div>
+
+          {/* Key Highlight Banner */}
+          <div className="w-full h-8 img-skeleton rounded-xl" />
+        </div>
+
+        {/* 4. Action Buttons / Quick Chips */}
+        <div className="flex flex-wrap gap-2 pt-2">
+          <div className="w-36 h-8 img-skeleton rounded-full" />
+          <div className="w-44 h-8 img-skeleton rounded-full" />
+          <div className="w-32 h-8 img-skeleton rounded-full" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+

@@ -36,13 +36,15 @@ export async function generateDynamicChips(
   }
 
   let project = null
-  try {
-    project = await prisma.project.findUnique({
-      where: { id: topProject.id },
-      include: { builder: true }
-    })
-  } catch {
-    // Database connection error fallback
+  if (topProject?.id) {
+    try {
+      project = await prisma.project.findUnique({
+        where: { id: topProject.id },
+        include: { builder: true }
+      })
+    } catch {
+      // Database connection error fallback
+    }
   }
 
   if (!project) {

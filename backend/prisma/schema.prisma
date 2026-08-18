@@ -238,6 +238,21 @@ model Project {
   fir_against_project             Boolean?
   approvals_status                String?
 
+  // 12. Utilities, Civic Infra & Architectural Specs (2026 Comprehensive Living Standards)
+  water_source                    String?
+  dg_power_rate_per_unit          Float?
+  maintenance_per_sqft_monthly    Float?
+  has_png_gas_pipeline            Boolean?               @default(true)
+  mobile_network_rating           Int?                   @default(4)
+  ceiling_height_ft               Float?                 @default(10.2)
+  lifts_per_tower                 Int?                   @default(3)
+  has_service_lift                Boolean?               @default(true)
+  shared_walls_type               String?
+  authority_dues_cleared          Boolean?               @default(true)
+  land_tenure                     String?                @default("99-Year Authority Leasehold")
+  pet_friendly                    Boolean?               @default(true)
+  bachelor_tenants_allowed        Boolean?               @default(true)
+
   // Relations
   amenities                Amenity[]
   connectivity             Connectivity[]
@@ -261,6 +276,7 @@ model Project {
   channel_partners         ProjectChannelPartner[]
   chat_sessions            ChatSession[]          @relation("ProjectFocusedChats")
   spec_items               ProjectSpecItem[]
+  property_feedback        PropertyFeedback[]     @relation("PropertyFeedback")
 
   @@index([city, sector])
   @@index([status])
@@ -716,6 +732,12 @@ model ChatSession {
   query_metrics    QueryMetrics[]
   property_events  PropertyEvent[]
 
+  // Phase 5: Lead enrichment — links callback requests to full chat context
+  callback_requests CallbackRequest[] @relation("CallbackRequestChat")
+
+  // Phase 5: User feedback on recommendations
+  property_feedback PropertyFeedback[] @relation("PropertyFeedback")
+
   // Phase 0/1: Memory + Grading
   memory           SessionMemory?
   response_grades  ResponseGrade[]
@@ -818,6 +840,10 @@ model CallbackRequest {
   budget_max_cr     Float?
   source_intent     Json?
 
+  // Phase 5: Chat session linkage for enriched lead context
+  chat_session_id String?
+  chat_session    ChatSession? @relation("CallbackRequestChat", fields: [chat_session_id], references: [id], onDelete: SetNull)
+
   created_at   DateTime @default(now())
 
   objections LeadObjection[]
@@ -825,6 +851,7 @@ model CallbackRequest {
   @@index([project_slug])
   @@index([lead_tier])
   @@index([created_at])
+  @@index([chat_session_id])
   @@map("callback_requests")
 }
 
@@ -1704,6 +1731,28 @@ model GhostPoolAnalysis {
   @@index([project_id])
   @@index([week_start])
   @@map("ghost_pool_analysis")
+}
+
+// Phase 5: User feedback on property recommendations
+model PropertyFeedback {
+  id         String   @id @default(uuid())
+  session_id String
+  project_id String
+
+  sentiment  String   // "good" | "bad"
+  reasons    String[] // JSON array: ["too_expensive", "possession_far", "wrong_location"]
+  rating     Int?     // Optional 1-5 star rating
+  comment    String?  // Optional user comment
+
+  created_at DateTime @default(now())
+
+  session    ChatSession @relation("PropertyFeedback", fields: [session_id], references: [id], onDelete: Cascade)
+  project    Project? @relation("PropertyFeedback", fields: [project_id], references: [id], onDelete: SetNull)
+
+  @@index([session_id])
+  @@index([project_id])
+  @@index([sentiment])
+  @@map("property_feedback")
 }
 
 model AuditLog {

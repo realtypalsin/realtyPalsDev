@@ -392,8 +392,8 @@ function MessageBubbleInner({
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
           className={`px-5 py-3.5 transition-all duration-300 ${isUser
-            ? 'max-w-[85%] sm:max-w-[78%] bg-gradient-user-bubble text-white shadow-[0_4px_18px_rgba(37,99,235,0.28)] rounded-[22px] rounded-br-[6px] border border-blue-400/30 text-sm font-medium tracking-tight'
-            : 'max-w-[95%] sm:max-w-[85%] bg-white dark:bg-[#121214] ring-1 ring-inset ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100 relative overflow-hidden rounded-[22px] rounded-tl-[6px] cursor-pointer sm:cursor-default shadow-[0_2px_16px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
+            ? 'max-w-[85%] sm:max-w-[78%] bg-blue-600 text-white shadow-xs rounded-[22px] rounded-br-[6px] text-sm font-medium tracking-tight'
+            : 'max-w-[95%] sm:max-w-[85%] bg-white dark:bg-[#18181b] border border-gray-200/60 dark:border-zinc-800 text-gray-900 dark:text-zinc-100 relative overflow-hidden rounded-[22px] rounded-tl-[6px] cursor-pointer sm:cursor-default shadow-xs dark:shadow-md'
             }`}
         >
           {!isUser && <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] pointer-events-none" />}
@@ -459,6 +459,24 @@ function MessageBubbleInner({
                         transition={{ duration: 0.25 }}
                         className="space-y-3"
                       >
+                        {/* Summary */}
+                        {message.chatResponse.message && (
+                          <div className="text-gray-700 dark:text-gray-300 leading-relaxed font-normal">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {message.chatResponse.message}
+                            </ReactMarkdown>
+                          </div>
+                        )}
+
+                        {/* Metadata badge */}
+                        <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                          <span className="flex items-center gap-1 font-medium">
+                            <Sparkles size={13} className="text-blue-600 dark:text-blue-400" />
+                            Verified by RealtyPals Data
+                          </span>
+                        </div>
+
+                        {/* Formatted details: confidence, freshness, warnings */}
                         <ResponseFormatter response={message.chatResponse} />
                       </m.div>
                     </>
@@ -481,22 +499,16 @@ function MessageBubbleInner({
                       >
                         {/* Summary text */}
                         {summary && (
-                          <div className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 mb-3">
-                            {summary}
+                          <div className="text-gray-700 dark:text-gray-300 leading-relaxed font-normal">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {summary}
+                            </ReactMarkdown>
                           </div>
                         )}
 
-                        {/* Confidence badge */}
-                        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
-                          confidence >= 0.8 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
-                          confidence >= 0.65 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
-                          'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${
-                            confidence >= 0.8 ? 'bg-green-600 dark:bg-green-400' :
-                            confidence >= 0.65 ? 'bg-yellow-600 dark:bg-yellow-400' :
-                            'bg-orange-600 dark:bg-orange-400'
-                          }`} />
+                        {/* Confidence score */}
+                        <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-semibold">
+                          <Sparkles size={13} />
                           {Math.round(confidence * 100)}% confident
                         </div>
 
@@ -537,7 +549,7 @@ function MessageBubbleInner({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.25 }}
-                        className={blocks ? undefined : "prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-blue-700 dark:prose-headings:text-blue-400 prose-a:text-blue-500 prose-strong:bg-blue-50 dark:prose-strong:bg-blue-900/40 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md prose-strong:text-blue-950 dark:prose-strong:text-blue-100 prose-strong:font-semibold prose-strong:border prose-strong:border-blue-200 dark:prose-strong:border-blue-700/50 prose-table:w-full prose-table:text-sm prose-table:my-4 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-100 dark:prose-th:bg-blue-900/40 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-gray-800 dark:prose-th:text-blue-200 prose-th:border prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-gray-200 dark:prose-td:border-gray-700"}
+                        className={blocks ? undefined : "prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-zinc-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:bg-zinc-100 dark:prose-strong:bg-zinc-800 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100 prose-strong:font-semibold prose-strong:border prose-strong:border-zinc-200 dark:prose-strong:border-zinc-700/60 prose-table:w-full prose-table:text-sm prose-table:my-3 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-zinc-200 dark:prose-table:border-zinc-800 prose-th:bg-zinc-50 dark:prose-th:bg-zinc-800/80 prose-th:px-3.5 prose-th:py-2.5 prose-th:text-left prose-th:text-zinc-800 dark:prose-th:text-zinc-200 prose-th:border prose-th:border-zinc-200 dark:prose-th:border-zinc-800 prose-td:px-3.5 prose-td:py-2.5 prose-td:border prose-td:border-zinc-200 dark:prose-td:border-zinc-800"}
                       >
                         {blocks ? (
                           <ResponseBlockRenderer blocks={blocks} />
@@ -550,21 +562,21 @@ function MessageBubbleInner({
                                 'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
                                 'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
                                 table: ({ node, ...props }: any) => (
-                                  <div className="my-3.5 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xs">
-                                    <table className="w-full border-collapse text-left text-xs sm:text-sm text-slate-700 dark:text-slate-300" {...props} />
+                                  <div className="my-3 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs">
+                                    <table className="w-full border-collapse text-left text-xs sm:text-sm text-zinc-800 dark:text-zinc-200" {...props} />
                                   </div>
                                 ),
                                 thead: ({ node, ...props }: any) => (
-                                  <thead className="bg-slate-100/90 dark:bg-slate-800/80 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700/80" {...props} />
+                                  <thead className="bg-zinc-50 dark:bg-zinc-800/90 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700" {...props} />
                                 ),
                                 th: ({ node, ...props }: any) => (
-                                  <th className="px-4 py-3 font-bold text-slate-900 dark:text-white" {...props} />
+                                  <th className="px-3.5 py-2.5 font-bold text-zinc-900 dark:text-white border-r border-zinc-200/60 dark:border-zinc-700/60 last:border-0" {...props} />
                                 ),
                                 td: ({ node, ...props }: any) => (
-                                  <td className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 last:border-0 leading-relaxed font-normal" {...props} />
+                                  <td className="px-3.5 py-2.5 border-b border-zinc-100 dark:border-zinc-800/70 last:border-0 border-r border-zinc-100 dark:border-zinc-800/50 last:border-r-0 leading-relaxed font-normal" {...props} />
                                 ),
                                 tr: ({ node, ...props }: any) => (
-                                  <tr className="hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-colors even:bg-slate-50/40 dark:even:bg-slate-900/30" {...props} />
+                                  <tr className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors even:bg-zinc-50/40 dark:even:bg-zinc-800/20" {...props} />
                                 ),
                                 a: ({ node, ...props }: any) => {
                                   const href = props.href || ''

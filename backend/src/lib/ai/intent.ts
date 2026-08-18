@@ -48,14 +48,25 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
   if (update.sector && !update.spatialScope) {
     spatialScope = 'EXACT'
   }
-  
+
+  // Follow-up context queries (e.g. "show payment plans", "view cost sheet", "calculate EMI")
+  // should preserve the active project context instead of wiping it
+  const isFollowUpQuery = Boolean(
+    previous.projectNames &&
+    previous.projectNames.length === 1 &&
+    !isSectorSwitch &&
+    (!update.projectNames || update.projectNames.length === 0)
+  )
+
   const result = {
     ...previous,
-    projectNames: undefined,           // reset — only populated if this turn names projects
-    is_comparison_query: undefined,    // reset — only populated if this turn is a compare request
+    projectNames: isFollowUpQuery ? previous.projectNames : (update.projectNames && update.projectNames.length > 0 ? update.projectNames : undefined),
+    is_comparison_query: undefined, // reset comparison flag per turn
     // Only clear sector/lifestyle if this is a TRULY fresh lookup (no prior context)
     ...(freshProjectLookup && !previous.sector ? { lifestyleKeywords: undefined } : {}),
     ...(isSectorSwitch ? { 
+        projectNames: undefined,
+        targetProjectId: undefined,
         bhk: undefined, 
         budgetMin: undefined, 
         budgetMax: undefined, 
@@ -192,34 +203,64 @@ import { FALLBACK_CHAIN } from '../config'
 import { isKeyFailed, markKeyFailed } from './providerStatus'
 
 export async function extractIntent(message: string, previousIntent: Intent): Promise<IntentResult> {
-  for (const item of FALLBACK_CHAIN) {
-    if (isKeyFailed(item.envKey)) {
-      console.log(`[INTENT:SKIP] ${item.label} (${item.envKey}) — blacklisted circuit breaker active`)
+  // Intent extraction chain: prioritize fast, cheap models
+  // Groq 8B (0.05/M tokens) → Groq 70B → Cerebras → Mistral → OpenAI
+  const intentChain = [
+    // Tier 1: Ultra-fast, cheapest
+    { provider: 'groq' as const, envKey: 'GROQ_API_KEY', model: MODELS.GROQ_FAST || 'llama-3.1-8b-instant', timeout: 3000 },
+    { provider: 'groq' as const, envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_FAST || 'llama-3.1-8b-instant', timeout: 3000 },
+    { provider: 'groq' as const, envKey: 'GROQ_API_KEY2', model: MODELS.GROQ_FAST || 'llama-3.1-8b-instant', timeout: 3000 },
+    // Tier 2: Fallback to 70B if 8B unavailable
+    { provider: 'groq' as const, envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART || 'llama-3.3-70b-versatile', timeout: 3000 },
+    { provider: 'groq' as const, envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART || 'llama-3.3-70b-versatile', timeout: 3000 },
+    // Tier 3: Cerebras (fast, reasonable cost)
+    { provider: 'cerebras' as const, envKey: 'CEREBRAS_API_KEY', model: 'llama3.3-70b', timeout: 3000 },
+    // Tier 4: Mistral
+    { provider: 'mistral' as const, envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', timeout: 3000 },
+    // Tier 5: OpenAI (most expensive fallback)
+    { provider: 'openai' as const, envKey: 'OPENAI_API_KEY', model: MODELS.MAIN || 'gpt-4o', timeout: 2000 },
+  ]
+
+  for (const config of intentChain) {
+    if (isKeyFailed(config.envKey)) {
+      console.log(`[INTENT:SKIP] ${config.provider}/${config.envKey} — blacklisted circuit breaker active`)
       continue
     }
-    const apiKey = process.env[item.envKey]
+    const apiKey = process.env[config.envKey]
     if (!apiKey) continue
 
     try {
-      if (item.provider === 'cerebras') {
-        console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
+      if (config.provider === 'groq') {
+        console.log(`[INTENT] Trying Groq (${config.model}) via ${config.envKey}`)
+        const groq = new Groq({ apiKey, timeout: config.timeout })
+        const completion = await groq.chat.completions.create({
+          model: config.model,
+          messages: [
+            { role: 'system', content: INTENT_EXTRACTION_PROMPT },
+            { role: 'user', content: `Previous intent: ${JSON.stringify(previousIntent)}\n\nUser message: ${message}` },
+          ],
+          response_format: { type: 'json_object' },
+          max_tokens: 256,
+          temperature: 0.1,
+        })
+        const raw = completion.choices[0]?.message?.content ?? '{}'
+        const result = parseIntentJson(raw, previousIntent)
+        if (result) return { intent: result, degraded: false }
+      }
+      if (config.provider === 'cerebras') {
+        console.log(`[INTENT] Trying Cerebras via ${config.envKey}`)
         const result = await extractWithCerebras(message, previousIntent, apiKey)
         if (result) return { intent: result, degraded: false }
       }
-      if (item.provider === 'groq') {
-        console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
-        const result = await extractWithGroqKey(message, previousIntent, apiKey)
-        if (result) return { intent: result, degraded: false }
-      }
-      if (item.provider === 'mistral') {
-        console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
+      if (config.provider === 'mistral') {
+        console.log(`[INTENT] Trying Mistral via ${config.envKey}`)
         const result = await extractWithMistral(message, previousIntent, apiKey)
         if (result) return { intent: result, degraded: false }
       }
-      if (item.provider === 'openai') {
-        console.log(`[INTENT] Trying ${item.label} (${item.envKey})`)
+      if (config.provider === 'openai') {
+        console.log(`[INTENT] Trying OpenAI via ${config.envKey}`)
         const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), 2500) // Fast 2.5s fail-fast timeout
+        const timer = setTimeout(() => controller.abort(), config.timeout)
         try {
           const result = await extractWithOpenAIKey(message, previousIntent, apiKey, controller.signal)
           clearTimeout(timer)
@@ -227,13 +268,13 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
         } catch (err: any) {
           clearTimeout(timer)
           if (err?.status === 404 || err?.status === 401 || err?.status === 403 || err?.name === 'AbortError' || (err?.message || '').includes('404')) {
-            markKeyFailed(item.envKey)
+            markKeyFailed(config.envKey)
           }
           throw err
         }
       }
     } catch (err: any) {
-      console.warn(`[INTENT] ${item.label} (${item.envKey}) failed:`, err?.message || String(err))
+      console.warn(`[INTENT] ${config.provider}/${config.envKey} failed:`, err?.message || String(err))
     }
   }
 

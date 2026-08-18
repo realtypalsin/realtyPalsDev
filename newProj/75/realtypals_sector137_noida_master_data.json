@@ -1047,7 +1047,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "56810c4e-ff3f-425a-8204-c929415a9324",
@@ -2130,7 +2143,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.4,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Independent Tower Core Layout (Minimal Shared Walls)",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "e3e6d203-17ae-44a5-a0ca-036277ad3219",
@@ -3197,7 +3223,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "ff0c2a44-30f0-4283-8c8c-4d10f504923c",
@@ -4264,7 +4303,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "a2d6bae9-4e9a-4d9e-af2d-85509ccd03f2",
@@ -5469,7 +5521,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 22.5,
+    "maintenance_per_sqft_monthly": 3.4,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 11.5,
+    "lifts_per_tower": 4,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "ab208851-3bae-4fcb-a900-684c9774ec51",
@@ -6598,7 +6663,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "e98b34a4-33d5-4f2c-9f05-a45d77cd01a4",
@@ -7800,7 +7878,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "3b783d97-d1b5-43b1-9246-8931c4266064",
@@ -9152,7 +9243,20 @@
           "updated_at": "2026-08-14T16:17:11.398Z"
         }
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "53e12b17-015b-4afd-8731-41f01f1c5df9",
@@ -10248,7 +10352,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "b4d99162-9e9d-4fa7-8f84-bba750ad5939",
@@ -11377,7 +11494,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "7533e111-ec22-4378-9af7-04c1280d7af7",
@@ -12532,7 +12662,20 @@
         "rera_compliant": true,
         "type": "agency"
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   },
   {
     "id": "f25e325a-5036-48c5-bc62-a288e40cf481",
@@ -13792,6 +13935,19 @@
           "updated_at": "2026-08-14T16:17:11.398Z"
         }
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 21,
+    "maintenance_per_sqft_monthly": 2.85,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 5,
+    "ceiling_height_ft": 10.2,
+    "lifts_per_tower": 3,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   }
 ]

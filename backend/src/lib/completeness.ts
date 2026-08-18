@@ -78,6 +78,21 @@ export interface ProjectSnapshot {
   women_safety_score?:  number | null
   air_quality_index_avg?: number | null
 
+  // Living Specs & 2026 Standards
+  water_source?:                 string | null
+  dg_power_rate_per_unit?:       number | null
+  maintenance_per_sqft_monthly?: number | null
+  has_png_gas_pipeline?:         boolean | null
+  mobile_network_rating?:        number | null
+  ceiling_height_ft?:            number | null
+  lifts_per_tower?:              number | null
+  has_service_lift?:             boolean | null
+  shared_walls_type?:            string | null
+  authority_dues_cleared?:       boolean | null
+  land_tenure?:                  string | null
+  pet_friendly?:                 boolean | null
+  bachelor_tenants_allowed?:     boolean | null
+
   // Relations
   builder:                  { id: string; name: string } | null
   unit_types:               UnitSnapshot[]
@@ -310,6 +325,23 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
   enrichment.push(hasPartners)
   if (!hasPartners) missing.partners.push('No channel partners linked')
 
+  // Living Specs & 2026 Standards Checks
+  const hasWaterSource = present(project.water_source)
+  enrichment.push(hasWaterSource)
+  if (!hasWaterSource) missing.overview.push('Water supply source not specified')
+
+  const hasLivingRates = project.dg_power_rate_per_unit != null && project.maintenance_per_sqft_monthly != null
+  enrichment.push(hasLivingRates)
+  if (!hasLivingRates) missing.overview.push('DG power rate or monthly maintenance not set')
+
+  const hasArchitecturalSpecs = project.ceiling_height_ft != null && project.lifts_per_tower != null
+  enrichment.push(hasArchitecturalSpecs)
+  if (!hasArchitecturalSpecs) missing.overview.push('Ceiling height or elevators count not set')
+
+  const hasPrivacyLayout = present(project.shared_walls_type)
+  enrichment.push(hasPrivacyLayout)
+  if (!hasPrivacyLayout) missing.overview.push('Privacy / core layout not specified')
+
   const enrichmentPassed = enrichment.filter(Boolean).length
   const enrichmentTotal  = enrichment.length
 
@@ -317,13 +349,17 @@ export function computeCompleteness(project: ProjectSnapshot): CompletenessResul
 
   // 1. Core Info Tab (20% weight)
   const coreScore = Math.min(100, Math.round(
-    (hasName ? 15 : 0) +
-    (hasStatus ? 15 : 0) +
-    (hasRera ? 15 : 0) +
-    (hasDescription ? 15 : 0) +
-    (hasHero ? 15 : 0) +
+    (hasName ? 10 : 0) +
+    (hasStatus ? 10 : 0) +
+    (hasRera ? 10 : 0) +
+    (hasDescription ? 10 : 0) +
+    (hasHero ? 10 : 0) +
     ((project.unit_types || []).length >= 1 ? 15 : 0) +
-    (hasAmenities ? 10 : 0)
+    (hasAmenities ? 10 : 0) +
+    (hasWaterSource ? 10 : 0) +
+    (hasLivingRates ? 10 : 0) +
+    (hasArchitecturalSpecs ? 10 : 0) +
+    (hasPrivacyLayout ? 5 : 0)
   ))
 
   // 2. Pricing & Location Tab (25% weight)

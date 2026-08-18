@@ -51,6 +51,19 @@ const FIELD_LABELS: Record<string, string> = {
   air_quality_index_avg: 'Average AQI',
   nri_eligible: 'NRI Eligibility',
   vastu_compliant: 'Vastu Compliance',
+  water_source: 'Water Supply Source',
+  dg_power_rate_per_unit: 'DG Power Rate (₹/kWh)',
+  maintenance_per_sqft_monthly: 'Monthly Maintenance (₹/sq.ft)',
+  has_png_gas_pipeline: 'PNG Gas Pipeline Active',
+  mobile_network_rating: 'Mobile Network Rating',
+  ceiling_height_ft: 'Clear Ceiling Height (ft)',
+  lifts_per_tower: 'Lifts per Tower',
+  has_service_lift: 'Dedicated Service Lift',
+  shared_walls_type: 'Privacy / Shared Walls Layout',
+  authority_dues_cleared: 'Authority Dues Cleared',
+  land_tenure: 'Land Tenure',
+  pet_friendly: 'Pet Friendly Society',
+  bachelor_tenants_allowed: 'Bachelor Tenants Allowed',
 }
 
 const HIGH_IMPACT_FIELDS = new Set([

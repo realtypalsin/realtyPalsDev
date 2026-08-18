@@ -1195,6 +1195,19 @@
           "updated_at": "2026-08-14T19:13:20.205Z"
         }
       }
-    ]
+    ],
+    "water_source": "Centralized Water Softening Plant (WTP) + Deep Ganga Jal Feeder",
+    "dg_power_rate_per_unit": 22.5,
+    "maintenance_per_sqft_monthly": 3.4,
+    "has_png_gas_pipeline": true,
+    "mobile_network_rating": 4,
+    "ceiling_height_ft": 11.5,
+    "lifts_per_tower": 4,
+    "has_service_lift": true,
+    "shared_walls_type": "Zero Shared Walls / 3-Side Open Layout",
+    "authority_dues_cleared": true,
+    "land_tenure": "99-Year Authority Leasehold",
+    "pet_friendly": true,
+    "bachelor_tenants_allowed": true
   }
 ]

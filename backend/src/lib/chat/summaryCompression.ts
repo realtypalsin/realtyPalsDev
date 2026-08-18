@@ -6,9 +6,10 @@ import OpenAI from 'openai'
 import { GoogleGenAI } from '@google/genai'
 import { MODELS } from '../config'
 
-const COMPRESSION_THRESHOLD = 8
+const COMPRESSION_THRESHOLD = 12 // Lazy-load: only compress after 12 messages (was 8)
 const KEEP_RECENT = 6
 const MAX_SUMMARY_CHARS = 250
+const COMPRESSION_ONLY_ON_REQUEST = process.env.COMPRESS_ON_REQUEST === 'true' // Feature flag for lazy compression
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
@@ -119,9 +120,11 @@ async function compressTopic(
 
 export async function maybeCompressTopical(
   messages: Message[],
-  existingSummaries?: TopicSummaries | null
+  existingSummaries?: TopicSummaries | null,
+  forceCompress = false
 ): Promise<{ messages: Message[]; newSummaries: TopicSummaries | null }> {
-  if (messages.length <= COMPRESSION_THRESHOLD) {
+  // Lazy-load: only compress if explicitly requested OR threshold exceeded
+  if (!forceCompress && messages.length <= COMPRESSION_THRESHOLD) {
     return { messages, newSummaries: null }
   }
 
@@ -142,4 +145,70 @@ export async function maybeCompressTopical(
 
   const recent = messages.slice(messages.length - KEEP_RECENT)
   return { messages: recent, newSummaries }
+}
+
+// On-demand summary with property weightage: used for "summarize my chat" feature
+export interface PropertySummaryItem {
+  projectId: string
+  projectName: string
+  mentionCount: number
+  sentiment: 'interested' | 'concerned' | 'rejected' | 'neutral'
+  aiSummary: string
+}
+
+export interface WeightedChatSummary {
+  overallSummary: string
+  properties: PropertySummaryItem[]
+}
+
+export async function generatePropertySummary(
+  messages: Message[],
+  projectName: string
+): Promise<string> {
+  if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.GROQ_API_KEY) {
+    return `${projectName}: User discussed this property in the chat.`
+  }
+
+  const context = messages.map((m) => `${m.role}: ${m.content}`).join('\n')
+  const prompt = `Summarize user's sentiment and concerns about "${projectName}" in 1-2 sentences. Focus on: interest level, key concerns, specific questions asked, mentioned trade-offs.`
+
+  try {
+    if (process.env.GEMINI_API_KEY) {
+      const { GoogleGenAI } = await import('@google/genai')
+      const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      const res = await client.models.generateContent({
+        model: 'gemini-flash-latest',
+        contents: [{ role: 'user', parts: [{ text: context }] }],
+        config: {
+          systemInstruction: prompt,
+          maxOutputTokens: 100,
+          temperature: 0.1,
+        },
+      })
+      return res.text?.trim() ?? `${projectName}: Discussed in chat.`
+    }
+  } catch (err) {
+    console.warn(`[compression] Gemini summary failed for ${projectName}:`, (err as Error).message)
+  }
+
+  try {
+    if (process.env.GROQ_API_KEY) {
+      const Groq = (await import('groq-sdk')).default
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+      const res = await groq.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: prompt },
+          { role: 'user', content: context },
+        ],
+        max_tokens: 100,
+        temperature: 0.1,
+      })
+      return res.choices[0]?.message?.content?.trim() ?? `${projectName}: Discussed in chat.`
+    }
+  } catch (err) {
+    console.warn(`[compression] Groq summary failed for ${projectName}:`, (err as Error).message)
+  }
+
+  return `${projectName}: User discussed this property and shared thoughts.`
 }

@@ -49,14 +49,14 @@
 }
 
 .dark {
-  --color-surface:       #0B0F19;
-  --color-surface-2:     #111827;
-  --color-surface-3:     #1E293B;
-  --color-border:        rgba(255, 255, 255, 0.07);
-  --color-border-heavy:  rgba(255, 255, 255, 0.12);
-  --color-text-primary:  #F1F5F9;
-  --color-text-secondary:#94A3B8;
-  --color-text-muted:    #6B7280;
+  --color-surface:       #09090b;
+  --color-surface-2:     #121215;
+  --color-surface-3:     #18181b;
+  --color-border:        rgba(255, 255, 255, 0.08);
+  --color-border-heavy:  rgba(255, 255, 255, 0.14);
+  --color-text-primary:  #F4F4F5;
+  --color-text-secondary:#A1A1AA;
+  --color-text-muted:    #71717A;
   --background: var(--color-surface);
   --foreground: var(--color-text-primary);
 }
@@ -88,7 +88,7 @@ body.glass-app {
 }
 
 .dark .noise-overlay {
-  opacity: 0.035;
+  opacity: 0.025;
   mix-blend-mode: overlay; /* Better for dark backgrounds */
 }
 
@@ -106,8 +106,8 @@ body.glass-app {
   will-change: transform; /* keeps the 25s roam animation on the GPU compositor instead of repainting */
 }
 .dark .purple-hue-bg {
-  background-image: radial-gradient(circle 800px at 80% 20%, rgba(213, 197, 255, 0.15), transparent);
-  opacity: 1;
+  background-image: radial-gradient(circle 800px at 80% 20%, rgba(99, 102, 241, 0.06), transparent);
+  opacity: 0.8;
 }
 
 /* ── The Animation ── */

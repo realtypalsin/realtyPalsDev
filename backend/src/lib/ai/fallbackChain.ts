@@ -38,7 +38,9 @@ export interface FallbackChainResult {
 
 import { validateAgainstFactsSync } from './guardrails-v2'
 import { trackEvent } from '../monitoring/posthog'
-import { env } from './env'
+import { env } from '../env'
+import { adaptiveCapMessages } from './adaptiveMessaging'
+import { estimateTokensReal } from './tokenizer'
 
 function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLimit = 50) {
   let buffer = ''
@@ -104,10 +106,16 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     ? chainConfig
     : chainConfig.filter(item => item.provider !== 'gemini')
 
+  // Adaptive message capping: keep as many messages as fit within token budget
+  const systemPromptTokens = estimateTokensReal(systemPrompt)
+  const maxTokens = (options.config as any)?.maxTokens ?? 3000
+  const adaptiveResult = adaptiveCapMessages(messages, systemPromptTokens, maxTokens)
+  const cappedMessages = adaptiveResult.messages
+
   // Log chain initiation at info level
   if (process.env.DEBUG_FALLBACK) {
     console.log(`[FALLBACK:INIT] Starting fallback chain with ${effectiveChainConfig.length} providers`)
-    console.log(`[FALLBACK:CONTEXT] Messages: ${messages.length}, SystemPrompt: ${systemPrompt.slice(0, 50)}...`)
+    console.log(`[FALLBACK:CONTEXT] Messages: ${adaptiveResult.messageCount}/${messages.length} (adaptive, ${adaptiveResult.estimatedTokens} tokens), SystemPrompt: ${systemPrompt.slice(0, 50)}...`)
     if (!enableGeminiFallback) console.log(`[FALLBACK:FEATURE_FLAG] Gemini fallback disabled`)
   }
 
@@ -130,15 +138,15 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
 
       let text = ''
       if (item.provider === 'cerebras') {
-        text = await streamWithCerebras(effectivePrompt, messages, bufferedSend, apiKey, item.model)
+        text = await streamWithCerebras(effectivePrompt, cappedMessages, bufferedSend, apiKey, item.model)
       } else if (item.provider === 'mistral') {
-        text = await streamWithMistral(effectivePrompt, messages, bufferedSend, apiKey)
+        text = await streamWithMistral(effectivePrompt, cappedMessages, bufferedSend, apiKey)
       } else if (item.provider === 'gemini') {
-        text = await streamWithGemini(effectivePrompt, messages, bufferedSend, onToolCall, effectiveConfig, apiKey)
+        text = await streamWithGemini(effectivePrompt, cappedMessages, bufferedSend, onToolCall, effectiveConfig, apiKey)
       } else if (item.provider === 'openai') {
         text = await streamWithOpenAI(
           effectivePrompt,
-          messages,
+          cappedMessages,
           bufferedSend,
           onToolCall,
           effectiveConfig,
@@ -147,7 +155,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
           apiKey,
         )
       } else if (item.provider === 'groq') {
-        text = await streamWithGroq(effectivePrompt, messages, bufferedSend, userId, sessionId, apiKey)
+        text = await streamWithGroq(effectivePrompt, cappedMessages, bufferedSend, userId, sessionId, apiKey)
       }
 
       flushRemaining()

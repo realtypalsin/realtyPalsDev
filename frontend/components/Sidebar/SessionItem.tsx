@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Check, X, Pencil, Trash2 } from 'lucide-react';
+import { MessageSquare, Check, X, Pencil, Trash2, Search, Building2, Scale, IndianRupee } from 'lucide-react';
 import Link from 'next/link';
 import { Session } from '@/hooks/useSessions';
 import { toast } from 'sonner';
@@ -37,14 +37,31 @@ function getOrCreateObserver(): PerformanceObserver {
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return 'now';
+  if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
+  if (hrs < 24) return `${hrs}h`;
   const days = Math.floor(hrs / 24);
-  if (days === 1) return 'yesterday';
-  if (days < 7) return `${days}d ago`;
+  if (days === 1) return '1d';
+  if (days < 7) return `${days}d`;
   return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
+function getSessionIcon(label: string) {
+  const l = label.toLowerCase();
+  if (l.includes('compare') || l.includes(' vs ') || l.includes('versus')) {
+    return Scale;
+  }
+  if (l.includes('price') || l.includes('budget') || l.includes('cost') || l.includes('emi') || l.includes('cr') || l.includes('lakh')) {
+    return IndianRupee;
+  }
+  if (l.includes('elite') || l.includes('county') || l.includes('lotus') || l.includes('godrej') || l.includes('ace') || l.includes('towers') || l.includes('heights') || l.includes('greens') || l.includes('project')) {
+    return Building2;
+  }
+  if (l.includes('find') || l.includes('search') || l.includes('show') || l.includes('bhk') || l.includes('sector')) {
+    return Search;
+  }
+  return MessageSquare;
 }
 
 interface SessionItemProps {
@@ -84,7 +101,7 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
       toast.success('Chat renamed successfully');
     } catch {
       toast.error('Failed to rename chat');
-      setRenameValue(session.label); // reset on error
+      setRenameValue(session.label);
     } finally {
       setIsProcessing(false);
       setIsRenaming(false);
@@ -104,10 +121,12 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
     }
   };
 
+  const IconComponent = getSessionIcon(session.label);
+
   if (isRenaming) {
     return (
-      <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-white/90 dark:bg-gray-800 border border-blue-200 dark:border-blue-700 shadow-sm">
-        <MessageSquare size={14} className="text-blue-400 flex-shrink-0 ml-1" />
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-blue-500 shadow-sm">
+        <IconComponent size={13} className="text-blue-500 flex-shrink-0" />
         <input
           ref={inputRef}
           value={renameValue}
@@ -117,13 +136,13 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
             if (e.key === 'Escape') setIsRenaming(false);
           }}
           disabled={isProcessing}
-          className="flex-1 min-w-0 text-sm bg-transparent outline-none text-gray-900 dark:text-gray-100 disabled:opacity-50"
+          className="flex-1 min-w-0 text-xs bg-transparent outline-none text-zinc-900 dark:text-zinc-100 disabled:opacity-50 font-medium"
           maxLength={100}
         />
-        <button onClick={submitRename} disabled={isProcessing} className="p-1 text-green-500 hover:text-green-600 transition-colors disabled:opacity-50">
+        <button onClick={submitRename} disabled={isProcessing} className="p-1 text-emerald-600 hover:text-emerald-700 transition-colors disabled:opacity-50">
           <Check size={13} />
         </button>
-        <button onClick={() => setIsRenaming(false)} disabled={isProcessing} className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50">
+        <button onClick={() => setIsRenaming(false)} disabled={isProcessing} className="p-1 text-zinc-400 hover:text-zinc-600 transition-colors disabled:opacity-50">
           <X size={13} />
         </button>
       </div>
@@ -132,18 +151,20 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
 
   if (confirmDelete) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-        <span className="text-xs text-red-600 dark:text-red-400 flex-1">Delete this chat?</span>
-        <button
-          onClick={handleDelete}
-          disabled={isProcessing}
-          className="px-2 py-0.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded font-medium transition-colors disabled:opacity-50"
-        >
-          {isProcessing ? '…' : 'Yes'}
-        </button>
-        <button onClick={() => setConfirmDelete(false)} disabled={isProcessing} className="px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 rounded font-medium disabled:opacity-50">
-          No
-        </button>
+      <div className="flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 shadow-2xs">
+        <span className="text-[11px] font-semibold text-red-600 dark:text-red-400 truncate">Delete chat?</span>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={handleDelete}
+            disabled={isProcessing}
+            className="px-2 py-0.5 text-[10px] bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition-colors disabled:opacity-50"
+          >
+            {isProcessing ? '…' : 'Delete'}
+          </button>
+          <button onClick={() => setConfirmDelete(false)} disabled={isProcessing} className="px-1.5 py-0.5 text-[10px] text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 rounded font-medium disabled:opacity-50">
+            Cancel
+          </button>
+        </div>
       </div>
     );
   }
@@ -151,12 +172,12 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
   return (
     <Link
       href={`/discover/${session.id}`}
-      className={`group/session flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+      className={`group/session relative flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-colors duration-150 ${
         isNavigating ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
-      } border ${
+      } ${
         isActive
-          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300'
-          : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-white/70 dark:hover:bg-gray-800/70 hover:border-gray-200 dark:hover:border-gray-700'
+          ? 'bg-zinc-200/70 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-semibold shadow-2xs'
+          : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium'
       }`}
       onClick={(e) => {
         if (isNavigating) {
@@ -176,7 +197,6 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
         ;(window as any).__navTimings = { t0 }
         if (process.env.NODE_ENV === 'development') console.log('[NAV] 1. sidebar-click  t=0ms')
 
-        // [TIMING] Reuse global observer to avoid repeated creation
         if (typeof PerformanceObserver !== 'undefined') {
           try {
             const obs = getOrCreateObserver()
@@ -184,7 +204,6 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
           } catch { /* unsupported */ }
         }
 
-        // Call the parent onClick (which handles closeMobile)
         onClick();
       }}
       onDoubleClick={(e) => {
@@ -192,27 +211,39 @@ export function SessionItem({ session, isActive, onDelete, onRename, onClick }: 
         if (!isNavigating) setIsRenaming(true);
       }}
     >
-      <MessageSquare size={14} className={`flex-shrink-0 transition-colors ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover/session:text-gray-500'}`} />
-      <span className="text-[13px] truncate flex-1 font-medium">{session.label}</span>
-      <span className="text-[10px] text-gray-400 dark:text-gray-500 flex-shrink-0 opacity-0 group-hover/session:opacity-100 transition-opacity">
-        {timeAgo(session.last_active)}
+      <IconComponent
+        size={14}
+        className={`flex-shrink-0 transition-colors ${
+          isActive ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-zinc-500 group-hover/session:text-zinc-700 dark:group-hover/session:text-zinc-300'
+        }`}
+      />
+      <span className="text-[12.5px] truncate flex-1 leading-snug tracking-tight">
+        {session.label}
       </span>
-      <div className="flex items-center gap-0.5 opacity-0 group-hover/session:opacity-100 transition-opacity flex-shrink-0">
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsRenaming(true); }}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          title="Rename"
-        >
-          <Pencil size={11} />
-        </button>
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDelete(true); }}
-          className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 transition-colors"
-          title="Delete"
-        >
-          <Trash2 size={11} />
-        </button>
+
+      {/* Right Slot: fixed width 48px, zero layout shift or glitching */}
+      <div className="w-12 h-5 flex items-center justify-end flex-shrink-0 relative">
+        <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 transition-opacity duration-150 group-hover/session:opacity-0 absolute right-0">
+          {timeAgo(session.last_active)}
+        </span>
+        <div className="opacity-0 group-hover/session:opacity-100 transition-opacity duration-150 flex items-center gap-0.5 absolute right-0 bg-zinc-100/90 dark:bg-zinc-800/90 backdrop-blur-xs pl-1 rounded">
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsRenaming(true); }}
+            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+            title="Rename"
+          >
+            <Pencil size={11} />
+          </button>
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDelete(true); }}
+            className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-950 text-zinc-400 hover:text-red-500 transition-colors"
+            title="Delete"
+          >
+            <Trash2 size={11} />
+          </button>
+        </div>
       </div>
     </Link>
   );
 }
+

@@ -19,6 +19,7 @@ import type { ChipPickerState } from '@/components/chat/types';
 import { AlertTriangle, ArrowRight, ArrowUp, ChevronDown, Home, Key, MapPin, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet, Train, Trees, Crown, Building2, GraduationCap } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { useSessions } from '@/hooks/useSessions';
+import { ChatPhase2Skeleton } from '@/components/skeletons';
 
 const DEBUG = process.env.NODE_ENV !== 'production'
 const WELCOME_MESSAGE = "Hi, I'm RealtyPal — your advisor for Noida & Greater Noida. Ask me anything: budgets in ₹ Lakh/Cr, RERA status, builder track records, or which sector fits your family. I'll give you straight answers, tradeoffs included."
@@ -93,6 +94,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null);
   const [conversationState, setConversationState] = useState<import('@/components/chat/types').ConversationState | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
+  const loadedSessionIdRef = useRef<string | null | undefined>(undefined);
 
   // ChatGPT-style dynamic browser tab title updater
   useEffect(() => {
@@ -879,20 +881,18 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
   // Initialize: restore session from prop or show welcome
   useEffect(() => {
-    if ((!userId && !guestToken) || isInitialized) return;
+    if (!userId && !guestToken) return;
 
-    // userId/guestToken can change again (guest → authenticated) while this
-    // effect's own fetch is still in flight, re-triggering it before
-    // `isInitialized` flips true. Without this guard, a stale invocation
-    // resolving after a newer one wins and overwrites a correctly restored
-    // conversation with a blank welcome message.
+    // Fix 5: Always allow retry if API cache miss occurs on first attempt
+    // Only skip if we successfully loaded this exact session ID
+    if (loadedSessionIdRef.current === (initialSessionId ?? null) && isInitialized && chatHistory.length > 0) return;
+
     let cancelled = false;
 
     // No session to restore — new chat
-    // (Guests with a specific initialSessionId fall through to the restore
-    // fetch below, same as authenticated users — the backend supports
-    // guest_token ownership on GET /chat/session.)
     if (!initialSessionId) {
+      setRestoreError(false);
+      loadedSessionIdRef.current = null;
       setChatHistory([{
         id: crypto.randomUUID(),
         type: 'ai',
@@ -909,6 +909,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
     // Restore specific session
     (async () => {
+      setRestoreError(false);
+      setIsInitialized(false);
       try {
         const cached = LOCAL_SESSION_CACHE.get(initialSessionId);
         if (cached) {
@@ -927,6 +929,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           if (lastMsgWithResults) {
             setExpandedShortlists(new Set([lastMsgWithResults.id]));
           }
+          loadedSessionIdRef.current = initialSessionId;
           setIsInitialized(true);
           setTimeout(() => scrollToBottom('instant'), 50);
           return;
@@ -945,14 +948,20 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         const fetchT0 = performance.now()
         if (nt) console.log(`[NAV] 6. fetch-start       +${(fetchT0 - nt.t0).toFixed(1)}ms`)
         const sessionUrl = `${API_BASE}/chat/session?id=${initialSessionId}` + (guestToken && !userId ? `&guestToken=${guestToken}` : '')
-        const res = await fetch(sessionUrl, {
-          headers,
-          signal: AbortSignal.timeout(8000),
-        });
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 12000)
+        try {
+          const res = await fetch(sessionUrl, {
+            headers,
+            signal: controller.signal,
+          })
+          clearTimeout(timeoutId)
         const fetchMs = performance.now() - fetchT0
         if (nt) console.log(`[NAV] 7. fetch-end         +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${fetchMs.toFixed(1)}ms)`)
 
-        if (!res.ok) throw new Error('session fetch failed');
+        if (!res.ok) {
+          throw new Error(`session fetch failed with status ${res.status}`)
+        }
         const data = await res.json();
         if (cancelled) return;
 
@@ -966,7 +975,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         }
 
         if (data.ui_state) setConversationState(data.ui_state);
-
 
         if (Array.isArray(data.last_projects) && data.last_projects.length > 0) {
           setLastShortlist(data.last_projects);
@@ -1000,10 +1008,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 base.showComparisonTable = true
                 base.responseMode = 'comparison'
                 if (Array.isArray(artifact.projects) && artifact.projects.length >= 2) {
-                  // Current format: projects array
                   base.comparisonProjects = (artifact.projects as ProjectCardType[]).slice(0, 4)
                 } else if (artifact.left && artifact.right) {
-                  // Legacy format: left/right — convert to array, no data loss
                   base.comparisonProjects = [artifact.left as ProjectCardType, artifact.right as ProjectCardType]
                 }
               }
@@ -1013,10 +1019,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           const mapperMs = performance.now() - mapperT0
           if (nt) console.log(`[NAV] 8. mapper            +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${mapperMs.toFixed(1)}ms, ${data.messages.length} msgs)`)
 
-          // [TIMING] store for render-complete detection
           navTimingsRef.current = { restoreStart, authMs, fetchMs, mapperMs, setHistoryAt: performance.now() }
 
-          // Sort restored messages chronologically, guaranteeing user message always precedes assistant message
           restored.sort((a: any, b: any) => {
             const timeA = new Date(a.timestamp || 0).getTime()
             const timeB = new Date(b.timestamp || 0).getTime()
@@ -1042,6 +1046,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           if (lastMsgWithResults) {
             setExpandedShortlists(new Set([lastMsgWithResults.id]));
           }
+          loadedSessionIdRef.current = initialSessionId;
           setTimeout(() => {
             scrollToBottom('instant');
             setIsRestoring(false);
@@ -1051,21 +1056,35 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             id: crypto.randomUUID(),
             type: 'ai',
             content: "Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.",
-
             timestamp: new Date().toISOString(),
           }]);
+          loadedSessionIdRef.current = initialSessionId;
         }
-      } catch (err) {
+        } finally {
+          clearTimeout(timeoutId)
+        }
+      } catch (err: any) {
+        // Fix 6: Show user feedback on timeout
         if (cancelled) return;
-        console.error('[session-restore] failed:', err);
-        setRestoreError(true);
+        if (err?.name === 'AbortError') {
+          console.warn('[session-restore] timeout after 12s')
+          setToast({ message: 'Session loading took too long. Try refreshing the page.' })
+          setRestoreError(true)
+        } else {
+          console.error('[session-restore] failed:', err)
+          setRestoreError(true)
+        }
       } finally {
-        if (!cancelled) setIsInitialized(true);
+        if (!cancelled) setIsInitialized(true)
       }
     })();
 
-    return () => { cancelled = true; };
-  }, [userId, guestToken, isInitialized, initialSessionId, scrollToBottom]);
+    return () => {
+      cancelled = true
+      // Fix 7: Guard cleanup against stale effect in race condition
+      setIsInitialized(prev => !cancelled ? prev : true)
+    };
+  }, [userId, guestToken, initialSessionId, scrollToBottom]);
 
   // [TIMING] detect when setChatHistory from restore has been committed to DOM
   useEffect(() => {
@@ -1529,9 +1548,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         />
 
         {(!isInitialized && !!initialSessionId) ? (
-          <div className="flex flex-col items-center justify-center flex-1 gap-3 relative z-10">
-            <div className="w-9 h-9 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-            <p className="text-sm text-gray-400 dark:text-gray-500">Loading conversation…</p>
+          <div className="flex-1 flex flex-col justify-start w-full relative z-10 overflow-y-auto">
+            <ChatPhase2Skeleton />
           </div>
         ) : restoreError ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-4 p-8 text-center relative z-10">

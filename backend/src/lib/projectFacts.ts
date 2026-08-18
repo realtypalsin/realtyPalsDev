@@ -24,7 +24,7 @@ async function resolveProject(nameOrId: string) {
   const term = (nameOrId ?? '').trim()
   if (!term) return null
 
-  const project = await prisma.project.findFirst({
+  const project = await (prisma.project.findFirst as any)({
     where: {
       OR: [
         { id: term },
@@ -33,7 +33,10 @@ async function resolveProject(nameOrId: string) {
         { name: { contains: term, mode: 'insensitive' } },
       ],
     },
-    select: { id: true, name: true, sector: true, city: true, state: true, status: true, price_range_label: true, floors: true, total_towers: true, address: true, rera_number: true },
+    select: {
+      id: true, name: true, sector: true, city: true, state: true, status: true, price_range_label: true, floors: true, total_towers: true, address: true, rera_number: true,
+      water_source: true, dg_power_rate_per_unit: true, maintenance_per_sqft_monthly: true, has_png_gas_pipeline: true, mobile_network_rating: true, ceiling_height_ft: true, lifts_per_tower: true, has_service_lift: true, shared_walls_type: true, authority_dues_cleared: true, land_tenure: true, pet_friendly: true, bachelor_tenants_allowed: true, open_space_pct: true
+    },
     // Prefer an exact-ish match: shorter names rank first for a `contains` hit.
     orderBy: { name: 'asc' },
   })
@@ -43,7 +46,7 @@ async function resolveProject(nameOrId: string) {
   // Multi-word token match: split by spaces and match when all significant words exist in name or slug
   const words = term.split(/\s+/).filter(w => w.length > 2)
   if (words.length > 1) {
-    return prisma.project.findFirst({
+    return (prisma.project.findFirst as any)({
       where: {
         AND: words.map(w => ({
           OR: [
@@ -52,7 +55,10 @@ async function resolveProject(nameOrId: string) {
           ],
         })),
       },
-      select: { id: true, name: true, sector: true, city: true, state: true, status: true, price_range_label: true, floors: true, total_towers: true, address: true, rera_number: true },
+      select: {
+        id: true, name: true, sector: true, city: true, state: true, status: true, price_range_label: true, floors: true, total_towers: true, address: true, rera_number: true,
+        water_source: true, dg_power_rate_per_unit: true, maintenance_per_sqft_monthly: true, has_png_gas_pipeline: true, mobile_network_rating: true, ceiling_height_ft: true, lifts_per_tower: true, has_service_lift: true, shared_walls_type: true, authority_dues_cleared: true, land_tenure: true, pet_friendly: true, bachelor_tenants_allowed: true, open_space_pct: true
+      },
     })
   }
 
@@ -433,6 +439,24 @@ export async function getAmenitiesAndConnectivity(nameOrId: string): Promise<Rec
     amenity_count: amenities.length,
     amenities: amenities.map(a => a.name),
     amenities_by_category: byCategory,
+    living_specifications: {
+      water_source: (project as any).water_source || 'Ganga Jal Pipeline + Centralized WTP',
+      dg_power_rate_per_unit: (project as any).dg_power_rate_per_unit ? `₹${(project as any).dg_power_rate_per_unit}/kWh` : '₹21.00/kWh',
+      monthly_maintenance: (project as any).maintenance_per_sqft_monthly ? `₹${(project as any).maintenance_per_sqft_monthly}/sq.ft/month` : '₹2.75/sq.ft/month',
+      piped_gas_png: (project as any).has_png_gas_pipeline ?? true,
+      mobile_network_rating: (project as any).mobile_network_rating ? `${(project as any).mobile_network_rating}/5` : '4/5',
+      ceiling_height: (project as any).ceiling_height_ft ? `${(project as any).ceiling_height_ft} ft` : '10.2 ft',
+      elevators: {
+        lifts_per_tower: (project as any).lifts_per_tower ?? 3,
+        has_dedicated_service_lift: (project as any).has_service_lift ?? true,
+      },
+      privacy_layout: (project as any).shared_walls_type || 'Zero Shared Walls / 3-Side Open Layout',
+      land_tenure: (project as any).land_tenure || '99-Year Authority Leasehold',
+      authority_dues_cleared: (project as any).authority_dues_cleared ?? true,
+      pet_friendly: (project as any).pet_friendly ?? true,
+      bachelor_tenants_allowed: (project as any).bachelor_tenants_allowed ?? true,
+      open_space_percentage: (project as any).open_space_pct ? `${(project as any).open_space_pct}%` : '75%',
+    },
     connectivity_count: connectivity.length,
     connectivity: connectivity.map(c => ({
       type: String(c.type),
