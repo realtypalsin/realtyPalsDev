@@ -61,15 +61,37 @@
   --foreground: var(--color-text-primary);
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+/* ── iOS Safari & Mobile Cross-Browser Optimizations ── */
+@media screen and (max-width: 768px) {
+  /* Prevent iOS Safari from auto-zooming into inputs on focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Momentum scrolling for iOS touch */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
 }
 
 body.glass-app {
   background: #E4E4E5;
   color: #1E293B; /* slate-800 for better contrast */
+  min-height: 100dvh;
 }
 
 .dark body.glass-app, .dark .bg-\[\#E6E6E6\] {

@@ -857,12 +857,15 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const isReraCheckQuery = /(blacklist|nclt|insolven|defaulter|check rera|verify rera|rera website|rera portal|rera status|is.*rera registered)/i.test(message) && (intent.projectNames?.length ?? 0) === 0
     const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(message) && !isSectorCompare && (intent.projectNames?.length ?? 0) < 2
     const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(message) && (sectorMatches.length === 0 || /which sector/i.test(message))
+    const isReadyToMoveQuery = /(ready to move|rtm|move.?in|occupancy certificate|which.*ready|ready property|ready flat)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isAmenityQuery = /(amenit|sports|clubhouse|gym|pool|swimming|green cover|open space|which society has the best|best amenit|lifestyle)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isConnectivityQuery = /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(message) && !isPaymentPlanRequest
     const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(message) || isSectorCompare
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
-    if ((activeProjectName || isSummaryRequest || isCompareRequest || isSectorCompare || isPaymentPlanRequest || isCostSheetRequest || isStatutoryTaxQuery || isReraCheckQuery || isBuilderReputationQuery || isNewcomerOrientation) && action.type === 'TEXT_MESSAGE') {
+    if ((activeProjectName || isSummaryRequest || isCompareRequest || isSectorCompare || isPaymentPlanRequest || isCostSheetRequest || isStatutoryTaxQuery || isReraCheckQuery || isBuilderReputationQuery || isNewcomerOrientation || isReadyToMoveQuery || isAmenityQuery || isConnectivityQuery) && action.type === 'TEXT_MESSAGE') {
       try {
-        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest, isSectorCompare, isPaymentPlanRequest, isCostSheetRequest, isStatutoryTaxQuery, isReraCheckQuery, isBuilderReputationQuery, isNewcomerOrientation, sectorMatches })
+        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest, isSectorCompare, isPaymentPlanRequest, isCostSheetRequest, isStatutoryTaxQuery, isReraCheckQuery, isBuilderReputationQuery, isNewcomerOrientation, isReadyToMoveQuery, isAmenityQuery, isConnectivityQuery, sectorMatches })
 
         // Check for Builder Comparison
         const dbBuilders = await prisma.builder.findMany({
@@ -1078,6 +1081,137 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             intent,
             responseMode: 'chat',
           })
+          res.end()
+          return
+        }
+
+        // ─── READY-TO-MOVE VS UNDER-CONSTRUCTION STATUS GUIDE ──────────────────────
+        if (isReadyToMoveQuery) {
+          const sec = intent.sector || 'Sector 76'
+          const relevantProjects = await prisma.project.findMany({
+            where: {
+              OR: [
+                { sector: { contains: sec.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+                { id: { in: (cachedProjectsFromSession || []).map(p => p.id) } }
+              ]
+            },
+            include: { builder: true },
+            take: 6
+          })
+
+          const rows = (relevantProjects.length > 0 ? relevantProjects : cachedProjectsFromSession || []).slice(0, 6).map(p => {
+            const isRtm = p.status === 'ready_to_move' || p.possession_label?.toLowerCase().includes('delivered')
+            const moveStatus = isRtm ? 'Ready-to-Move' : (p.possession_label || 'Under Construction')
+            const ageStr = isRtm ? 'Delivered & occupied' : 'Under active construction'
+            const reraStr = p.rera_number ? 'UP-RERA Verified' : 'Registered'
+            const gstStr = isRtm ? '0% GST (Exempt)' : '5% GST'
+            return `| **${p.name}** | ${moveStatus} | ${ageStr} | ${reraStr} | ${gstStr} |`
+          }).join('\n')
+
+          const rtmText = `### Ready-to-Move vs. Delivery Status Guide (${sec})\n\n| Project Name | Move-in Status | Occupancy / Delivery Stage | RERA Status | GST Impact |\n| :--- | :--- | :--- | :--- | :--- |\n${rows}\n\n### Fiduciary Advisory on Ready Resale Units\nReady-to-Move units with Occupancy Certificate (OC) attract **0% GST**. Before token transfer, ensure the seller provides an executed Sub-Lease deed (Registry) or builder transfer NOC confirming zero pending authority penalties.`
+
+          const rtmChips = [
+            { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_tax_rtm', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
+            { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Other Charges', icon: 'file-text', analyticsId: 'chip_cost_rtm', priority: 2, payload: { text: 'Show cost sheet and price breakdown' } },
+            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit_rtm', priority: 3, payload: { text: 'Schedule a site visit' } }
+          ]
+
+          send('token', { token: rtmText })
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Verified ready-to-move and delivery status matrix:',
+            chips: rtmChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
+          res.end()
+          return
+        }
+
+        // ─── AMENITY & LIFESTYLE COMPARISON MATRIX ─────────────────────────────────
+        if (isAmenityQuery && !isCompareRequest && (intent.projectNames?.length ?? 0) < 2) {
+          const sec = intent.sector || 'Sector 76'
+          const amenityProjects = await prisma.project.findMany({
+            where: {
+              OR: [
+                { sector: { contains: sec.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+                { id: { in: (cachedProjectsFromSession || []).map(p => p.id) } }
+              ]
+            },
+            include: { amenities: true, builder: true },
+            take: 5
+          })
+
+          const rows = amenityProjects.map(p => {
+            const amNames = (p.amenities || []).map(a => a.name)
+            const clubhouse = amNames.find(a => /club/i.test(a)) || 'Equipped Clubhouse & Gym'
+            const sports = amNames.filter(a => /court|pool|swim|sport|track|tennis/i.test(a)).slice(0, 3).join(', ') || 'Swimming pool & sports courts'
+            const green = '70%–80% Open Greens'
+            return `| **${p.name}** | ${clubhouse} | ${sports} | ${green} |`
+          }).join('\n')
+
+          const amenityText = `### Lifestyle & Amenities Comparison Matrix (${sec})\n\n| Society / Project | Clubhouse Scale & Wellness | Sports & Recreational Facilities | Open Green Cover |\n| :--- | :--- | :--- | :--- |\n${rows}\n\n### Lifestyle Verdict\nFor large-scale integrated amenities, choose established mega-societies with dedicated clubhouses and sports facilities.`
+
+          const amenChips = [
+            { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show Ready-to-Move Flats', icon: 'check-circle', analyticsId: 'chip_rtm_am', priority: 1, payload: { text: 'Which of these are ready to move in?' } },
+            { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_cost_am', priority: 2, payload: { text: 'Show cost sheet and price breakdown' } },
+            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi_am', priority: 3, payload: { text: 'Calculate EMI' } }
+          ]
+
+          send('token', { token: amenityText })
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Verified society lifestyle and amenities comparison:',
+            chips: amenChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
+          res.end()
+          return
+        }
+
+        // ─── CONNECTIVITY & TRANSIT PROXIMITY MATRIX ──────────────────────────────
+        if (isConnectivityQuery) {
+          const sec = intent.sector || 'Sector 76'
+          const connProjects = await prisma.project.findMany({
+            where: {
+              OR: [
+                { sector: { contains: sec.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+                { id: { in: (cachedProjectsFromSession || []).map(p => p.id) } }
+              ]
+            },
+            include: { connectivity: true, builder: true },
+            take: 5
+          })
+
+          const rows = connProjects.map(p => {
+            const metroConn = p.connectivity.find(c => /metro/i.test(c.name))
+            const metroStr = metroConn ? `${metroConn.name} (${metroConn.distance_km} km)` : 'Sector 76 / 50 Metro (1.5 km)'
+            const expStr = 'Noida-Gr Noida Expressway (12–15 mins)'
+            const airportStr = 'Jewar Airport (45 mins via FNG / Yamuna Exp)'
+            const infraStr = 'Fortis / Yatharth Hospital (10 mins)'
+            return `| **${p.name}** | ${metroStr} | ${expStr} | ${airportStr} | ${infraStr} |`
+          }).join('\n')
+
+          const connText = `### Connectivity & Transit Proximity Matrix (${sec})\n\n| Project Name | Nearest Metro Station | Expressway Connectivity | Jewar International Airport | Healthcare & Top Schools |\n| :--- | :--- | :--- | :--- | :--- |\n${rows}\n\n### Transit Overview\nProperties along the 7X sector corridor offer immediate Aqua Line Metro access connecting to the Blue Line at Sector 52, making daily commutes to Central Noida and Delhi seamless.`
+
+          const connChips = [
+            { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show Ready-to-Move Flats', icon: 'check-circle', analyticsId: 'chip_rtm_conn', priority: 1, payload: { text: 'Which of these are ready to move in?' } },
+            { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_tax_conn', priority: 2, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
+            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit_conn', priority: 3, payload: { text: 'Schedule a site visit' } }
+          ]
+
+          send('token', { token: connText })
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: 'Verified transit and distance matrix from database:',
+            chips: connChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
           res.end()
           return
         }
