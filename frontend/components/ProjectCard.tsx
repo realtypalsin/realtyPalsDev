@@ -100,7 +100,9 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
     askPrompts.push({ icon: WarningCircle, label: 'Any concerns?', text: `What are the concerns or red flags with ${project.name}?`, type: 'concerns' })
   }
 
-  const unitsByBhk = project.unit_types.reduce((acc, u) => {
+  const rawUnitTypes = Array.isArray(project.unit_types) ? project.unit_types : []
+  const unitsByBhk = rawUnitTypes.reduce((acc, u) => {
+    if (!u || u.bhk == null) return acc
     if (!acc[u.bhk]) acc[u.bhk] = []
     const area = u.super_area_sqft || u.carpet_area_sqft
     if (area) acc[u.bhk].push(`${area}sqft`)

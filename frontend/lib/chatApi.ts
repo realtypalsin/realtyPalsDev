@@ -1,5 +1,5 @@
 // Chat API integration helpers
-import type { Intent } from '@/types/property'
+// Intent is represented as Record<string, unknown> throughout the codebase
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || ''
 
@@ -63,7 +63,7 @@ export async function submitPropertyFeedback(
 }
 
 // Format intent for UI display
-export function formatIntentForDisplay(intent: Intent | null | undefined) {
+export function formatIntentForDisplay(intent: Record<string, unknown> | null | undefined) {
   if (!intent) return null
 
   const BHK_DISPLAY: Record<number, string> = {
@@ -77,7 +77,7 @@ export function formatIntentForDisplay(intent: Intent | null | undefined) {
   const details = [
     {
       label: 'Property type',
-      value: intent.bhk ? intent.bhk.map((b) => BHK_DISPLAY[b] || `${b}BHK`).join(' / ') : null,
+      value: Array.isArray(intent?.bhk) ? (intent.bhk as number[]).map((b: number) => BHK_DISPLAY[b] || `${b}BHK`).join(' / ') : null,
     },
     { label: 'Location', value: intent.sector || intent.location || null },
     {
@@ -96,7 +96,7 @@ export function formatIntentForDisplay(intent: Intent | null | undefined) {
 
 // Parse quick follow-up buttons from API response
 export function parseQuickButtons(
-  intent: Intent | null,
+  intent: Record<string, unknown> | null,
   shownProjects: any[]
 ): Array<{ label: string; emoji: string; action: string; description: string }> {
   if (!intent || !shownProjects.length) return []
@@ -124,9 +124,9 @@ export function parseQuickButtons(
       description: 'Show properties under your budget',
     })
 
-    const hasExpensive = shownProjects.some((p) => (p.price_min_cr || 0) > intent.budgetMax!)
+    const hasExpensive = shownProjects.some((p) => (p.price_min_cr || 0) > (intent.budgetMax as number))
     if (hasExpensive) {
-      const newMax = Math.min((intent.budgetMax || 0) + 0.5, 5)
+      const newMax = Math.min(((intent.budgetMax as number) || 0) + 0.5, 5)
       buttons.push({
         label: `Up to ₹${newMax}Cr`,
         emoji: '📈',
@@ -148,14 +148,15 @@ export function parseQuickButtons(
   }
 
   // BHK variation
-  if (intent.bhk?.[0] === 3) {
+  const bhkArray = Array.isArray(intent.bhk) ? (intent.bhk as number[]) : null
+  if (bhkArray?.[0] === 3) {
     buttons.push({
       label: '2BHK only',
       emoji: '🏠',
       action: 'bhk:2',
       description: 'Show 2BHK properties instead',
     })
-  } else if (intent.bhk?.[0] === 2) {
+  } else if (bhkArray?.[0] === 2) {
     buttons.push({
       label: '3BHK options',
       emoji: '🏠',

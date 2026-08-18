@@ -29,34 +29,31 @@ export function markChipShown(sessionId: string, chipId: string, label?: string)
     const cleanLabel = label.trim().toLowerCase()
     set.add(`label:${cleanLabel}`)
 
-    // Semantic alias deduplication
-    if (cleanLabel.includes('payment plan')) {
+    // Semantic alias & topic deduplication
+    if (cleanLabel.includes('payment plan') || cleanLabel.includes('payment schedule') || cleanLabel.includes('clp')) {
       set.add('topic:payment_plans')
     }
-    if (cleanLabel.includes('amenit')) {
+    if (cleanLabel.includes('amenit') || cleanLabel.includes('clubhouse') || cleanLabel.includes('sports')) {
       set.add('topic:amenities')
+    }
+    if (cleanLabel.includes('ready to move') || cleanLabel.includes('ready-to-move') || cleanLabel.includes('rtm') || cleanLabel.includes('move in')) {
+      set.add('topic:ready_to_move')
+    }
+    if (cleanLabel.includes('rera') || cleanLabel.includes('legal status') || cleanLabel.includes('check rera')) {
+      set.add('topic:rera')
+    }
+    if (cleanLabel.includes('cost sheet') || cleanLabel.includes('all-inclusive') || cleanLabel.includes('price breakdown')) {
+      set.add('topic:cost_sheet')
+    }
+    if (cleanLabel.includes('stamp duty') || cleanLabel.includes('gst') || cleanLabel.includes('registration fee')) {
+      set.add('topic:statutory_tax')
     }
   }
 }
 
-export function suppressTopicChips(sessionId: string, topic: 'payment_plans' | 'amenities' | 'price' | 'builder'): void {
+export function suppressTopicChips(sessionId: string, topic: 'payment_plans' | 'amenities' | 'price' | 'builder' | 'ready_to_move' | 'rera' | 'cost_sheet'): void {
   const set = getShownChips(sessionId)
   set.add(`topic:${topic}`)
-
-  if (topic === 'payment_plans') {
-    set.add('label:review payment plans')
-    set.add('label:payment plans available')
-    set.add('label:are there any payment plans available?')
-    set.add('label:payment plans')
-    set.add('label:show payment plans')
-    set.add('label:show payment-plan options for ace hanei')
-  } else if (topic === 'amenities') {
-    set.add('label:what are the amenities provided')
-    set.add('label:what amenities are offered')
-    set.add('label:what are the amenities?')
-    set.add('label:amenities')
-    set.add('label:show amenities')
-  }
 }
 
 export function filterNewChips<T extends { id: string; label?: string }>(sessionId: string, chips: T[]): T[] {
@@ -74,9 +71,13 @@ export function filterNewChips<T extends { id: string; label?: string }>(session
       if (seenLabels.has(cleanLabel)) return false
       seenLabels.add(cleanLabel)
 
-      // Topic suppression check
-      if (shown.has('topic:payment_plans') && cleanLabel.includes('payment plan')) return false
-      if (shown.has('topic:amenities') && cleanLabel.includes('amenit')) return false
+      // Topic suppression check — prevent repeating questions the user already explored
+      if (shown.has('topic:payment_plans') && (cleanLabel.includes('payment plan') || cleanLabel.includes('payment schedule'))) return false
+      if (shown.has('topic:amenities') && (cleanLabel.includes('amenit') || cleanLabel.includes('clubhouse'))) return false
+      if (shown.has('topic:ready_to_move') && (cleanLabel.includes('ready to move') || cleanLabel.includes('ready-to-move') || cleanLabel.includes('rtm') || cleanLabel.includes('move in'))) return false
+      if (shown.has('topic:rera') && (cleanLabel.includes('rera') || cleanLabel.includes('legal status'))) return false
+      if (shown.has('topic:cost_sheet') && (cleanLabel.includes('cost sheet') || cleanLabel.includes('all-inclusive'))) return false
+      if (shown.has('topic:statutory_tax') && (cleanLabel.includes('stamp duty') || cleanLabel.includes('tax rate'))) return false
     }
 
     return true

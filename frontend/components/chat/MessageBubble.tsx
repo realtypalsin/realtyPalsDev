@@ -22,6 +22,7 @@ import type { ChipPickerState } from './types'
 import type { ChatResponse } from '@/types/chat'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
+import { PropertyFeedback } from '@/components/chat/PropertyFeedback'
 
 const safeDefaultSchema = defaultSchema || { tagNames: [], attributes: {} }
 const REALTY_SCHEMA = {
@@ -138,12 +139,22 @@ export interface MessageBubbleProps {
   selectedCompareIds?: Set<string>
   onToggleCompareSelect?: (messageId: string, property: ProjectCardType) => void
   onStartCompare?: (messageId: string, properties: ProjectCardType[]) => void
+  currentIntent?: Record<string, unknown> | null
 }
 
 // ── Message builders ───────────────────────────────────────────────────────
 export function buildPickerMessage(action: string, selected: ProjectCardType[]): string {
   const names = selected.map(p => p.name)
   switch (action) {
+    case 'payment_plans':
+    case 'plans':
+      return `Show payment plans for ${names[0]}.`
+    case 'cost_sheet':
+    case 'cost':
+      return `Show cost sheet and taxes for ${names[0]}.`
+    case 'site_visit':
+    case 'visit':
+      return `Schedule a site visit for ${names[0]}.`
     case 'emi':
       return `What would be the monthly EMI for ${names[0]}? Calculate EMI assuming standard lending parameters.`
     case 'stamp_duty':
@@ -155,9 +166,9 @@ export function buildPickerMessage(action: string, selected: ProjectCardType[]):
         ? `Compare ${names[0]} vs ${names[1]} in detail — price, amenities, builder, location, trade-offs.`
         : `Compare ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} in detail.`
     case 'builder':
-      return `Tell me about ${selected[0].builder.name}'s delivery history, reputation, and any complaints.`
+      return `Tell me about ${selected[0]?.builder ? (typeof selected[0].builder === 'object' ? selected[0].builder.name : selected[0].builder) : names[0]}'s delivery history, reputation, and any complaints.`
     case 'area':
-      return `Give me a full area overview of ${selected[0].sector} — metro access, schools, hospitals, appreciation potential.`
+      return `Give me a full area overview of ${selected[0]?.sector || 'the area'} — metro access, schools, hospitals, appreciation potential.`
     case 'risks':
       return `What are the main risks and concerns I should know about ${names[0]}?`
     default:
@@ -320,12 +331,52 @@ function MessageBubbleInner({
   onToggleExpanded, onSetChipPicker, onSetCarouselIndex,
   onSetSiteVisit, onOpenCalculator, onOpenShareSheet, onToast, onOpenCompare,
   comparingMessageId, selectedCompareIds, onToggleCompareSelect, onStartCompare,
+  currentIntent,
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
   const [showAllProperties, setShowAllProperties] = useState(false)
   const displayContent = message.content || ''
   const inlineEdit = useInlineEdit(displayContent)
   const rawChips: import('./types').ChipAction[] = [...((message.chips as import('./types').ChipAction[]) || []), ...(isLast ? chips : [])]
+
+  // If no backend chips provided yet on this message, adapt intelligent discovery chips into native SuggestionChips
+  if (rawChips.length === 0 && ((message.exactResults?.length ?? 0) > 0 || (message.nearbyResults?.length ?? 0) > 0 || (message.properties?.length ?? 0) > 0)) {
+    const pList = message.exactResults || message.nearbyResults || message.properties || []
+    const rawSector = (pList[0] as any)?.sector
+    const sec = typeof rawSector === 'string' ? rawSector : rawSector?.name || (typeof currentIntent?.sector === 'string' ? currentIntent.sector : '')
+    if (sec) {
+      rawChips.push({
+        id: `more-${sec}`,
+        label: `More in ${sec}`,
+        actionType: 'TEXT_MESSAGE',
+        payload: { text: `Show more verified properties in ${sec}` },
+        priority: 1,
+        analyticsId: 'more_in_sector',
+        icon: 'MapPin'
+      })
+    }
+    rawChips.push({
+      id: 'ready-to-move',
+      label: 'Ready to Move',
+      actionType: 'INTENT_PATCH',
+      payload: { patch: { possession: 'immediate' } },
+      priority: 2,
+      analyticsId: 'ready_to_move',
+      icon: 'Clock'
+    })
+    if (pList.length >= 2) {
+      rawChips.push({
+        id: 'compare-properties',
+        label: 'Compare Properties',
+        actionType: 'COMPARE_PROPERTIES',
+        payload: { mode: 'multi' },
+        priority: 3,
+        analyticsId: 'compare_multi',
+        icon: 'Scale'
+      })
+    }
+  }
+
   const combinedChips: import('./types').ChipAction[] = Array.from(new Map(rawChips.map((c) => [c.id || c.label, c])).values())
 
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
@@ -1044,6 +1095,21 @@ function MessageBubbleInner({
                             onSetSiteVisit={onSetSiteVisit}
                             onCall={onCallback}
                           />
+                          {/* Inline property feedback — unobtrusive, below each card */}
+                          {sessionId && property.id && (
+                            <m.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: pi * 0.07 + 0.2 }}
+                              className="px-1 pt-1.5 pb-0.5"
+                            >
+                              <PropertyFeedback
+                                sessionId={sessionId}
+                                projectId={String(property.id)}
+                                projectName={property.name}
+                              />
+                            </m.div>
+                          )}
                         </m.div>
                       ))}
                     </div>
@@ -1087,6 +1153,21 @@ function MessageBubbleInner({
                             onSetSiteVisit={onSetSiteVisit}
                             onCall={onCallback}
                           />
+                          {/* Inline property feedback for nearby results too */}
+                          {sessionId && property.id && (
+                            <m.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: pi * 0.07 + 0.2 }}
+                              className="px-1 pt-1.5 pb-0.5"
+                            >
+                              <PropertyFeedback
+                                sessionId={sessionId}
+                                projectId={String(property.id)}
+                                projectName={property.name}
+                              />
+                            </m.div>
+                          )}
                         </m.div>
                       ))}
                     </div>
@@ -1159,11 +1240,13 @@ function MessageBubbleInner({
 
       {/* Progressive chips from Conversation Engine */}
       {(() => {
-        const shouldShow = message.type === 'ai' && Boolean(displayContent) && combinedChips.length > 0
+        const hasText = Boolean(displayContent);
+        const hasProps = Boolean(message.exactResults?.length || message.nearbyResults?.length || message.properties?.length);
+        const hasDb = Boolean(message.chatResponse);
+        const shouldShow = message.type === 'ai' && (hasText || hasProps || hasDb) && combinedChips.length > 0
           && (!isLast || !isSubmitting);
         return shouldShow;
       })() && (
-
         <m.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1175,10 +1258,10 @@ function MessageBubbleInner({
             chipPicker={chipPicker}
             onSetChipPicker={onSetChipPicker}
             onAction={onAction}
+            isDisabled={isSubmitting}
           />
 
           <AnimatePresence mode="wait">
-
             {chipPicker && (
               <m.div
                 ref={chipPickerRef}

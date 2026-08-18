@@ -67,10 +67,11 @@ const nextConfig = {
     ],
   },
   async rewrites() {
+    const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '')
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://realtypalsdev.onrender.com'}/api/:path*`
+        destination: `${backendUrl}/api/:path*`
       },
     ]
   },
@@ -101,7 +102,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: (() => {
               const isDev = process.env.NODE_ENV !== 'production'
-              const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://realtypalsdev.onrender.com'
+              const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '')
               const connectSrc = isDev
                 ? "'self' http://localhost:* wss://localhost:* https: ws: wss:"
                 : `'self' ${backendUrl} wss: https: ws:`

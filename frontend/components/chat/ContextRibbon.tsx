@@ -42,7 +42,7 @@ export default function ContextRibbon({ intent, onRemove }: ContextRibbonProps) 
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, height: 0 }}
-      className="w-full flex justify-center py-3 absolute top-14 left-0 z-20 pointer-events-none"
+      className="w-full flex justify-center py-3"
     >
       <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-3xl px-4 pointer-events-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-full py-1.5 px-3 shadow-sm">
         <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mr-1 flex items-center gap-1">

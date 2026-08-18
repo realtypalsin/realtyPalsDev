@@ -20,6 +20,9 @@ type EventName =
   | 'ask_ai_tapped'
   | 'call_tapped'
   | 'share_tapped'
+  | 'property_feedback_submitted'
+  | 'quick_button_clicked'
+  | 'session_resumed'
 
 
 export function track(event: EventName, properties?: Record<string, unknown>) {

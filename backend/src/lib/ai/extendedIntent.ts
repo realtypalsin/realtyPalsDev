@@ -352,16 +352,35 @@ async function extractWithGroq(
     ? `Previous intent: ${JSON.stringify(previousIntent)}\n\nNew user message: ${message}`
     : `User message: ${message}`
 
-  const completion = await groq.chat.completions.create({
-    model: MODELS.GROQ_SMART,
-    messages: [
-      { role: 'system', content: EXTENDED_INTENT_EXTRACTION_PROMPT },
-      { role: 'user', content: userContent },
-    ],
-    response_format: { type: 'json_object' },
-    max_tokens: 512,
-    temperature: 0.1,
-  })
+  let completion
+  try {
+    completion = await groq.chat.completions.create({
+      model: MODELS.GROQ_SMART,
+      messages: [
+        { role: 'system', content: EXTENDED_INTENT_EXTRACTION_PROMPT },
+        { role: 'user', content: userContent },
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 512,
+      temperature: 0.1,
+    })
+  } catch (err: any) {
+    if (err?.status === 404 || err?.message?.includes('does not exist') || err?.message?.includes('model_not_found')) {
+      console.log('[EXTENDED_INTENT] GROQ_SMART 404, falling back to GROQ_FAST:', MODELS.GROQ_FAST)
+      completion = await groq.chat.completions.create({
+        model: MODELS.GROQ_FAST || 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: EXTENDED_INTENT_EXTRACTION_PROMPT },
+          { role: 'user', content: userContent },
+        ],
+        response_format: { type: 'json_object' },
+        max_tokens: 512,
+        temperature: 0.1,
+      })
+    } else {
+      throw err
+    }
+  }
 
   console.log('[EXTENDED_INTENT] END extractWithGroq', Date.now())
   const raw = completion.choices[0]?.message?.content ?? '{}'
@@ -371,7 +390,7 @@ async function extractWithGroq(
 async function extractWithOpenAI(
   message: string,
   previousIntent: ExtendedIntentWithConfidence | undefined,
-  signal: AbortSignal,
+  signal?: AbortSignal,
 ): Promise<ExtendedIntentWithConfidence> {
   console.log('[EXTENDED_INTENT] START extractWithOpenAI', Date.now())
   const client = new OpenAI({
@@ -395,7 +414,7 @@ async function extractWithOpenAI(
       max_tokens: 512,
       temperature: 0.1,
     },
-    { signal },
+    signal ? { signal } : undefined,
   )
 
   console.log('[EXTENDED_INTENT] END extractWithOpenAI', Date.now())

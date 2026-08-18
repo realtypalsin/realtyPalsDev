@@ -7,21 +7,21 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "prisma db push --schema=../frontend/prisma/schema.prisma && node dist/index.js",
+    "start": "node dist/index.js",
     "test": "node --require tsx/cjs src/test-runner.ts",
     "eval": "tsx src/lib/eval/eval-runner.ts",
     "eval:local": "tsx src/lib/eval/eval-runner.ts --endpoint=http://localhost:3002",
     "eval:staging": "tsx src/lib/eval/eval-runner.ts --endpoint=https://staging.realtypals.com",
     "eval:prod": "tsx src/lib/eval/eval-runner.ts --endpoint=https://realtypals.com",
     "lint": "eslint src --ext .ts --max-warnings=0",
-    "db:generate": "prisma generate --schema=../frontend/prisma/schema.prisma",
-    "postinstall": "prisma generate --schema=../frontend/prisma/schema.prisma",
+    "db:generate": "prisma generate",
+    "postinstall": "prisma generate",
     "typecheck": "tsc --noEmit",
     "swagger:generate": "tsx scripts/sync-swagger.ts",
     "check-all": "npm run lint && npm run typecheck"
   },
   "prisma": {
-    "schema": "../frontend/prisma/schema.prisma"
+    "schema": "prisma/schema.prisma"
   },
   "dependencies": {
     "@google/genai": "^2.16.0",

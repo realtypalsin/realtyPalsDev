@@ -656,6 +656,14 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             missingFields: event.missingFields,
             confidence: event.confidence
           });
+          // Persist chips directly onto the message in chatHistory
+          if (Array.isArray(event.chips) && event.chips.length > 0) {
+            setChatHistory(prev => prev.map(m =>
+              m.id === streamId
+                ? { ...m, chips: event.chips }
+                : m
+            ));
+          }
         } else if (event.type === 'focus') {
           // Phase 3: Focus event for text-only queries
           // Scroll and highlight existing card instead of re-rendering
@@ -716,8 +724,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 } : {}),
                 ...(responseMode === 'database' && (event as any).chatResponse ? {
                   chatResponse: (event as any).chatResponse,
-                  chips: (event as any).chatResponse.chips,
+                  chips: (event as any).chatResponse.chips || m.chips,
                 } : {}),
+                chips: m.chips || (event as any).chips || conversationState?.chips || [],
               }
               : m
           ));
@@ -1013,9 +1022,18 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   base.comparisonProjects = [artifact.left as ProjectCardType, artifact.right as ProjectCardType]
                 }
               }
+              if (artifact.type === 'ui_state' || artifact.chips) {
+                base.chips = (artifact.chips || (artifact as any).ui_state?.chips) as any
+              }
             }
             return base
           })
+          if (data.ui_state?.chips && Array.isArray(data.ui_state.chips) && data.ui_state.chips.length > 0) {
+            const lastAiMsg = [...restored].reverse().find(m => m.type === 'ai');
+            if (lastAiMsg && (!lastAiMsg.chips || (lastAiMsg.chips as any[]).length === 0)) {
+              lastAiMsg.chips = data.ui_state.chips;
+            }
+          }
           const mapperMs = performance.now() - mapperT0
           if (nt) console.log(`[NAV] 8. mapper            +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${mapperMs.toFixed(1)}ms, ${data.messages.length} msgs)`)
 
@@ -1542,10 +1560,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           <div className="absolute bottom-[-10%] left-[40%] w-[400px] h-[400px] bg-teal-400/10 dark:bg-teal-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" style={{ animationDelay: "4s" }} />
         </div>
 
-        <ContextRibbon
-          intent={currentIntent}
-          onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
-        />
 
         {(!isInitialized && !!initialSessionId) ? (
           <div className="flex-1 flex flex-col justify-start w-full relative z-10 overflow-y-auto">
@@ -1627,7 +1641,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               }}
             >
               <div className="max-w-[880px] mx-auto space-y-6">
-                {/* ReEngagementBanner moved to chat input area */}
+                {/* Intent context ribbon — inline in scroll flow, not floating */}
+                <AnimatePresence>
+                  {currentIntent && (
+                    <ContextRibbon
+                      intent={currentIntent}
+                      onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
+                    />
+                  )}
+                </AnimatePresence>
 
                 {showContextWarning && (
                   <div className="mx-auto max-w-lg px-4 py-2 my-2 text-xs text-center text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
@@ -1665,8 +1687,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                         sessionId={sessionId ?? ''}
                         regeneratingIdx={regeneratingIdx}
                         chipPicker={chipPicker}
-                        chips={(message.chips as any) ?? (actualIndex === chatHistory.length - 1 ? conversationState?.chips ?? [] : [])}
+                        chips={(Array.isArray(message.chips) && message.chips.length > 0) ? (message.chips as any) : (actualIndex === chatHistory.length - 1 ? conversationState?.chips ?? [] : [])}
                         isRestoring={isRestoring}
+                        currentIntent={currentIntent}
                         onCopy={handleCopy}
                         onDetailOpen={openDetailProject}
                         onCallback={setCallbackProject}

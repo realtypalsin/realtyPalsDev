@@ -3,10 +3,9 @@
 import { memo } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { ChevronRight, Edit2 } from 'lucide-react'
-import type { Intent } from '@/types/property'
 
 interface IntentConfirmationProps {
-  intent: Intent
+  intent: Record<string, unknown>
   onConfirm: () => void
   onEdit: () => void
   isLoading?: boolean
@@ -21,8 +20,8 @@ export const IntentConfirmation = memo(function IntentConfirmation({
   isLoading = false,
 }: IntentConfirmationProps) {
   const details: Array<{ label: string; value: string | null }> = [
-    { label: 'Property type', value: intent.bhk ? intent.bhk.map(b => BHK_DISPLAY[b] || `${b}BHK`).join(' / ') : null },
-    { label: 'Location', value: intent.sector || intent.location || null },
+    { label: 'Property type', value: Array.isArray(intent.bhk) ? (intent.bhk as number[]).map((b: number) => BHK_DISPLAY[b] || `${b}BHK`).join(' / ') : null },
+    { label: 'Location', value: (intent.sector || intent.location || null) as string | null },
     { label: 'Budget', value: intent.budgetMin || intent.budgetMax ? `₹${intent.budgetMin || 0}–${intent.budgetMax || '∞'}Cr` : null },
     { label: 'Possession', value: intent.possession === 'immediate' ? 'Ready to move' : intent.possession === 'flexible' ? 'Flexible' : null },
   ].filter(d => d.value)

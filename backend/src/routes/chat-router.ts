@@ -530,21 +530,7 @@ router.post('/', async (req: Request, res: Response) => {
 
       let matched: { id: string; name: string; slug: string } | null = null;
 
-      // Phase 4.2: pg_trgm native similarity search (if extension enabled)
-      try {
-        const trgmResults = await (prisma as any).$queryRaw`
-          SELECT id, name, slug FROM "projects"
-          WHERE name % ${cleanQuery} AND similarity(name, ${cleanQuery}) > 0.4
-          ORDER BY similarity(name, ${cleanQuery}) DESC
-          LIMIT 1
-        `;
-        if (Array.isArray(trgmResults) && trgmResults.length > 0) {
-          matched = trgmResults[0];
-          console.log('[CHAT:TRGM_MATCH]', matched?.name);
-        }
-      } catch (e) {
-        // pg_trgm fallback to JS matching
-      }
+
 
       // Exact & Token match fallback
       if (!matched) {
@@ -1059,7 +1045,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
               const socList = projsBySector[s.sector]?.join(', ') || 'Verified RERA societies'
               const priceBand = s.avg_price_per_sqft ? `₹${Math.round(s.avg_price_per_sqft).toLocaleString('en-IN')}/sq.ft` : '₹7,500–12,000/sq.ft'
               const strength = s.sector_strengths?.[0] || s.sector_overview?.slice(0, 70) || 'Established residential hub'
-              return `| **${s.sector}** (${s.micro_market || 'Noida'}) | ${priceBand} | ${strength} | ${socList} |`
+              return `| **${s.sector}** (${s.city || 'Noida'}) | ${priceBand} | ${strength} | ${socList} |`
             }).join('\n')
           } else {
             const uniqueSectors = Array.from(new Set(activeProjects.map(p => p.sector))).slice(0, 5)
@@ -1305,19 +1291,34 @@ OUTPUT STRUCTURE:
           }
 
           if (!costProject) {
-            const clarifyText = `### All-Inclusive Cost Sheet Structure\n\nWhen buying a residential property in Noida, the total acquisition cost consists of:\n\n1. **Base Sale Price (BSP)**: Carpet / Super area basic rate.\n2. **Statutory Taxes**: 7% UP Stamp Duty + 1% Registration + 5% GST (on Under-Construction units).\n3. **Other Project Charges**: Car Parking, Club Membership, EDC/IDC, and IFMS sinking fund.\n\n*Which project would you like to view the itemized price breakdown for?*`
+            const clarifyText = `### All-Inclusive Property Cost & Tax Structure (Noida)
+
+| Acquisition Component | Standard Rate / Range | Stage Payable | Description & Applicability |
+| :--- | :--- | :--- | :--- |
+| **Base Sale Price (BSP)** | As per project & carpet size | Construction milestones | Basic apartment purchase consideration |
+| **UP Stamp Duty** | 7% of agreement value | At Registration | 6% for single/joint women owners |
+| **Registration Fee** | 1% of agreement value | At Registration | Sub-registrar administrative fee |
+| **GST (Goods & Services Tax)** | 5% (without ITC) | With construction milestones | Applicable on Under-Construction (**0% GST on RTM**) |
+| **Covered Car Parking** | ₹3.50–5.00 Lakhs | Initial installments | Dedicated basement slot |
+| **Club Membership** | ₹1.50–3.00 Lakhs | On Possession | Access to luxury clubhouse & sports amenities |
+| **IFMS (Maintenance Sinking Fund)** | ₹50–100 / sq.ft | On Possession | Refundable interest-free corpus deposit |
+| **Dual Power & Meter Connection** | ₹1.25–2.00 Lakhs | On Possession | 5–7.5 kVA DG backup & grid connection |
+
+> **Advisory Rule of Thumb:** For under-construction homes, budget roughly **12%–14% above BSP** for all-inclusive handover. For Ready-to-Move apartments with Occupancy Certificate (OC), the statutory & possession load is approximately **8%–9%** (zero GST).`
+
             send('token', { token: clarifyText })
             send('ui_state', {
               stage: 'RESEARCH',
-              thinking: 'Select a project to view exact cost sheet breakdown:',
+              thinking: 'All-inclusive cost structure & statutory fee schedule:',
               chips: [
                 { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View UP Stamp Duty & Tax Rates', icon: 'file-text', analyticsId: 'chip_tax_cs', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
-                { id: `chip_sec76_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Flats in Sector 76', icon: 'building', analyticsId: 'chip_cs_s76', priority: 2, payload: { text: 'Show 2 BHK and 3 BHK flats in Sector 76' } }
+                { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show Ready-to-Move (0% GST)', icon: 'check-circle', analyticsId: 'chip_rtm_cs', priority: 2, payload: { text: 'Show ready to move flats in Noida' } },
+                { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi_cs', priority: 3, payload: { text: 'Calculate EMI' } }
               ],
               missingFields: [],
               confidence: 'HIGH'
             })
-            send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent, responseMode: 'chat' })
+            send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
             res.end()
             return
           }
@@ -1416,42 +1417,37 @@ OUTPUT STRUCTURE:
         if (isCompareRequest) {
           const matchedProjects: typeof allDbProjects = []
           const msgLower = message.toLowerCase()
-          
-          const tokenize = (str: string) => {
-            const stopWords = new Set(['the', 'by', 'group', 'project', 'sector', 'noida', 'greater', 'west', 'east', 'south', 'north'])
-            return str.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w))
+
+          // 1. If explicit projectNames provided by intent, match directly against those
+          if (intent.projectNames && intent.projectNames.length > 0) {
+            intent.projectNames.forEach(reqName => {
+              const reqLower = reqName.toLowerCase().trim()
+              const exact = allDbProjects.find(p => p.name.toLowerCase() === reqLower)
+              if (exact && !matchedProjects.some(mp => mp.id === exact.id)) {
+                matchedProjects.push(exact)
+                return
+              }
+              const prefixOrSub = allDbProjects.find(p => {
+                const pLower = p.name.toLowerCase()
+                return pLower === reqLower || pLower.startsWith(reqLower) || reqLower.startsWith(pLower) || pLower.includes(reqLower)
+              })
+              if (prefixOrSub && !matchedProjects.some(mp => mp.id === prefixOrSub.id)) {
+                matchedProjects.push(prefixOrSub)
+              }
+            })
           }
 
-          const msgTokens = tokenize(message)
-          const intentTokens = (intent.projectNames || []).flatMap(pn => tokenize(pn))
-          const allUserTokens = Array.from(new Set([...msgTokens, ...intentTokens]))
-
-          const sortedDbProjects = [...allDbProjects].sort((a, b) => b.name.length - a.name.length)
-
-          sortedDbProjects.forEach(p => {
-            const pName = p.name.toLowerCase()
-            
-            const fullMatch = msgLower.includes(pName)
-            const inNames = intent.projectNames && intent.projectNames.some(pn => {
-              const pnLower = pn.toLowerCase()
-              return pName.includes(pnLower) || pnLower.includes(pName)
-            })
-
-            const pTokens = tokenize(p.name)
-            const overlap = pTokens.filter(pt => allUserTokens.some(ut => pt.includes(ut) || ut.includes(pt)))
-            const isFuzzyMatch = overlap.length >= 2 || (overlap.length >= 1 && (pTokens.length === 1 || overlap.some(t => t.startsWith('fusion') || t.startsWith('hanei') || t.startsWith('nimbus') || t.startsWith('aspire') || t.startsWith('brook'))))
-
-            if (fullMatch || inNames || isFuzzyMatch) {
-              if (!matchedProjects.some(mp => mp.id === p.id)) {
+          // 2. If no projectNames or fewer than 2 matched, scan message for full DB project names
+          if (matchedProjects.length < 2) {
+            const sortedDb = [...allDbProjects].sort((a, b) => b.name.length - a.name.length)
+            sortedDb.forEach(p => {
+              if (msgLower.includes(p.name.toLowerCase()) && !matchedProjects.some(mp => mp.id === p.id)) {
                 matchedProjects.push(p)
-                if (!fullMatch && !inNames && isFuzzyMatch) {
-                  fuzzyMatchedNotes.push(`Did you mean **${p.name}**? We matched it based on your query.`)
-                }
               }
-            }
-          })
+            })
+          }
 
-          targetProjects = matchedProjects
+          targetProjects = matchedProjects.slice(0, 4)
         }
 
         // If not comparing, find the single active project (exact or fuzzy)
@@ -1658,9 +1654,48 @@ Buyers should factor an additional **12% to 14%** over the Basic Sale Price (BSP
           }
 
           const projName = detailedTargetProjects[0]?.name || 'Project'
-          let responseChips: Array<{ id: string; actionType: string; label: string; icon: string; analyticsId: string; priority: number; payload: { text: string } }> = []
+          let responseChips: Array<{ id: string; actionType: string; label: string; icon: string; analyticsId: string; priority: number; payload: Record<string, unknown> }> = []
 
-          if (isPaymentPlanRequest) {
+          if (isCompareRequest && detailedTargetProjects.length >= 2) {
+            responseChips = [
+              {
+                id: `chip_emi_${Date.now()}`,
+                actionType: 'CALCULATE_EMI',
+                label: 'Calculate Monthly EMI',
+                icon: 'calculator',
+                analyticsId: 'chip_emi_compare',
+                priority: 1,
+                payload: { action: 'emi' }
+              },
+              {
+                id: `chip_visit_${Date.now()}`,
+                actionType: 'BOOK_VISIT',
+                label: 'Schedule Site Visit',
+                icon: 'calendar',
+                analyticsId: 'chip_visit_compare',
+                priority: 2,
+                payload: { action: 'site_visit' }
+              },
+              {
+                id: `chip_plans_${Date.now()}`,
+                actionType: 'TEXT_MESSAGE',
+                label: `Payment Plans (${detailedTargetProjects[0].name.slice(0, 16)})`,
+                icon: 'file-text',
+                analyticsId: 'chip_plans_p1',
+                priority: 3,
+                payload: { text: `Show payment plans for ${detailedTargetProjects[0].name}` }
+              },
+              {
+                id: `chip_cost_${Date.now()}`,
+                actionType: 'TEXT_MESSAGE',
+                label: `Cost Sheet (${detailedTargetProjects[1].name.slice(0, 16)})`,
+                icon: 'file-text',
+                analyticsId: 'chip_cost_p2',
+                priority: 4,
+                payload: { text: `Show cost sheet and taxes for ${detailedTargetProjects[1].name}` }
+              }
+            ]
+          } else if (isPaymentPlanRequest) {
             responseChips = [
               { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_cost', priority: 1, payload: { text: `Show cost sheet and taxes for ${projName}` } },
               { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 2, payload: { text: `Calculate EMI for ${projName}` } },

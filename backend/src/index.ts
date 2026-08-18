@@ -71,20 +71,31 @@ app.set('trust proxy', 1)
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }))
-const allowedOrigins = [
+const envOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean)
+
+const allowedOrigins = new Set([
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:3001',
   'http://localhost:3002',
-  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-]
+  ...envOrigins
+])
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+    if (
+      !origin ||
+      allowedOrigins.has(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com') ||
+      process.env.NODE_ENV !== 'production'
+    ) {
       callback(null, true)
     } else {
-      callback(new Error('Not allowed by CORS'))
+      callback(new Error(`CORS origin not allowed: ${origin}`))
     }
   },
   credentials: true,
@@ -233,11 +244,9 @@ async function startup() {
   // Phase 2.1: Initialize in-memory caches for project data and query planning
   initializeCaches()
   logger.info('caches initialized')
-
-  const server = app.listen(PORT, () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     const elapsed = Date.now() - startTime
     logger.info({ port: PORT, elapsed }, `listening — ready`)
-
     const keys = {
       GROQ_API_KEY:             !!process.env.GROQ_API_KEY,
       OPENAI_API_KEY:           !!process.env.OPENAI_API_KEY,
