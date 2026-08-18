@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest'
 import { buildPickerMessage } from '@/components/chat/MessageBubble'
 import type { ProjectCard } from '@/types/project'
 

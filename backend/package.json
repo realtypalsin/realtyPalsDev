@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.16.0",
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.20.0",
     "@sentry/node": "^8.0.0",
     "@supabase/supabase-js": "^2.49.8",

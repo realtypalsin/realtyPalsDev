@@ -9,6 +9,8 @@ module.exports = createJestConfig({
     '^@/(.*)$': '<rootDir>/$1',
     '^rehype-raw$': '<rootDir>/__mocks__/rehypeRaw.js',
     '^rehype-sanitize$': '<rootDir>/__mocks__/rehypeSanitize.js',
+    '^remark-gfm$': '<rootDir>/__mocks__/rehypeRaw.js',
+    '^react-markdown$': '<rootDir>/__mocks__/reactMarkdown.js',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(rehype-raw|rehype-sanitize|hast-util-sanitize|hast-util-parse-selector|property-information|unist-util-position|unist-util-visit|unist-util-is)/)',
