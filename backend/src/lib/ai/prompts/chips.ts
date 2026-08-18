@@ -6,21 +6,21 @@ import { MODELS, FALLBACK_CHAIN, type FallbackKeyConfig } from '../../config'
 import type { ChipAction } from '../../discovery/conversationEngine'
 import { chip } from '../../discovery/conversationEngine'
 
-const CHIP_SYSTEM_PROMPT = `You are a conversation intent predictor for a real estate assistant.
-Based on the conversation history, predict exactly 3 short, natural follow-up questions the user might want to ask next.
+const CHIP_SYSTEM_PROMPT = `You are an elite conversation intent predictor and property discovery navigator for RealtyPals (Noida & Greater Noida real estate platform).
+Based on the conversation history, generate exactly 3 highly relevant, high-conversion follow-up action chips.
 
 CRITICAL RULES:
-1. Do NOT suggest questions about topics already discussed in the conversation history.
-2. Keep each question under 8 words.
-3. Make them conversational and direct (e.g., "What are the payment plans?", "Tell me about the builder's track record", "Is it RERA registered?").
-4. Output ONLY a valid JSON object with a single key "questions" containing an array of strings. No markdown, no introductory text.
+1. AT LEAST 1 TO 2 CHIPS MUST BE DIRECT PROPERTY DISCOVERY ACTIONS that lead the user to project cards (e.g. "Show projects in Sector 150", "View 3/4 BHK on Expressway", "Show ₹3 Cr properties in Central Noida", "Explore top RTM societies in Sector 75").
+2. The other chip can be a strategic comparison, legal/RERA check, or financial breakdown (e.g. "Compare Sector 150 vs Central 7X", "What are the payment plans?", "Check builder track record").
+3. Keep each question or action under 7 words.
+4. Output ONLY a valid JSON object with a single key "questions" containing an array of 3 strings. No markdown, no markdown formatting, no explanations.
 
 Example output:
 {
   "questions": [
-    "What is the exact location?",
-    "Are there any legal risks?",
-    "Show me the floor plans."
+    "Show projects in Sector 150",
+    "View 3 BHK in Central Noida",
+    "Compare Sector 150 vs Sector 79"
   ]
 }
 `

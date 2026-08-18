@@ -101,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const crumbs = breadcrumb(pathname)
 
   return (
-    <div className="h-screen bg-surface-3 font-sans text-text-primary selection:bg-slate-200 selection:text-text-primary flex overflow-hidden">
+    <div className="h-[100dvh] min-h-[100dvh] bg-surface-3 font-sans text-text-primary selection:bg-slate-200 selection:text-text-primary flex overflow-hidden">
       
       {/* Command Palette */}
       <AnimatePresence>
@@ -170,7 +170,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       `}>
         
         {/* Brand Header */}
-        <div className="group h-14 flex items-center justify-center border-b border-zinc-100/80 w-full px-3 shrink-0 relative">
+        <div className="group h-14 pt-[env(safe-area-inset-top,0px)] flex items-center justify-center border-b border-zinc-100/80 w-full px-3 shrink-0 relative box-content">
           {!isCollapsed ? (
             <>
               <div className="flex flex-1 items-center justify-center transition-opacity duration-300">
@@ -203,41 +203,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           )}
         </div>
 
-        {/* Workspace Tag (Expanded only) */}
-        {!isCollapsed && (
-          <div className="px-5 py-3 border-b border-zinc-50/50 flex items-center gap-2 bg-zinc-50/30">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Admin Workspace</p>
-          </div>
-        )}
-
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {NAV.map(item => {
-            const isActive = pathname === item.href
-              ? true
-              : pathname.startsWith(item.href) && item.href !== '/admin'
-
-            const Icon = item.icon
+        {/* Navigation Items */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {NAV.map((nav) => {
+            const isActive = pathname === nav.href || (nav.href !== '/admin' && pathname.startsWith(nav.href))
             return (
-              <div key={item.href} className="relative group/navitem flex justify-center">
+              <div key={nav.href} className="relative group/navitem flex justify-center">
                 <Link
-                  href={item.href}
+                  href={nav.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-[12px]'} ${
-                    isActive 
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' 
-                      : 'text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900'
-                  }`}
-                  title={isCollapsed ? item.label : undefined}
+                  className={`
+                    flex items-center transition-all duration-base overflow-hidden whitespace-nowrap
+                    ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'}
+                    ${isActive
+                      ? 'bg-slate-900 text-white font-medium'
+                      : 'text-zinc-500 hover:bg-slate-100 hover:text-zinc-900'
+                    }
+                  `}
                 >
-                  <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-white' : 'text-zinc-400 group-hover/navitem:text-zinc-600'} />
-                  {!isCollapsed && <span className={`text-[13px] font-semibold tracking-wide ${isActive ? 'text-white' : ''}`}>{item.label}</span>}
+                  <nav.icon size={18} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-white' : 'text-zinc-400 group-hover/navitem:text-zinc-600'} />
+                  {!isCollapsed && (
+                    <span className="text-[13px] font-semibold tracking-wide">
+                      {nav.label}
+                    </span>
+                  )}
                 </Link>
-                {/* Tooltip for collapsed state */}
                 {isCollapsed && (
                   <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 py-1.5 px-2.5 bg-zinc-800 text-white text-[11px] font-medium rounded-md opacity-0 group-hover/navitem:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-xl">
-                    {item.label}
+                    {nav.label}
                   </div>
                 )}
               </div>
@@ -245,14 +238,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        {/* Footer Area */}
-        <div className="p-3 border-t border-zinc-100 shrink-0 w-full space-y-1">
+        {/* Footer Actions */}
+        <div className="p-3 border-t border-border space-y-1 shrink-0 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
           <div className="relative group/navitem flex justify-center">
             <Link 
               href="/" 
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-xl justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-[12px]'} text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900`}
+              className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900`}
             >
               <Building2 size={18} strokeWidth={2} className="text-zinc-400 group-hover/navitem:text-zinc-600" />
               {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">View site</span>}
@@ -267,9 +260,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="relative group/navitem flex justify-center">
             <button
               onClick={handleLogout}
-              className={`flex items-center transition-all duration-base overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-lg py-2.5 rounded-md'} text-text-secondary hover:bg-red-50 hover:text-red-600`}
+              className={`flex items-center transition-all duration-base overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 hover:bg-red-50 hover:text-red-600`}
             >
-              <LogOut size={18} strokeWidth={2} className="text-text-muted group-hover/navitem:text-red-500" />
+              <LogOut size={18} strokeWidth={2} className="text-zinc-400 group-hover/navitem:text-red-500" />
               {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">Sign Out</span>}
             </button>
             {isCollapsed && (
@@ -284,31 +277,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden bg-slate-50/70 dark:bg-zinc-950/70">
 
-        {/* Top bar */}
-        <header className="h-14 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shrink-0 px-4 md:px-6 flex items-center justify-between z-40 transition-colors">
-          <div className="flex items-center gap-3 min-w-0">
+        {/* Top bar - Notch Aware */}
+        <header className="pt-[env(safe-area-inset-top,0px)] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shrink-0 px-3 sm:px-6 flex items-center justify-between z-40 transition-colors">
+          <div className="h-14 flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <button
               onClick={() => setMobileOpen(true)}
-              className="md:hidden text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white p-1 mr-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="md:hidden text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+              aria-label="Open Navigation"
             >
               <Menu size={20} />
             </button>
 
             {/* Breadcrumbs */}
-            <nav className="flex items-center gap-1.5 text-xs font-semibold min-w-0">
-              <Building2 size={15} className="text-zinc-400 dark:text-zinc-500 shrink-0" />
+            <nav className="flex items-center gap-1 sm:gap-1.5 text-xs font-semibold min-w-0">
+              <Building2 size={15} className="text-zinc-400 dark:text-zinc-500 shrink-0 hidden sm:inline" />
               {crumbs.map((c, i) => (
-                <span key={i} className="flex items-center gap-1.5 min-w-0">
-                  {i > 0 && <ChevronRight size={13} className="text-zinc-300 dark:text-zinc-600 flex-shrink-0" />}
+                <span key={i} className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                  {i > 0 && <ChevronRight size={12} className="text-zinc-300 dark:text-zinc-600 flex-shrink-0" />}
                   {c.href && i < crumbs.length - 1 ? (
                     <Link
                       href={c.href}
-                      className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white px-2 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-all truncate"
+                      className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white px-1.5 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-all truncate"
                     >
                       {c.label}
                     </Link>
                   ) : (
-                    <span className="text-zinc-900 dark:text-zinc-100 font-bold px-2 py-1 bg-zinc-100/90 dark:bg-zinc-800/90 rounded-md border border-zinc-200/60 dark:border-zinc-700/60 truncate shadow-2xs">
+                    <span className="text-zinc-900 dark:text-zinc-100 font-bold px-2 py-0.5 sm:py-1 bg-zinc-100/90 dark:bg-zinc-800/90 rounded-md border border-zinc-200/60 dark:border-zinc-700/60 truncate shadow-2xs">
                       {c.label}
                     </span>
                   )}
@@ -328,8 +322,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </header>
 
-        {/* Page */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 w-full bg-slate-50/50 dark:bg-zinc-950/50 relative">{children}</main>
+        {/* Page Main View */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 w-full bg-slate-50/50 dark:bg-zinc-950/50 relative pb-20 md:pb-8">{children}</main>
+
+        {/* Mobile Bottom Navigation Tab Bar */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800 px-1 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+6px)] flex items-center justify-around shadow-lg">
+          {NAV.slice(0, 5).map((nav) => {
+            const isActive = pathname === nav.href || (nav.href !== '/admin' && pathname.startsWith(nav.href))
+            return (
+              <Link
+                key={nav.href}
+                href={nav.href}
+                className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition-all duration-200 min-w-[48px] ${
+                  isActive
+                    ? 'text-blue-600 dark:text-blue-400 font-bold scale-105'
+                    : 'text-zinc-500 dark:text-zinc-400 font-medium hover:text-zinc-900 dark:hover:text-zinc-100'
+                }`}
+              >
+                <nav.icon size={17} strokeWidth={isActive ? 2.5 : 1.8} className={isActive ? 'text-blue-600 dark:text-blue-400' : ''} />
+                <span className="text-[9.5px] tracking-tight mt-0.5 font-semibold">{nav.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
       </div>
     </div>
   )
