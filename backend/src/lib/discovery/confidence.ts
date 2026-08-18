@@ -105,21 +105,21 @@ export function buildClarificationOptions(intent: Intent, inventory: ChipInvento
   // Two knowns
   if (hasSector && hasBhk && !hasBudget) {
     return {
-      question: `${intent.sector} and ${bhkLabel} noted. What is your maximum budget?`,
+      question: `Looking at ${bhkLabel} options in ${intent.sector}. What budget range do you have in mind?`,
       options: budgetChips,
     }
   }
 
   if (hasBhk && hasBudget && !hasSector) {
     return {
-      question: `${bhkLabel} under ${budgetLabel} noted. Any preferred sector?`,
+      question: `Here are strategic ${bhkLabel} options under ${budgetLabel} across Noida. Do you have a preferred corridor or commute hub?`,
       options: sectorChips,
     }
   }
 
   if (hasSector && hasBudget && !hasBhk) {
     return {
-      question: `${intent.sector} under ${budgetLabel} noted. What configuration are you looking for?`,
+      question: `For a budget of ${budgetLabel} in ${intent.sector}, which configuration fits your family's needs best?`,
       options: bhkChips,
     }
   }
@@ -127,31 +127,31 @@ export function buildClarificationOptions(intent: Intent, inventory: ChipInvento
   // One known
   if (hasBhk && !hasSector && !hasBudget) {
     return {
-      question: `${bhkLabel} noted. Which sector or area are you considering?`,
+      question: `Exploring ${bhkLabel} homes in Noida. Are you focusing on central Noida, Expressway hubs, or Greater Noida West?`,
       options: sectorChips,
     }
   }
 
   if (hasBudget && !hasSector && !hasBhk) {
     return {
-      question: `Budget under ${budgetLabel} noted. Which sector and configuration?`,
+      question: `With a budget of ${budgetLabel}, Noida offers excellent high-appreciation options across Expressway (Sec 150/128) and Central Noida. Which area or configuration are you leaning towards?`,
       options: [...sectorChips.slice(0, 2), ...bhkChips.slice(0, 2)],
     }
   }
 
   if (hasSector && !hasBhk && !hasBudget) {
     return {
-      question: `${intent.sector} noted. What configuration are you looking for?`,
+      question: `Exploring properties in ${intent.sector}. Are you seeking a 2/3/4 BHK apartment or looking for investment options?`,
       options: bhkChips,
     }
   }
 
   // Zero knowns
   return {
-    question: 'What are you looking for? (area, configuration, or budget)',
+    question: 'How can I assist your property search in Noida today? (e.g. Budget, top sectors, RERA verification, or investment ROI)',
     options: [
       ...bhkChips.slice(0, 3),
-      { label: 'Tell me options', value: 'What options are available in Noida under 2 crore?' },
+      { label: 'Top Investment Sectors', value: 'Which sectors in Noida have highest ROI and rental yield?' },
     ],
   }
 }

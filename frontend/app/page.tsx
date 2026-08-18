@@ -67,28 +67,28 @@ export default function LandingPage() {
       </div>
 
       {/* Floating Top Navigation Header */}
-      <header className="relative z-20 w-full max-w-6xl mx-auto flex items-center justify-between shrink-0 py-1">
-        <Link href="/" className="group">
+      <header className="relative z-20 w-full max-w-6xl mx-auto flex items-center justify-between shrink-0 py-2">
+        <Link href="/" className="group shrink-0">
           <Image
             src="/images/icons/ExpandedRealtyPalsWhite.png"
             alt="RealtyPals"
-            width={180}
-            height={54}
-            className="object-contain opacity-95 group-hover:opacity-100 transition-opacity drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)]"
+            width={160}
+            height={48}
+            className="object-contain w-32 sm:w-44 h-auto opacity-95 group-hover:opacity-100 transition-opacity drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)]"
             priority
           />
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Link
             href="/auth"
-            className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors tracking-tight px-3 py-2"
+            className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors tracking-tight px-2.5 py-1.5 whitespace-nowrap"
           >
             Sign In
           </Link>
           <button
             onClick={() => router.push('/discover')}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200 backdrop-blur-md shadow-xs active:scale-95 flex items-center gap-2 cursor-pointer whitespace-nowrap"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200 backdrop-blur-md shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
           >
             <span>Explore Catalog</span>
             <ArrowRight size={13} />
@@ -128,8 +128,8 @@ export default function LandingPage() {
             </button>
           </div>
 
-          {/* Architectural Crisp Feature Cards (6px Rounded Corners) */}
-          <div className="mt-8 sm:mt-12 flex flex-wrap justify-center items-center gap-2.5 drop-shadow-md">
+          {/* Trust Badges - Desktop Cards, Mobile Clean 1-Line Indicator */}
+          <div className="mt-8 sm:mt-12 hidden sm:flex flex-wrap justify-center items-center gap-2.5 drop-shadow-md">
             <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-white/[0.04] border border-white/15 backdrop-blur-md text-[10px] sm:text-[11px] font-bold text-zinc-200 tracking-wider uppercase shadow-xs">
               <ShieldCheck size={14} className="text-emerald-400" />
               <span>RERA-Checked Data</span>
@@ -142,6 +142,14 @@ export default function LandingPage() {
               <Compass size={14} className="text-purple-400" />
               <span>Hyperlocal Noida Expertise</span>
             </div>
+          </div>
+
+          <div className="mt-5 flex sm:hidden items-center justify-center gap-2.5 text-[10px] text-zinc-400 font-semibold tracking-wider uppercase">
+            <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-emerald-400" /> 100% RERA</span>
+            <span>•</span>
+            <span className="flex items-center gap-1"><Scale size={12} className="text-blue-400" /> Zero Broker Calls</span>
+            <span>•</span>
+            <span className="flex items-center gap-1"><Compass size={12} className="text-purple-400" /> Noida Guide</span>
           </div>
         </m.div>
       </main>

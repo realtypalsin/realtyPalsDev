@@ -2755,27 +2755,12 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         : `You haven't given me specific constraints yet. Tell me: budget, location, BHK size, or timeline, and I'll find what works.`
       console.log('[CHAT:META_AWARE]', { constraints, response: fullText })
       send('token', { token: fullText })
-    } else if (needsClarification) {
-      const confidence = computeConfidence(intent)
-      const clarification = buildClarificationOptions(intent, chipInventory)
-      fullText = clarification.question
-      console.log('[CHAT:CLARIFY] deterministic clarification, skipping LLM', { intent, confidence: confidence.level, question: fullText })
-      send('token', { token: fullText })
     } else if (disambiguationText !== null) {
       fullText = disambiguationText
       send('token', { token: fullText })
-    } else if (isPropertySearchWithResults) {
-      const bhkLabel = intent.bhk?.length ? `${intent.bhk.join('/')} BHK ` : ''
-      const sector = intent.sector || ''
-      const city = projects[0]?.city || ''
-      const sectorLabel = sector ? ` in ${sector}` : ''
-      const cityLabel = city && !sector.toLowerCase().includes(city.toLowerCase()) ? `, ${city}` : ''
-      fullText = `Here are ${projects.length} verified ${bhkLabel}properties matching your search${sectorLabel}${cityLabel}:`
-      console.log('[CHAT:SEARCH_LEAD_IN] deterministic search lead-in, skipping LLM project hallucination', { fullText })
-      send('token', { token: fullText })
     }
 
-    if (!needsClarification && disambiguationText === null && !isPropertySearchWithResults) {
+    if (disambiguationText === null && !isMetaQuestion) {
       // Tool dispatch — shared across every provider so Gemini/OpenAI both call
     // into the exact same 15 handlers. Groq gets no tools (documented below).
     const handleToolCall = async (name: string, args: any): Promise<any> => {

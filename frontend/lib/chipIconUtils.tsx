@@ -1,21 +1,26 @@
-import { Wallet, Building2, Scale, MapPin, Trees, MessageSquare, ShieldCheck, FileText } from 'lucide-react'
+import { Wallet, Building2, Scale, MapPin, Trees, MessageSquare, ShieldCheck, FileText, TrendingUp, Store, LayoutGrid, Sparkles, Compass, Home } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 export const EMOJI_REGEX = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu
 
 export const CHIP_ICON_PATTERNS = [
+  { regex: /return|roi|yield|invest|appreciation|growth|gain/i, icon: TrendingUp },
+  { regex: /commercial|retail|shop|mall|office/i, icon: Store },
   { regex: /cost|price|budget|emi|payment|crore|lakh|₹|financial|loan/i, icon: Wallet },
-  { regex: /bhk|project|apartment|house|home|villa|society|building|flat/i, icon: Building2 },
-  { regex: /compare|vs|difference|tradeoff/i, icon: Scale },
-  { regex: /amenit|park|pool|gym|clubhouse|garden|green/i, icon: Trees },
-  { regex: /sector|metro|location|area|distance|near/i, icon: MapPin },
-  { regex: /builder|developer|rera|legal|risk|track/i, icon: ShieldCheck },
-  { regex: /plan|document|review/i, icon: FileText },
+  { regex: /\b\d\s*bhk\b|penthouse|configuration|layout|floor plan/i, icon: LayoutGrid },
+  { regex: /compare|vs|versus|difference|tradeoff|better/i, icon: Scale },
+  { regex: /amenit|park|pool|gym|clubhouse|garden|luxury|lifestyle/i, icon: Sparkles },
+  { regex: /green|trees|forest|golf/i, icon: Trees },
+  { regex: /sector|metro|location|area|distance|near|expressway/i, icon: MapPin },
+  { regex: /builder|developer|rera|legal|risk|track|verified/i, icon: ShieldCheck },
+  { regex: /plan|document|review|cost sheet|breakdown/i, icon: FileText },
+  { regex: /ready|resale|villa|independent|family/i, icon: Home },
+  { regex: /project|society|apartment|flat|building/i, icon: Building2 },
 ] as const
 
 export function renderChipIcon(label: string, isActive: boolean): ReactNode {
   const pattern = CHIP_ICON_PATTERNS.find(p => p.regex.test(label))
-  const Icon = pattern?.icon || MessageSquare
+  const Icon = pattern?.icon || Compass
 
   const iconClass = `flex-shrink-0 transition-colors ${
     isActive
