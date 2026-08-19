@@ -650,8 +650,8 @@ export default function ResidencesTab({
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
                 <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 flex items-center justify-center">
-                    <Sun size={17} />
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center">
+                    <Sun size={18} />
                   </div>
                   <div>
                     <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Morning Sunlight</h4>
@@ -660,8 +660,8 @@ export default function ResidencesTab({
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center">
-                    <Wind size={17} />
+                  <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
+                    <Wind size={18} />
                   </div>
                   <div>
                     <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Cross Breeze</h4>
@@ -670,8 +670,8 @@ export default function ResidencesTab({
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center">
-                    <Trees size={17} />
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+                    <Trees size={18} />
                   </div>
                   <div>
                     <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Balcony Vistas</h4>
@@ -680,8 +680,8 @@ export default function ResidencesTab({
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center">
-                    <Maximize2 size={17} />
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center">
+                    <Maximize2 size={18} />
                   </div>
                   <div>
                     <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Space Ratio</h4>
@@ -708,7 +708,7 @@ export default function ResidencesTab({
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
                     {finalHighlights.map((item: any, i: number) => (
                       <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20">
                           <CheckCircle2 size={16} />
                         </div>
                         <div>

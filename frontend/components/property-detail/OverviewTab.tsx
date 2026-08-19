@@ -2,10 +2,32 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import {
-  Building2, MapPin, ChevronRight, TrainFront,
-  GraduationCap, HeartPulse, ShoppingBag, Leaf, Shield, ShieldCheck, Car, FileText,
-  Download, CheckCircle2, BedDouble, Plane, CalendarDays, UserCheck, Users, TrendingUp, Award, Layers, Check, Phone, Mail, Sparkles
-} from 'lucide-react'
+  Tree,
+  Train,
+  Leaf,
+  UsersFour,
+  Sparkle,
+  AirplaneTilt,
+  FirstAidKit,
+  GraduationCap,
+  Tote,
+  RoadHorizon,
+  Buildings,
+  FilePdf,
+  Certificate,
+  UserCheck,
+  UsersThree,
+  TrendUp,
+  CrownSimple,
+  ShieldCheck,
+  Bed,
+  CalendarCheck,
+  CheckCircle,
+  Phone,
+  EnvelopeSimple,
+  MapPin,
+  CaretRight
+} from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import type { ProjectDocumentPublic } from '@/lib/hooks/useProjectDetail'
 import { getProjectOverview, type ProjectOverviewData } from '@/lib/backend-api'
@@ -98,7 +120,7 @@ export default function OverviewTab({
   const constructionTech = marketingClaims.find((c: string) => /mivan|alumiform|precast|rcc/i.test(c)) || (d as any)?.construction_tech
   const lowDensityTag = d?.open_space_pct && d.open_space_pct >= 70 ? 'Low Density' : null
 
-  // 1. USP Chips (Exact screenshot layout with icons)
+  // 1. USP Chips (Exact screenshot layout with Phosphor duotone icons)
   const metroConn = connections.find(c => c.type === 'metro')
   const hasSecurityAmenity = amenities.some(a => a.category === 'security')
   const quickInfoItems: { label: string; value: string; sublabel: string; icon: any; color: string }[] = []
@@ -109,7 +131,7 @@ export default function OverviewTab({
       label: 'Open Green',
       value: `${d.open_space_pct}%`,
       sublabel: 'Open Green',
-      icon: Leaf,
+      icon: Tree,
       color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
     })
   }
@@ -130,7 +152,7 @@ export default function OverviewTab({
         label: 'Metro',
         value: metroVal,
         sublabel: `${cleanMetroName} Metro`.replace(/\s+/g, ' ').replace(/Metro Metro/gi, 'Metro'),
-        icon: TrainFront,
+        icon: Train,
         color: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
       })
     }
@@ -155,7 +177,7 @@ export default function OverviewTab({
       label: 'Density',
       value: 'Low',
       sublabel: 'Density Living',
-      icon: Users,
+      icon: UsersFour,
       color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
     })
   }
@@ -167,7 +189,7 @@ export default function OverviewTab({
       label: 'Smart Units',
       value: `${smartUnitCount}+`,
       sublabel: 'Smart Units',
-      icon: Layers,
+      icon: Sparkle,
       color: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400'
     })
   }
@@ -177,9 +199,9 @@ export default function OverviewTab({
   // Perfect For (Exact card grid layout matching screenshot)
   const defaultPerfectFor = [
     { label: 'End Users', desc: 'Move-in for family', icon: UserCheck },
-    { label: 'Families', desc: 'Spacious & safe living', icon: Users },
-    { label: 'Investors', desc: 'High growth potential', icon: TrendingUp },
-    { label: 'Premium Lifestyle', desc: 'Luxury amenities', icon: Award },
+    { label: 'Families', desc: 'Spacious & safe living', icon: UsersThree },
+    { label: 'Investors', desc: 'High growth potential', icon: TrendUp },
+    { label: 'Premium Lifestyle', desc: 'Luxury amenities', icon: CrownSimple },
   ]
 
   const personaList = (detail as any)?.persona_profile?.recommended_personas || (detail as any)?.persona_profile?.primary_persona 
@@ -209,13 +231,13 @@ export default function OverviewTab({
     
     let Icon = MapPin
     let cat = 'Landmark'
-    if (c.type === 'metro') { Icon = TrainFront; cat = 'Metro' }
-    else if (c.type === 'hospital') { Icon = HeartPulse; cat = 'Hospital' }
+    if (c.type === 'metro') { Icon = Train; cat = 'Metro' }
+    else if (c.type === 'hospital') { Icon = FirstAidKit; cat = 'Hospital' }
     else if (c.type === 'school' || c.type === 'university') { Icon = GraduationCap; cat = 'Education' }
-    else if (c.type === 'mall' || c.type === 'commercial') { Icon = ShoppingBag; cat = 'Retail Hub' }
-    else if (c.type === 'expressway' || c.type === 'road' || c.type === 'highway') { Icon = Car; cat = 'Expressway' }
-    else if (c.type === 'airport') { Icon = Plane; cat = 'Airport' }
-    else if (c.type === 'it_park') { Icon = Building2; cat = 'IT Park' }
+    else if (c.type === 'mall' || c.type === 'commercial') { Icon = Tote; cat = 'Retail Hub' }
+    else if (c.type === 'expressway' || c.type === 'road' || c.type === 'highway') { Icon = RoadHorizon; cat = 'Expressway' }
+    else if (c.type === 'airport') { Icon = AirplaneTilt; cat = 'Airport' }
+    else if (c.type === 'it_park') { Icon = Buildings; cat = 'IT Park' }
 
     aroundProjectList.push({ category: cat, name, distance: distStr, time: timeEst, icon: Icon })
   })
@@ -249,7 +271,7 @@ export default function OverviewTab({
             return (
               <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[16px] sm:rounded-[20px] p-2.5 sm:p-4 flex flex-col items-center justify-center text-center shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all hover:-translate-y-0.5 min-h-[82px] sm:min-h-[108px] h-full">
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color} mb-1 sm:mb-1.5`}>
-                  <Icon size={16} />
+                  <Icon size={18} weight="duotone" />
                 </div>
                 <span className="text-[12px] sm:text-[14px] font-black text-gray-900 dark:text-white leading-tight truncate max-w-full">
                   {item.value}
@@ -274,8 +296,8 @@ export default function OverviewTab({
               const Icon = item.icon
               return (
                 <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[18px] sm:rounded-[20px] p-3.5 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col items-start gap-2.5 sm:gap-3.5 transition-all hover:-translate-y-0.5 min-w-0">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 flex-shrink-0">
-                    <Icon size={16} />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-indigo-50/70 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+                    <Icon size={18} weight="duotone" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="text-[12.5px] sm:text-[14px] font-black text-gray-900 dark:text-white leading-tight break-words">{item.label}</h4>
@@ -328,7 +350,7 @@ export default function OverviewTab({
               Available Configurations
             </h2>
             <button onClick={onGoToFloorPlans ?? onGoToPricing} className="text-[12px] sm:text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-              View All <ChevronRight size={14} />
+              View All <CaretRight size={14} weight="bold" />
             </button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -392,7 +414,7 @@ export default function OverviewTab({
             </div>
             {channelPartners.length > 4 && (
               <button onClick={onGoToDocuments} className="text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                View All Partners <ChevronRight size={14} />
+                View All Partners <CaretRight size={14} weight="bold" />
               </button>
             )}
           </div>
@@ -473,7 +495,7 @@ export default function OverviewTab({
                 className="text-[12px] sm:text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
               >
                 {showAllAmenities ? 'Show Less' : `View All (${amenities.length})`}
-                <ChevronRight size={14} className={showAllAmenities ? 'rotate-90 transition-transform' : ''} />
+                <CaretRight size={14} weight="bold" className={showAllAmenities ? 'rotate-90 transition-transform' : ''} />
               </button>
             )}
           </div>
@@ -503,24 +525,24 @@ export default function OverviewTab({
             Project Details
           </h2>
           <button onClick={() => setShowAllDetails(!showAllDetails)} className="text-[12px] sm:text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-            {showAllDetails ? 'Show Less' : 'View All Details'} <ChevronRight size={14} className={showAllDetails ? 'rotate-90 transition-transform' : ''} />
+            {showAllDetails ? 'Show Less' : 'View All Details'} <CaretRight size={14} weight="bold" className={showAllDetails ? 'rotate-90 transition-transform' : ''} />
           </button>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
           {[
-            { label: 'STATUS', val: d?.status === 'ready_to_move' ? 'Ready to Move' : (d?.status as string) === 'delivered' ? 'Possession Delivered' : d?.status === 'new_launch' ? 'New Launch' : 'Under Construction', icon: Building2 },
-            ...(d?.total_towers ? [{ label: 'TOTAL TOWERS', val: `${d.total_towers}`, icon: Building2 }] : []),
-            ...((d as any)?.total_units ? [{ label: 'TOTAL UNITS', val: `${(d as any).total_units}`, icon: Building2 }] : []),
-            ...(unitTypes.length > 0 ? [{ label: 'CONFIGURATIONS', val: [...new Set(unitTypes.map(u => u.bhk))].sort((a,b)=>a-b).join(', ') + ' BHK', icon: BedDouble }] : []),
+            { label: 'STATUS', val: d?.status === 'ready_to_move' ? 'Ready to Move' : (d?.status as string) === 'delivered' ? 'Possession Delivered' : d?.status === 'new_launch' ? 'New Launch' : 'Under Construction', icon: Buildings },
+            ...(d?.total_towers ? [{ label: 'TOTAL TOWERS', val: `${d.total_towers}`, icon: Buildings }] : []),
+            ...((d as any)?.total_units ? [{ label: 'TOTAL UNITS', val: `${(d as any).total_units}`, icon: Buildings }] : []),
+            ...(unitTypes.length > 0 ? [{ label: 'CONFIGURATIONS', val: [...new Set(unitTypes.map(u => u.bhk))].sort((a,b)=>a-b).join(', ') + ' BHK', icon: Bed }] : []),
             ...(d?.land_area_acres ? [{ label: 'PROJECT AREA', val: `${d.land_area_acres} Acres`, icon: Leaf }] : []),
             ...(d?.open_space_pct ? [{ label: 'OPEN SPACE', val: `${d.open_space_pct}%`, icon: Leaf }] : []),
-            ...(d?.launch_date ? [{ label: 'LAUNCH DATE', val: (() => { const d2 = new Date(d.launch_date); return isNaN(d2.getTime()) ? 'Unspecified' : d2.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })(), icon: CalendarDays }] : []),
-            { label: 'POSSESSION', val: d?.possession_label ?? (d?.status === 'ready_to_move' || (d?.status as string) === 'delivered' ? 'Delivered' : 'Under Construction'), icon: CalendarDays },
+            ...(d?.launch_date ? [{ label: 'LAUNCH DATE', val: (() => { const d2 = new Date(d.launch_date); return isNaN(d2.getTime()) ? 'Unspecified' : d2.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })(), icon: CalendarCheck }] : []),
+            { label: 'POSSESSION', val: d?.possession_label ?? (d?.status === 'ready_to_move' || (d?.status as string) === 'delivered' ? 'Delivered' : 'Under Construction'), icon: CalendarCheck },
             ...(showAllDetails ? [
-              ...(d?.rera_number ? [{ label: 'RERA NO.', val: d.rera_number, icon: FileText }] : []),
-              { label: 'DEVELOPER', val: devName, icon: Building2 },
-              ...((d as any)?.property_type ? [{ label: 'PROJECT TYPE', val: (d as any).property_type, icon: Building2 }] : []),
+              ...(d?.rera_number ? [{ label: 'RERA NO.', val: d.rera_number, icon: FilePdf }] : []),
+              { label: 'DEVELOPER', val: devName, icon: Buildings },
+              ...((d as any)?.property_type ? [{ label: 'PROJECT TYPE', val: (d as any).property_type, icon: Buildings }] : []),
               ...(d?.green_rating ? [{ label: 'GREEN RATING', val: d.green_rating, icon: Leaf }] : []),
             ] : [])
           ].map((detailItem, i) => {
@@ -528,7 +550,7 @@ export default function OverviewTab({
             return (
               <div key={i} className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-2.5 sm:gap-3.5 min-w-0 overflow-hidden">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white dark:bg-white/10 text-gray-400 flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <Icon size={17} />
+                  <Icon size={18} weight="duotone" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[9.5px] sm:text-[10px] text-gray-400 dark:text-gray-500 font-black uppercase tracking-wider leading-none">{detailItem.label}</p>
@@ -563,7 +585,7 @@ export default function OverviewTab({
                 <div key={i} className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2 sm:space-y-3 flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center ${bg}`}>
-                      <Icon size={16} />
+                      <Icon size={18} weight="duotone" />
                     </div>
                     <div className="text-right">
                       <p className="text-[12px] sm:text-[12.5px] font-black text-amber-700 dark:text-amber-400 leading-none">{item.distance}</p>
@@ -596,7 +618,7 @@ export default function OverviewTab({
               Important Documents
             </h2>
             <button onClick={onGoToDocuments} className="text-[12px] sm:text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-              Document Center <ChevronRight size={14} />
+              Document Center <CaretRight size={14} weight="bold" />
             </button>
           </div>
 
@@ -618,7 +640,7 @@ export default function OverviewTab({
                   className="flex items-center gap-2.5 sm:gap-3.5 p-3 sm:p-4 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-2xl hover:bg-gray-100/50 dark:hover:bg-white/10 transition-colors cursor-pointer group shadow-sm min-w-0"
                 >
                   <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${cat.bg}`}>
-                    <FileText size={17} />
+                    <FilePdf size={18} weight="duotone" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[12.5px] sm:text-[13.5px] font-extrabold text-gray-900 dark:text-white truncate">{cat.title}</p>
@@ -647,7 +669,7 @@ export default function OverviewTab({
           onClick={onGoToPricing}
           className="px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 font-black rounded-2xl text-[14px] transition-all shadow-lg hover:scale-105 flex items-center gap-2 whitespace-nowrap"
         >
-          <CalendarDays size={18} />
+          <CalendarCheck size={18} weight="duotone" />
           Book Site Visit Now
         </button>
       </div>

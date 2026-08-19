@@ -4,9 +4,25 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  Globe, Download, Building2, Users, TrendingUp, Award, CalendarDays,
-  ShieldCheck, ArrowUpRight, Leaf, CheckCircle2, Clock, MapPin, BadgeCheck, Phone, FileText
-} from 'lucide-react'
+  Globe,
+  DownloadSimple,
+  Buildings,
+  UsersThree,
+  TrendUp,
+  Medal,
+  CalendarCheck,
+  ShieldCheck,
+  ArrowUpRight,
+  Leaf,
+  CheckCircle,
+  Clock,
+  MapPin,
+  SealCheck,
+  Phone,
+  FilePdf,
+  Ruler,
+  Trophy
+} from '@phosphor-icons/react'
 import type { Builder } from '@prisma/client'
 import { BuilderTabSkeleton } from '@/components/skeletons'
 
@@ -113,20 +129,20 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                 className="w-full h-full object-contain"
               />
             ) : (
-              <Building2 size={40} className="text-amber-600" />
+              <Buildings size={40} weight="duotone" className="text-amber-600" />
             )}
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 text-[10.5px] font-black tracking-wider uppercase flex items-center gap-1 border border-blue-100">
-                <BadgeCheck size={12} /> Verified Builder
+                <SealCheck size={14} weight="duotone" /> Verified Builder
               </span>
             </div>
 
             <h1 className="text-[20px] sm:text-[24px] md:text-[28px] font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
               {builderName}
-              <CheckCircle2 className="text-blue-500 fill-blue-500 text-white inline-block" size={20} />
+              <CheckCircle size={20} weight="duotone" className="text-blue-500 inline-block" />
             </h1>
 
             <p className="text-[12.5px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
@@ -141,14 +157,14 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                   rel="noopener noreferrer"
                   className="px-5 py-2.5 bg-[#111827] hover:bg-black text-white dark:bg-white dark:text-gray-900 font-black rounded-xl text-[12.5px] shadow-sm flex items-center gap-2 transition-all"
                 >
-                  <Globe size={15} /> Visit Official Website
+                  <Globe size={15} weight="duotone" /> Visit Official Website
                 </a>
               )}
               <button
                 onClick={handleExploreStory}
                 className="px-5 py-2.5 bg-white dark:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/10 font-extrabold rounded-xl text-[12.5px] shadow-sm flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-white/15 transition-all"
               >
-                <Download size={15} /> Download Developer Profile
+                <DownloadSimple size={15} weight="duotone" /> Download Developer Profile
               </button>
             </div>
           </div>
@@ -291,13 +307,13 @@ export default function BuilderTab({ builder, project, documents = [], loading }
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
           {[
-            builder?.rera_promoter_id ? { title: 'RERA Registered', sub: builder.rera_promoter_id, tag: 'Registered', color: 'bg-blue-50 text-blue-600' } : null,
-            builder?.iso_certified ? { title: 'ISO 9001:2015', sub: 'Quality Management', tag: 'Certified', color: 'bg-indigo-50 text-indigo-600' } : null,
-            builder?.credai_member ? { title: 'CREDAI Member', sub: 'Confederation of Real Estate', tag: 'Member', color: 'bg-emerald-50 text-emerald-600' } : null
+            builder?.rera_promoter_id ? { title: 'RERA Registered', sub: builder.rera_promoter_id, tag: 'Registered', color: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20' } : null,
+            builder?.iso_certified ? { title: 'ISO 9001:2015', sub: 'Quality Management', tag: 'Certified', color: 'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 border border-indigo-500/20' } : null,
+            builder?.credai_member ? { title: 'CREDAI Member', sub: 'Confederation of Real Estate', tag: 'Member', color: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20' } : null
           ].filter(Boolean).map((item: any, i) => (
             <div key={i} className="p-3 sm:p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1.5 sm:space-y-2">
               <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center ${item.color}`}>
-                <BadgeCheck size={15} />
+                <SealCheck size={18} weight="duotone" />
               </div>
               <div>
                 <h4 className="text-[12px] sm:text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">{item.title}</h4>
@@ -324,24 +340,32 @@ export default function BuilderTab({ builder, project, documents = [], loading }
             : '3.5M+'
 
           const impactItems = [
-            { val: `${legacyYears}+`, label: 'Years of Legacy' },
-            { val: `${builder?.projects_delivered_count || 3}+`, label: 'Projects Delivered' },
-            { val: deliveredSqftVal, label: 'Sq. Ft. Delivered' }
+            { val: `${legacyYears}+`, label: 'Years of Legacy', icon: CalendarCheck, color: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/20' },
+            { val: `${builder?.projects_delivered_count || 3}+`, label: 'Projects Delivered', icon: Buildings, color: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/20' },
+            { val: deliveredSqftVal, label: 'Sq. Ft. Delivered', icon: Ruler, color: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/20' }
           ]
 
           return (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
-              {impactItems.map((imp, i) => (
-                <div
-                  key={i}
-                  className={`p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 ${
-                    i === 2 ? 'col-span-2 sm:col-span-1 max-w-[200px] sm:max-w-none mx-auto w-full text-center sm:text-left' : ''
-                  }`}
-                >
-                  <h3 className="text-[18px] sm:text-[22px] font-black text-gray-900 dark:text-white">{imp.val}</h3>
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-extrabold">{imp.label}</p>
-                </div>
-              ))}
+              {impactItems.map((imp, i) => {
+                const Icon = imp.icon
+                return (
+                  <div
+                    key={i}
+                    className={`p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2 flex flex-col justify-between ${
+                      i === 2 ? 'col-span-2 sm:col-span-1 max-w-[200px] sm:max-w-none mx-auto w-full text-center sm:text-left' : ''
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${imp.color}`}>
+                      <Icon size={18} weight="duotone" />
+                    </div>
+                    <div>
+                      <h3 className="text-[18px] sm:text-[22px] font-black text-gray-900 dark:text-white leading-none">{imp.val}</h3>
+                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-extrabold mt-1">{imp.label}</p>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )
         })()}
@@ -378,8 +402,8 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                         isOddLast ? 'col-span-2' : 'col-span-1'
                       }`}
                     >
-                      <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
-                        <Award size={16} />
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                        <Trophy size={18} weight="duotone" />
                       </div>
                       <div className="min-w-0">
                         <h4 className="text-[12px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">{awardTitle}</h4>
@@ -499,8 +523,8 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                 className="p-3 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between gap-3 hover:bg-gray-100/70 dark:hover:bg-white/10 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
-                    <FileText size={17} />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <FilePdf size={18} weight="duotone" />
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-white truncate">{doc.name || doc.doc_type?.replace(/_/g, ' ') || 'Project Document'}</h4>
@@ -508,7 +532,7 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                   </div>
                 </div>
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform flex-shrink-0 shadow-2xs">
-                  <Download size={13} />
+                  <DownloadSimple size={14} weight="duotone" />
                 </div>
               </a>
             ))}
@@ -535,17 +559,17 @@ export default function BuilderTab({ builder, project, documents = [], loading }
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
           {[
-            { icon: Clock, title: 'Timely Delivery', desc: 'Track record of on-time project completion.', color: 'bg-blue-50 text-blue-600' },
-            { icon: ShieldCheck, title: 'Superior Quality', desc: 'Premium materials and international standards.', color: 'bg-indigo-50 text-indigo-600' },
-            { icon: MapPin, title: 'Prime Locations', desc: 'Projects in high-growth corridors with connectivity.', color: 'bg-purple-50 text-purple-600' },
-            { icon: Building2, title: 'Innovative Design', desc: 'Thoughtfully designed spaces for modern living.', color: 'bg-emerald-50 text-emerald-600' },
-            { icon: Users, title: 'Support & Care', desc: 'Dedicated support before & after possession.', color: 'bg-amber-50 text-amber-600' }
+            { icon: Clock, title: 'Timely Delivery', desc: 'Track record of on-time project completion.', color: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20' },
+            { icon: ShieldCheck, title: 'Superior Quality', desc: 'Premium materials and international standards.', color: 'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 border border-indigo-500/20' },
+            { icon: MapPin, title: 'Prime Locations', desc: 'Projects in high-growth corridors with connectivity.', color: 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20' },
+            { icon: Buildings, title: 'Innovative Design', desc: 'Thoughtfully designed spaces for modern living.', color: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20' },
+            { icon: UsersThree, title: 'Support & Care', desc: 'Dedicated support before & after possession.', color: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20' }
           ].map((card, i) => {
             const Icon = card.icon
             return (
               <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
                 <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center ${card.color}`}>
-                  <Icon size={16} />
+                  <Icon size={18} weight="duotone" />
                 </div>
                 <div>
                   <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight">{card.title}</h4>
@@ -564,7 +588,7 @@ export default function BuilderTab({ builder, project, documents = [], loading }
           <p className="text-[12.5px] text-slate-300 font-medium">Discover our projects and experience the {builderName} difference.</p>
         </div>
         <button className="px-6 py-3 bg-white text-gray-900 font-black rounded-xl text-[13px] shadow-md hover:bg-gray-100 transition-all flex items-center gap-2 flex-shrink-0 z-10">
-          <CalendarDays size={16} /> Book Site Visit
+          <CalendarCheck size={18} weight="duotone" /> Book Site Visit
         </button>
       </div>
 

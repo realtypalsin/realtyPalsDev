@@ -3,24 +3,24 @@
 import { useMemo, useState } from 'react'
 import {
   ShieldCheck,
-  Layers,
-  UtensilsCrossed,
-  Droplets,
-  DoorOpen,
-  Zap,
+  SquaresFour,
+  CookingPot,
+  Drop,
+  Door,
+  Lightning,
   Wrench,
-  ArrowUpDown,
-  Lock,
-  Leaf,
+  Elevator,
+  LockKey,
+  Plant,
   Car,
-  Boxes,
-  CheckCircle2,
+  Package,
+  CheckCircle,
   Tag,
-  ChevronDown,
+  CaretDown,
   HardHat,
   Crown,
-  Award
-} from 'lucide-react'
+  Medal
+} from '@phosphor-icons/react'
 
 interface SpecItem {
   label: string
@@ -38,7 +38,7 @@ interface SpecificationGridProps {
 }
 
 interface CategoryTheme {
-  icon: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<any>
   label: string
   iconBg: string
 }
@@ -47,57 +47,57 @@ const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   structure: {
     icon: ShieldCheck,
     label: 'Structure & Safety',
-    iconBg: 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300',
+    iconBg: 'bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
   },
   flooring: {
-    icon: Layers,
+    icon: SquaresFour,
     label: 'Flooring & Surfaces',
-    iconBg: 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300',
+    iconBg: 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20',
   },
   kitchen: {
-    icon: UtensilsCrossed,
+    icon: CookingPot,
     label: 'Kitchen & Utility',
-    iconBg: 'bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300',
+    iconBg: 'bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20',
   },
   bathrooms: {
-    icon: Droplets,
+    icon: Drop,
     label: 'Bathrooms & CP Fittings',
-    iconBg: 'bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300',
+    iconBg: 'bg-sky-500/10 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/20',
   },
   doors_windows: {
-    icon: DoorOpen,
+    icon: Door,
     label: 'Doors & Windows',
-    iconBg: 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300',
+    iconBg: 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
   },
   electrical: {
-    icon: Zap,
+    icon: Lightning,
     label: 'Electrical & Power',
-    iconBg: 'bg-orange-100 dark:bg-orange-900/60 text-orange-700 dark:text-orange-300',
+    iconBg: 'bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20',
   },
   plumbing: {
     icon: Wrench,
     label: 'Plumbing & Drainage',
-    iconBg: 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300',
+    iconBg: 'bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20',
   },
   lifts: {
-    icon: ArrowUpDown,
+    icon: Elevator,
     label: 'Elevators & Vertical Transit',
-    iconBg: 'bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300',
+    iconBg: 'bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20',
   },
   security: {
-    icon: Lock,
+    icon: LockKey,
     label: 'Security & Access Control',
-    iconBg: 'bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300',
+    iconBg: 'bg-teal-500/10 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400 border border-teal-500/20',
   },
   sustainability: {
-    icon: Leaf,
+    icon: Plant,
     label: 'Green Building & Solar',
-    iconBg: 'bg-green-100 dark:bg-green-900/60 text-green-700 dark:text-green-300',
+    iconBg: 'bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/20',
   },
   parking: {
     icon: Car,
     label: 'Parking & Basement',
-    iconBg: 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300',
+    iconBg: 'bg-slate-500/10 dark:bg-slate-500/20 text-slate-700 dark:text-slate-300 border border-slate-500/20',
   },
 }
 
@@ -105,9 +105,9 @@ function getCategoryTheme(cat: string): CategoryTheme {
   const normalized = String(cat || '').toLowerCase().trim().replace(/[\s-]+/g, '_')
   return (
     CATEGORY_THEMES[normalized] || {
-      icon: Boxes,
+      icon: Package,
       label: cat ? cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'General Specification',
-      iconBg: 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300',
+      iconBg: 'bg-slate-500/10 dark:bg-slate-500/20 text-slate-700 dark:text-slate-300 border border-slate-500/20',
     }
   )
 }
@@ -125,7 +125,7 @@ function TierBadge({ tier }: { tier?: string | null }) {
   if (normalized.includes('luxury') || normalized.includes('ultra')) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/15 via-yellow-500/15 to-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-300/60 dark:border-amber-700/50 shadow-xs">
-        <Crown className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+        <Crown size={12} weight="duotone" className="text-amber-600 dark:text-amber-400" />
         {tier}
       </span>
     )
@@ -134,7 +134,7 @@ function TierBadge({ tier }: { tier?: string | null }) {
   if (normalized.includes('premium')) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-200/80 dark:border-blue-800/60 shadow-xs">
-        <Award className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" />
+        <Medal size={12} weight="duotone" className="text-blue-600 dark:text-blue-400" />
         {tier}
       </span>
     )
@@ -157,7 +157,7 @@ function VerificationBadge({ verified }: { verified?: Date | null }) {
   }
   return (
     <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/40">
-      <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+      <CheckCircle size={12} weight="duotone" className="text-emerald-600 dark:text-emerald-400" />
       Site Verified
     </span>
   )
@@ -226,7 +226,7 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${theme.iconBg} flex items-center justify-center shrink-0`}>
-              <IconComponent className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              <IconComponent size={18} weight="duotone" />
             </div>
             <div className="min-w-0">
               <h4 className="font-black text-[13px] sm:text-[14px] text-slate-900 dark:text-white tracking-tight truncate">
@@ -244,8 +244,10 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
             <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 whitespace-nowrap">
               {items.length}
             </span>
-            <ChevronDown
-              className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+            <CaretDown
+              size={14}
+              weight="bold"
+              className={`text-slate-400 transition-transform duration-200 ${
                 isOpen ? 'rotate-180' : ''
               }`}
             />
@@ -275,7 +277,7 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
                             : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
                         }`}
                       >
-                        {TierIcon && <TierIcon className="w-2.5 h-2.5" />}
+                        {TierIcon && <TierIcon size={12} weight="duotone" />}
                         {spec.tier}
                       </span>
                     )}
@@ -288,7 +290,7 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
                   <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100 dark:border-white/5 text-[10px] sm:text-[11px]">
                     {spec.brand ? (
                       <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[160px] sm:max-w-[220px]">
-                        <Tag className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                        <Tag size={12} weight="duotone" className="text-slate-400 flex-shrink-0" />
                         <span className="text-slate-400">Brand:</span> <span className="text-slate-900 dark:text-white font-bold truncate">{spec.brand}</span>
                       </span>
                     ) : (
@@ -312,7 +314,7 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#141414] p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center shrink-0 shadow-sm">
-            <HardHat className="w-4 h-4 sm:w-5 sm:h-5" />
+            <HardHat size={20} weight="duotone" />
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
@@ -326,7 +328,7 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
 
         <div className="flex items-center gap-2 self-start sm:self-center">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50 shadow-xs">
-            <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle size={14} weight="duotone" className="text-emerald-600 dark:text-emerald-400" />
             <span>{specs.length} Verified Specs</span>
           </div>
           <button

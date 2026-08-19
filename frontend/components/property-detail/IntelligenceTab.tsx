@@ -4,6 +4,13 @@ import {
   TrendingUp, Award, Calendar, Zap, UserCheck, CheckCircle2,
   ChevronRight, DollarSign, Users, ShieldCheck, FileCheck, Lock, Globe
 } from 'lucide-react'
+import {
+  MapPin,
+  CurrencyInr,
+  Sparkle,
+  HouseLine,
+  Heartbeat
+} from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import InfoTooltip from '@/components/ui/InfoTooltip'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -602,40 +609,48 @@ export default function IntelligenceTab({
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
             {[
-              { label: 'Location Match', score: locationFit, tag: 'Excellent', hint: 'Proximity to metro, expressways, top schools, hospitals, and major IT/commercial hubs.' },
-              { label: 'Budget Fit', score: budgetFit, tag: 'Very Good', hint: 'Position relative to micro-market average price/sqft and overall sector pricing trends.' },
-              { label: 'Amenities Fit', score: amenitiesFit, tag: 'Excellent', hint: 'Coverage across sports, wellness, security, green spaces, and clubhouse facilities.' },
-              { label: 'Unit Config Fit', score: configFit, tag: 'Very Good', hint: 'Layout efficiency, carpet ratio, orientation, and family stage suitabilities.' },
-              { label: 'Lifestyle Fit', score: lifestyleFit, tag: 'Excellent', hint: 'Composite score incorporating air quality index, green cover %, safety, and noise levels.' }
-            ].filter(item => item.score !== null).map((item, i, arr) => (
-              <div
-                key={i}
-                className={`p-3.5 sm:p-4 rounded-2xl bg-gray-50/80 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2.5 relative ${
-                  arr.length % 2 !== 0 && i === arr.length - 1 ? 'col-span-2 sm:col-span-1 max-w-[200px] sm:max-w-none mx-auto w-full' : ''
-                }`}
-              >
-                <div className="flex items-center justify-between gap-1">
-                  <p className="text-[10.5px] sm:text-[11.5px] font-extrabold text-gray-600 dark:text-gray-300 truncate">{item.label}</p>
-                  <InfoTooltip content={item.hint} title={item.label} />
-                </div>
+              { label: 'Location Match', score: locationFit, tag: 'Excellent', hint: 'Proximity to metro, expressways, top schools, hospitals, and major IT/commercial hubs.', icon: MapPin, color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
+              { label: 'Budget Fit', score: budgetFit, tag: 'Very Good', hint: 'Position relative to micro-market average price/sqft and overall sector pricing trends.', icon: CurrencyInr, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+              { label: 'Amenities Fit', score: amenitiesFit, tag: 'Excellent', hint: 'Coverage across sports, wellness, security, green spaces, and clubhouse facilities.', icon: Sparkle, color: 'text-purple-500 bg-purple-500/10 border-purple-500/20' },
+              { label: 'Unit Config Fit', score: configFit, tag: 'Very Good', hint: 'Layout efficiency, carpet ratio, orientation, and family stage suitabilities.', icon: HouseLine, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
+              { label: 'Lifestyle Fit', score: lifestyleFit, tag: 'Excellent', hint: 'Composite score incorporating air quality index, green cover %, safety, and noise levels.', icon: Heartbeat, color: 'text-rose-500 bg-rose-500/10 border-rose-500/20' }
+            ].filter(item => item.score !== null).map((item, i, arr) => {
+              const Icon = item.icon
+              return (
+                <div
+                  key={i}
+                  className={`p-3.5 sm:p-4 rounded-2xl bg-gray-50/80 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2.5 relative ${
+                    arr.length % 2 !== 0 && i === arr.length - 1 ? 'col-span-2 sm:col-span-1 max-w-[200px] sm:max-w-none mx-auto w-full' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <div className={`w-6 h-6 rounded-lg border flex items-center justify-center flex-shrink-0 ${item.color}`}>
+                        <Icon size={14} weight="duotone" />
+                      </div>
+                      <p className="text-[10.5px] sm:text-[11.5px] font-extrabold text-gray-600 dark:text-gray-300 truncate">{item.label}</p>
+                    </div>
+                    <InfoTooltip content={item.hint} title={item.label} />
+                  </div>
 
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[20px] sm:text-[24px] font-black text-gray-900 dark:text-white tracking-tight leading-none">
-                    {item.score}%
-                  </span>
-                  <span className="text-[9.5px] sm:text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-                    {item.tag}
-                  </span>
-                </div>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[20px] sm:text-[24px] font-black text-gray-900 dark:text-white tracking-tight leading-none">
+                      {item.score}%
+                    </span>
+                    <span className="text-[9.5px] sm:text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+                      {item.tag}
+                    </span>
+                  </div>
 
-                <div className="w-full h-1.5 bg-gray-200/80 dark:bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
-                    style={{ width: `${item.score}%` }}
-                  />
+                  <div className="w-full h-1.5 bg-gray-200/80 dark:bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                      style={{ width: `${item.score}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
