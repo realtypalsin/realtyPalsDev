@@ -263,7 +263,7 @@ export default function IntelligenceTab({
     ? `${(finIntel.breakeven_months / 12).toFixed(1)} Yrs` 
     : (pData?.resale_lock_in_months 
       ? `${(pData.resale_lock_in_months / 12).toFixed(1)} Yrs` 
-      : (pData?.status === 'ready_to_move' || pData?.status === 'delivered' ? 'No Lock-in (0m)' : '3.8 Yrs'))
+      : ((pData?.status as string) === 'ready_to_move' || (pData?.status as string) === 'delivered' ? 'No Lock-in (0m)' : '3.8 Yrs'))
 
   // 2. Price & Value Analysis Data
   const valueForMoneyScore = dna?.price_score ?? null

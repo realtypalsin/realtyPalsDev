@@ -323,14 +323,14 @@ export default function OverviewTab({
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
             {whyBuy.slice(0, 4).map((reason, i) => {
-              const icons = [MapPin, TrainFront, Building2, ShieldCheck]
-              const bgs = ['bg-emerald-50 text-emerald-600', 'bg-blue-50 text-blue-600', 'bg-teal-50 text-teal-600', 'bg-purple-50 text-purple-600']
+              const icons = [MapPin, Train, Buildings, ShieldCheck]
+              const bgs = ['bg-emerald-500/10 text-emerald-600 border border-emerald-500/20', 'bg-blue-500/10 text-blue-600 border border-blue-500/20', 'bg-teal-500/10 text-teal-600 border border-teal-500/20', 'bg-purple-500/10 text-purple-600 border border-purple-500/20']
               const Icon = icons[i % icons.length]
               const bg = bgs[i % bgs.length]
               return (
                 <div key={i} className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[18px] sm:rounded-[20px] p-3.5 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col items-start gap-2.5 sm:gap-3.5 transition-all hover:-translate-y-0.5">
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${bg}`}>
-                    <Icon size={16} />
+                    <Icon size={18} weight="duotone" />
                   </div>
                   <p className="text-[12px] sm:text-[13px] font-bold text-gray-700 dark:text-gray-300 leading-snug sm:leading-relaxed">
                     {reason}
