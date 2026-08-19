@@ -112,6 +112,12 @@ function getCategoryTheme(cat: string): CategoryTheme {
   )
 }
 
+function getTierIcon(tier?: string | null) {
+  if (tier === 'luxury') return Crown
+  if (tier === 'premium') return Award
+  return Tag
+}
+
 function TierBadge({ tier }: { tier?: string | null }) {
   if (!tier) return null
   const normalized = tier.toLowerCase()

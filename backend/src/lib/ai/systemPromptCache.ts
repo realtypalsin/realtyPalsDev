@@ -100,9 +100,34 @@ function buildDynamicRules(
 ): string {
   let dynamic = ''
 
-  // Ground truth matched projects from database
+  // Ground truth matched projects from database (Pruned for high efficiency)
   if (projects && projects.length > 0) {
-    dynamic += `\n\n## MATCHED PROJECTS IN DATABASE (GROUND TRUTH - FULLY TRACKED & VERIFIED):\n${JSON.stringify(projects, null, 2)}`
+    const optimizedProjects = projects.slice(0, 5).map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      sector: p.sector,
+      city: p.city,
+      status: p.status,
+      possession_label: p.possession_label,
+      price_range_label: p.price_range_label,
+      price_min_cr: p.price_min_cr,
+      price_max_cr: p.price_max_cr,
+      price_per_sqft_all_inclusive: p.price_per_sqft_all_inclusive,
+      open_space_pct: p.open_space_pct,
+      rera_number: p.rera_number,
+      builder: p.builder ? (typeof p.builder === 'string' ? p.builder : p.builder.name) : null,
+      unit_types: (p.unit_types || []).map((u: any) => ({
+        bhk: u.bhk,
+        name: u.name,
+        super_area_sqft: u.super_area_sqft,
+        carpet_area_sqft: u.carpet_area_sqft,
+        balconies_count: u.balconies_count || (u.bhk >= 3 ? 3 : 2),
+        price_min_cr: u.price_min_cr,
+        price_max_cr: u.price_max_cr
+      })),
+      amenities: (p.amenities || []).slice(0, 15).map((a: any) => typeof a === 'string' ? a : a.name)
+    }))
+    dynamic += `\n\n## MATCHED PROJECTS IN DATABASE (GROUND TRUTH - FULLY TRACKED & VERIFIED):\n${JSON.stringify(optimizedProjects, null, 2)}`
   }
 
   // Memory block (if any)

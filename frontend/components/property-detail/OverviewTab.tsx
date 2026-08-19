@@ -13,6 +13,7 @@ import { getProjectOverview, type ProjectOverviewData } from '@/lib/backend-api'
 import ConstructionTimeline from './ConstructionTimeline'
 import { SpecificationGrid } from './SpecificationGrid'
 import { OverviewBentoSkeleton } from '@/components/skeletons'
+import { AmenityCard } from './AmenityVisual'
 
 // Color token system for consistency
 const TOKEN = {
@@ -479,45 +480,9 @@ export default function OverviewTab({
 
           {/* 2-Column Bento Grid on Mobile / 4-Column on Desktop */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pt-1">
-            {(showAllAmenities ? amenities : amenities.slice(0, 6)).map((a, i) => {
-              const lower = a.name.toLowerCase()
-              const isSports = /court|tennis|badminton|squash|cricket|track|sport/i.test(lower)
-              const isWater = /pool|swim|water|aqua/i.test(lower)
-              const isWellness = /gym|yoga|fitness|health|spa|sauna/i.test(lower)
-              const isGreen = /park|garden|tree|green|lawn|plaza/i.test(lower)
-              const isSecurity = /security|cctv|intercom|guard|fire/i.test(lower)
-
-              const iconBg = isWater
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400'
-                : isWellness
-                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400'
-                : isGreen
-                ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'
-                : isSports
-                ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400'
-                : isSecurity
-                ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400'
-                : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
-
-              return (
-                <div
-                  key={i}
-                  className="p-3 sm:p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-start gap-2.5 hover:border-gray-200 transition-all"
-                >
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${iconBg}`}>
-                    <Sparkles size={15} />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-[12px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">
-                      {a.name}
-                    </h4>
-                    <span className="text-[9.5px] font-extrabold text-gray-400 uppercase tracking-wider block mt-1">
-                      {a.category || 'Lifestyle'}
-                    </span>
-                  </div>
-                </div>
-              )
-            })}
+            {(showAllAmenities ? amenities : amenities.slice(0, 6)).map((a, i) => (
+              <AmenityCard key={i} name={a.name} category={a.category} />
+            ))}
 
             {!showAllAmenities && amenities.length > 6 && (
               <button

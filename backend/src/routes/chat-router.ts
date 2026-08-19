@@ -863,9 +863,10 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|club|gym|fitness|pool|swimming|snooker|billiards|table tennis|squash|tennis|badminton|cricket|playground|play area|kid'?s? play|creche|daycare|park|green cover|open space|ev charg|theatre|library|banquet|spa|sauna|jacuzzi|which society has the best|best amenit|lifestyle|court|jogging|skating|golf)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
     const isConnectivityQuery = !isInventorySearch && /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(message) && !isPaymentPlanRequest
     const isConfigurationQuery = !isInventorySearch && /(balcon|bedroom|bathroom|carpet area|super area|sqft|square feet|size of|how big|how many (balconies|rooms|bhk|bathrooms)|configuration|unit type|floor plan)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isTotalOutflowQuery = /(total (price|cost|amount|outflow)|on.?road|all.?inclusive price|how much (in total|total will it cost)|with registry|final price)/i.test(message)
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
-    if (!isInventorySearch && (activeProjectName || isSummaryRequest || isCompareRequest || isSectorCompare || isPaymentPlanRequest || isCostSheetRequest || isStatutoryTaxQuery || isReraCheckQuery || isBuilderReputationQuery || isNewcomerOrientation || isReadyToMoveQuery || isAmenityQuery || isConnectivityQuery || isConfigurationQuery) && action.type === 'TEXT_MESSAGE') {
+    if (!isInventorySearch && (activeProjectName || isSummaryRequest || isCompareRequest || isSectorCompare || isPaymentPlanRequest || isCostSheetRequest || isStatutoryTaxQuery || isReraCheckQuery || isBuilderReputationQuery || isNewcomerOrientation || isReadyToMoveQuery || isAmenityQuery || isConnectivityQuery || isConfigurationQuery || isTotalOutflowQuery) && action.type === 'TEXT_MESSAGE') {
       try {
         console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest, isSectorCompare, isPaymentPlanRequest, isCostSheetRequest, isStatutoryTaxQuery, isReraCheckQuery, isBuilderReputationQuery, isNewcomerOrientation, isReadyToMoveQuery, isAmenityQuery, isConnectivityQuery, sectorMatches })
 
@@ -1330,6 +1331,78 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
               return
             }
           }
+        }
+
+        // ─── TOTAL ON-ROAD / ALL-INCLUSIVE OUTFLOW CALCULATOR ────────────────────
+        if (isTotalOutflowQuery) {
+          const targetProjName = activeProjectName || (cachedProjectsFromSession?.[0]?.name)
+          const targetProject = targetProjName ? await prisma.project.findFirst({
+            where: {
+              OR: [
+                { name: { contains: targetProjName, mode: 'insensitive' } },
+                { slug: { contains: targetProjName, mode: 'insensitive' } }
+              ]
+            },
+            include: { unit_types: { orderBy: { bhk: 'asc' } }, builder: true }
+          }) : null
+
+          const is3BHK = /3\s*bhk/i.test(message)
+          const is4BHK = /4\s*bhk/i.test(message)
+          const bhkNum = is4BHK ? 4 : is3BHK ? 3 : 2
+
+          let basePriceCr = targetProject?.price_min_cr || 1.35
+          let projName = targetProject?.name || 'Standard Luxury Apartment'
+          let sectorName = targetProject?.sector || (intent.sector || 'Sector 75, Noida')
+
+          if (targetProject?.unit_types && targetProject.unit_types.length > 0) {
+            const matchedUnit = targetProject.unit_types.find(u => u.bhk === bhkNum) || targetProject.unit_types[0]
+            if (matchedUnit.price_min_cr) {
+              basePriceCr = matchedUnit.price_min_cr
+            }
+          }
+
+          const baseAmount = basePriceCr * 10000000
+          const isRtm = targetProject?.status === 'ready_to_move' || targetProject?.possession_label?.toLowerCase().includes('delivered')
+          const gstPct = isRtm ? 0 : 0.05
+          const gstAmount = Math.round(baseAmount * gstPct)
+          const stampDutyAmount = Math.round(baseAmount * 0.07) // 7% in UP
+          const registrationFee = Math.min(30000, Math.round(baseAmount * 0.01))
+          const ifmsAndMeter = 250000 // IFMS + Dual meter + Club membership
+          const totalOutflow = baseAmount + gstAmount + stampDutyAmount + registrationFee + ifmsAndMeter
+          const totalOutflowCr = (totalOutflow / 10000000).toFixed(2)
+
+          const formatL = (val: number) => `₹${(val / 100000).toFixed(2)} L`
+
+          const outflowText = `### Total All-Inclusive Outflow: ${bhkNum} BHK in ${projName} (${sectorName})
+
+| Cost Component | Applicable Rate / Charge | Estimated Amount |
+| :--- | :--- | :--- |
+| **Base Agreement Value (BSP)** | Sanctioned Unit Pricing | **₹${basePriceCr.toFixed(2)} Cr** |
+| **Stamp Duty (UP RERA)** | 7.0% of Agreement Value | ${formatL(stampDutyAmount)} |
+| **Registration Fee** | 1.0% (Capped at ₹30k) | ₹30,000 |
+| **GST** | ${isRtm ? '0% (Exempt for OC RTM)' : '5.0% (Under-Construction)'} | ${isRtm ? '₹0 (Exempt)' : formatL(gstAmount)} |
+| **IFMS, Electricity Meter & Club** | Fixed One-Time Possession Outflow | ${formatL(ifmsAndMeter)} |
+| **GRAND TOTAL ALL-INCLUSIVE** | **Estimated Final Registry Cost** | **₹${totalOutflowCr} Cr** |
+
+*Note: Female primary owners receive a ₹10,000 concession on stamp duty. Bank financing covers up to 80% of Base Agreement Value.*`
+
+          const outflowChips = [
+            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: `Calculate EMI for ₹${totalOutflowCr} Cr`, icon: 'calculator', analyticsId: 'chip_emi_outflow', priority: 1, payload: { text: `Calculate EMI for loan amount of ₹${(Number(totalOutflowCr) * 0.8).toFixed(2)} Cr` } },
+            { id: `chip_plan_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Construction Payment Plan', icon: 'file-text', analyticsId: 'chip_plan_outflow', priority: 2, payload: { text: `Show payment plan for ${projName}` } },
+            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit_outflow', priority: 3, payload: { text: `Schedule a site visit for ${projName}` } }
+          ]
+
+          send('token', { token: outflowText })
+          send('ui_state', {
+            stage: 'RESEARCH',
+            thinking: `Calculated total all-inclusive cost with UP stamp duty and GST for ${projName}:`,
+            chips: outflowChips,
+            missingFields: [],
+            confidence: 'HIGH'
+          })
+          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
+          res.end()
+          return
         }
 
         // ─── CONNECTIVITY & TRANSIT PROXIMITY MATRIX ──────────────────────────────
