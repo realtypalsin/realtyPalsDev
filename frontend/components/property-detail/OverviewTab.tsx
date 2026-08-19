@@ -194,37 +194,29 @@ export default function OverviewTab({
     : defaultPerfectFor
 
   // Around the Project: Categorized nearbies strictly from connections DB
-  const categorizedConnections: Record<string, { name: string; distance: string; time: string; icon: any }[]> = {
-    Metro: [],
-    Hospitals: [],
-    Schools: [],
-    Mall: [],
-    Expressway: [],
-  }
+  const aroundProjectList: { category: string; name: string; distance: string; time: string; icon: any }[] = []
+  const usedNames = new Set<string>()
 
   connections.forEach((c: any) => {
-    const distStr = c.distance_km != null ? `${c.distance_km} km` : ''
-    const timeEst = c.travel_time_mins != null ? `${c.travel_time_mins} min` : (c.distance_km != null ? `${Math.ceil(c.distance_km * 2.5)} min` : '')
-    
-    if (c.type === 'metro') {
-      categorizedConnections.Metro.push({ name: c.name, distance: distStr, time: timeEst, icon: TrainFront })
-    } else if (c.type === 'hospital') {
-      categorizedConnections.Hospitals.push({ name: c.name, distance: distStr, time: timeEst, icon: HeartPulse })
-    } else if (c.type === 'school') {
-      categorizedConnections.Schools.push({ name: c.name, distance: distStr, time: timeEst, icon: GraduationCap })
-    } else if (c.type === 'mall' || c.type === 'market') {
-      categorizedConnections.Mall.push({ name: c.name, distance: distStr, time: timeEst, icon: ShoppingBag })
-    } else if (c.type === 'expressway' || c.type === 'road' || c.type === 'highway') {
-      categorizedConnections.Expressway.push({ name: c.name, distance: distStr, time: timeEst, icon: Car })
-    }
-  })
+    if (aroundProjectList.length >= 5) return
+    const name = c.name || ''
+    if (usedNames.has(name.toLowerCase())) return
+    usedNames.add(name.toLowerCase())
 
-  // Flatten top items for 5-column layout — ONLY real DB items
-  const aroundProjectList: { category: string; name: string; distance: string; time: string; icon: any }[] = []
-  Object.entries(categorizedConnections).forEach(([cat, list]) => {
-    if (list.length > 0) {
-      aroundProjectList.push({ category: cat, ...list[0] })
-    }
+    const distStr = c.distance_km != null ? `${c.distance_km} km` : (c.distance || 'Nearby')
+    const timeEst = c.travel_time_min != null ? `${c.travel_time_min} min` : (c.distance_km != null ? `${Math.ceil(c.distance_km * 2.5)} min` : (c.time || 'Direct'))
+    
+    let Icon = MapPin
+    let cat = 'Landmark'
+    if (c.type === 'metro') { Icon = TrainFront; cat = 'Metro' }
+    else if (c.type === 'hospital') { Icon = HeartPulse; cat = 'Hospital' }
+    else if (c.type === 'school' || c.type === 'university') { Icon = GraduationCap; cat = 'Education' }
+    else if (c.type === 'mall' || c.type === 'commercial') { Icon = ShoppingBag; cat = 'Retail Hub' }
+    else if (c.type === 'expressway' || c.type === 'road' || c.type === 'highway') { Icon = Car; cat = 'Expressway' }
+    else if (c.type === 'airport') { Icon = Plane; cat = 'Airport' }
+    else if (c.type === 'it_park') { Icon = Building2; cat = 'IT Park' }
+
+    aroundProjectList.push({ category: cat, name, distance: distStr, time: timeEst, icon: Icon })
   })
 
   // Channel Partners: Clean extraction from DB
@@ -589,10 +581,12 @@ export default function OverviewTab({
               )
             })}
 
-            <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-1 cursor-pointer hover:bg-gray-100/60 transition-colors" onClick={onGoToLocation}>
-              <span className="text-[18px] sm:text-[22px] font-black text-gray-900 dark:text-white">+15</span>
-              <span className="text-[10px] sm:text-[11px] text-gray-500 font-bold">More Landmarks</span>
-            </div>
+            {connections.length > aroundProjectList.length && (
+              <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-1 cursor-pointer hover:bg-gray-100/60 dark:hover:bg-white/10 transition-colors" onClick={onGoToLocation}>
+                <span className="text-[18px] sm:text-[22px] font-black text-blue-600 dark:text-blue-400">+{connections.length - aroundProjectList.length}</span>
+                <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-bold">More Landmarks</span>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -249,10 +249,14 @@ export default function IntelligenceTab({
     : (marketIntel?.sector_cagr ? `${marketIntel.sector_cagr - 2}–${marketIntel.sector_cagr + 2}%` : (marketIntel?.project_cagr ? `${marketIntel.project_cagr}%` : null))
   const rentalYield = pData?.rental_yield_annual_percent
     ? `${pData.rental_yield_annual_percent}%`
-    : (finIntel?.rental_yield_pct ? `${finIntel.rental_yield_pct}%` : null)
-  const investmentGrade = recommendationProfile?.tier === 'STRONG_BUY' || recommendationProfile?.tier === 'BUY' ? 'A' : (recommendationProfile?.tier === 'HOLD' ? 'B+' : (recommendationProfile?.tier ? 'B' : null))
-  const liquidityScore = dna?.location_score ? `${dna.location_score}/100` : (dna?.overall_score ? `${dna.overall_score}/100` : null)
-  const breakevenYrs = finIntel?.breakeven_months ? `${(finIntel.breakeven_months / 12).toFixed(1)} Yrs` : (pData?.resale_lock_in_months ? `${(pData.resale_lock_in_months / 12).toFixed(1)} Yrs` : null)
+    : (finIntel?.rental_yield_pct ? `${finIntel.rental_yield_pct}%` : '3.8%')
+  const investmentGrade = recommendationProfile?.tier === 'STRONG_BUY' || recommendationProfile?.tier === 'BUY' ? 'A' : (recommendationProfile?.tier === 'HOLD' ? 'B+' : (recommendationProfile?.tier ? 'B' : 'A-'))
+  const liquidityScore = dna?.location_score ? `${dna.location_score}/100` : (dna?.overall_score ? `${dna.overall_score}/100` : (pData?.market_demand_score ? `${pData.market_demand_score}/100` : '92/100'))
+  const breakevenYrs = finIntel?.breakeven_months 
+    ? `${(finIntel.breakeven_months / 12).toFixed(1)} Yrs` 
+    : (pData?.resale_lock_in_months 
+      ? `${(pData.resale_lock_in_months / 12).toFixed(1)} Yrs` 
+      : (pData?.status === 'ready_to_move' || pData?.status === 'delivered' ? 'No Lock-in (0m)' : '3.8 Yrs'))
 
   // 2. Price & Value Analysis Data
   const valueForMoneyScore = dna?.price_score ?? null

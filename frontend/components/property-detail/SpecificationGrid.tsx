@@ -171,8 +171,8 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
 
   const categories = Object.keys(grouped)
   
-  // Unified global expanded state - allows all to be open smoothly together
-  const [isAllExpanded, setIsAllExpanded] = useState<boolean>(true)
+  // Collapsed by default — user can expand individually or click Expand All
+  const [isAllExpanded, setIsAllExpanded] = useState<boolean>(false)
   const [categoryOverrides, setCategoryOverrides] = useState<Record<string, boolean>>({})
 
   const isCategoryOpen = (cat: string) => {
@@ -216,18 +216,18 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
         <button
           type="button"
           onClick={() => toggleCategory(category)}
-          className="w-full flex items-center justify-between p-2.5 sm:p-4 text-left hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition-colors select-none"
+          className="w-full flex items-center justify-between p-3 sm:p-4 text-left hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition-colors select-none"
         >
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${theme.iconBg} flex items-center justify-center shrink-0`}>
-              <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${theme.iconBg} flex items-center justify-center shrink-0`}>
+              <IconComponent className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
             </div>
             <div className="min-w-0">
-              <h4 className="font-bold text-[12px] sm:text-[13.5px] text-slate-900 dark:text-white tracking-tight truncate">
+              <h4 className="font-black text-[13px] sm:text-[14px] text-slate-900 dark:text-white tracking-tight truncate">
                 {theme.label}
               </h4>
               {!isOpen && brands.length > 0 && (
-                <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5 hidden sm:block">
+                <p className="text-[10.5px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5 hidden sm:block">
                   {brands.join(' • ')}
                 </p>
               )}
@@ -235,11 +235,11 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-1.5 sm:ml-3">
-            <span className="text-[9.5px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+            <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 whitespace-nowrap">
               {items.length}
             </span>
             <ChevronDown
-              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 transition-transform duration-200 ${
+              className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
                 isOpen ? 'rotate-180' : ''
               }`}
             />
@@ -247,32 +247,42 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
         </button>
 
         {isOpen && (
-          <div className="p-2.5 sm:p-4 pt-1 border-t border-slate-100 dark:border-white/5 space-y-2 sm:space-y-3 bg-slate-50/30 dark:bg-white/[0.01]">
-            {items.map((spec: SpecItem, idx) => {
-              const label = (typeof spec === 'object' && spec?.label) || 'Specification'
-              const value = (typeof spec === 'object' && spec?.value) || ''
-              const tier = (typeof spec === 'object' ? spec?.tier : null) ?? null
-
+          <div className="p-3 sm:p-4 pt-1 border-t border-slate-100 dark:border-white/5 space-y-2.5 sm:space-y-3 bg-slate-50/30 dark:bg-white/[0.01]">
+            {items.map((spec, idx) => {
+              const TierIcon = getTierIcon(spec.tier)
               return (
                 <div
                   key={idx}
-                  className="bg-white dark:bg-[#1a1a1a] p-2.5 sm:p-3.5 rounded-xl border border-slate-200/70 dark:border-white/5 space-y-1.5 sm:space-y-2 shadow-2xs"
+                  className="p-3 sm:p-3.5 rounded-xl bg-white dark:bg-[#1a1a1c] border border-slate-200/60 dark:border-white/5 space-y-1.5 transition-all shadow-2xs hover:border-slate-300 dark:hover:border-white/15"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-1">
-                    <div className="font-bold text-[11.5px] sm:text-[13px] text-slate-900 dark:text-white break-words min-w-0">
-                      {label}
-                    </div>
-                    {tier && <div className="flex-shrink-0"><TierBadge tier={tier} /></div>}
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-[11.5px] sm:text-[12px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      {spec.label}
+                    </span>
+                    {spec.tier && (
+                      <span
+                        className={`inline-flex items-center gap-1 text-[9.5px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full capitalize shrink-0 ${
+                          spec.tier === 'luxury'
+                            ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/80'
+                            : spec.tier === 'premium'
+                            ? 'bg-blue-100 text-blue-900 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300/80'
+                            : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                        }`}
+                      >
+                        {TierIcon && <TierIcon className="w-2.5 h-2.5" />}
+                        {spec.tier}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="text-[10.5px] sm:text-[12px] text-slate-600 dark:text-slate-300 leading-relaxed font-normal break-words">
-                    {value}
+                  <div className="text-[12.5px] sm:text-[13px] text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
+                    {spec.value}
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100 dark:border-white/5 text-[9.5px] sm:text-[11px]">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100 dark:border-white/5 text-[10px] sm:text-[11px]">
                     {spec.brand ? (
-                      <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[140px] sm:max-w-[200px]">
-                        <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400 flex-shrink-0" />
+                      <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[160px] sm:max-w-[220px]">
+                        <Tag className="w-3 h-3 text-slate-400 flex-shrink-0" />
                         <span className="text-slate-400">Brand:</span> <span className="text-slate-900 dark:text-white font-bold truncate">{spec.brand}</span>
                       </span>
                     ) : (
@@ -290,9 +300,6 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
       </div>
     )
   }
-
-  const leftColCategories = categories.filter((_, i) => i % 2 === 0)
-  const rightColCategories = categories.filter((_, i) => i % 2 === 1)
 
   return (
     <section className="space-y-3 sm:space-y-4">
@@ -326,13 +333,15 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 items-start">
-        <div className="flex flex-col gap-2.5 sm:gap-4">
-          {leftColCategories.map(renderCategoryCard)}
-        </div>
-        <div className="flex flex-col gap-2.5 sm:gap-4">
-          {rightColCategories.map(renderCategoryCard)}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-start">
+        {categories.map((cat, i) => {
+          const isLastOdd = categories.length % 2 !== 0 && i === categories.length - 1
+          return (
+            <div key={cat} className={isLastOdd ? 'col-span-1 md:col-span-2 max-w-2xl mx-auto w-full' : 'w-full'}>
+              {renderCategoryCard(cat)}
+            </div>
+          )
+        })}
       </div>
     </section>
   )

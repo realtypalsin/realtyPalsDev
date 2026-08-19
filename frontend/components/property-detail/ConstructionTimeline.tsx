@@ -97,39 +97,39 @@ export default function ConstructionTimeline({
 
       {/* For Delivered / RTM Properties: Highlight Active Society Lifestyle & Resident Operations */}
       {isRTM ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-          <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/40 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-              <ShieldCheck size={18} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/40 flex items-start gap-3 hover:border-emerald-200 transition-all shadow-2xs">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
+              <ShieldCheck size={17} />
             </div>
-            <div>
-              <h4 className="text-[13px] font-bold text-gray-900 dark:text-emerald-100">OC & Registry Complete</h4>
-              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
-                Full Occupancy Certificate granted by the Authority. Immediate flat registration and handover available.
+            <div className="min-w-0">
+              <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-emerald-100">OC & Registry Complete</h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                Full Occupancy Certificate granted. Immediate flat registry & physical handover available.
               </p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-800/40 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0">
-              <Users size={18} />
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-800/40 flex items-start gap-3 hover:border-blue-200 transition-all shadow-2xs">
+            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
+              <Users size={17} />
             </div>
-            <div>
-              <h4 className="text-[13px] font-bold text-gray-900 dark:text-blue-100">Active RWA & Community</h4>
-              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
-                Elected Resident Welfare Association with active facility maintenance, MyGate security, and festival events.
+            <div className="min-w-0">
+              <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-blue-100">Active RWA & Governance</h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                Elected Resident Welfare Association managing security, MyGate access & facility maintenance.
               </p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-800/40 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
-              <Zap size={18} />
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-800/40 flex items-start gap-3 hover:border-purple-200 transition-all shadow-2xs sm:col-span-2 lg:col-span-1">
+            <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 mt-0.5">
+              <Zap size={17} />
             </div>
-            <div>
-              <h4 className="text-[13px] font-bold text-gray-900 dark:text-purple-100">Operational Amenities</h4>
-              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
-                Fully functional clubhouse, temperature-controlled pool, power backup grid, and daily convenience shops.
+            <div className="min-w-0">
+              <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-purple-100">100% Operational Amenities</h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                Functional clubhouse, swimming pool, 24/7 power backup grid & daily convenience shops.
               </p>
             </div>
           </div>

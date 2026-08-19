@@ -29,11 +29,6 @@ const ICONS: Record<string, any> = {
 }
 
 export default function LocationTab({ project, detail, d, projectAddress, loading }: LocationTabProps) {
-  if (loading && !detail && !d) {
-    return <LocationTabSkeleton />
-  }
-  const waUrl = d ? buildWhatsAppUrl(d, 'panel') : 'https://wa.me/'
-
   // State handles
   const [selectedMapFilter, setSelectedMapFilter] = useState<string>('All')
   const [sharedStatus, setSharedStatus] = useState(false)
@@ -42,6 +37,11 @@ export default function LocationTab({ project, detail, d, projectAddress, loadin
   // Commute calculator inputs
   const [destInput, setDestInput] = useState('')
   const [calculatedTime, setCalculatedTime] = useState<string | null>(null)
+
+  if (loading && !detail && !d) {
+    return <LocationTabSkeleton />
+  }
+  const waUrl = d ? buildWhatsAppUrl(d, 'panel') : 'https://wa.me/'
 
   // Coordinates
   const projectLat = project?.lat || SECTOR_CENTROIDS[project?.sector || '']?.[0] || 28.535
@@ -241,29 +241,29 @@ export default function LocationTab({ project, detail, d, projectAddress, loadin
           <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Average driving and transit travel times to major NCR commercial centers.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
           {((detail as any)?.commute_matrix && Array.isArray((detail as any).commute_matrix)
             ? (detail as any).commute_matrix
             : []
           ).map((c: any, i: number) => (
-            <div key={i} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-3 hover:border-gray-200 transition-all">
+            <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2.5 hover:border-gray-200 transition-all shadow-2xs">
               <div className="flex items-center justify-between">
                 <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center text-[12px] font-black">
-                  <Car size={16} />
+                  <Car size={15} />
                 </div>
-                <span className="text-[10.5px] font-black text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2 py-0.5 rounded-full">
+                <span className="text-[9.5px] sm:text-[10.5px] font-black text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2 py-0.5 rounded-full">
                   {c.mode || 'Drive'}
                 </span>
               </div>
 
               <div>
-                <h4 className="text-[13px] font-black text-gray-900 dark:text-white leading-snug line-clamp-2">{c.destination}</h4>
-                <div className="flex items-center justify-between text-[11px] font-bold text-gray-400 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
-                  <span>{c.distance_km ? `${c.distance_km} km` : 'Direct corridor'}</span>
-                  <span className="text-gray-900 dark:text-white font-black text-[12px]">{c.travel_time_min} mins</span>
+                <h4 className="text-[12px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-snug line-clamp-2">{c.destination}</h4>
+                <div className="flex items-center justify-between text-[10.5px] sm:text-[11px] font-bold text-gray-400 mt-2 pt-1.5 border-t border-gray-100 dark:border-white/5">
+                  <span className="truncate">{c.distance_km ? `${c.distance_km} km` : 'Direct'}</span>
+                  <span className="text-gray-900 dark:text-white font-black text-[11.5px] sm:text-[12px] shrink-0">{c.travel_time_min} mins</span>
                 </div>
                 {c.peak_time_min && (
-                  <p className="text-[9.5px] text-gray-400 font-medium mt-0.5">Peak traffic: ~{c.peak_time_min} mins</p>
+                  <p className="text-[9px] text-gray-400 font-medium mt-0.5 truncate">Peak: ~{c.peak_time_min}m</p>
                 )}
               </div>
             </div>

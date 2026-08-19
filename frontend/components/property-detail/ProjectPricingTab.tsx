@@ -26,10 +26,6 @@ function fmtRs(num: number): string {
 }
 
 export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCosts }: ProjectPricingTabProps) {
-  if (loading && !detail) {
-    return <PricingTabSkeleton />
-  }
-
   const availableBhks = unitTypes.length > 0 ? Array.from(new Set(unitTypes.map(u => `${u.bhk} BHK`))) : []
   const [bhkFilterState, setBhkFilter] = useState<string>(availableBhks[0] ?? '')
   const bhkFilter = availableBhks.includes(bhkFilterState) ? bhkFilterState : (availableBhks[0] ?? '')
@@ -44,6 +40,27 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
   const [propertyPrice, setPropertyPrice] = useState<number>(unitMinCr ? unitMinCr * 10000000 : 0)
   const [downPaymentPct, setDownPaymentPct] = useState<number>(20)
   const [tenureYears, setTenureYears] = useState<number>(20)
+
+  const isRTM = detail?.status === 'ready_to_move'
+
+  // Payment Plan Selection State & Configuration Picker
+  const [selectedPlanTab, setSelectedPlanTab] = useState<'clp' | 'investor' | 'flexi' | 'full'>(isRTM ? 'full' : 'clp')
+
+  // Cost Breakdown Toggle State & Donut Hover Isolation State
+  const [costBreakdownStage, setCostBreakdownStage] = useState<'construction' | 'possession'>(isRTM ? 'possession' : 'construction')
+  const [hoveredCostIdx, setHoveredCostIdx] = useState<number | null>(null)
+
+  // Modal States for Plan Comparison & Check Eligibility
+  const [showCompareModal, setShowCompareModal] = useState<boolean>(false)
+  const [showEligibilityModal, setShowEligibilityModal] = useState<boolean>(false)
+  const [showAllMilestones, setShowAllMilestones] = useState<boolean>(false)
+
+  // Loan eligibility (45% FOIR affordability against user's monthly income)
+  const [monthlyIncome, setMonthlyIncome] = useState<number>(0)
+
+  if (loading && !detail) {
+    return <PricingTabSkeleton />
+  }
 
   // DB-backed payment plan & cost sheet properties
   const dbPaymentPlan = detail?.payment_plan ?? null
@@ -63,22 +80,6 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
   const totalPayment = estimatedEmi * totalMonths
   const totalInterest = Math.max(0, totalPayment - loanAmount)
 
-  const isRTM = detail?.status === 'ready_to_move'
-
-  // Payment Plan Selection State & Configuration Picker
-  const [selectedPlanTab, setSelectedPlanTab] = useState<'clp' | 'investor' | 'flexi' | 'full'>(isRTM ? 'full' : 'clp')
-
-  // Cost Breakdown Toggle State & Donut Hover Isolation State
-  const [costBreakdownStage, setCostBreakdownStage] = useState<'construction' | 'possession'>(isRTM ? 'possession' : 'construction')
-  const [hoveredCostIdx, setHoveredCostIdx] = useState<number | null>(null)
-
-  // Modal States for Plan Comparison & Check Eligibility
-  const [showCompareModal, setShowCompareModal] = useState<boolean>(false)
-  const [showEligibilityModal, setShowEligibilityModal] = useState<boolean>(false)
-  const [showAllMilestones, setShowAllMilestones] = useState<boolean>(false)
-
-  // Loan eligibility (45% FOIR affordability against user's monthly income)
-  const [monthlyIncome, setMonthlyIncome] = useState<number>(0)
   const maxEmiFromIncome = monthlyIncome * 0.45
   const eligibleLoanAmount = monthlyRate > 0 && maxEmiFromIncome > 0
     ? (maxEmiFromIncome * (Math.pow(1 + monthlyRate, totalMonths) - 1)) / (monthlyRate * Math.pow(1 + monthlyRate, totalMonths))
