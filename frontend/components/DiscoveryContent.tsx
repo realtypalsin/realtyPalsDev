@@ -16,7 +16,7 @@ import MessageBubble, { buildPickerMessage } from '@/components/chat/MessageBubb
 import CompareSelectorOverlay from '@/components/chat/CompareSelectorOverlay';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import type { ChipPickerState } from '@/components/chat/types';
-import { AlertTriangle, ArrowRight, ArrowUp, ChevronDown, Home, Key, MapPin, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet, Train, Trees, Crown, Building2, GraduationCap } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ArrowUp, ChevronDown, Home, Key, MapPin, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet, Train, Trees, Crown, Building2, GraduationCap, SquarePen } from 'lucide-react';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { useSessions } from '@/hooks/useSessions';
 import { ChatPhase2Skeleton } from '@/components/skeletons';
@@ -154,6 +154,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     }
     setShowHeaderDropdown(false);
   };
+
+  const handleNewChat = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
+    router.push('/discover');
+  }, [router]);
 
   // Notify parent of session changes for sidebar highlighting
   useEffect(() => { onSessionChange?.(sessionId) }, [sessionId, onSessionChange])
@@ -1495,8 +1500,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      {/* Claude-style Seamless Header */}
-      <div className="absolute top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 bg-transparent pointer-events-none">
+      {/* ChatGPT/Claude-style Seamless Header with Top Gradient Fade */}
+      <div className="absolute top-0 left-0 right-0 h-14 md:h-16 z-50 flex items-center justify-between px-3 sm:px-4 bg-gradient-to-b from-slate-50/95 via-slate-50/70 to-transparent dark:from-gray-900/95 dark:via-gray-900/70 dark:to-transparent backdrop-blur-[6px] transition-colors pointer-events-none">
         <div className="flex-1 flex items-center justify-start pl-14 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
           {hasUserReplied && (
             isRenamingHeader ? (
@@ -1517,9 +1522,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             ) : (
               <button
                 onClick={() => setShowHeaderDropdown(!showHeaderDropdown)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-800/50 transition-colors text-gray-700 dark:text-gray-300 group"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-700 dark:text-gray-200 group cursor-pointer"
               >
-                <span className="text-sm font-medium truncate max-w-[150px] md:max-w-xs">{sessionTitle || 'New Chat'}</span>
+                <span className="text-[13.5px] sm:text-sm font-bold truncate max-w-[140px] sm:max-w-xs">{sessionTitle || 'New Chat'}</span>
                 <ChevronDown size={14} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
               </button>
             )
@@ -1541,11 +1546,18 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           )}
         </div>
 
-        <div className="flex-1 flex justify-center relative pointer-events-auto">
-          {/* Spacer so the middle items stay centered */}
-        </div>
+        <div className="flex items-center justify-end gap-2 pointer-events-auto">
+          {/* ChatGPT-style New Chat button in header */}
+          <button
+            onClick={handleNewChat}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-100 text-[12px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+            title="Start new conversation"
+            aria-label="New Chat"
+          >
+            <SquarePen size={14} className="text-blue-600 dark:text-blue-400" />
+            <span className="hidden sm:inline">New Chat</span>
+          </button>
 
-        <div className="flex-1 flex items-center justify-end gap-2 pointer-events-auto">
           <ThemeToggle />
         </div>
       </div>
@@ -1756,6 +1768,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             </div>
 
             {/* (View on Map Toggle moved to MessageBubble) */}
+
+            {/* Bottom Gradient Fade Overlay (Apple/ChatGPT style fading beneath input) */}
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 md:h-36 bg-gradient-to-t from-slate-50 via-slate-50/85 to-transparent dark:from-gray-900 dark:via-gray-900/85 dark:to-transparent z-20" />
 
             {/* Stable flex-bottom input island */}
             <AnimatePresence initial={false}>
