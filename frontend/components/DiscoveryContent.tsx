@@ -15,9 +15,17 @@ import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-van
 import MessageBubble, { buildPickerMessage } from '@/components/chat/MessageBubble';
 import CompareSelectorOverlay from '@/components/chat/CompareSelectorOverlay';
 import ContextRibbon from '@/components/chat/ContextRibbon';
-import type { ChipPickerState } from '@/components/chat/types';
-import { AlertTriangle, ArrowRight, ArrowUp, ChevronDown, Home, Key, MapPin, Mic, MessageSquare, Pencil, Palmtree, Scale, ShieldCheck, Trash2, TrendingUp, Wallet, Train, Trees, Crown, Building2, GraduationCap, SquarePen } from 'lucide-react';
-import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
+import {
+  WarningCircle,
+  CaretDown,
+  Microphone,
+  ChatCircleDots,
+  PencilSimple,
+  Trash,
+  NotePencil,
+  Scales,
+  ArrowRight
+} from '@phosphor-icons/react';
 import { useSessions } from '@/hooks/useSessions';
 import { ChatPhase2Skeleton } from '@/components/skeletons';
 
@@ -1450,7 +1458,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             <button
               type="button"
               onClick={() => abortControllerRef.current?.abort()}
-              className="mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-gradient-to-br from-red-500 to-red-600 text-white shadow-[0_4px_12px_rgba(239,68,68,0.35)] hover:from-red-600 hover:to-red-700 hover:shadow-[0_6px_16px_rgba(239,68,68,0.45)] active:scale-95"
+              className="mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-gradient-to-br from-red-500 to-red-600 text-white shadow-[0_4px_12px_rgba(239,68,68,0.35)] hover:from-red-600 hover:to-red-700 hover:shadow-[0_6px_16px_rgba(239,68,68,0.45)] active:scale-95 cursor-pointer"
               title="Stop generating"
               aria-label="Stop generating"
             >
@@ -1461,11 +1469,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               type="button"
               onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
               disabled={!isOnline}
-              className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] active:scale-95 ${isOnline ? 'bg-gradient-to-br from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 hover:shadow-[0_6px_16px_rgba(37,99,235,0.45)]' : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50'}`}
+              className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] active:scale-95 ${isOnline ? 'bg-gradient-to-br from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 hover:shadow-[0_6px_16px_rgba(37,99,235,0.45)] cursor-pointer' : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50'}`}
               title={isOnline ? 'Send' : 'You\'re offline'}
-              aria-label={isOnline ? 'Send message' : 'Send disabled - you\'re offline'}
+              aria-label="Send message"
             >
-              <ArrowUp size={20} className="text-current" strokeWidth={3} />
+              <span className="w-0 h-0 border-y-[5px] border-y-transparent border-l-[9px] border-l-white ml-0.5" />
             </button>
           ) : (
             <button
@@ -1474,17 +1482,17 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${isListening
                 ? 'text-white bg-gradient-to-br from-red-500 to-red-600 shadow-[0_4px_16px_rgba(239,68,68,0.4)] scale-105'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
+                } cursor-pointer`}
               title="Voice Input"
               aria-label="Voice input"
             >
               {isListening ? (
                 <div className="relative flex items-center justify-center">
                   <div className="absolute inset-0 rounded-xl bg-red-400 animate-pulse opacity-40" />
-                  <Mic size={20} className="relative text-current fill-current" />
+                  <Microphone size={20} weight="fill" className="relative text-current" />
                 </div>
               ) : (
-                <Mic size={20} strokeWidth={1.5} />
+                <Microphone size={20} weight="bold" />
               )}
             </button>
           )}
@@ -1525,7 +1533,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-700 dark:text-gray-200 group cursor-pointer"
               >
                 <span className="text-[13.5px] sm:text-sm font-bold truncate max-w-[140px] sm:max-w-xs">{sessionTitle || 'New Chat'}</span>
-                <ChevronDown size={14} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
+                <CaretDown size={14} weight="bold" className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
               </button>
             )
           )}
@@ -1533,13 +1541,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           {/* Dropdown Menu */}
           {showHeaderDropdown && hasUserReplied && (
             <div className="absolute top-full left-4 mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
-              <button onClick={handleStartRename} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <Pencil size={16} className="text-gray-400" />
+              <button onClick={handleStartRename} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                <PencilSimple size={16} weight="bold" className="text-gray-400" />
                 <span>Rename</span>
               </button>
               <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2" />
-              <button onClick={handleDeleteSession} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
-                <Trash2 size={16} />
+              <button onClick={handleDeleteSession} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors cursor-pointer">
+                <Trash size={16} weight="bold" />
                 <span>Delete</span>
               </button>
             </div>
@@ -1554,7 +1562,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             title="Start new conversation"
             aria-label="New Chat"
           >
-            <SquarePen size={14} className="text-blue-600 dark:text-blue-400" />
+            <NotePencil size={15} weight="duotone" className="text-blue-600 dark:text-blue-400" />
             <span className="hidden sm:inline">New Chat</span>
           </button>
 
@@ -1580,7 +1588,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         ) : restoreError ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-4 p-8 text-center relative z-10">
             <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center">
-              <AlertTriangle size={28} className="text-red-400" />
+              <WarningCircle size={28} weight="duotone" className="text-red-400" />
             </div>
             <div>
               <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Could not load this conversation</p>
@@ -1747,7 +1755,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                       }}
                       className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-full shadow-2xl hover:bg-blue-700 transition-all font-semibold border border-blue-400"
                     >
-                      <MessageSquare size={18} />
+                      <ChatCircleDots size={18} weight="bold" />
                       <span>Send Message</span>
                     </button>
                   </m.div>
@@ -1830,7 +1838,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold text-xs">
-                <Scale size={16} />
+                <Scales size={16} weight="duotone" />
               </div>
               <div>
                 <p className="text-[13px] font-bold tracking-tight text-white">Compare Mode Active</p>

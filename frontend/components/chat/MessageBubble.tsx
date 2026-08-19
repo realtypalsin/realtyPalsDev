@@ -1,10 +1,20 @@
-'use client'
+'use client';
 
 import { memo, useEffect, useRef, useState } from 'react'
 import {  m, AnimatePresence  } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import NextImage from 'next/image'
-import { RotateCcw, Copy, ChevronDown, MapPin, ThumbsUp, ThumbsDown, Scale, Sparkles, Edit2 } from 'lucide-react'
+import {
+  ArrowCounterClockwise,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  PencilSimple,
+  Sparkle,
+  MapPin,
+  Scales,
+  CaretDown
+} from '@phosphor-icons/react'
 import { ResponseFormatter } from './ResponseFormatter'
 import remarkGfm from 'remark-gfm'
 import { track, trackPropertyEvent } from '@/lib/analytics'
@@ -522,7 +532,7 @@ function MessageBubbleInner({
                         {/* Metadata badge */}
                         <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                           <span className="flex items-center gap-1 font-medium">
-                            <Sparkles size={13} className="text-blue-600 dark:text-blue-400" />
+                            <Sparkle size={13} weight="duotone" className="text-blue-600 dark:text-blue-400" />
                             Verified by RealtyPals Data
                           </span>
                         </div>
@@ -559,7 +569,7 @@ function MessageBubbleInner({
 
                         {/* Confidence score */}
                         <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-semibold">
-                          <Sparkles size={13} />
+                          <Sparkle size={13} weight="duotone" />
                           {Math.round(confidence * 100)}% confident
                         </div>
 
@@ -730,7 +740,7 @@ function MessageBubbleInner({
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200/70 dark:border-slate-700/70 text-[11px] font-semibold shadow-2xs transition-all active:scale-95 cursor-pointer"
             disabled={inlineEdit.isLoading}
           >
-            <Edit2 size={12} className="text-slate-500 dark:text-slate-400" />
+            <PencilSimple size={13} weight="bold" className="text-slate-500 dark:text-slate-400" />
             <span>Edit</span>
           </button>
         )}
@@ -1007,7 +1017,7 @@ function MessageBubbleInner({
                   onClick={() => window.dispatchEvent(new CustomEvent('realtypals:open-map'))}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 hover:border-blue-400 dark:hover:border-blue-500 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs active:scale-95 cursor-pointer"
                 >
-                  <MapPin size={13} className="text-blue-500" />
+                  <MapPin size={13} weight="duotone" className="text-blue-500" />
                   <span className="hidden sm:inline">Map</span>
                 </button>
                 {fullCardsForCompare.length >= 2 && (
@@ -1025,7 +1035,7 @@ function MessageBubbleInner({
                         : 'bg-white/80 dark:bg-zinc-800/80 border-slate-200/80 dark:border-zinc-700/80 text-slate-700 dark:text-slate-200 hover:border-blue-400 dark:hover:border-blue-500'
                     }`}
                   >
-                    <Scale size={13} className={comparingMessageId === message.id ? 'text-white' : 'text-blue-500'} />
+                    <Scales size={13} weight="duotone" className={comparingMessageId === message.id ? 'text-white' : 'text-blue-500'} />
                     <span className="hidden sm:inline">{comparingMessageId === message.id ? 'Comparing…' : 'Compare'}</span>
                   </button>
                 )}
@@ -1038,7 +1048,7 @@ function MessageBubbleInner({
                   }`}
                 >
                   <span>{isOpen ? 'Hide' : `View (${totalCards})`}</span>
-                  <ChevronDown size={13} className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-white' : 'text-slate-500'}`} />
+                  <CaretDown size={13} weight="bold" className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-white' : 'text-slate-500'}`} />
                 </button>
               </div>
             </m.div>
@@ -1187,7 +1197,7 @@ function MessageBubbleInner({
                       className="px-6 py-2.5 bg-gradient-button hover:bg-gradient-button-hover text-white text-[12px] font-bold rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
                     >
                       <span>{showAllProperties ? 'Show initial 6 properties' : `View remaining ${totalCards - MAX_CARDS} properties (All ${totalCards})`}</span>
-                      <ChevronDown size={14} className={`transition-transform duration-200 ${showAllProperties ? 'rotate-180' : ''}`} />
+                      <CaretDown size={14} weight="bold" className={`transition-transform duration-200 ${showAllProperties ? 'rotate-180' : ''}`} />
                     </button>
                   </div>
                 )}
@@ -1207,7 +1217,7 @@ function MessageBubbleInner({
             className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl text-[12px] font-semibold text-blue-700 transition-all"
           >
             <span>View {lastShortlist.length} shortlisted properties</span>
-            <ChevronDown size={14} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+            <CaretDown size={14} weight="bold" className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
           </button>
           {isExpanded && (
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -1445,7 +1455,7 @@ function MessageBubbleInner({
                 disabled={regeneratingIdx === index || isSubmitting}
                 className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2.5 transition-colors disabled:opacity-50"
               >
-                <RotateCcw size={14} className={`text-gray-400 ${regeneratingIdx === index ? 'animate-spin' : ''}`} /> 
+                <ArrowCounterClockwise size={14} weight="bold" className={`text-gray-400 ${regeneratingIdx === index ? 'animate-spin' : ''}`} /> 
                 {regeneratingIdx === index ? 'Regenerating...' : 'Regenerate'}
               </button>
             )}

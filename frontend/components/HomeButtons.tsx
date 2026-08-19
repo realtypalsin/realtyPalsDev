@@ -3,29 +3,29 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import {
-  Building2,
-  Home,
+  Buildings,
+  House,
   Key,
   Crown,
-  Trees,
-  Shield,
-  Sparkles,
-  Layers,
-  ChevronDown,
-  ChevronRight,
-  ListFilter
-} from 'lucide-react';
+  Tree,
+  ShieldCheck,
+  Sparkle,
+  Stack,
+  CaretDown,
+  CaretRight,
+  Funnels
+} from '@phosphor-icons/react';
 import { HOME_BUTTON_GROUPS } from '@/lib/homeButtons';
 
 const iconMap: Record<string, React.ReactNode> = {
-  Building2: <Building2 size={13} />,
-  Home: <Home size={13} />,
-  Key: <Key size={13} />,
-  Crown: <Crown size={13} />,
-  Trees: <Trees size={13} />,
-  Shield: <Shield size={13} />,
-  Sparkles: <Sparkles size={13} />,
-  Layers: <Layers size={13} />
+  Building2: <Buildings size={14} weight="duotone" />,
+  Home: <House size={14} weight="duotone" />,
+  Key: <Key size={14} weight="duotone" />,
+  Crown: <Crown size={14} weight="duotone" />,
+  Trees: <Tree size={14} weight="duotone" />,
+  Shield: <ShieldCheck size={14} weight="duotone" />,
+  Sparkles: <Sparkle size={14} weight="duotone" />,
+  Layers: <Stack size={14} weight="duotone" />
 };
 
 interface HomeButtonsProps {
@@ -95,10 +95,10 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                 <button
                   type="button"
                   onClick={(e) => handleToggle(group.id, e)}
-                  className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 shrink-0 ml-1"
+                  className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 shrink-0 ml-1 cursor-pointer"
                   title="Options"
                 >
-                  <ChevronDown size={12} className={`transition-transform ${isOpen ? 'rotate-180 text-blue-500' : ''}`} />
+                  <CaretDown size={12} weight="bold" className={`transition-transform ${isOpen ? 'rotate-180 text-blue-500' : ''}`} />
                 </button>
               </m.div>
 
@@ -115,7 +115,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                         <button
                           key={idx}
                           onClick={() => handleOptionSelect(option.prompt)}
-                          className="w-full text-left px-2 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-600 dark:hover:text-blue-400 truncate"
+                          className="w-full text-left px-2 py-1.5 rounded-lg text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-600 dark:hover:text-blue-400 truncate cursor-pointer"
                         >
                           {option.label}
                         </button>
@@ -181,8 +181,9 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                   }`}
                   title="More preset queries"
                 >
-                  <ChevronDown
+                  <CaretDown
                     size={13}
+                    weight="bold"
                     className={`transition-transform duration-300 ease-out ${
                       isOpen ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''
                     }`}
@@ -202,7 +203,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                   >
                     <div className="px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-zinc-400 dark:text-zinc-500 uppercase border-b border-zinc-100 dark:border-zinc-800/80 mb-1 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
-                        <ListFilter size={11} className="text-zinc-400" />
+                        <Funnels size={11} weight="bold" className="text-zinc-400" />
                         PRESETS
                       </span>
                       <span className="text-[9px] font-medium text-zinc-400 dark:text-zinc-500">
@@ -221,8 +222,9 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                           <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors truncate">
                             {option.label}
                           </span>
-                          <ChevronRight
+                          <CaretRight
                             size={13}
+                            weight="bold"
                             className="text-zinc-300 dark:text-zinc-600 group-hover/item:text-blue-500 group-hover/item:translate-x-0.5 transition-all flex-shrink-0"
                           />
                         </button>

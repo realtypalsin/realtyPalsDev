@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { CheckCircle2, Circle, X } from 'lucide-react'
+import { CheckCircle, Circle, X } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 
 interface CompareSelectorOverlayProps {
@@ -114,9 +114,9 @@ export default function CompareSelectorOverlay({
                   {/* Selection Bubble */}
                   <div className="absolute top-3 right-3 z-10">
                     {isSelected ? (
-                      <CheckCircle2 className="w-6 h-6 text-indigo-600 dark:text-indigo-500 fill-indigo-600 dark:fill-indigo-500" />
+                      <CheckCircle size={24} weight="fill" className="text-indigo-600 dark:text-indigo-500" />
                     ) : (
-                      <Circle className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                      <Circle size={24} className="text-gray-300 dark:text-gray-600" />
                     )}
                   </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from '@phosphor-icons/react';
 
 export default function ThemeToggle() {
   const [dark, setDark] = useState(false);
@@ -13,7 +13,6 @@ export default function ThemeToggle() {
     });
   };
 
-
   useEffect(() => {
     const stored = localStorage.getItem('theme');
     // Default to light mode as requested. Only use dark mode if explicitly set.
@@ -21,7 +20,6 @@ export default function ThemeToggle() {
     setDark(isDark);
     document.documentElement.classList.toggle('dark', isDark);
     updateFavicon(isDark);
-
   }, []);
 
   const toggle = () => {
@@ -30,20 +28,19 @@ export default function ThemeToggle() {
     document.documentElement.classList.toggle('dark', next);
     localStorage.setItem('theme', next ? 'dark' : 'light');
     updateFavicon(next);
-
   };
 
   return (
     <button
       onClick={toggle}
-      className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-white dark:bg-gray-700 rounded-full transition-all duration-300 border border-[#D0D0D0] dark:border-gray-600 hover:shadow-sm"
+      className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-white/90 dark:bg-white/10 rounded-full transition-all duration-300 border border-gray-200/80 dark:border-white/10 shadow-xs hover:bg-white dark:hover:bg-white/20 active:scale-95 cursor-pointer"
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={dark ? 'Light mode' : 'Dark mode'}
     >
       {dark ? (
-        <Sun size={18} className="text-amber-500" />
+        <Sun size={17} weight="duotone" className="text-amber-400" />
       ) : (
-        <Moon size={18} className="text-gray-600" />
+        <Moon size={17} weight="duotone" className="text-gray-700" />
       )}
     </button>
   );

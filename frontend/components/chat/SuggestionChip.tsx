@@ -1,7 +1,7 @@
 'use client'
 
 import { m } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import { CaretDown } from '@phosphor-icons/react'
 import { renderChipIcon, stripEmojis } from '@/lib/chipIconUtils'
 import type { ChipAction, ChipPickerState } from './types'
 
@@ -55,15 +55,14 @@ export function SuggestionChip({ chip, chipPicker, onSetChipPicker, onAction, di
       {renderChipIcon(cleanLabel, isActive)}
       <span className="truncate min-w-0 font-medium tracking-tight">{cleanLabel}</span>
       {hasDropdown && (
-        <ChevronDown
+        <CaretDown
           size={13}
+          weight="bold"
           className={`flex-shrink-0 transition-transform duration-200 ${
-            isActive ? 'text-blue-200 rotate-180' : 'text-zinc-400 dark:text-zinc-500 group-hover:text-blue-500 group-hover:translate-y-[1px]'
+            isActive ? 'rotate-180 text-blue-200' : 'text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300'
           }`}
         />
       )}
     </m.button>
   )
 }
-
-

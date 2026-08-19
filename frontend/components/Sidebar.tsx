@@ -1,5 +1,14 @@
-"use client";
-import { Compass, Bookmark, PanelLeftClose, PanelLeftOpen, LogOut, SquarePen, Clock } from 'lucide-react';
+'use client';
+
+import {
+  Compass,
+  BookmarkSimple,
+  SidebarSimple,
+  SignOut,
+  NotePencil,
+  ClockCounterClockwise,
+  List
+} from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
@@ -118,8 +127,6 @@ export default function Sidebar({
     routeToView[pathname ?? ""] ?? activeViewProp ?? "discovery";
 
   const handleLogout = () => {
-    // Navigate instantly (client-side) — don't block on a full page reload or the
-    // network sign-out call. Clear local state, fire sign-out in the background.
     localStorage.removeItem("user_id");
     getSupabaseClient()
       .then((supabase) => supabase.auth.signOut())
@@ -127,9 +134,6 @@ export default function Sidebar({
     router.replace("/auth");
   };
 
-  // NOTE: Value Estimator, Market Intelligence and Lead Snapshot are hidden until
-  // their pages are built out — they were stubs (hit non-existent endpoints / "coming
-  // soon") and a demo click would dead-end.
   const menuItems = [
     {
       id: "discovery",
@@ -137,7 +141,7 @@ export default function Sidebar({
       icon: Compass,
       href: "/discover",
     },
-    { id: "saved", label: "Saved Property", icon: Bookmark, href: "/saved" },
+    { id: "saved", label: "Saved Property", icon: BookmarkSimple, href: "/saved" },
   ];
 
   useEffect(() => {
@@ -159,7 +163,9 @@ export default function Sidebar({
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, []);  const closeMobile = () => setMobileOpen(false);
+  }, []);
+
+  const closeMobile = () => setMobileOpen(false);
   const grouped = groupSessionsByDate(sessions);
 
   const handleFreshDiscovery = (e: React.MouseEvent) => {
@@ -172,24 +178,15 @@ export default function Sidebar({
 
   return (
     <>
+      {/* Mobile Hamburger Menu Button (Elevated at z-[60] so it's always accessible and crisp) */}
       <button
+        type="button"
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-40 w-10 h-10 flex items-center justify-center active:scale-95 transition-all text-gray-700 dark:text-gray-200"
-        aria-label="Open menu"
+        className="md:hidden fixed top-3 left-3 z-[60] w-9 h-9 rounded-xl bg-white/90 dark:bg-zinc-800/90 border border-gray-200/80 dark:border-white/10 shadow-xs flex items-center justify-center text-gray-800 dark:text-gray-100 backdrop-blur-md active:scale-95 transition-all cursor-pointer"
+        aria-label="Open sidebar menu"
+        title="Open menu"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 8h16M4 16h16"
-          />
-        </svg>
+        <List size={20} weight="bold" />
       </button>
 
       {mobileOpen && (
@@ -221,22 +218,24 @@ export default function Sidebar({
               <Image src="/images/icons/ExpandedRealtyPalsWhite.png" alt="RealtyPals Logo" width={136} height={30} className="object-contain hidden dark:block drop-shadow-xs" />
             </Link>
             <button
+              type="button"
               onClick={() => {
                 if (window.innerWidth < 768) closeMobile();
                 else onToggleCollapse?.();
               }}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               title="Collapse sidebar"
               aria-label="Collapse sidebar"
             >
-              <PanelLeftClose size={18} strokeWidth={1.8} />
+              <SidebarSimple size={18} weight="bold" />
             </button>
           </div>
         ) : (
           <div className="h-14 flex items-center justify-center border-b border-gray-100/60 dark:border-gray-800/60 w-full shrink-0 relative group">
             <button
+              type="button"
               onClick={onToggleCollapse}
-              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all relative"
+              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all relative cursor-pointer"
               title="Expand sidebar"
               aria-label="Expand sidebar"
             >
@@ -260,7 +259,7 @@ export default function Sidebar({
 
               {/* Hover Expand Icon */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 text-zinc-700 dark:text-zinc-200 transition-opacity duration-200 pointer-events-none">
-                <PanelLeftOpen size={18} strokeWidth={2} />
+                <SidebarSimple size={18} weight="bold" />
               </div>
 
               {/* Tooltip */}
@@ -275,6 +274,7 @@ export default function Sidebar({
         {!isCollapsed ? (
           <div className="p-3 w-full shrink-0">
             <button
+              type="button"
               onClick={() => {
                 if (isNavigating) return;
                 setIsNavigating(true);
@@ -285,11 +285,11 @@ export default function Sidebar({
                 router.push('/discover');
               }}
               disabled={isNavigating}
-              className="group flex items-center justify-between w-full py-2 px-3 bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-semibold rounded-xl transition-all duration-150 border border-zinc-200/80 dark:border-zinc-700/60 shadow-2xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group flex items-center justify-between w-full py-2 px-3 bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-semibold rounded-xl transition-all duration-150 border border-zinc-200/80 dark:border-zinc-700/60 shadow-2xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
                 <div className="w-5 h-5 flex items-center justify-center rounded-md text-blue-600 dark:text-blue-400">
-                  <SquarePen size={16} strokeWidth={2.2} />
+                  <NotePencil size={18} weight="duotone" />
                 </div>
                 <span className="text-[12.5px] tracking-tight">{isNavigating ? 'Opening...' : 'New chat'}</span>
               </div>
@@ -301,6 +301,7 @@ export default function Sidebar({
         ) : (
           <div className="px-3 py-3 w-full shrink-0 flex justify-center">
             <button
+              type="button"
               onClick={() => {
                 if (isNavigating) return;
                 setIsNavigating(true);
@@ -311,10 +312,10 @@ export default function Sidebar({
                 router.push('/discover');
               }}
               disabled={isNavigating}
-              className="w-10 h-10 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center shadow-xs transition-all hover:opacity-90 active:scale-95 group relative disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-10 h-10 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center shadow-xs transition-all hover:opacity-90 active:scale-95 group relative disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               title="New chat"
             >
-              <SquarePen size={17} strokeWidth={2.2} />
+              <NotePencil size={18} weight="bold" />
               <span className="absolute left-full ml-2.5 px-2.5 py-1 bg-zinc-900 text-white text-[11px] font-medium rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100]">
                 New chat
               </span>
@@ -396,7 +397,7 @@ export default function Sidebar({
             <div className="w-full shrink-0 px-3 pb-1.5 pt-1">
               <div className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-2 font-bold flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <Clock size={11} strokeWidth={2} />
+                  <ClockCounterClockwise size={13} weight="bold" />
                   <span>Recent</span>
                 </div>
                 {sessions.length > 0 && (
@@ -474,17 +475,18 @@ export default function Sidebar({
           <div className="p-3 border-t border-gray-100/60 dark:border-gray-800/60 shrink-0 w-full">
             {userId ? (
               <button
+                type="button"
                 onClick={() => { router.push('/account'); closeMobile(); }}
-                className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
+                className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
               >
                 <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold text-sm">
                   F
                 </div>
                 <div className="flex-1 flex items-center justify-between min-w-0">
                   <span className="text-[12.5px] font-medium tracking-tight text-zinc-700 dark:text-zinc-200 truncate">My Account</span>
-                  <LogOut 
-                    size={14} 
-                    strokeWidth={2} 
+                  <SignOut 
+                    size={16} 
+                    weight="bold" 
                     className="text-zinc-400 hover:text-red-500 transition-colors" 
                     onClick={(e) => { e.stopPropagation(); handleLogout(); closeMobile(); }}
                   />
@@ -492,10 +494,11 @@ export default function Sidebar({
               </button>
             ) : (
               <button
+                type="button"
                 onClick={() => { router.push('/auth'); closeMobile(); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors font-medium text-[12.5px]"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors font-medium text-[12.5px] cursor-pointer"
               >
-                <LogOut size={16} strokeWidth={1.8} className="shrink-0 rotate-180" />
+                <SignOut size={16} weight="bold" className="shrink-0 rotate-180" />
                 <span className="tracking-tight">Sign in</span>
               </button>
             )}
@@ -505,8 +508,9 @@ export default function Sidebar({
             {userId ? (
               <div className="group relative">
                 <button
+                  type="button"
                   onClick={() => { router.push('/account'); closeMobile(); }}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold text-sm hover:opacity-90 transition-opacity"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold text-sm hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   F
                 </button>
@@ -517,11 +521,12 @@ export default function Sidebar({
             ) : (
               <div className="group relative">
                 <button
+                  type="button"
                   onClick={() => { router.push('/auth'); closeMobile(); }}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
                   aria-label="Sign in"
                 >
-                  <LogOut size={17} strokeWidth={1.8} className="rotate-180" />
+                  <SignOut size={18} weight="bold" className="rotate-180" />
                 </button>
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2.5 px-2.5 py-1 bg-zinc-900 text-white text-[11px] font-medium rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100]">
                   Sign in

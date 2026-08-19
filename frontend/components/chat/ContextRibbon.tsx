@@ -1,8 +1,7 @@
 'use client';
 
-import {  m, AnimatePresence  } from 'framer-motion';
-import { X, Search } from 'lucide-react';
-import type { ConversationState } from './types';
+import { m, AnimatePresence } from 'framer-motion';
+import { X, MagnifyingGlass } from '@phosphor-icons/react';
 
 interface ContextRibbonProps {
   intent: Record<string, unknown> | null;
@@ -44,9 +43,9 @@ export default function ContextRibbon({ intent, onRemove }: ContextRibbonProps) 
       exit={{ opacity: 0, height: 0 }}
       className="w-full flex justify-center py-3"
     >
-      <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-3xl px-4 pointer-events-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-full py-1.5 px-3 shadow-sm">
+      <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-3xl px-4 pointer-events-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-full py-1.5 px-3 shadow-xs">
         <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mr-1 flex items-center gap-1">
-          <Search size={12} className="text-gray-400 dark:text-gray-500" />
+          <MagnifyingGlass size={13} weight="bold" className="text-gray-400 dark:text-gray-500" />
           Intent
         </span>
         <div className="w-[1px] h-3 bg-gray-300 dark:bg-gray-700 mx-1" />
@@ -63,11 +62,12 @@ export default function ContextRibbon({ intent, onRemove }: ContextRibbonProps) 
             >
               <span>{filter.label}</span>
               <button
+                type="button"
                 onClick={() => onRemove(filter.field)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+                className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
                 title={`Remove ${filter.field}`}
               >
-                <X size={10} />
+                <X size={10} weight="bold" />
               </button>
             </m.div>
           ))}
