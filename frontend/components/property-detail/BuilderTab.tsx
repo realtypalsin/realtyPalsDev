@@ -366,7 +366,7 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1">
+              <div className="grid grid-cols-2 lg:grid-cols-2 gap-2.5 sm:gap-3 pt-1">
                 {dbAwards.slice(0, 4).map((award: any, i: number, arr: any[]) => {
                   const awardTitle = typeof award === 'string' ? award : (award?.title || award?.name || 'Real Estate Excellence Award')
                   const awardOrg = typeof award === 'string' && award.includes('-') ? award.split('-')[0].trim() : (award?.organization || award?.year || 'Verified Industry Recognition')
@@ -374,16 +374,16 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                   return (
                     <div
                       key={i}
-                      className={`p-3.5 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-2xl flex items-start gap-3 ${
-                        isOddLast ? 'sm:col-span-2' : ''
+                      className={`p-3 sm:p-3.5 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-2xl flex flex-col justify-between gap-2 ${
+                        isOddLast ? 'col-span-2' : 'col-span-1'
                       }`}
                     >
-                      <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
                         <Award size={16} />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight">{awardTitle}</h4>
-                        <p className="text-[10.5px] text-gray-400 font-medium mt-0.5">{awardOrg}</p>
+                        <h4 className="text-[12px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">{awardTitle}</h4>
+                        <p className="text-[10px] sm:text-[10.5px] text-gray-400 font-medium mt-1 truncate">{awardOrg}</p>
                       </div>
                     </div>
                   )

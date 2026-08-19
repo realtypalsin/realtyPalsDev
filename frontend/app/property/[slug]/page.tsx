@@ -56,10 +56,9 @@ export default function PropertyDetailPage() {
     loadProject()
   }, [slug])
 
-  if (!slug) return null
-
-
   const [copied, setCopied] = useState(false)
+
+  if (!slug) return null
 
   const handleShare = async () => {
     const url = typeof window !== 'undefined' ? window.location.href : ''

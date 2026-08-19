@@ -228,7 +228,7 @@ export default function OverviewTab({
     phone: cp.phone || cp.channel_partner?.phone || null,
   })) : []
 
-  if (loading && !d) {
+  if ((loading && !detail) || !detail) {
     return <OverviewBentoSkeleton />
   }
 
@@ -454,7 +454,7 @@ export default function OverviewTab({
         </div>
       )}
 
-      {/* 6. PROJECT AMENITIES (Clean typography pill tags - zero icons) */}
+      {/* 6. PROJECT AMENITIES (Executive 2-Column Mobile Bento Grid matching Channel Partners) */}
       {amenities.length > 0 && (
         <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
           <div className="flex items-center justify-between">
@@ -466,7 +466,7 @@ export default function OverviewTab({
                 {amenities.length} Features
               </span>
             </div>
-            {amenities.length > 10 && (
+            {amenities.length > 6 && (
               <button
                 onClick={() => setShowAllAmenities(!showAllAmenities)}
                 className="text-[12px] sm:text-[12.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
@@ -477,22 +477,54 @@ export default function OverviewTab({
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 sm:gap-2.5 pt-1">
-            {(showAllAmenities ? amenities : amenities.slice(0, 10)).map((a, i) => (
-              <span
-                key={i}
-                className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gray-50/80 dark:bg-white/5 border border-gray-200/70 dark:border-white/10 text-[12px] sm:text-[12.5px] font-bold text-gray-800 dark:text-gray-200 hover:border-gray-300 dark:hover:border-white/20 transition-all shadow-2xs"
-              >
-                {a.name}
-              </span>
-            ))}
+          {/* 2-Column Bento Grid on Mobile / 4-Column on Desktop */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pt-1">
+            {(showAllAmenities ? amenities : amenities.slice(0, 6)).map((a, i) => {
+              const lower = a.name.toLowerCase()
+              const isSports = /court|tennis|badminton|squash|cricket|track|sport/i.test(lower)
+              const isWater = /pool|swim|water|aqua/i.test(lower)
+              const isWellness = /gym|yoga|fitness|health|spa|sauna/i.test(lower)
+              const isGreen = /park|garden|tree|green|lawn|plaza/i.test(lower)
+              const isSecurity = /security|cctv|intercom|guard|fire/i.test(lower)
 
-            {!showAllAmenities && amenities.length > 10 && (
+              const iconBg = isWater
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400'
+                : isWellness
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400'
+                : isGreen
+                ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'
+                : isSports
+                ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400'
+                : isSecurity
+                ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400'
+                : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
+
+              return (
+                <div
+                  key={i}
+                  className="p-3 sm:p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-start gap-2.5 hover:border-gray-200 transition-all"
+                >
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${iconBg}`}>
+                    <Sparkles size={15} />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-[12px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">
+                      {a.name}
+                    </h4>
+                    <span className="text-[9.5px] font-extrabold text-gray-400 uppercase tracking-wider block mt-1">
+                      {a.category || 'Lifestyle'}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+
+            {!showAllAmenities && amenities.length > 6 && (
               <button
                 onClick={() => setShowAllAmenities(true)}
-                className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-[12px] sm:text-[12.5px] font-extrabold text-blue-600 dark:text-blue-400 hover:bg-slate-200/70 dark:hover:bg-white/15 transition-colors cursor-pointer"
+                className="p-3 sm:p-3.5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 flex items-center justify-center text-center text-[12px] font-black text-blue-600 dark:text-blue-400 hover:bg-blue-100/60 transition-all cursor-pointer col-span-2 sm:col-span-1"
               >
-                +{amenities.length - 10} more
+                +{amenities.length - 6} More Amenities
               </button>
             )}
           </div>

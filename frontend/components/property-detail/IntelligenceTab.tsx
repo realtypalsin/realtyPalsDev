@@ -600,7 +600,7 @@ export default function IntelligenceTab({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
             {[
               { label: 'Location Match', score: locationFit, tag: 'Excellent', hint: 'Proximity to metro, expressways, top schools, hospitals, and major IT/commercial hubs.' },
               { label: 'Budget Fit', score: budgetFit, tag: 'Very Good', hint: 'Position relative to micro-market average price/sqft and overall sector pricing trends.' },
@@ -610,18 +610,30 @@ export default function IntelligenceTab({
             ].filter(item => item.score !== null).map((item, i, arr) => (
               <div
                 key={i}
-                className={`p-3.5 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-1.5 sm:space-y-2 relative ${
-                  arr.length % 2 !== 0 && i === arr.length - 1 ? 'col-span-2 sm:col-span-1 max-w-[220px] sm:max-w-none mx-auto w-full' : ''
+                className={`p-3.5 sm:p-4 rounded-2xl bg-gray-50/80 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2.5 relative ${
+                  arr.length % 2 !== 0 && i === arr.length - 1 ? 'col-span-2 sm:col-span-1 max-w-[200px] sm:max-w-none mx-auto w-full' : ''
                 }`}
               >
-                <div className="flex items-center justify-center gap-1.5 h-6 sm:h-8">
-                  <p className="text-[10px] sm:text-[11px] font-extrabold text-gray-500 dark:text-gray-400">{item.label}</p>
+                <div className="flex items-center justify-between gap-1">
+                  <p className="text-[10.5px] sm:text-[11.5px] font-extrabold text-gray-600 dark:text-gray-300 truncate">{item.label}</p>
                   <InfoTooltip content={item.hint} title={item.label} />
                 </div>
-                <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-full border-4 border-emerald-500 border-t-transparent flex items-center justify-center font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-lg">
-                  {item.score}%
+
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-[20px] sm:text-[24px] font-black text-gray-900 dark:text-white tracking-tight leading-none">
+                    {item.score}%
+                  </span>
+                  <span className="text-[9.5px] sm:text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+                    {item.tag}
+                  </span>
                 </div>
-                <span className="text-[10px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400">{item.tag}</span>
+
+                <div className="w-full h-1.5 bg-gray-200/80 dark:bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                    style={{ width: `${item.score}%` }}
+                  />
+                </div>
               </div>
             ))}
           </div>

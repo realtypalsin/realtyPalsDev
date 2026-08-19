@@ -333,11 +333,17 @@ export function SpecificationGrid({ specs }: SpecificationGridProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-start">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-2.5 sm:gap-4 items-start">
         {categories.map((cat, i) => {
+          const isOpen = isCategoryOpen(cat)
           const isLastOdd = categories.length % 2 !== 0 && i === categories.length - 1
           return (
-            <div key={cat} className={isLastOdd ? 'col-span-1 md:col-span-2 max-w-2xl mx-auto w-full' : 'w-full'}>
+            <div
+              key={cat}
+              className={`w-full transition-all duration-200 ${
+                isOpen ? 'col-span-2 md:col-span-1' : isLastOdd ? 'col-span-2 md:col-span-2 max-w-md md:max-w-2xl mx-auto' : 'col-span-1'
+              }`}
+            >
               {renderCategoryCard(cat)}
             </div>
           )
