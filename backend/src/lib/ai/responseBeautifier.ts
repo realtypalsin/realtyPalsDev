@@ -12,7 +12,13 @@ export function beautifyResponse(text: string): string {
 
   let beautified = text
 
-  // ── Phase 0: Rewrite verbose/generic search result headers ──
+  // ── Phase 0: Strip / unwrap pseudo XML tags (<realty-chart>, <realty-box>, etc.) ──
+  beautified = beautified.replace(/<realty-chart\b[^>]*\bdata=["']([\s\S]*?)["'][^>]*\/?>/gi, (_match, data) => {
+    return '\n\n' + data.trim() + '\n\n'
+  })
+  beautified = beautified.replace(/<\/?realty-(?:chart|box|action)[^>]*>/gi, '')
+
+  // ── Phase 0.5: Rewrite verbose/generic search result headers ──
   beautified = beautified.replace(
     /Ranked\s+by\s+our\s+verified\s+project\s+score\s*\([^)]*\)/gi,
     '⭐ Top verified matches ranked by RealtyScore™'

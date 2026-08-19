@@ -4,6 +4,7 @@
 
 import Groq from 'groq-sdk'
 import OpenAI from 'openai'
+import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
 import { MODELS } from '../config'
 import type { Intent } from '../discovery'
@@ -422,6 +423,35 @@ async function extractWithOpenAI(
   return parseExtendedIntentJson(raw, previousIntent, 'openai')
 }
 
+async function extractWithGemini(
+  message: string,
+  previousIntent: ExtendedIntentWithConfidence | undefined,
+): Promise<ExtendedIntentWithConfidence> {
+  console.log('[EXTENDED_INTENT] START extractWithGemini', Date.now())
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('No GEMINI_API_KEY')
+  const client = new GoogleGenAI({ apiKey })
+
+  const userContent = previousIntent
+    ? `Previous intent: ${JSON.stringify(previousIntent)}\n\nNew user message: ${message}`
+    : `User message: ${message}`
+
+  const response = await client.models.generateContent({
+    model: MODELS.GEMINI_MAIN || 'gemini-2.0-flash',
+    contents: [{ role: 'user', parts: [{ text: userContent }] }],
+    config: {
+      systemInstruction: EXTENDED_INTENT_EXTRACTION_PROMPT,
+      responseMimeType: 'application/json',
+      maxOutputTokens: 512,
+      temperature: 0.1,
+    } as any,
+  })
+
+  console.log('[EXTENDED_INTENT] END extractWithGemini', Date.now())
+  const raw = response.text || '{}'
+  return parseExtendedIntentJson(raw, previousIntent, 'gemini')
+}
+
 async function extractWithCerebras(
   message: string,
   previousIntent: ExtendedIntentWithConfidence | undefined,
@@ -577,42 +607,19 @@ export async function extractExtendedIntent(
 ): Promise<ExtendedIntentResult> {
   const { userMessage, previousIntent } = options
 
-  // 1. Attempt OpenAI with 2.5-second timeout (if not blacklisted), fallback to Groq
-  if (process.env.OPENAI_API_KEY && !isKeyFailed('OPENAI_API_KEY')) {
-    const controller = new AbortController()
-    const timer = setTimeout(() => {
-      console.warn('[extended_intent] 2.5s wall-clock expired — aborting OpenAI, switching to Groq')
-      controller.abort()
-    }, 2500)
-
+  // 1. PRIMARY: Google Gemini 2.0 Flash (Paid, high throughput, zero rate limits)
+  if (process.env.GEMINI_API_KEY && !isKeyFailed('GEMINI_API_KEY')) {
     try {
-      console.log('[EXTENDED_INTENT] trying OpenAI path', Date.now())
-      const result = await extractWithOpenAI(userMessage, previousIntent, controller.signal)
-      console.log('[EXTENDED_INTENT] OpenAI path succeeded', Date.now(), { result })
-      clearTimeout(timer)
-      return { intent: result, degraded: false }
-    } catch (err: any) {
-      clearTimeout(timer)
-      if (err?.status === 404 || err?.status === 401 || err?.status === 403 || err?.name === 'AbortError' || (err?.message || '').includes('404')) {
-        markKeyFailed('OPENAI_API_KEY')
-      }
-      console.warn('[extended_intent] OpenAI failed, trying Groq:', (err as Error).message)
-    }
-  }
-
-  // 2. Attempt Groq
-  if (process.env.GROQ_API_KEY) {
-    try {
-      console.log('[EXTENDED_INTENT] trying Groq path', Date.now())
-      const result = await extractWithGroq(userMessage, previousIntent)
-      console.log('[EXTENDED_INTENT] Groq path succeeded', Date.now(), { result })
+      console.log('[EXTENDED_INTENT] trying Gemini path', Date.now())
+      const result = await extractWithGemini(userMessage, previousIntent)
+      console.log('[EXTENDED_INTENT] Gemini path succeeded', Date.now(), { result })
       return { intent: result, degraded: false }
     } catch (err) {
-      console.warn('[extended_intent] Groq failed, trying Cerebras:', (err as Error).message)
+      console.warn('[extended_intent] Gemini failed, trying Cerebras:', (err as Error).message)
     }
   }
 
-  // 3. Attempt Cerebras (Ultra-fast LLaMA 3.3 70B extraction)
+  // 2. Cerebras (Ultra-fast LLaMA 3.3 70B extraction)
   if (process.env.CEREBRAS_API_KEY || process.env.CEREBRAS_API_KEY1) {
     try {
       console.log('[EXTENDED_INTENT] trying Cerebras path', Date.now())
@@ -624,7 +631,7 @@ export async function extractExtendedIntent(
     }
   }
 
-  // 4. Attempt Mistral
+  // 3. Mistral
   if (process.env.MISTRAL_API_KEY) {
     try {
       console.log('[EXTENDED_INTENT] trying Mistral path', Date.now())
@@ -632,7 +639,34 @@ export async function extractExtendedIntent(
       console.log('[EXTENDED_INTENT] Mistral path succeeded', Date.now(), { result })
       return { intent: result, degraded: false }
     } catch (err) {
-      console.warn('[extended_intent] Mistral failed:', (err as Error).message)
+      console.warn('[extended_intent] Mistral failed, trying Groq:', (err as Error).message)
+    }
+  }
+
+  // 4. Groq
+  if (process.env.GROQ_API_KEY) {
+    try {
+      console.log('[EXTENDED_INTENT] trying Groq path', Date.now())
+      const result = await extractWithGroq(userMessage, previousIntent)
+      console.log('[EXTENDED_INTENT] Groq path succeeded', Date.now(), { result })
+      return { intent: result, degraded: false }
+    } catch (err) {
+      console.warn('[extended_intent] Groq failed, trying OpenAI:', (err as Error).message)
+    }
+  }
+
+  // 5. OpenAI
+  if (process.env.OPENAI_API_KEY && !isKeyFailed('OPENAI_API_KEY')) {
+    try {
+      console.log('[EXTENDED_INTENT] trying OpenAI path', Date.now())
+      const result = await extractWithOpenAI(userMessage, previousIntent)
+      console.log('[EXTENDED_INTENT] OpenAI path succeeded', Date.now(), { result })
+      return { intent: result, degraded: false }
+    } catch (err: any) {
+      if (err?.status === 404 || err?.status === 401 || err?.status === 403 || (err?.message || '').includes('404')) {
+        markKeyFailed('OPENAI_API_KEY')
+      }
+      console.warn('[extended_intent] OpenAI failed:', (err as Error).message)
     }
   }
 

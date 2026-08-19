@@ -593,7 +593,10 @@ function MessageBubbleInner({
                 // Stage D: AI text streaming or complete
                 if (displayContent) {
                   const streaming = isLast && isSubmitting
-                  const blocks = streaming ? null : parseResponseBlocks(displayContent)
+                  const cleanDisplayContent = displayContent
+                    .replace(/<realty-chart\b[^>]*\bdata=["']([\s\S]*?)["'][^>]*\/?>/gi, (_m, data) => '\n\n' + data.trim() + '\n\n')
+                    .replace(/<\/?realty-(?:chart|box|action)[^>]*>/gi, '')
+                  const blocks = streaming ? null : parseResponseBlocks(cleanDisplayContent)
                   return (
                     <>
                       {!hasProperties && (

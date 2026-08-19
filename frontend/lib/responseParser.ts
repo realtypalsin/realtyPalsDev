@@ -31,7 +31,13 @@ function detectType(line: string): BlockType | null {
 export function parseResponseBlocks(content: string): ResponseBlock[] | null {
   if (!content.trim()) return null
 
-  const lines = content.split('\n')
+  // Unwrap any legacy <realty-chart ... data="..."> tags
+  let cleaned = content.replace(/<realty-chart\b[^>]*\bdata=["']([\s\S]*?)["'][^>]*\/?>/gi, (_match, data) => {
+    return '\n\n' + data.trim() + '\n\n'
+  })
+  cleaned = cleaned.replace(/<\/?realty-(?:chart|box|action)[^>]*>/gi, '')
+
+  const lines = cleaned.split('\n')
   const hasStructure = lines.some(l => detectType(l) !== null)
   if (!hasStructure) return null
 

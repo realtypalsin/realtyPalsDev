@@ -4,8 +4,8 @@
 export const MODELS = {
   MAIN: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
-  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-2.5-flash',
-  GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-2.5-flash',
+  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-2.0-flash',
+  GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-1.5-flash',
   OPENAI_AZURE: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   OPENAI_FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
   GROQ_FAST: process.env.GROQ_FAST_MODEL || 'llama-3.1-8b-instant',
@@ -54,23 +54,23 @@ export interface FallbackKeyConfig {
 
 export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 1: GOOGLE GEMINI 3.5 FLASH (Primary Premium Paid Provider)
+  // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: false, label: 'Google Gemini 3.5 Flash (Primary)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: false, label: 'Google Gemini 2.0 Flash (Primary)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: false, label: 'Google Gemini 1.5 Flash (Backup)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 2: MISTRAL & GROQ (High-Speed Backup Chain)
+  // TIER 2: MISTRAL & CEREBRAS (High-Speed Failover Layer)
   // ═══════════════════════════════════════════════════════════════════════════
   { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small (Verified)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 1)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 2)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY2', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 3)' },
+  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'llama-3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (Key 1)' },
+  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY1', model: 'llama-3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (Key 2)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 3: OPENAI & CEREBRAS (Failover Resilience Layer)
+  // TIER 3: GROQ & OPENAI (Resilience Layer)
   // ═══════════════════════════════════════════════════════════════════════════
+  { provider: 'groq', envKey: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 1)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 2)' },
   { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 1)' },
   { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 2)' },
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'llama3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (Key 1)' },
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY1', model: 'llama3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (Key 2)' },
 ]
