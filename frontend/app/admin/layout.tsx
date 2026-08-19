@@ -5,20 +5,29 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
-  Building2, Users, LayoutDashboard, LogOut, Menu,
-  ChevronRight, Search, FileText, MessageSquare, Newspaper, PanelLeftClose, PanelLeftOpen, BarChart3
-} from 'lucide-react'
-import {  AnimatePresence, m  } from 'framer-motion'
+  Gauge,
+  Buildings,
+  UsersThree,
+  IdentificationBadge,
+  PhoneCall,
+  NewspaperClipping,
+  ChartLineUp,
+  SignOut,
+  MagnifyingGlass,
+  CaretRight,
+  SidebarSimple
+} from '@phosphor-icons/react'
+import { AnimatePresence, m } from 'framer-motion'
 import { API_BASE } from '@/lib/env'
 
 const NAV = [
-  { href: '/admin',                       label: 'Dashboard',            icon: LayoutDashboard },
-  { href: '/admin/projects',              label: 'Projects',             icon: Building2 },
-  { href: '/admin/builders',              label: 'Builders',             icon: Users },
-  { href: '/admin/builder-applications',  label: 'Registrations',        icon: FileText },
-  { href: '/admin/leads',                 label: 'Leads',                icon: MessageSquare },
-  { href: '/admin/news',                  label: 'News',                 icon: Newspaper },
-  { href: '/admin/analytics',             label: 'Analytics',            icon: BarChart3 },
+  { href: '/admin',                       label: 'Dashboard',            icon: Gauge },
+  { href: '/admin/projects',              label: 'Projects',             icon: Buildings },
+  { href: '/admin/builders',              label: 'Builders',             icon: UsersThree },
+  { href: '/admin/builder-applications',  label: 'Registrations',        icon: IdentificationBadge },
+  { href: '/admin/leads',                 label: 'Leads',                icon: PhoneCall },
+  { href: '/admin/news',                  label: 'News',                 icon: NewspaperClipping },
+  { href: '/admin/analytics',             label: 'Analytics',            icon: ChartLineUp },
 ]
 
 function breadcrumb(pathname: string): { label: string; href?: string }[] {
@@ -122,7 +131,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="fixed top-[15vh] left-1/2 -translate-x-1/2 w-full max-w-xl bg-white rounded-2xl shadow-[0_32px_64px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] z-50 overflow-hidden"
             >
               <div className="flex items-center px-4 border-b border-zinc-200/50">
-                <Search size={18} className="text-zinc-400 mr-3" />
+                <MagnifyingGlass size={18} weight="bold" className="text-zinc-400 mr-3" />
                 <input
                   autoFocus
                   placeholder="Type a command or search..."
@@ -137,10 +146,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <button
                     key={nav.href}
                     onClick={() => { router.push(nav.href); setCmdOpen(false) }}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-zinc-100/80 transition-colors group"
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-zinc-100/80 transition-colors group cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
-                      <nav.icon size={16} className="text-zinc-500 group-hover:text-zinc-900 transition-colors" />
+                      <nav.icon size={18} weight="duotone" className="text-zinc-500 group-hover:text-zinc-900 transition-colors" />
                       <span className="text-[14px] font-medium text-zinc-700 group-hover:text-zinc-900">{nav.label}</span>
                     </div>
                     <span className="text-[12px] text-zinc-400 font-medium">Go to</span>
@@ -178,13 +187,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="absolute right-3 flex items-center justify-center">
                 <button
+                  type="button"
                   onClick={() => {
                     if (window.innerWidth < 768) setMobileOpen(false);
                     else setIsCollapsed(true);
                   }}
-                  className="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
+                  className="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-colors cursor-pointer"
+                  title="Collapse sidebar"
+                  aria-label="Collapse sidebar"
                 >
-                  <PanelLeftClose size={20} strokeWidth={1.5} />
+                  <SidebarSimple size={18} weight="bold" />
                 </button>
               </div>
             </>
@@ -194,10 +206,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Image src="/images/icons/CollapsedRealtyPalsBlackSqLogo.png" alt="RealtyPals Logo" width={32} height={32} className="object-contain rounded-md drop-shadow-sm" unoptimized />
               </div>
               <button
+                type="button"
                 onClick={() => setIsCollapsed(false)}
-                className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-all duration-200"
+                className="absolute inset-0 m-auto w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-all duration-200 cursor-pointer"
+                title="Expand sidebar"
+                aria-label="Expand sidebar"
               >
-                <PanelLeftOpen size={20} strokeWidth={1.5} />
+                <SidebarSimple size={18} weight="bold" />
               </button>
             </div>
           )}
@@ -216,12 +231,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     flex items-center transition-all duration-base overflow-hidden whitespace-nowrap
                     ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'}
                     ${isActive
-                      ? 'bg-slate-900 text-white font-medium'
+                      ? 'bg-slate-900 text-white font-medium shadow-xs'
                       : 'text-zinc-500 hover:bg-slate-100 hover:text-zinc-900'
                     }
                   `}
                 >
-                  <nav.icon size={18} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-white' : 'text-zinc-400 group-hover/navitem:text-zinc-600'} />
+                  <nav.icon size={18} weight={isActive ? "fill" : "duotone"} className={isActive ? 'text-white' : 'text-zinc-400 group-hover/navitem:text-zinc-600'} />
                   {!isCollapsed && (
                     <span className="text-[13px] font-semibold tracking-wide">
                       {nav.label}
@@ -247,7 +262,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               rel="noopener noreferrer"
               className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900`}
             >
-              <Building2 size={18} strokeWidth={2} className="text-zinc-400 group-hover/navitem:text-zinc-600" />
+              <Buildings size={18} weight="duotone" className="text-zinc-400 group-hover/navitem:text-zinc-600" />
               {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">View site</span>}
             </Link>
             {isCollapsed && (
@@ -259,10 +274,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="relative group/navitem flex justify-center">
             <button
+              type="button"
               onClick={handleLogout}
-              className={`flex items-center transition-all duration-base overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 hover:bg-red-50 hover:text-red-600`}
+              className={`flex items-center transition-all duration-base overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 hover:bg-red-50 hover:text-red-600 cursor-pointer`}
             >
-              <LogOut size={18} strokeWidth={2} className="text-zinc-400 group-hover/navitem:text-red-500" />
+              <SignOut size={18} weight="bold" className="text-zinc-400 group-hover/navitem:text-red-500" />
               {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">Sign Out</span>}
             </button>
             {isCollapsed && (
@@ -281,19 +297,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="pt-[env(safe-area-inset-top,0px)] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 shrink-0 px-3 sm:px-6 flex items-center justify-between z-40 transition-colors">
           <div className="h-14 flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <button
+              type="button"
               onClick={() => setMobileOpen(true)}
-              className="md:hidden text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+              className="md:hidden flex flex-col justify-center items-start gap-[4.5px] p-2 text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
               aria-label="Open Navigation"
             >
-              <Menu size={20} />
+              <span className="w-[16px] h-[2px] bg-current rounded-full" />
+              <span className="w-[16px] h-[2px] bg-current rounded-full" />
             </button>
 
             {/* Breadcrumbs */}
             <nav className="flex items-center gap-1 sm:gap-1.5 text-xs font-semibold min-w-0">
-              <Building2 size={15} className="text-zinc-400 dark:text-zinc-500 shrink-0 hidden sm:inline" />
+              <Buildings size={16} weight="duotone" className="text-zinc-400 dark:text-zinc-500 shrink-0 hidden sm:inline" />
               {crumbs.map((c, i) => (
                 <span key={i} className="flex items-center gap-1 sm:gap-1.5 min-w-0">
-                  {i > 0 && <ChevronRight size={12} className="text-zinc-300 dark:text-zinc-600 flex-shrink-0" />}
+                  {i > 0 && <CaretRight size={12} weight="bold" className="text-zinc-300 dark:text-zinc-600 flex-shrink-0" />}
                   {c.href && i < crumbs.length - 1 ? (
                     <Link
                       href={c.href}
@@ -313,10 +331,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Command shortcut hint */}
           <button 
+            type="button"
             onClick={() => setCmdOpen(true)}
             className="hidden md:flex items-center gap-2.5 px-3 py-1.5 bg-zinc-100/80 hover:bg-zinc-200/70 dark:bg-zinc-800/70 dark:hover:bg-zinc-800 border border-zinc-200/70 dark:border-zinc-700/70 rounded-full text-xs font-medium text-zinc-500 dark:text-zinc-400 transition-all shadow-2xs hover:shadow-xs group cursor-pointer"
           >
-            <Search size={13} className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+            <MagnifyingGlass size={14} weight="bold" className="text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
             <span className="font-semibold text-[11.5px]">Search</span>
             <kbd className="font-sans text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 shadow-2xs">⌘K</kbd>
           </button>
@@ -339,7 +358,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     : 'text-zinc-500 dark:text-zinc-400 font-medium hover:text-zinc-900 dark:hover:text-zinc-100'
                 }`}
               >
-                <nav.icon size={17} strokeWidth={isActive ? 2.5 : 1.8} className={isActive ? 'text-blue-600 dark:text-blue-400' : ''} />
+                <nav.icon size={18} weight={isActive ? "fill" : "duotone"} className={isActive ? 'text-blue-600 dark:text-blue-400' : ''} />
                 <span className="text-[9.5px] tracking-tight mt-0.5 font-semibold">{nav.label}</span>
               </Link>
             )

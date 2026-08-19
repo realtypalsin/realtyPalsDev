@@ -3,9 +3,20 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Building2, Users, CheckCircle2, AlertTriangle, ArrowRight, RefreshCw,
-  ImageOff, ShieldOff, Terminal, Plus, Activity, Copy, Check
-} from 'lucide-react'
+  Buildings,
+  UsersThree,
+  CheckCircle,
+  WarningCircle,
+  ArrowRight,
+  ArrowClockwise,
+  ImageBroken,
+  ShieldSlash,
+  TerminalWindow,
+  Plus,
+  Activity,
+  Copy,
+  Check
+} from '@phosphor-icons/react'
 import { Skeleton } from '@/components/ui/skeleton'
 import UniversalLoader from '@/components/ui/universal-loader'
 import AdminInfoTooltip from '@/components/admin/AdminInfoTooltip'
@@ -108,18 +119,19 @@ export default function AdminDashboard() {
 
         <div className="flex items-center gap-2.5">
           <button
+            type="button"
             onClick={load}
             disabled={loading}
             className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 rounded-xl shadow-xs hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin text-blue-500' : 'text-zinc-500'} />
+            <ArrowClockwise size={14} weight="bold" className={loading ? 'animate-spin text-blue-500' : 'text-zinc-500'} />
             <span>Refresh Metrics</span>
           </button>
           <Link
             href="/admin/projects/new"
             className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl shadow-xs transition-all active:scale-[0.98]"
           >
-            <Plus size={15} />
+            <Plus size={15} weight="bold" />
             <span>Add Property</span>
           </Link>
         </div>
@@ -147,7 +159,7 @@ export default function AdminDashboard() {
                 />
               </span>
               <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Building2 size={18} />
+                <Buildings size={20} weight="duotone" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline justify-between">
@@ -175,7 +187,7 @@ export default function AdminDashboard() {
                 />
               </span>
               <div className="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Users size={18} />
+                <UsersThree size={20} weight="duotone" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline justify-between">
@@ -200,7 +212,7 @@ export default function AdminDashboard() {
                 />
               </span>
               <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <CheckCircle2 size={18} />
+                <CheckCircle size={20} weight="duotone" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline justify-between">
@@ -239,7 +251,7 @@ export default function AdminDashboard() {
                   ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform'
                   : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
               }`}>
-                <AlertTriangle size={18} />
+                <WarningCircle size={20} weight="duotone" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline justify-between">
@@ -450,21 +462,21 @@ export default function AdminDashboard() {
               >
                 <div className="flex items-center gap-3.5">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Plus size={18} />
+                    <Plus size={18} weight="bold" />
                   </div>
                   <div>
                     <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100">Create Project Record</h4>
                     <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Add property metadata, pricing & images</p>
                   </div>
                 </div>
-                <ArrowRight size={15} className="text-zinc-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                <ArrowRight size={15} weight="bold" className="text-zinc-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
               </Link>
 
               {stats && stats.no_image > 0 && (
                 <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60">
                   <div className="flex items-center gap-3.5">
                     <div className="w-9 h-9 rounded-xl bg-white dark:bg-zinc-900 shadow-2xs flex items-center justify-center text-amber-600 dark:text-amber-400">
-                      <ImageOff size={18} />
+                      <ImageBroken size={18} weight="duotone" />
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-amber-900 dark:text-amber-200">
@@ -476,10 +488,11 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => copyToClipboard('npm run db:seed-images')}
                     className="px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:text-amber-300 bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-700 rounded-lg shadow-2xs hover:bg-amber-100 transition-colors flex items-center gap-1 cursor-pointer"
                   >
-                    {copiedCmd === 'npm run db:seed-images' ? <Check size={12} /> : <Copy size={12} />}
+                    {copiedCmd === 'npm run db:seed-images' ? <Check size={12} weight="bold" /> : <Copy size={12} weight="bold" />}
                     <span>{copiedCmd === 'npm run db:seed-images' ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
@@ -489,7 +502,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between p-3.5 rounded-xl bg-violet-50/60 dark:bg-violet-950/30 border border-violet-200/80 dark:border-violet-800/60">
                   <div className="flex items-center gap-3.5">
                     <div className="w-9 h-9 rounded-xl bg-white dark:bg-zinc-900 shadow-2xs flex items-center justify-center text-violet-600 dark:text-violet-400">
-                      <ShieldOff size={18} />
+                      <ShieldSlash size={18} weight="duotone" />
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-violet-900 dark:text-violet-200">
@@ -501,10 +514,11 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => copyToClipboard('npm run db:enrich-ai')}
                     className="px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:text-violet-300 bg-white dark:bg-zinc-800 border border-violet-300 dark:border-violet-700 rounded-lg shadow-2xs hover:bg-violet-100 transition-colors flex items-center gap-1 cursor-pointer"
                   >
-                    {copiedCmd === 'npm run db:enrich-ai' ? <Check size={12} /> : <Copy size={12} />}
+                    {copiedCmd === 'npm run db:enrich-ai' ? <Check size={12} weight="bold" /> : <Copy size={12} weight="bold" />}
                     <span>{copiedCmd === 'npm run db:enrich-ai' ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
@@ -522,7 +536,7 @@ export default function AdminDashboard() {
               <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
               <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
               <span className="text-xs font-semibold text-zinc-400 ml-2 font-sans flex items-center gap-1.5">
-                <Terminal size={13} className="text-zinc-500" />
+                <TerminalWindow size={14} weight="duotone" className="text-zinc-500" />
                 <span>bash — realty-pals-server</span>
               </span>
             </div>
@@ -545,11 +559,12 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-3">
                   <span className="text-[11px] text-zinc-500 hidden sm:inline"># {desc}</span>
                   <button
+                    type="button"
                     onClick={() => copyToClipboard(cmd)}
                     className="p-1 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-60 group-hover:opacity-100 cursor-pointer"
                     title="Copy command"
                   >
-                    {copiedCmd === cmd ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                    {copiedCmd === cmd ? <Check size={13} weight="bold" className="text-emerald-400" /> : <Copy size={13} weight="bold" />}
                   </button>
                 </div>
               </div>

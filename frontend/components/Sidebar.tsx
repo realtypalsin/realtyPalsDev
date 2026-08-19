@@ -178,15 +178,16 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile Hamburger Menu Button (Elevated at z-[60] so it's always accessible and crisp) */}
+      {/* Mobile Sidebar Button (ChatGPT-style minimalist 2 lines) */}
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-3 left-3 z-[60] w-9 h-9 rounded-xl bg-white/90 dark:bg-zinc-800/90 border border-gray-200/80 dark:border-white/10 shadow-xs flex items-center justify-center text-gray-800 dark:text-gray-100 backdrop-blur-md active:scale-95 transition-all cursor-pointer"
+        className="md:hidden fixed top-3.5 left-3.5 z-[60] w-8 h-8 flex flex-col justify-center items-start gap-[4.5px] p-1.5 text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white active:scale-95 transition-all cursor-pointer"
         aria-label="Open sidebar menu"
         title="Open menu"
       >
-        <List size={20} weight="bold" />
+        <span className="w-[17px] h-[2px] bg-current rounded-full" />
+        <span className="w-[17px] h-[2px] bg-current rounded-full" />
       </button>
 
       {mobileOpen && (
