@@ -347,7 +347,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               alt={project.name}
               fill
               priority={index < 3}
-              onError={() => markImageFailed(activeUrl)}
+              onError={() => { if (activeUrl) markImageFailed(activeUrl) }}
               className="object-cover"
               sizes="130px"
             />
@@ -418,7 +418,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                   alt={project.name}
                   fill
                   priority={index < 4 && i === 0}
-                  onError={() => markImageFailed(src)}
+                  onError={() => { if (src) markImageFailed(src) }}
                   className={`object-cover transition-all duration-500 ${
                     i === imgIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
                   }`}

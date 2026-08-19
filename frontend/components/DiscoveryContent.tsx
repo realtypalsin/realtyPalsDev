@@ -13,6 +13,7 @@ import { streamChat as streamChatBackend } from '@/lib/backend-api'
 import { authHeaders } from '@/lib/authedFetch'
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import MessageBubble, { buildPickerMessage } from '@/components/chat/MessageBubble';
+import type { ChipPickerState } from '@/components/chat/types';
 import CompareSelectorOverlay from '@/components/chat/CompareSelectorOverlay';
 import ContextRibbon from '@/components/chat/ContextRibbon';
 import {

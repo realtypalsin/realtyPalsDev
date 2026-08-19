@@ -114,7 +114,7 @@ function getCategoryTheme(cat: string): CategoryTheme {
 
 function getTierIcon(tier?: string | null) {
   if (tier === 'luxury') return Crown
-  if (tier === 'premium') return Award
+  if (tier === 'premium') return Medal
   return Tag
 }
 

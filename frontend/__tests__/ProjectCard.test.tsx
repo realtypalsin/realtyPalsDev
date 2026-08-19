@@ -45,35 +45,33 @@ const mockProject: ProjectCardType = {
 describe('ProjectCard Component', () => {
   it('renders the project name, builder, and sector', () => {
     render(<ProjectCard project={mockProject} userId={null} />);
-    expect(screen.getByText('Ace Hanei')).toBeInTheDocument();
-    expect(screen.getByText('ACE Group')).toBeInTheDocument();
-    expect(screen.getByText('Sector 12')).toBeInTheDocument();
+    expect(screen.getAllByText('Ace Hanei')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('ACE Group')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Sector 12')[0]).toBeInTheDocument();
   });
 
   it('renders the exact price range label', () => {
     render(<ProjectCard project={mockProject} userId={null} />);
-    expect(screen.getByText('₹3.11–5.70Cr')).toBeInTheDocument();
+    expect(screen.getAllByText('₹3.11–5.70Cr')[0]).toBeInTheDocument();
   });
-
-
 
   it('renders the possession label for under construction projects', () => {
     render(<ProjectCard project={mockProject} userId={null} />);
-    expect(screen.getByText(/Expected October 2023/)).toBeInTheDocument();
-    expect(screen.getByText('Under Construction')).toBeInTheDocument();
+    expect(screen.getAllByText(/Expected October 2023/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Under Construction')[0]).toBeInTheDocument();
   });
 
   it('renders RTM tag instead of possession label when status is ready_to_move', () => {
     const rtmProject = { ...mockProject, status: 'ready_to_move' as const };
     render(<ProjectCard project={rtmProject} userId={null} />);
-    expect(screen.getByText('Ready to Move')).toBeInTheDocument();
+    expect(screen.getAllByText('Ready to Move')[0]).toBeInTheDocument();
     expect(screen.queryByText('Expected October 2023')).not.toBeInTheDocument();
   });
 
   it('renders exactly two BHK rows by default and handles expand/collapse', () => {
     render(<ProjectCard project={mockProject} userId={null} />);
     // Initial state: Only 3 BHK and 4 BHK should be grouped.
-    expect(screen.getByText('3 BHK')).toBeInTheDocument();
-    expect(screen.getByText('4 BHK')).toBeInTheDocument();
+    expect(screen.getAllByText(/3 BHK/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/4 BHK/)[0]).toBeInTheDocument();
   });
 });

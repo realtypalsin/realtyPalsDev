@@ -185,9 +185,9 @@ export default function BuilderTab({ builder, project, documents = [], loading }
       {(() => {
         const stats = [
           { title: `${legacyYears}+`, label: 'Years of Legacy', icon: Clock, color: 'text-blue-600 bg-blue-50' },
-          (builder?.projects_delivered_count && Number(builder.projects_delivered_count) > 0) ? { title: `${builder.projects_delivered_count}+`, label: 'Projects Delivered', icon: Building2, color: 'text-purple-600 bg-purple-50' } : null,
-          (builder?.delivered_units && Number(builder.delivered_units) >= 10000) ? { title: `${(Number(builder.delivered_units) >= 100000 ? (Number(builder.delivered_units) / 1000000).toFixed(1) + 'M+' : Number(builder.delivered_units).toLocaleString() + '+')}`, label: 'Sq. Ft. Delivered', icon: Award, color: 'text-amber-600 bg-amber-50' } : null,
-          (Number((builder as any)?.ongoing_projects) > 0 || Number((builder as any)?.ongoing_projects_count) > 0) ? { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count}+`, label: 'Ongoing Projects', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' } : null
+          (builder?.projects_delivered_count && Number(builder.projects_delivered_count) > 0) ? { title: `${builder.projects_delivered_count}+`, label: 'Projects Delivered', icon: Buildings, color: 'text-purple-600 bg-purple-50' } : null,
+          (builder?.delivered_units && Number(builder.delivered_units) >= 10000) ? { title: `${(Number(builder.delivered_units) >= 100000 ? (Number(builder.delivered_units) / 1000000).toFixed(1) + 'M+' : Number(builder.delivered_units).toLocaleString() + '+')}`, label: 'Sq. Ft. Delivered', icon: Medal, color: 'text-amber-600 bg-amber-50' } : null,
+          (Number((builder as any)?.ongoing_projects) > 0 || Number((builder as any)?.ongoing_projects_count) > 0) ? { title: `${(builder as any)?.ongoing_projects || (builder as any)?.ongoing_projects_count}+`, label: 'Ongoing Projects', icon: TrendUp, color: 'text-emerald-600 bg-emerald-50' } : null
         ].filter(Boolean)
 
         if (stats.length === 0) return null
@@ -232,7 +232,7 @@ export default function BuilderTab({ builder, project, documents = [], loading }
 
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3 pt-2">
               {[
-                { title: 'Customer-Centric', desc: 'Putting customers at the heart of everything.', icon: Users, color: 'bg-blue-50 text-blue-600' },
+                { title: 'Customer-Centric', desc: 'Putting customers at the heart of everything.', icon: UsersThree, color: 'bg-blue-50 text-blue-600' },
                 { title: 'Quality & Integrity', desc: 'Uncompromised quality with complete transparency.', icon: ShieldCheck, color: 'bg-emerald-50 text-emerald-600' },
                 { title: 'Timely Delivery', desc: 'Strong track record of delivering projects on time.', icon: Clock, color: 'bg-amber-50 text-amber-600' },
                 { title: 'Sustainable Dev', desc: 'Building responsibly for a better tomorrow.', icon: Leaf, color: 'bg-rose-50 text-rose-600' }

@@ -13,7 +13,6 @@ import {
   ShieldSlash,
   TerminalWindow,
   Plus,
-  Activity,
   Copy,
   Check
 } from '@phosphor-icons/react'

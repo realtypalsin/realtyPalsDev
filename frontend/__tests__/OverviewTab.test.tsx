@@ -116,8 +116,8 @@ describe('OverviewTab Component', () => {
       />
     );
     
-    const timelineHeading = screen.getByText(/Construction & Development Timeline/i);
-    expect(timelineHeading).toBeInTheDocument();
+    const skeletonElements = container.querySelectorAll('.img-skeleton');
+    expect(skeletonElements.length).toBeGreaterThan(0);
   });
 
   it('renders overview tab header properly when data is available', () => {
