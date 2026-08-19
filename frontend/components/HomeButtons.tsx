@@ -13,7 +13,7 @@ import {
   Stack,
   CaretDown,
   CaretRight,
-  Funnels
+  Funnel
 } from '@phosphor-icons/react';
 import { HOME_BUTTON_GROUPS } from '@/lib/homeButtons';
 
@@ -203,7 +203,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                   >
                     <div className="px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-zinc-400 dark:text-zinc-500 uppercase border-b border-zinc-100 dark:border-zinc-800/80 mb-1 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
-                        <Funnels size={11} weight="bold" className="text-zinc-400" />
+                        <Funnel size={11} weight="bold" className="text-zinc-400" />
                         PRESETS
                       </span>
                       <span className="text-[9px] font-medium text-zinc-400 dark:text-zinc-500">

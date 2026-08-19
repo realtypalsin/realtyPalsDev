@@ -422,6 +422,68 @@ async function extractWithOpenAI(
   return parseExtendedIntentJson(raw, previousIntent, 'openai')
 }
 
+async function extractWithCerebras(
+  message: string,
+  previousIntent: ExtendedIntentWithConfidence | undefined,
+): Promise<ExtendedIntentWithConfidence> {
+  console.log('[EXTENDED_INTENT] START extractWithCerebras', Date.now())
+  const client = new OpenAI({
+    apiKey: process.env.CEREBRAS_API_KEY || process.env.CEREBRAS_API_KEY1,
+    baseURL: 'https://api.cerebras.ai/v1',
+    timeout: 10000,
+  })
+
+  const userContent = previousIntent
+    ? `Previous intent: ${JSON.stringify(previousIntent)}\n\nNew user message: ${message}`
+    : `User message: ${message}`
+
+  const completion = await client.chat.completions.create({
+    model: 'llama-3.3-70b',
+    messages: [
+      { role: 'system', content: EXTENDED_INTENT_EXTRACTION_PROMPT },
+      { role: 'user', content: userContent },
+    ],
+    response_format: { type: 'json_object' },
+    max_tokens: 512,
+    temperature: 0.1,
+  })
+
+  console.log('[EXTENDED_INTENT] END extractWithCerebras', Date.now())
+  const raw = completion.choices[0]?.message?.content ?? '{}'
+  return parseExtendedIntentJson(raw, previousIntent, 'cerebras')
+}
+
+async function extractWithMistral(
+  message: string,
+  previousIntent: ExtendedIntentWithConfidence | undefined,
+): Promise<ExtendedIntentWithConfidence> {
+  console.log('[EXTENDED_INTENT] START extractWithMistral', Date.now())
+  const client = new OpenAI({
+    apiKey: process.env.MISTRAL_API_KEY,
+    baseURL: 'https://api.mistral.ai/v1',
+    timeout: 10000,
+  })
+
+  const userContent = previousIntent
+    ? `Previous intent: ${JSON.stringify(previousIntent)}\n\nNew user message: ${message}`
+    : `User message: ${message}`
+
+  const completion = await client.chat.completions.create({
+    model: 'mistral-small-latest',
+    messages: [
+      { role: 'system', content: EXTENDED_INTENT_EXTRACTION_PROMPT },
+      { role: 'user', content: userContent },
+    ],
+    response_format: { type: 'json_object' },
+    max_tokens: 512,
+    temperature: 0.1,
+  })
+
+  console.log('[EXTENDED_INTENT] END extractWithMistral', Date.now())
+  const raw = completion.choices[0]?.message?.content ?? '{}'
+  return parseExtendedIntentJson(raw, previousIntent, 'mistral')
+}
+
 /** Parse raw LLM JSON output into ExtendedIntentWithConfidence. */
 function parseExtendedIntentJson(
   raw: string,
@@ -515,7 +577,7 @@ export async function extractExtendedIntent(
 ): Promise<ExtendedIntentResult> {
   const { userMessage, previousIntent } = options
 
-  // Attempt OpenAI with 2.5-second timeout (if not blacklisted), fallback to Groq
+  // 1. Attempt OpenAI with 2.5-second timeout (if not blacklisted), fallback to Groq
   if (process.env.OPENAI_API_KEY && !isKeyFailed('OPENAI_API_KEY')) {
     const controller = new AbortController()
     const timer = setTimeout(() => {
@@ -538,7 +600,7 @@ export async function extractExtendedIntent(
     }
   }
 
-  // Fallback to Groq
+  // 2. Attempt Groq
   if (process.env.GROQ_API_KEY) {
     try {
       console.log('[EXTENDED_INTENT] trying Groq path', Date.now())
@@ -546,7 +608,31 @@ export async function extractExtendedIntent(
       console.log('[EXTENDED_INTENT] Groq path succeeded', Date.now(), { result })
       return { intent: result, degraded: false }
     } catch (err) {
-      console.warn('[extended_intent] Groq failed:', (err as Error).message)
+      console.warn('[extended_intent] Groq failed, trying Cerebras:', (err as Error).message)
+    }
+  }
+
+  // 3. Attempt Cerebras (Ultra-fast LLaMA 3.3 70B extraction)
+  if (process.env.CEREBRAS_API_KEY || process.env.CEREBRAS_API_KEY1) {
+    try {
+      console.log('[EXTENDED_INTENT] trying Cerebras path', Date.now())
+      const result = await extractWithCerebras(userMessage, previousIntent)
+      console.log('[EXTENDED_INTENT] Cerebras path succeeded', Date.now(), { result })
+      return { intent: result, degraded: false }
+    } catch (err) {
+      console.warn('[extended_intent] Cerebras failed, trying Mistral:', (err as Error).message)
+    }
+  }
+
+  // 4. Attempt Mistral
+  if (process.env.MISTRAL_API_KEY) {
+    try {
+      console.log('[EXTENDED_INTENT] trying Mistral path', Date.now())
+      const result = await extractWithMistral(userMessage, previousIntent)
+      console.log('[EXTENDED_INTENT] Mistral path succeeded', Date.now(), { result })
+      return { intent: result, degraded: false }
+    } catch (err) {
+      console.warn('[extended_intent] Mistral failed:', (err as Error).message)
     }
   }
 

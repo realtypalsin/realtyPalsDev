@@ -27,6 +27,7 @@ import {
   ArrowRight
 } from '@phosphor-icons/react';
 import { useSessions } from '@/hooks/useSessions';
+import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { ChatPhase2Skeleton } from '@/components/skeletons';
 
 const DEBUG = process.env.NODE_ENV !== 'production'
