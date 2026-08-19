@@ -30,10 +30,11 @@ import { isCityLevel } from './intent'
 import { CITY_LEVEL_ALIASES } from './constants'
 import { SUPPORTED_CITIES } from '../config/cities'
 
-/** Bidirectional substring match — mirrors SQL ILIKE fallback used in discovery Branch 1. */
-export function matchesProjectName(term: string, projectName: string): boolean {
-  const t = term.toLowerCase()
-  const n = projectName.toLowerCase()
+/** Bidirectional substring match — mirrors SQL ILIKE fallback used in discovery Branch 1. Safe against null/undefined. */
+export function matchesProjectName(term?: string | null, projectName?: string | null): boolean {
+  if (!term || !projectName || typeof term !== 'string' || typeof projectName !== 'string') return false
+  const t = term.toLowerCase().trim()
+  const n = projectName.toLowerCase().trim()
   return n.includes(t) || t.includes(n)
 }
 

@@ -127,13 +127,14 @@ function Field({ label, children, hint, required }: {
   required?: boolean
 }) {
   return (
-    <div>
-      <label className="block text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-2">
+    <div className="w-full min-w-0 flex flex-col">
+      <label className="block text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-1.5">
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
-      {children}
-      {hint && <p className="text-[12px] text-slate-600 dark:text-slate-300 font-medium mt-2 leading-snug">{hint}</p>}
-
+      <div className="w-full min-w-0">
+        {children}
+      </div>
+      {hint && <p className="text-[11.5px] text-slate-500 dark:text-slate-400 font-medium mt-1.5 leading-snug">{hint}</p>}
     </div>
   )
 }
@@ -369,8 +370,8 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
   }, [dirty, form, projectId, handleSubmit])
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 w-full">
 
 
         <SectionHeader title="Core Info" />

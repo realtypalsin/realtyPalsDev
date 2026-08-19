@@ -202,22 +202,21 @@ export interface IntentResult {
 import { FALLBACK_CHAIN } from '../config'
 import { isKeyFailed, markKeyFailed } from './providerStatus'
 
+import { GoogleGenAI } from '@google/genai'
+
 export async function extractIntent(message: string, previousIntent: Intent): Promise<IntentResult> {
-  // Intent extraction chain: prioritize fast, cheap models
-  // Groq 8B (0.05/M tokens) → Groq 70B → Cerebras → Mistral → OpenAI
+  // Intent extraction chain: prioritize Gemini Flash & fast, reliable models
   const intentChain = [
-    // Tier 1: Ultra-fast, cheapest
-    { provider: 'groq' as const, envKey: 'GROQ_API_KEY', model: MODELS.GROQ_FAST || 'llama-3.1-8b-instant', timeout: 3000 },
-    { provider: 'groq' as const, envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_FAST || 'llama-3.1-8b-instant', timeout: 3000 },
-    { provider: 'groq' as const, envKey: 'GROQ_API_KEY2', model: MODELS.GROQ_FAST || 'llama-3.1-8b-instant', timeout: 3000 },
-    // Tier 2: Fallback to 70B if 8B unavailable
+    // Tier 1: Gemini 2.5 Flash (Primary high-accuracy, lightning-fast)
+    { provider: 'gemini' as const, envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN || 'gemini-2.5-flash', timeout: 3000 },
+    // Tier 2: Mistral Small
+    { provider: 'mistral' as const, envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', timeout: 3000 },
+    // Tier 3: Groq
     { provider: 'groq' as const, envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART || 'llama-3.3-70b-versatile', timeout: 3000 },
     { provider: 'groq' as const, envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART || 'llama-3.3-70b-versatile', timeout: 3000 },
-    // Tier 3: Cerebras (fast, reasonable cost)
+    // Tier 4: Cerebras
     { provider: 'cerebras' as const, envKey: 'CEREBRAS_API_KEY', model: 'llama3.3-70b', timeout: 3000 },
-    // Tier 4: Mistral
-    { provider: 'mistral' as const, envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', timeout: 3000 },
-    // Tier 5: OpenAI (most expensive fallback)
+    // Tier 5: OpenAI (Fallback)
     { provider: 'openai' as const, envKey: 'OPENAI_API_KEY', model: MODELS.MAIN || 'gpt-4o', timeout: 2000 },
   ]
 
@@ -230,6 +229,22 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
     if (!apiKey) continue
 
     try {
+      if (config.provider === 'gemini') {
+        console.log(`[INTENT] Trying Gemini (${config.model}) via ${config.envKey}`)
+        const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: config.timeout } })
+        const res = await client.models.generateContent({
+          model: config.model || 'gemini-2.5-flash',
+          contents: [{ role: 'user', parts: [{ text: `Previous intent: ${JSON.stringify(previousIntent)}\n\nUser message: ${message}` }] }],
+          config: {
+            systemInstruction: INTENT_EXTRACTION_PROMPT,
+            temperature: 0.1,
+            responseMimeType: 'application/json',
+          },
+        })
+        const raw = res.text?.trim() ?? '{}'
+        const result = parseIntentJson(raw, previousIntent)
+        if (result) return { intent: result, degraded: false }
+      }
       if (config.provider === 'groq') {
         console.log(`[INTENT] Trying Groq (${config.model}) via ${config.envKey}`)
         const groq = new Groq({ apiKey, timeout: config.timeout })

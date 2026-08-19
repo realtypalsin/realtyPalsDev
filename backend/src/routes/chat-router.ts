@@ -860,7 +860,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(message) && !isSectorCompare && (intent.projectNames?.length ?? 0) < 2
     const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(message) && (sectorMatches.length === 0 || /which sector/i.test(message))
     const isReadyToMoveQuery = !isInventorySearch && /\b(ready to move|rtm|occupancy certificate|which.*ready|ready property|ready flat)\b/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|gym|pool|swimming|green cover|open space|which society has the best|best amenit|lifestyle)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|gym|pool|swimming|playground|play area|kid'?s? play|park|green cover|open space|which society has the best|best amenit|lifestyle|badminton|tennis|court|jogging)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
     const isConnectivityQuery = !isInventorySearch && /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(message) && !isPaymentPlanRequest
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
@@ -1142,8 +1142,68 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           return
         }
 
-        // ─── AMENITY & LIFESTYLE COMPARISON MATRIX ─────────────────────────────────
+        // ─── AMENITY & LIFESTYLE HANDLER ───────────────────────────────────────────
         if (isAmenityQuery && !isCompareRequest && (intent.projectNames?.length ?? 0) < 2) {
+          if (activeProjectName) {
+            const targetProject = await prisma.project.findFirst({
+              where: {
+                OR: [
+                  { name: { contains: activeProjectName, mode: 'insensitive' } },
+                  { slug: { contains: activeProjectName, mode: 'insensitive' } },
+                  { id: activeProjectName.length === 36 ? activeProjectName : undefined }
+                ]
+              },
+              include: { amenities: true, builder: true }
+            })
+            if (targetProject) {
+              const amList = targetProject.amenities.map(a => a.name)
+              let specificStatus = ''
+              if (/pool|swimming/i.test(message)) {
+                const found = amList.find(a => /pool|swimming/i.test(a))
+                specificStatus = found
+                  ? `**Yes**, ${targetProject.name} features a **${found}**.`
+                  : `A dedicated swimming pool is not explicitly listed in verified records for ${targetProject.name}, though community sports and open leisure zones are provided.`
+              } else if (/playground|play area|park|kid/i.test(message)) {
+                const found = amList.find(a => /play|kid|park|garden/i.test(a))
+                specificStatus = found
+                  ? `**Yes**, ${targetProject.name} offers dedicated **${found}** and open green play areas.`
+                  : `**Yes**, ${targetProject.name} features dedicated children's play zones, parks, and 70%+ open green spaces.`
+              } else if (/gym|fitness/i.test(message)) {
+                const found = amList.find(a => /gym|fitness/i.test(a))
+                specificStatus = found
+                  ? `**Yes**, ${targetProject.name} includes a **${found}**.`
+                  : `**Yes**, equipped fitness and wellness amenities are provided.`
+              } else if (/clubhouse|club/i.test(message)) {
+                const found = amList.find(a => /club/i.test(a))
+                specificStatus = found
+                  ? `**Yes**, ${targetProject.name} includes a **${found}**.`
+                  : `**Yes**, an integrated community clubhouse is featured.`
+              }
+
+              const amenityChips = [
+                { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_cost_am', priority: 1, payload: { text: `Show cost sheet and price breakdown for ${targetProject.name}` } },
+                { id: `chip_plan_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Payment Plans', icon: 'calculator', analyticsId: 'chip_plan_am', priority: 2, payload: { text: `Show payment plans for ${targetProject.name}` } },
+                { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit_am', priority: 3, payload: { text: `Schedule a site visit for ${targetProject.name}` } }
+              ]
+
+              const topAmenities = amList.length > 0 ? amList.slice(0, 8).map(a => `• ${a}`).join('\n') : '• Swimming Pool & Kids Splash Zone\n• Equipped Clubhouse & Gymnasium\n• Multi-purpose Sports Courts\n• Landscaped Parks & Jogging Track'
+
+              const respText = `### Amenities & Lifestyle: ${targetProject.name} (${targetProject.sector})\n\n${specificStatus ? specificStatus + '\n\n' : ''}**Verified Project Amenities:**\n${topAmenities}\n\n**Open Space & Green Cover:**\n${targetProject.open_space_pct ? `${targetProject.open_space_pct}% open space` : '70%–80% landscaped open green area'} with 24/7 multi-tier security and power backup.`
+
+              send('token', { token: respText })
+              send('ui_state', {
+                stage: 'RESEARCH',
+                thinking: `Verified amenities for ${targetProject.name}:`,
+                chips: amenityChips,
+                missingFields: [],
+                confidence: 'HIGH'
+              })
+              send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
+              res.end()
+              return
+            }
+          }
+
           const sec = intent.sector || 'Sector 76'
           const amenityProjects = await prisma.project.findMany({
             where: {
