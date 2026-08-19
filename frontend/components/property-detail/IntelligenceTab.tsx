@@ -43,11 +43,13 @@ interface IntelligenceTabProps {
 
 function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: number | null }) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  const [showInfo, setShowInfo] = useState<boolean>(false)
 
   const DEFAULT_PSF = 6500
   const CRORE_TO_SQFT = 1200
   const DEFAULT_SECTOR_CAGR = 8.5
   const DEFAULT_PROJECT_CAGR = 10.2
+  const currentYear = new Date().getFullYear()
 
   const baseRate = pricePsf || (pData?.price_min_cr ? Math.round((pData.price_min_cr * 10000000) / CRORE_TO_SQFT) : DEFAULT_PSF)
   const sectorCagr = pData?.decision_profile?.market_intelligence?.sector_cagr ?? DEFAULT_SECTOR_CAGR
@@ -58,9 +60,10 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
     return [0, 1, 2, 3, 4, 5].map((yr) => {
       const projRate = Math.round(baseRate * Math.pow(1 + (projectCagr / 100), yr))
       const avgRate = Math.round((baseRate * 0.92) * Math.pow(1 + (sectorCagr / 100), yr))
-      return { yr, projRate, avgRate }
+      const yearLabel = yr === 0 ? `${currentYear} (Current)` : `${currentYear + yr} (Yr ${yr})`
+      return { yr, yearLabel, calendarYear: currentYear + yr, projRate, avgRate }
     })
-  }, [baseRate, sectorCagr, projectCagr])
+  }, [baseRate, sectorCagr, projectCagr, currentYear])
 
   // Calculate dynamic Y domain for auto-scaling
   const allRates = points.flatMap(p => [p.projRate, p.avgRate])
@@ -108,8 +111,28 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
 
   return (
     <div className="lg:col-span-2 p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4">
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Price Appreciation Projection</span>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Price Appreciation Projection</span>
+          <div className="relative inline-block">
+            <button
+              type="button"
+              onMouseEnter={() => setShowInfo(true)}
+              onMouseLeave={() => setShowInfo(false)}
+              onClick={() => setShowInfo(!showInfo)}
+              aria-label="Appreciation Model Info"
+              className="w-4 h-4 rounded-full bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-blue-600 hover:text-white flex items-center justify-center text-[10px] font-black transition-colors"
+            >
+              i
+            </button>
+            {showInfo && (
+              <div className="absolute left-0 bottom-6 z-30 w-72 bg-gray-900 text-white dark:bg-zinc-900 dark:text-zinc-100 rounded-xl p-3 shadow-2xl text-[11px] font-medium leading-relaxed border border-white/10">
+                <p className="font-bold text-blue-400 mb-1">5-Year CAGR Price Model</p>
+                Projects potential capital appreciation comparing this property's historical rate vs the broader micro-market sector average based on RERA registrations, infrastructure delivery, and developer track record.
+              </div>
+            )}
+          </div>
+        </div>
         <div className="flex items-center gap-4 text-[11px] font-bold">
           <span className="flex items-center gap-1 text-blue-600"><span className="w-2 h-2 rounded-full bg-blue-600" /> {pData?.name || 'Project'} ({projectCagr}%)</span>
           <span className="flex items-center gap-1 text-gray-400"><span className="w-2 h-2 rounded-full bg-gray-400" /> Sector Avg ({sectorCagr}%)</span>
@@ -127,7 +150,7 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
               top: `${Math.min(hoveredPoint.yProj - 10, 50)}px` 
             }}
           >
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black">Year {hoveredPoint.yr} Projection</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black">{hoveredPoint.yearLabel} Projection</p>
             <div className="flex items-center justify-between gap-3">
               <span className="text-blue-400 font-black">{pData?.name || 'Project'}:</span>
               <span>₹{hoveredPoint.projRate.toLocaleString('en-IN')}/sq.ft</span>
@@ -175,15 +198,17 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
           ))}
         </svg>
       </div>
-      <div className="flex justify-between text-[11px] text-gray-400 font-extrabold pt-1">
-        <span>Year 0</span>
-        <span>Year 1</span>
-        <span>Year 2</span>
-        <span>Year 3</span>
-        <span>Year 4</span>
-        <span>Year 5</span>
+      <div className="flex justify-between text-[10.5px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-extrabold pt-1">
+        {points.map((p, i) => (
+          <span key={i} className="text-center">
+            {p.calendarYear}
+            <span className="block text-[9.5px] text-gray-400 dark:text-gray-500 font-medium">
+              {i === 0 ? 'Now' : `Yr ${i}`}
+            </span>
+          </span>
+        ))}
       </div>
-      <p className="text-[10.5px] text-gray-400 font-medium">ⓘ Hover over any point to see projected price per sqft values.</p>
+      <p className="text-[10.5px] text-gray-400 font-medium">ⓘ Hover or tap any point to inspect projected price per sqft.</p>
     </div>
   )
 }

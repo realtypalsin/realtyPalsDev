@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, ShieldCheck, Activity, Calendar } from 'lucide-react'
+import { Check, ShieldCheck, Activity, Calendar, Users, Home, Zap, Sparkles, Building } from 'lucide-react'
 import type { ProjectOverviewData } from '@/lib/backend-api'
 
 export interface ConstructionTimelineProps {
@@ -18,7 +18,6 @@ function formatPossessionDate(raw: string | null | undefined): string | null {
     const cleanStr = raw.trim()
     const dateObj = new Date(cleanStr)
     if (isNaN(dateObj.getTime())) {
-      // Fallback if not a standard date format
       return cleanStr.replace(/T.*$/, '')
     }
     return dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
@@ -64,11 +63,13 @@ export default function ConstructionTimeline({
         <div>
           <div className="flex items-center gap-2.5">
             <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-              {isRTM ? 'Delivery & Possession Status' : 'Construction & Development Timeline'}
+              {isRTM ? 'Society Living & Resident Operations' : 'Construction & Development Timeline'}
             </h2>
           </div>
           <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">
-            {isRTM ? 'Occupancy Certificate (OC) granted & completed project milestones' : 'Real-time site velocity & milestone tracking from official RERA logs'}
+            {isRTM 
+              ? 'Occupancy Certificate (OC) granted • Active RWA governance & operational resident amenities' 
+              : 'Real-time site velocity & milestone tracking from official RERA filings'}
           </p>
         </div>
 
@@ -79,7 +80,7 @@ export default function ConstructionTimeline({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            <span>{isRTM ? 'Possession Ready • OC Granted' : 'On Track for On-Time Delivery'}</span>
+            <span>{isRTM ? 'Ready to Move • OC Granted' : 'Active Construction • On Track'}</span>
           </div>
 
           {list.length > 0 && (
@@ -87,60 +88,101 @@ export default function ConstructionTimeline({
               onClick={() => setIsExpanded(!isExpanded)}
               className="px-3.5 py-1 rounded-full text-[11.5px] font-extrabold bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-200 transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
             >
-              <span>{isExpanded ? 'Collapse' : `View ${list.length} Milestones`}</span>
+              <span>{isExpanded ? 'Collapse' : isRTM ? `View Construction Archive (${list.length})` : `View ${list.length} Milestones`}</span>
               <span className={`text-[9px] transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Modern Sleek Overall Progress Bar (Visible outside the collapsed timeline) */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center">
-              <Activity size={14} />
+      {/* For Delivered / RTM Properties: Highlight Active Society Lifestyle & Resident Operations */}
+      {isRTM ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/40 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+              <ShieldCheck size={18} />
             </div>
             <div>
-              <span className="text-[13px] font-black text-gray-900 dark:text-white">Overall Construction Progress</span>
-              <p className="text-[10.5px] text-gray-400 font-semibold">{completedCount} of {list.length || 6} milestones completed</p>
+              <h4 className="text-[13px] font-bold text-gray-900 dark:text-emerald-100">OC & Registry Complete</h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
+                Full Occupancy Certificate granted by the Authority. Immediate flat registration and handover available.
+              </p>
             </div>
           </div>
-          <div className="text-right">
-            <span className="text-[18px] sm:text-[20px] font-black text-[#00875A] dark:text-emerald-400">{progressPct}%</span>
-            <span className="text-[10px] text-gray-400 font-bold block">Completed</span>
+
+          <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-800/40 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0">
+              <Users size={18} />
+            </div>
+            <div>
+              <h4 className="text-[13px] font-bold text-gray-900 dark:text-blue-100">Active RWA & Community</h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
+                Elected Resident Welfare Association with active facility maintenance, MyGate security, and festival events.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-800/40 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
+              <Zap size={18} />
+            </div>
+            <div>
+              <h4 className="text-[13px] font-bold text-gray-900 dark:text-purple-100">Operational Amenities</h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed">
+                Fully functional clubhouse, temperature-controlled pool, power backup grid, and daily convenience shops.
+              </p>
+            </div>
           </div>
         </div>
+      ) : (
+        /* Modern Overall Progress Bar for Under-Construction Properties */
+        <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center">
+                <Activity size={14} />
+              </div>
+              <div>
+                <span className="text-[13px] font-black text-gray-900 dark:text-white">Overall Construction Progress</span>
+                <p className="text-[10.5px] text-gray-400 font-semibold">{completedCount} of {list.length || 6} milestones completed</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[18px] sm:text-[20px] font-black text-[#00875A] dark:text-emerald-400">{progressPct}%</span>
+              <span className="text-[10px] text-gray-400 font-bold block">Completed</span>
+            </div>
+          </div>
 
-        {/* Custom Track Bar with Glowing Gradient & Pin Indicator */}
-        <div className="w-full bg-gray-200/80 dark:bg-gray-800/80 h-3 rounded-full relative overflow-visible flex items-center shadow-inner">
-          <div
-            className="bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 h-full rounded-full transition-all duration-700 ease-out shadow-xs"
-            style={{ width: `${progressPct}%` }}
-          />
-          <div
-            className="w-4 h-4 rounded-full bg-emerald-700 dark:bg-white border-2 border-white dark:border-gray-900 shadow-md absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-out z-10 flex items-center justify-center cursor-pointer hover:scale-125"
-            style={{ left: `${Math.min(Math.max(progressPct, 4), 96)}%` }}
-            title={`Current Progress: ${progressPct}%`}
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-900" />
+          {/* Custom Track Bar with Glowing Gradient & Pin Indicator */}
+          <div className="w-full bg-gray-200/80 dark:bg-gray-800/80 h-3 rounded-full relative overflow-visible flex items-center shadow-inner">
+            <div
+              className="bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 h-full rounded-full transition-all duration-700 ease-out shadow-xs"
+              style={{ width: `${progressPct}%` }}
+            />
+            <div
+              className="w-4 h-4 rounded-full bg-emerald-700 dark:bg-white border-2 border-white dark:border-gray-900 shadow-md absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-out z-10 flex items-center justify-center cursor-pointer hover:scale-125"
+              style={{ left: `${Math.min(Math.max(progressPct, 4), 96)}%` }}
+              title={`Current Progress: ${progressPct}%`}
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-900" />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] font-bold text-gray-500 dark:text-gray-400 pt-0.5">
+            <span>Site Excavation</span>
+            <span className="text-blue-600 dark:text-blue-400">Finishing &amp; MEP</span>
+            <span>Key Handover</span>
           </div>
         </div>
-
-        <div className="flex items-center justify-between text-[11px] font-bold text-gray-500 dark:text-gray-400 pt-0.5">
-          <span>Site Excavation</span>
-          <span className="text-blue-600 dark:text-blue-400">Finishing &amp; MEP</span>
-          <span>Key Handover</span>
-        </div>
-      </div>
+      )}
 
       {/* Main Timeline Card Grid (Expandable on demand) */}
       {isExpanded && list.length > 0 && (
         <div className="pt-2 pb-1 space-y-4 animate-in fade-in slide-in-from-top-3 duration-300">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
             {list.map((m: any, i: number) => {
-              const isDone = m.status === 'completed'
-              const isInProgress = m.status === 'in_progress'
+              const isDone = m.status === 'completed' || isRTM
+              const isInProgress = !isRTM && m.status === 'in_progress'
               const isSelected = selectedPhaseIndex === i
 
               return (
@@ -191,10 +233,10 @@ export default function ConstructionTimeline({
                     <span className={`text-[10px] font-black ${
                       isDone ? 'text-[#00875A] dark:text-emerald-400' : isInProgress ? 'text-[#0066CC] dark:text-blue-400' : 'text-gray-400'
                     }`}>
-                      {isDone ? 'Done' : isInProgress ? 'Active' : 'Upcoming'}
+                      {isDone ? 'Delivered' : isInProgress ? 'Active' : 'Upcoming'}
                     </span>
                     <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">
-                      {m.date_label || m.date || 'Scheduled'}
+                      {m.date_label || m.date || 'Completed'}
                     </span>
                   </div>
                 </div>
@@ -221,8 +263,8 @@ export default function ConstructionTimeline({
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0 self-end sm:self-center">
                   <div className="text-right text-[11px]">
-                    <p className="text-gray-400 font-medium">Target Schedule</p>
-                    <p className="font-black text-gray-900 dark:text-white">{selectedPhase.date_label || 'Scheduled'}</p>
+                    <p className="text-gray-400 font-medium">Timeline Status</p>
+                    <p className="font-black text-gray-900 dark:text-white">{selectedPhase.date_label || 'Completed'}</p>
                   </div>
                   <button
                     onClick={() => setSelectedPhaseIndex(null)}
@@ -242,9 +284,9 @@ export default function ConstructionTimeline({
         <div className="pt-2 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1.5 font-bold text-gray-700 dark:text-gray-300">
             <Calendar size={13} className="text-blue-500" />
-            <span>Target Possession: {formattedPossession}</span>
+            <span>{isRTM ? `Delivered & Occupied since ${formattedPossession}` : `Target Possession: ${formattedPossession}`}</span>
           </div>
-          <span className="text-[10px] text-gray-400">RERA Verified Timeline</span>
+          <span className="text-[10px] text-gray-400">RERA Verified Records</span>
         </div>
       )}
     </div>

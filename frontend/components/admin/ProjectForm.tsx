@@ -111,7 +111,7 @@ function toSlug(name: string): string {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="col-span-1 sm:col-span-2 pt-6 mt-4 first:pt-0 first:mt-0">
+    <div className="col-span-1 md:col-span-2 pt-6 mt-4 first:pt-0 first:mt-0">
       <div className="flex items-center gap-4">
         <span className="text-[15px] font-sans font-bold text-zinc-900 dark:text-white tracking-tight">{title}</span>
         <div className="flex-1 h-px bg-zinc-200/80 dark:bg-zinc-800" />
@@ -502,7 +502,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
 
         <SectionHeader title="Descriptions" />
 
-        <div className="col-span-1 sm:col-span-2">
+        <div className="col-span-1 md:col-span-2">
           <Field label="Short Description" hint="1–2 sentences used by the AI in recommendations">
             <Textarea
               value={form.description}
@@ -513,7 +513,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
           </Field>
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-1 md:col-span-2">
           <Field label="Long Description" hint="Full description shown in the property detail panel">
             <Textarea
               value={form.long_description}
@@ -678,7 +678,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
 
         <SectionHeader title="AI & Marketing" />
 
-        <div className="col-span-2">
+        <div className="col-span-1 md:col-span-2">
           <Field label="Marketing Claims" hint="Key selling points — press Enter after each">
             <TagInput
               tags={form.marketing_claims}
@@ -688,7 +688,7 @@ export default function ProjectForm({ initialData, projectId, onFormChange, onSa
           </Field>
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-1 md:col-span-2">
           <Field label="AI Search Keywords" hint="Terms the AI uses to match this project to queries">
             <TagInput
               tags={form.ai_search_keywords}

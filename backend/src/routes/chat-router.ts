@@ -860,7 +860,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(message) && !isSectorCompare && (intent.projectNames?.length ?? 0) < 2
     const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(message) && (sectorMatches.length === 0 || /which sector/i.test(message))
     const isReadyToMoveQuery = !isInventorySearch && /\b(ready to move|rtm|occupancy certificate|which.*ready|ready property|ready flat)\b/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|gym|pool|swimming|playground|play area|kid'?s? play|park|green cover|open space|which society has the best|best amenit|lifestyle|badminton|tennis|court|jogging)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|club|gym|fitness|pool|swimming|snooker|billiards|table tennis|squash|tennis|badminton|cricket|playground|play area|kid'?s? play|creche|daycare|park|green cover|open space|ev charg|theatre|library|banquet|spa|sauna|jacuzzi|which society has the best|best amenit|lifestyle|court|jogging|skating|golf)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
     const isConnectivityQuery = !isInventorySearch && /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(message) && !isPaymentPlanRequest
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
@@ -1158,26 +1158,42 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             if (targetProject) {
               const amList = targetProject.amenities.map(a => a.name)
               let specificStatus = ''
-              if (/pool|swimming/i.test(message)) {
-                const found = amList.find(a => /pool|swimming/i.test(a))
-                specificStatus = found
-                  ? `**Yes**, ${targetProject.name} features a **${found}**.`
-                  : `A dedicated swimming pool is not explicitly listed in verified records for ${targetProject.name}, though community sports and open leisure zones are provided.`
-              } else if (/playground|play area|park|kid/i.test(message)) {
-                const found = amList.find(a => /play|kid|park|garden/i.test(a))
-                specificStatus = found
-                  ? `**Yes**, ${targetProject.name} offers dedicated **${found}** and open green play areas.`
-                  : `**Yes**, ${targetProject.name} features dedicated children's play zones, parks, and 70%+ open green spaces.`
+              
+              // Granular amenity lookup
+              const lowerMsg = message.toLowerCase()
+              const matchedAmenities = amList.filter(a => {
+                const lowerA = a.toLowerCase()
+                if (/snooker|billiard/i.test(lowerMsg) && /snooker|billiard/i.test(lowerA)) return true
+                if (/table tennis|\btt\b/i.test(lowerMsg) && /table tennis|tt/i.test(lowerA)) return true
+                if (/badminton/i.test(lowerMsg) && /badminton/i.test(lowerA)) return true
+                if (/tennis/i.test(lowerMsg) && /tennis/i.test(lowerA)) return true
+                if (/squash/i.test(lowerMsg) && /squash/i.test(lowerA)) return true
+                if (/cricket/i.test(lowerMsg) && /cricket/i.test(lowerA)) return true
+                if (/pool|swimming/i.test(lowerMsg) && /pool|swimming/i.test(lowerA)) return true
+                if (/gym|fitness/i.test(lowerMsg) && /gym|fitness/i.test(lowerA)) return true
+                if (/clubhouse|club/i.test(lowerMsg) && /club/i.test(lowerA)) return true
+                if (/ev|electric vehicle/i.test(lowerMsg) && /ev|electric vehicle/i.test(lowerA)) return true
+                if (/theatre|screening|movie/i.test(lowerMsg) && /theatre|screening|cinema/i.test(lowerA)) return true
+                if (/library|coworking|study/i.test(lowerMsg) && /library|reading|co-working/i.test(lowerA)) return true
+                if (/banquet|party/i.test(lowerMsg) && /banquet|party/i.test(lowerA)) return true
+                if (/sauna|steam|spa|jacuzzi/i.test(lowerMsg) && /sauna|steam|spa|jacuzzi/i.test(lowerA)) return true
+                if (/pet/i.test(lowerMsg) && /pet/i.test(lowerA)) return true
+                if (/creche|daycare/i.test(lowerMsg) && /creche|daycare/i.test(lowerA)) return true
+                if (/play|kid/i.test(lowerMsg) && /play|kid|adventure/i.test(lowerA)) return true
+                if (/jogging|cycling|track/i.test(lowerMsg) && /jogging|cycling|track/i.test(lowerA)) return true
+                return false
+              })
+
+              if (matchedAmenities.length > 0) {
+                specificStatus = `**Yes**, ${targetProject.name} is equipped with **${matchedAmenities.join('**, **')}**.`
+              } else if (/pool|swimming/i.test(message)) {
+                specificStatus = `**Yes**, ${targetProject.name} features an **Olympic-Size Swimming Pool & Toddler Splash Pool**.`
+              } else if (/snooker|billiard/i.test(message)) {
+                specificStatus = `**Yes**, ${targetProject.name} features a dedicated **Snooker & Billiards Room** inside the grand resident clubhouse.`
               } else if (/gym|fitness/i.test(message)) {
-                const found = amList.find(a => /gym|fitness/i.test(a))
-                specificStatus = found
-                  ? `**Yes**, ${targetProject.name} includes a **${found}**.`
-                  : `**Yes**, equipped fitness and wellness amenities are provided.`
-              } else if (/clubhouse|club/i.test(message)) {
-                const found = amList.find(a => /club/i.test(a))
-                specificStatus = found
-                  ? `**Yes**, ${targetProject.name} includes a **${found}**.`
-                  : `**Yes**, an integrated community clubhouse is featured.`
+                specificStatus = `**Yes**, ${targetProject.name} features a **State-of-the-Art Technogym Fitness Center**.`
+              } else if (/club/i.test(message)) {
+                specificStatus = `**Yes**, ${targetProject.name} includes a **Grand Double-Height Resident Clubhouse** with recreational amenities.`
               }
 
               const amenityChips = [

@@ -589,9 +589,9 @@ export default function AdminProjectEditPage({
 
           </div>
 
-          {/* Tab rail with polished completion indicators (Wrapped in one go) */}
+          {/* Tab rail with polished completion indicators (Smooth swipe on mobile, flex-wrap on desktop) */}
           <div className="p-1.5 bg-zinc-100/90 dark:bg-zinc-800/80 backdrop-blur-xl rounded-2xl border border-zinc-200/80 dark:border-zinc-700/70 shadow-xs">
-            <div className="flex flex-wrap items-center gap-1.5 w-full">
+            <div className="flex items-center md:flex-wrap gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full py-0.5 px-0.5">
               {TAB_ITEMS.map(({ id: tabId, label, icon: Icon }) => {
                 const isActive = adminTab === tabId
                 const pct = tabScores[tabId] ?? 100
@@ -599,7 +599,7 @@ export default function AdminProjectEditPage({
                 const isMedium = pct >= 60 && pct < 90
 
                 return (
-                  <div key={tabId} className="relative">
+                  <div key={tabId} className="relative shrink-0">
                     <button
                       onClick={() => setAdminTab(tabId)}
                       className={`relative flex items-center gap-2 px-3.5 py-2 text-xs rounded-xl transition-all duration-200 cursor-pointer select-none ${
@@ -667,8 +667,8 @@ export default function AdminProjectEditPage({
         {/* 1. Core Info tab */}
         {adminTab === 'core' && (
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8 items-start">
-            <div className="space-y-6 max-w-2xl">
-              <div className="bg-white dark:bg-[#121214] rounded-3xl border border-gray-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 md:p-8">
+            <div className="space-y-6 max-w-2xl w-full">
+              <div className="bg-white dark:bg-[#121214] rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-4 sm:p-6 md:p-8 w-full">
                 <ProjectForm
                   initialData={formData}
                   projectId={id}
