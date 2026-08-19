@@ -4,7 +4,7 @@ import Image from 'next/image'
 import {
   Building2, MapPin, ChevronRight, TrainFront,
   GraduationCap, HeartPulse, ShoppingBag, Leaf, Shield, ShieldCheck, Car, FileText,
-  Download, CheckCircle2, BedDouble, Plane, CalendarDays, UserCheck, Users, TrendingUp, Award, Layers, Check, Phone, Mail
+  Download, CheckCircle2, BedDouble, Plane, CalendarDays, UserCheck, Users, TrendingUp, Award, Layers, Check, Phone, Mail, Sparkles
 } from 'lucide-react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import type { ProjectDocumentPublic } from '@/lib/hooks/useProjectDetail'

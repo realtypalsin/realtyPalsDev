@@ -6,7 +6,7 @@ import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
   Award, Maximize2, TrendingDown, CheckCircle2, Crown,
   HelpCircle, Lightbulb, Shield, Car, User, Wind, Cpu, Droplet,
-  Layout, Home, Users, Compass, Eye, Trophy, CalendarDays, ShieldCheck, Leaf
+  Layout, Home, Users, Compass, Eye, Trophy, CalendarDays, ShieldCheck, Leaf, Sun, Trees
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { resolveImgUrl } from '@/lib/utils'
