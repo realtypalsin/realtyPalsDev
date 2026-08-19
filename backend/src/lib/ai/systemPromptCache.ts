@@ -100,6 +100,11 @@ function buildDynamicRules(
 ): string {
   let dynamic = ''
 
+  // Ground truth matched projects from database
+  if (projects && projects.length > 0) {
+    dynamic += `\n\n## MATCHED PROJECTS IN DATABASE (GROUND TRUTH - FULLY TRACKED & VERIFIED):\n${JSON.stringify(projects, null, 2)}`
+  }
+
   // Memory block (if any)
   if (memory) {
     const memoryStr = typeof memory === 'string' ? memory : JSON.stringify(memory)

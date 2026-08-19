@@ -155,12 +155,12 @@ export default function LocationTab({ project, detail, d, projectAddress, loadin
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-[11.5px] font-black">
-              {['All', 'Transport', 'Expressway', 'Schools', 'Hospitals', 'Malls', 'Restaurants', 'Parks', 'Banks', 'Others'].map((cat) => (
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-1 text-[11px] sm:text-[11.5px] font-black">
+              {['All', 'Transport', 'Expressway', 'Schools', 'Hospitals', 'Malls', 'Parks'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedMapFilter(cat)}
-                  className={`px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1 flex-shrink-0 ${
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 ${
                     selectedMapFilter === cat
                       ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-sm'
                       : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200/70'

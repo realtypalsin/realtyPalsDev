@@ -393,17 +393,17 @@ export default function IntelligenceTab({
 
           {/* Return Scenario Breakdown */}
           {returnScenarios && (
-            <div className="p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-4 flex flex-col justify-between">
+            <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 flex flex-col justify-between">
               <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Return Scenario (5 Years)</span>
-              <div className="space-y-2.5">
+              <div className="grid grid-cols-3 sm:grid-cols-1 gap-2 sm:gap-2.5">
                 {Object.entries(returnScenarios).map(([key, sc]) => (
-                  <div key={key} className={`p-3 rounded-xl border border-gray-100 dark:border-white/5 flex items-center justify-between ${sc.bg}`}>
-                    <span className="text-[12.5px] font-bold text-gray-800 dark:text-gray-200 capitalize">{sc.label}</span>
-                    <span className="text-[14px] font-black">{sc.pct}</span>
+                  <div key={key} className={`p-2.5 sm:p-3 rounded-xl border border-gray-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left ${sc.bg}`}>
+                    <span className="text-[11px] sm:text-[12.5px] font-bold text-gray-800 dark:text-gray-200 capitalize truncate">{sc.label}</span>
+                    <span className="text-[12.5px] sm:text-[14px] font-black">{sc.pct}</span>
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-gray-400 font-medium">Compound growth estimates updated monthly</span>
+              <span className="text-[9.5px] sm:text-[10px] text-gray-400 font-medium text-center sm:text-left">Compound growth estimates updated monthly</span>
             </div>
           )}
         </div>
@@ -607,13 +607,18 @@ export default function IntelligenceTab({
               { label: 'Amenities Fit', score: amenitiesFit, tag: 'Excellent', hint: 'Coverage across sports, wellness, security, green spaces, and clubhouse facilities.' },
               { label: 'Unit Config Fit', score: configFit, tag: 'Very Good', hint: 'Layout efficiency, carpet ratio, orientation, and family stage suitabilities.' },
               { label: 'Lifestyle Fit', score: lifestyleFit, tag: 'Excellent', hint: 'Composite score incorporating air quality index, green cover %, safety, and noise levels.' }
-            ].filter(item => item.score !== null).map((item, i) => (
-              <div key={i} className="p-3.5 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-1.5 sm:space-y-2 relative">
+            ].filter(item => item.score !== null).map((item, i, arr) => (
+              <div
+                key={i}
+                className={`p-3.5 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-1.5 sm:space-y-2 relative ${
+                  arr.length % 2 !== 0 && i === arr.length - 1 ? 'col-span-2 sm:col-span-1 max-w-[220px] sm:max-w-none mx-auto w-full' : ''
+                }`}
+              >
                 <div className="flex items-center justify-center gap-1.5 h-6 sm:h-8">
                   <p className="text-[10px] sm:text-[11px] font-extrabold text-gray-500 dark:text-gray-400">{item.label}</p>
                   <InfoTooltip content={item.hint} title={item.label} />
                 </div>
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-emerald-500 border-t-transparent flex items-center justify-center font-black text-emerald-600 dark:text-emerald-400 text-base sm:text-lg">
+                <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-full border-4 border-emerald-500 border-t-transparent flex items-center justify-center font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-lg">
                   {item.score}%
                 </div>
                 <span className="text-[10px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400">{item.tag}</span>
@@ -639,7 +644,7 @@ export default function IntelligenceTab({
             {/* Unit Mix Distribution */}
             <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-3 sm:space-y-4">
               <span className="text-[12px] font-extrabold text-gray-700 dark:text-gray-300">Unit Mix Distribution</span>
-              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-1 sm:pt-2">
+              <div className="flex flex-row items-center justify-around sm:justify-start gap-4 sm:gap-8 pt-1 sm:pt-2">
                 
                 {/* SVG Segmented Donut Chart */}
                 <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center flex-shrink-0">

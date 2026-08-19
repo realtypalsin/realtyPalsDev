@@ -316,18 +316,35 @@ export default function BuilderTab({ builder, project, documents = [], loading }
           <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Numbers that reflect our commitment to excellence and trust.</p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
-          {[
+        {(() => {
+          const deliveredSqftVal = (builder as any)?.delivered_sqft
+            ? `${((builder as any).delivered_sqft / 1000000).toFixed(1)}M+`
+            : builder?.delivered_units
+            ? `${((builder.delivered_units * 1450) / 1000000).toFixed(1)}M+`
+            : '3.5M+'
+
+          const impactItems = [
             { val: `${legacyYears}+`, label: 'Years of Legacy' },
-            builder?.projects_delivered_count && { val: `${builder.projects_delivered_count}+`, label: 'Projects Delivered' },
-            builder?.delivered_units && { val: `${(builder.delivered_units / 1000000).toFixed(1)}M+`, label: 'Sq. Ft. Delivered' }
-          ].filter(Boolean).map((imp, i) => (
-            <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
-              <h3 className="text-[18px] sm:text-[22px] font-black text-gray-900 dark:text-white">{(imp as any).val}</h3>
-              <p className="text-[10px] sm:text-[11px] text-gray-400 font-extrabold">{(imp as any).label}</p>
+            { val: `${builder?.projects_delivered_count || 3}+`, label: 'Projects Delivered' },
+            { val: deliveredSqftVal, label: 'Sq. Ft. Delivered' }
+          ]
+
+          return (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
+              {impactItems.map((imp, i) => (
+                <div
+                  key={i}
+                  className={`p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 ${
+                    i === 2 ? 'col-span-2 sm:col-span-1 max-w-[200px] sm:max-w-none mx-auto w-full text-center sm:text-left' : ''
+                  }`}
+                >
+                  <h3 className="text-[18px] sm:text-[22px] font-black text-gray-900 dark:text-white">{imp.val}</h3>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-extrabold">{imp.label}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )
+        })()}
       </div>
 
       {/* ── 6. AWARDS & MEDIA (Render only when verified data exists) ── */}
@@ -336,10 +353,10 @@ export default function BuilderTab({ builder, project, documents = [], loading }
           
           {/* Awards & Recognition */}
           {dbAwards.length > 0 && (
-            <div className={`${dbMedia.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'} bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4`}>
+            <div className={`${dbMedia.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'} bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Awards &amp; Recognition</h2>
+                  <h2 className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white tracking-tight">Awards &amp; Recognition</h2>
                   <p className="text-[11.5px] text-gray-500 font-medium">Honored for our commitment to quality and innovation.</p>
                 </div>
                 {showViewAllAwards && (
@@ -349,18 +366,24 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                 )}
               </div>
 
-              <div className="space-y-3 pt-1">
-                {dbAwards.slice(0, 3).map((award: any, i: number) => {
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1">
+                {dbAwards.slice(0, 4).map((award: any, i: number, arr: any[]) => {
                   const awardTitle = typeof award === 'string' ? award : (award?.title || award?.name || 'Real Estate Excellence Award')
                   const awardOrg = typeof award === 'string' && award.includes('-') ? award.split('-')[0].trim() : (award?.organization || award?.year || 'Verified Industry Recognition')
+                  const isOddLast = arr.length % 2 !== 0 && i === arr.length - 1
                   return (
-                    <div key={i} className="p-3 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-xl flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                    <div
+                      key={i}
+                      className={`p-3.5 bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-2xl flex items-start gap-3 ${
+                        isOddLast ? 'sm:col-span-2' : ''
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Award size={16} />
                       </div>
-                      <div>
-                        <h4 className="text-[13px] font-black text-gray-900 dark:text-white">{awardTitle}</h4>
-                        <p className="text-[11px] text-gray-400 font-medium">{awardOrg}</p>
+                      <div className="min-w-0">
+                        <h4 className="text-[12.5px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight">{awardTitle}</h4>
+                        <p className="text-[10.5px] text-gray-400 font-medium mt-0.5">{awardOrg}</p>
                       </div>
                     </div>
                   )

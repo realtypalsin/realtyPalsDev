@@ -230,10 +230,10 @@ export default function ResidencesTab({
       </div>
 
       {/* BHK Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 pb-1">
         <button
           onClick={() => setFilter('all')}
-          className={`text-[12.5px] font-extrabold px-5 py-2.5 rounded-full transition-all whitespace-nowrap ${
+          className={`text-[12px] sm:text-[12.5px] font-extrabold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all whitespace-nowrap ${
             filter === 'all'
               ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-md'
               : 'bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 border border-gray-200/60 dark:border-white/10 hover:bg-gray-50'
@@ -245,7 +245,7 @@ export default function ResidencesTab({
           <button
             key={opt}
             onClick={() => setFilter(opt)}
-            className={`text-[12.5px] font-extrabold px-5 py-2.5 rounded-full transition-all whitespace-nowrap ${
+            className={`text-[12px] sm:text-[12.5px] font-extrabold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all whitespace-nowrap ${
               filter === opt
                 ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-md'
                 : 'bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 border border-gray-200/60 dark:border-white/10 hover:bg-gray-50'
@@ -1073,15 +1073,23 @@ export default function ResidencesTab({
                   <p className="text-[12px] text-gray-500 font-medium mt-0.5">Based on lifestyle and space needs.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {perfectForList.map((pf: string, i: number) => (
-                    <div key={i} className="p-5 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
-                        <Users size={18} />
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4">
+                  {perfectForList.map((pf: string, i: number, arr: string[]) => {
+                    const isOddLast = arr.length % 2 !== 0 && i === arr.length - 1
+                    return (
+                      <div
+                        key={i}
+                        className={`p-3.5 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2 ${
+                          isOddLast ? 'col-span-2 md:col-span-1 max-w-xs md:max-w-none mx-auto w-full text-center sm:text-left' : ''
+                        }`}
+                      >
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                          <Users size={16} />
+                        </div>
+                        <h4 className="text-[12.5px] sm:text-[14px] font-black text-gray-900 dark:text-white leading-snug">{pf}</h4>
                       </div>
-                      <h4 className="text-[14.5px] font-black text-gray-900 dark:text-white">{pf}</h4>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}

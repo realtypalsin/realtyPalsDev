@@ -841,24 +841,24 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
           <p className="text-[12px] text-gray-500 font-medium mt-0.5">See exactly what you&apos;re paying for. Hover items to isolate components.</p>
         </div>
 
-        {/* Stage Toggle Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        {/* Stage Toggle Segmented Control */}
+        <div className="grid grid-cols-2 p-1 bg-gray-100 dark:bg-white/10 rounded-2xl max-w-sm w-full gap-1">
           <button
             onClick={() => setCostBreakdownStage('construction')}
-            className={`text-[12px] font-extrabold px-5 py-2 rounded-full transition-all ${
+            className={`text-[11.5px] sm:text-[12px] font-black py-2 rounded-xl transition-all text-center truncate ${
               costBreakdownStage === 'construction'
-                ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-md'
-                : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300'
+                ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
             }`}
           >
-            At Booking / During Construction
+            Booking & Construction
           </button>
           <button
             onClick={() => setCostBreakdownStage('possession')}
-            className={`text-[12px] font-extrabold px-5 py-2 rounded-full transition-all ${
+            className={`text-[11.5px] sm:text-[12px] font-black py-2 rounded-xl transition-all text-center truncate ${
               costBreakdownStage === 'possession'
-                ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-md'
-                : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300'
+                ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
             }`}
           >
             At Possession
