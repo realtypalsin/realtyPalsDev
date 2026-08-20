@@ -20,7 +20,7 @@ export async function generateBuyerNarrative(messages: any[]): Promise<BuyerNarr
     }
 
     const client = new GoogleGenerativeAI(env.GEMINI_API_KEY)
-    const model = client.getGenerativeModel({ model: MODELS.GEMINI_LITE || 'gemini-2.5-flash-lite' })
+    const model = client.getGenerativeModel({ model: MODELS.GEMINI_LITE || 'gemini-3.5-flash-lite' })
 
     const transcript = messages
       .map(

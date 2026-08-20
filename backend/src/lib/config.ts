@@ -4,8 +4,8 @@
 export const MODELS = {
   MAIN: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
-  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-2.5-flash',
-  GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-2.5-flash-lite',
+  GEMINI_MAIN: process.env.GEMINI_MAIN_MODEL || 'gemini-3.6-flash',
+  GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-3.5-flash-lite',
   OPENAI_AZURE: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   OPENAI_FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
   GROQ_FAST: process.env.GROQ_FAST_MODEL || 'llama-3.1-8b-instant',
@@ -56,8 +56,8 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: false, label: 'Google Gemini 2.5 Flash (Primary)' },
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: false, label: 'Google Gemini 2.5 Flash Lite (Backup)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: false, label: 'Google Gemini 3.6 Flash (Primary)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: false, label: 'Google Gemini 3.5 Flash Lite (Backup)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: MISTRAL & CEREBRAS (High-Speed Failover Layer)

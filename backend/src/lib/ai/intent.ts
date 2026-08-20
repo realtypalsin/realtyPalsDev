@@ -207,8 +207,8 @@ import { GoogleGenAI } from '@google/genai'
 export async function extractIntent(message: string, previousIntent: Intent): Promise<IntentResult> {
   // Intent extraction chain: prioritize Gemini Flash & fast, reliable models
   const intentChain = [
-    // Tier 1: Gemini 2.5 Flash (Primary high-accuracy, lightning-fast)
-    { provider: 'gemini' as const, envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN || 'gemini-2.5-flash', timeout: 3000 },
+    // Tier 1: Gemini 3.6 Flash (Primary high-accuracy, lightning-fast)
+    { provider: 'gemini' as const, envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN || 'gemini-3.6-flash', timeout: 3000 },
     // Tier 2: Mistral Small
     { provider: 'mistral' as const, envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', timeout: 3000 },
     // Tier 3: Groq

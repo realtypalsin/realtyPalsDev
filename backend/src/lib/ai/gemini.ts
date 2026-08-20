@@ -114,7 +114,7 @@ export async function streamWithGemini(
       } catch (err: any) {
         const errMsg = err?.message || String(err)
         if (errMsg.includes('404') || errMsg.includes('not found') || errMsg.includes('no longer available')) {
-          const fallbackModel = targetModel === 'gemini-2.5-flash-lite' ? 'gemini-2.5-flash' : 'gemini-2.5-flash-lite'
+          const fallbackModel = targetModel === 'gemini-3.5-flash-lite' ? 'gemini-3.6-flash' : 'gemini-3.5-flash-lite'
           console.warn(`[gemini] Model '${targetModel}' failed (${errMsg.slice(0, 120)}...). Retrying with '${fallbackModel}'...`)
           stream = await client.models.generateContentStream({
             model: fallbackModel,

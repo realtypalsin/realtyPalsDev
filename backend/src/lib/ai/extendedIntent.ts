@@ -437,7 +437,7 @@ async function extractWithGemini(
     : `User message: ${message}`
 
   const response = await client.models.generateContent({
-    model: MODELS.GEMINI_MAIN || 'gemini-2.5-flash',
+    model: MODELS.GEMINI_MAIN || 'gemini-3.6-flash',
     contents: [{ role: 'user', parts: [{ text: userContent }] }],
     config: {
       systemInstruction: EXTENDED_INTENT_EXTRACTION_PROMPT,
