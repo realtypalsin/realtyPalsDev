@@ -46,6 +46,17 @@ export const metadata: Metadata = {
     shortcut: "/images/icons/faviconBlack.svg",
     apple: "/images/icons/faviconBlack.svg",
   },
+  formatDetection: {
+    telephone: false,
+    date: false,
+    address: false,
+    email: false,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'RealtyPals',
+  },
 };
 
 export const viewport = {
@@ -54,6 +65,10 @@ export const viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover' as const,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+  ],
 };
 
 import { Toaster } from "sonner";
