@@ -8,12 +8,12 @@ import {
   Key,
   Crown,
   Tree,
-  ShieldCheck,
-  Sparkle,
   Stack,
   CaretDown,
   CaretRight,
-  Funnel
+  Funnel,
+  MapPin,
+  CurrencyInr
 } from '@phosphor-icons/react';
 import { HOME_BUTTON_GROUPS } from '@/lib/homeButtons';
 
@@ -23,9 +23,9 @@ const iconMap: Record<string, React.ReactNode> = {
   Key: <Key size={14} weight="duotone" />,
   Crown: <Crown size={14} weight="duotone" />,
   Trees: <Tree size={14} weight="duotone" />,
-  Shield: <ShieldCheck size={14} weight="duotone" />,
-  Sparkles: <Sparkle size={14} weight="duotone" />,
-  Layers: <Stack size={14} weight="duotone" />
+  Layers: <Stack size={14} weight="duotone" />,
+  MapPin: <MapPin size={14} weight="duotone" />,
+  CurrencyInr: <CurrencyInr size={14} weight="duotone" />,
 };
 
 interface HomeButtonsProps {
@@ -64,27 +64,27 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
 
   return (
     <div ref={containerRef} className="w-full max-w-4xl mx-auto px-2">
-      {/* Mobile: Clean 2-Column Grid (ChatGPT/Claude mobile style) */}
-      <div className="grid grid-cols-2 gap-2 sm:hidden">
-        {HOME_BUTTON_GROUPS.filter(group => group.options && group.options.length > 0).slice(0, 6).map((group) => {
+      {/* Mobile: 2×2 Grid — only 4 buttons */}
+      <div className="grid grid-cols-2 gap-2.5 sm:hidden">
+        {HOME_BUTTON_GROUPS.filter(group => group.options && group.options.length > 0).slice(0, 4).map((group) => {
           const isOpen = openDropdownId === group.id;
           return (
             <div key={group.id} className="relative">
               <m.div
                 whileTap={{ scale: 0.96 }}
-                className={`group flex items-center justify-between rounded-xl text-xs font-semibold border transition-all duration-200 p-2 shadow-2xs ${
+                className={`group flex items-center justify-between rounded-2xl text-xs font-semibold border transition-all duration-200 p-3 shadow-sm ${
                   isOpen
-                    ? 'bg-white dark:bg-[#18181c] border-blue-500/80 dark:border-blue-400/80 text-zinc-900 dark:text-zinc-100 ring-2 ring-blue-500/25 shadow-md'
-                    : 'bg-white/95 dark:bg-[#141416]/95 backdrop-blur-md border-zinc-200/90 dark:border-zinc-800 text-zinc-700 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs'
+                    ? 'bg-white dark:bg-[#18181c] border-blue-500/80 dark:border-blue-400/80 text-zinc-900 dark:text-zinc-100 ring-2 ring-blue-500/20'
+                    : 'bg-white/90 dark:bg-[#141416]/90 backdrop-blur-md border-zinc-200/80 dark:border-zinc-800 text-zinc-700 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <button
                   type="button"
                   onClick={(e) => handleMainClick(group.primaryPrompt, e)}
-                  className="flex items-center gap-1.5 min-w-0 flex-1 text-left cursor-pointer"
+                  className="flex items-center gap-2 min-w-0 flex-1 text-left cursor-pointer"
                   title={group.primaryPrompt}
                 >
-                  <span className={`flex-shrink-0 p-1 rounded-lg ${group.colorClass}`}>
+                  <span className={`flex-shrink-0 p-1.5 rounded-xl ${group.colorClass}`}>
                     {iconMap[group.icon]}
                   </span>
                   <span className="truncate font-bold text-[11.5px] leading-tight text-zinc-800 dark:text-zinc-200">
@@ -98,7 +98,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                   className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 shrink-0 ml-1 cursor-pointer"
                   title="Options"
                 >
-                  <CaretDown size={12} weight="bold" className={`transition-transform ${isOpen ? 'rotate-180 text-blue-500' : ''}`} />
+                  <CaretDown size={11} weight="bold" className={`transition-transform ${isOpen ? 'rotate-180 text-blue-500' : ''}`} />
                 </button>
               </m.div>
 
@@ -129,7 +129,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
         })}
       </div>
 
-      {/* Desktop: Horizontal Flowing Pills */}
+      {/* Desktop: Horizontal Flowing Pills — all buttons */}
       <div className="hidden sm:flex flex-wrap items-center justify-center gap-2.5">
         {HOME_BUTTON_GROUPS.filter(group => group.options && group.options.length > 0).map((group, index) => {
           const isOpen = openDropdownId === group.id;
@@ -152,7 +152,6 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                     : 'bg-white/95 dark:bg-[#141416]/95 backdrop-blur-md border-zinc-200/90 dark:border-zinc-800 text-zinc-700 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs'
                 }`}
               >
-                {/* Left Main Clickable Button */}
                 <button
                   type="button"
                   onClick={(e) => handleMainClick(group.primaryPrompt, e)}
@@ -167,10 +166,8 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                   </span>
                 </button>
 
-                {/* Vertical Subtle Divider */}
                 <div className="h-4 w-px bg-zinc-200/80 dark:bg-zinc-800/90 shrink-0" />
 
-                {/* Right Dropdown Toggle Button */}
                 <button
                   type="button"
                   onClick={(e) => handleToggle(group.id, e)}
@@ -191,7 +188,6 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                 </button>
               </m.div>
 
-              {/* Compact & Refined Expanded Dropdown Menu */}
               <AnimatePresence>
                 {isOpen && (
                   <m.div

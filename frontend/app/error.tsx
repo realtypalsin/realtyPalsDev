@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { AlertCircle, RefreshCw, Home, ArrowLeft, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, House, ArrowClockwise, CaretDown, CaretUp, ShieldCheck } from '@phosphor-icons/react'
+import Image from 'next/image'
 
 export default function Error({
   error,
@@ -15,7 +16,6 @@ export default function Error({
   const [isRetrying, setIsRetrying] = useState(false)
 
   useEffect(() => {
-    // Auto-retry ChunkLoadErrors by hard-refreshing (once per session)
     if (error?.message?.includes('ChunkLoadError') || error?.message?.includes('Loading chunk')) {
       const reloadAttempts = sessionStorage.getItem('chunk_reload_attempts') ?? '0'
       if (parseInt(reloadAttempts) < 1) {
@@ -42,48 +42,53 @@ export default function Error({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F4F6F9] via-[#F8FAFC] to-[#F1F3F7] dark:from-[#090D16] dark:via-[#0E1320] dark:to-[#090D16] text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white relative overflow-hidden font-sans transition-colors">
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col justify-between selection:bg-blue-500 selection:text-white relative overflow-hidden font-sans">
+      {/* Ambient background */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <header className="relative z-10 max-w-6xl mx-auto w-full px-6 py-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-            RP
-          </div>
-          <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-            RealtyPals
-          </span>
+      <header className="relative z-10 max-w-6xl mx-auto w-full px-6 py-5 flex items-center justify-between border-b border-white/5">
+        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+          <Image
+            src="/images/icons/ExpandedRealtyPalsWhite.png"
+            alt="RealtyPals"
+            width={140}
+            height={42}
+            className="object-contain h-auto opacity-90 group-hover:opacity-100 transition-opacity w-28 sm:w-36"
+          />
         </Link>
 
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-400 hover:text-white transition-colors px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={13} weight="bold" />
           <span>Home</span>
         </Link>
       </header>
 
       {/* Main Container */}
-      <main className="relative z-10 max-w-xl mx-auto w-full px-6 py-12 flex-1 flex flex-col items-center justify-center text-center">
-        {/* Error Icon Badge */}
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-sm mb-5">
-          <AlertCircle size={30} />
+      <main className="relative z-10 max-w-md mx-auto w-full px-6 py-12 flex-1 flex flex-col items-center justify-center text-center">
+
+        {/* Error icon badge */}
+        <div className="w-18 h-18 mb-5 rounded-3xl bg-amber-500/8 border border-amber-500/15 flex items-center justify-center p-5 shadow-inner">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+            <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
 
         {/* Status Badge */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold uppercase tracking-wider mb-3">
-          <ShieldCheck size={13} className="text-blue-600 dark:text-blue-400" />
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/12 backdrop-blur-md text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-4">
+          <ShieldCheck size={12} weight="duotone" className="text-blue-400" />
           <span>Session Recovery Active</span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-3">
           Unable to Load Section
         </h1>
 
-        <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mb-8 leading-relaxed font-normal">
+        <p className="text-sm text-zinc-400 max-w-sm mb-8 leading-relaxed font-normal">
           An unexpected interruption occurred while rendering this view. You can reload the component or return to the main discovery floor.
         </p>
 
@@ -93,37 +98,37 @@ export default function Error({
             type="button"
             onClick={handleReset}
             disabled={isRetrying}
-            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw size={14} className={isRetrying ? 'animate-spin' : ''} />
+            <ArrowClockwise size={14} weight="bold" className={isRetrying ? 'animate-spin' : ''} />
             <span>{isRetrying ? 'Reloading...' : 'Try Again'}</span>
           </button>
 
           <Link
             href="/"
-            className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all flex items-center gap-2 shadow-2xs"
+            className="px-5 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/10 active:scale-95 border border-white/12 text-zinc-200 font-bold text-xs transition-all flex items-center gap-2"
           >
-            <Home size={14} />
+            <House size={14} weight="duotone" />
             <span>Return Home</span>
           </Link>
         </div>
 
-        {/* Collapsible Error Trace (Developer Details) */}
+        {/* Collapsible Error Trace */}
         {error?.message && (
-          <div className="w-full max-w-lg mt-2">
+          <div className="w-full max-w-sm mt-2">
             <button
               onClick={() => setShowDetails(!showDetails)}
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
             >
               <span>{showDetails ? 'Hide technical trace' : 'View technical trace'}</span>
-              {showDetails ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              {showDetails ? <CaretUp size={11} weight="bold" /> : <CaretDown size={11} weight="bold" />}
             </button>
 
             {showDetails && (
-              <div className="mt-3 p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-left font-mono text-[11px] text-slate-700 dark:text-slate-300 overflow-x-auto max-h-36 leading-relaxed">
-                <span className="text-slate-500 font-bold block mb-1">Diagnostic Log:</span>
+              <div className="mt-3 p-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-left font-mono text-[11px] text-zinc-400 overflow-x-auto max-h-36 leading-relaxed">
+                <span className="text-zinc-500 font-bold block mb-1">Diagnostic Log:</span>
                 {error.message}
-                {error.digest && <span className="block text-slate-500 mt-1">Digest: {error.digest}</span>}
+                {error.digest && <span className="block text-zinc-600 mt-1">Digest: {error.digest}</span>}
               </div>
             )}
           </div>
@@ -131,10 +136,9 @@ export default function Error({
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 max-w-6xl mx-auto w-full px-6 py-4 border-t border-slate-200/60 dark:border-slate-800/60 text-center text-xs text-slate-500 dark:text-slate-500">
-        © 2026 RealtyPals · Verified Real Estate Intelligence
+      <footer className="relative z-10 max-w-6xl mx-auto w-full px-6 py-4 border-t border-white/5 text-center text-[11px] text-zinc-600">
+        © {new Date().getFullYear()} RealtyPals · Verified Real Estate Intelligence
       </footer>
     </div>
   )
 }
-

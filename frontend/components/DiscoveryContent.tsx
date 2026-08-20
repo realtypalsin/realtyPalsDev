@@ -449,6 +449,26 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     }
   };
 
+  const lastScrolledMsgId = useRef<string | null>(null);
+
+  const scrollToLatestResponse = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (chatHistory.length === 0) return;
+    const lastMsg = chatHistory[chatHistory.length - 1];
+
+    // ChatGPT/Gemini style: scroll to the top of the newly generated assistant message
+    if (lastMsg && lastMsg.type === 'ai') {
+      const msgElem = document.getElementById(`msg-${lastMsg.id}`);
+      if (msgElem) {
+        msgElem.scrollIntoView({ behavior, block: 'start' });
+        return;
+      }
+    }
+
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior, block: 'end' });
+    }
+  }, [chatHistory]);
+
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior, block: 'end' });
@@ -456,8 +476,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, []);
 
   useEffect(() => {
-    if (chatHistory.length > 0 && !userScrolledUp.current) scrollToBottom();
-  }, [chatHistory.length, isSubmitting, scrollToBottom]);
+    if (chatHistory.length > 0 && !userScrolledUp.current) {
+      const lastMsg = chatHistory[chatHistory.length - 1];
+      if (lastMsg && lastMsg.id !== lastScrolledMsgId.current) {
+        lastScrolledMsgId.current = lastMsg.id;
+        const timer = setTimeout(() => scrollToLatestResponse(), 80);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [chatHistory, isSubmitting, scrollToLatestResponse]);
 
   // ── Mobile keyboard handling via Visual Viewport API ──
   const [keyboardOpen, setKeyboardOpen] = useState(false);
@@ -1510,8 +1537,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      {/* ChatGPT/Claude-style Seamless Header with Top Gradient Fade */}
-      <div className="absolute top-0 left-0 right-0 h-14 md:h-16 z-50 flex items-center justify-between px-3 sm:px-4 bg-gradient-to-b from-slate-50/95 via-slate-50/70 to-transparent dark:from-gray-900/95 dark:via-gray-900/70 dark:to-transparent backdrop-blur-[6px] transition-colors pointer-events-none">
+      {/* Clean Transparent Header Bar */}
+      <div className="absolute top-0 left-0 right-0 h-14 md:h-16 z-30 flex items-center justify-between px-3 sm:px-4 bg-transparent pointer-events-none">
         <div className="flex-1 flex items-center justify-start pl-14 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
           {hasUserReplied && (
             isRenamingHeader ? (
@@ -1693,7 +1720,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   const actualIndex = Math.max(0, chatHistory.length - visibleCount) + index;
                   const isComparingThis = message.id === comparingMessageId;
                   return (
-                    <div key={message.id} className={isComparingThis ? 'relative z-30' : ''}>
+                    <div key={message.id} id={`msg-${message.id}`} className={`scroll-mt-6 ${isComparingThis ? 'relative z-30' : ''}`}>
                       <MessageBubble
                         message={message}
                         index={actualIndex}

@@ -470,10 +470,58 @@ export default function BuilderRegistrationForm() {
       <div className="absolute bottom-0 left-0 w-[70vw] h-[70vw] bg-gradient-to-tr from-indigo-500/5 to-transparent rounded-full blur-[100px] pointer-events-none -translate-x-1/4 translate-y-1/4" />
 
       {/* Main Split Card */}
-      <div className="w-full max-w-[1060px] min-h-[720px] md:h-[780px] bg-white rounded-[28px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)] relative z-10 flex flex-col md:flex-row overflow-hidden">
+      <div className="w-full max-w-[1060px] min-h-0 md:h-[780px] bg-white rounded-[24px] sm:rounded-[28px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)] relative z-10 flex flex-col md:flex-row overflow-hidden my-auto">
         
-        {/* Left Sidebar Stepper — Seamless Floating Style Without Connecting Lines */}
-        <div className="w-full md:w-[340px] bg-zinc-50/80 border-r border-zinc-200/80 p-6 md:p-8 flex flex-col shrink-0 justify-between">
+        {/* Mobile Header & Progress Stepper (Visible only on < md) */}
+        <div className="md:hidden w-full bg-zinc-50 border-b border-zinc-200/80 p-4 shrink-0">
+          <div className="flex items-center justify-between mb-3">
+            <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-900 text-xs font-semibold">
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </Link>
+            <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals" width={90} height={22} className="object-contain opacity-90" unoptimized />
+          </div>
+
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <span className="text-[10.5px] font-bold text-blue-600 uppercase tracking-wider">Step {currentIdx + 1} of {STEPS.length}</span>
+              <h2 className="text-sm font-bold text-zinc-900 leading-tight">{STEP_TITLES[activeStep].title}</h2>
+            </div>
+            <div className="flex items-center gap-1">
+              {STEPS.map((step, idx) => {
+                const isActive = idx === currentIdx
+                const isCompleted = isStepFullyCompleted(step)
+                return (
+                  <button
+                    key={step}
+                    type="button"
+                    onClick={() => handleStepClick(step)}
+                    className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center transition-all ${
+                      isActive
+                        ? 'bg-blue-600 text-white shadow-2xs'
+                        : isCompleted
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-zinc-200 text-zinc-500'
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Progress bar line */}
+          <div className="w-full bg-zinc-200 h-1.5 rounded-full overflow-hidden">
+            <div
+              className="bg-blue-600 h-full transition-all duration-300 rounded-full"
+              style={{ width: `${((currentIdx + 1) / STEPS.length) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Left Sidebar Stepper — Desktop Only (Visible on md+) */}
+        <div className="hidden md:flex w-[340px] bg-zinc-50/80 border-r border-zinc-200/80 p-6 md:p-8 flex-col shrink-0 justify-between">
           <div>
             <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals" width={105} height={26} className="object-contain mb-6 opacity-90" unoptimized />
             
@@ -595,7 +643,7 @@ export default function BuilderRegistrationForm() {
 
         {/* Right Area: Form Content */}
         <div className="flex-1 flex flex-col relative bg-white">
-          <div className="flex-1 p-8 sm:p-10 lg:px-14 lg:py-10 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 p-5 sm:p-8 md:p-10 lg:px-14 lg:py-10 overflow-y-auto custom-scrollbar">
             <div className="max-w-[480px] mx-auto">
               
               {/* Step Title Header */}

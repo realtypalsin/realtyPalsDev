@@ -14,6 +14,27 @@ export interface HomeButtonGroup {
 
 export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
   {
+    id: 'budget_3bhk',
+    title: '2 Crore 3 BHK — Good Deal?',
+    primaryPrompt: 'Is 2 crore too much for a 3 BHK in Noida right now?',
+    icon: 'CurrencyInr',
+    colorClass: 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 group-hover/main:bg-amber-600 group-hover/main:text-white',
+    options: [
+      {
+        label: 'Is 2Cr fair for Sector 75?',
+        prompt: 'Is 2 crore a fair price for a 3 BHK in Sector 75 Noida?'
+      },
+      {
+        label: 'Best 3 BHK under 2 Crore',
+        prompt: 'Show me the best 3 BHK options in Noida under 2 crore budget.'
+      },
+      {
+        label: 'Price trends for 3 BHK',
+        prompt: 'What are current price trends for 3 BHK flats across Noida sectors?'
+      }
+    ]
+  },
+  {
     id: 'sec75',
     title: '3 BHK in Sector 75 Noida',
     primaryPrompt: 'Show me 3 BHK apartments available for immediate purchase in Sector 75 Noida.',
@@ -30,49 +51,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
       },
       {
         label: 'Flats near Metro station',
-        prompt: 'Find residential flats in Sector 75 Noida within walking distance to Sector 50/76 metro station.'
-      }
-    ]
-  },
-  {
-    id: 'sec76',
-    title: '2 BHK in Sector 76 Noida',
-    primaryPrompt: 'Show me budget friendly 2 BHK flats available in Sector 76 Noida.',
-    icon: 'Home',
-    colorClass: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 group-hover/main:bg-emerald-600 group-hover/main:text-white',
-    options: [
-      {
-        label: 'Budget friendly 2 BHK',
-        prompt: 'Show me budget friendly 2 BHK flats available in Sector 76 Noida.'
-      },
-      {
-        label: 'Resale property deals',
-        prompt: 'Are there good resale property deals available in Sector 76 Noida?'
-      },
-      {
-        label: 'Spacious family 3 BHK',
-        prompt: 'Find spacious 3 BHK family apartments in ready-to-move societies in Sector 76 Noida.'
-      }
-    ]
-  },
-  {
-    id: 'sec77',
-    title: '3 BHK in Sector 77 Noida',
-    primaryPrompt: 'Show me the most popular 3 BHK housing societies in Sector 77 Noida.',
-    icon: 'Key',
-    colorClass: 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 group-hover/main:bg-amber-600 group-hover/main:text-white',
-    options: [
-      {
-        label: 'Popular housing societies',
-        prompt: 'Show me the most popular 3 BHK housing societies in Sector 77 Noida.'
-      },
-      {
-        label: 'Ready to move flats',
-        prompt: 'Which completed projects in Sector 77 Noida have ready to move 2 BHK and 3 BHK apartments?'
-      },
-      {
-        label: 'Price growth & trends',
-        prompt: 'What are the price trends and rental yields for apartments in Sector 77 Noida?'
+        prompt: 'Find residential flats in Sector 75 Noida within walking distance to metro station.'
       }
     ]
   },
@@ -143,7 +122,7 @@ export const HOME_BUTTON_GROUPS: HomeButtonGroup[] = [
     id: 'sec12_gn',
     title: 'Sector 12 Greater Noida West',
     primaryPrompt: 'Show me newly launched luxury 3 BHK & 4 BHK projects in Sector 12 Greater Noida West.',
-    icon: 'Sparkles',
+    icon: 'MapPin',
     colorClass: 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 group-hover/main:bg-rose-600 group-hover/main:text-white',
     options: [
       {

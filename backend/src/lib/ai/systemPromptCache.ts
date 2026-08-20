@@ -12,7 +12,7 @@ interface CachedSystemPrompt {
   version: number // Bump on base prompt changes
 }
 
-const CACHE_VERSION = 1
+const CACHE_VERSION = 2
 let cachedBasePrompt: CachedSystemPrompt | null = null
 const CACHE_TTL = 3600000 // 1 hour
 

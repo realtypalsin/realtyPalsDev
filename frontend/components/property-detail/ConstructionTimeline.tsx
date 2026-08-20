@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, ShieldCheck, Activity, Calendar, Users, Home, Zap, Sparkles, Building } from 'lucide-react'
+import { Check, ShieldCheck, Activity, Calendar, Users, Home, Zap, Building } from 'lucide-react'
 import type { ProjectOverviewData } from '@/lib/backend-api'
 
 export interface ConstructionTimelineProps {

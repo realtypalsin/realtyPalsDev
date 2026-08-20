@@ -18,7 +18,6 @@ import {
   CreditCard,
   BarChart3,
   Calendar,
-  Sparkles,
   Layers,
   Home,
   CheckCircle2,
@@ -57,7 +56,7 @@ function getHeaderIcon(text: string) {
   if (t.includes('safety') || t.includes('security') || t.includes('cctv') || t.includes('aqi')) return ShieldCheck
   if (t.includes('status') || t.includes('timeline') || t.includes('possession') || t.includes('date')) return Calendar
   if (t.includes('layout') || t.includes('unit') || t.includes('bhk') || t.includes('config')) return Home
-  if (t.includes('amenit') || t.includes('facility') || t.includes('feature')) return Sparkles
+  if (t.includes('amenit') || t.includes('facility') || t.includes('feature')) return Layers
   if (t.includes('connectiv') || t.includes('nearby') || t.includes('infra')) return Layers
   if (t.includes('decision') || t.includes('verdict') || t.includes('intelligence') || t.includes('thesis')) return BarChart3
   return Info

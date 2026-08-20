@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import DiscoveryContent from '@/components/DiscoveryContent';
 import ChatErrorBoundary from '@/components/ChatErrorBoundary';
 import UniversalLoader from '@/components/ui/universal-loader';
+import { DiscoveryHomeSkeleton } from '@/components/skeletons';
 import { getSupabaseClient } from '@/lib/supabase';
 import { migrateSessions } from '@/lib/backend-api';
 import { getOrCreateGuestToken, clearGuestToken } from '@/lib/guestToken';
@@ -97,8 +98,17 @@ export default function DiscoverPage() {
 
   if (!ready) {
     return (
-      <div className="flex items-center justify-center min-h-[100dvh] bg-transparent">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+      <div className="flex h-[100dvh] bg-transparent overflow-hidden no-overscroll">
+        <Sidebar 
+          userId={userId} 
+          guestToken={guestToken} 
+          activeSessionId={activeSessionId} 
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+        <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
+          <DiscoveryHomeSkeleton />
+        </main>
       </div>
     );
   }
@@ -114,7 +124,7 @@ export default function DiscoverPage() {
       />
       <main className="flex-1 h-full flex flex-col min-h-0 overflow-hidden relative">
         <ChatErrorBoundary>
-          <Suspense fallback={<div className="flex-1"><UniversalLoader variant="skeleton-page" label="Opening your advisor…" /></div>}>
+          <Suspense fallback={<DiscoveryHomeSkeleton />}>
             <DiscoveryContent
               key={`new-${newChatNonce}`}
               initialSessionId={null}

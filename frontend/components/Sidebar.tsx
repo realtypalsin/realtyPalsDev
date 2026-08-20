@@ -178,37 +178,39 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile Sidebar Button (ChatGPT-style minimalist 2 lines) */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-3.5 left-3.5 z-[60] w-8 h-8 flex flex-col justify-center items-start gap-[4.5px] p-1.5 text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white active:scale-95 transition-all cursor-pointer"
-        aria-label="Open sidebar menu"
-        title="Open menu"
-      >
-        <span className="w-[17px] h-[2px] bg-current rounded-full" />
-        <span className="w-[17px] h-[2px] bg-current rounded-full" />
-      </button>
+      {/* Mobile Sidebar Button (ChatGPT-style minimalist 2 unequal lines) */}
+      {!mobileOpen && (
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="md:hidden fixed top-3.5 left-3.5 z-[65] w-9 h-9 flex flex-col justify-center items-start p-2 gap-[5px] text-zinc-800 dark:text-zinc-200 hover:text-black dark:hover:text-white active:scale-90 transition-all cursor-pointer pointer-events-auto rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
+          aria-label="Open sidebar menu"
+          title="Open menu"
+        >
+          <span className="w-[18px] h-[2px] bg-current rounded-full" />
+          <span className="w-[11px] h-[2px] bg-current rounded-full" />
+        </button>
+      )}
 
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
           onClick={closeMobile}
         />
       )}
 
       <div
         className={`
-        ${isCollapsed ? 'hidden md:flex w-[64px]' : 'w-64 md:w-[260px]'} 
-        text-gray-900 dark:text-gray-100 flex flex-col h-full border-r border-gray-200/60 dark:border-gray-800/60 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl
-        fixed md:relative z-50 md:z-auto shrink-0
+        ${isCollapsed ? 'hidden md:flex w-[64px]' : 'w-[280px] sm:w-[300px] md:w-[260px]'} 
+        text-gray-900 dark:text-gray-100 flex flex-col h-full border-r border-gray-200/80 dark:border-zinc-800/80 bg-white dark:bg-[#0c0d14]
+        fixed md:relative z-[60] md:z-auto shrink-0 shadow-2xl md:shadow-none
         transition-all duration-300 ease-in-out overflow-hidden
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}
       >
         {/* Header: Expanded vs Collapsed */}
         {!isCollapsed ? (
-          <div className="h-14 flex items-center justify-between border-b border-gray-100/60 dark:border-gray-800/60 w-full px-3.5 shrink-0">
+          <div className="h-14 flex items-center justify-between border-b border-gray-100 dark:border-zinc-800/80 w-full px-4 shrink-0 bg-white dark:bg-[#0c0d14]">
             <Link
               href="/discover"
               onClick={handleFreshDiscovery}
@@ -224,11 +226,12 @@ export default function Sidebar({
                 if (window.innerWidth < 768) closeMobile();
                 else onToggleCollapse?.();
               }}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-              title="Collapse sidebar"
-              aria-label="Collapse sidebar"
+              className="p-2 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer flex flex-col justify-center items-start gap-[5px]"
+              title="Close sidebar"
+              aria-label="Close sidebar"
             >
-              <SidebarSimple size={18} weight="bold" />
+              <span className="w-[18px] h-[2px] bg-current rounded-full" />
+              <span className="w-[11px] h-[2px] bg-current rounded-full" />
             </button>
           </div>
         ) : (

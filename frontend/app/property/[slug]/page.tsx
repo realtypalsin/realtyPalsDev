@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Share2, Sparkles } from 'lucide-react'
+import { ArrowLeft, Share2 } from 'lucide-react'
+import { Sparkle } from '@phosphor-icons/react'
 import type { ProjectDetail } from '@/types/project'
 import ProjectDetailPanel from '@/components/ProjectDetailPanel'
 import PropertyDetailThemed from '@/components/PropertyDetailThemed'
@@ -122,7 +123,7 @@ export default function PropertyDetailPage() {
               onClick={() => router.push('/discover')}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all active:scale-95 shadow-sm cursor-pointer"
             >
-              <Sparkles size={13} />
+              <Sparkle size={13} weight="duotone" />
               <span className="hidden sm:inline">Ask AI Advisor</span>
               <span className="sm:hidden">AI</span>
             </button>

@@ -530,4 +530,36 @@ export function ChatPhase2Skeleton() {
   )
 }
 
+/** Dedicated Discovery Home Empty-State Skeleton matching the wordmark, input bar, and 6-button grid */
+export function DiscoveryHomeSkeleton() {
+  return (
+    <div className="flex-1 h-full w-full flex flex-col items-center justify-center p-4 sm:p-8 animate-in fade-in duration-150">
+      <div className="w-full max-w-2xl flex flex-col items-center text-center space-y-6">
+        
+        {/* Wordmark Skeleton */}
+        <div className="flex flex-col items-center space-y-2">
+          <div className="w-48 sm:w-56 h-10 sm:h-12 img-skeleton rounded-2xl" />
+          <div className="w-32 h-4 img-skeleton rounded-md opacity-75" />
+          <div className="w-52 h-3 img-skeleton rounded-md opacity-50" />
+        </div>
+
+        {/* Search Input Bar Skeleton */}
+        <div className="w-full max-w-xl h-14 rounded-full img-skeleton flex items-center justify-between px-6 shadow-sm border border-black/5 dark:border-white/10" />
+
+        {/* 6 Dedicated Prompt Button Skeletons */}
+        <div className="w-full max-w-xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-10 rounded-2xl img-skeleton border border-black/5 dark:border-white/5 shadow-2xs"
+            />
+          ))}
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+
 

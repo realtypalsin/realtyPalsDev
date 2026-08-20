@@ -494,75 +494,74 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
         </div>
 
         {/* ── Body ── */}
-        <div className="px-5 pt-4 pb-5 flex-1 flex flex-col bg-white dark:bg-[#111]">
-          {/* Name row + RERA + Distance */}
-          <div className="flex items-start justify-between gap-2 mb-0.5">
-            <h3 className="text-[17px] font-semibold text-gray-900 dark:text-gray-100 tracking-tight leading-snug truncate">
-              {project.name}
-            </h3>
-            <div className="flex-shrink-0 flex gap-1">
-              {project.distance_km && project.distance_km > 0 && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 text-[10px] font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                  <MapPinLine size={10} weight="fill" />
-                  {project.distance_km.toFixed(1)} km
-                </span>
-              )}
-              {project.rera_number && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 tracking-wide uppercase">
-                  <ShieldCheck size={12} weight="fill" className="text-emerald-500" />
-                  RERA
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Builder · Sector · Possession */}
-          <div className="flex items-center justify-between text-[12px] text-gray-600 dark:text-gray-300 mb-3 gap-2">
-            <div className="flex items-center gap-1.5 truncate flex-1">
-              <span className="font-medium truncate">
-                {typeof project.builder === 'object' ? project.builder?.name : project.builder}
-              </span>
-              <span className="opacity-40">·</span>
-              <span className="truncate opacity-80">{project.sector}</span>
-            </div>
-            {project.possession_label && !isRTM && (
-              <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap flex-shrink-0">
-                Possession: {project.possession_label}
-              </span>
-            )}
-          </div>
-
-          {/* Price — big hero number */}
-          <div className="mb-4">
-            <p className="text-[24px] font-medium text-gray-900 dark:text-gray-50 tracking-tight leading-none">
-              {project.price_range_label}
-            </p>
-          </div>
-
-          {/* Configurations */}
-          <div className="flex flex-col gap-1.5 mb-5">
-            {(expandedUnits ? bhkGroups : bhkGroups.slice(0, 2)).map(g => (
-              <div key={g.bhk} className="flex items-end text-[13px] group">
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-medium text-gray-800 dark:text-gray-200">{g.bhk} BHK</span>
-                </div>
-                <div className="flex-1 mx-2 mb-[4px] border-b border-dotted border-gray-300 dark:border-gray-700/50 group-hover:border-gray-400 dark:group-hover:border-gray-600 transition-colors" />
-                {g.areas.length > 0 && (
-                  <span className="text-[12px] text-gray-500 dark:text-gray-400 font-medium text-right truncate flex-shrink-0">
-                    {g.areas.join(', ')}
+        <div className="px-5 pt-4 pb-5 flex-1 flex flex-col justify-between bg-white dark:bg-[#111]">
+          <div>
+            {/* Name row + RERA + Distance */}
+            <div className="flex items-start justify-between gap-2 mb-1 min-h-[26px]">
+              <h3 className="text-[17px] font-bold text-gray-900 dark:text-gray-100 tracking-tight leading-snug truncate" title={project.name}>
+                {project.name}
+              </h3>
+              <div className="flex-shrink-0 flex gap-1 items-center">
+                {project.distance_km && project.distance_km > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 text-[10px] font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                    <MapPinLine size={10} weight="fill" />
+                    {project.distance_km.toFixed(1)} km
+                  </span>
+                )}
+                {project.rera_number && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 tracking-wide uppercase">
+                    <ShieldCheck size={12} weight="fill" className="text-emerald-500" />
+                    RERA
                   </span>
                 )}
               </div>
-            ))}
-            {bhkGroups.length > 2 && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setExpandedUnits(prev => !prev) }}
-                className="text-[12px] font-semibold text-blue-600 dark:text-blue-400 hover:underline text-left"
-              >
-                {expandedUnits ? 'Show less ↑' : `+ ${bhkGroups.length - 2} more configurations`}
-              </button>
-            )}
+            </div>
+
+            {/* Builder · Sector · Possession */}
+            <div className="flex items-center justify-between text-[12px] text-gray-600 dark:text-gray-300 mb-3 gap-2 min-h-[18px]">
+              <div className="flex items-center gap-1.5 truncate flex-1">
+                <span className="font-medium truncate">
+                  {typeof project.builder === 'object' ? project.builder?.name : project.builder}
+                </span>
+                <span className="opacity-40">·</span>
+                <span className="truncate opacity-80">{project.sector}</span>
+              </div>
+              {project.possession_label && !isRTM && (
+                <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap flex-shrink-0">
+                  Possession: {project.possession_label}
+                </span>
+              )}
+            </div>
+
+            {/* Price — big hero number */}
+            <div className="mb-3.5 min-h-[28px] flex items-center">
+              <p className="text-[22px] sm:text-[24px] font-bold text-gray-900 dark:text-gray-50 tracking-tight leading-none">
+                {project.price_range_label}
+              </p>
+            </div>
+
+            {/* Configurations — Uniform Fixed Height Slot (56px) */}
+            <div className="min-h-[56px] max-h-[56px] flex flex-col justify-center gap-1 mb-4 overflow-hidden">
+              {bhkGroups.slice(0, 2).map(g => (
+                <div key={g.bhk} className="flex items-center text-[12.5px] group">
+                  <span className="font-semibold text-gray-800 dark:text-gray-200 shrink-0">{g.bhk} BHK</span>
+                  <div className="flex-1 mx-2 border-b border-dotted border-gray-300 dark:border-gray-700/60" />
+                  <span className="text-[11.5px] text-gray-500 dark:text-gray-400 font-medium text-right truncate shrink-0 max-w-[140px]">
+                    {g.areas.slice(0, 2).join(', ')}
+                  </span>
+                </div>
+              ))}
+              {bhkGroups.length === 1 && (
+                <div className="flex items-center text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+                  <span className="truncate">All units verified with active RERA floor plans</span>
+                </div>
+              )}
+              {bhkGroups.length > 2 && (
+                <div className="text-[10.5px] font-semibold text-blue-600 dark:text-blue-400 truncate">
+                  +{bhkGroups.length - 2} more configurations available
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Quick Actions */}
