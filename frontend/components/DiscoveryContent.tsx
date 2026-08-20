@@ -1537,8 +1537,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      {/* Clean Transparent Header Bar */}
-      <div className="absolute top-0 left-0 right-0 h-14 md:h-16 z-30 flex items-center justify-between px-3 sm:px-4 bg-transparent pointer-events-none">
+      {/* Clean Glassmorphic Borderless Top Header */}
+      <div className="absolute top-0 left-0 right-0 h-14 md:h-16 z-30 flex items-center justify-between px-3 sm:px-4 bg-slate-50/85 dark:bg-[#0c0d14]/85 backdrop-blur-md border-0 border-none transition-colors pointer-events-none">
         <div className="flex-1 flex items-center justify-start pl-14 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
           {hasUserReplied && (
             isRenamingHeader ? (

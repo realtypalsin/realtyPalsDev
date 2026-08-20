@@ -240,21 +240,21 @@ function TextBlock({ block }: { block: ResponseBlock }) {
           'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
           'realty-action': ({ node, ...props }: any) => <ContactButton label={props.label || 'Request Callback'} className="my-2" />,
           table: ({ node, ...props }: any) => (
-            <div className="my-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#151b27] shadow-sm">
-              <table className="w-full border-collapse text-left text-sm text-gray-500 dark:text-gray-400" {...props} />
+            <div className="my-4 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-x -mx-1 sm:mx-0">
+              <table className="min-w-[540px] w-full border-collapse text-left text-xs sm:text-sm text-slate-700 dark:text-zinc-300" {...props} />
             </div>
           ),
           thead: ({ node, ...props }: any) => (
-            <thead className="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800" {...props} />
+            <thead className="bg-slate-100/80 dark:bg-zinc-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-700/80" {...props} />
           ),
           th: ({ node, ...props }: any) => (
-            <th className="px-4 py-3 font-semibold text-gray-900 dark:text-white" {...props} />
+            <th className="px-4 py-3 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap" {...props} />
           ),
           td: ({ node, ...props }: any) => (
-            <td className="px-4 py-3 border-b border-gray-100 dark:border-gray-800/50 last:border-0 text-gray-700 dark:text-gray-300" {...props} />
+            <td className="px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
           ),
           tr: ({ node, ...props }: any) => (
-            <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors" {...props} />
+            <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-slate-50/50 dark:even:bg-zinc-800/20" {...props} />
           )
         } as any}
       >

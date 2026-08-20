@@ -106,21 +106,21 @@ export function MessageContentRenderer({ content, isStreaming, onAction }: Messa
             <blockquote className="my-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 p-4 text-slate-700 dark:text-slate-300 not-italic shadow-xs" {...props} />
           ),
           table: ({ node, ...props }: any) => (
-            <div className="my-4 overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#151b27] shadow-xs">
-              <table className="w-full border-collapse text-left text-xs md:text-sm text-slate-700 dark:text-slate-300" {...props} />
+            <div className="my-4 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-x -mx-1 sm:mx-0">
+              <table className="min-w-[540px] w-full border-collapse text-left text-xs sm:text-sm text-slate-700 dark:text-zinc-300" {...props} />
             </div>
           ),
           thead: ({ node, ...props }: any) => (
-            <thead className="bg-slate-100/70 dark:bg-slate-800/60 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/80" {...props} />
+            <thead className="bg-slate-100/80 dark:bg-zinc-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-700/80" {...props} />
           ),
           th: ({ node, ...props }: any) => (
-            <th className="px-4 py-3 font-bold text-slate-900 dark:text-slate-100" {...props} />
+            <th className="px-4 py-3 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap" {...props} />
           ),
           td: ({ node, ...props }: any) => (
-            <td className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 last:border-0" {...props} />
+            <td className="px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
           ),
           tr: ({ node, ...props }: any) => (
-            <tr className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors even:bg-slate-50/30 dark:even:bg-slate-900/20" {...props} />
+            <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-slate-50/50 dark:even:bg-zinc-800/20" {...props} />
           ),
           a: ({ node, ...props }: any) => {
             const href = props.href || ''

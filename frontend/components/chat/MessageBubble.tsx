@@ -626,21 +626,21 @@ function MessageBubbleInner({
                                 'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
                                 'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
                                 table: ({ node, ...props }: any) => (
-                                  <div className="my-3 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs">
-                                    <table className="w-full border-collapse text-left text-xs sm:text-sm text-zinc-800 dark:text-zinc-200" {...props} />
+                                  <div className="my-4 overflow-x-auto rounded-2xl border border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-x -mx-1 sm:mx-0">
+                                    <table className="min-w-[560px] w-full border-collapse text-left text-xs sm:text-sm text-zinc-800 dark:text-zinc-200" {...props} />
                                   </div>
                                 ),
                                 thead: ({ node, ...props }: any) => (
-                                  <thead className="bg-zinc-50 dark:bg-zinc-800/90 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700" {...props} />
+                                  <thead className="bg-zinc-100/80 dark:bg-zinc-800/80 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700/80" {...props} />
                                 ),
                                 th: ({ node, ...props }: any) => (
-                                  <th className="px-3.5 py-2.5 font-bold text-zinc-900 dark:text-white border-r border-zinc-200/60 dark:border-zinc-700/60 last:border-0" {...props} />
+                                  <th className="px-4 py-3 font-bold text-zinc-900 dark:text-white whitespace-nowrap" {...props} />
                                 ),
                                 td: ({ node, ...props }: any) => (
-                                  <td className="px-3.5 py-2.5 border-b border-zinc-100 dark:border-zinc-800/70 last:border-0 border-r border-zinc-100 dark:border-zinc-800/50 last:border-r-0 leading-relaxed font-normal" {...props} />
+                                  <td className="px-4 py-3.5 border-b border-zinc-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
                                 ),
                                 tr: ({ node, ...props }: any) => (
-                                  <tr className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors even:bg-zinc-50/40 dark:even:bg-zinc-800/20" {...props} />
+                                  <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-zinc-50/50 dark:even:bg-zinc-800/20" {...props} />
                                 ),
                                 a: ({ node, ...props }: any) => {
                                   const href = props.href || ''
