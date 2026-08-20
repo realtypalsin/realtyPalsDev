@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { env } from './env'
+import { MODELS } from './config'
 
 export interface BuyerNarrative {
   summary: string
@@ -19,7 +20,7 @@ export async function generateBuyerNarrative(messages: any[]): Promise<BuyerNarr
     }
 
     const client = new GoogleGenerativeAI(env.GEMINI_API_KEY)
-    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = client.getGenerativeModel({ model: MODELS.GEMINI_LITE || 'gemini-2.5-flash-lite' })
 
     const transcript = messages
       .map(
