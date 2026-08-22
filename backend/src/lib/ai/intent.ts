@@ -205,8 +205,8 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
     // Tier 2: Mistral Small
     { provider: 'mistral' as const, envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', timeout: 3000 },
     // Tier 3: Groq
-    { provider: 'groq' as const, envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART || 'llama-3.3-70b-versatile', timeout: 3000 },
-    { provider: 'groq' as const, envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART || 'llama-3.3-70b-versatile', timeout: 3000 },
+    { provider: 'groq' as const, envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART, timeout: 3000 },
+    { provider: 'groq' as const, envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART, timeout: 3000 },
     // Tier 4: Cerebras
     { provider: 'cerebras' as const, envKey: 'CEREBRAS_API_KEY', model: 'llama3.3-70b', timeout: 3000 },
     // Tier 5: OpenAI (Fallback)

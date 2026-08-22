@@ -196,7 +196,7 @@ export async function generatePropertySummary(
       const Groq = (await import('groq-sdk')).default
       const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
       const res = await groq.chat.completions.create({
-        model: 'llama-3.1-8b-instant',
+        model: MODELS.GROQ_FAST,
         messages: [
           { role: 'system', content: prompt },
           { role: 'user', content: context },

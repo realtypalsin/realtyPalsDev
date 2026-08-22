@@ -8,8 +8,10 @@ export const MODELS = {
   GEMINI_LITE: process.env.GEMINI_LITE_MODEL || 'gemini-3.5-flash-lite',
   OPENAI_AZURE: process.env.OPENAI_AZURE_MODEL || 'gpt-4o',
   OPENAI_FALLBACK: process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini',
-  GROQ_FAST: process.env.GROQ_FAST_MODEL || 'llama-3.1-8b-instant',
-  GROQ_SMART: process.env.GROQ_SMART_MODEL || 'llama-3.3-70b-versatile',
+  // llama-3.1-8b-instant and llama-3.3-70b-versatile were deprecated by Groq (June 2026,
+  // free/developer tier). Groq's own migration guidance: gpt-oss-20b / gpt-oss-120b.
+  GROQ_FAST: process.env.GROQ_FAST_MODEL || 'openai/gpt-oss-20b',
+  GROQ_SMART: process.env.GROQ_SMART_MODEL || 'openai/gpt-oss-120b',
 }
 
 export const AI_CONFIG = {
@@ -69,8 +71,8 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 3: GROQ & OPENAI (Resilience Layer)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'groq', envKey: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 1)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: 'llama-3.3-70b-versatile', supportsTools: false, label: 'Groq 70B (Key 2)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 1)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 2)' },
   { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 1)' },
   { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 2)' },
 ]

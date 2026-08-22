@@ -130,13 +130,15 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, systemPrompt)
 
     const effectiveConfig = options.config || { maxTokens: 3000 }
+    // Gemini ignores its FALLBACK_CHAIN item.model unless we thread it through here — without
+    // this, the "backup" gemini entry silently re-requests the exact same model (and fails the
+    // exact same way on auth/config errors) instead of trying its distinct lite tier. An explicit
+    // caller override (e.g. cost-routing's config.model) still wins over the chain entry's default.
+    const geminiConfig = { ...effectiveConfig, model: effectiveConfig.model ?? item.model }
 
     try {
       if (process.env.DEBUG_FALLBACK) {
-        // For gemini, the actual model comes from effectiveConfig.model (defaulting inside
-        // streamWithGemini), NOT item.model — item.model is unused for that provider. Log
-        // what will actually be requested so cost-routing decisions are verifiable.
-        const effectiveModel = item.provider === 'gemini' ? (effectiveConfig.model || '(default)') : item.model
+        const effectiveModel = item.provider === 'gemini' ? geminiConfig.model : item.model
         console.log(`[FALLBACK:TRY] → ${item.label} | Model: ${effectiveModel} | Tools: ${item.supportsTools}`)
       }
 
@@ -146,7 +148,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       } else if (item.provider === 'mistral') {
         text = await streamWithMistral(effectivePrompt, cappedMessages, bufferedSend, apiKey)
       } else if (item.provider === 'gemini') {
-        text = await streamWithGemini(effectivePrompt, cappedMessages, bufferedSend, onToolCall, effectiveConfig, apiKey)
+        text = await streamWithGemini(effectivePrompt, cappedMessages, bufferedSend, onToolCall, geminiConfig, apiKey)
       } else if (item.provider === 'openai') {
         text = await streamWithOpenAI(
           effectivePrompt,

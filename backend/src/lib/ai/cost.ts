@@ -2,8 +2,10 @@ import { prisma } from '../db'
 
 // USD per 1M tokens. Update when provider pricing changes.
 const PRICE: Record<string, { in: number; out: number }> = {
-  'llama-3.1-8b-instant': { in: 0.05, out: 0.08 },
-  'llama-3.3-70b-versatile': { in: 0.59, out: 0.79 },
+  'llama-3.1-8b-instant': { in: 0.05, out: 0.08 }, // deprecated by Groq June 2026, kept for historical usage rows
+  'llama-3.3-70b-versatile': { in: 0.59, out: 0.79 }, // deprecated by Groq June 2026, kept for historical usage rows
+  'openai/gpt-oss-20b': { in: 0.075, out: 0.3 }, // Groq — replaces llama-3.1-8b-instant
+  'openai/gpt-oss-120b': { in: 0.15, out: 0.6 }, // Groq — replaces llama-3.3-70b-versatile
   'gpt-4o': { in: 2.5, out: 10.0 },
   'gpt-4o-mini': { in: 0.15, out: 0.6 },
   'claude-3-5-sonnet-20241022': { in: 3.0, out: 15.0 },

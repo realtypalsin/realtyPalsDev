@@ -369,7 +369,7 @@ async function extractWithGroq(
     if (err?.status === 404 || err?.message?.includes('does not exist') || err?.message?.includes('model_not_found')) {
       console.log('[EXTENDED_INTENT] GROQ_SMART 404, falling back to GROQ_FAST:', MODELS.GROQ_FAST)
       completion = await groq.chat.completions.create({
-        model: MODELS.GROQ_FAST || 'llama-3.1-8b-instant',
+        model: MODELS.GROQ_FAST,
         messages: [
           { role: 'system', content: EXTENDED_INTENT_EXTRACTION_PROMPT },
           { role: 'user', content: userContent },
