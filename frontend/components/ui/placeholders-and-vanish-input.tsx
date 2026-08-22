@@ -4,6 +4,13 @@ import {  AnimatePresence, m  } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
+interface Particle {
+    x: number;
+    y: number;
+    r: number;
+    color: string;
+}
+
 export function PlaceholdersAndVanishInput({
     placeholders,
     onChange,
@@ -14,7 +21,7 @@ export function PlaceholdersAndVanishInput({
 
 }: {
     placeholders: string[];
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     children?: React.ReactNode;
     value?: string;
@@ -52,10 +59,17 @@ export function PlaceholdersAndVanishInput({
     }, [placeholders]);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const newDataRef = useRef<any[]>([]);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const newDataRef = useRef<Particle[]>([]);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
     const [value, setValue] = useState(controlledValue || "");
     const [animating, setAnimating] = useState(false);
+    const isMountedRef = useRef(true);
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     // Sync internal value when parent pushes a controlled value (e.g. Ask AI injection)
     useEffect(() => {
@@ -93,7 +107,7 @@ export function PlaceholdersAndVanishInput({
 
         const imageData = ctx.getImageData(0, 0, 800, 800);
         const pixelData = imageData.data;
-        const newData: any[] = [];
+        const newData: { x: number; y: number; color: [number, number, number, number] }[] = [];
 
         for (let t = 0; t < 800; t++) {
             let i = 4 * t * 800;
@@ -132,8 +146,10 @@ export function PlaceholdersAndVanishInput({
 
     const animate = (start: number) => {
         const animateFrame = (pos: number = 0) => {
+            if (!isMountedRef.current) return;
             requestAnimationFrame(() => {
-                const newArr = [];
+                if (!isMountedRef.current) return;
+                const newArr: Particle[] = [];
                 for (let i = 0; i < newDataRef.current.length; i++) {
                     const current = newDataRef.current[i];
                     if (current.x < pos) {
@@ -166,7 +182,7 @@ export function PlaceholdersAndVanishInput({
                 }
                 if (newDataRef.current.length > 0) {
                     animateFrame(pos - 8);
-                } else {
+                } else if (isMountedRef.current) {
                     setValue("");
                     setAnimating(false);
                 }
@@ -199,24 +215,19 @@ export function PlaceholdersAndVanishInput({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (disabled) return;
-
         vanishAndSubmit();
         onSubmit && onSubmit(e);
     };
     return (
         <form
             className={cn(
-                "w-full relative max-w-4xl mx-auto bg-transparent min-h-[48px] rounded-3xl overflow-hidden border-0 transition duration-200",
-                disabled && "opacity-70 pointer-events-none"
-
+                "w-full relative max-w-4xl mx-auto bg-transparent min-h-[48px] rounded-3xl overflow-hidden border-0 transition duration-200"
             )}
             onSubmit={handleSubmit}
         >
             <canvas
                 className={cn(
                     "absolute pointer-events-none text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
-
                     !animating ? "opacity-0" : "opacity-100"
                 )}
                 ref={canvasRef}
@@ -226,7 +237,7 @@ export function PlaceholdersAndVanishInput({
                 onChange={(e) => {
                     if (!animating) {
                         setValue(e.target.value);
-                        onChange && onChange(e as any);
+                        onChange && onChange(e);
                     }
                 }}
                 onInput={(e) => {
@@ -235,12 +246,11 @@ export function PlaceholdersAndVanishInput({
                     target.style.height = Math.min(target.scrollHeight, 200) + 'px';
                 }}
                 onKeyDown={handleKeyDown}
-                ref={inputRef as any}
+                ref={inputRef}
                 value={value}
-                disabled={disabled}
                 rows={1}
                 className={cn(
-                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black rounded-3xl focus:outline-none focus:ring-0 pl-4 sm:pl-6 pr-4 touch-target-min disabled:cursor-not-allowed resize-none py-3.5 overflow-hidden",
+                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black rounded-3xl focus:outline-none focus:ring-0 pl-4 sm:pl-6 pr-4 touch-target-min resize-none py-3.5 overflow-hidden",
                     animating && "text-transparent dark:text-transparent"
                 )}
                 style={{ minHeight: "48px", maxHeight: "200px" }}
@@ -274,8 +284,7 @@ export function PlaceholdersAndVanishInput({
                             }}
                             className="dark:text-zinc-500 text-sm sm:text-base font-normal text-neutral-500 pl-4 sm:pl-12 text-left w-[calc(100%-2rem)] truncate"
                         >
-                            {disabled ? "AI is responding..." : placeholders[currentPlaceholder]}
-
+                            {placeholders[currentPlaceholder]}
                         </m.p>
                     )}
                 </AnimatePresence>

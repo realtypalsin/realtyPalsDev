@@ -10,7 +10,7 @@ import {
   BookmarkSimple,
   CaretLeft, CaretRight,
   Car, GraduationCap, ShoppingBag, Bank, BookOpen,
-  Barbell, Star, Buildings, Phone, PhoneCall, ShareNetwork, Robot,
+  Barbell, Star, Buildings, Phone, PhoneCall, ShareNetwork, Robot, ChatCenteredText,
   Coins, MapPinLine, ChartLineUp, Scales, WarningCircle, PencilSimple,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
@@ -32,12 +32,9 @@ interface Props {
   onDetailOpen?: (project: ProjectCardType) => void
   onToast?: (message: string) => void
   onAskAI?: (project: ProjectCardType) => void
-  onSetSiteVisit?: (project: ProjectCardType) => void
   onCall?: (project: ProjectCardType) => void
   onShare?: (project: ProjectCardType) => void
   quickActions?: React.ReactNode
-  // Optional recommendation display
-  showRecommendation?: boolean
 }
 
 const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
@@ -62,15 +59,18 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
   university: BookOpen,
 }
 
-export default function ProjectCard({ project, userId, sessionId, index = 0, isSelectable = false, isSelected = false, onToggleSelect, onDetailOpen, onToast, onAskAI, onSetSiteVisit, onCall, onShare, quickActions }: Props) {
+export default function ProjectCard({ project, userId, sessionId, index = 0, isSelectable = false, isSelected = false, onToggleSelect, onDetailOpen, onToast, onAskAI, onCall, onShare, quickActions }: Props) {
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)
   const [askMenuOpen, setAskMenuOpen] = useState(false)
 
-  if (isSelectable && !onToggleSelect) {
-    console.warn(`[ProjectCard] isSelectable=true but onToggleSelect callback is missing for project ${project.id}`)
-  }
+  useEffect(() => {
+    if (isSelectable && !onToggleSelect) {
+      console.warn(`[ProjectCard] isSelectable=true but onToggleSelect callback is missing for project ${project.id}`)
+    }
+  }, [isSelectable, onToggleSelect, project.id])
+
   const askMenuRef = useRef<HTMLDivElement>(null)
   const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg, setImgIdx } = usePreferredImages(project)
 
@@ -88,7 +88,16 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
   const isTopPick = index === 0
   const isRTM = project.status === 'ready_to_move'
   const isNew = project.status === 'new_launch'
-  const statusLabel = isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'
+  const isDelayed = project.possession_label ? (project.possession_label.toLowerCase().includes('delayed') || project.possession_label.toLowerCase().includes('disputed')) : false
+  const statusLabel = isRTM
+    ? 'Ready to Move'
+    : isDelayed
+      ? 'Delayed / Disputed'
+      : project.possession_label
+        ? `Possession: ${project.possession_label}`
+        : isNew
+          ? 'New Launch'
+          : 'Under Construction'
 
   const askPrompts: Array<{ icon: React.ElementType; label: string; text: string; type: string }> = [
     { icon: Coins, label: 'Payment plans & offers', text: `What are the payment plans and current offers for ${project.name}?`, type: 'payment' },
@@ -186,7 +195,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
     <div
       data-project-id={project.id}
       onClick={handleCardClick}
-      className={`group relative w-full flex flex-col rounded-[20px] md:rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-300 ease-out cursor-pointer ${
+      className={`group relative w-full flex flex-col rounded-[20px] md:rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-300 ease-out cursor-pointer cv-auto contain-paint ${
         isSelected
           ? 'ring-2 ring-blue-600 dark:ring-blue-500 shadow-[0_8px_30px_rgba(37,99,235,0.25)] scale-[1.01] border-blue-500 z-20'
           : isTopPick
@@ -206,11 +215,13 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold ${
                 isRTM 
                   ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' 
-                  : isNew 
-                    ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300' 
-                    : 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                  : isDelayed
+                    ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                    : isNew 
+                      ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300' 
+                      : 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
               }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${isRTM ? 'bg-emerald-500' : isDelayed ? 'bg-rose-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
                 {statusLabel}
               </span>
 
@@ -258,7 +269,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                   className="w-full h-7 px-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white text-[11px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all"
                   title="Ask AI about this project"
                 >
-                  <Robot size={13} weight="fill" />
+                  <ChatCenteredText size={13} weight="fill" />
                   Ask AI
                 </button>
 
@@ -323,6 +334,12 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               <ShareNetwork size={13} weight="bold" />
             </button>
           </div>
+
+          {quickActions && (
+            <div onClick={(e) => e.stopPropagation()} className="pt-1.5">
+              {quickActions}
+            </div>
+          )}
         </div>
 
         {/* Right: Dish / Property Thumbnail (35% width) */}
@@ -417,12 +434,12 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                   src={resolveImgUrl(src) || '/placeholder.png'}
                   alt={project.name}
                   fill
-                  priority={index < 4 && i === 0}
+                  priority={index < 3 && i === 0}
                   onError={() => { if (src) markImageFailed(src) }}
                   className={`object-cover transition-all duration-500 ${
                     i === imgIdx ? 'opacity-100 scale-100' : 'opacity-0 scale-105 absolute inset-0'
                   }`}
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 380px"
                 />
               ))}
             </>
@@ -467,9 +484,23 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
 
           {/* Status tag overlaid on image top-left */}
           <div className="absolute top-3 left-3 z-10">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-sm">
-              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRTM ? 'bg-emerald-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-              <span className={`text-[10px] font-medium tracking-wide text-white`}>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md border shadow-sm ${
+              isRTM 
+                ? 'bg-black/50 border-emerald-500/40 text-white' 
+                : isDelayed 
+                  ? 'bg-black/50 border-rose-500/50 text-white' 
+                  : 'bg-black/45 border-white/15 text-white'
+            }`}>
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                isRTM 
+                  ? 'bg-emerald-400' 
+                  : isDelayed 
+                    ? 'bg-rose-400' 
+                    : isNew 
+                      ? 'bg-blue-400' 
+                      : 'bg-amber-400'
+              }`} />
+              <span className="text-[10px] font-semibold tracking-wide">
                 {statusLabel}
               </span>
             </div>
@@ -517,20 +548,13 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               </div>
             </div>
 
-            {/* Builder · Sector · Possession */}
-            <div className="flex items-center justify-between text-[12px] text-gray-600 dark:text-gray-300 mb-3 gap-2 min-h-[18px]">
-              <div className="flex items-center gap-1.5 truncate flex-1">
-                <span className="font-medium truncate">
-                  {typeof project.builder === 'object' ? project.builder?.name : project.builder}
-                </span>
-                <span className="opacity-40">·</span>
-                <span className="truncate opacity-80">{project.sector}</span>
-              </div>
-              {project.possession_label && !isRTM && (
-                <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap flex-shrink-0">
-                  Possession: {project.possession_label}
-                </span>
-              )}
+            {/* Builder & Location Subtitle */}
+            <div className="flex items-center gap-1.5 text-[12.5px] text-gray-600 dark:text-gray-300 mb-3 min-h-[20px]">
+              <span className="font-semibold text-gray-800 dark:text-gray-200 truncate">
+                {typeof project.builder === 'object' ? project.builder?.name : project.builder}
+              </span>
+              <span className="opacity-40 shrink-0">·</span>
+              <span className="truncate opacity-80 shrink-0">{project.sector}</span>
             </div>
 
             {/* Price — big hero number */}
@@ -565,7 +589,8 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
           </div>
 
           {/* Quick Actions */}
-          <div className="mt-auto flex items-center justify-between gap-3 pt-2">
+          <div className="mt-auto">
+          <div className="flex items-center justify-between gap-3 pt-2">
             {onAskAI ? (
               <div className="relative flex-1" ref={askMenuRef}>
                 <button
@@ -579,7 +604,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                   aria-haspopup="menu"
                   aria-expanded={askMenuOpen}
                 >
-                  <Robot size={16} weight="fill" />
+                  <ChatCenteredText size={16} weight="fill" />
                   Ask AI
                 </button>
 
@@ -663,6 +688,12 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                 <ShareNetwork size={16} className="text-gray-500 dark:text-gray-400" />
               </button>
             </div>
+          </div>
+          {quickActions && (
+            <div onClick={(e) => e.stopPropagation()} className="pt-2">
+              {quickActions}
+            </div>
+          )}
           </div>
         </div>
       </div>

@@ -16,7 +16,12 @@ export default function SessionDiscoverPage() {
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(sessionId);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 1024 && window.innerWidth >= 768;
+    }
+    return false;
+  });
 
   useEffect(() => {
     let cancelled = false;

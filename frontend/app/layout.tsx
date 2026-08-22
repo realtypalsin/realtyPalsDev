@@ -4,32 +4,45 @@ import "./globals.css";
 import { Outfit, Playfair_Display, Afacad, Inter } from "next/font/google";
 
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { Toaster } from "sonner";
+import { PingBackend } from "@/components/PingBackend";
+import CookiesBanner from "@/components/CookiesBanner";
+import { LazyMotion, domAnimation } from 'framer-motion'
+import ProgressBar from '@/components/ProgressBar'
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  preload: true,
 });
 
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
+  display: "swap",
+  preload: true,
 });
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
+  display: "swap",
+  preload: false,
 });
 
 const afacad = Afacad({
   subsets: ["latin"],
   variable: "--font-afacad",
   display: "swap",
+  preload: false,
   fallback: ["system-ui", "sans-serif"],
   adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
+  // TODO: confirm production domain — no NEXT_PUBLIC_SITE_URL/similar env var found in this codebase; using realtypals.com as a placeholder (matches storage.realtypals.com already referenced in next.config.js).
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://realtypals.com'),
   title: {
     default: "RealtyPals — AI Property Advisor for Noida",
     template: "%s | RealtyPals",
@@ -71,14 +84,6 @@ export const viewport = {
   ],
 };
 
-import { Toaster } from "sonner";
-import { PingBackend } from "@/components/PingBackend";
-import CookiesBanner from "@/components/CookiesBanner";
-
-
-import { LazyMotion, domAnimation } from 'framer-motion'
-import ProgressBar from '@/components/ProgressBar'
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -86,7 +91,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
-      <body className="antialiased glass-app font-sans relative text-foreground text-slate-800 bg-[#E4E4E5]">
+      <body className="antialiased glass-app font-sans relative text-foreground bg-[#E4E4E5]">
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:p-4 focus:bg-white focus:text-blue-600 focus:font-bold">
           Skip to main content
         </a>

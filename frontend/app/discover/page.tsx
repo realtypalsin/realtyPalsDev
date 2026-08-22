@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
 import DiscoveryContent from '@/components/DiscoveryContent';
 import ChatErrorBoundary from '@/components/ChatErrorBoundary';
-import UniversalLoader from '@/components/ui/universal-loader';
 import { DiscoveryHomeSkeleton } from '@/components/skeletons';
 import { getSupabaseClient } from '@/lib/supabase';
 import { migrateSessions } from '@/lib/backend-api';
@@ -15,7 +14,12 @@ export default function DiscoverPage() {
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 1024 && window.innerWidth >= 768;
+    }
+    return false;
+  });
   const [newChatNonce, setNewChatNonce] = useState(0);
 
   useEffect(() => {

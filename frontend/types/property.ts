@@ -33,6 +33,11 @@ export interface PropertyImage {
   sort_order: number;
 }
 
+export interface PropertyDna {
+  rera_compliance_label?: string | null;
+  builder_track_record_label?: string | null;
+}
+
 export interface Property {
   id: string;
   sector_id: string;
@@ -41,22 +46,29 @@ export interface Property {
   size_sqft: number;
   price: number;
   price_per_sqft: number;
-  builder: string;
+  builder: string | { name: string };
   project_name?: string | null;
   image_url?: string | null;
+  images?: Array<string | { url?: string; image_url?: string }>;
   floor: number | null;
   status: 'under_construction' | 'ready_to_move' | 'new_launch';
   amenities: string[];
   bathrooms?: number | null;
   balconies?: number | null;
   highlights?: string[];
-  images?: PropertyImage[];
   sector: Sector;
   score?: number;
   match_score?: number;
   property_index?: number;
   property_reference?: string;
   validation?: PropertyValidation | null;
+  tier?: string | null;
+  address?: string | null;
+  dna?: PropertyDna | null;
+  minPrice?: number;
+  maxPrice?: number;
+  possession_date?: string | null;
+  possession_label?: string | null;
 
   // Phase 5: Comprehensive Property Decision Factors
   // 1. Resale & Investment Terms

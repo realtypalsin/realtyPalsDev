@@ -7,18 +7,19 @@ const nextConfig = {
   },
   experimental: {
     instrumentationHook: true,
-    optimizePackageImports: ['lucide-react', '@phosphor-icons/react'],
-    serverComponentsExternalPackages: ['@sentry/nextjs', '@sentry/node', '@apm-js-collab/tracing-hooks'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@phosphor-icons/react',
+      'framer-motion',
+      'date-fns',
+      'recharts'
+    ],
+    serverComponentsExternalPackages: ['@sentry/node', '@apm-js-collab/tracing-hooks'],
   },
   transpilePackages: ['leaflet', 'react-leaflet', 'recharts', 'react-is'],
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.cache = false
-    }
-    return config
-  },
   images: {
     formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 2592000,
     remotePatterns: [
       {
         protocol: 'https',
@@ -87,6 +88,24 @@ const nextConfig = {
   async headers() {
     return [
       {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/images/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options',  value: 'nosniff' },
@@ -105,11 +124,11 @@ const nextConfig = {
               const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '')
               const connectSrc = isDev
                 ? "'self' http://localhost:* wss://localhost:* https: ws: wss:"
-                : `'self' ${backendUrl} wss: https: ws:`
-              // Dev-only: unsafe-eval for Next.js HMR only. Production uses strict CSP.
+                : `'self' ${backendUrl} https://*.supabase.co https://*.supabase.in https://us.posthog.com https://app.posthog.com https://maps.googleapis.com`
+              // Dev-only: unsafe-eval and unsafe-inline for Next.js HMR only. Production uses strict CSP.
               const scriptSrc = isDev
                 ? "'self' 'unsafe-eval' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com"
-                : "'self' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com"
+                : "'self' https://www.google-analytics.com https://maps.googleapis.com"
               return `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
             })(),
           },

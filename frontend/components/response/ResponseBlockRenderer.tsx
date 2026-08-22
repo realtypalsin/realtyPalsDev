@@ -145,16 +145,16 @@ function WhyWinsCard({ block }: { block: ResponseBlock }) {
     <div className="rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700/60 bg-white dark:bg-gray-800/80 shadow-sm">
       <div className="h-0.5 w-full bg-gray-200 dark:bg-gray-600" />
       {winner && (
-        <div className="px-4 pt-3 pb-0">
-          <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.12em]">Why {winner} wins</span>
+        <div className="px-3 sm:px-4 pt-3 pb-0">
+          <span className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.12em]">Why {winner} wins</span>
         </div>
       )}
-      <div className="overflow-x-auto">
-        <table className="w-full text-[11px]">
+      <div className="overflow-x-auto touch-pan-x custom-scrollbar">
+        <table className="w-full text-[11px] sm:text-xs">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-800/60">
               {parsed.headers.map((h, i) => (
-                <th key={i} className="px-4 py-2 text-left text-[9px] font-black text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700/60">
+                <th key={i} className="px-3 sm:px-4 py-2 text-left text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700/60">
                   {h}
                 </th>
               ))}
@@ -164,7 +164,7 @@ function WhyWinsCard({ block }: { block: ResponseBlock }) {
             {parsed.rows.map((row, i) => (
               <tr key={i} className="border-t border-gray-100 dark:border-gray-700/40">
                 {row.map((cell, j) => (
-                  <td key={j} className={`px-4 py-2.5 ${j === 0 ? 'font-bold text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                  <td key={j} className={`px-3 sm:px-4 py-2 sm:py-2.5 ${j === 0 ? 'font-bold text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
                     {cell}
                   </td>
                 ))}
@@ -236,25 +236,25 @@ function TextBlock({ block }: { block: ResponseBlock }) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[[rehypeRaw], [rehypeSanitize, sanitizeSchema]]}
         components={{
-          'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
-          'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
-          'realty-action': ({ node, ...props }: any) => <ContactButton label={props.label || 'Request Callback'} className="my-2" />,
+          'realty-chart': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { type?: string; data?: string; title?: string }) => <RealtyChart type={props.type ?? ''} data={props.data ?? ''} title={props.title} />,
+          'realty-box': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { type?: string; title?: string }) => <RealtyBox type={props.type ?? ''} title={props.title}>{props.children}</RealtyBox>,
+          'realty-action': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { label?: string }) => <ContactButton label={props.label || 'Request Callback'} className="my-2" />,
           table: ({ node, ...props }: any) => (
-            <div className="my-4 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-x -mx-1 sm:mx-0">
-              <table className="min-w-[540px] w-full border-collapse text-left text-xs sm:text-sm text-slate-700 dark:text-zinc-300" {...props} />
+            <div className="my-3 sm:my-4 overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-x">
+              <table className="min-w-[360px] sm:min-w-[500px] w-full border-collapse text-left text-[11px] sm:text-xs md:text-sm text-slate-700 dark:text-zinc-300" {...props} />
             </div>
           ),
           thead: ({ node, ...props }: any) => (
-            <thead className="bg-slate-100/80 dark:bg-zinc-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-700/80" {...props} />
+            <thead className="bg-slate-100/90 dark:bg-zinc-800/90 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-700/80" {...props} />
           ),
           th: ({ node, ...props }: any) => (
-            <th className="px-4 py-3 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap" {...props} />
+            <th className="px-3 sm:px-4 py-2 sm:py-3 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap" {...props} />
           ),
           td: ({ node, ...props }: any) => (
-            <td className="px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
+            <td className="px-3 sm:px-4 py-2.5 sm:py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
           ),
           tr: ({ node, ...props }: any) => (
-            <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-slate-50/50 dark:even:bg-zinc-800/20" {...props} />
+            <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-slate-50/50 dark:even:bg-zinc-800/30" {...props} />
           )
         } as any}
       >

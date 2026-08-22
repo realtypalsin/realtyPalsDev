@@ -10,6 +10,7 @@ export interface ConstructionTimelineProps {
   possessionDate?: string | null
   projectRiskFlag?: string | null
   onTimeDeliveryPct?: number | null
+  isLoading?: boolean
 }
 
 function formatPossessionDate(raw: string | null | undefined): string | null {
@@ -31,11 +32,39 @@ export default function ConstructionTimeline({
   projectStatus,
   possessionDate,
   projectRiskFlag,
-  onTimeDeliveryPct = 94
+  onTimeDeliveryPct = null,
+  isLoading = false
 }: ConstructionTimelineProps) {
   const isRTM = projectStatus === 'ready_to_move' || projectStatus === 'delivered'
   const [selectedPhaseIndex, setSelectedPhaseIndex] = useState<number | null>(null)
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
+
+  // Dedicated Skeleton Loader while timeline details load
+  if (isLoading || (milestones === undefined && !isRTM)) {
+    return (
+      <div className="relative overflow-hidden bg-white dark:bg-[#111111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[28px] p-5 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.03)] space-y-5 animate-pulse">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
+          <div className="space-y-2">
+            <div className="h-5 w-64 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+            <div className="h-3.5 w-80 max-w-full bg-gray-100 dark:bg-gray-800/60 rounded-md" />
+          </div>
+          <div className="h-8 w-32 bg-gray-100 dark:bg-gray-800/80 rounded-full" />
+        </div>
+        <div className="space-y-3 pt-2">
+          <div className="flex justify-between items-center">
+            <div className="h-4 w-36 bg-gray-200 dark:bg-gray-800 rounded-md" />
+            <div className="h-4 w-16 bg-gray-200 dark:bg-gray-800 rounded-md" />
+          </div>
+          <div className="h-2.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full" />
+          <div className="flex justify-between text-[11px] pt-1">
+            <div className="h-3 w-20 bg-gray-100 dark:bg-gray-800/60 rounded" />
+            <div className="h-3 w-24 bg-gray-100 dark:bg-gray-800/60 rounded" />
+            <div className="h-3 w-20 bg-gray-100 dark:bg-gray-800/60 rounded" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Use only real milestones, no fabricated defaults
   const list = (milestones && milestones.length > 0)
@@ -54,6 +83,26 @@ export default function ConstructionTimeline({
 
   const selectedPhase = selectedPhaseIndex !== null ? list[selectedPhaseIndex] : null
   const formattedPossession = formatPossessionDate(possessionDate)
+
+  // Status badge driven by the real delay/progress signals available from props —
+  // projectRiskFlag (explicit risk note) takes priority, then the builder's on-time delivery track record.
+  const isDelayed = !!projectRiskFlag
+  const emeraldBadge = { dotClass: 'bg-emerald-500', pingClass: 'bg-emerald-400', pillClass: 'bg-[#F0FDF4] dark:bg-emerald-950/40 text-[#00875A] dark:text-emerald-300 border-[#DCFCE7] dark:border-emerald-800/50' }
+  const amberBadge = { dotClass: 'bg-amber-500', pingClass: 'bg-amber-400', pillClass: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/50' }
+  const roseBadge = { dotClass: 'bg-rose-500', pingClass: 'bg-rose-400', pillClass: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/50' }
+  const grayBadge = { dotClass: 'bg-gray-400', pingClass: 'bg-gray-300', pillClass: 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/10' }
+
+  const statusBadge = isRTM
+    ? { text: 'Ready to Move • OC Granted', ...emeraldBadge }
+    : isDelayed
+    ? { text: 'Delayed', ...roseBadge }
+    : onTimeDeliveryPct != null
+    ? (onTimeDeliveryPct >= 80
+        ? { text: 'Active Construction • On Track', ...emeraldBadge }
+        : onTimeDeliveryPct >= 50
+        ? { text: 'Active Construction • Monitor Progress', ...amberBadge }
+        : { text: 'Active Construction • Delay Risk', ...roseBadge })
+    : { text: 'Active Construction • In Progress', ...grayBadge }
 
   return (
     <div className="relative overflow-hidden bg-white dark:bg-[#111111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[28px] p-5 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all space-y-5">
@@ -75,12 +124,12 @@ export default function ConstructionTimeline({
 
         {/* Status Tag Pill Top Right */}
         <div className="flex items-center gap-2.5 self-start sm:self-center flex-wrap">
-          <div className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-[#F0FDF4] dark:bg-emerald-950/40 text-[#00875A] dark:text-emerald-300 border border-[#DCFCE7] dark:border-emerald-800/50 flex items-center gap-1.5 shadow-2xs">
+          <div className={`px-3 py-1 rounded-full text-[11px] font-extrabold border flex items-center gap-1.5 shadow-2xs ${statusBadge.pillClass}`}>
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${statusBadge.pingClass}`} />
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${statusBadge.dotClass}`} />
             </span>
-            <span>{isRTM ? 'Ready to Move • OC Granted' : 'Active Construction • On Track'}</span>
+            <span>{statusBadge.text}</span>
           </div>
 
           {list.length > 0 && (
@@ -144,7 +193,10 @@ export default function ConstructionTimeline({
               </div>
               <div>
                 <span className="text-[13px] font-black text-gray-900 dark:text-white">Overall Construction Progress</span>
-                <p className="text-[10.5px] text-gray-400 font-semibold">{completedCount} of {list.length || 6} milestones completed</p>
+                <p className="text-[10.5px] text-gray-400 font-semibold">
+                  {completedCount} of {list.length || 6} milestones completed
+                  {onTimeDeliveryPct != null && ` • Builder's on-time delivery record: ${onTimeDeliveryPct}%`}
+                </p>
               </div>
             </div>
             <div className="text-right">

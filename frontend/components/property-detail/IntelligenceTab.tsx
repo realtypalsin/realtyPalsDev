@@ -2,37 +2,20 @@
 import { useMemo, useState } from 'react'
 import {
   TrendingUp, Award, Calendar, Zap, UserCheck, CheckCircle2,
-  ChevronRight, DollarSign, Users, ShieldCheck, FileCheck, Lock, Globe
+  ChevronRight, DollarSign, Users, ShieldCheck, FileCheck, Lock, Globe,
+  AlertTriangle, AlertOctagon
 } from 'lucide-react'
 import {
   MapPin,
   CurrencyInr,
-  Sparkle,
+  SwimmingPool,
   HouseLine,
   Heartbeat
 } from '@phosphor-icons/react'
-import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
+import type { ProjectCard as ProjectCardType, ProjectDetail, UnitTypeSummary } from '@/types/project'
 import InfoTooltip from '@/components/ui/InfoTooltip'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IntelligenceTabSkeleton } from '@/components/skeletons'
-
-// Design token system for consistency
-const TOKEN = {
-  text: {
-    primary: 'text-text-primary dark:text-text-primary',
-    secondary: 'text-text-secondary dark:text-text-secondary',
-    muted: 'text-text-muted dark:text-text-muted',
-  },
-  bg: {
-    surface: 'bg-surface dark:bg-slate-900',
-    surface2: 'bg-surface-2 dark:bg-slate-800',
-    success: 'bg-success/5 dark:bg-success/10',
-    danger: 'bg-danger/5 dark:bg-danger/10',
-  },
-  border: 'border-border dark:border-slate-700',
-  radius: 'rounded-lg',
-  shadow: 'shadow-xs',
-}
 
 interface IntelligenceTabProps {
   project: ProjectCardType | null
@@ -220,9 +203,17 @@ function PriceAppreciationChart({ pData, pricePsf }: { pData: any; pricePsf: num
   )
 }
 
-function renderMetricVal(val: string | number | null | undefined, loading: boolean, skeletonWidth = 'w-16') {
+function fitTagForScore(score: number | null): string {
+  if (score == null) return 'Not available'
+  if (score >= 80) return 'Excellent'
+  if (score >= 60) return 'Good'
+  if (score >= 40) return 'Fair'
+  return 'Weak'
+}
+
+function renderMetricVal(val: string | number | null | undefined, loading: boolean, skeletonWidth = 'w-16', fallback = '-') {
   if (loading) return <Skeleton className={`h-6 ${skeletonWidth} inline-block rounded-md`} />
-  if (val === null || val === undefined || val === '' || val === 'null' || val === 'undefined') return '-'
+  if (val === null || val === undefined || val === '' || val === 'null' || val === 'undefined') return fallback
   return val
 }
 
@@ -256,14 +247,14 @@ export default function IntelligenceTab({
     : (marketIntel?.sector_cagr ? `${marketIntel.sector_cagr - 2}–${marketIntel.sector_cagr + 2}%` : (marketIntel?.project_cagr ? `${marketIntel.project_cagr}%` : null))
   const rentalYield = pData?.rental_yield_annual_percent
     ? `${pData.rental_yield_annual_percent}%`
-    : (finIntel?.rental_yield_pct ? `${finIntel.rental_yield_pct}%` : '3.8%')
+    : (finIntel?.rental_yield_pct ? `${finIntel.rental_yield_pct}%` : null)
   const investmentGrade = recommendationProfile?.tier === 'STRONG_BUY' || recommendationProfile?.tier === 'BUY' ? 'A' : (recommendationProfile?.tier === 'HOLD' ? 'B+' : (recommendationProfile?.tier ? 'B' : 'A-'))
-  const liquidityScore = dna?.location_score ? `${dna.location_score}/100` : (dna?.overall_score ? `${dna.overall_score}/100` : (pData?.market_demand_score ? `${pData.market_demand_score}/100` : '92/100'))
-  const breakevenYrs = finIntel?.breakeven_months 
-    ? `${(finIntel.breakeven_months / 12).toFixed(1)} Yrs` 
-    : (pData?.resale_lock_in_months 
-      ? `${(pData.resale_lock_in_months / 12).toFixed(1)} Yrs` 
-      : ((pData?.status as string) === 'ready_to_move' || (pData?.status as string) === 'delivered' ? 'No Lock-in (0m)' : '3.8 Yrs'))
+  const liquidityScore = dna?.location_score ? `${dna.location_score}/100` : (dna?.overall_score ? `${dna.overall_score}/100` : (pData?.market_demand_score ? `${pData.market_demand_score}/100` : null))
+  const breakevenYrs = finIntel?.breakeven_months
+    ? `${(finIntel.breakeven_months / 12).toFixed(1)} Yrs`
+    : (pData?.resale_lock_in_months
+      ? `${(pData.resale_lock_in_months / 12).toFixed(1)} Yrs`
+      : ((pData?.status as string) === 'ready_to_move' || (pData?.status as string) === 'delivered' ? 'No Lock-in (0m)' : null))
 
   // 2. Price & Value Analysis Data
   const valueForMoneyScore = dna?.price_score ?? null
@@ -274,7 +265,7 @@ export default function IntelligenceTab({
   const totalUnits = pData?.total_units ?? null
   const absorptionRate = totalUnits ? `${Math.round(totalUnits * 0.22)} Units/Month` : null
   const upcomingLaunches = pData?.competing_projects_nearby ? `${pData.competing_projects_nearby} Projects` : (pData?.total_towers ? `${pData.total_towers} Projects` : null)
-  const unsoldMonths = finIntel?.unsold_inventory_months ? `${finIntel.unsold_inventory_months} Months` : (totalUnits ? `${Math.round(totalUnits * 0.025)} Months` : '14 Months')
+  const unsoldMonths = finIntel?.unsold_inventory_months ? `${finIntel.unsold_inventory_months} Months` : null
 
   // 4. Buyer Preference Fit
   const locationFit = dna?.location_score ?? null
@@ -290,7 +281,7 @@ export default function IntelligenceTab({
 
     // Group unit types by BHK
     const bhkGroups: Record<number, number> = {}
-    unitTypes.forEach((u: any) => {
+    unitTypes.forEach((u: UnitTypeSummary) => {
       const bhkVal = u.bhk || 2
       bhkGroups[bhkVal] = (bhkGroups[bhkVal] || 0) + 1
     })
@@ -300,15 +291,13 @@ export default function IntelligenceTab({
       return [{ label: `${bhkKeys[0]} BHK`, pct: 100, color: 'bg-blue-600' }]
     }
 
-    // Realistic market distribution weighting based on BHK tier
-    const defaultWeights: Record<number, number> = { 2: 45, 3: 40, 4: 15, 5: 10 }
-    const rawPcts = bhkKeys.map(bhk => defaultWeights[bhk] || 20)
-    const sumWeights = rawPcts.reduce((a, b) => a + b, 0)
+    // Real distribution based on the actual count of configured unit types per BHK
+    const totalCount = bhkKeys.reduce((sum, bhk) => sum + bhkGroups[bhk], 0)
 
     const colors = ['bg-blue-600', 'bg-emerald-500', 'bg-purple-500', 'bg-amber-500', 'bg-[#c47860]']
     let runningTotal = 0
     return bhkKeys.map((bhk, idx) => {
-      const pct = idx === bhkKeys.length - 1 ? 100 - runningTotal : Math.round((defaultWeights[bhk] || 20) / sumWeights * 100)
+      const pct = idx === bhkKeys.length - 1 ? 100 - runningTotal : Math.round((bhkGroups[bhk] / totalCount) * 100)
       runningTotal += pct
       return {
         label: `${bhk} BHK`,
@@ -366,10 +355,10 @@ export default function IntelligenceTab({
           <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
             <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">Rental Yield</p>
             <p className="text-[18px] sm:text-[22px] font-black text-gray-900 dark:text-white leading-none truncate">
-              {renderMetricVal(rentalYield, loading, "w-16")}
+              {renderMetricVal(rentalYield, loading, "w-16", 'Not available')}
             </p>
             <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold truncate">
-              • Strong rental demand
+              {rentalYield ? '• Strong rental demand' : 'Insufficient data'}
             </p>
           </div>
 
@@ -381,14 +370,14 @@ export default function IntelligenceTab({
           <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 min-w-0">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">Liquidity</p>
             <p className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white truncate">
-              {renderMetricVal(liquidityScore, loading, "w-16")}
+              {renderMetricVal(liquidityScore, loading, "w-16", 'Not available')}
             </p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1 col-span-2 sm:col-span-1 min-w-0">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">Lock-in / Break-even</p>
             <p className="text-[18px] sm:text-[20px] font-black text-gray-900 dark:text-white truncate">
-              {renderMetricVal(breakevenYrs, loading, "w-20")}
+              {renderMetricVal(breakevenYrs, loading, "w-20", 'Not available')}
             </p>
           </div>
         </div>
@@ -575,8 +564,8 @@ export default function IntelligenceTab({
 
           <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
             <p className="text-[9.5px] sm:text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider">Unsold Inventory</p>
-            <p className="text-[17px] sm:text-[20px] font-black text-gray-900 dark:text-white">{unsoldMonths ?? '--'}</p>
-            <p className="text-[10px] sm:text-[10.5px] text-emerald-600 font-bold">Healthy</p>
+            <p className="text-[17px] sm:text-[20px] font-black text-gray-900 dark:text-white">{unsoldMonths ?? 'Not available'}</p>
+            <p className="text-[10px] sm:text-[10.5px] text-emerald-600 font-bold">{unsoldMonths ? 'Healthy' : 'Insufficient data'}</p>
           </div>
         </div>
 
@@ -609,13 +598,14 @@ export default function IntelligenceTab({
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
             {[
-              { label: 'Location Match', score: locationFit, tag: 'Excellent', hint: 'Proximity to metro, expressways, top schools, hospitals, and major IT/commercial hubs.', icon: MapPin, color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
-              { label: 'Budget Fit', score: budgetFit, tag: 'Very Good', hint: 'Position relative to micro-market average price/sqft and overall sector pricing trends.', icon: CurrencyInr, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-              { label: 'Amenities Fit', score: amenitiesFit, tag: 'Excellent', hint: 'Coverage across sports, wellness, security, green spaces, and clubhouse facilities.', icon: Sparkle, color: 'text-purple-500 bg-purple-500/10 border-purple-500/20' },
-              { label: 'Unit Config Fit', score: configFit, tag: 'Very Good', hint: 'Layout efficiency, carpet ratio, orientation, and family stage suitabilities.', icon: HouseLine, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
-              { label: 'Lifestyle Fit', score: lifestyleFit, tag: 'Excellent', hint: 'Composite score incorporating air quality index, green cover %, safety, and noise levels.', icon: Heartbeat, color: 'text-rose-500 bg-rose-500/10 border-rose-500/20' }
+              { label: 'Location Match', score: locationFit, hint: 'Proximity to metro, expressways, top schools, hospitals, and major IT/commercial hubs.', icon: MapPin, color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
+              { label: 'Budget Fit', score: budgetFit, hint: 'Position relative to micro-market average price/sqft and overall sector pricing trends.', icon: CurrencyInr, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+              { label: 'Amenities Fit', score: amenitiesFit, hint: 'Coverage across sports, wellness, security, green spaces, and clubhouse facilities.', icon: SwimmingPool, color: 'text-purple-500 bg-purple-500/10 border-purple-500/20' },
+              { label: 'Unit Config Fit', score: configFit, hint: 'Layout efficiency, carpet ratio, orientation, and family stage suitabilities.', icon: HouseLine, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
+              { label: 'Lifestyle Fit', score: lifestyleFit, hint: 'Composite score incorporating air quality index, green cover %, safety, and noise levels.', icon: Heartbeat, color: 'text-rose-500 bg-rose-500/10 border-rose-500/20' }
             ].filter(item => item.score !== null).map((item, i, arr) => {
               const Icon = item.icon
+              const tag = fitTagForScore(item.score)
               return (
                 <div
                   key={i}
@@ -638,7 +628,7 @@ export default function IntelligenceTab({
                       {item.score}%
                     </span>
                     <span className="text-[9.5px] sm:text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-                      {item.tag}
+                      {tag}
                     </span>
                   </div>
 
@@ -735,9 +725,9 @@ export default function IntelligenceTab({
                   <InfoTooltip title="Unit Mix Methodology" content="Calculated from real-time buyer search velocity, unit inventory allocation, and transaction demand across this micro-market. Percentages reflect total 100% inventory distribution." />
                 </div>
                 <div className="space-y-1.5 sm:space-y-2 pt-1">
-                  {unitTypes.slice(0, 4).map((unit: any, i: number) => {
+                  {unitTypes.slice(0, 4).map((unit: UnitTypeSummary, i: number) => {
                     const matchedDist = bhkDistribution.find(d => d.label.includes(`${unit.bhk}`))
-                    const calcPct = matchedDist ? matchedDist.pct : (i === 0 ? 45 : i === 1 ? 35 : 20)
+                    const calcPct = matchedDist?.pct ?? null
                     return (
                       <div key={i} className="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-between">
                         <span className="text-[11.5px] sm:text-[12.5px] font-extrabold text-gray-800 dark:text-gray-200 flex items-center gap-2 truncate">
@@ -745,7 +735,7 @@ export default function IntelligenceTab({
                           <span className="truncate">{unit.name || `${unit.bhk} BHK (${unit.super_area_sqft || '--'} sq.ft)`}</span>
                         </span>
                         <span className="text-[11.5px] sm:text-[12px] font-black text-gray-900 dark:text-white flex-shrink-0 pl-2">
-                          {calcPct}%
+                          {calcPct != null ? `${calcPct}%` : 'Not available'}
                         </span>
                       </div>
                     )
@@ -840,22 +830,30 @@ export default function IntelligenceTab({
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
           {[
-            { label: 'RERA Status', val: pData?.rera_number || pData?.is_rera_approved, displayVal: pData?.rera_number ? 'RERA Registered' : (pData?.is_rera_approved ? 'Approved' : 'Verified'), color: 'text-emerald-600' },
-            { label: 'NCLT Standing', val: pData?.nclt_moratorium_active, displayVal: pData?.nclt_moratorium_active ? 'Moratorium Active' : 'Clean / Clear', color: pData?.nclt_moratorium_active ? 'text-rose-600' : 'text-emerald-600' },
-            { label: 'Escrow Verification', val: pData?.escrow_verified, displayVal: pData?.escrow_verified ? `Verified (${pData.escrow_bank_name || 'HDFC'})` : 'Escrow Verified', color: 'text-emerald-600' },
-            { label: 'Land Title Deed', val: pData?.land_title_clear, displayVal: pData?.land_title_clear !== false ? 'Clear Title' : 'Verification Pending', color: pData?.land_title_clear !== false ? 'text-emerald-600' : 'text-amber-600' },
-            { label: 'Litigation History', val: (pData?.litigation_count || builder?.litigation_count), displayVal: (pData?.litigation_count || builder?.litigation_count) ? `${pData?.litigation_count || builder?.litigation_count} Active Flags` : '0 Active Flags', color: (pData?.litigation_count || builder?.litigation_count) ? 'text-amber-600' : 'text-emerald-600' }
-          ].map((item, i) => (
+            { label: 'RERA Status', val: pData?.rera_number || pData?.is_rera_approved, displayVal: pData?.rera_number ? 'RERA Registered' : (pData?.is_rera_approved ? 'Approved' : 'Verified'), color: 'text-emerald-600', status: 'ok' as const },
+            { label: 'NCLT Standing', val: pData?.nclt_moratorium_active, displayVal: pData?.nclt_moratorium_active ? 'Moratorium Active' : 'Clean / Clear', color: pData?.nclt_moratorium_active ? 'text-rose-600' : 'text-emerald-600', status: pData?.nclt_moratorium_active ? 'bad' as const : 'ok' as const },
+            { label: 'Escrow Verification', val: pData?.escrow_verified, displayVal: pData?.escrow_verified ? (pData.escrow_bank_name ? `Verified (${pData.escrow_bank_name})` : 'Verified') : 'Verification Pending', color: pData?.escrow_verified ? 'text-emerald-600' : 'text-amber-600', status: pData?.escrow_verified ? 'ok' as const : 'warn' as const },
+            { label: 'Land Title Deed', val: pData?.land_title_clear, displayVal: pData?.land_title_clear !== false ? 'Clear Title' : 'Verification Pending', color: pData?.land_title_clear !== false ? 'text-emerald-600' : 'text-amber-600', status: pData?.land_title_clear !== false ? 'ok' as const : 'warn' as const },
+            { label: 'Litigation History', val: (pData?.litigation_count || builder?.litigation_count), displayVal: (pData?.litigation_count || builder?.litigation_count) ? `${pData?.litigation_count || builder?.litigation_count} Active Flags` : '0 Active Flags', color: (pData?.litigation_count || builder?.litigation_count) ? 'text-amber-600' : 'text-emerald-600', status: (pData?.litigation_count || builder?.litigation_count) ? 'bad' as const : 'ok' as const }
+          ].map((item, i) => {
+            const StatusIcon = item.status === 'ok' ? CheckCircle2 : item.status === 'warn' ? AlertTriangle : AlertOctagon
+            const iconBg = item.status === 'ok'
+              ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+              : item.status === 'warn'
+              ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400'
+              : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
+            return (
             <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-2.5 sm:gap-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 size={15} />
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+                <StatusIcon size={15} />
               </div>
               <div className="min-w-0">
                 <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wider truncate">{item.label}</p>
                 <p className={`text-[12px] sm:text-[13px] font-black truncate ${item.color}`}>{item.displayVal}</p>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
         <p className="text-[10.5px] sm:text-[11px] text-gray-400 font-medium">ⓘ Verified from official documents and third-party validation.</p>
@@ -870,7 +868,7 @@ export default function IntelligenceTab({
           <div>
             <h3 className="text-[17px] font-black text-gray-900 dark:text-white">Advisor Insight</h3>
             <p className="text-[12.5px] text-gray-600 dark:text-gray-300 font-medium mt-0.5 max-w-xl">
-              {recommendationProfile?.primary_thesis || decisionProfile?.decision_thesis || `${pData?.name || 'Project'} scores high on value, demand and future growth. A strong buy for both end-users and investors.`}
+              {recommendationProfile?.primary_thesis || decisionProfile?.decision_thesis || 'No analyst thesis available for this project yet.'}
             </p>
           </div>
         </div>

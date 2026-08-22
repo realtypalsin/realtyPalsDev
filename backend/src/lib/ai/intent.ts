@@ -78,13 +78,6 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
     ...(spatialScope ? { spatialScope } : {}),
   } as Intent
 
-  console.log('[INTENT:MERGE]', JSON.stringify({
-    previous,
-    update,
-    freshProjectLookup,
-    result,
-  }))
-
   return result
 }
 
@@ -129,8 +122,8 @@ async function extractWithMistral(msg: string, prev: Intent, apiKey: string): Pr
   return parseIntentJson(raw, prev)
 }
 
-async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string): Promise<Intent> {
-  const groq = new Groq({ apiKey, timeout: 8000 })
+async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string, timeout = 8000): Promise<Intent> {
+  const groq = new Groq({ apiKey, timeout })
   let raw = '{}'
   try {
     const completion = await groq.chat.completions.create({
@@ -144,8 +137,9 @@ async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string): Pr
       temperature: 0.1,
     })
     raw = completion.choices[0]?.message?.content ?? '{}'
-  } catch (err: any) {
-    if (err?.status === 429 || err?.message?.includes('rate_limit_exceeded') || err?.message?.includes('Rate limit reached')) {
+  } catch (err) {
+    const e = err as { status?: number; message?: string }
+    if (e?.status === 429 || e?.message?.includes('rate_limit_exceeded') || e?.message?.includes('Rate limit reached')) {
       console.warn('[INTENT:GROQ] 70B rate limited, retrying intent with 8B instant model')
       const fallbackCompletion = await groq.chat.completions.create({
         model: MODELS.GROQ_FAST,
@@ -199,7 +193,6 @@ export interface IntentResult {
   degraded: boolean
 }
 
-import { FALLBACK_CHAIN } from '../config'
 import { isKeyFailed, markKeyFailed } from './providerStatus'
 
 import { GoogleGenAI } from '@google/genai'
@@ -247,19 +240,7 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
       }
       if (config.provider === 'groq') {
         console.log(`[INTENT] Trying Groq (${config.model}) via ${config.envKey}`)
-        const groq = new Groq({ apiKey, timeout: config.timeout })
-        const completion = await groq.chat.completions.create({
-          model: config.model,
-          messages: [
-            { role: 'system', content: INTENT_EXTRACTION_PROMPT },
-            { role: 'user', content: `Previous intent: ${JSON.stringify(previousIntent)}\n\nUser message: ${message}` },
-          ],
-          response_format: { type: 'json_object' },
-          max_tokens: 256,
-          temperature: 0.1,
-        })
-        const raw = completion.choices[0]?.message?.content ?? '{}'
-        const result = parseIntentJson(raw, previousIntent)
+        const result = await extractWithGroqKey(message, previousIntent, apiKey, config.timeout)
         if (result) return { intent: result, degraded: false }
       }
       if (config.provider === 'cerebras') {
@@ -280,16 +261,17 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
           const result = await extractWithOpenAIKey(message, previousIntent, apiKey, controller.signal)
           clearTimeout(timer)
           if (result) return { intent: result, degraded: false }
-        } catch (err: any) {
+        } catch (err) {
           clearTimeout(timer)
-          if (err?.status === 404 || err?.status === 401 || err?.status === 403 || err?.name === 'AbortError' || (err?.message || '').includes('404')) {
+          const e = err as { status?: number; name?: string; message?: string }
+          if (e?.status === 404 || e?.status === 401 || e?.status === 403 || e?.name === 'AbortError' || (e?.message || '').includes('404')) {
             markKeyFailed(config.envKey)
           }
           throw err
         }
       }
-    } catch (err: any) {
-      console.warn(`[INTENT] ${config.provider}/${config.envKey} failed:`, err?.message || String(err))
+    } catch (err) {
+      console.warn(`[INTENT] ${config.provider}/${config.envKey} failed:`, (err as Error)?.message || String(err))
     }
   }
 

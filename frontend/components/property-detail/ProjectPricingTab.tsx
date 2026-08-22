@@ -5,7 +5,8 @@ import {
   TrendingUp, Home, ArrowUpRight, PhoneCall, IndianRupee,
   MessageSquare, ChevronRight, Calculator, Landmark, Award, Gift, Clock, HelpCircle, Check, Info, X
 } from 'lucide-react'
-import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
+import type { LucideIcon } from 'lucide-react'
+import type { ProjectDetail, UnitTypeSummary, PaymentPlan } from '@/types/project'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { PricingTabSkeleton } from '@/components/skeletons'
 
@@ -16,6 +17,34 @@ export interface ProjectPricingTabProps {
   onGoToCosts: () => void
 }
 
+type PlanTypeKey = 'clp' | 'investor' | 'flexi' | 'full'
+
+// Normalized shape covering both DB milestones ({label, percent, due}) and the
+// fallback template milestones ({milestone, due, pct}) rendered by this component.
+interface MilestoneItem {
+  milestone?: string
+  label?: string
+  name?: string
+  stage?: string
+  phase?: string
+  due?: string
+  desc?: string
+  description?: string
+  pct?: number
+  percent?: number
+  percentage?: number
+  amt?: number
+  amount?: number
+  done?: boolean
+}
+
+function getMilestonePct(item: MilestoneItem): number {
+  const raw = item.pct ?? item.percent ?? item.percentage
+  if (raw == null) return 0
+  const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw).replace('%', '').trim())
+  return isNaN(parsed) ? 0 : parsed
+}
+
 function fmtCr(cr: number | null): string {
   if (cr == null) return '—'
   return `₹${cr.toFixed(2)} Cr`
@@ -23,6 +52,15 @@ function fmtCr(cr: number | null): string {
 
 function fmtRs(num: number): string {
   return `₹${Math.round(num).toLocaleString('en-IN')}`
+}
+
+// Small visual flag reused wherever a shown value is a fallback estimate rather than verified project data.
+function EstimatedBadge() {
+  return (
+    <span className="ml-1.5 px-1.5 py-0.5 rounded text-[8.5px] font-black uppercase tracking-wide bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 align-middle">
+      Est.
+    </span>
+  )
 }
 
 export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCosts }: ProjectPricingTabProps) {
@@ -104,16 +142,16 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
     full: ['full', 'full_payment', 'possession_linked'],
   }
 
-  const findPlanByType = (typeKey: string) =>
-    dbPlansList.find((p: any) => p.plan_type === typeKey || PLAN_TYPE_ALIASES[typeKey]?.includes(p.plan_type))
+  const findPlanByType = (typeKey: string): PaymentPlan | undefined =>
+    dbPlansList.find((p) => p.plan_type === typeKey || PLAN_TYPE_ALIASES[typeKey]?.includes(p.plan_type))
 
-  const getMilestonesForType = (typeKey: string, fallback: any[]) => {
+  const getMilestonesForType = (typeKey: string, fallback: MilestoneItem[]): MilestoneItem[] => {
     const matchedPlan = findPlanByType(typeKey)
     return matchedPlan?.milestones?.length ? matchedPlan.milestones : fallback
   }
 
   // Dynamic payment plan milestones derived from DB or structured templates
-  const paymentPlanMilestones: Record<string, any[]> = {
+  const paymentPlanMilestones: Record<PlanTypeKey, MilestoneItem[]> = {
     clp: getMilestonesForType('clp', isRTM ? [
       { milestone: 'Booking Amount', due: 'At the time of booking token', pct: 10 },
       { milestone: 'Within 30 Days of Booking', due: 'Agreement execution & bank sanction', pct: 15 },
@@ -160,10 +198,17 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
       const matched = findPlanByType(typeKey)
       if (!matched) return null
       const milestones = paymentPlanMilestones[typeKey] || []
-      const lastPct = milestones.length > 0 ? Number(milestones[milestones.length - 1]?.pct) || 0 : 0
+      const lastPct = milestones.length > 0 ? getMilestonePct(milestones[milestones.length - 1]) : 0
       return { typeKey, plan: matched, prePossessionPct: 100 - lastPct }
     })
-    .filter((x): x is { typeKey: 'clp' | 'investor' | 'flexi' | 'full'; plan: any; prePossessionPct: number } => x !== null)
+    .filter((x): x is { typeKey: PlanTypeKey; plan: PaymentPlan; prePossessionPct: number } => x !== null)
+
+  // Booking-amount stat card: only show a specific % when it's the real first milestone of a DB-backed plan
+  const isSelectedPlanFromDb = !!findPlanByType(selectedPlanTab)?.milestones?.length
+  const selectedPlanMilestones = paymentPlanMilestones[selectedPlanTab] || []
+  const bookingAmountPct = isSelectedPlanFromDb && selectedPlanMilestones.length > 0
+    ? getMilestonePct(selectedPlanMilestones[0])
+    : null
 
   const planLabel = (typeKey: string, fallback: string) => {
     const entry = matchedPlanEntries.find((p) => p.typeKey === typeKey)
@@ -175,7 +220,7 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
     : null
   const withDiscount = matchedPlanEntries.filter((p) => p.plan.discount_offered_pct != null)
   const maxDiscountEntry = withDiscount.length > 0
-    ? withDiscount.reduce((max, p) => (p.plan.discount_offered_pct > max.plan.discount_offered_pct ? p : max))
+    ? withDiscount.reduce((max, p) => ((p.plan.discount_offered_pct ?? 0) > (max.plan.discount_offered_pct ?? 0) ? p : max))
     : matchedPlanEntries.find((p) => p.typeKey === 'full') ?? null
   const bestRoiEntry = matchedPlanEntries.find((p) => p.typeKey === 'investor') ?? null
   const mostPopularEntry = matchedPlanEntries.find((p) => p.typeKey === 'clp') ?? matchedPlanEntries[0] ?? null
@@ -185,7 +230,7 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
     bestRoiEntry && { icon: TrendingUp, title: 'Best for ROI', val: planLabel('investor', 'Investor Plan'), color: 'text-emerald-600 bg-emerald-50' },
     maxDiscountEntry && { icon: Award, title: 'Max Discount', val: planLabel(maxDiscountEntry.typeKey, 'Full Payment'), color: 'text-amber-600 bg-amber-50' },
     mostPopularEntry && { icon: Landmark, title: 'Most Popular', val: planLabel(mostPopularEntry.typeKey, 'Construction Linked'), color: 'text-purple-600 bg-purple-50' },
-  ].filter((x): x is { icon: any; title: string; val: string; color: string } => x !== null)
+  ].filter((x): x is { icon: LucideIcon; title: string; val: string; color: string } => x !== null)
 
   // Plan Comparison Modal rows — same milestone source as the on-page Milestone Schedule, so they can't disagree
   const PLAN_ROW_META: Record<string, { label: string; color: string; bestFor: string }> = {
@@ -196,8 +241,8 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
   }
   const planCompareRows = (['clp', 'investor', 'flexi', 'full'] as const).map((typeKey) => {
     const milestones = paymentPlanMilestones[typeKey] || []
-    const bookingPct = milestones.length > 0 ? Number(milestones[0]?.pct) || 0 : 0
-    const possessionPct = milestones.length > 0 ? Number(milestones[milestones.length - 1]?.pct) || 0 : 0
+    const bookingPct = milestones.length > 0 ? getMilestonePct(milestones[0]) : 0
+    const possessionPct = milestones.length > 0 ? getMilestonePct(milestones[milestones.length - 1]) : 0
     const constructionPct = Math.max(0, 100 - bookingPct - possessionPct)
     const meta = PLAN_ROW_META[typeKey]
     const matchedEntry = matchedPlanEntries.find((p) => p.typeKey === typeKey)
@@ -214,10 +259,15 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
 
   // Dynamic Cost Sheet Rates from DB (all from project.cost_sheet)
   const stampDutyPct = dbCostSheet?.stamp_duty_pct ?? 6.0
+  const isStampEstimated = dbCostSheet?.stamp_duty_pct == null
   const regPct = dbCostSheet?.registration_pct ?? 1.0
+  const isRegEstimated = dbCostSheet?.registration_pct == null
   const gstPct = dbCostSheet?.gst_rate_pct ?? 5.0
+  const isGstEstimated = dbCostSheet?.gst_rate_pct == null
   const clubAmt = dbCostSheet?.club_membership ?? 200000
+  const isClubEstimated = dbCostSheet?.club_membership == null
   const ifmsAmt = dbCostSheet?.ifms ?? 75000
+  const isIfmsEstimated = dbCostSheet?.ifms == null
   const utilFieldsAllMissing = dbCostSheet?.electricity_connection == null && dbCostSheet?.water_sewer_connection == null && dbCostSheet?.maintenance_psf_monthly == null
   const utilAmt = utilFieldsAllMissing
     ? 125000
@@ -227,31 +277,22 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
   const baseCostVal = propertyPrice
 
   // Sum PLC charges from dbCostSheet.plc_charges JSON array if present
-  const rawPlcArray = Array.isArray(dbCostSheet?.plc_charges) ? (dbCostSheet.plc_charges as any[]) : []
+  const rawPlcArray = dbCostSheet?.plc_charges ?? []
   let calcPlcVal = 0
   for (const item of rawPlcArray) {
-    if (typeof item === 'number') {
-      calcPlcVal += item
-    } else if (item && typeof item === 'object') {
-      if (typeof item.amount === 'number') calcPlcVal += item.amount
-      else if (typeof item.amount_psf === 'number' && unitAreaSqft) calcPlcVal += item.amount_psf * unitAreaSqft
-      else if (typeof item.pct === 'number') calcPlcVal += Math.round(baseCostVal * (item.pct / 100))
-    }
+    if (typeof item.amount === 'number') calcPlcVal += item.amount
+    else if (typeof item.percent === 'number') calcPlcVal += Math.round(baseCostVal * (item.percent / 100))
   }
   const hasPlcData = rawPlcArray.length > 0
   const plcCostVal = hasPlcData ? calcPlcVal : Math.round(baseCostVal * 0.02)
   const isPlcEstimated = !hasPlcData
 
   // Sum Other charges from dbCostSheet.other_charges JSON array if present
-  const rawOtherArray = Array.isArray(dbCostSheet?.other_charges) ? (dbCostSheet.other_charges as any[]) : []
+  const rawOtherArray = dbCostSheet?.other_charges ?? []
   let calcOtherVal = 0
   for (const item of rawOtherArray) {
-    if (typeof item === 'number') {
-      calcOtherVal += item
-    } else if (item && typeof item === 'object') {
-      if (typeof item.amount === 'number') calcOtherVal += item.amount
-      else if (typeof item.pct === 'number') calcOtherVal += Math.round(baseCostVal * (item.pct / 100))
-    }
+    if (typeof item.amount === 'number') calcOtherVal += item.amount
+    else if (typeof item.percent === 'number') calcOtherVal += Math.round(baseCostVal * (item.percent / 100))
   }
   const hasOtherData = rawOtherArray.length > 0
   const otherCostVal = hasOtherData ? calcOtherVal : 125000
@@ -270,21 +311,21 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
 
   // Adaptive breakdown components based on Stage Toggle (At Booking vs At Possession)
   const breakdownComponents = !unitAreaSqft ? [] : costBreakdownStage === 'construction' ? [
-    { id: 'base', name: `Base Price (${unitAreaSqft.toLocaleString('en-IN')} sq.ft)`, amount: baseCostVal, pct: ((baseCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-[#2563EB]', stroke: '#2563EB' },
-    { id: 'plc', name: 'PLC Charges', amount: plcCostVal, pct: ((plcCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-indigo-500', stroke: '#6366F1' },
-    { id: 'club', name: 'Club Membership', amount: clubCostVal, pct: ((clubCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-amber-400', stroke: '#FBBF24' },
-    { id: 'ifms', name: 'IFMS (Advance)', amount: ifmsCostVal, pct: ((ifmsCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-orange-500', stroke: '#F97316' },
-    { id: 'other', name: 'Other Charges', amount: otherCostVal, pct: ((otherCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-pink-500', stroke: '#EC4899' }
+    { id: 'base', name: `Base Price (${unitAreaSqft.toLocaleString('en-IN')} sq.ft)`, amount: baseCostVal, pct: ((baseCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-[#2563EB]', stroke: '#2563EB', estimated: false },
+    { id: 'plc', name: 'PLC Charges', amount: plcCostVal, pct: ((plcCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-indigo-500', stroke: '#6366F1', estimated: isPlcEstimated },
+    { id: 'club', name: 'Club Membership', amount: clubCostVal, pct: ((clubCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-amber-400', stroke: '#FBBF24', estimated: isClubEstimated },
+    { id: 'ifms', name: 'IFMS (Advance)', amount: ifmsCostVal, pct: ((ifmsCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-orange-500', stroke: '#F97316', estimated: isIfmsEstimated },
+    { id: 'other', name: 'Other Charges', amount: otherCostVal, pct: ((otherCostVal / constructionTotalCost) * 100).toFixed(1) + '%', color: 'bg-pink-500', stroke: '#EC4899', estimated: isOtherEstimated }
   ] : [
-    { id: 'base', name: `Base Price (${unitAreaSqft.toLocaleString('en-IN')} sq.ft)`, amount: baseCostVal, pct: ((baseCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-[#2563EB]', stroke: '#2563EB' },
-    { id: 'plc', name: 'PLC Charges', amount: plcCostVal, pct: ((plcCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-indigo-500', stroke: '#6366F1' },
-    { id: 'club', name: 'Club Membership', amount: clubCostVal, pct: ((clubCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-amber-400', stroke: '#FBBF24' },
-    { id: 'ifms', name: 'IFMS (Advance)', amount: ifmsCostVal, pct: ((ifmsCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-orange-500', stroke: '#F97316' },
-    { id: 'other', name: 'Other Charges', amount: otherCostVal, pct: ((otherCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-pink-500', stroke: '#EC4899' },
-    { id: 'stamp', name: `Stamp Duty (${stampDutyPct}%)`, amount: stampDutyCost, pct: ((stampDutyCost / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-emerald-500', stroke: '#10B981' },
-    { id: 'reg', name: `Registration (${regPct}%)`, amount: regCost, pct: ((regCost / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-teal-500', stroke: '#14B8A6' },
-    { id: 'gst', name: `GST (${gstPct}%)`, amount: gstCost, pct: ((gstCost / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-purple-500', stroke: '#A855F7' },
-    { id: 'util', name: 'Utilities & Charges', amount: utilitiesCost, pct: ((utilitiesCost / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-rose-500', stroke: '#F43F5E' }
+    { id: 'base', name: `Base Price (${unitAreaSqft.toLocaleString('en-IN')} sq.ft)`, amount: baseCostVal, pct: ((baseCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-[#2563EB]', stroke: '#2563EB', estimated: false },
+    { id: 'plc', name: 'PLC Charges', amount: plcCostVal, pct: ((plcCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-indigo-500', stroke: '#6366F1', estimated: isPlcEstimated },
+    { id: 'club', name: 'Club Membership', amount: clubCostVal, pct: ((clubCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-amber-400', stroke: '#FBBF24', estimated: isClubEstimated },
+    { id: 'ifms', name: 'IFMS (Advance)', amount: ifmsCostVal, pct: ((ifmsCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-orange-500', stroke: '#F97316', estimated: isIfmsEstimated },
+    { id: 'other', name: 'Other Charges', amount: otherCostVal, pct: ((otherCostVal / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-pink-500', stroke: '#EC4899', estimated: isOtherEstimated },
+    { id: 'stamp', name: `Stamp Duty (${stampDutyPct}%)`, amount: stampDutyCost, pct: ((stampDutyCost / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-emerald-500', stroke: '#10B981', estimated: isStampEstimated },
+    { id: 'reg', name: `Registration (${regPct}%)`, amount: regCost, pct: ((regCost / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-teal-500', stroke: '#14B8A6', estimated: isRegEstimated },
+    { id: 'gst', name: `GST (${gstPct}%)`, amount: gstCost, pct: ((gstCost / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-purple-500', stroke: '#A855F7', estimated: isGstEstimated },
+    { id: 'util', name: 'Utilities & Charges', amount: utilitiesCost, pct: ((utilitiesCost / grandTotalAtPossession) * 100).toFixed(1) + '%', color: 'bg-rose-500', stroke: '#F43F5E', estimated: isUtilEstimated }
   ]
 
   const activeTotalVal = costBreakdownStage === 'construction' ? constructionTotalCost : grandTotalAtPossession
@@ -292,8 +333,8 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
   const downloadScheduleCSV = () => {
     const activeMilestones = paymentPlanMilestones[selectedPlanTab]
     const headers = ['Milestone', 'Description', 'Percentage Due']
-    const rows = activeMilestones.map((m: any) => [m.milestone || m.label || '', m.desc || '', m.pct || ''])
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e: any) => e.join(','))].join('\n')
+    const rows: string[][] = activeMilestones.map((m) => [m.milestone || m.label || '', m.desc || m.due || '', String(getMilestonePct(m))])
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n')
     const link = document.createElement('a')
     link.setAttribute('href', encodeURI(csvContent))
     link.setAttribute('download', `payment_plan_${selectedPlanTab}_${detail?.name?.replace(/\s+/g, '_') ?? 'project'}.csv`)
@@ -360,7 +401,7 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
               <Percent size={17} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-tight truncate">10%</p>
+              <p className="text-[15px] sm:text-[18px] font-black text-gray-900 dark:text-white leading-tight truncate">{bookingAmountPct != null ? `${bookingAmountPct}%` : 'Varies by plan'}</p>
               <p className="text-[10px] sm:text-[11px] text-gray-400 font-bold mt-0.5 leading-tight line-clamp-1 sm:line-clamp-none">Booking Amount</p>
             </div>
           </div>
@@ -517,8 +558,9 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
                   <span className="text-[28px] font-black text-gray-900 dark:text-white">{fmtRs(estimatedEmi)}</span>
                   <span className="text-[12px] text-gray-400 font-semibold">/ month</span>
                 </div>
-                <p className="text-[10.5px] text-gray-400 font-medium mt-0.5">
-                  @ {dbCostSheet?.base_interest_rate ?? 8.5}% p.a. {dbCostSheet?.base_interest_rate ? 'project subvention rate' : '(indicative bank benchmark rate)'}
+                <p className="text-[10.5px] text-gray-400 font-medium mt-0.5 flex items-center flex-wrap">
+                  @ {interestRatePct}% p.a. {dbCostSheet?.base_interest_rate ? 'project subvention rate' : '(indicative bank benchmark rate)'}
+                  {dbCostSheet?.base_interest_rate == null && <EstimatedBadge />}
                 </p>
               </div>
 
@@ -633,27 +675,28 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
-          {((detail?.builder_detail?.funding_banks && detail.builder_detail.funding_banks.length > 0)
-            ? detail.builder_detail.funding_banks
-            : ['State Bank of India (SBI)', 'HDFC Bank', 'ICICI Bank', 'Axis Bank', 'Punjab National Bank (PNB)']
-          ).map((bankName: string, idx: number) => (
-            <div key={idx} className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 hover:border-gray-200 transition-all">
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center font-black text-[12px]">
-                  🏛️
+        {detail?.builder_detail?.funding_banks && detail.builder_detail.funding_banks.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+            {detail.builder_detail.funding_banks.map((bankName: string, idx: number) => (
+              <div key={idx} className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 hover:border-gray-200 transition-all">
+                <div className="flex items-center justify-between">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 flex items-center justify-center font-black text-[12px]">
+                    🏛️
+                  </div>
+                  <span className="text-[9.5px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
+                    Approved
+                  </span>
                 </div>
-                <span className="text-[9.5px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
-                  Approved
-                </span>
+                <div>
+                  <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">{bankName}</h4>
+                  <p className="text-[9.5px] text-gray-400 font-semibold mt-0.5">APF Sanctioned • Fast Track</p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white leading-tight">{bankName}</h4>
-                <p className="text-[9.5px] text-gray-400 font-semibold mt-0.5">APF Sanctioned • Fast Track</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[12px] text-gray-400 font-semibold pt-1">Bank approval details not available.</p>
+        )}
       </div>
 
       {/* ── 3. PAYMENT PLANS (Full-width milestones with exact ₹ amounts) ── */}
@@ -687,18 +730,18 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
 
         {/* 4 Payment Plan Variant Selectors */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
+          {([
             { id: 'clp', name: 'Construction Linked', tag: 'Most Popular', icon: Landmark },
             { id: 'investor', name: 'Investor Plan', tag: 'Better Returns', icon: TrendingUp },
             { id: 'flexi', name: 'Flexi Plan', tag: 'Lower Initial Outgo', icon: Percent },
             { id: 'full', name: 'Full Payment', tag: 'Max Discount', icon: Award }
-          ].map((plan) => {
+          ] as Array<{ id: PlanTypeKey; name: string; tag: string; icon: LucideIcon }>).map((plan) => {
             const isSelected = selectedPlanTab === plan.id
             const Icon = plan.icon
             return (
               <div
                 key={plan.id}
-                onClick={() => setSelectedPlanTab(plan.id as any)}
+                onClick={() => setSelectedPlanTab(plan.id)}
                 className={`p-4 rounded-2xl cursor-pointer transition-all space-y-2.5 ${
                   isSelected
                     ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-md ring-2 ring-blue-500'
@@ -728,16 +771,17 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
 
               return (
                 <>
+                  {!isSelectedPlanFromDb && (
+                    <p className="text-[10.5px] text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1 mb-1">
+                      <Info size={12} /> Illustrative schedule — confirm exact milestones with the builder.
+                    </p>
+                  )}
                   <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
-                    {visibleItems.map((item: any, idx: number) => {
+                    {visibleItems.map((item: MilestoneItem, idx: number) => {
                       const milestoneTitle = item.milestone || item.name || item.label || item.stage || item.phase || `Stage ${idx + 1}`
                       const milestoneDesc = item.due || item.desc || item.description || (item.done ? 'Completed stage' : 'As per schedule')
 
-                      const rawPctVal = item.pct != null
-                        ? (typeof item.pct === 'number' ? item.pct : parseFloat(String(item.pct).replace('%', '').trim()))
-                        : (item.percentage != null ? parseFloat(String(item.percentage)) : 0)
-
-                      const pctVal = isNaN(rawPctVal) ? 0 : rawPctVal
+                      const pctVal = getMilestonePct(item)
                       const basePrice = propertyPrice > 0 ? propertyPrice : (unitMinCr ? unitMinCr * 10000000 : 0)
 
                       const milestoneAmt = (item.amt && item.amt > 0)
@@ -753,7 +797,7 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
                               ₹
                             </div>
                             <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 text-[10.5px] font-black border border-blue-100 dark:border-blue-800/40">
-                              {pctVal > 0 ? `${pctVal}%` : (item.pct ? String(item.pct) : '--')}
+                              {pctVal > 0 ? `${pctVal}%` : '--'}
                             </span>
                           </div>
 
@@ -935,6 +979,7 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
                 <div className="flex items-center gap-3">
                   <span className={`w-3 h-3 rounded-full ${item.color} shadow-sm`} />
                   <span className="font-extrabold text-gray-800 dark:text-gray-200">{item.name}</span>
+                  {item.estimated && <EstimatedBadge />}
                 </div>
                 <div className="flex items-center gap-12">
                   <span className="font-black text-gray-900 dark:text-white">{fmtRs(item.amount)}</span>
@@ -964,65 +1009,80 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
           <p className="text-[12px] text-gray-500 font-medium mt-0.5">Limited time offers from builder and our trusted partners.</p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-          {(() => {
-            const claims = detail?.marketing_claims || []
-            const escrowBank = detail?.escrow_bank_name
-            const assumptions = detail?.cost_sheet?.assumptions || []
-            const promotions = detail?.promotions || []
+        {(() => {
+          const claims = detail?.marketing_claims || []
+          const escrowBank = detail?.escrow_bank_name
+          const assumptions = detail?.cost_sheet?.assumptions || []
+          const promotions = detail?.promotions || []
 
-            const offers = [
-              {
-                tag: 'Builder Offer',
-                title: claims[0] || 'Early Booking Benefit',
-                desc: claims[1] || 'Direct builder launch discount',
-                icon: Gift,
-                bg: 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
-              },
-              {
-                tag: 'Bank Tie-up',
-                title: escrowBank ? `Approved by ${escrowBank}` : 'Pre-approved Loans',
-                desc: 'Seamless home loan processing & fast approval',
-                icon: Landmark,
-                bg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
-              },
-              {
-                tag: 'Financing Benefit',
-                title: assumptions[0] || 'Zero Brokerage Fee',
-                desc: assumptions[1] || 'Via RealtyPals channel partners',
-                icon: Percent,
-                bg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
-              },
-              ...promotions.map((promo) => ({
-                tag: 'Promotion',
-                title: promo.title,
-                desc: promo.description || promo.content,
-                icon: Award,
-                bg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
-              }))
-            ]
+          const offers: Array<{ tag: string; title: string; desc: string; icon: LucideIcon; bg: string }> = []
 
-            return offers.map((offer, i) => {
-              const Icon = offer.icon
-              return (
-                <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${offer.bg}`}>
-                      <Icon size={16} />
-                    </div>
-                    <span className="text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1.5 sm:px-2 py-0.5 rounded">
-                      {offer.tag}
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-[12.5px] sm:text-[13.5px] font-black text-gray-900 dark:text-white leading-tight">{offer.title}</h4>
-                    <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium mt-0.5 leading-snug line-clamp-2">{offer.desc}</p>
-                  </div>
-                </div>
-              )
+          if (claims[0]) {
+            offers.push({
+              tag: 'Builder Offer',
+              title: claims[0],
+              desc: claims[1] || 'Confirm exact terms with the builder',
+              icon: Gift,
+              bg: 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
             })
-          })()}
-        </div>
+          }
+
+          offers.push({
+            tag: 'Bank Tie-up',
+            title: escrowBank ? `Approved by ${escrowBank}` : 'Pre-approved Loans',
+            desc: 'Seamless home loan processing & fast approval',
+            icon: Landmark,
+            bg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
+          })
+
+          if (assumptions[0]) {
+            offers.push({
+              tag: 'Financing Benefit',
+              title: assumptions[0],
+              desc: assumptions[1] || 'Confirm exact terms with the builder',
+              icon: Percent,
+              bg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+            })
+          }
+
+          promotions.forEach((promo) => {
+            offers.push({
+              tag: 'Promotion',
+              title: promo.title,
+              desc: promo.description || promo.content,
+              icon: Award,
+              bg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
+            })
+          })
+
+          if (offers.length === 0) {
+            return <p className="text-[12px] text-gray-400 font-semibold">No current offers listed for this project.</p>
+          }
+
+          return (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+              {offers.map((offer, i) => {
+                const Icon = offer.icon
+                return (
+                  <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${offer.bg}`}>
+                        <Icon size={16} />
+                      </div>
+                      <span className="text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1.5 sm:px-2 py-0.5 rounded">
+                        {offer.tag}
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-[12.5px] sm:text-[13.5px] font-black text-gray-900 dark:text-white leading-tight">{offer.title}</h4>
+                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium mt-0.5 leading-snug line-clamp-2">{offer.desc}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
       </div>
 
       {/* ── 6. READY TO BOOK CTA BANNER ── */}
@@ -1074,10 +1134,10 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
               <p className="text-[12px] text-gray-500 font-medium">Detailed breakdown across all payment options for {bhkFilter}</p>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-[12.5px]">
+            <div className="overflow-x-auto touch-pan-x custom-scrollbar">
+              <table className="w-full min-w-[480px] sm:min-w-[640px] text-left text-xs sm:text-[12.5px]">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-white/10 text-gray-400 uppercase text-[10px] font-black">
+                  <tr className="border-b border-gray-200 dark:border-white/10 text-gray-400 uppercase text-[9px] sm:text-[10px] font-black">
                     <th className="pb-3">Plan Variant</th>
                     <th className="pb-3">Booking Amt</th>
                     <th className="pb-3">Construction Stages</th>

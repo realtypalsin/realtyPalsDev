@@ -4,9 +4,9 @@ import { m, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import {
   Bed, Bath, Columns, Ruler, ZoomIn, ChevronDown, ChevronRight,
-  Award, Maximize2, TrendingDown, CheckCircle2, Crown,
-  HelpCircle, Lightbulb, Shield, Car, User, Wind, Cpu, Droplet,
-  Layout, Home, Users, Compass, Eye, Trophy, CalendarDays, ShieldCheck, Leaf, Sun, Trees
+  Maximize2, TrendingDown, CheckCircle2, Crown,
+  HelpCircle, Lightbulb, Wind,
+  Layout, Home, Users, Compass, Eye, Trophy, CalendarDays, ShieldCheck, Leaf
 } from 'lucide-react'
 import type { ProjectDetail, UnitTypeSummary } from '@/types/project'
 import { resolveImgUrl } from '@/lib/utils'
@@ -18,27 +18,8 @@ import { CustomDropdown } from '@/components/ui/CustomDropdown'
 type FloorPlanImage = { id: string; url: string; caption?: string | null; bhk?: number | null; size_sqft?: number | null }
 type LazyState<T> = { loaded: boolean; available: boolean; data: T | null; message?: string }
 type AvailabilityRow = { tower: string; floor: string; unitNo: string; facing: string; view: string; price: string; status: string }
-
-// Resolve icon name from string to Lucide Icon component
-const ICON_MAP: Record<string, React.ComponentType<any>> = {
-  layout: Layout,
-  height: Maximize2,
-  mivan: Shield,
-  shield: Shield,
-  parking: Car,
-  utility: Columns,
-  briefcase: Award,
-  sun: ShieldCheck,
-  lock: Shield,
-  ac: Wind,
-  kitchen: Home,
-  columns: Columns,
-  door: Compass,
-  droplet: Droplet,
-  cpu: Cpu,
-  car: Car,
-  user: User
-}
+type UnitInventoryEntry = { unit_type_id: string; tower_name: string; floor_number: number; unit_number: string; facing: string | null; view: string | null; status: string }
+type HighlightEntry = string | { title: string; desc?: string }
 
 function priceLabel(u: UnitTypeSummary): string {
   if (u.price_label) return u.price_label
@@ -47,13 +28,21 @@ function priceLabel(u: UnitTypeSummary): string {
   return `₹${Number(u.price_min_cr).toFixed(2)} – ${Number(u.price_max_cr).toFixed(2)} Cr`
 }
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+// Small visual flag for values computed as a fallback estimate rather than pulled from verified DB fields.
+function EstimatedBadge() {
+  return (
+    <span className="ml-1.5 px-1.5 py-0.5 rounded text-[8.5px] font-black uppercase tracking-wide bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 align-middle">
+      Est.
+    </span>
+  )
+}
+
 function AvailabilityTable({ rows }: { rows: AvailabilityRow[] }) {
   return (
-    <div className="overflow-x-auto border border-gray-100 dark:border-white/5 rounded-2xl">
-      <table className="w-full min-w-[720px] text-left text-[12.5px] border-collapse">
+    <div className="overflow-x-auto touch-pan-x custom-scrollbar border border-gray-100 dark:border-white/5 rounded-2xl">
+      <table className="w-full min-w-[540px] sm:min-w-[720px] text-left text-xs sm:text-[12.5px] border-collapse">
         <thead>
-          <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[10px] uppercase tracking-wider">
+          <tr className="bg-gray-50/70 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 text-gray-400 font-black text-[9px] sm:text-[10px] uppercase tracking-wider">
             <th className="p-3.5 pl-4">Tower</th>
             <th className="p-3.5">Floor</th>
             <th className="p-3.5">Unit No.</th>
@@ -168,7 +157,7 @@ export default function ResidencesTab({
   const carpetArea = activeUnit?.carpet_area_sqft || null
   const balconyArea = activeUnit?.balcony_area_sqft || null
 
-  const parseArray = (v: any) => {
+  const parseArray = (v: unknown): unknown[] => {
     if (Array.isArray(v)) return v;
     if (typeof v === 'string') {
       try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; }
@@ -176,28 +165,28 @@ export default function ResidencesTab({
     return [];
   }
 
-  const perfectForList = activeUnit ? parseArray(activeUnit.perfect_for) : []
-  const keyHighlightsList = activeUnit ? parseArray(activeUnit.key_highlights) : []
+  const perfectForList = activeUnit ? (parseArray(activeUnit.perfect_for) as string[]) : []
+  const keyHighlightsList = activeUnit ? (parseArray(activeUnit.key_highlights) as HighlightEntry[]) : []
 
   // Unit availability from unit_inventory table, fallback to empty if no DB data
-  const unitInventory = (detail)?.unit_inventory || []
-  const filteredInventory = activeUnit?.id ? unitInventory.filter((u: any) => u?.unit_type_id === activeUnit.id) : unitInventory
+  const unitInventory: UnitInventoryEntry[] = detail?.unit_inventory || []
+  const filteredInventory = activeUnit?.id ? unitInventory.filter((u) => u?.unit_type_id === activeUnit.id) : unitInventory
   const availabilityRows: AvailabilityRow[] = filteredInventory
-    .filter((u): u is any => u != null)
+    .filter((u): u is UnitInventoryEntry => u != null)
     .map((u) => ({
-      tower: (u?.tower_name ?? '—') as string,
-      floor: (u?.floor_number ? String(u.floor_number) : '—') as string,
-      unitNo: (u?.unit_number ?? '—') as string,
-      facing: (u?.facing ?? '—') as string,
-      view: (u?.view ?? '—') as string,
+      tower: u?.tower_name ?? '—',
+      floor: u?.floor_number ? String(u.floor_number) : '—',
+      unitNo: u?.unit_number ?? '—',
+      facing: u?.facing ?? '—',
+      view: u?.view ?? '—',
       price: activeUnit ? priceLabel(activeUnit) : 'Price on Request',
       status: u?.status === 'available' ? 'Available' : u?.status === 'booked' ? 'Booked' : 'Hold'
     }))
 
   const selectedInventoryEntry = filteredInventory.find(
-    (u: any) => u?.tower_name === selectedTower && u?.unit_number === selectedUnitNo
+    (u) => u?.tower_name === selectedTower && u?.unit_number === selectedUnitNo
   ) ?? filteredInventory[0] ?? null
-  const selectedFacing: string | null = (selectedInventoryEntry?.facing ?? null) as string | null
+  const selectedFacing: string | null = selectedInventoryEntry?.facing ?? null
 
   if (loading && !detail) {
     return <ResidencesSkeletonFull />
@@ -459,18 +448,21 @@ export default function ResidencesTab({
                       <span className="text-gray-400 font-bold block text-[10px] uppercase">Carpet Area</span>
                       <span className="font-black text-emerald-700 dark:text-emerald-400">
                         {carpetArea ? `${carpetArea.toLocaleString()} sq.ft` : (area ? `${Math.round(area * 0.70)} sq.ft` : '—')}
+                        {!carpetArea && area && <EstimatedBadge />}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-400 font-bold block text-[10px] uppercase">Balcony Space</span>
                       <span className="font-black text-gray-900 dark:text-white">
                         {balconyArea ? `${balconyArea.toLocaleString()} sq.ft` : (area ? `${Math.round(area * 0.12)} sq.ft` : '—')}
+                        {!balconyArea && area && <EstimatedBadge />}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-400 font-bold block text-[10px] uppercase">Layout Efficiency</span>
                       <span className="font-black text-blue-600 dark:text-blue-400">
                         {carpetArea && area ? `${Math.round((carpetArea / area) * 100)}% Usable` : '70% Usable'}
+                        {!(carpetArea && area) && <EstimatedBadge />}
                       </span>
                     </div>
                   </div>
@@ -525,11 +517,11 @@ export default function ResidencesTab({
                         triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[110px]"
                       />
 
-                      {(activeUnit)?.tower_association && (activeUnit).tower_association.length > 0 && (
+                      {activeUnit.tower_association && activeUnit.tower_association.length > 0 && (
                         <CustomDropdown
                           value={selectedTower}
                           onChange={(val) => setSelectedTower(val)}
-                          options={(activeUnit).tower_association.map((t: string) => ({ value: t, label: t }))}
+                          options={activeUnit.tower_association.map((t) => ({ value: t, label: t }))}
                           size="xs"
                           triggerClassName="text-[11.5px] font-bold py-2 px-3 rounded-xl min-w-[90px]"
                         />
@@ -571,7 +563,7 @@ export default function ResidencesTab({
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Built-up Area</p>
-                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit)?.built_up_area_sqft ? `${(activeUnit).built_up_area_sqft.toLocaleString()} sqft` : '—'}</p>
+                      <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.built_up_area_sqft ? `${activeUnit.built_up_area_sqft.toLocaleString()} sqft` : '—'}</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
@@ -584,24 +576,24 @@ export default function ResidencesTab({
                       <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.bathrooms ?? '—'}</p>
                     </div>
 
-                    {(activeUnit)?.balconies != null && (
+                    {activeUnit.balconies != null && (
                       <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Private Balcony</p>
-                        <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit).balconies}</p>
+                        <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.balconies}</p>
                       </div>
                     )}
 
-                    {(activeUnit)?.utility_area_sqft != null && (
+                    {activeUnit.utility_area_sqft != null && (
                       <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Utility Area</p>
-                        <p className="text-[16px] font-black text-gray-900 dark:text-white">{(activeUnit).utility_area_sqft} sqft</p>
+                        <p className="text-[16px] font-black text-gray-900 dark:text-white">{activeUnit.utility_area_sqft} sqft</p>
                       </div>
                     )}
 
-                    {(activeUnit)?.efficiency_rating && (
+                    {activeUnit.efficiency_rating && (
                       <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-1">
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Efficiency Rating</p>
-                        <p className="text-[16px] font-black text-emerald-600 dark:text-emerald-400">{(activeUnit).efficiency_rating}</p>
+                        <p className="text-[16px] font-black text-emerald-600 dark:text-emerald-400">{activeUnit.efficiency_rating}</p>
                       </div>
                     )}
 
@@ -634,68 +626,11 @@ export default function ResidencesTab({
 
             </div>
 
-            {/* ── 2.5. SUNLIGHT, VENTILATION & VASTU ORIENTATION ── */}
-            <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <Compass size={19} className="text-emerald-600 dark:text-emerald-400" /> Sunlight, Ventilation &amp; Vastu Architecture
-                  </h3>
-                  <p className="text-[11.5px] sm:text-[12px] text-gray-500 font-medium mt-0.5">Layout dynamics, natural cross-ventilation, and orientation credentials for {activeUnit?.name || 'this residence'}.</p>
-                </div>
-                <span className="self-start sm:self-auto px-3 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 font-black text-[11px] rounded-full border border-emerald-200/60 dark:border-emerald-800/40 flex items-center gap-1">
-                  <ShieldCheck size={14} /> Vastu Compliant
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center">
-                    <Sun size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Morning Sunlight</h4>
-                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">East/NE Balcony Sun Exposure</p>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
-                    <Wind size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Cross Breeze</h4>
-                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">3-Side Open Tower Design</p>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
-                    <Trees size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Balcony Vistas</h4>
-                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">Central Greens &amp; Clubhouse</p>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center">
-                    <Maximize2 size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-[12.5px] font-black text-gray-900 dark:text-white">Space Ratio</h4>
-                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">80%+ Usable Carpet Efficiency</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* ── 3. KEY HIGHLIGHTS ── */}
             {(() => {
               const defaultHighlights = [
                 { title: `${activeUnit?.bhk || 2} BHK Efficient Layout`, desc: 'Optimized internal layout with zero wasted corridor space' },
-                { title: `${(activeUnit as any)?.balconies_count || (activeUnit?.bhk && activeUnit.bhk >= 3 ? 3 : 2)} Large Balconies`, desc: 'Panoramic green views with separate utility deck' },
+                { title: `${activeUnit?.balconies || (activeUnit?.bhk && activeUnit.bhk >= 3 ? 3 : 2)} Large Balconies`, desc: 'Panoramic green views with separate utility deck' },
                 { title: 'Cross Ventilation', desc: 'Dual-aspect airflow design promoting natural cooling' },
                 { title: 'Vastu Compliant', desc: 'Auspicious orientation for enhanced positivity and sunlight' }
               ]
@@ -706,7 +641,7 @@ export default function ResidencesTab({
                   <h3 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight">Key Highlights</h3>
 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-                    {finalHighlights.map((item: any, i: number) => (
+                    {finalHighlights.map((item: HighlightEntry, i: number) => (
                       <div key={i} className="p-3.5 sm:p-4 rounded-2xl bg-gray-50/60 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
                         <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20">
                           <CheckCircle2 size={16} />
@@ -769,6 +704,8 @@ export default function ResidencesTab({
                 const superSqft = area
                 const cSqft = carpetArea || Math.round(superSqft * 0.70)
                 const bSqft = balconyArea || Math.round(superSqft * 0.12)
+                const isCarpetEstimated = !carpetArea
+                const isBalconyEstimated = !balconyArea
                 const shaftSqft = Math.max(0, superSqft - cSqft - bSqft)
 
                 const cPct = Math.round((cSqft / superSqft) * 100)
@@ -881,7 +818,7 @@ export default function ResidencesTab({
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(cSqft)}</p>
+                            <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(cSqft)}{isCarpetEstimated && <EstimatedBadge />}</p>
                             <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">{cPct}%</span>
                           </div>
                         </div>
@@ -904,7 +841,7 @@ export default function ResidencesTab({
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(bSqft)}</p>
+                            <p className="text-[13px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(bSqft)}{isBalconyEstimated && <EstimatedBadge />}</p>
                             <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400">{bPct}%</span>
                           </div>
                         </div>
@@ -1011,7 +948,7 @@ export default function ResidencesTab({
               )}
 
               {/* Balcony & Outdoor Deck Visualizer Card (Architectural styling) */}
-              {(activeUnit)?.balconies != null && (
+              {activeUnit?.balconies != null && (
               <div className="bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-5 flex flex-col justify-between">
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-between gap-2">
@@ -1025,14 +962,14 @@ export default function ResidencesTab({
                       </div>
                     </div>
                     <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-emerald-500/10 text-emerald-900 dark:text-emerald-300 ring-1 ring-emerald-500/20 text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider whitespace-nowrap">
-                      {(activeUnit).balconies} {(activeUnit).balconies === 1 ? 'Balcony' : 'Balconies'}
+                      {activeUnit.balconies} {activeUnit.balconies === 1 ? 'Balcony' : 'Balconies'}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2.5 sm:gap-3 pt-1">
                     <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-0.5 sm:space-y-1">
                       <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-gray-400">Total Deck Area</p>
-                      <p className="text-[13.5px] sm:text-[15px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(balconyArea || (area ? Math.round(area * 0.12) : null))}</p>
+                      <p className="text-[13.5px] sm:text-[15px] font-black text-gray-900 dark:text-white leading-tight">{formatArea(balconyArea || (area ? Math.round(area * 0.12) : null))}{!balconyArea && <EstimatedBadge />}</p>
                       <p className="text-[9.5px] sm:text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Extended Sit-out</p>
                     </div>
 

@@ -26,6 +26,7 @@ import {
   computeBudgetStatus,
 } from './scoring'
 import { getNearbySectors } from './sectors'
+import type { SectorTier } from './sectorTiers'
 import { isCityLevel } from './intent'
 import { CITY_LEVEL_ALIASES } from './constants'
 import { SUPPORTED_CITIES } from '../config/cities'
@@ -190,6 +191,29 @@ function regionFilter(region: 'noida' | 'greater_noida' | 'greater_noida_west'):
   }
 }
 
+export const SECTOR_CORRIDOR_ALIASES: Record<string, string[]> = {
+  '7x': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
+  'sector 7x': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
+  '7x sectors': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
+  'central noida 7x': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
+  'central noida': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
+  'expressway': ['Sector 107', 'Sector 137', 'Sector 143', 'Sector 150'],
+  'noida expressway': ['Sector 107', 'Sector 137', 'Sector 143', 'Sector 150'],
+  'expressway corridor': ['Sector 107', 'Sector 137', 'Sector 143', 'Sector 150'],
+}
+
+export function expandSectorAliases(sector?: string): string[] {
+  if (!sector) return []
+  const norm = sector.toLowerCase().replace(/[,.-]/g, '').trim()
+  if (SECTOR_CORRIDOR_ALIASES[norm]) {
+    return SECTOR_CORRIDOR_ALIASES[norm]
+  }
+  if (norm.includes('7x') || norm.includes('70s')) {
+    return ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79']
+  }
+  return [sector]
+}
+
 export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Prisma.ProjectWhereInput {
   const where: Prisma.ProjectWhereInput = {}
 
@@ -198,9 +222,9 @@ export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Pr
     if (region) where.AND = [regionFilter(region)]
   }
 
-  // Sector — whole-word match (case-insensitive).
-  // This ensures 'Sector 10' matches 'Sector 10 Greater Noida West' but NOT 'Sector 107'.
-  const sectorsToSearch = overrideSectors || (intent.sector && !isCityLevel(intent.sector) ? [intent.sector] : [])
+  // Sector — whole-word match (case-insensitive) with corridor alias expansion (e.g. 7X -> Sectors 74-79)
+  const initialSectors = overrideSectors || (intent.sector && !isCityLevel(intent.sector) ? expandSectorAliases(intent.sector) : [])
+  const sectorsToSearch = initialSectors.flatMap(s => expandSectorAliases(s))
 
   if (sectorsToSearch.length > 0) {
     where.OR = sectorsToSearch.flatMap((sectorStr) => {
@@ -357,8 +381,8 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { getMarketTier } = require('./marketTiers')
 
-  const sectorIntelligence = (p as any).sector_intelligence // populated via dynamic SQL join if available
-  let sectorTier: any = undefined
+  const sectorIntelligence = (p as { sector_intelligence?: { sector_stage: string; avg_price_per_sqft: number | null; price_5yr_cagr_pct: number | null } }).sector_intelligence // populated via dynamic SQL join if available
+  let sectorTier: SectorTier | undefined
   if (sectorIntelligence) {
     const tierInfo = computeSectorTier({
       city: p.city,
@@ -417,9 +441,9 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     architect: p.architect ?? null,
     interior_designer: p.interior_designer ?? null,
     design_theme: p.design_theme ?? null,
-    project_risk_flag: (p as any).project_risk_flag ?? null,
-    nclt_moratorium_active: (p as any).nclt_moratorium_active ?? null,
-    registry_status: (p as any).registry_status ?? null,
+    project_risk_flag: p.project_risk_flag ?? null,
+    nclt_moratorium_active: p.nclt_moratorium_active ?? null,
+    registry_status: p.registry_status ?? null,
     marketing_claims: p.marketing_claims,
     hero_image_url: p.hero_image_url ?? null,
     price_min_cr: minP,
@@ -428,7 +452,9 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     floor_plan_count: p.unit_types.length,
     project_status: String(p.status),
     amenity_count: p.amenities.length,
-    construction_progress_pct: (p as any).construction_milestones?.find((m: any) => m.critical_path)?.completion_pct ?? 0,
+    // Not wired: ConstructionMilestone isn't included in PROJECT_INCLUDE and has no
+    // "critical path" concept in the schema — leave at 0 rather than fabricate progress.
+    construction_progress_pct: 0,
     unit_types: p.unit_types.map((u) => ({
       name: u.name,
       bhk: u.bhk,
@@ -470,7 +496,7 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
         possession_date: p.possession_date,
         possession_label: p.possession_label,
         status: String(p.status),
-        project_risk_flag: (p as any).project_risk_flag ?? null,
+        project_risk_flag: p.project_risk_flag ?? null,
         builder: p.builder,
         decision_profile: p.decision_profile,
         recommendation_profile: p.recommendation_profile,
@@ -490,7 +516,7 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     // Eager intelligence — pure sync, no DB cost
     decisionIntelligence: buildDecisionIntelligence({
       dna: p.dna ?? null,
-      project_risk_flag: (p as any).project_risk_flag ?? null,
+      project_risk_flag: p.project_risk_flag ?? null,
       rera_number: p.rera_number ?? null,
       status: String(p.status),
       possession_date: p.possession_date ? p.possession_date.toISOString() : null,
@@ -508,7 +534,7 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     buyerPersonas: buildBuyerPersonas({
       dna: p.dna ?? null,
       status: String(p.status),
-      project_risk_flag: (p as any).project_risk_flag ?? null,
+      project_risk_flag: p.project_risk_flag ?? null,
       persona_profile: p.persona_profile ?? null,
       amenities: p.amenities,
     }),
@@ -516,7 +542,7 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
       dna: p.dna ?? null,
       builder: p.builder,
       rera_number: p.rera_number ?? null,
-      project_risk_flag: (p as any).project_risk_flag ?? null,
+      project_risk_flag: p.project_risk_flag ?? null,
       status: String(p.status),
     }),
     whyNot: null, // populated post-sort by scoreAndSort()
@@ -694,11 +720,7 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     }
 
     const notFoundNames = effectiveIntent.projectNames!.filter(
-      (n) => !byName.some(
-        (p) =>
-          p.name.toLowerCase().includes(n.toLowerCase()) ||
-          n.toLowerCase().includes(p.name.toLowerCase())
-      )
+      (n) => !byName.some((p) => matchesProjectName(n, p.name))
     )
 
     const res: DiscoveryResult = {
@@ -819,7 +841,8 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     totalCount = count
     rawProjectsUnpaginated = list
   } catch (dbErr) {
-    console.warn('[DISCOVERY:DB_WARN] Connection pool exhausted or query failed:', (dbErr as Error).message)
+    console.error('[DISCOVERY:DB_ERROR] Connection pool exhausted or query failed:', (dbErr as Error).message)
+    throw dbErr
   }
 
   let rawProjects = rawProjectsUnpaginated
@@ -845,7 +868,8 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
         include: PROJECT_INCLUDE,
         take: 50,
       })
-    } catch {
+    } catch (err) {
+      console.warn('[DISCOVERY:B2-FALLBACK] sector-only query failed:', (err as Error).message)
       rawProjects = []
     }
     if (rawProjects.length > 0) {

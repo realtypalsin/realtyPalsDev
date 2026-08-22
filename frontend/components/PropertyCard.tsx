@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { formatPriceCr } from '@/lib/format';
 import { API_BASE } from '@/lib/env';
+import { track } from '@/lib/analytics';
+import { authHeaders } from '@/lib/authedFetch';
 import { Heart, ChevronLeft, ChevronRight, MessageCircle, Info, ShieldCheck, LineChart } from 'lucide-react';
 import {  m  } from 'framer-motion';
 
@@ -14,9 +16,10 @@ interface PropertyCardProps {
   userId?: string | null;
   autoPlay?: boolean;
   onAuthRequired?: () => void;
+  onToast?: (message: string) => void;
 }
 
-export default function PropertyCard({ property, userId, autoPlay = true, onAuthRequired }: PropertyCardProps) {
+export default function PropertyCard({ property, userId, autoPlay = true, onAuthRequired, onToast }: PropertyCardProps) {
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -28,8 +31,8 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
 
   const images: string[] = [];
   if (property.image_url) images.push(property.image_url);
-  if ((property as any).images?.length) {
-    (property as any).images.forEach((img: any) => {
+  if (property.images?.length) {
+    property.images.forEach((img) => {
       const url = typeof img === 'string' ? img : img.url || img.image_url;
       if (url && !images.includes(url)) images.push(url);
     });
@@ -64,21 +67,25 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
     setSaving(true);
     try {
       if (isSaved) {
-        await fetch(`${API_BASE}/saved/${property.id}`, {
+        const res = await fetch(`${API_BASE}/saved/${property.id}`, {
           method: 'DELETE',
-          headers: { 'X-User-Id': userId },
+          headers: await authHeaders(),
         });
+        if (!res.ok) throw new Error('Delete failed');
         setIsSaved(false);
       } else {
-        await fetch(`${API_BASE}/saved`, {
+        const res = await fetch(`${API_BASE}/saved`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
+          headers: await authHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ project_id: property.id }),
         });
+        if (!res.ok) throw new Error('Save failed');
         setIsSaved(true);
+        track('property_saved', { project_slug: property.id, project_name: displayName });
       }
     } catch (error) {
       console.error('Error saving property:', error);
+      onToast?.('Could not save. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -93,11 +100,11 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
     setImgLoaded(false);
   }, [images.length]);
 
-  const builderName = typeof property.builder === 'object' ? (property.builder as any)?.name : property.builder;
+  const builderName = typeof property.builder === 'object' ? property.builder?.name : property.builder;
   const displayName = property.project_name || builderName;
   const isLiveResult = String(property.id).startsWith('google-place-');
-  const tier = (property as any).tier as string | undefined;
-  const address = (property as any).address as string | undefined;
+  const tier = property.tier ?? undefined;
+  const address = property.address ?? undefined;
 
   const locationLine = property.sector?.name
     ? `${property.sector.name}${property.sector.city ? `, ${property.sector.city}` : ''}`
@@ -124,8 +131,8 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
     return `₹${fmt(toCr(low))} – ${fmt(toCr(high))}`;
   };
 
-  const minPrice = (property as any).minPrice as number | undefined;
-  const maxPrice = (property as any).maxPrice as number | undefined;
+  const minPrice = property.minPrice;
+  const maxPrice = property.maxPrice;
   const hasPriceRange = minPrice != null && maxPrice != null && minPrice !== maxPrice;
   const priceLabel = hasPriceRange ? 'Price range' : 'Starting price';
 
@@ -135,8 +142,8 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
     ? formatPriceCr(property.price)
     : null;
 
-  const possessionDate = (property as any).possession_date as string | undefined;
-  const possessionLabelRaw = (property as any).possession_label as string | undefined;
+  const possessionDate = property.possession_date ?? undefined;
+  const possessionLabelRaw = property.possession_label ?? undefined;
   const showPossession = property.status === 'under_construction' || property.status === 'new_launch';
   const possessionDisplay = (() => {
     if (!showPossession) return null;
@@ -157,7 +164,7 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
     <m.div
       id={`property-card-${property.id}`}
       onClick={handleClick}
-      className="group relative bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.14)] transition-shadow duration-300 cursor-pointer border border-gray-100 dark:border-gray-800 flex flex-col"
+      className="group relative bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.14)] transition-shadow duration-300 cursor-pointer border border-gray-100 dark:border-gray-800 flex flex-col cv-auto contain-paint"
       whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 380, damping: 28 }}
     >
@@ -187,7 +194,8 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
             src={currentImgUrl}
             alt={displayName}
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+            priority={property.property_index === 0}
             unoptimized={currentImgUrl.startsWith('/')}
             className={`object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
             onLoad={() => setImgLoaded(true)}
@@ -216,7 +224,7 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
               {property.match_score}% Match
             </span>
           )}
-          {(property as any).dna?.rera_compliance_label?.toLowerCase().includes('safe') && (
+          {property.dna?.rera_compliance_label?.toLowerCase().includes('safe') && (
             <span className="flex items-center gap-1 px-2 py-0.5 bg-white/20 backdrop-blur-md text-emerald-900 dark:text-emerald-300 border border-emerald-300/50 dark:border-emerald-500/30 shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-[10px] font-semibold rounded-full leading-5">
               <ShieldCheck size={12} className="text-emerald-700 dark:text-emerald-400" />
               RERA Verified
@@ -269,27 +277,36 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
 
         {/* Header: name + save button */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-[15px] font-bold text-gray-900 dark:text-white leading-snug truncate">
+          <div className="flex-1 min-w-0 space-y-1">
+            <h3 className="text-[15.5px] font-bold text-gray-900 dark:text-white leading-snug truncate">
               {displayName}
             </h3>
-            {(builderName || possessionDisplay) && (
-              <div className="flex items-center justify-between mt-0.5">
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-medium flex-1">
-                  {builderName && builderName !== displayName ? builderName : ''}
-                </p>
-                {possessionDisplay && (
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500 ml-2 whitespace-nowrap">
-                    Possession: {possessionDisplay}
-                  </p>
-                )}
-              </div>
-            )}
-            {locationLine && (
-              <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-                {locationLine}
-              </p>
-            )}
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
+              {builderName && builderName !== displayName && (
+                <>
+                  <span className="truncate text-gray-700 dark:text-gray-300">{builderName}</span>
+                  <span className="opacity-40 shrink-0">·</span>
+                </>
+              )}
+              {locationLine && (
+                <span className="truncate opacity-85 shrink-0">{locationLine}</span>
+              )}
+            </div>
+            <div className="h-[24px] flex items-center pt-0.5">
+              {possessionDisplay ? (
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold ${
+                  possessionDisplay.toLowerCase().includes('delayed') || possessionDisplay.toLowerCase().includes('disputed')
+                    ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40'
+                    : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 border border-gray-200/60 dark:border-white/10'
+                }`}>
+                  Possession: {possessionDisplay}
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40">
+                  Ready to Move
+                </span>
+              )}
+            </div>
           </div>
           <button
             type="button"
@@ -369,16 +386,16 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
         )}
 
         {/* DNA Scores */}
-        {(property as any).dna && (
+        {property.dna && (
           <div className="flex items-center gap-3 mt-0.5">
-            {(property as any).dna.rera_compliance_label && (
+            {property.dna.rera_compliance_label && (
               <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                RERA: {(property as any).dna.rera_compliance_label}
+                RERA: {property.dna.rera_compliance_label}
               </span>
             )}
-            {(property as any).dna.builder_track_record_label && (
+            {property.dna.builder_track_record_label && (
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
-                Builder: {(property as any).dna.builder_track_record_label}
+                Builder: {property.dna.builder_track_record_label}
               </span>
             )}
           </div>

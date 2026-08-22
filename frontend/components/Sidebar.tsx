@@ -22,23 +22,17 @@ import { useSessions, Session } from "@/hooks/useSessions";
 import { SessionItem } from "@/components/Sidebar/SessionItem";
 import { authHeaders } from "@/lib/authedFetch";
 
+type SidebarView =
+  | "discovery"
+  | "saved"
+  | "compare"
+  | "value-estimator"
+  | "market-intelligence"
+  | "lead-snapshot";
+
 interface SidebarProps {
-  activeView?:
-    | "discovery"
-    | "saved"
-    | "compare"
-    | "value-estimator"
-    | "market-intelligence"
-    | "lead-snapshot";
-  onViewChange?: (
-    view:
-      | "discovery"
-      | "saved"
-      | "compare"
-      | "value-estimator"
-      | "market-intelligence"
-      | "lead-snapshot",
-  ) => void;
+  activeView?: SidebarView;
+  onViewChange?: (view: SidebarView) => void;
   userId: string | null;
   guestToken?: string | null;
   activeSessionId?: string | null;
@@ -94,6 +88,7 @@ export default function Sidebar({
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [leadsToday, setLeadsToday] = useState<number | null>(null);
+  const [userInitial, setUserInitial] = useState("U");
   const [isNavigating, setIsNavigating] = useState(false);
   const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -115,7 +110,19 @@ export default function Sidebar({
       .catch(() => {});
   }, [userId]);
 
-  const routeToView: Record<string, any> = {
+  useEffect(() => {
+    if (!userId) return;
+    getSupabaseClient()
+      .then((supabase) => supabase.auth.getUser())
+      .then(({ data }) => {
+        const name = data.user?.user_metadata?.full_name as string | undefined;
+        const source = name || data.user?.email || "";
+        if (source) setUserInitial(source.charAt(0).toUpperCase());
+      })
+      .catch(() => {});
+  }, [userId]);
+
+  const routeToView: Record<string, SidebarView> = {
     "/discover": "discovery",
     "/saved": "saved",
     "/compare": "compare",
@@ -151,14 +158,14 @@ export default function Sidebar({
     };
     const handleTouchEnd = (e: TouchEvent) => {
       const touchEndX = e.changedTouches[0].screenX;
-      if (touchEndX - touchStartX > 80 && touchStartX < 30) {
+      if (touchEndX - touchStartX > 80 && touchStartX < 40) {
         setMobileOpen(true);
-      } else if (touchStartX - touchEndX > 80) {
+      } else if (touchStartX - touchEndX > 70) {
         setMobileOpen(false);
       }
     };
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
     return () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
@@ -166,6 +173,15 @@ export default function Sidebar({
   }, []);
 
   const closeMobile = () => setMobileOpen(false);
+
+  // Discovery link is always "/discover" — clicking it while already there should
+  // force a fresh navigation instead of a no-op Link click.
+  const handleMenuItemClick = (e: React.MouseEvent, itemId: string, href: string) => {
+    if (pathname === href && itemId === 'discovery') {
+      e.preventDefault();
+      router.push('/discover');
+    }
+  };
   const grouped = groupSessionsByDate(sessions);
 
   const handleFreshDiscovery = (e: React.MouseEvent) => {
@@ -178,17 +194,16 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile Sidebar Button (ChatGPT-style minimalist 2 unequal lines) */}
+      {/* Mobile Sidebar Button */}
       {!mobileOpen && (
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="md:hidden fixed top-3.5 left-3.5 z-[65] w-9 h-9 flex flex-col justify-center items-start p-2 gap-[5px] text-zinc-800 dark:text-zinc-200 hover:text-black dark:hover:text-white active:scale-90 transition-all cursor-pointer pointer-events-auto rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
+          className="md:hidden fixed top-3 left-3 z-[65] w-9 h-9 flex items-center justify-center p-1.5 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white active:scale-90 transition-all cursor-pointer pointer-events-auto rounded-xl bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xs"
           aria-label="Open sidebar menu"
           title="Open menu"
         >
-          <span className="w-[18px] h-[2px] bg-current rounded-full" />
-          <span className="w-[11px] h-[2px] bg-current rounded-full" />
+          <List size={20} weight="bold" />
         </button>
       )}
 
@@ -226,12 +241,11 @@ export default function Sidebar({
                 if (window.innerWidth < 768) closeMobile();
                 else onToggleCollapse?.();
               }}
-              className="p-2 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer flex flex-col justify-center items-start gap-[5px]"
-              title="Close sidebar"
-              aria-label="Close sidebar"
+              className="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer flex items-center justify-center"
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
             >
-              <span className="w-[18px] h-[2px] bg-current rounded-full" />
-              <span className="w-[11px] h-[2px] bg-current rounded-full" />
+              <SidebarSimple size={19} weight="bold" />
             </button>
           </div>
         ) : (
@@ -341,10 +355,7 @@ export default function Sidebar({
                     href={item.href}
                     prefetch={true}
                     onClick={(e) => {
-                      if (pathname === item.href && item.id === 'discovery') {
-                        e.preventDefault();
-                        router.push('/discover');
-                      }
+                      handleMenuItemClick(e, item.id, item.href);
                       closeMobile();
                       onViewChange?.(item.id as any);
                     }}
@@ -372,10 +383,7 @@ export default function Sidebar({
                   href={item.href}
                   prefetch={true}
                   onClick={(e) => {
-                    if (pathname === item.href && item.id === 'discovery') {
-                      e.preventDefault();
-                      router.push('/discover');
-                    }
+                    handleMenuItemClick(e, item.id, item.href);
                     closeMobile();
                     onViewChange?.(item.id as any);
                   }}
@@ -467,6 +475,9 @@ export default function Sidebar({
         )}
 
         {/* Lead banner */}
+        {/* NOTE: leadsToday is an internal sales metric shown to any logged-in
+            user regardless of role — needs a product decision on role-gating,
+            not silently fixed here. */}
         {!isCollapsed && leadsToday !== null && leadsToday > 0 && (
           <div className="mt-auto mx-3 mb-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 flex items-center gap-2 whitespace-nowrap">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse flex-shrink-0" />
@@ -484,7 +495,7 @@ export default function Sidebar({
                 className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
               >
                 <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold text-sm">
-                  F
+                  {userInitial}
                 </div>
                 <div className="flex-1 flex items-center justify-between min-w-0">
                   <span className="text-[12.5px] font-medium tracking-tight text-zinc-700 dark:text-zinc-200 truncate">My Account</span>
@@ -516,7 +527,7 @@ export default function Sidebar({
                   onClick={() => { router.push('/account'); closeMobile(); }}
                   className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold text-sm hover:opacity-90 transition-opacity cursor-pointer"
                 >
-                  F
+                  {userInitial}
                 </button>
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2.5 px-2.5 py-1 bg-zinc-900 text-white text-[11px] font-medium rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100]">
                   My Account

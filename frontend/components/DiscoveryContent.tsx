@@ -25,7 +25,8 @@ import {
   Trash,
   NotePencil,
   Scales,
-  ArrowRight
+  ArrowRight,
+  ArrowUp
 } from '@phosphor-icons/react';
 import { useSessions } from '@/hooks/useSessions';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
@@ -70,6 +71,41 @@ function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => v
   );
 }
 
+// [TIMING] Shape of the perf-timing bag stashed on window by SessionItem.tsx
+interface NavTimings {
+  t0: number;
+  contentMounted?: number;
+  rscEnd?: number;
+  pageMounted?: number;
+  propertyCardsLogged?: boolean;
+  propertyCards?: number;
+}
+
+function getNavTimings(): NavTimings | undefined {
+  return (window as unknown as { __navTimings?: NavTimings }).__navTimings;
+}
+
+// Minimal Web Speech API typings — not part of the standard DOM lib.
+interface MinimalSpeechRecognitionResult {
+  [index: number]: { transcript: string };
+}
+interface MinimalSpeechRecognitionEvent {
+  results: ArrayLike<MinimalSpeechRecognitionResult>;
+}
+interface MinimalSpeechRecognitionErrorEvent {
+  error: string;
+}
+interface MinimalSpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: MinimalSpeechRecognitionEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: MinimalSpeechRecognitionErrorEvent) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 interface DiscoveryContentProps {
   userId: string | null;
   guestToken?: string | null;
@@ -86,7 +122,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [visibleCount, setVisibleCount] = useState(15);
   const [toast, setToast] = useState<{ message: string } | null>(null);
-  const [, setShowRecommendations] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -299,12 +334,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [callbackDone, setCallbackDone] = useState(false);
 
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
-  const [, setShareCopied] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [isInputMinimized, setIsInputMinimized] = useState(false);
-  const [regeneratingIdx,] = useState<number | null>(null);
-  const [, setStatusPhase] = useState<'extracting' | 'searching' | 'generating' | null>(null)
-  const [, setResultCount] = useState<number | null>(null)
+  const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
   const [showReEngagement, setShowReEngagement] = useState(true)
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -334,7 +366,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
   // [TIMING] DiscoveryContent mount — distinct from page-mount (page has auth init first)
   useEffect(() => {
-    const nt = (window as any).__navTimings
+    const nt = getNavTimings()
     if (nt && !nt.contentMounted) {
       nt.contentMounted = performance.now()
       if (DEBUG) console.log(`[NAV] 3b. content-mount  +${(nt.contentMounted - nt.t0).toFixed(1)}ms`)
@@ -364,22 +396,27 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
 
   // ── Voice input (Web Speech API) ──
+  // Minimal local typings: the DOM lib doesn't ship SpeechRecognition (non-standard/webkit-prefixed).
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<MinimalSpeechRecognition | null>(null);
 
   useEffect(() => {
     // Initialize speech recognition once
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
+      const w = window as unknown as {
+        SpeechRecognition?: new () => MinimalSpeechRecognition;
+        webkitSpeechRecognition?: new () => MinimalSpeechRecognition;
+      };
+      const SpeechRecognitionCtor = w.SpeechRecognition || w.webkitSpeechRecognition;
+      if (SpeechRecognitionCtor) {
+        const recognition = new SpeechRecognitionCtor();
         recognition.continuous = false;
         recognition.interimResults = true;
         recognition.lang = navigator.language || 'en-IN';
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event: MinimalSpeechRecognitionEvent) => {
           const transcript = Array.from(event.results)
-            .map((result: any) => result[0].transcript)
+            .map((result) => result[0].transcript)
             .join('');
           setChatInput(transcript);
         };
@@ -388,7 +425,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           setIsListening(false);
         };
 
-        recognition.onerror = (event: any) => {
+        recognition.onerror = (event: MinimalSpeechRecognitionErrorEvent) => {
           console.error('Speech recognition error:', event.error);
           setIsListening(false);
           if (event.error === 'not-allowed') {
@@ -568,7 +605,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     }
 
     setIsSubmitting(true);
-    setStatusPhase('extracting');
     userScrolledUp.current = false;
     setChipPicker(null);
 
@@ -627,7 +663,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           // the UI in 'extracting' until tokens arrive.
           const isSearchState =
             event.intentState === 'READY_TO_SEARCH' || event.intentState === 'SHORTLISTED'
-          if (isSearchState) setStatusPhase('searching')
           setChatHistory(prev => prev.map(m =>
             m.id === streamId ? {
               ...m,
@@ -642,8 +677,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           const expansion = event.expansion;
           const shortlist = exact.length > 0 ? exact : nearby;
           localProjects = shortlist;
-          setStatusPhase('generating');
-          setResultCount(shortlist.length);
           setChatHistory(prev => prev.map(m =>
             m.id === streamId
               ? {
@@ -668,7 +701,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             }
             return shortlist;
           });
-          setShowRecommendations(shortlist.length > 0);
           track('recommendation_generated', { count: shortlist.length, session_id: sessionId });
         } else if (event.type === 'token') {
           setChatHistory(prev => prev.map(m =>
@@ -724,8 +756,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             console.warn('[FOCUS] Card element not found:', event.projectId);
           }
         } else if (event.type === 'error') {
-          setStatusPhase(null);
-          setResultCount(null);
           if (event.message?.includes('sending messages a bit fast') || event.message?.includes('Too many messages')) {
             // Rate limit: show countdown banner, remove the AI placeholder
             setRateLimitUntil(Date.now() + 10_000);
@@ -822,16 +852,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         }
       },
       onDone: () => {
-        setStatusPhase(null);
-        setResultCount(null);
         streamingMsgIdRef.current = null;
         setIsSubmitting(false);
+        setRegeneratingIdx(null);
         submitLockRef.current = false;
         if (controller.signal.aborted) {
           if (DEBUG) console.log('[CHAT:ABORT] stream aborted by user')
           setChatHistory(prev => {
             const next = prev.filter(m => m.id !== streamId)
-            console.log('[CHAT:ABORT_CLEANUP] removed AI placeholder', streamId, 'history length', prev.length, '→', next.length)
+            if (DEBUG) console.log('[CHAT:ABORT_CLEANUP] removed AI placeholder', streamId, 'history length', prev.length, '→', next.length)
             return next
           })
           return
@@ -885,7 +914,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
     setChatHistory([]);
     setChatInput('');
-    setShowRecommendations(false);
     setIsInitialized(false);
     setChatPhase('DISCOVERY');
     setChatTurnCount(0);
@@ -896,8 +924,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setCurrentIntent(null);
     setLastShortlist([]);
     setSessionTitle(null);
-    setStatusPhase(null);
-    setResultCount(null);
     setDetailProject(null);
     setExpandedShortlists(new Set());
     setRateLimitUntil(null);
@@ -972,7 +998,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           if (cached.ui_state) setConversationState(cached.ui_state as any);
           if (cached.last_projects && cached.last_projects.length > 0) {
             setLastShortlist(cached.last_projects as any);
-            setShowRecommendations(true);
           }
           const restoredHistory = (cached.restored ?? []) as ChatMessage[];
           setChatHistory(restoredHistory);
@@ -987,17 +1012,17 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         }
 
         // [TIMING]
-        const nt = (window as any).__navTimings
+        const nt = getNavTimings()
         const restoreStart = performance.now()
-        if (nt) console.log(`[NAV] 4. restore-start    +${(restoreStart - nt.t0).toFixed(1)}ms`)
+        if (DEBUG && nt) console.log(`[NAV] 4. restore-start    +${(restoreStart - nt.t0).toFixed(1)}ms`)
 
         const authT0 = performance.now()
         const headers = await authHeaders()
         const authMs = performance.now() - authT0
-        if (nt) console.log(`[NAV] 5. authHeaders       +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${authMs.toFixed(1)}ms)`)
+        if (DEBUG && nt) console.log(`[NAV] 5. authHeaders       +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${authMs.toFixed(1)}ms)`)
 
         const fetchT0 = performance.now()
-        if (nt) console.log(`[NAV] 6. fetch-start       +${(fetchT0 - nt.t0).toFixed(1)}ms`)
+        if (DEBUG && nt) console.log(`[NAV] 6. fetch-start       +${(fetchT0 - nt.t0).toFixed(1)}ms`)
         const sessionUrl = `${API_BASE}/chat/session?id=${initialSessionId}` + (guestToken && !userId ? `&guestToken=${guestToken}` : '')
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 12000)
@@ -1008,7 +1033,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           })
           clearTimeout(timeoutId)
         const fetchMs = performance.now() - fetchT0
-        if (nt) console.log(`[NAV] 7. fetch-end         +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${fetchMs.toFixed(1)}ms)`)
+        if (DEBUG && nt) console.log(`[NAV] 7. fetch-end         +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${fetchMs.toFixed(1)}ms)`)
 
         if (!res.ok) {
           throw new Error(`session fetch failed with status ${res.status}`)
@@ -1029,7 +1054,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
         if (Array.isArray(data.last_projects) && data.last_projects.length > 0) {
           setLastShortlist(data.last_projects);
-          setShowRecommendations(true);
         }
 
         if (data.messages && data.messages.length > 0) {
@@ -1077,7 +1101,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             }
           }
           const mapperMs = performance.now() - mapperT0
-          if (nt) console.log(`[NAV] 8. mapper            +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${mapperMs.toFixed(1)}ms, ${data.messages.length} msgs)`)
+          if (DEBUG && nt) console.log(`[NAV] 8. mapper            +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${mapperMs.toFixed(1)}ms, ${data.messages.length} msgs)`)
 
           navTimingsRef.current = { restoreStart, authMs, fetchMs, mapperMs, setHistoryAt: performance.now() }
 
@@ -1151,7 +1175,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const t = navTimingsRef.current
     if (!t || chatHistory.length === 0) return
     const renderMs = performance.now() - t.setHistoryAt
-    const nt = (window as any).__navTimings
+    const nt = getNavTimings()
     if (nt) {
       if (DEBUG) console.log(`[NAV] 9. render-complete   +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${renderMs.toFixed(1)}ms)`)
       const totalMs = performance.now() - nt.t0
@@ -1165,7 +1189,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         { name: 'render', ms: renderMs },
       ].filter(s => s.ms > 0)
       const slowest = stages.reduce((a, b) => a.ms > b.ms ? a : b)
-      console.log(
+      if (DEBUG) console.log(
         `[NAV] ━━━ TOTAL ${totalMs.toFixed(0)}ms` +
         (rscMs != null ? ` | rsc+compile ${rscMs.toFixed(0)}ms` : '') +
         (mountMs != null ? ` | page-mount ${mountMs.toFixed(0)}ms` : '') +
@@ -1182,7 +1206,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
   // [TIMING] property cards first visible — fires once when any message has property results
   useEffect(() => {
-    const nt = (window as any).__navTimings
+    const nt = getNavTimings()
     if (!nt || nt.propertyCardsLogged) return
     const hasCards = chatHistory.some(
       (m) => (m.exactResults && m.exactResults.length > 0) || (m.nearbyResults && m.nearbyResults.length > 0)
@@ -1219,9 +1243,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     e.preventDefault();
     const text = (textOverride ?? chatInput).trim();
     if (!text) return;
+    if (isSubmitting) {
+      abortControllerRef.current?.abort();
+    }
     dispatchAction({ type: 'TEXT_MESSAGE', payload: { text } });
     track('message_sent', { session_id: sessionId, turn: chatTurnCount });
-  }, [chatInput, chatTurnCount, dispatchAction, sessionId]);
+  }, [chatInput, chatTurnCount, dispatchAction, sessionId, isSubmitting]);
 
   // ── Regenerate: re-send the last user message ──
   const handleRegenerate = useCallback((aiMsgIndex: number) => {
@@ -1230,7 +1257,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     for (let i = aiMsgIndex - 1; i >= 0; i--) {
       if (chatHistory[i].type === 'user') { userMsg = chatHistory[i].content; break; }
     }
-    if (userMsg) dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: userMsg } });
+    if (userMsg) {
+      setRegeneratingIdx(aiMsgIndex);
+      dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: userMsg } });
+    }
   }, [chatHistory, dispatchAction]);
 
   // ── Edit message: update content, truncate subsequent, regenerate ──
@@ -1478,51 +1508,38 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               onChange={(e) => setChatInput(e.target.value)}
               onSubmit={handleChatSubmit}
               value={chatInput}
-              disabled={isSubmitting}
             />
           </div>
 
-          {/* Morphing action button: Stop while streaming → Send with text → Mic when empty */}
+          {/* Action button: Stop (square) while streaming → Send (ArrowUp) */}
           {isSubmitting ? (
             <button
               type="button"
               onClick={() => abortControllerRef.current?.abort()}
-              className="mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-gradient-to-br from-red-500 to-red-600 text-white shadow-[0_4px_12px_rgba(239,68,68,0.35)] hover:from-red-600 hover:to-red-700 hover:shadow-[0_6px_16px_rgba(239,68,68,0.45)] active:scale-95 cursor-pointer"
+              className="mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-red-500 hover:bg-red-600 text-white shadow-[0_4px_12px_rgba(239,68,68,0.35)] active:scale-95 cursor-pointer"
               title="Stop generating"
               aria-label="Stop generating"
             >
-              <span className="w-2.5 h-2.5 rounded-[2px] bg-current" />
-            </button>
-          ) : chatInput.trim() ? (
-            <button
-              type="button"
-              onClick={() => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })}
-              disabled={!isOnline}
-              className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] active:scale-95 ${isOnline ? 'bg-gradient-to-br from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 hover:shadow-[0_6px_16px_rgba(37,99,235,0.45)] cursor-pointer' : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50'}`}
-              title={isOnline ? 'Send' : 'You\'re offline'}
-              aria-label="Send message"
-            >
-              <span className="w-0 h-0 border-y-[5px] border-y-transparent border-l-[9px] border-l-white ml-0.5" />
+              <span className="w-3 h-3 rounded-[2.5px] bg-white" />
             </button>
           ) : (
             <button
               type="button"
-              onClick={toggleVoiceInput}
-              className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 ${isListening
-                ? 'text-white bg-gradient-to-br from-red-500 to-red-600 shadow-[0_4px_16px_rgba(239,68,68,0.4)] scale-105'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:bg-gray-300 dark:hover:bg-gray-600'
-                } cursor-pointer`}
-              title="Voice Input"
-              aria-label="Voice input"
+              onClick={() => {
+                if (!chatInput.trim() || !isOnline) return
+                if (isSubmitting) abortControllerRef.current?.abort()
+                dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })
+              }}
+              disabled={!isOnline || !chatInput.trim()}
+              className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] active:scale-95 ${
+                isOnline && chatInput.trim()
+                  ? 'bg-gradient-to-br from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 hover:shadow-[0_6px_16px_rgba(37,99,235,0.45)] cursor-pointer'
+                  : 'bg-gray-300 dark:bg-zinc-700 text-gray-400 dark:text-zinc-500 cursor-not-allowed opacity-50 shadow-none'
+              }`}
+              title={isOnline ? 'Send message' : 'You\'re offline'}
+              aria-label="Send message"
             >
-              {isListening ? (
-                <div className="relative flex items-center justify-center">
-                  <div className="absolute inset-0 rounded-xl bg-red-400 animate-pulse opacity-40" />
-                  <Microphone size={20} weight="fill" className="relative text-current" />
-                </div>
-              ) : (
-                <Microphone size={20} weight="bold" />
-              )}
+              <ArrowUp size={18} weight="bold" />
             </button>
           )}
         </div>
@@ -1537,12 +1554,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      {/* Clean Glassmorphic Borderless Top Header */}
-      <div className="absolute top-0 left-0 right-0 h-14 md:h-16 z-30 flex items-center justify-between px-3 sm:px-4 bg-slate-50/85 dark:bg-[#0c0d14]/85 backdrop-blur-md border-0 border-none transition-colors pointer-events-none">
-        <div className="flex-1 flex items-center justify-start pl-14 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
+      {/* Clean Glassmorphic Floating Top Header (Claude-style without solid bar) */}
+      <div className="absolute top-0 left-0 right-0 h-14 md:h-16 z-30 flex items-center justify-between px-2.5 sm:px-4 bg-transparent border-0 border-none pointer-events-none transition-colors">
+        <div className="flex-1 flex items-center justify-start pl-12 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
           {hasUserReplied && (
             isRenamingHeader ? (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-200/50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-xs">
                 <input
                   autoFocus
                   type="text"
@@ -1553,41 +1570,41 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                     if (e.key === 'Escape') setIsRenamingHeader(false);
                   }}
                   onBlur={submitHeaderRename}
-                  className="bg-transparent border-none outline-none text-sm font-medium w-32 md:w-48 text-gray-700 dark:text-gray-300"
+                  className="bg-transparent border-none outline-none text-xs sm:text-sm font-semibold w-32 md:w-48 text-gray-800 dark:text-gray-200"
                 />
               </div>
             ) : (
               <button
                 onClick={() => setShowHeaderDropdown(!showHeaderDropdown)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-700 dark:text-gray-200 group cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xs hover:bg-white dark:hover:bg-zinc-800 transition-all text-gray-800 dark:text-gray-200 group cursor-pointer"
               >
-                <span className="text-[13.5px] sm:text-sm font-bold truncate max-w-[140px] sm:max-w-xs">{sessionTitle || 'New Chat'}</span>
-                <CaretDown size={14} weight="bold" className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
+                <span className="text-[12.5px] sm:text-sm font-bold truncate max-w-[130px] sm:max-w-xs">{sessionTitle || 'New Chat'}</span>
+                <CaretDown size={13} weight="bold" className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
               </button>
             )
           )}
 
           {/* Dropdown Menu */}
           {showHeaderDropdown && hasUserReplied && (
-            <div className="absolute top-full left-4 mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
-              <button onClick={handleStartRename} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-                <PencilSimple size={16} weight="bold" className="text-gray-400" />
+            <div className="absolute top-full left-12 md:left-0 mt-1 w-44 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-zinc-800 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
+              <button onClick={handleStartRename} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+                <PencilSimple size={15} weight="bold" className="text-gray-400" />
                 <span>Rename</span>
               </button>
-              <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2" />
-              <button onClick={handleDeleteSession} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors cursor-pointer">
-                <Trash size={16} weight="bold" />
+              <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1 mx-2" />
+              <button onClick={handleDeleteSession} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer">
+                <Trash size={15} weight="bold" />
                 <span>Delete</span>
               </button>
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 pointer-events-auto">
-          {/* ChatGPT-style New Chat button in header */}
+        <div className="flex items-center justify-end gap-1.5 sm:gap-2 pointer-events-auto">
+          {/* Floating New Chat button */}
           <button
             onClick={handleNewChat}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 border border-gray-200/80 dark:border-white/10 text-gray-800 dark:text-gray-100 text-[12px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md hover:bg-white dark:hover:bg-zinc-800 border border-black/5 dark:border-white/10 text-gray-800 dark:text-gray-100 text-[11.5px] sm:text-[12px] font-bold shadow-2xs active:scale-95 transition-all cursor-pointer"
             title="Start new conversation"
             aria-label="New Chat"
           >
@@ -1681,7 +1698,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               aria-live="polite"
               aria-relevant="additions text"
               aria-label="Conversation with RealtyPal advisor"
-              className="flex-1 w-full h-full overflow-y-auto px-4 md:px-8 pt-32 md:pt-36 pb-32 relative z-10"
+              className="flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-28 sm:pt-32 md:pt-36 pb-32 relative z-10"
 
               onScroll={(e) => {
                 const el = e.currentTarget;
@@ -1754,7 +1771,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                         onToast={handleToast}
                         onOpenCompare={setCompareOverlayProperties}
                         comparingMessageId={comparingMessageId}
-                        selectedCompareIds={isComparingThis ? new Set(Array.from(selectedCompareProjects.keys()).flatMap(k => [String(k), k])) : undefined}
+                        selectedCompareIds={isComparingThis ? new Set(selectedCompareProjects.keys()) : undefined}
                         onToggleCompareSelect={handleToggleCompareSelect}
                         onStartCompare={handleStartCompare}
                       />
@@ -1967,7 +1984,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       <ShareShortlistModal
         isOpen={shareSheetOpen}
         shortlist={lastShortlist}
-        onClose={() => { setShareSheetOpen(false); setShareCopied(false) }}
+        onClose={() => setShareSheetOpen(false)}
       />
 
     </div>

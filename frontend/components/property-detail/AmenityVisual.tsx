@@ -17,7 +17,11 @@ import {
   FirstAid,
   ShoppingBag,
   Heart,
-  Sparkle,
+  Baseball,
+  Flag,
+  Trophy,
+  Star,
+  CheckCircle,
   Lock,
   Bicycle,
   Basketball,
@@ -232,12 +236,32 @@ export function getAmenityVisual(name: string): AmenityVisualConfig {
     }
   }
 
-  // Default Luxury Highlight
+  // 20. Cricket / Batting Net / Pitch
+  if (/cricket|pitch|batting|net practice/i.test(n)) {
+    return {
+      icon: Baseball,
+      bgClass: 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/20',
+      textClass: 'text-emerald-600 dark:text-emerald-400',
+      category: 'Cricket & Sports'
+    }
+  }
+
+  // 21. Golf & Putting
+  if (/golf|putting/i.test(n)) {
+    return {
+      icon: Flag,
+      bgClass: 'bg-teal-500/10 dark:bg-teal-500/20 border-teal-500/20',
+      textClass: 'text-teal-600 dark:text-teal-400',
+      category: 'Golf & Leisure'
+    }
+  }
+
+  // Default Feature
   return {
-    icon: Sparkle,
+    icon: Star,
     bgClass: 'bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500/20',
     textClass: 'text-indigo-600 dark:text-indigo-400',
-    category: 'Lifestyle Feature'
+    category: 'Community Feature'
   }
 }
 

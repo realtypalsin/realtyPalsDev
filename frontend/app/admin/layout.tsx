@@ -56,26 +56,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [cmdOpen, setCmdOpen] = useState(false)
+  const [cmdQuery, setCmdQuery] = useState('')
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         setCmdOpen((open) => !open)
+      } else if (e.key === 'Escape' && cmdOpen) {
+        setCmdOpen(false)
       }
     }
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [])
+  }, [cmdOpen])
+
+  useEffect(() => {
+    if (!cmdOpen) setCmdQuery('')
+  }, [cmdOpen])
+
+  const filteredNav = NAV.filter((nav) => nav.label.toLowerCase().includes(cmdQuery.trim().toLowerCase()))
 
   useEffect(() => {
     const crumbs = breadcrumb(pathname)
-    const titleStr = crumbs.map(c => c.label).join(' · ')
-    document.title = `${titleStr} | RealtyPals`
+    const activeSection = crumbs.length > 1 ? crumbs.slice(1).map(c => c.label).join(' | ') : 'Dashboard'
+    document.title = `${activeSection} | Admin RealtyPals`
   }, [pathname])
 
   useEffect(() => {
     if (pathname === '/admin/login') { setChecking(false); return }
+    // NOTE: client-side only check — token presence is not proof of a valid session.
+    // Per CLAUDE.md security rules, this needs server-side session verification (middleware/API guard), out of scope for this pass.
     const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null
     if (!token) { router.replace('/admin/login'); return }
     const headers = { 'Authorization': `Bearer ${token}` }
@@ -110,7 +121,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const crumbs = breadcrumb(pathname)
 
   return (
-    <div className="h-[100dvh] min-h-[100dvh] bg-surface-3 font-sans text-text-primary selection:bg-slate-200 selection:text-text-primary flex overflow-hidden">
+    <div className="h-[100dvh] min-h-[100dvh] bg-surface-3 dark:bg-zinc-950 font-sans text-text-primary selection:bg-slate-200 selection:text-text-primary flex overflow-hidden">
       
       {/* Command Palette */}
       <AnimatePresence>
@@ -135,6 +146,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <input
                   autoFocus
                   placeholder="Type a command or search..."
+                  value={cmdQuery}
+                  onChange={(e) => setCmdQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && filteredNav[0]) {
+                      router.push(filteredNav[0].href)
+                      setCmdOpen(false)
+                    }
+                  }}
                   className="flex-1 py-4 bg-transparent outline-none text-[15px] font-medium text-zinc-900 placeholder:text-zinc-400"
                 />
                 <div className="flex gap-1">
@@ -142,7 +161,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
               </div>
               <div className="p-2 space-y-1">
-                {NAV.map((nav) => (
+                {filteredNav.length === 0 && (
+                  <p className="px-3 py-4 text-center text-[13px] text-zinc-400 font-medium">No matches</p>
+                )}
+                {filteredNav.map((nav) => (
                   <button
                     key={nav.href}
                     onClick={() => { router.push(nav.href); setCmdOpen(false) }}
@@ -172,14 +194,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className={`
         ${isCollapsed ? 'hidden md:flex w-[68px]' : 'w-64 md:w-[260px]'}
-        flex flex-col h-full bg-surface border-r border-border shadow-xs
+        flex flex-col h-full bg-surface dark:bg-zinc-900 border-r border-border dark:border-zinc-800 shadow-xs
         fixed md:relative z-50 md:z-auto shrink-0
         transition-all duration-base ease-in-out
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        
+
         {/* Brand Header */}
-        <div className="group h-14 pt-[env(safe-area-inset-top,0px)] flex items-center justify-center border-b border-zinc-100/80 w-full px-3 shrink-0 relative box-content">
+        <div className="group h-14 pt-[env(safe-area-inset-top,0px)] flex items-center justify-center border-b border-zinc-100/80 dark:border-zinc-800 w-full px-3 shrink-0 relative box-content">
           {!isCollapsed ? (
             <>
               <div className="flex flex-1 items-center justify-center transition-opacity duration-300">
@@ -231,12 +253,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     flex items-center transition-all duration-base overflow-hidden whitespace-nowrap
                     ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'}
                     ${isActive
-                      ? 'bg-slate-900 text-white font-medium shadow-xs'
-                      : 'text-zinc-500 hover:bg-slate-100 hover:text-zinc-900'
+                      ? 'bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
+                      : 'text-zinc-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
                     }
                   `}
                 >
-                  <nav.icon size={18} weight={isActive ? "fill" : "duotone"} className={isActive ? 'text-white' : 'text-zinc-400 group-hover/navitem:text-zinc-600'} />
+                  <nav.icon size={18} weight={isActive ? "fill" : "duotone"} className={isActive ? 'text-white dark:text-zinc-900' : 'text-zinc-400 dark:text-zinc-500 group-hover/navitem:text-zinc-600 dark:group-hover/navitem:text-zinc-300'} />
                   {!isCollapsed && (
                     <span className="text-[13px] font-semibold tracking-wide">
                       {nav.label}
@@ -254,15 +276,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-3 border-t border-border space-y-1 shrink-0 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
+        <div className="p-3 border-t border-border dark:border-zinc-800 space-y-1 shrink-0 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
           <div className="relative group/navitem flex justify-center">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900`}
+              className={`flex items-center transition-all duration-200 overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100/80 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100`}
             >
-              <Buildings size={18} weight="duotone" className="text-zinc-400 group-hover/navitem:text-zinc-600" />
+              <Buildings size={18} weight="duotone" className="text-zinc-400 dark:text-zinc-500 group-hover/navitem:text-zinc-600 dark:group-hover/navitem:text-zinc-300" />
               {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">View site</span>}
             </Link>
             {isCollapsed && (
@@ -276,9 +298,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button
               type="button"
               onClick={handleLogout}
-              className={`flex items-center transition-all duration-base overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 hover:bg-red-50 hover:text-red-600 cursor-pointer`}
+              className={`flex items-center transition-all duration-base overflow-hidden whitespace-nowrap ${isCollapsed ? 'w-10 h-10 rounded-md justify-center' : 'w-full gap-3 px-3 py-2.5 rounded-md'} text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 cursor-pointer`}
             >
-              <SignOut size={18} weight="bold" className="text-zinc-400 group-hover/navitem:text-red-500" />
+              <SignOut size={18} weight="bold" className="text-zinc-400 dark:text-zinc-500 group-hover/navitem:text-red-500" />
               {!isCollapsed && <span className="text-[13px] font-semibold tracking-wide">Sign Out</span>}
             </button>
             {isCollapsed && (

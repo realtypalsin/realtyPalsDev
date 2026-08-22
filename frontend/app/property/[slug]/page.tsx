@@ -3,12 +3,12 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Share2 } from 'lucide-react'
-import { Sparkle } from '@phosphor-icons/react'
-import type { ProjectDetail } from '@/types/project'
+import { ChatCircleDots } from '@phosphor-icons/react'
+import type { ProjectDetail, ProjectCard as ProjectCardType } from '@/types/project'
 import ProjectDetailPanel from '@/components/ProjectDetailPanel'
 import PropertyDetailThemed from '@/components/PropertyDetailThemed'
 import { API_BASE } from '@/lib/env'
-import { applyTheme, ELITE_THEME, DEFAULT_THEME, type BuilderTheme } from '@/lib/builderTheme'
+import { applyTheme, DEFAULT_THEME, type BuilderTheme } from '@/lib/builderTheme'
 
 
 export default function PropertyDetailPage() {
@@ -19,8 +19,23 @@ export default function PropertyDetailPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [theme, setTheme] = useState<BuilderTheme>(DEFAULT_THEME)
 
-  // Stable stub — lets the panel open and show skeletons immediately
-  const stub = useMemo(() => ({ slug: slug ?? '', id: '' } as any), [slug])
+  // Stable stub — lets the panel open and show skeletons immediately while the real detail loads
+  const stub: ProjectCardType = useMemo(() => ({
+    id: '',
+    slug: slug ?? '',
+    name: '',
+    builder: { name: '', slug: '' },
+    sector: '',
+    city: '',
+    status: 'under_construction',
+    possession_date: null,
+    marketing_claims: [],
+    price_range_label: '',
+    unit_types: [],
+    top_amenities: [],
+    top_connectivity: [],
+    images: [],
+  }), [slug])
 
   useEffect(() => {
     setUserId(localStorage.getItem('user_id'))
@@ -41,9 +56,7 @@ export default function PropertyDetailPage() {
         const project = d.project
         let selectedTheme = DEFAULT_THEME
 
-        if (project?.builder_id === 'elite-group' || project?.builder?.name?.toLowerCase().includes('elite')) {
-          selectedTheme = ELITE_THEME
-        } else if (project?.builder_theme) {
+        if (project?.builder_theme) {
           selectedTheme = project.builder_theme
         }
 
@@ -123,7 +136,7 @@ export default function PropertyDetailPage() {
               onClick={() => router.push('/discover')}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all active:scale-95 shadow-sm cursor-pointer"
             >
-              <Sparkle size={13} weight="duotone" />
+              <ChatCircleDots size={14} weight="duotone" />
               <span className="hidden sm:inline">Ask AI Advisor</span>
               <span className="sm:hidden">AI</span>
             </button>

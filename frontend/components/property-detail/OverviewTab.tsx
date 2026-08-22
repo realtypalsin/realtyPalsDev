@@ -6,7 +6,7 @@ import {
   Train,
   Leaf,
   UsersFour,
-  Sparkle,
+  Cpu,
   AirplaneTilt,
   FirstAidKit,
   GraduationCap,
@@ -82,12 +82,24 @@ export default function OverviewTab({
   const [showAllDetails, setShowAllDetails] = useState(false)
   const [showAllAmenities, setShowAllAmenities] = useState(false)
   const [overview, setOverview] = useState<ProjectOverviewData | null>(null)
+  const [overviewLoading, setOverviewLoading] = useState(true)
 
   const slug = detail?.slug ?? project?.slug
   useEffect(() => {
     if (!slug) return
     let cancelled = false
-    getProjectOverview(slug).then((data) => { if (!cancelled) setOverview(data) }).catch((err) => console.warn('getProjectOverview error:', err))
+    setOverviewLoading(true)
+    getProjectOverview(slug)
+      .then((data) => {
+        if (!cancelled) {
+          setOverview(data)
+          setOverviewLoading(false)
+        }
+      })
+      .catch((err) => {
+        console.warn('getProjectOverview error:', err)
+        if (!cancelled) setOverviewLoading(false)
+      })
     return () => { cancelled = true }
   }, [slug])
 
@@ -189,7 +201,7 @@ export default function OverviewTab({
       label: 'Smart Units',
       value: `${smartUnitCount}+`,
       sublabel: 'Smart Units',
-      icon: Sparkle,
+      icon: Cpu,
       color: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400'
     })
   }
@@ -382,7 +394,7 @@ export default function OverviewTab({
                   <div className="pt-2 border-t border-gray-100 dark:border-white/5">
                     <p className="text-[14px] sm:text-[17px] font-black text-gray-900 dark:text-white leading-none">
                       {opt.price_min_cr != null
-                        ? (opt.price_min_cr === opt.price_max_cr ? `₹${opt.price_min_cr} Cr` : `₹${opt.price_min_cr} - ${opt.price_max_cr} Cr`)
+                        ? (opt.price_min_cr === opt.price_max_cr ? `₹${opt.price_min_cr.toFixed(2)} Cr` : `₹${opt.price_min_cr.toFixed(2)} - ${opt.price_max_cr?.toFixed(2)} Cr`)
                         : 'Price on Request'}
                     </p>
                     {startsAt && <p className="text-[10px] text-gray-400 font-medium mt-1">{startsAt}</p>}
@@ -400,6 +412,7 @@ export default function OverviewTab({
         projectStatus={d?.status}
         possessionDate={d?.possession_date}
         onTimeDeliveryPct={overview?.on_time_delivery_pct ?? undefined}
+        isLoading={overviewLoading || loading}
       />
 
       {/* INTEGRATED AUTHORIZED SALES PARTNERS */}
@@ -426,7 +439,7 @@ export default function OverviewTab({
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-white/10 flex-shrink-0 relative">
                     <Image
                       src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${partner.name || i}`}
-                      alt={partner.name}
+                      alt={partner.name || 'Channel partner'}
                       fill
                       unoptimized
                       className="object-cover"

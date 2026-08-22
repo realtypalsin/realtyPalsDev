@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useEffect, useRef, useState } from 'react'
+import type { HTMLAttributes } from 'react'
 import {  m, AnimatePresence  } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import NextImage from 'next/image'
@@ -10,7 +11,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   PencilSimple,
-  Sparkle,
+  ShieldCheck,
+  CheckCircle,
   MapPin,
   Scales,
   CaretDown
@@ -50,6 +52,14 @@ const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
   loading: () => <div className="h-48 bg-slate-100 animate-pulse rounded-xl flex items-center justify-center"><span className="text-sm text-slate-400">Loading chart...</span></div>
 })
 import RealtyBox from '@/components/RealtyBox'
+
+// Narrowed shape of ChipAction.payload actually read by the card-selector chip flow.
+interface ChipCardPayload {
+  projects?: Array<{ id: string; name: string }>
+  text?: string
+  actionPrefix?: string
+  actionSuffix?: string
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatStreamingIntent(intent: Record<string, unknown> | null | undefined): string | null {
@@ -216,8 +226,8 @@ export function SuggestionChipGroups({
 
   const handleCardSelect = (chip: import('./types').ChipAction, projectId: string) => {
     // Convert card selection to TEXT_MESSAGE for the backend
-    const payload = (chip.payload as any) || {}
-    const projects = payload.projects as Array<{ id: string; name: string }> | undefined
+    const payload = (chip.payload as ChipCardPayload) || {}
+    const projects = payload.projects
 
     // Validate chip has projects array
     if (!projects || projects.length === 0) {
@@ -286,7 +296,7 @@ export function SuggestionChipGroups({
     <div className="flex flex-wrap gap-2">
       {sorted.map((chip) => {
         // Check if chip has multiple projects — use CardSelectorChip
-        const projects = chip.payload?.projects as Array<{ id: string; name: string }> | undefined
+        const projects = (chip.payload as ChipCardPayload | undefined)?.projects
         const hasMultipleProjects = projects && projects.length > 1
 
         if (hasMultipleProjects) {
@@ -324,6 +334,11 @@ function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
     prev.message.componentResponse === next.message.componentResponse &&
     prev.message.responseMode === next.message.responseMode &&
     prev.message.showComparisonTable === next.message.showComparisonTable &&
+    prev.message.highlights === next.message.highlights &&
+    prev.message.amenities === next.message.amenities &&
+    prev.message.images === next.message.images &&
+    prev.message.is_verified === next.message.is_verified &&
+    prev.message.spatialContext === next.message.spatialContext &&
     prev.isExpanded === next.isExpanded &&
     prev.carouselIndex === next.carouselIndex &&
     prev.chips === next.chips &&
@@ -391,6 +406,7 @@ function MessageBubbleInner({
 
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
   const touchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const touchStartPos = useRef<{ x: number, y: number } | null>(null);
   const chipPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -429,13 +445,30 @@ function MessageBubbleInner({
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isUser || !message.content) return;
     const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    if (touchTimeout.current !== null) clearTimeout(touchTimeout.current);
     touchTimeout.current = setTimeout(() => {
       setContextMenu({ x: touch.clientX, y: touch.clientY });
-    }, 500); // 500ms long press
+    }, 700); // 700ms clean long press threshold
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartPos.current || !touchTimeout.current) return;
+    const touch = e.touches[0];
+    const dx = Math.abs(touch.clientX - touchStartPos.current.x);
+    const dy = Math.abs(touch.clientY - touchStartPos.current.y);
+    if (dx > 8 || dy > 8) {
+      clearTimeout(touchTimeout.current);
+      touchTimeout.current = null;
+    }
   };
 
   const handleTouchEnd = () => {
-    if (touchTimeout.current !== null) clearTimeout(touchTimeout.current);
+    if (touchTimeout.current !== null) {
+      clearTimeout(touchTimeout.current);
+      touchTimeout.current = null;
+    }
+    touchStartPos.current = null;
   };
 
   return (
@@ -450,11 +483,12 @@ function MessageBubbleInner({
         <div
           onContextMenu={handleContextMenu}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
-          className={`px-5 py-3.5 transition-all duration-300 ${isUser
-            ? 'max-w-[85%] sm:max-w-[78%] bg-blue-600 text-white shadow-xs rounded-[22px] rounded-br-[6px] text-sm font-medium tracking-tight'
-            : 'max-w-[95%] sm:max-w-[85%] bg-white dark:bg-[#18181b] border border-gray-200/60 dark:border-zinc-800 text-gray-900 dark:text-zinc-100 relative overflow-hidden rounded-[22px] rounded-tl-[6px] cursor-pointer sm:cursor-default shadow-xs dark:shadow-md'
+          className={`px-4 sm:px-5 py-3 sm:py-3.5 transition-all duration-300 ${isUser
+            ? 'max-w-[88%] sm:max-w-[78%] bg-blue-600 text-white shadow-xs rounded-[22px] rounded-br-[6px] text-xs sm:text-sm font-medium tracking-tight'
+            : 'max-w-[96%] sm:max-w-[85%] bg-white dark:bg-[#18181b] border border-gray-200/60 dark:border-zinc-800 text-gray-900 dark:text-zinc-100 relative overflow-hidden rounded-[22px] rounded-tl-[6px] shadow-xs dark:shadow-md select-text'
             }`}
         >
           {!isUser && <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] pointer-events-none" />}
@@ -532,7 +566,7 @@ function MessageBubbleInner({
                         {/* Metadata badge */}
                         <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                           <span className="flex items-center gap-1 font-medium">
-                            <Sparkle size={13} weight="duotone" className="text-blue-600 dark:text-blue-400" />
+                            <ShieldCheck size={14} weight="fill" className="text-blue-600 dark:text-blue-400" />
                             Verified by RealtyPals Data
                           </span>
                         </div>
@@ -569,7 +603,7 @@ function MessageBubbleInner({
 
                         {/* Confidence score */}
                         <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-semibold">
-                          <Sparkle size={13} weight="duotone" />
+                          <CheckCircle size={14} weight="fill" />
                           {Math.round(confidence * 100)}% confident
                         </div>
 
@@ -623,8 +657,8 @@ function MessageBubbleInner({
                               remarkPlugins={[remarkGfm]}
                               rehypePlugins={[rehypeRaw, [rehypeSanitize, REALTY_SCHEMA]]}
                               components={{
-                                'realty-chart': ({ node, ...props }: any) => <RealtyChart type={props.type} data={props.data} title={props.title} />,
-                                'realty-box': ({ node, ...props }: any) => <RealtyBox type={props.type} title={props.title}>{props.children}</RealtyBox>,
+                                'realty-chart': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { type?: string; data?: string; title?: string }) => <RealtyChart type={props.type ?? ''} data={props.data ?? ''} title={props.title} />,
+                                'realty-box': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { type?: string; title?: string }) => <RealtyBox type={props.type ?? ''} title={props.title}>{props.children}</RealtyBox>,
                                 table: ({ node, ...props }: any) => (
                                   <div className="my-4 overflow-x-auto rounded-2xl border border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-x -mx-1 sm:mx-0">
                                     <table className="min-w-[560px] w-full border-collapse text-left text-xs sm:text-sm text-zinc-800 dark:text-zinc-200" {...props} />
@@ -1098,8 +1132,7 @@ function MessageBubbleInner({
                             isSelectable={comparingMessageId === message.id}
                             isSelected={Boolean(selectedCompareIds && (
                               selectedCompareIds.has(String(property.id)) ||
-                              (property.slug !== undefined && property.slug !== null && selectedCompareIds.has(property.slug)) ||
-                              selectedCompareIds.has(property.id as any)
+                              (property.slug !== undefined && property.slug !== null && selectedCompareIds.has(property.slug))
                             ))}
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
@@ -1156,8 +1189,7 @@ function MessageBubbleInner({
                             isSelectable={comparingMessageId === message.id}
                             isSelected={Boolean(selectedCompareIds && (
                               selectedCompareIds.has(String(property.id)) ||
-                              (property.slug !== undefined && property.slug !== null && selectedCompareIds.has(property.slug)) ||
-                              selectedCompareIds.has(property.id as any)
+                              (property.slug !== undefined && property.slug !== null && selectedCompareIds.has(property.slug))
                             ))}
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}

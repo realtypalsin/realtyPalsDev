@@ -10,7 +10,7 @@ import {
   XCircle, 
   Eye, 
   Newspaper, 
-  Sparkles, 
+  Tag, 
   RotateCcw, 
   Search, 
   X, 
@@ -27,12 +27,14 @@ import CustomSelect from '@/components/admin/CustomSelect'
 import { adminFetch } from '@/lib/adminFetch'
 import { Skeleton } from '@/components/ui/skeleton'
 
+type NewsLinkType = 'project' | 'external_url'
+
 interface BuilderNews {
   id: string
   title: string
   description: string
   image_url?: string | null
-  link_type?: string | null
+  link_type?: NewsLinkType | null
   link_target?: string | null
   status: 'draft' | 'pending_approval' | 'published' | 'archived' | 'rejected'
   approval_notes?: string | null
@@ -159,6 +161,8 @@ export default function BuilderNewsPage() {
   }, [])
 
   const handleDelete = async (id: string) => {
+    // NOTE: native confirm() dialog — inconsistent with the AnimatePresence/modal pattern used
+    // elsewhere in this file. No reusable confirm-modal component exists nearby; left as-is to avoid scope creep.
     if (!confirm('Archive this news post?')) return
 
     try {
@@ -463,7 +467,7 @@ export default function BuilderNewsPage() {
                           </h3>
                           {item.run_as_promo && (
                             <span className="px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-[10px] font-bold flex items-center gap-1">
-                              <Sparkles size={11} /> Promo
+                              <Tag size={11} /> Promo
                             </span>
                           )}
                         </div>
@@ -554,6 +558,7 @@ export default function BuilderNewsPage() {
               setShowModal(false)
               setEditingItem(null)
             }}
+            showToast={showToast}
           />
         )}
       </AnimatePresence>
@@ -574,14 +579,23 @@ export default function BuilderNewsPage() {
 function NewsModal({
   item,
   onSave,
-  onCancel
+  onCancel,
+  showToast
 }: {
   item: BuilderNews | null
   onSave: () => void
   onCancel: () => void
+  showToast: (message: string, type?: 'success' | 'error') => void
 }) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string
+    description: string
+    link_type: NewsLinkType
+    link_target: string
+    image_url: string
+    run_as_promo: boolean
+  }>({
     title: item?.title || '',
     description: item?.description || '',
     link_type: item?.link_type || 'project',
@@ -606,9 +620,12 @@ function NewsModal({
 
       if (res.ok) {
         onSave()
+      } else {
+        showToast('Failed to save news post', 'error')
       }
-    } catch {
-      console.error('Save failed')
+    } catch (err) {
+      console.error('Save failed', err)
+      showToast('Error saving news post', 'error')
     } finally {
       setLoading(false)
     }
@@ -689,7 +706,7 @@ function NewsModal({
               </label>
               <CustomSelect
                 value={formData.link_type}
-                onChange={val => setFormData({ ...formData, link_type: val })}
+                onChange={val => setFormData({ ...formData, link_type: val as NewsLinkType })}
                 options={[
                   { value: 'project', label: 'Project Slug' },
                   { value: 'external_url', label: 'External URL' },
