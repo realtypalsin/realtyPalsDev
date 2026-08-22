@@ -208,7 +208,7 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
   // Intent extraction chain: prioritize Gemini Flash & fast, reliable models
   const intentChain = [
     // Tier 1: Gemini 3.6 Flash (Primary high-accuracy, lightning-fast)
-    { provider: 'gemini' as const, envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN || 'gemini-3.6-flash', timeout: 3000 },
+    { provider: 'gemini' as const, envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN || 'gemini-3.6-flash', timeout: 10000 },
     // Tier 2: Mistral Small
     { provider: 'mistral' as const, envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', timeout: 3000 },
     // Tier 3: Groq
@@ -233,7 +233,7 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
         console.log(`[INTENT] Trying Gemini (${config.model}) via ${config.envKey}`)
         const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: config.timeout } })
         const res = await client.models.generateContent({
-          model: config.model || 'gemini-2.5-flash',
+          model: config.model || 'gemini-3.6-flash',
           contents: [{ role: 'user', parts: [{ text: `Previous intent: ${JSON.stringify(previousIntent)}\n\nUser message: ${message}` }] }],
           config: {
             systemInstruction: INTENT_EXTRACTION_PROMPT,
