@@ -133,7 +133,11 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
 
     try {
       if (process.env.DEBUG_FALLBACK) {
-        console.log(`[FALLBACK:TRY] → ${item.label} | Model: ${item.model} | Tools: ${item.supportsTools}`)
+        // For gemini, the actual model comes from effectiveConfig.model (defaulting inside
+        // streamWithGemini), NOT item.model — item.model is unused for that provider. Log
+        // what will actually be requested so cost-routing decisions are verifiable.
+        const effectiveModel = item.provider === 'gemini' ? (effectiveConfig.model || '(default)') : item.model
+        console.log(`[FALLBACK:TRY] → ${item.label} | Model: ${effectiveModel} | Tools: ${item.supportsTools}`)
       }
 
       let text = ''

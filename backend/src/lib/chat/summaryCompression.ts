@@ -177,7 +177,7 @@ export async function generatePropertySummary(
       const { GoogleGenAI } = await import('@google/genai')
       const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
       const res = await client.models.generateContent({
-        model: 'gemini-flash-latest',
+        model: MODELS.GEMINI_LITE,
         contents: [{ role: 'user', parts: [{ text: context }] }],
         config: {
           systemInstruction: prompt,

@@ -8,6 +8,7 @@ import multer from 'multer'
 import type { ChatCompletionContentPart } from 'groq-sdk/resources/chat/completions'
 import { prisma } from '../lib/db'
 import { supabaseAdmin } from '../lib/supabase'
+import { GoogleGenAI } from '@google/genai'
 import { getGroq } from '../lib/ai/groq'
 import { MODELS } from '../lib/config'
 import { requireAdmin } from '../lib/adminAuth'
@@ -61,28 +62,36 @@ router.post('/ask', async (req: Request, res: Response) => {
 
   const maxContext = doc.content_text.slice(0, 8000)
 
+  const DOC_ASK_SYSTEM_PROMPT = 'You are a real estate document analyst. Answer questions strictly based on the document text provided. If the answer isn\'t in the document, say so clearly. Be concise and precise.'
+
   let answer: string
   try {
-    const resp = await getGroq().chat.completions.create({
-      model: MODELS.GROQ_SMART,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a real estate document analyst. Answer questions strictly based on the document text provided. If the answer isn\'t in the document, say so clearly. Be concise and precise.',
-        },
-        {
-          role: 'user',
-          content: `DOCUMENT:\n${maxContext}\n\nQUESTION: ${question}`,
-        },
-      ],
-      max_tokens: 600,
-      temperature: 0.1,
+    if (!process.env.GEMINI_API_KEY) throw new Error('No GEMINI_API_KEY')
+    const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    const resp = await client.models.generateContent({
+      model: MODELS.GEMINI_LITE,
+      contents: [{ role: 'user', parts: [{ text: `DOCUMENT:\n${maxContext}\n\nQUESTION: ${question}` }] }],
+      config: { systemInstruction: DOC_ASK_SYSTEM_PROMPT, maxOutputTokens: 600, temperature: 0.1 },
     })
-    answer = resp.choices[0]?.message?.content ?? 'Unable to generate answer.'
-  } catch (err) {
-    console.error('[documents/ask]', err)
-    res.status(502).json({ error: 'AI service unavailable' })
-    return
+    answer = resp.text || 'Unable to generate answer.'
+  } catch (geminiErr) {
+    console.warn('[documents/ask] Gemini failed, trying Groq:', geminiErr instanceof Error ? geminiErr.message : geminiErr)
+    try {
+      const resp = await getGroq().chat.completions.create({
+        model: MODELS.GROQ_SMART,
+        messages: [
+          { role: 'system', content: DOC_ASK_SYSTEM_PROMPT },
+          { role: 'user', content: `DOCUMENT:\n${maxContext}\n\nQUESTION: ${question}` },
+        ],
+        max_tokens: 600,
+        temperature: 0.1,
+      })
+      answer = resp.choices[0]?.message?.content ?? 'Unable to generate answer.'
+    } catch (err) {
+      console.error('[documents/ask]', err)
+      res.status(502).json({ error: 'AI service unavailable' })
+      return
+    }
   }
 
   res.json({ answer, document_name: doc.name })
@@ -159,30 +168,43 @@ router.post('/', requireAdmin, upload.single('file'), async (req: Request, res: 
   let content_text: string | null = null
 
   if (file.mimetype.startsWith('image/')) {
+    const base64 = file.buffer.toString('base64')
+    const extractPrompt = 'Extract all text from this real estate document. Return only the extracted text, nothing else.'
     try {
-      const base64 = file.buffer.toString('base64')
-      const resp = await getGroq().chat.completions.create({
-        model: 'llama-3.2-11b-vision-preview',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'image_url',
-                image_url: { url: `data:${file.mimetype};base64,${base64}` },
-              },
-              {
-                type: 'text',
-                text: 'Extract all text from this real estate document. Return only the extracted text, nothing else.',
-              },
-            ] as ChatCompletionContentPart[],
-          },
-        ],
-        max_tokens: 2000,
+      if (!process.env.GEMINI_API_KEY) throw new Error('No GEMINI_API_KEY')
+      const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      const resp = await client.models.generateContent({
+        model: MODELS.GEMINI_LITE,
+        contents: [{
+          role: 'user',
+          parts: [
+            { inlineData: { mimeType: file.mimetype, data: base64 } },
+            { text: extractPrompt },
+          ],
+        }],
+        config: { maxOutputTokens: 2000 },
       })
-      content_text = resp.choices[0]?.message?.content ?? null
-    } catch (e) {
-      console.warn('[docs] vision extract failed:', e)
+      content_text = resp.text || null
+    } catch (geminiErr) {
+      console.warn('[docs] Gemini vision extract failed, trying Groq:', geminiErr instanceof Error ? geminiErr.message : geminiErr)
+      try {
+        const resp = await getGroq().chat.completions.create({
+          model: 'llama-3.2-11b-vision-preview',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'image_url', image_url: { url: `data:${file.mimetype};base64,${base64}` } },
+                { type: 'text', text: extractPrompt },
+              ] as ChatCompletionContentPart[],
+            },
+          ],
+          max_tokens: 2000,
+        })
+        content_text = resp.choices[0]?.message?.content ?? null
+      } catch (e) {
+        console.warn('[docs] vision extract failed:', e)
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 import { env } from './env'
 import { MODELS } from './config'
 
@@ -19,8 +19,7 @@ export async function generateBuyerNarrative(messages: any[]): Promise<BuyerNarr
       return null
     }
 
-    const client = new GoogleGenerativeAI(env.GEMINI_API_KEY)
-    const model = client.getGenerativeModel({ model: MODELS.GEMINI_LITE || 'gemini-3.5-flash-lite' })
+    const client = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
 
     const transcript = messages
       .map(
@@ -44,11 +43,14 @@ Generate a JSON response with:
 
 Respond ONLY with valid JSON (no markdown, no extra text).`
 
-    const result = await model.generateContent(prompt)
-    const text = result.response.text()
+    const result = await client.models.generateContent({
+      model: MODELS.GEMINI_LITE || 'gemini-3.5-flash-lite',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: { responseMimeType: 'application/json', maxOutputTokens: 300, temperature: 0.1 },
+    })
 
     // Parse JSON from response
-    const json = JSON.parse(text)
+    const json = JSON.parse(result.text || '{}')
 
     return {
       summary: json.summary || '',

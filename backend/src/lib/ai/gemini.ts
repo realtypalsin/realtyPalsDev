@@ -104,6 +104,9 @@ export async function streamWithGemini(
       }
 
       let targetModel = config.model || MODELS.GEMINI_MAIN
+      if (process.env.DEBUG_FALLBACK) {
+        console.log(`[gemini] requesting model=${targetModel}`)
+      }
       let stream: any
       try {
         stream = await client.models.generateContentStream({

@@ -8,10 +8,10 @@
  *   Routes to: Query Planner → Project Data Gateway → LLM
  *
  * FACTUAL: Factual queries (what, when, where)
- *   Routes to: cheap model (llama-3.1-8b-instant)
+ *   Routes to: Gemini 3.5 Flash Lite (cheap tier)
  *
  * ADVISORY: Reasoning queries (should, why, is this good)
- *   Routes to: smart model (claude-opus)
+ *   Routes to: Gemini 3.6 Flash (default/smart tier)
  */
 
 import type { Intent } from '../discovery';
@@ -184,8 +184,8 @@ export function classifyIntent(userMessage: string, intent?: Intent): IntentClas
 /**
  * Route intent to handler based on category.
  * - project_detail: Query Planner → Project Data Gateway (structured flow)
- * - factual: cheap model (llama-3.1-8b-instant, cost optimized)
- * - advisory: smart model (claude-opus or gpt-4o, reasoning required)
+ * - factual: cheap model (Gemini 3.5 Flash Lite, cost optimized) — wired in chat-router.ts
+ * - advisory: smart model (Gemini 3.6 Flash default, reasoning required)
  *
  * Returns routing hint: 'query_planner' | 'cheap' | 'smart'
  */
@@ -208,8 +208,8 @@ export function getModelName(route: 'query_planner' | 'cheap' | 'smart'): string
     case 'query_planner':
       return 'planner' // Not a model, triggers plan-driven flow
     case 'cheap':
-      return 'llama-3.1-8b-instant' // ~$0.002 per 1K tokens
+      return 'gemini-3.5-flash-lite'
     case 'smart':
-      return 'gpt-4o' // Reasoning model
+      return 'gemini-3.6-flash'
   }
 }

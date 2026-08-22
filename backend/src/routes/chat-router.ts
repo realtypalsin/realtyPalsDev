@@ -30,7 +30,7 @@ import {
 } from '../lib/projectFacts'
 import { gatePublished } from '../lib/intelligenceGate'
 import { getBuilderRecord } from '../lib/builders'
-import { FINANCIAL } from '../lib/config'
+import { FINANCIAL, MODELS } from '../lib/config'
 import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
 import { classifyQuery } from '../lib/discovery/queryClassifier'
@@ -3284,9 +3284,14 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         }
     };
 
-    // Stream generation with dynamic provider chain selection
-    // Phase 4: Route factual queries to 8B models, advisory/project_detail to 70B+
-    const dynamicChainConfig = undefined
+    // Stream generation with cost-aware model routing (G5): factual queries (definitional,
+    // "what/list/price/amenities") route to Gemini's cheap lite tier; advisory/reasoning
+    // queries ("should I", "is this good") keep the smart default. Only affects the Gemini
+    // leg of the fallback chain — deep-fallback providers (Groq/OpenAI) pick their own model.
+    const modelRoute = routeToModel(classification)
+    if (process.env.DEBUG_FALLBACK) {
+      console.log(`[CHAT:MODEL_ROUTE] category=${classification.category} route=${modelRoute}`)
+    }
 
     // Phase 2.2: Emit early "thinking" status before LLM inference to reduce perceived latency
     send('status', { status: 'thinking', message: 'Searching verified properties and analyzing your requirements...' })
@@ -3301,7 +3306,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         userMessage: message,
         userId,
         sessionId: currentSessionId,
-        chainConfig: dynamicChainConfig,
+        config: modelRoute === 'cheap' ? { maxTokens: 1500, model: MODELS.GEMINI_LITE } : undefined,
       })
       fullText = fallbackResult.text
       usedProvider = { provider: fallbackResult.provider, envKey: fallbackResult.envKey }
