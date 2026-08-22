@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,39 +9,42 @@ import { getSupabaseClient } from '@/lib/supabase'
 
 export default function LandingPage() {
   const router = useRouter()
-  const [checking, setChecking] = useState(true)
 
   useEffect(() => {
     let cancelled = false
-    getSupabaseClient()
-      .then((supabase) => supabase.auth.getSession())
-      .then(({ data }) => {
+
+    const checkAuth = async () => {
+      try {
+        const cachedId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null
+        if (cachedId) {
+          router.replace('/discover')
+          return
+        }
+
+        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+          setTimeout(() => resolve({ data: { session: null } }), 1000)
+        )
+        const sessionPromise = getSupabaseClient().then((supabase) => supabase.auth.getSession())
+        const res = await Promise.race([sessionPromise, timeoutPromise])
+
         if (cancelled) return
-        if (data?.session?.user) {
+        if (res?.data?.session?.user) {
           try {
-            localStorage.setItem('user_id', data.session.user.id)
+            localStorage.setItem('user_id', res.data.session.user.id)
           } catch {}
           router.replace('/discover')
-        } else {
-          setChecking(false)
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.warn('Auth session check failed on LandingPage', err)
-        if (!cancelled) setChecking(false)
-      })
+      }
+    }
+
+    checkAuth()
+
     return () => {
       cancelled = true
     }
   }, [router])
-
-  if (checking) {
-    return (
-      <div className="flex items-center justify-center h-[100dvh] bg-[#050505]">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-white" />
-      </div>
-    )
-  }
 
   return (
     <div className="relative h-[100dvh] max-h-[100dvh] w-full flex flex-col justify-between overflow-hidden bg-[#050505] text-white font-sans selection:bg-white selection:text-black py-4 sm:py-6 px-4 sm:px-8">

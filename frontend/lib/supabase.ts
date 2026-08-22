@@ -18,10 +18,20 @@ export function getSupabaseClient(): Promise<SupabaseBrowserClient> {
         ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) || ''
       if (!url || !key) {
         console.warn('Supabase URL or Key is missing. Check your environment variables.');
+        return {
+          auth: {
+            getSession: async () => ({ data: { session: null }, error: null }),
+            getUser: async () => ({ data: { user: null }, error: null }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+            signOut: async () => ({ error: null }),
+            signInWithOAuth: async () => ({ data: null, error: new Error('Supabase not configured') }),
+            signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
+            signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
+          }
+        } as unknown as SupabaseBrowserClient
       }
       return createBrowserClient(url, key)
     })
   }
   return clientPromise
-
 }
