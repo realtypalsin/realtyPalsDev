@@ -18,6 +18,7 @@ import {
   CaretDown
 } from '@phosphor-icons/react'
 import { ResponseFormatter } from './ResponseFormatter'
+import DomainExecutionTimeline from './DomainExecutionTimeline'
 import remarkGfm from 'remark-gfm'
 import { track, trackPropertyEvent } from '@/lib/analytics'
 import { parseResponseBlocks } from '@/lib/responseParser'
@@ -486,77 +487,58 @@ function MessageBubbleInner({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
-          className={`px-4 sm:px-5 py-3 sm:py-3.5 transition-all duration-300 ${isUser
-            ? 'max-w-[88%] sm:max-w-[78%] bg-blue-600 text-white shadow-xs rounded-[22px] rounded-br-[6px] text-xs sm:text-sm font-medium tracking-tight'
-            : 'max-w-[96%] sm:max-w-[85%] bg-white dark:bg-[#18181b] border border-gray-200/60 dark:border-zinc-800 text-gray-900 dark:text-zinc-100 relative overflow-hidden rounded-[22px] rounded-tl-[6px] shadow-xs dark:shadow-md select-text'
-            }`}
+          className={`transition-all duration-200 ${
+            isUser
+              ? 'max-w-[85%] sm:max-w-[75%] bg-[#edf3fd] dark:bg-[#152033] text-[#0f172a] dark:text-[#f0f6ff] border border-[#d2e2fa] dark:border-[#1e3252] shadow-[0_2px_10px_rgba(37,99,235,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] rounded-[22px] rounded-br-[6px] px-5 py-3.5 select-text'
+              : 'w-full max-w-full bg-transparent text-slate-800 dark:text-zinc-200 select-text px-0 py-0.5'
+          }`}
         >
-          {!isUser && <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] pointer-events-none" />}
-
           {!isUser ? (
-            <div className="relative z-10">
+            <div className="relative z-10 space-y-3">
               {(() => {
                 const hasProperties = (message.exactResults?.length ?? 0) > 0 || (message.nearbyResults?.length ?? 0) > 0
                 const phaseStr = message.streamingPhase ?? ''
-                const intent = message.streamingIntent ?? null
-                const resultCount = message.streamingResultCount ?? 0
+                const intent = message.streamingIntent ?? currentIntent ?? null
+                const resultCount = message.streamingResultCount ?? (message.exactResults?.length ?? 0) + (message.nearbyResults?.length ?? 0)
                 const phase = (phaseStr || undefined) as 'searching' | 'generating' | 'extracting' | undefined
+                const isStreamingActive = isLast && isSubmitting
 
-                // Stage A: waiting — no properties, no content yet
-                if (!hasProperties && !message.content) {
-                  const { label, sublabel } = buildAdaptiveThinkingLabel(message.content ?? undefined, intent, phaseStr)
-                  const showCards = phaseStr === 'searching' || phaseStr === 'generating'
+                // Render Domain Execution Timeline at top of AI message (during streaming or when active)
+                const showTimeline = isStreamingActive || (!message.content && !hasProperties)
 
+                // Stage A: Stream active / Waiting
+                if (showTimeline && !message.content && !hasProperties) {
                   return (
-                    <UniversalLoader
-                      variant="chat-thinking"
-                      label={label}
-                      sublabel={sublabel}
-                      showCards={showCards}
-                      phase={phase}
-                      intent={intent}
-                      resultCount={resultCount}
-                    />
+                    <div className="py-1">
+                      <DomainExecutionTimeline
+                        phase={phase ?? 'extracting'}
+                        intent={intent}
+                        resultCount={resultCount}
+                        spatialContext={message.spatialContext}
+                        isStreaming={true}
+                        queryType={message.responseMode === 'comparison' ? 'comparison' : 'discovery'}
+                        defaultExpanded={false}
+                      />
+                    </div>
                   )
                 }
 
-                // Stage B: properties arrived, AI text not started yet
-                if (hasProperties && !message.content && phase === 'generating') {
-                  return (
-                    <m.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex items-center gap-2.5 py-1"
-                    >
-                      <div className="flex gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 opacity-100 animate-pulse" style={{ animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 opacity-100 animate-pulse" style={{ animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 opacity-100 animate-pulse" style={{ animationDelay: '300ms' }} />
-                      </div>
-                      <span className="text-[12px] text-blue-600 dark:text-blue-400 font-medium">
-                        Analyzing {resultCount != null && resultCount > 0 ? `${resultCount} ${resultCount === 1 ? 'property' : 'properties'}` : 'results'}…
-                      </span>
-                    </m.div>
-                  )
-                }
-
-                // Stage C: Database-backed response (80% DB, 20% LLM)
+                // Stage B: Database-backed response (80% DB, 20% LLM)
                 if (message.responseMode === 'database' && message.chatResponse) {
                   return (
                     <>
-                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100 dark:border-gray-700/60">
-                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Data-Backed Advice</span>
+                      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200/60 dark:border-zinc-800">
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Verified Market Analysis</span>
                       </div>
                       <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.25 }}
-                        className="space-y-3"
+                        className="space-y-3 text-[15.5px] leading-[1.75] text-slate-800 dark:text-zinc-200"
                       >
                         {/* Summary */}
                         {message.chatResponse.message && (
-                          <div className="text-gray-700 dark:text-gray-300 leading-relaxed font-normal">
+                          <div className="leading-relaxed font-normal">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {message.chatResponse.message}
                             </ReactMarkdown>
@@ -578,23 +560,23 @@ function MessageBubbleInner({
                   )
                 }
 
-                // Stage D: Component response (verified data pipeline)
+                // Stage C: Component response (verified data pipeline)
                 if (message.responseMode === 'components' && message.componentResponse) {
                   const { summary, confidence, components, sources } = message.componentResponse
                   return (
                     <>
-                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100 dark:border-gray-700/60">
+                      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200/60 dark:border-zinc-800">
                         <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Verified Data</span>
                       </div>
                       <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.25 }}
-                        className="space-y-3"
+                        className="space-y-3 text-[15.5px] leading-[1.75] text-slate-800 dark:text-zinc-200"
                       >
                         {/* Summary text */}
                         {summary && (
-                          <div className="text-gray-700 dark:text-gray-300 leading-relaxed font-normal">
+                          <div className="leading-relaxed font-normal">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {summary}
                             </ReactMarkdown>
@@ -614,7 +596,7 @@ function MessageBubbleInner({
 
                         {/* Sources attribution */}
                         {sources && sources.length > 0 && (
-                          <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60 text-xs text-gray-600 dark:text-gray-300">
+                          <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-600 dark:text-gray-400">
                             <span className="font-medium">Sources: </span>
                             {sources.join(', ')}
                           </div>
@@ -624,8 +606,8 @@ function MessageBubbleInner({
                   )
                 }
 
-                // Stage D: AI text streaming or complete
-                if (displayContent) {
+                // Stage D: AI text streaming or complete (Unboxed Editorial Style)
+                if (displayContent || isStreamingActive) {
                   const streaming = isLast && isSubmitting
                   const cleanDisplayContent = displayContent
                     .replace(/<realty-chart\b[^>]*\bdata=["']([\s\S]*?)["'][^>]*\/?>/gi, (_m, data) => '\n\n' + data.trim() + '\n\n')
@@ -633,21 +615,32 @@ function MessageBubbleInner({
                   const blocks = streaming ? null : parseResponseBlocks(cleanDisplayContent)
                   return (
                     <>
-                      {!hasProperties && (
-                        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100 dark:border-gray-700/60">
-                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">AI Advisor</span>
+                      {/* Optional Domain Execution Timeline pill atop AI response */}
+                      {(isStreamingActive || hasProperties) && (
+                        <div className="mb-2">
+                          <DomainExecutionTimeline
+                            phase={isStreamingActive ? phase ?? 'generating' : 'completed'}
+                            intent={intent}
+                            resultCount={resultCount}
+                            spatialContext={message.spatialContext}
+                            isStreaming={isStreamingActive}
+                            queryType={message.responseMode === 'comparison' ? 'comparison' : 'discovery'}
+                            defaultExpanded={false}
+                          />
                         </div>
                       )}
+
                       {message.is_verified === false && (
-                        <div className="mb-3 pb-3 border-b border-amber-200 dark:border-amber-800/40">
-                          <p className="text-[11px] text-amber-900 dark:text-amber-50 font-medium">⚠️ This data is not verified by us. Please confirm with our team before making decisions.</p>
+                        <div className="mb-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
+                          <p className="text-[12px] text-amber-900 dark:text-amber-200 font-medium">⚠️ This data is not verified by us. Please confirm with our advisory team before making decisions.</p>
                         </div>
                       )}
+
                       <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 0.25 }}
-                        className={blocks ? undefined : "prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-zinc-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:bg-zinc-100 dark:prose-strong:bg-zinc-800 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100 prose-strong:font-semibold prose-strong:border prose-strong:border-zinc-200 dark:prose-strong:border-zinc-700/60 prose-table:w-full prose-table:text-sm prose-table:my-3 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-zinc-200 dark:prose-table:border-zinc-800 prose-th:bg-zinc-50 dark:prose-th:bg-zinc-800/80 prose-th:px-3.5 prose-th:py-2.5 prose-th:text-left prose-th:text-zinc-800 dark:prose-th:text-zinc-200 prose-th:border prose-th:border-zinc-200 dark:prose-th:border-zinc-800 prose-td:px-3.5 prose-td:py-2.5 prose-td:border prose-td:border-zinc-200 dark:prose-td:border-zinc-800"}
+                        transition={{ duration: 0.2 }}
+                        className={blocks ? undefined : "prose prose-slate dark:prose-invert max-w-none text-[15.5px] leading-[1.78] font-normal tracking-[-0.01em] text-slate-800 dark:text-zinc-200 prose-p:my-2.5 prose-p:leading-[1.78] prose-headings:font-bold prose-headings:text-slate-900 dark:prose-headings:text-zinc-100 prose-headings:tracking-tight prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:font-semibold prose-strong:text-slate-900 dark:prose-strong:text-white prose-blockquote:border-l-2 prose-blockquote:border-blue-500/70 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-600 dark:prose-blockquote:text-zinc-400 prose-table:w-full prose-table:text-sm prose-table:my-4 prose-table:border-collapse"}
                       >
                         {blocks ? (
                           <ResponseBlockRenderer blocks={blocks} />
@@ -660,21 +653,21 @@ function MessageBubbleInner({
                                 'realty-chart': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { type?: string; data?: string; title?: string }) => <RealtyChart type={props.type ?? ''} data={props.data ?? ''} title={props.title} />,
                                 'realty-box': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { type?: string; title?: string }) => <RealtyBox type={props.type ?? ''} title={props.title}>{props.children}</RealtyBox>,
                                 table: ({ node, ...props }: any) => (
-                                  <div className="my-4 overflow-x-auto rounded-2xl border border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-x -mx-1 sm:mx-0">
-                                    <table className="min-w-[560px] w-full border-collapse text-left text-xs sm:text-sm text-zinc-800 dark:text-zinc-200" {...props} />
+                                  <div className="my-4 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/60 dark:bg-[#121214] shadow-2xs custom-scrollbar touch-pan-x">
+                                    <table className="min-w-[560px] w-full border-collapse text-left text-xs sm:text-[13.5px] text-slate-800 dark:text-zinc-200" {...props} />
                                   </div>
                                 ),
                                 thead: ({ node, ...props }: any) => (
-                                  <thead className="bg-zinc-100/80 dark:bg-zinc-800/80 text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700/80" {...props} />
+                                  <thead className="bg-slate-100/90 dark:bg-zinc-800/90 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-700/80" {...props} />
                                 ),
                                 th: ({ node, ...props }: any) => (
-                                  <th className="px-4 py-3 font-bold text-zinc-900 dark:text-white whitespace-nowrap" {...props} />
+                                  <th className="px-4 py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap" {...props} />
                                 ),
                                 td: ({ node, ...props }: any) => (
-                                  <td className="px-4 py-3.5 border-b border-zinc-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
+                                  <td className="px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
                                 ),
                                 tr: ({ node, ...props }: any) => (
-                                  <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-zinc-50/50 dark:even:bg-zinc-800/20" {...props} />
+                                  <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-slate-50/50 dark:even:bg-zinc-800/20" {...props} />
                                 ),
                                 a: ({ node, ...props }: any) => {
                                   const href = props.href || ''
@@ -692,7 +685,7 @@ function MessageBubbleInner({
                                           priority: 2,
                                           payload: { text: `Tell me more about ${projectName}` },
                                         })}
-                                        className="text-[#c47860] hover:underline cursor-pointer font-medium"
+                                        className="text-[#c47860] hover:underline cursor-pointer font-semibold"
                                       >
                                         {projectName}
                                       </button>
@@ -705,7 +698,7 @@ function MessageBubbleInner({
                               {displayContent}
                             </ReactMarkdown>
                             {streaming && (
-                              <span className="inline-block w-0.5 h-[1em] bg-current animate-pulse ml-0.5 align-middle opacity-70" />
+                              <span className="inline-block w-0.5 h-[1.1em] bg-blue-600 dark:bg-blue-400 animate-pulse ml-1 align-middle" />
                             )}
                           </>
                         )}
@@ -759,7 +752,7 @@ function MessageBubbleInner({
               </div>
             </div>
           ) : (
-            <p className="whitespace-pre-wrap text-[16px] font-medium leading-relaxed relative z-10">{displayContent}</p>
+            <p className="whitespace-pre-wrap text-[15px] sm:text-[15.5px] font-normal leading-relaxed relative z-10">{displayContent}</p>
           )}
         </div>
       </div>
@@ -774,10 +767,10 @@ function MessageBubbleInner({
           <button
             onClick={() => inlineEdit.setIsEditing(true)}
             title="Edit message"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200/70 dark:border-slate-700/70 text-[11px] font-semibold shadow-2xs transition-all active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/50 text-[11px] font-semibold shadow-2xs transition-all active:scale-95 cursor-pointer"
             disabled={inlineEdit.isLoading}
           >
-            <PencilSimple size={13} weight="bold" className="text-slate-500 dark:text-slate-400" />
+            <PencilSimple size={13} weight="bold" className="text-blue-600 dark:text-blue-400" />
             <span>Edit</span>
           </button>
         )}

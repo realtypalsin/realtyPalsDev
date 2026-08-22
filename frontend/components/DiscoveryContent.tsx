@@ -26,7 +26,8 @@ import {
   NotePencil,
   Scales,
   ArrowRight,
-  ArrowUp
+  ArrowUp,
+  MapPin
 } from '@phosphor-icons/react';
 import { useSessions } from '@/hooks/useSessions';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
@@ -1479,7 +1480,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const handleOpenCalculator = useCallback(() => setShowCalculator(true), [])
   const handleOpenShareSheet = useCallback(() => setShareSheetOpen(true), [])
 
-  // ── Floating Chat Input Bar (LobeHub Style) ──
+  // ── Unified Floating Bento Input Dock ──
   const chatInputForm = (
     <div className={`relative w-full transition-all duration-300 ${isInputMinimized ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="relative w-full">
@@ -1487,8 +1488,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
         )}
 
-        <div className="relative flex items-end bg-white dark:bg-[#111] ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] focus-within:ring-2 focus-within:ring-blue-500/80 focus-within:shadow-[0_4px_30px_rgba(37,99,235,0.15)] rounded-3xl transition-all duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] mx-auto w-full group pr-1.5 py-1.5 min-h-[48px]">
-          <div id="chat-input-guide" className="relative flex-1 group">
+        <div className="relative flex flex-col bg-white/95 dark:bg-[#18181b]/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] focus-within:border-black/25 dark:focus-within:border-white/25 focus-within:shadow-[0_10px_36px_rgba(0,0,0,0.1)] dark:focus-within:shadow-[0_10px_36px_rgba(0,0,0,0.6)] rounded-[24px] transition-all duration-200 mx-auto w-full p-2 sm:p-2.5">
+          <div id="chat-input-guide" className="relative w-full">
             <PlaceholdersAndVanishInput
               placeholders={
                 chatPhase === 'ADVISOR'
@@ -1511,41 +1512,88 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             />
           </div>
 
-          {/* Action button: Stop (square) while streaming → Send (ArrowUp) */}
-          {isSubmitting ? (
-            <button
-              type="button"
-              onClick={() => abortControllerRef.current?.abort()}
-              className="mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 bg-red-500 hover:bg-red-600 text-white shadow-[0_4px_12px_rgba(239,68,68,0.35)] active:scale-95 cursor-pointer"
-              title="Stop generating"
-              aria-label="Stop generating"
-            >
-              <span className="w-3 h-3 rounded-[2.5px] bg-white" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                if (!chatInput.trim() || !isOnline) return
-                if (isSubmitting) abortControllerRef.current?.abort()
-                dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })
-              }}
-              disabled={!isOnline || !chatInput.trim()}
-              className={`mb-0.5 w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] active:scale-95 ${
-                isOnline && chatInput.trim()
-                  ? 'bg-gradient-to-br from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-600 hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 hover:shadow-[0_6px_16px_rgba(37,99,235,0.45)] cursor-pointer'
-                  : 'bg-gray-300 dark:bg-zinc-700 text-gray-400 dark:text-zinc-500 cursor-not-allowed opacity-50 shadow-none'
-              }`}
-              title={isOnline ? 'Send message' : 'You\'re offline'}
-              aria-label="Send message"
-            >
-              <ArrowUp size={18} weight="bold" />
-            </button>
-          )}
+          {/* Integrated Bento Bottom Action Strip */}
+          <div className="flex items-center justify-between pt-1 px-2 border-t border-slate-100 dark:border-zinc-800/60 mt-1">
+            {/* Left: Active context indicator or search shortcut */}
+            <div className="flex items-center gap-1.5 min-w-0">
+              {currentIntent?.sector ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200/70 dark:border-blue-800/60 text-[11px] font-semibold text-blue-700 dark:text-blue-300 truncate">
+                  <MapPin size={12} weight="fill" className="text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span className="truncate">{String(currentIntent.sector)}</span>
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 hidden sm:inline">
+                  AI Real Estate Advisor · Noida & Greater Noida
+                </span>
+              )}
+            </div>
+
+            {/* Right: Voice Input + Send/Stop Controls */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Voice button with live waveform state */}
+              <button
+                type="button"
+                onClick={toggleVoiceInput}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isListening
+                    ? 'bg-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.5)] animate-pulse'
+                    : 'bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300'
+                }`}
+                title={isListening ? 'Stop listening' : 'Voice search'}
+                aria-label={isListening ? 'Stop listening' : 'Voice search'}
+              >
+                {isListening ? (
+                  <>
+                    <div className="flex items-center gap-0.5 h-3">
+                      <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse" />
+                      <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+                      <span className="w-0.5 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-[11px]">Listening…</span>
+                  </>
+                ) : (
+                  <>
+                    <Microphone size={14} weight="bold" />
+                    <span className="hidden sm:inline text-[11px]">Voice</span>
+                  </>
+                )}
+              </button>
+
+              {/* Action button: Stop (square) while streaming → Send (ArrowUp) */}
+              {isSubmitting ? (
+                <button
+                  type="button"
+                  onClick={() => abortControllerRef.current?.abort()}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white shadow-xs active:scale-95 cursor-pointer"
+                  title="Stop generating"
+                  aria-label="Stop generating"
+                >
+                  <span className="w-2.5 h-2.5 rounded-[2px] bg-white dark:bg-zinc-900" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!chatInput.trim() || !isOnline) return
+                    if (isSubmitting) abortControllerRef.current?.abort()
+                    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: chatInput.trim() } })
+                  }}
+                  disabled={!isOnline || !chatInput.trim()}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 text-white active:scale-95 ${
+                    isOnline && chatInput.trim()
+                      ? 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-[0_2px_10px_rgba(37,99,235,0.35)] cursor-pointer'
+                      : 'bg-slate-200 dark:bg-zinc-800 text-slate-400 dark:text-zinc-600 cursor-not-allowed opacity-50'
+                  }`}
+                  title={isOnline ? 'Send message' : 'You\'re offline'}
+                  aria-label="Send message"
+                >
+                  <ArrowUp size={15} weight="bold" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-
       </div>
-
     </div>
   );
 
@@ -1554,70 +1602,107 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      {/* Clean Glassmorphic Floating Top Header (Claude-style without solid bar) */}
-      <div className="absolute top-0 left-0 right-0 h-14 md:h-16 z-30 flex items-center justify-between px-2.5 sm:px-4 bg-transparent border-0 border-none pointer-events-none transition-colors">
-        <div className="flex-1 flex items-center justify-start pl-12 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
-          {hasUserReplied && (
-            isRenamingHeader ? (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-xs">
-                <input
-                  autoFocus
-                  type="text"
-                  value={headerRenameValue}
-                  onChange={(e) => setHeaderRenameValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') submitHeaderRename();
-                    if (e.key === 'Escape') setIsRenamingHeader(false);
-                  }}
-                  onBlur={submitHeaderRename}
-                  className="bg-transparent border-none outline-none text-xs sm:text-sm font-semibold w-32 md:w-48 text-gray-800 dark:text-gray-200"
-                />
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowHeaderDropdown(!showHeaderDropdown)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xs hover:bg-white dark:hover:bg-zinc-800 transition-all text-gray-800 dark:text-gray-200 group cursor-pointer"
+      {/* Floating Header Elements (Zero border, zero margin background bar) */}
+      <div className="absolute top-2.5 sm:top-3 left-0 right-0 z-30 flex items-center justify-between px-3 sm:px-5 pointer-events-none">
+        <div className="flex items-center justify-start pl-12 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
+          <AnimatePresence>
+            {hasUserReplied && (
+              <m.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
               >
-                <span className="text-[12.5px] sm:text-sm font-bold truncate max-w-[130px] sm:max-w-xs">{sessionTitle || 'New Chat'}</span>
-                <CaretDown size={13} weight="bold" className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
-              </button>
-            )
-          )}
+                {isRenamingHeader ? (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-xs">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={headerRenameValue}
+                      onChange={(e) => setHeaderRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') submitHeaderRename();
+                        if (e.key === 'Escape') setIsRenamingHeader(false);
+                      }}
+                      onBlur={submitHeaderRename}
+                      className="bg-transparent border-none outline-none text-xs sm:text-sm font-semibold w-32 md:w-48 text-gray-800 dark:text-gray-200"
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowHeaderDropdown(!showHeaderDropdown)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xs hover:bg-white dark:hover:bg-zinc-800 transition-all text-gray-800 dark:text-gray-200 group cursor-pointer"
+                  >
+                    <span className="text-[12.5px] sm:text-sm font-bold truncate max-w-[130px] sm:max-w-xs">{sessionTitle || 'Conversation'}</span>
+                    <CaretDown size={13} weight="bold" className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
+                  </button>
+                )}
 
-          {/* Dropdown Menu */}
-          {showHeaderDropdown && hasUserReplied && (
-            <div className="absolute top-full left-12 md:left-0 mt-1 w-44 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-zinc-800 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
-              <button onClick={handleStartRename} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                <PencilSimple size={15} weight="bold" className="text-gray-400" />
-                <span>Rename</span>
-              </button>
-              <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1 mx-2" />
-              <button onClick={handleDeleteSession} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer">
-                <Trash size={15} weight="bold" />
-                <span>Delete</span>
-              </button>
-            </div>
-          )}
+                {/* Dropdown Menu */}
+                {showHeaderDropdown && (
+                  <div className="absolute top-full left-12 md:left-0 mt-1.5 w-44 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-zinc-800 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
+                    <button onClick={handleStartRename} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+                      <PencilSimple size={15} weight="bold" className="text-gray-400" />
+                      <span>Rename</span>
+                    </button>
+                    <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1 mx-2" />
+                    <button onClick={handleDeleteSession} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer">
+                      <Trash size={15} weight="bold" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                )}
+              </m.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="flex items-center justify-end gap-1.5 sm:gap-2 pointer-events-auto">
-          {/* Floating New Chat button */}
-          <button
-            onClick={handleNewChat}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md hover:bg-white dark:hover:bg-zinc-800 border border-black/5 dark:border-white/10 text-gray-800 dark:text-gray-100 text-[11.5px] sm:text-[12px] font-bold shadow-2xs active:scale-95 transition-all cursor-pointer"
-            title="Start new conversation"
-            aria-label="New Chat"
-          >
-            <NotePencil size={15} weight="duotone" className="text-blue-600 dark:text-blue-400" />
-            <span className="hidden sm:inline">New Chat</span>
-          </button>
+          {/* Floating New Chat button — only visible once chat has started */}
+          <AnimatePresence>
+            {hasUserReplied && (
+              <m.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                onClick={handleNewChat}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md hover:bg-white dark:hover:bg-zinc-800 border border-black/5 dark:border-white/10 text-gray-800 dark:text-gray-100 text-[11.5px] sm:text-[12px] font-bold shadow-2xs active:scale-95 transition-all cursor-pointer"
+                title="Start new conversation"
+                aria-label="New Chat"
+              >
+                <NotePencil size={15} weight="duotone" className="text-blue-600 dark:text-blue-400" />
+                <span className="hidden sm:inline">New Chat</span>
+              </m.button>
+            )}
+          </AnimatePresence>
 
           <ThemeToggle />
         </div>
       </div>
 
+      {/* Sticky Top Intent Ribbon (Remains pinned at top during scroll) */}
+      <AnimatePresence>
+        {hasUserReplied && currentIntent && (
+          <m.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-12 sm:top-13 left-0 right-0 z-20 flex justify-center px-4 pointer-events-none"
+          >
+            <div className="pointer-events-auto">
+              <ContextRibbon
+                intent={currentIntent}
+                onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
+              />
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
+
       {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10 pt-14 pb-4">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10">
 
         {/* Animated Orbs Overlay Background */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -1661,7 +1746,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-1 font-[family-name:var(--font-afacad)]">
                 Search Better
               </h2>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">AI property advisor · Noida & Greater Noida</p>
             </div>
 
             {showReEngagement && !hasUserReplied && (
@@ -1698,7 +1782,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               aria-live="polite"
               aria-relevant="additions text"
               aria-label="Conversation with RealtyPal advisor"
-              className="flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-28 sm:pt-32 md:pt-36 pb-32 relative z-10"
+              className={`flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 ${currentIntent ? 'pt-24 sm:pt-26' : 'pt-14 sm:pt-16'} pb-36 relative z-10`}
 
               onScroll={(e) => {
                 const el = e.currentTarget;
@@ -1707,16 +1791,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               }}
             >
               <div className="max-w-[880px] mx-auto space-y-6">
-                {/* Intent context ribbon — inline in scroll flow, not floating */}
-                <AnimatePresence>
-                  {currentIntent && (
-                    <ContextRibbon
-                      intent={currentIntent}
-                      onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
-                    />
-                  )}
-                </AnimatePresence>
-
                 {showContextWarning && (
                   <div className="mx-auto max-w-lg px-4 py-2 my-2 text-xs text-center text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     Long conversation detected. Start a new chat for the best AI responses.

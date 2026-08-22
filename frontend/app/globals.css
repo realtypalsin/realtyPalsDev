@@ -554,3 +554,45 @@ select option {
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
 }
+
+/* ── Claude-Style Editorial Typography & Prose Enhancements ── */
+.prose {
+  font-family: inherit;
+  letter-spacing: -0.011em;
+}
+
+.prose p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.75;
+}
+
+.prose blockquote {
+  border-left-width: 2.5px;
+  border-color: rgba(59, 130, 246, 0.7);
+  padding-left: 1rem;
+  font-style: italic;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.prose table th,
+.prose table td {
+  padding: 0.75rem 1rem;
+}
+
+.prose ul > li,
+.prose ol > li {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+

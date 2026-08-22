@@ -32,6 +32,7 @@ interface Props {
   onDetailOpen?: (project: ProjectCardType) => void
   onToast?: (message: string) => void
   onAskAI?: (project: ProjectCardType) => void
+  onSetSiteVisit?: (project: ProjectCardType) => void
   onCall?: (project: ProjectCardType) => void
   onShare?: (project: ProjectCardType) => void
   quickActions?: React.ReactNode
@@ -59,7 +60,7 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
   university: BookOpen,
 }
 
-export default function ProjectCard({ project, userId, sessionId, index = 0, isSelectable = false, isSelected = false, onToggleSelect, onDetailOpen, onToast, onAskAI, onCall, onShare, quickActions }: Props) {
+export default function ProjectCard({ project, userId, sessionId, index = 0, isSelectable = false, isSelected = false, onToggleSelect, onDetailOpen, onToast, onAskAI, onSetSiteVisit, onCall, onShare, quickActions }: Props) {
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)

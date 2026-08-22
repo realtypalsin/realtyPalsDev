@@ -221,13 +221,13 @@ export function PlaceholdersAndVanishInput({
     return (
         <form
             className={cn(
-                "w-full relative max-w-4xl mx-auto bg-transparent min-h-[48px] rounded-3xl overflow-hidden border-0 transition duration-200"
+                "w-full relative max-w-4xl mx-auto bg-transparent min-h-[40px] rounded-2xl overflow-hidden border-0 transition duration-200"
             )}
             onSubmit={handleSubmit}
         >
             <canvas
                 className={cn(
-                    "absolute pointer-events-none text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
+                    "absolute pointer-events-none text-base transform scale-50 top-[10%] left-2 sm:left-4 origin-top-left filter invert dark:invert-0 pr-20",
                     !animating ? "opacity-0" : "opacity-100"
                 )}
                 ref={canvasRef}
@@ -243,30 +243,29 @@ export function PlaceholdersAndVanishInput({
                 onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
                     target.style.height = 'auto';
-                    target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+                    target.style.height = Math.min(target.scrollHeight, 160) + 'px';
                 }}
                 onKeyDown={handleKeyDown}
                 ref={inputRef}
                 value={value}
                 rows={1}
                 className={cn(
-                    "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black rounded-3xl focus:outline-none focus:ring-0 pl-4 sm:pl-6 pr-4 touch-target-min resize-none py-3.5 overflow-hidden",
+                    "w-full relative text-[14.5px] sm:text-[15px] z-50 border-none dark:text-zinc-100 bg-transparent text-slate-900 rounded-2xl focus:outline-none focus:ring-0 pl-3 sm:pl-4 pr-3 resize-none py-2 sm:py-2.5 leading-relaxed overflow-hidden",
                     animating && "text-transparent dark:text-transparent"
                 )}
-                style={{ minHeight: "48px", maxHeight: "200px" }}
+                style={{ minHeight: "40px", maxHeight: "160px" }}
             />
 
             <div className="absolute right-2 bottom-1.5 z-50 flex items-center gap-2">
                 {children}
             </div>
 
-            <div className={cn("absolute inset-0 flex items-start pt-3.5 rounded-3xl pointer-events-none transition-opacity duration-200", value ? "opacity-0" : "opacity-100")}>
-
+            <div className={cn("absolute inset-0 flex items-start pt-2 sm:pt-2.5 rounded-2xl pointer-events-none transition-opacity duration-200", value ? "opacity-0" : "opacity-100")}>
                 <AnimatePresence mode="wait">
                     {!value && (
                         <m.p
                             initial={{
-                                y: 5,
+                                y: 4,
                                 opacity: 0,
                             }}
                             key={`current-placeholder-${currentPlaceholder}`}
@@ -275,14 +274,14 @@ export function PlaceholdersAndVanishInput({
                                 opacity: 1,
                             }}
                             exit={{
-                                y: -15,
+                                y: -12,
                                 opacity: 0,
                             }}
                             transition={{
-                                duration: 0.3,
+                                duration: 0.25,
                                 ease: "linear",
                             }}
-                            className="dark:text-zinc-500 text-sm sm:text-base font-normal text-neutral-500 pl-4 sm:pl-12 text-left w-[calc(100%-2rem)] truncate"
+                            className="dark:text-zinc-500 text-[14.5px] sm:text-[15px] font-normal text-slate-400 pl-3 sm:pl-4 text-left w-[calc(100%-2rem)] truncate"
                         >
                             {placeholders[currentPlaceholder]}
                         </m.p>
