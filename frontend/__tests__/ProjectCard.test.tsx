@@ -58,6 +58,11 @@ describe('ProjectCard Component', () => {
   it('renders the possession label for under construction projects', () => {
     render(<ProjectCard project={mockProject} userId={null} />);
     expect(screen.getAllByText(/Expected October 2023/)[0]).toBeInTheDocument();
+  });
+
+  it('renders Under Construction when possession_label is missing', () => {
+    const ucProject = { ...mockProject, possession_label: undefined };
+    render(<ProjectCard project={ucProject} userId={null} />);
     expect(screen.getAllByText('Under Construction')[0]).toBeInTheDocument();
   });
 

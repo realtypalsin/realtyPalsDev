@@ -8,7 +8,18 @@ jest.mock('@/lib/analytics', () => ({
   track: jest.fn(),
 }));
 
-jest.mock('@/components/MarketComparison', () => () => <div data-testid="market-comparison">MarketComparison</div>);
+jest.mock('@/lib/backend-api', () => ({
+  getProjectOverview: jest.fn().mockResolvedValue({
+    project: {
+      construction_stage: 'Excavation & Foundation',
+      construction_pct: 25,
+      actual_completion_date: '2025-12-31',
+    },
+    milestones: [],
+    priceHistory: [],
+    recentUpdates: [],
+  }),
+}));
 
 const mockBuilder: BuilderDetail = {
   name: 'Elite Builders',
@@ -120,7 +131,7 @@ describe('OverviewTab Component', () => {
     expect(skeletonElements.length).toBeGreaterThan(0);
   });
 
-  it('renders overview tab header properly when data is available', () => {
+  it('renders overview tab header properly when data is available', async () => {
     render(
       <OverviewTab
         project={mockProject}
@@ -140,6 +151,6 @@ describe('OverviewTab Component', () => {
       />
     );
     
-    expect(screen.getByText('Construction & Development Timeline')).toBeInTheDocument();
+    expect(await screen.findByText('Construction & Development Timeline')).toBeInTheDocument();
   });
 });
