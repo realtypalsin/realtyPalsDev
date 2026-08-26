@@ -57,7 +57,13 @@ describe('ProjectCard Component', () => {
 
   it('renders the possession label for under construction projects', () => {
     render(<ProjectCard project={mockProject} userId={null} />);
-    expect(screen.getAllByText(/Expected October 2023/)[0]).toBeInTheDocument();
+    // Long month names are abbreviated so the label fits without truncating the year.
+    expect(screen.getAllByText(/Expected Oct 2023/)[0]).toBeInTheDocument();
+  });
+
+  it('never truncates the possession year away', () => {
+    render(<ProjectCard project={mockProject} userId={null} />);
+    expect(screen.queryByText(/Expected Oct(ober)? 2…/)).not.toBeInTheDocument();
   });
 
   it('renders Under Construction when possession_label is missing', () => {

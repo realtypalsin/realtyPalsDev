@@ -9,16 +9,17 @@ import { getMultiDimensionalRecommendations } from '../multiDimensionalIntegrati
 import { extractExtendedIntent } from '../../ai/extendedIntent'
 import { rankProject } from '../scoringEngine'
 
-// Phase 1 and the full-pipeline suites call a live LLM. Gate them the same way
-// intent-extraction.test.ts already gates its round-trips, so a machine with no
-// provider keys reports "skipped" instead of four assertion failures.
+// Phase 1 and the full-pipeline suites call a live LLM: they cost money, take
+// ~25s, and assert on non-deterministic model output. Presence of a provider key
+// is NOT consent to run them — a dev with a real key in .env would otherwise get
+// random red on every `npm test`. Opt in explicitly with RUN_LIVE_LLM_TESTS=1.
 const LIVE_KEYS = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'GROQ_API_KEY', 'MISTRAL_API_KEY', 'CEREBRAS_API_KEY']
-const hasLiveProvider = LIVE_KEYS.some(
-  k => !!process.env[k] && process.env[k] !== 'test-key-unused-in-unit-tests',
-)
+const hasLiveProvider =
+  process.env.RUN_LIVE_LLM_TESTS === '1' &&
+  LIVE_KEYS.some(k => !!process.env[k] && process.env[k] !== 'test-key-unused-in-unit-tests')
 
 describe('Multi-Dimensional Integration', () => {
-  describe('Phase 1: Intent Extraction', { skip: !hasLiveProvider && 'no LLM provider key configured' }, () => {
+  describe('Phase 1: Intent Extraction', { skip: !hasLiveProvider && 'live LLM suite — set RUN_LIVE_LLM_TESTS=1 to run' }, () => {
     it('extracts budget from user message', async () => {
       const { intent } = await extractExtendedIntent({
         userMessage: 'I need a property under 1.5 crore'

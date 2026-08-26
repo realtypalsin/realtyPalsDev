@@ -99,7 +99,8 @@ describe('MessageBubble Component', () => {
     expect(screen.getByText('Show me projects in Sector 150')).toBeInTheDocument();
   });
 
-  it('renders assistant message correctly', () => {
+  // Assistant prose renders through the lazily-imported markdown chunk.
+  it('renders assistant message correctly', async () => {
     render(
       <MessageBubble
         {...sharedProps}
@@ -107,8 +108,8 @@ describe('MessageBubble Component', () => {
         message={mockAssistantMessage}
       />
     );
-    
-    expect(screen.getByText('Here are some top projects in Sector 150.')).toBeInTheDocument();
+
+    expect(await screen.findByText('Here are some top projects in Sector 150.')).toBeInTheDocument();
   });
 
   it('shows typing indicator when assistant is streaming with no content', () => {

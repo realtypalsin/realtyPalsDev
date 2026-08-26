@@ -1,4 +1,4 @@
-import posthog from 'posthog-js'
+import { capture, identify } from '@/lib/posthogClient'
 
 type EventName =
   | 'chat_started'
@@ -28,7 +28,7 @@ type EventName =
 export function track(event: EventName, properties?: Record<string, unknown>) {
   try {
     if (typeof window === 'undefined') return
-    posthog.capture(event, properties)
+    capture(event, properties)
   } catch {
     // never let analytics crash the app
   }
@@ -37,7 +37,7 @@ export function track(event: EventName, properties?: Record<string, unknown>) {
 export function identifyUser(userId: string, traits?: Record<string, unknown>) {
   try {
     if (typeof window === 'undefined') return
-    posthog.identify(userId, traits)
+    identify(userId, traits)
   } catch {}
 }
 type PropertyAction = 'view' | 'save' | 'compare' | 'share' | 'whatsapp_inquiry' | 'call' | 'ask_ai' | 'site_visit' | 'image_viewed' | 'tab_opened' | 'floorplan_viewed' | 'document_download' | 'calculator_used' | 'card_click' | 'filter_applied'

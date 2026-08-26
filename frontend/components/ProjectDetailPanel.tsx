@@ -20,17 +20,42 @@ import { handleReraClick, handleEscapeKey, imageTypeRank } from '@/lib/projectDe
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
 import OverviewTab from '@/components/property-detail/OverviewTab'
-import { IntelligenceTabSkeleton } from '@/components/skeletons'
+import {
+  IntelligenceTabSkeleton,
+  ResidencesSkeletonFull,
+  PricingTabSkeleton,
+  LocationTabSkeleton,
+  BuilderTabSkeleton,
+} from '@/components/skeletons'
 import dynamic from 'next/dynamic'
+
+// Only one tab is ever mounted. Loading all of them eagerly put ~100 kB of
+// tab-only JS in the /property/[slug] entry chunk for markup the visitor may
+// never open. OverviewTab stays static — it is the default tab and must paint
+// without a second round-trip.
 const IntelligenceTab = dynamic(() => import('@/components/property-detail/IntelligenceTab'), {
   ssr: false,
   loading: () => <IntelligenceTabSkeleton />
 })
-import ResidencesTab from '@/components/property-detail/ResidencesTab'
-import ProjectPricingTab from '@/components/property-detail/ProjectPricingTab'
-import LocationTab from '@/components/property-detail/LocationTab'
-import BuilderTab from '@/components/property-detail/BuilderTab'
-import PartnersTab from '@/components/property-detail/PartnersTab'
+const ResidencesTab = dynamic(() => import('@/components/property-detail/ResidencesTab'), {
+  ssr: false,
+  loading: () => <ResidencesSkeletonFull />
+})
+const ProjectPricingTab = dynamic(() => import('@/components/property-detail/ProjectPricingTab'), {
+  ssr: false,
+  loading: () => <PricingTabSkeleton />
+})
+const LocationTab = dynamic(() => import('@/components/property-detail/LocationTab'), {
+  ssr: false,
+  loading: () => <LocationTabSkeleton />
+})
+const BuilderTab = dynamic(() => import('@/components/property-detail/BuilderTab'), {
+  ssr: false,
+  loading: () => <BuilderTabSkeleton />
+})
+const PartnersTab = dynamic(() => import('@/components/property-detail/PartnersTab'), {
+  ssr: false,
+})
 import { resolveImgUrl } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -91,6 +116,29 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       scrollContainerMobileRef.current.scrollTo({ top: 0, behavior: 'auto' })
     }
   }, [activeTab])
+
+  // Warm the lazy tab chunks once the browser is idle, so the first paint stays
+  // light but switching tabs never shows a loading skeleton on a warm connection.
+  useEffect(() => {
+    if (!project) return
+    const warm = () => {
+      void import('@/components/property-detail/ResidencesTab')
+      void import('@/components/property-detail/ProjectPricingTab')
+      void import('@/components/property-detail/LocationTab')
+      void import('@/components/property-detail/BuilderTab')
+      void import('@/components/property-detail/IntelligenceTab')
+      void import('@/components/property-detail/PartnersTab')
+    }
+    if (typeof window === 'undefined') return
+    const idle = typeof window.requestIdleCallback === 'function'
+    const handle: number = idle
+      ? window.requestIdleCallback(warm, { timeout: 2500 })
+      : window.setTimeout(warm, 1200)
+    return () => {
+      if (idle) window.cancelIdleCallback(handle)
+      else window.clearTimeout(handle)
+    }
+  }, [project])
 
   useEffect(() => {
     const currentTab = searchParams.get('tab')

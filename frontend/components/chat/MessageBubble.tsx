@@ -19,7 +19,6 @@ import {
 } from '@phosphor-icons/react'
 import { ResponseFormatter } from './ResponseFormatter'
 import DomainExecutionTimeline from './DomainExecutionTimeline'
-import remarkGfm from 'remark-gfm'
 import { track, trackPropertyEvent } from '@/lib/analytics'
 import { parseResponseBlocks } from '@/lib/responseParser'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
@@ -31,26 +30,14 @@ import { useInlineEdit } from '@/hooks/useInlineEdit'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
-import rehypeRaw from 'rehype-raw'
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import { PropertyFeedback } from '@/components/chat/PropertyFeedback'
-
-const safeDefaultSchema = defaultSchema || { tagNames: [], attributes: {} }
-const REALTY_SCHEMA = {
-  ...safeDefaultSchema,
-  tagNames: [...(safeDefaultSchema.tagNames || []), 'realty-chart', 'realty-box'],
-  attributes: {
-    ...(safeDefaultSchema.attributes || {}),
-    'realty-chart': ['type', 'data', 'title'],
-    'realty-box': ['type', 'title'],
-  },
-}
 
 const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
   ssr: false,
   loading: () => <div className="h-48 bg-slate-100 animate-pulse rounded-xl flex items-center justify-center"><span className="text-sm text-slate-400">Loading chart...</span></div>
 })
 import RealtyBox from '@/components/RealtyBox'
+import ContactButton from '@/components/ContactButton'
 
 // Narrowed shape of ChipAction.payload actually read by the card-selector chip flow.
 interface ChipCardPayload {
@@ -60,7 +47,13 @@ interface ChipCardPayload {
   actionSuffix?: string
 }
 
-import ReactMarkdown from 'react-markdown'
+// Lazy: react-markdown + remark/rehype (and parse5 via rehype-raw) are ~600 KB of
+// raw JS that nothing needs until the first assistant message renders. Fetched
+// while the model streams. See components/response/Markdown.tsx.
+const Markdown = dynamic(() => import('@/components/response/Markdown'), {
+  ssr: false,
+  loading: () => <div className="h-5 w-2/3 rounded bg-slate-100 dark:bg-zinc-800 animate-pulse" />,
+})
 
 // ── Dynamic imports — excluded from initial JS bundle ──────────────────────
 
@@ -648,9 +641,9 @@ function MessageBubbleInner({
                         {/* Summary */}
                         {message.chatResponse.message && (
                           <div className="leading-relaxed font-normal">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            <Markdown>
                               {message.chatResponse.message}
-                            </ReactMarkdown>
+                            </Markdown>
                           </div>
                         )}
 
@@ -686,9 +679,9 @@ function MessageBubbleInner({
                         {/* Summary text */}
                         {summary && (
                           <div className="leading-relaxed font-normal">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            <Markdown>
                               {summary}
-                            </ReactMarkdown>
+                            </Markdown>
                           </div>
                         )}
 
@@ -755,12 +748,15 @@ function MessageBubbleInner({
                           <ResponseBlockRenderer blocks={blocks} />
                         ) : (
                           <>
-                            <ReactMarkdown
-                              remarkPlugins={[remarkGfm]}
-                              rehypePlugins={[rehypeRaw, [rehypeSanitize, REALTY_SCHEMA]]}
+                            <Markdown
+                              raw
                               components={{
                                 'realty-chart': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { type?: string; data?: string; title?: string }) => <RealtyChart type={props.type ?? ''} data={props.data ?? ''} title={props.title} />,
                                 'realty-box': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { type?: string; title?: string }) => <RealtyBox type={props.type ?? ''} title={props.title}>{props.children}</RealtyBox>,
+                                // Mapped for parity with ResponseBlockRenderer — the shared
+                                // sanitizer schema allows realty-action, so it must render as
+                                // something rather than leaking an unknown element.
+                                'realty-action': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { label?: string }) => <ContactButton label={props.label || 'Request Callback'} className="my-2" />,
                                 table: ({ node, ...props }: any) => (
                                   <div className="my-3.5 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/60 dark:bg-[#121214] shadow-2xs custom-scrollbar touch-pan-y overscroll-x-contain">
                                     <table className="w-full table-auto border-collapse text-left text-xs sm:text-[13.5px] text-slate-800 dark:text-zinc-200" {...props} />
@@ -805,7 +801,7 @@ function MessageBubbleInner({
                               } as any}
                             >
                               {displayContent}
-                            </ReactMarkdown>
+                            </Markdown>
                             {streaming && (
                               <span className="inline-block w-0.5 h-[1.1em] bg-blue-600 dark:bg-blue-400 animate-pulse ml-1 align-middle" />
                             )}

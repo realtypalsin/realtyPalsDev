@@ -189,12 +189,14 @@ describe('INTENT_EXTRACTION_PROMPT — generic adjective counter-examples', () =
 })
 
 // ─── Integration: full extractIntent round-trips ──────────────────────────────
-// Skipped when no API keys are configured.
+// Live LLM round-trips: they cost money and assert on non-deterministic output.
+// Opt in with RUN_LIVE_LLM_TESTS=1 — a key sitting in .env is not consent to run.
 
-const hasOpenAI = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'test-key-unused-in-unit-tests'
-const hasGroq = !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'test-key-unused-in-unit-tests'
+const liveOptIn = process.env.RUN_LIVE_LLM_TESTS === '1'
+const hasOpenAI = liveOptIn && !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'test-key-unused-in-unit-tests'
+const hasGroq = liveOptIn && !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'test-key-unused-in-unit-tests'
 
-describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasGroq }, () => {
+describe('extractIntent — RERA query round-trips', { skip: !hasOpenAI && !hasGroq && 'live LLM suite — set RUN_LIVE_LLM_TESTS=1 to run' }, () => {
   // Dynamic import to avoid module-level side effects when skipped
   it('English RERA number query → projectNames populated', async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports

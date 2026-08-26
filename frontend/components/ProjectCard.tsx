@@ -91,12 +91,15 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
   const isNew = project.status === 'new_launch'
   const isDelayed = project.possession_label ? (project.possession_label.toLowerCase().includes('delayed') || project.possession_label.toLowerCase().includes('disputed')) : false
 
-  // Format and shorten possession / status label for clean UI display without long overflow
+  // Format and shorten possession / status label for clean UI display without long overflow.
+  // Abbreviate the month before ever truncating — a hard slice on "Expected October 2023"
+  // eats the year, which is the single most decision-relevant token in the label.
   const rawPossession = (project.possession_label || '').trim()
   const cleanPossession = rawPossession
     .replace(/^possession[:\s-]*/i, '')
     .replace(/under construction\s*\(([^)]+)\)/i, '$1')
     .replace(/under construction/i, 'Under Const.')
+    .replace(/\b(January|February|August|September|October|November|December)\b/gi, m => m.slice(0, 3))
     .trim()
 
   const statusLabel = isRTM

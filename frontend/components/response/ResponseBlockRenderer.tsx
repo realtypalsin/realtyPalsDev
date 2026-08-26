@@ -4,7 +4,6 @@ import React from 'react'
 import { Trophy, BarChart2, CheckCircle, Building2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
-import remarkGfm from 'remark-gfm'
 import type { ResponseBlock, BlockType } from '@/lib/responseParser'
 import {
   extractNameReason,
@@ -16,10 +15,6 @@ import {
   parseSingleProjectHeader,
   extractSingleProjectBullets,
 } from '@/lib/responseParser'
-import rehypeRaw from 'rehype-raw'
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
-
-
 const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
   ssr: false,
   loading: () => <Skeleton className="h-48 w-full rounded-xl" />
@@ -27,21 +22,12 @@ const RealtyChart = dynamic(() => import('@/components/RealtyChart'), {
 import RealtyBox from '@/components/RealtyBox'
 import ContactButton from '@/components/ContactButton'
 
-const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
-
-// Sanitization schema: allow realty-chart and realty-box custom elements + their attributes.
-// Must extend `tagNames` — hast-util-sanitize has no `tagNameFilter` option, so the
-// previous filter function was ignored and every realty-* tag was stripped here.
-const sanitizeSchema = {
-  ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames ?? []), 'realty-chart', 'realty-box', 'realty-action'],
-  attributes: {
-    ...defaultSchema.attributes,
-    'realty-chart': ['type', 'data', 'title'],
-    'realty-box': ['type', 'title'],
-    'realty-action': ['type', 'label'],
-  },
-}
+// Lazy: pulls react-markdown + remark/rehype (and parse5 via rehype-raw) out of
+// the /discover entry chunk. See components/response/Markdown.tsx.
+const Markdown = dynamic(() => import('@/components/response/Markdown'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-16 w-full rounded-lg" />,
+})
 
 // ── Card shell ────────────────────────────────────────────────────────────────
 
@@ -231,9 +217,8 @@ function TextBlock({ block }: { block: ResponseBlock }) {
   if (!block.body) return null
   return (
     <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-table:text-sm">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeRaw], [rehypeSanitize, sanitizeSchema]]}
+      <Markdown
+        raw
         components={{
           'realty-chart': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { type?: string; data?: string; title?: string }) => <RealtyChart type={props.type ?? ''} data={props.data ?? ''} title={props.title} />,
           'realty-box': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { type?: string; title?: string }) => <RealtyBox type={props.type ?? ''} title={props.title}>{props.children}</RealtyBox>,
@@ -258,7 +243,7 @@ function TextBlock({ block }: { block: ResponseBlock }) {
         } as any}
       >
         {block.body}
-      </ReactMarkdown>
+      </Markdown>
     </div>
   )
 }

@@ -54,7 +54,7 @@ describe('base prompt — safety rules survive in both variants', () => {
   it('no-tools variant carries its provider-specific overrides', () => {
     assert.ok(noTools.includes("I can't reach our builder database right now"))
     assert.ok(noTools.includes('Based on general knowledge (not a live search) —'))
-    assert.ok(noTools.includes("I can't verify RERA details right now"))
+    assert.ok(noTools.includes("I can't verify live RERA details right now"))
   })
 
   it('never redirects buyers to a competitor portal', () => {

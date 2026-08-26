@@ -1,46 +1,48 @@
 'use client'
 
-import posthog from 'posthog-js'
-import { PostHogProvider as PHProvider } from 'posthog-js/react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, Suspense } from 'react'
+import { capture, preloadPostHog } from '@/lib/posthogClient'
 
-// Initialize once at module load — runs only in browser (client bundle)
-if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://app.posthog.com',
-    person_profiles: 'identified_only',
-    capture_pageview: false,
-    loaded: (ph) => {
-      if (process.env.NODE_ENV === 'development') ph.debug()
-    },
-  })
-}
+// posthog-js is loaded lazily (see lib/posthogClient.ts) — it is ~219 KB and
+// used to sit in the root layout's chunk, so every route paid for it before
+// first paint. The `posthog-js/react` context provider is gone with it: nothing
+// in this codebase calls `usePostHog()`, so it was 100% overhead.
 
 function PostHogPageView() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    if (pathname) {
-      let url = window.origin + pathname
-      if (searchParams.toString()) {
-        url += `?${searchParams.toString()}`
-      }
-      posthog.capture('$pageview', { $current_url: url })
-    }
+    if (!pathname) return
+    const qs = searchParams.toString()
+    capture('$pageview', { $current_url: window.origin + pathname + (qs ? `?${qs}` : '') })
   }, [pathname, searchParams])
 
   return null
 }
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
+  // Warm the library once the browser is idle so the first real event does not
+  // pay the download latency.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const idle = typeof window.requestIdleCallback === 'function'
+    const handle: number = idle
+      ? window.requestIdleCallback(preloadPostHog, { timeout: 4000 })
+      : window.setTimeout(preloadPostHog, 2000)
+    return () => {
+      if (idle) window.cancelIdleCallback(handle)
+      else window.clearTimeout(handle)
+    }
+  }, [])
+
   return (
-    <PHProvider client={posthog}>
+    <>
       <Suspense fallback={null}>
         <PostHogPageView />
       </Suspense>
       {children}
-    </PHProvider>
+    </>
   )
 }

@@ -170,12 +170,16 @@ describe('ProjectDetailPanel Component', () => {
     });
   });
 
-  it('switches to Pricing tab when clicked', () => {
+  // Pricing, like Analysis, is a lazily-imported tab chunk — assert after it resolves.
+  it('switches to Pricing tab when clicked', async () => {
     render(<ProjectDetailPanel project={mockProject} initialDetail={mockDetail} onClose={jest.fn()} />);
-    
+
     const pricingTabBtn = screen.getAllByText('Pricing')[0];
     fireEvent.click(pricingTabBtn);
-    
-    expect(screen.getAllByTestId('pricing-tab').length).toBeGreaterThan(0);
+
+    const { waitFor } = require('@testing-library/react');
+    await waitFor(() => {
+      expect(screen.getAllByTestId('pricing-tab').length).toBeGreaterThan(0);
+    });
   });
 });
