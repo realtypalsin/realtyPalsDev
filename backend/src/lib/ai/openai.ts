@@ -67,9 +67,10 @@ export class StreamStallError extends Error {
   }
 }
 
-// 30 seconds: generous enough for a slow tool call response, tight enough
-// to fail-fast on a genuine GitHub Models body stall.
-const INACTIVITY_MS = 60_000;
+// Tight initial timeout for fast rollover if provider is stalled/rate-limited,
+// and reasonable stream inactivity timeout between chunks.
+const INITIAL_TOKEN_TIMEOUT_MS = 8_000;
+const STREAM_INACTIVITY_MS = 15_000;
 
 export async function streamWithOpenAI(
   system: string,
@@ -120,13 +121,14 @@ export async function streamWithOpenAI(
     let inactivityFired = false;
     let inactivityTimer: NodeJS.Timeout | null = null;
 
-    const resetInactivity = () => {
+    const resetInactivity = (isStreaming = false) => {
       if (inactivityTimer) clearTimeout(inactivityTimer);
+      const timeoutMs = isStreaming ? STREAM_INACTIVITY_MS : INITIAL_TOKEN_TIMEOUT_MS;
       inactivityTimer = setTimeout(() => {
         inactivityFired = true;
-        console.warn('[openai] inactivity timeout cycle=' + cycle + ' anyTokenSent=' + anyTokenSent);
+        console.warn(`[openai] inactivity timeout cycle=${cycle} anyTokenSent=${anyTokenSent} (after ${timeoutMs}ms)`);
         inactivityController.abort();
-      }, INACTIVITY_MS);
+      }, timeoutMs);
     };
 
     const clearInactivity = () => {
@@ -134,7 +136,7 @@ export async function streamWithOpenAI(
     };
 
     // Start the timer before create() — covers header stall on GitHub Models.
-    resetInactivity();
+    resetInactivity(false);
 
     console.log('[OPENAI] START create() cycle=' + cycle, Date.now(), { allowTools, msgCount: currentMsgs.length });
 
@@ -182,7 +184,7 @@ export async function streamWithOpenAI(
     try {
       for await (const chunk of stream) {
         // Each chunk resets the inactivity timer — only a genuine silence triggers abort.
-        resetInactivity();
+        resetInactivity(true);
 
         // Absolute deadline check — abort if turn exceeds 120s wall-clock
         if (Date.now() > turnDeadline) {

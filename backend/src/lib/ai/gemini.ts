@@ -11,11 +11,12 @@ type ToolCallFn = (name: string, args: Record<string, unknown>) => Promise<unkno
 
 const MAX_TOOL_CYCLES = 3
 
-// Matches openai.ts's INACTIVITY_MS: generous enough for a slow tool call,
-// tight enough to fail-fast on a genuine stall.
-const INACTIVITY_MS = 60_000
+// Tight initial timeout for fast rollover if provider is stalled/rate-limited,
+// and reasonable stream inactivity timeout between chunks.
+const INITIAL_TOKEN_TIMEOUT_MS = 8_000
+const STREAM_INACTIVITY_MS = 15_000
 
-// Thrown when the stream stalls (no chunk for INACTIVITY_MS) or produces nothing.
+// Thrown when the stream stalls (no chunk within timeout) or produces nothing.
 // tokensSent indicates whether partial content was already sent to the SSE client —
 // callers use this the same way as openai.ts's StreamStallError: clean fallback
 // to the next provider (false) vs error-and-close (true).
@@ -67,7 +68,7 @@ export async function streamWithGemini(
 ): Promise<string> {
   const apiKey = apiKeyOverride ?? process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('No GEMINI_API_KEY configured')
-  const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: INACTIVITY_MS } })
+  const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: STREAM_INACTIVITY_MS } })
   const contents: GeminiContent[] = toGeminiContents(messages)
   let fullText = ''
   const usage: GeminiUsage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 }
@@ -82,14 +83,15 @@ export async function streamWithGemini(
     let inactivityTimer: NodeJS.Timeout | null = null
     const cycleUsage: GeminiUsage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 }
 
-    const resetInactivity = () => {
+    const resetInactivity = (isStreaming = false) => {
       if (inactivityTimer) clearTimeout(inactivityTimer)
+      const timeoutMs = isStreaming ? STREAM_INACTIVITY_MS : INITIAL_TOKEN_TIMEOUT_MS
       inactivityTimer = setTimeout(() => {
         stalled = true
-        console.warn('[gemini] inactivity timeout cycle=' + cycle + ' tokensSent=' + tokensSentThisCycle)
-      }, INACTIVITY_MS)
+        console.warn(`[gemini] inactivity timeout cycle=${cycle} tokensSent=${tokensSentThisCycle} (after ${timeoutMs}ms)`)
+      }, timeoutMs)
     }
-    resetInactivity()
+    resetInactivity(false)
 
     let functionCall: { name: string; args: Record<string, unknown> } | null = null
 
@@ -133,7 +135,7 @@ export async function streamWithGemini(
 
       for await (const chunk of stream) {
         sawAnyChunk = true
-        resetInactivity()
+        resetInactivity(true)
         if (stalled) break
 
         // usageMetadata is populated on the final chunk; later chunks supersede
