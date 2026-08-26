@@ -87,14 +87,14 @@ export function ProjectCarousel({
         <>
           <button
             onClick={handlePrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors"
+            className="tap-target absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors"
             aria-label="Previous image"
           >
             <ChevronLeft size={16} />
           </button>
           <button
             onClick={handleNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors"
+            className="tap-target absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors"
             aria-label="Next image"
           >
             <ChevronRight size={16} />

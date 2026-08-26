@@ -272,7 +272,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
           </div>
 
           {/* Quick Actions Row */}
-          <div className="flex items-center gap-1.5 pt-2 mt-auto">
+          <div className="flex items-center gap-2 pt-2 mt-auto">
             {onAskAI ? (
               <div className="relative flex-1" ref={askMenuRef}>
                 <button
@@ -334,7 +334,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                 trackPropertyEvent(project.id, 'call', sessionId, userId).catch(() => {})
                 onCall?.(project)
               }}
-              className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 transition-all active:scale-95 flex-shrink-0"
+              className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 transition-all active:scale-95 flex-shrink-0"
               title="Request a callback"
             >
               <PhoneCall size={13} weight="bold" />
@@ -343,7 +343,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
             <button
               type="button"
               onClick={handleShareProject}
-              className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 transition-all active:scale-95 flex-shrink-0"
+              className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 transition-all active:scale-95 flex-shrink-0"
               title="Share project"
             >
               <ShareNetwork size={13} weight="bold" />

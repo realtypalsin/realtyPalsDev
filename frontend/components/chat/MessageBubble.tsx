@@ -844,7 +844,7 @@ function MessageBubbleInner({
             <button
               onClick={() => { onCopy(displayContent); onToast('Copied to clipboard'); }}
               title="Copy response"
-              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
+              className="tap-target-y inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
             >
               <Copy size={13} />
             </button>
@@ -852,14 +852,14 @@ function MessageBubbleInner({
             <button
               onClick={() => { track('answer_feedback', { helpful: true, session_id: sessionId }); onToast('Thanks for the feedback'); }}
               title="Helpful"
-              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
+              className="tap-target-y inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
             >
               <ThumbsUp size={13} />
             </button>
             <button
               onClick={() => { track('answer_feedback', { helpful: false, session_id: sessionId }); onToast('Thanks for the feedback'); }}
               title="Not helpful"
-              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
+              className="tap-target-y inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-90 cursor-pointer"
             >
               <ThumbsDown size={13} />
             </button>

@@ -637,3 +637,49 @@ select option {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.4; }
 }
+
+/* ── Touch target expansion ───────────────────────────────────────────────────
+   Grows the *hit* region of a small control toward the 44 CSS px minimum
+   (WCAG 2.5.8, iOS HIG) without moving a single painted pixel. Use these
+   instead of enlarging an icon button when the surrounding layout is tight.
+
+   .tap-target    expands in both axes — only safe when the control has clear
+                  space around it (an isolated FAB, a carousel arrow), because
+                  the invisible pad would otherwise overlap a neighbour and
+                  steal its taps.
+   .tap-target-y  expands vertically only — safe inside a horizontal toolbar,
+                  where neighbours sit to the left and right. */
+.tap-target,
+.tap-target-y {
+  position: relative;
+}
+
+.tap-target::after,
+.tap-target-y::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Hit region only — never painted, and it must not eat the element's own
+     cursor or hover styling, which sit on the button itself. */
+}
+
+.tap-target::after {
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+}
+
+.tap-target-y::after {
+  width: 100%;
+  height: max(100%, 44px);
+}
+
+/* A mouse is precise, so the invisible pad buys nothing and can only interfere
+   with hovering a neighbouring control. Coarse pointers keep it. */
+@media (pointer: fine) {
+  .tap-target::after,
+  .tap-target-y::after {
+    display: none;
+  }
+}
