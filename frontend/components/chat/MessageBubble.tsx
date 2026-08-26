@@ -813,18 +813,18 @@ function MessageBubbleInner({
                                 'realty-chart': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { type?: string; data?: string; title?: string }) => <RealtyChart type={props.type ?? ''} data={props.data ?? ''} title={props.title} />,
                                 'realty-box': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { type?: string; title?: string }) => <RealtyBox type={props.type ?? ''} title={props.title}>{props.children}</RealtyBox>,
                                 table: ({ node, ...props }: any) => (
-                                  <div className="my-4 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/60 dark:bg-[#121214] shadow-2xs custom-scrollbar touch-pan-x">
-                                    <table className="min-w-[560px] w-full border-collapse text-left text-xs sm:text-[13.5px] text-slate-800 dark:text-zinc-200" {...props} />
+                                  <div className="my-3.5 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/60 dark:bg-[#121214] shadow-2xs custom-scrollbar touch-pan-y overscroll-x-contain">
+                                    <table className="w-full table-auto border-collapse text-left text-xs sm:text-[13.5px] text-slate-800 dark:text-zinc-200" {...props} />
                                   </div>
                                 ),
                                 thead: ({ node, ...props }: any) => (
-                                  <thead className="bg-slate-100/90 dark:bg-zinc-800/90 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-700/80" {...props} />
+                                  <thead className="bg-slate-100/90 dark:bg-zinc-800/90 text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-700/80" {...props} />
                                 ),
                                 th: ({ node, ...props }: any) => (
-                                  <th className="px-4 py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap" {...props} />
+                                  <th className="px-2.5 sm:px-4 py-2.5 sm:py-3 font-bold text-slate-900 dark:text-white whitespace-normal sm:whitespace-nowrap break-words" {...props} />
                                 ),
                                 td: ({ node, ...props }: any) => (
-                                  <td className="px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
+                                  <td className="px-2.5 sm:px-4 py-2.5 sm:py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top break-words" {...props} />
                                 ),
                                 tr: ({ node, ...props }: any) => (
                                   <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-slate-50/50 dark:even:bg-zinc-800/20" {...props} />

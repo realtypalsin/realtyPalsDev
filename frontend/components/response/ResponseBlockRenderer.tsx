@@ -240,18 +240,18 @@ function TextBlock({ block }: { block: ResponseBlock }) {
           'realty-box': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { type?: string; title?: string }) => <RealtyBox type={props.type ?? ''} title={props.title}>{props.children}</RealtyBox>,
           'realty-action': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { label?: string }) => <ContactButton label={props.label || 'Request Callback'} className="my-2" />,
           table: ({ node, ...props }: any) => (
-            <div className="my-3 sm:my-4 overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-x">
-              <table className="min-w-[360px] sm:min-w-[500px] w-full border-collapse text-left text-[11px] sm:text-xs md:text-sm text-slate-700 dark:text-zinc-300" {...props} />
+            <div className="my-3 sm:my-4 overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-y overscroll-x-contain">
+              <table className="w-full table-auto border-collapse text-left text-[11px] sm:text-xs md:text-sm text-slate-700 dark:text-zinc-300" {...props} />
             </div>
           ),
           thead: ({ node, ...props }: any) => (
             <thead className="bg-slate-100/90 dark:bg-zinc-800/90 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 border-b border-slate-200 dark:border-zinc-700/80" {...props} />
           ),
           th: ({ node, ...props }: any) => (
-            <th className="px-3 sm:px-4 py-2 sm:py-3 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap" {...props} />
+            <th className="px-2.5 sm:px-4 py-2 sm:py-3 font-bold text-slate-900 dark:text-slate-100 whitespace-normal sm:whitespace-nowrap break-words" {...props} />
           ),
           td: ({ node, ...props }: any) => (
-            <td className="px-3 sm:px-4 py-2.5 sm:py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top" {...props} />
+            <td className="px-2.5 sm:px-4 py-2.5 sm:py-3.5 border-b border-slate-100 dark:border-zinc-800/60 last:border-0 leading-relaxed align-top break-words" {...props} />
           ),
           tr: ({ node, ...props }: any) => (
             <tr className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors odd:bg-transparent even:bg-slate-50/50 dark:even:bg-zinc-800/30" {...props} />
