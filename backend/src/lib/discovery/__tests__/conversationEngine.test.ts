@@ -162,7 +162,6 @@ describe('ConversationEngine: Chip Factory', () => {
       'C1',
       'INTENT_PATCH',
       'Test Label',
-      '📍',
       { patch: { sector: 'Sector 150' } },
       1
     )
@@ -182,7 +181,6 @@ describe('ConversationEngine: Chip Factory', () => {
       'C2',
       'INTENT_PATCH',
       'Sector 150',
-      '📍',
       { patch: { sector: 'Sector 150' } },
       1,
       group

@@ -128,7 +128,7 @@ export function buildOpenAnswerChips(
   for (const sector of sectors.slice(0, 2)) {
     out.push(chip(
       `TEXT_MESSAGE:open_sector:${sector.replace(/\s+/g, '_')}`,
-      'TEXT_MESSAGE', `Projects in ${sector}`, '',
+      'TEXT_MESSAGE', `Projects in ${sector}`,
       { text: `Show me projects in ${sector}` },
       priority++,
     ))
@@ -137,14 +137,14 @@ export function buildOpenAnswerChips(
   if (projects.length >= 2) {
     out.push(chip(
       `COMPARE_PROPERTIES:open_compare:${projects.map(p => p.id).join(':')}`,
-      'COMPARE_PROPERTIES', `Compare these ${projects.length}`, '',
+      'COMPARE_PROPERTIES', `Compare these ${projects.length}`,
       { mode: 'multi', projects },
       priority++,
     ))
   } else if (projects.length === 1) {
     out.push(chip(
       `TEXT_MESSAGE:open_project:${projects[0].id}`,
-      'TEXT_MESSAGE', `About ${projects[0].name}`, '',
+      'TEXT_MESSAGE', `About ${projects[0].name}`,
       { text: `Tell me about ${projects[0].name}` },
       priority++,
     ))
@@ -153,7 +153,7 @@ export function buildOpenAnswerChips(
   if (sectors.length >= 2) {
     out.push(chip(
       `TEXT_MESSAGE:open_sector_compare:${sectors.slice(0, 2).join('_').replace(/\s+/g, '_')}`,
-      'TEXT_MESSAGE', `${sectors[0]} vs ${sectors[1]}`, '',
+      'TEXT_MESSAGE', `${sectors[0]} vs ${sectors[1]}`,
       { text: `Compare ${sectors[0]} with ${sectors[1]}` },
       priority++,
     ))
@@ -170,14 +170,14 @@ export function buildProseChips(projects: Array<{ id: string; name: string }>): 
 
   if (projects.length >= 2) {
     out.push(chip(`COMPARE_PROPERTIES:prose_compare:${pIds}`, 'COMPARE_PROPERTIES',
-      `Compare these ${projects.length}`, '', { mode: 'multi', projects }, 1))
+      `Compare these ${projects.length}`, { mode: 'multi', projects }, 1))
   }
   out.push(
-    chip(`TEXT_MESSAGE:prose_tradeoffs:${pIds}`, 'TEXT_MESSAGE', 'What are the trade-offs?', '',
+    chip(`TEXT_MESSAGE:prose_tradeoffs:${pIds}`, 'TEXT_MESSAGE', 'What are the trade-offs?',
       { actionPrefix: 'What are the main trade-offs, risks and downsides of', projects, actionSuffix: '?' }, 2),
-    chip(`CALCULATE_EMI:prose_emi:${pIds}`, 'CALCULATE_EMI', 'Calculate EMI', '',
+    chip(`CALCULATE_EMI:prose_emi:${pIds}`, 'CALCULATE_EMI', 'Calculate EMI',
       { projects }, 3),
-    chip(`TEXT_MESSAGE:prose_rera:${pIds}`, 'TEXT_MESSAGE', 'Check RERA status', '',
+    chip(`TEXT_MESSAGE:prose_rera:${pIds}`, 'TEXT_MESSAGE', 'Check RERA status',
       { actionPrefix: 'Show the RERA registration and legal standing of', projects }, 4),
   )
   return out

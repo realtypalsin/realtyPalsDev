@@ -91,6 +91,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable} ${playfair.variable} ${afacad.variable} font-sans`}>
+      <head>
+        {/* Applies the stored theme before first paint. ThemeToggle sets it in a
+            useEffect, which runs after hydration — so dark-mode users got a
+            white flash on every navigation. Must stay in sync with ThemeToggle:
+            light is the default, dark only when explicitly stored. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark')}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="antialiased glass-app font-sans relative text-foreground bg-[#E4E4E5]">
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:p-4 focus:bg-white focus:text-blue-600 focus:font-bold">
           Skip to main content

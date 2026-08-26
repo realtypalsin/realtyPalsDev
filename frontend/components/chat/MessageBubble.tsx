@@ -27,12 +27,10 @@ import ProjectCard from '@/components/ProjectCard'
 import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import { SuggestionChip } from '@/components/chat/SuggestionChip'
 import { CardSelectorChip } from '@/components/chat/CardSelectorChip'
-import UniversalLoader from '@/components/ui/universal-loader'
 import { useInlineEdit } from '@/hooks/useInlineEdit'
 import type { ChatMessage } from '@/types/property'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 import type { ChipPickerState } from './types'
-import type { ChatResponse } from '@/types/chat'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import { PropertyFeedback } from '@/components/chat/PropertyFeedback'
@@ -62,55 +60,6 @@ interface ChipCardPayload {
   actionSuffix?: string
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function formatStreamingIntent(intent: Record<string, unknown> | null | undefined): string | null {
-  if (!intent) return null
-  const parts: string[] = []
-  if (Array.isArray(intent.bhk) && intent.bhk.length > 0) parts.push(`${(intent.bhk as number[]).join('/')} BHK`)
-  if (typeof intent.sector === 'string') parts.push(intent.sector)
-  if (Number.isFinite(intent.budgetMax)) parts.push(`under ₹${intent.budgetMax}Cr`)
-  else if (Number.isFinite(intent.budgetMin)) parts.push(`from ₹${intent.budgetMin}Cr`)
-  return parts.length > 0 ? `Looking for ${parts.join(' · ')}` : 'Scanning available projects…'
-}
-
-function buildAdaptiveThinkingLabel(userMessage: string | undefined, intent: Record<string, unknown> | null, phase: string): { label: string; sublabel?: string } {
-  const intentLabel = formatStreamingIntent(intent)
-
-  // Extract key terms from user message
-  const msg = (userMessage || '').toLowerCase()
-  const hasBudget = /(\d+\s*(cr|crore|lakh|lac))/i.test(userMessage || '')
-  const hasMetro = /metro|station|proximity|near/i.test(msg)
-  const hasFamily = /family|kids|children|school/i.test(msg)
-  const hasInvestment = /invest|appreciation|roi/i.test(msg)
-
-  // Build context phrase
-  let context = ''
-  if (hasBudget && hasMetro) context = 'metro-accessible'
-  else if (hasBudget && hasFamily) context = 'family-focused'
-  else if (hasBudget && hasInvestment) context = 'investment-grade'
-  else if (hasMetro) context = 'near metro stations'
-  else if (hasFamily) context = 'for your family'
-  else context = 'that match your criteria'
-
-  if (phase === 'searching') {
-    return {
-      label: `Searching for properties ${context}`,
-      sublabel: intentLabel || undefined
-    }
-  } else if (phase === 'generating') {
-    return {
-      label: 'Analyzing options',
-      sublabel: intentLabel || undefined
-    }
-  } else {
-    // extraction phase
-    if (intentLabel) {
-      return { label: 'Refining criteria', sublabel: intentLabel }
-    }
-    return { label: 'Understanding your needs' }
-  }
-}
-
 import ReactMarkdown from 'react-markdown'
 
 // ── Dynamic imports — excluded from initial JS bundle ──────────────────────
@@ -127,7 +76,6 @@ export interface MessageBubbleProps {
   isLast: boolean
   isSubmitting: boolean
   chatPhase: 'DISCOVERY' | 'ADVISOR'
-  isLastProperties: boolean
   isExpanded: boolean
   carouselIndex: number
   lastShortlist: ProjectCardType[]
@@ -470,6 +418,7 @@ function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
   if (prev.comparingMessageId !== next.comparingMessageId) return false
   if (prev.selectedCompareIds !== next.selectedCompareIds) return false
   if (prev.isExpanded !== next.isExpanded) return false
+  if (prev.showMap !== next.showMap) return false
   return (
     prev.message.content === next.message.content &&
     prev.message.properties === next.message.properties &&
@@ -493,7 +442,7 @@ function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
 
 // ── Component ──────────────────────────────────────────────────────────────
 function MessageBubbleInner({
-  message, index, isLast, isSubmitting, chatPhase, isLastProperties,
+  message, index, isLast, isSubmitting, chatPhase,
   isExpanded, carouselIndex, lastShortlist, showMap, userId, sessionId, regeneratingIdx,
   chipPicker, chips, isRestoring,
   onCopy, onDetailOpen, onCallback, onRegenerate, onAction, onEditMessage,
@@ -1015,11 +964,14 @@ function MessageBubbleInner({
                 <div className="flex gap-3">
                   <div className="flex-shrink-0 text-2xl">⚠️</div>
                   <div className="flex-1 min-w-0">
+                    {/* State the actual reason. This banner fires on the backend's
+                        NO-FALLBACK path, which means the sector was searched and
+                        held nothing — not that anything is overloaded. */}
                     <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                      We&apos;re experiencing high traffic
+                      Nothing in {message.spatialContext?.anchorSector} matches your criteria
                     </p>
                     <p className="text-xs text-amber-800 dark:text-amber-200 mt-1.5 leading-relaxed">
-                      No inventory is currently available in <strong>{message.spatialContext?.anchorSector}</strong> for your criteria, or our data systems are temporarily unavailable. Please try again in a few moments.
+                      We only show verified inventory, so we won&apos;t substitute another sector without asking. Try widening the budget or BHK, or ask for nearby sectors.
                     </p>
                   </div>
                 </div>
@@ -1165,9 +1117,14 @@ function MessageBubbleInner({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent('realtypals:open-map'))}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 hover:border-blue-400 dark:hover:border-blue-500 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs active:scale-95 cursor-pointer"
+                  aria-pressed={showMap}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer border ${
+                    showMap
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-blue-500/20'
+                      : 'bg-white/80 dark:bg-zinc-800/80 border-slate-200/80 dark:border-zinc-700/80 text-slate-700 dark:text-slate-200 hover:border-blue-400 dark:hover:border-blue-500'
+                  }`}
                 >
-                  <MapPin size={13} weight="duotone" className="text-blue-500" />
+                  <MapPin size={13} weight="duotone" className={showMap ? 'text-white' : 'text-blue-500'} />
                   <span className="hidden sm:inline">Map</span>
                 </button>
                 {fullCardsForCompare.length >= 2 && (
@@ -1219,7 +1176,9 @@ function MessageBubbleInner({
                     We couldn&apos;t find an exact match in {String(expansion.requestedSector)}
                   </p>
                   <p className="text-[12px] text-amber-700 dark:text-amber-400 mt-0.5 font-medium">
-                    Verified --
+                    {expansion.searchedSectors?.length
+                      ? `Showing verified alternatives from ${expansion.searchedSectors.join(', ')}.`
+                      : 'Showing verified alternatives nearby.'}
                   </p>
                 </div>
               </m.div>

@@ -29,13 +29,12 @@ import ContactButton from '@/components/ContactButton'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 
-// Sanitization schema: allow realty-chart and realty-box custom elements + their attributes
+// Sanitization schema: allow realty-chart and realty-box custom elements + their attributes.
+// Must extend `tagNames` — hast-util-sanitize has no `tagNameFilter` option, so the
+// previous filter function was ignored and every realty-* tag was stripped here.
 const sanitizeSchema = {
   ...defaultSchema,
-  tagNameFilter: (tagName: string) => {
-    if (tagName === 'realty-chart' || tagName === 'realty-box' || tagName === 'realty-action') return true
-    return (defaultSchema as any).tagNameFilter?.(tagName) ?? false
-  },
+  tagNames: [...(defaultSchema.tagNames ?? []), 'realty-chart', 'realty-box', 'realty-action'],
   attributes: {
     ...defaultSchema.attributes,
     'realty-chart': ['type', 'data', 'title'],

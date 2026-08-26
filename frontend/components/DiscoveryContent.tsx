@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, m } from 'framer-motion';
 import dynamic from 'next/dynamic';
@@ -35,8 +35,6 @@ import { ChatPhase2Skeleton } from '@/components/skeletons';
 
 const DEBUG = process.env.NODE_ENV !== 'production'
 const WELCOME_MESSAGE = "Hi, I'm RealtyPal — your advisor for Noida & Greater Noida. Ask me anything: budgets in ₹ Lakh/Cr, RERA status, builder track records, or which sector fits your family. I'll give you straight answers, tradeoffs included."
-const PHASES = ['DISCOVERY', 'ADVISOR'] as const
-const STATUS_PHASES = { extracting: 'extracting', searching: 'searching', generating: 'generating' } as const
 import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } from '@/hooks/useAnalyticsTracking';
 
 // ── Dynamic imports — heavy components excluded from initial bundle ─────────
@@ -45,7 +43,6 @@ const CallbackModal = dynamic(() => import('@/components/CallbackModal'), { ssr:
 const ShareShortlistModal = dynamic(() => import('@/components/ShareShortlistModal'), { ssr: false })
 const CalculatorPanel = dynamic(() => import('@/components/CalculatorPanel'), { ssr: false })
 const ProjectDetailPanel = dynamic(() => import('@/components/ProjectDetailPanel'), { ssr: false })
-const LeadSuccessModal = dynamic(() => import('@/components/LeadSuccessModal'), { ssr: false })
 const ThemeToggle = dynamic(() => import('@/components/ThemeToggle'), { ssr: false })
 const ReEngagementBanner = dynamic(() => import('@/components/chat/ReEngagementBanner'), { ssr: false })
 const HomeButtons = dynamic(() => import('@/components/HomeButtons'), { ssr: false })
@@ -231,13 +228,20 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     }
   }, [sessionId]);
 
-  // Persist scroll position
+  // Persist scroll position. Coalesced into one write per frame: sessionStorage
+  // is synchronous, and writing it on every scroll event janked the feed.
+  const pendingScrollWrite = useRef<number | null>(null);
   const handleMessageScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
-    if (sessionId) {
+    if (!sessionId || pendingScrollWrite.current !== null) return;
+    pendingScrollWrite.current = requestAnimationFrame(() => {
+      pendingScrollWrite.current = null;
       sessionStorage.setItem(`scroll_pos_${sessionId}`, scrollTop.toString());
-    }
+    });
   };
+  useEffect(() => () => {
+    if (pendingScrollWrite.current !== null) cancelAnimationFrame(pendingScrollWrite.current);
+  }, []);
 
   // Sync state to local session cache so switching chats is seamless
   useEffect(() => {
@@ -293,6 +297,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, []);
 
   const handleToggleCompareSelect = useCallback((_messageId: string, property: ProjectCardType) => {
+    let hitLimit = false;
     setSelectedCompareProjects(prev => {
       const next = new Map(prev);
       const key = String(property.id || property.slug);
@@ -300,13 +305,16 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         next.delete(key);
       } else {
         if (next.size >= 4) {
-          setToast({ message: 'Maximum 4 properties can be compared at once.' });
+          // Flag it, don't setToast in here: StrictMode invokes the updater
+          // twice, which fired the toast twice.
+          hitLimit = true;
           return prev;
         }
         next.set(key, property);
       }
       return next;
     });
+    if (hitLimit) setToast({ message: 'Maximum 4 properties can be compared at once.' });
   }, []);
 
   const handleCancelCompare = useCallback(() => {
@@ -976,7 +984,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       setChatHistory([{
         id: crypto.randomUUID(),
         type: 'ai',
-        content: "Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.",
+        content: WELCOME_MESSAGE,
         timestamp: new Date().toISOString(),
       }]);
       setCurrentIntent(null);
@@ -1142,7 +1150,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           setChatHistory([{
             id: crypto.randomUUID(),
             type: 'ai',
-            content: "Hi, I'm RealtyPal. Research properties, compare options, and decide confidently.",
+            content: WELCOME_MESSAGE,
             timestamp: new Date().toISOString(),
           }]);
           loadedSessionIdRef.current = initialSessionId;
@@ -1454,39 +1462,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
   const hasUserReplied = chatHistory.some((m) => m.type === 'user');
 
-  // Index of the last chat message that has property cards — only that one shows full grid
-  // If the properties are exactly the same as the previous turn, it returns -1 (auto-collapses them).
-  const lastPropertiesIndex = useMemo(() => {
-    const propIndices = chatHistory.reduce<number[]>((acc, msg, i) => {
-      if ((msg.exactResults?.length ?? 0) > 0 || (msg.nearbyResults?.length ?? 0) > 0 || (msg.properties?.length ?? 0) > 0) {
-        acc.push(i);
-      }
-      return acc;
-    }, []);
-
-    if (propIndices.length === 0) return -1;
-    const lastIdx = propIndices[propIndices.length - 1];
-
-    if (propIndices.length > 1) {
-      const prevIdx = propIndices[propIndices.length - 2];
-      const lastMsg = chatHistory[lastIdx];
-      const prevMsg = chatHistory[prevIdx];
-
-      const getProjectSlugs = (m: import('@/types/property').ChatMessage) => {
-        const exact = m.exactResults?.map(p => p.slug) ?? [];
-        const nearby = m.nearbyResults?.map(p => p.slug) ?? [];
-        const legacy = m.properties?.map(p => p.slug) ?? [];
-        return [...exact, ...nearby, ...legacy].sort().join(',');
-      };
-
-      if (getProjectSlugs(lastMsg) === getProjectSlugs(prevMsg)) {
-        return -1; // Properties are identical to previous turn, keep them collapsed!
-      }
-    }
-
-    return lastIdx;
-  }, [chatHistory]);
-
   // ── Stable MessageBubble callbacks ──────────────────────────────────────────
   const handleToggleExpanded = useCallback((id: string) => {
     setExpandedShortlists(prev => {
@@ -1497,6 +1472,14 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   }, [])
 
   const handleToggleMap = useCallback(() => setShowMap(v => !v), [])
+
+  // The Map button on each result header dispatches this. Without a listener the
+  // button was inert — `showMap` is already plumbed into MessageBubble and gates
+  // the SectorMap render, so this is the only piece that was missing.
+  useEffect(() => {
+    window.addEventListener('realtypals:open-map', handleToggleMap);
+    return () => window.removeEventListener('realtypals:open-map', handleToggleMap);
+  }, [handleToggleMap]);
 
   const handleSetCarouselIndex = useCallback((msgIdx: number, imgIdx: number) => {
     setCarouselIndexes(prev => ({ ...prev, [msgIdx]: imgIdx }))
@@ -1844,7 +1827,6 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                         isLast={actualIndex === chatHistory.length - 1}
                         isSubmitting={isSubmitting}
                         chatPhase={chatPhase}
-                        isLastProperties={actualIndex === lastPropertiesIndex}
                         isExpanded={expandedShortlists.has(message.id)}
                         carouselIndex={carouselIndexes[actualIndex] ?? 0}
                         lastShortlist={lastShortlist}
@@ -2072,14 +2054,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         onClose={() => { setCallbackProject(null); setCallbackDone(false) }}
       />
 
-      {callbackDone && callbackProject && (
-        <LeadSuccessModal
-          type="callback"
-          projectName={callbackProject.name}
-          name=""
-          onClose={() => { setCallbackProject(null); setCallbackDone(false) }}
-        />
-      )}
+      {/* No LeadSuccessModal here: CallbackModal renders its own success screen
+          and fires `lead_created` itself. This block was gated on a flag nothing
+          ever set, so it was unreachable — and would have been a second, duplicate
+          success dialog if it had fired. */}
 
       {/* ── Share shortlist sheet ── */}
       <ShareShortlistModal

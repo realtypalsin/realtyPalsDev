@@ -200,7 +200,6 @@ export async function generateContextualLLMChips(
       `llm_chip_${idx}`,
       'TEXT_MESSAGE',
       beautified,
-      '',
       { text: beautified },
       priorityStart + idx
     )

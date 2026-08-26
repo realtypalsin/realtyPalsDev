@@ -27,8 +27,13 @@ import {
   computeBudgetStatus,
 } from './scoring'
 import { getNearbySectors } from './sectors'
-import type { SectorTier } from './sectorTiers'
+// Static imports: neither module imports anything, so the "circular dependency"
+// these were deferred for with require() at call time never existed — and the
+// require ran once per project per query.
+import { computeSectorTier, type SectorTier } from './sectorTiers'
+import { getMarketTier } from './marketTiers'
 import { isCityLevel } from './intent'
+import { normalizeBuilderSearchName } from '../builders'
 import { CITY_LEVEL_ALIASES } from './constants'
 import { SUPPORTED_CITIES } from '../config/cities'
 
@@ -280,7 +285,7 @@ export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Pr
   // Builder — fuzzy token match (e.g. "Purvanchal Projects" -> "Purvanchal")
   if (intent.builderName) {
     const rawBuilder = intent.builderName.trim()
-    const cleanBuilder = rawBuilder.replace(/\b(projects|group|developers|developer|infratech|infra|limited|ltd|pvt|llp|realtors|realtech|buildtech)\b/gi, '').trim()
+    const cleanBuilder = normalizeBuilderSearchName(rawBuilder)
     where.builder = {
       OR: [
         { name: { contains: rawBuilder, mode: 'insensitive' as const } },
@@ -381,13 +386,6 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     relevantUnits.length ? relevantUnits : p.unit_types,
     intent
   )
-
-  // Phase 5: Compute sector tier for boost
-  // Import here to avoid circular dependency
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { computeSectorTier } = require('./sectorTiers')
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { getMarketTier } = require('./marketTiers')
 
   const sectorIntelligence = (p as { sector_intelligence?: { sector_stage: string; avg_price_per_sqft: number | null; price_5yr_cagr_pct: number | null } }).sector_intelligence // populated via dynamic SQL join if available
   let sectorTier: SectorTier | undefined
@@ -798,11 +796,13 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
 
       // Process PROXIMITY results: fetch full project data, partition into exact + nearby, return early
       if (rawProjectsFromSpatial.length > 0) {
-        const projectIds = rawProjectsFromSpatial.map((p) => p.id)
+        // Page by distance, not by whatever order Postgres returns: a `take` on
+        // the id lookup discarded an arbitrary subset, so the nearest projects
+        // could be the ones dropped. rawProjectsFromSpatial is nearest-first.
+        const projectIds = rawProjectsFromSpatial.slice(0, RESULTS_PER_PAGE).map((p) => p.id)
         const fullProjects = await prisma.project.findMany({
           where: { id: { in: projectIds } },
           include: PROJECT_INCLUDE,
-          take: RESULTS_PER_PAGE,
         })
 
         if (fullProjects.length > 0) {
@@ -811,7 +811,9 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
 
           const projectsWithDistance = fullProjects.map((p) => ({
             ...p,
-            distance_km: distanceMap.get(p.id) || null,
+            // `??`, not `||` — a project sitting on the sector centroid has
+            // distance 0, which `||` turned into "unknown distance".
+            distance_km: distanceMap.get(p.id) ?? null,
           }))
 
           // Partition: exact sector vs nearby sectors
@@ -991,7 +993,7 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     return res
   }
 
-  // ── Branch 3: nearby sector expansion (parallel) ─────────────────────
+  // ── Branch 4: nearby sector expansion (parallel) ─────────────────────
   // Only fires when:
   // 1. spatialScope !== 'EXACT' (user didn't strictly request "in Sector X")
   // 2. spatialScope !== 'PROXIMITY' (handled above with radial search)
@@ -1043,7 +1045,7 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     }
   }
 
-  // ── Branch 4: NO-FALLBACK enforcement for EXACT spatial scope ──────────
+  // ── Branch 5: NO-FALLBACK enforcement for EXACT spatial scope ──────────
   // If user explicitly asked for "in Sector X" (EXACT scope) and we have zero results,
   // DO NOT fall back to city-wide recommendations. This prevents false positives and
   // maintains trust. Show empty state with error messaging in frontend.
@@ -1072,7 +1074,7 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     return res
   }
 
-  // ── Branch 4: Fallback to top city projects ─────────────────────────────
+  // ── Branch 6: Fallback to top city projects ─────────────────────────────
   // If the sector was completely unknown, fetch top projects across the city
   // so we can still push our own inventory instead of a dead end.
   // NOTE: This fallback is ONLY for BROAD scope queries (region-level searches)
@@ -1110,99 +1112,4 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
   }
   await setCached(cacheKey, res, 300)
   return res
-}
-
-/**
- * Phase 5: Curated ranking helpers
- * Registered as tools when queryKind=RANKING
- */
-
-/**
- * Get best value projects for a sector and budget.
- * Sorted by (headroom + amenity_depth).
- */
-export async function bestValueProjects(
-  sector: string,
-  budgetMaxCr?: number
-): Promise<ScoredProject[]> {
-  const where: Prisma.ProjectWhereInput = {
-    sector: { equals: sector, mode: 'insensitive' },
-    status: { in: ['under_construction', 'ready_to_move'] },
-  }
-
-  const projects = await prisma.project.findMany({
-    where,
-    include: PROJECT_INCLUDE,
-    take: 10,
-  })
-
-  const scored = projects.map((p) => mapToScored(p as RawProject, { budgetMax: budgetMaxCr }))
-  // Sort by match score (which includes headroom + amenities)
-  return scored.sort((a, b) => b.matchScore - a.matchScore)
-}
-
-/**
- * Get fastest possession projects for a sector and budget.
- * Possession date ascending, filter >12mo delays.
- */
-export async function fastestPossessionProjects(
-  sector: string,
-  budgetMaxCr?: number
-): Promise<ScoredProject[]> {
-  const cutoffDate = new Date()
-  cutoffDate.setMonth(cutoffDate.getMonth() + 36) // 3 years from now
-
-  const where: Prisma.ProjectWhereInput = {
-    sector: { equals: sector, mode: 'insensitive' },
-    status: { in: ['under_construction', 'ready_to_move'] },
-    possession_date: { lte: cutoffDate },
-  }
-
-  const projects = await prisma.project.findMany({
-    where,
-    include: PROJECT_INCLUDE,
-    orderBy: { possession_date: 'asc' },
-    take: 10,
-  })
-
-  const scored = projects.map((p) => mapToScored(p as RawProject, { budgetMax: budgetMaxCr }))
-  // Already sorted by possession_date from DB
-  return scored.sort((a, b) => {
-    const aDate = a.possession_date ? new Date(a.possession_date) : new Date(9999, 0, 1)
-    const bDate = b.possession_date ? new Date(b.possession_date) : new Date(9999, 0, 1)
-    return aDate.getTime() - bDate.getTime()
-  })
-}
-
-/**
- * Get best projects for families (school/amenities focus).
- */
-export async function bestForFamiliesProjects(
-  sector: string,
-  budgetMaxCr?: number
-): Promise<ScoredProject[]> {
-  const where: Prisma.ProjectWhereInput = {
-    sector: { equals: sector, mode: 'insensitive' },
-    status: { in: ['under_construction', 'ready_to_move'] },
-  }
-
-  const projects = await prisma.project.findMany({
-    where,
-    include: PROJECT_INCLUDE,
-    take: 10,
-  })
-
-  const scored = projects.map((p) => mapToScored(p as RawProject, { budgetMax: budgetMaxCr }))
-
-  // Sort by amenity count + school/connectivity signals
-  return scored.sort((a, b) => {
-    const aAmenities = a.top_amenities?.length || 0
-    const aSchools = a.top_connectivity?.filter((c) => c.type.toLowerCase().includes('school')).length || 0
-    const bAmenities = b.top_amenities?.length || 0
-    const bSchools = b.top_connectivity?.filter((c) => c.type.toLowerCase().includes('school')).length || 0
-
-    const aScore = aAmenities * 2 + aSchools * 3
-    const bScore = bAmenities * 2 + bSchools * 3
-    return bScore - aScore
-  })
 }

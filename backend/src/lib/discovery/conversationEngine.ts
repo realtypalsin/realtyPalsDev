@@ -128,7 +128,7 @@ function computeStage(
 
 // ─── Missing field computation ────────────────────────────────────────────────
 
-function getMissingFields(intent: Intent, intentState?: IntentState): string[] {
+function getMissingFields(intent: Intent): string[] {
   const missing: string[] = []
   if (!intent.sector) missing.push('sector')
   if (!intent.bhk || intent.bhk.length === 0) missing.push('bhk')
@@ -180,11 +180,13 @@ function cleanLabel(s: string): string {
     .trim()
 }
 
+// No `icon` parameter: the frontend derives a chip's icon from its label
+// (chipIconUtils), so the argument callers used to pass was overwritten with
+// `icon: ''` here and silently discarded.
 export function chip(
   id: string,
   actionType: ConversationActionType,
   label: string,
-  icon: string,
   payload: Record<string, unknown>,
   priority: number = 1,
   group?: ChipGroup
@@ -213,7 +215,6 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
       `INTENT_PATCH:sector:${sector}`,
       'INTENT_PATCH',
       sector,
-      '',
       { patch: { sector }, label: sector },
       idx + 1,
       areaGroup
@@ -226,7 +227,6 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
       `INTENT_PATCH:budget:${bucket.label.replace(/\W+/g, '_').toLowerCase()}`,
       'INTENT_PATCH',
       bucket.label,
-      '',
       { patch: { budgetMax: bucket.max }, label: bucket.label },
       chips.length + 1,
       budgetGroup
@@ -239,7 +239,6 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
       `INTENT_PATCH:bhk:${bhk}`,
       'INTENT_PATCH',
       `${bhk} BHK`,
-      '',
       { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
       chips.length + 1,
       bhkGroup
@@ -285,27 +284,27 @@ async function getClarifyingChips(
   // ─── 2. Persona Specific Dynamic Clarification ───────────────────────────────
   if (intent.journeyStage === 'yield_investor') {
     chips.push(
-      chip('EXPLORE:yield_commercial', 'TEXT_MESSAGE', 'Commercial Retail (6-8% Yield)', '', { message: 'Tell me about commercial retail yields vs residential in Noida' }, priority++),
-      chip('EXPLORE:jewar_catalyst', 'TEXT_MESSAGE', 'Jewar Airport Impact', '', { message: 'How will Jewar Airport commercial flights impact property values?' }, priority++),
-      chip('EXPLORE:roi_5yr_model', 'TEXT_MESSAGE', '5-Yr ROI Projection', '', { message: 'Show me a 5-year ROI model comparing residential vs commercial' }, priority++)
+      chip('EXPLORE:yield_commercial', 'TEXT_MESSAGE', 'Commercial Retail (6-8% Yield)', { message: 'Tell me about commercial retail yields vs residential in Noida' }, priority++),
+      chip('EXPLORE:jewar_catalyst', 'TEXT_MESSAGE', 'Jewar Airport Impact', { message: 'How will Jewar Airport commercial flights impact property values?' }, priority++),
+      chip('EXPLORE:roi_5yr_model', 'TEXT_MESSAGE', '5-Yr ROI Projection', { message: 'Show me a 5-year ROI model comparing residential vs commercial' }, priority++)
     )
     return chips
   }
 
   if (intent.riskProfile === 'nri' || intent.journeyStage === 'nri_investor') {
     chips.push(
-      chip('EXPLORE:nri_form7', 'TEXT_MESSAGE', 'Form-7 Escrow Compliant Only', '', { message: 'Show me projects with 100% UP RERA Form-7 escrow compliance' }, priority++),
-      chip('EXPLORE:nri_tripartite', 'TEXT_MESSAGE', 'Tripartite Agreement Info', '', { message: 'How does the mandatory Tripartite Sale Agreement protect me?' }, priority++),
-      chip('EXPLORE:nri_remote_spa', 'TEXT_MESSAGE', 'Remote Registry (SPA)', '', { message: 'How does remote registration via Special Power of Attorney work?' }, priority++)
+      chip('EXPLORE:nri_form7', 'TEXT_MESSAGE', 'Form-7 Escrow Compliant Only', { message: 'Show me projects with 100% UP RERA Form-7 escrow compliance' }, priority++),
+      chip('EXPLORE:nri_tripartite', 'TEXT_MESSAGE', 'Tripartite Agreement Info', { message: 'How does the mandatory Tripartite Sale Agreement protect me?' }, priority++),
+      chip('EXPLORE:nri_remote_spa', 'TEXT_MESSAGE', 'Remote Registry (SPA)', { message: 'How does remote registration via Special Power of Attorney work?' }, priority++)
     )
     return chips
   }
 
   if (intent.journeyStage === 'market_evaluator') {
     chips.push(
-      chip('EXPLORE:sec75_vs_76', 'TEXT_MESSAGE', 'Sector 75 vs 76 Delta', '', { message: 'Why is Sector 75 more expensive than Sector 76?' }, priority++),
-      chip('EXPLORE:carpet_vs_super', 'TEXT_MESSAGE', 'Carpet vs Super Area', '', { message: 'How does RERA carpet area differ from builder super built-up area?' }, priority++),
-      chip('EXPLORE:circle_rate_duty', 'TEXT_MESSAGE', 'Circle Rate & Tax Rules', '', { message: 'How are circle rates and stamp duty calculated in Noida?' }, priority++)
+      chip('EXPLORE:sec75_vs_76', 'TEXT_MESSAGE', 'Sector 75 vs 76 Delta', { message: 'Why is Sector 75 more expensive than Sector 76?' }, priority++),
+      chip('EXPLORE:carpet_vs_super', 'TEXT_MESSAGE', 'Carpet vs Super Area', { message: 'How does RERA carpet area differ from builder super built-up area?' }, priority++),
+      chip('EXPLORE:circle_rate_duty', 'TEXT_MESSAGE', 'Circle Rate & Tax Rules', { message: 'How are circle rates and stamp duty calculated in Noida?' }, priority++)
     )
     return chips
   }
@@ -313,10 +312,10 @@ async function getClarifyingChips(
   // ─── 3. Relocators without a specific sector selected ─────────────────────────
   if (intent.journeyStage === 'relocation' && !intent.sector) {
     chips.push(
-      chip('INTENT_PATCH:corridor_exp', 'TEXT_MESSAGE', 'Noida Expressway (IT & Luxury)', '', { message: 'Tell me about living along the Noida Expressway corridor' }, priority++),
-      chip('INTENT_PATCH:corridor_central', 'TEXT_MESSAGE', 'Central Noida (Schools & Metro)', '', { message: 'Tell me about family living in Central Noida 7X sectors' }, priority++),
-      chip('INTENT_PATCH:corridor_gnw', 'TEXT_MESSAGE', 'Gr. Noida West (Value & Space)', '', { message: 'Tell me about Greater Noida West for spacious family flats' }, priority++),
-      chip('EXPLORE:lifestyle_commute_delhi', 'TEXT_MESSAGE', 'Commuting to Delhi/Gurgaon', '', { message: 'I need easy daily connectivity to Delhi and South Delhi' }, priority++)
+      chip('INTENT_PATCH:corridor_exp', 'TEXT_MESSAGE', 'Noida Expressway (IT & Luxury)', { message: 'Tell me about living along the Noida Expressway corridor' }, priority++),
+      chip('INTENT_PATCH:corridor_central', 'TEXT_MESSAGE', 'Central Noida (Schools & Metro)', { message: 'Tell me about family living in Central Noida 7X sectors' }, priority++),
+      chip('INTENT_PATCH:corridor_gnw', 'TEXT_MESSAGE', 'Gr. Noida West (Value & Space)', { message: 'Tell me about Greater Noida West for spacious family flats' }, priority++),
+      chip('EXPLORE:lifestyle_commute_delhi', 'TEXT_MESSAGE', 'Commuting to Delhi/Gurgaon', { message: 'I need easy daily connectivity to Delhi and South Delhi' }, priority++)
     )
     return chips
   }
@@ -325,10 +324,10 @@ async function getClarifyingChips(
   if (intent.sector && (!intent.bhk || intent.bhk.length === 0)) {
     const sec = intent.sector
     chips.push(
-      chip(`INTENT_PATCH:bhk_2:${sec}`, 'INTENT_PATCH', `2 BHK in ${sec}`, '', { patch: { sector: sec, bhk: [2] }, label: `2 BHK in ${sec}` }, priority++),
-      chip(`INTENT_PATCH:bhk_3:${sec}`, 'INTENT_PATCH', `3 BHK in ${sec}`, '', { patch: { sector: sec, bhk: [3] }, label: `3 BHK in ${sec}` }, priority++),
-      chip(`INTENT_PATCH:bhk_4:${sec}`, 'INTENT_PATCH', `4 BHK in ${sec}`, '', { patch: { sector: sec, bhk: [4] }, label: `4 BHK in ${sec}` }, priority++),
-      chip(`EXPLORE:rtm:${sec}`, 'TEXT_MESSAGE', `Ready to Move in ${sec}`, '', { message: `Show me ready-to-move projects with Occupancy Certificate in ${sec}` }, priority++)
+      chip(`INTENT_PATCH:bhk_2:${sec}`, 'INTENT_PATCH', `2 BHK in ${sec}`, { patch: { sector: sec, bhk: [2] }, label: `2 BHK in ${sec}` }, priority++),
+      chip(`INTENT_PATCH:bhk_3:${sec}`, 'INTENT_PATCH', `3 BHK in ${sec}`, { patch: { sector: sec, bhk: [3] }, label: `3 BHK in ${sec}` }, priority++),
+      chip(`INTENT_PATCH:bhk_4:${sec}`, 'INTENT_PATCH', `4 BHK in ${sec}`, { patch: { sector: sec, bhk: [4] }, label: `4 BHK in ${sec}` }, priority++),
+      chip(`EXPLORE:rtm:${sec}`, 'TEXT_MESSAGE', `Ready to Move in ${sec}`, { message: `Show me ready-to-move projects with Occupancy Certificate in ${sec}` }, priority++)
     )
     return chips
   }
@@ -338,10 +337,10 @@ async function getClarifyingChips(
     const sec = intent.sector
     const cleanSec = sec.startsWith('Sector') ? sec : `Sector ${sec}`
     chips.push(
-      chip(`INTENT_PATCH:budget_low:${sec}`, 'INTENT_PATCH', `Under ₹1.2 Cr`, '', { patch: { sector: sec, bhk: intent.bhk, budgetMax: 1.2 }, label: `Under ₹1.2 Cr` }, priority++),
-      chip(`INTENT_PATCH:budget_mid:${sec}`, 'INTENT_PATCH', `₹1.2 – ₹1.6 Cr`, '', { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.2, budgetMax: 1.6 }, label: `₹1.2 – ₹1.6 Cr` }, priority++),
-      chip(`INTENT_PATCH:budget_high:${sec}`, 'INTENT_PATCH', `₹1.6 Cr+`, '', { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.6 }, label: `₹1.6 Cr+` }, priority++),
-      chip(`EXPLORE:tradeoffs:${sec}`, 'TEXT_MESSAGE', `${cleanSec} Pros & Cons`, '', { message: `What are the main advantages and drawbacks of living in ${cleanSec}?` }, priority++)
+      chip(`INTENT_PATCH:budget_low:${sec}`, 'INTENT_PATCH', `Under ₹1.2 Cr`, { patch: { sector: sec, bhk: intent.bhk, budgetMax: 1.2 }, label: `Under ₹1.2 Cr` }, priority++),
+      chip(`INTENT_PATCH:budget_mid:${sec}`, 'INTENT_PATCH', `₹1.2 – ₹1.6 Cr`, { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.2, budgetMax: 1.6 }, label: `₹1.2 – ₹1.6 Cr` }, priority++),
+      chip(`INTENT_PATCH:budget_high:${sec}`, 'INTENT_PATCH', `₹1.6 Cr+`, { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.6 }, label: `₹1.6 Cr+` }, priority++),
+      chip(`EXPLORE:tradeoffs:${sec}`, 'TEXT_MESSAGE', `${cleanSec} Pros & Cons`, { message: `What are the main advantages and drawbacks of living in ${cleanSec}?` }, priority++)
     )
     return chips
   }
@@ -368,7 +367,6 @@ async function getClarifyingChips(
         `INTENT_PATCH:clarify_sector:${sector.replace(/\s+/g, '_')}`,
         'INTENT_PATCH',
         sector,
-        '',
         { patch: { sector, ...(intent.bhk?.length ? { bhk: intent.bhk } : {}) }, label: sector },
         priority++,
       ))
@@ -381,7 +379,7 @@ async function getClarifyingChips(
     for (const bhk of inventory.bhkOptions) {
       chips.push(chip(
         `INTENT_PATCH:bhk_clarify:${bhk}`,
-        'INTENT_PATCH', `${bhk} BHK`, '',
+        'INTENT_PATCH', `${bhk} BHK`,
         { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
         priority++,
       ))
@@ -410,7 +408,7 @@ function getSearchRefinementChips(
     for (const bhk of inventory.bhkOptions) {
       chips.push(chip(
         `INTENT_PATCH:refine_bhk:${bhk}`,
-        'INTENT_PATCH', `${bhk} BHK`, '🏠',
+        'INTENT_PATCH', `${bhk} BHK`,
         { patch: { bhk: [bhk] }, label: `${bhk} BHK` },
         priority++,
       ))
@@ -436,7 +434,7 @@ function getSearchRefinementChips(
     for (const bucket of dynamicBuckets) {
       chips.push(chip(
         `INTENT_PATCH:refine_budget:${bucket.label.replace(/[₹\s,–-]/g, '_')}`,
-        'INTENT_PATCH', bucket.label, '💰',
+        'INTENT_PATCH', bucket.label,
         { patch: { budgetMin: bucket.min, budgetMax: bucket.max }, label: bucket.label },
         priority++,
       ))
@@ -461,7 +459,7 @@ function getSearchRefinementChips(
     for (const lifestyle of sortedAmenities) {
       chips.push(chip(
         `INTENT_PATCH:refine_lifestyle:${lifestyle.replace(/\s/g, '_').toLowerCase()}`,
-        'INTENT_PATCH', lifestyle, '⭐',
+        'INTENT_PATCH', lifestyle,
         { patch: { lifestyleKeywords: [...(intent.lifestyleKeywords ?? []), lifestyle] }, label: lifestyle },
         priority++,
       ))
@@ -469,32 +467,6 @@ function getSearchRefinementChips(
   }
 
   return chips.slice(0, 3)
-}
-
-function filterByHistory(pool: ChipAction[], chatHistory: unknown[]): ChipAction[] {
-  const historyText = chatHistory
-    .filter((m): m is ChatMessage => isChatMessage(m))
-    .filter(m => m.role === 'user')
-    .map(m => String(m.content ?? '').toLowerCase())
-    .join(' ')
-  return pool.filter(c => {
-    const labelLower = c.label.toLowerCase()
-    const isDiscussed = historyText.includes(labelLower) ||
-      ((c.payload?.text as string)?.toLowerCase() && historyText.includes((c.payload.text as string).toLowerCase()))
-    return !isDiscussed
-  })
-}
-
-function getFallbackChips(pool: ChipAction[], chips: ChipAction[], maxCount: number, chatHistory: unknown[]): ChipAction[] {
-  const needed = maxCount - chips.length
-  if (needed <= 0) return chips
-  
-  const turn = Math.floor(chatHistory.length / 2)
-  const maxStartIndex = Math.max(0, pool.length - needed)
-  const startIndex = maxStartIndex > 0 ? (turn % maxStartIndex) : 0
-  
-  chips.push(...pool.slice(startIndex, startIndex + needed))
-  return chips
 }
 
 /** Unified chip pipeline: candidates → dedupe → rank → cap-4 */
@@ -533,13 +505,13 @@ export function getConvertingChips(results: ScoredProject[] = []): ChipAction[] 
   const top = projects[0]
 
   return [
-    chip(`BOOK_VISIT:convert_visit:${pIds}`, 'BOOK_VISIT', 'Book a site visit', '',
+    chip(`BOOK_VISIT:convert_visit:${pIds}`, 'BOOK_VISIT', 'Book a site visit',
       { mode: 'single', projects }, 1),
-    chip(`TEXT_MESSAGE:convert_callback:${pIds}`, 'TEXT_MESSAGE', 'Talk to an advisor', '',
+    chip(`TEXT_MESSAGE:convert_callback:${pIds}`, 'TEXT_MESSAGE', 'Talk to an advisor',
       { text: `I'd like a callback about ${top.name}.` }, 2),
-    chip(`CALCULATE_EMI:convert_emi:${pIds}`, 'CALCULATE_EMI', 'Work out the EMI', '',
+    chip(`CALCULATE_EMI:convert_emi:${pIds}`, 'CALCULATE_EMI', 'Work out the EMI',
       { mode: 'single', projects }, 3),
-    chip(`TEXT_MESSAGE:convert_doubts:${pIds}`, 'TEXT_MESSAGE', 'What should worry me?', '',
+    chip(`TEXT_MESSAGE:convert_doubts:${pIds}`, 'TEXT_MESSAGE', 'What should worry me?',
       { actionPrefix: 'What are the risks, delays or hidden costs I should worry about with', projects, actionSuffix: '?' }, 4),
   ]
 }
@@ -551,14 +523,14 @@ export function getFloorChips(intent: Intent, results: ScoredProject[] = []): Ch
     const projects = safeResults.slice(0, 4).map(r => ({ id: r.id, name: r.name }))
     const pIds = projects.map(p => p.id).join(':')
     const out: ChipAction[] = [
-      chip(`TEXT_MESSAGE:floor_tradeoffs:${pIds}`, 'TEXT_MESSAGE', 'What are the trade-offs?', '',
+      chip(`TEXT_MESSAGE:floor_tradeoffs:${pIds}`, 'TEXT_MESSAGE', 'What are the trade-offs?',
         { actionPrefix: 'What are the main trade-offs and risks of', projects, actionSuffix: '?' }, 1),
-      chip(`TEXT_MESSAGE:floor_tell_more:${pIds}`, 'TEXT_MESSAGE', 'Tell me more', '',
+      chip(`TEXT_MESSAGE:floor_tell_more:${pIds}`, 'TEXT_MESSAGE', 'Tell me more',
         { actionPrefix: 'Tell me more about', projects }, 2),
     ]
     if (results.length >= 2) {
       out.push(chip(`COMPARE_PROPERTIES:floor_compare:${pIds}`, 'COMPARE_PROPERTIES',
-        `Compare these ${Math.min(results.length, 3)}`, '', { mode: 'multi', projects }, 3))
+        `Compare these ${Math.min(results.length, 3)}`, { mode: 'multi', projects }, 3))
     }
     return out
   }
@@ -566,11 +538,11 @@ export function getFloorChips(intent: Intent, results: ScoredProject[] = []): Ch
   // No results: safe, always-answerable questions. No invented inventory.
   const sectorBit = intent.sector ? ` in ${intent.sector}` : ' in Noida'
   return [
-    chip('TEXT_MESSAGE:floor_ready_to_move', 'TEXT_MESSAGE', 'Ready-to-move homes', '',
+    chip('TEXT_MESSAGE:floor_ready_to_move', 'TEXT_MESSAGE', 'Ready-to-move homes',
       { text: `Show me ready-to-move projects${sectorBit}.` }, 1),
-    chip('TEXT_MESSAGE:floor_buying_guide', 'TEXT_MESSAGE', 'What should I check first?', '',
+    chip('TEXT_MESSAGE:floor_buying_guide', 'TEXT_MESSAGE', 'What should I check first?',
       { text: 'What should I check before buying a property in Noida?' }, 2),
-    chip('TEXT_MESSAGE:floor_budget_help', 'TEXT_MESSAGE', 'Help me set a budget', '',
+    chip('TEXT_MESSAGE:floor_budget_help', 'TEXT_MESSAGE', 'Help me set a budget',
       { text: 'Help me work out a realistic budget and EMI.' }, 3),
   ]
 }
@@ -597,7 +569,7 @@ export async function computeConversationState(
   const allowLlmChips = opts.allowLlmChips ?? true
   const stageTurnCount = opts.stageTurnCount ?? 0
   const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0, isUserMessage, stageTurnCount)
-  const missingFields = getMissingFields(intent, intentState)
+  const missingFields = getMissingFields(intent)
   const confidence = computeConfidenceLevel(intent)
   const thinking = getThinkingMessage(stage, intent)
 
@@ -611,7 +583,6 @@ export async function computeConversationState(
         `TEXT_MESSAGE:disambig:${c.name.replace(/\s+/g, '_')}`,
         'TEXT_MESSAGE',
         shortLabel,
-        '',
         { text: `Show me ${c.name} in ${c.sector}` },
         idx + 1
       )
@@ -621,7 +592,6 @@ export async function computeConversationState(
       `INTENT_PATCH:disambig_sec:${s.replace(/\s+/g, '_')}`,
       'INTENT_PATCH',
       s,
-      '',
       { patch: { sector: s }, label: s },
       idx + 1
     ))
@@ -631,7 +601,6 @@ export async function computeConversationState(
       `INTENT_PATCH:disambig_city:${c.city}`,
       'INTENT_PATCH',
       c.label,
-      '',
       { patch: { sector: cityDisambiguation.query, city: c.city }, label: c.label },
       idx + 1
     ))

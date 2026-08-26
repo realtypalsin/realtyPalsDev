@@ -6,6 +6,22 @@ export function normalizeBuilderSearchName(raw: string): string {
     .trim();
 }
 
+// Defined once so the name lookup and the slug/parent-group fallback return
+// identical shapes.
+const BUILDER_INCLUDE = {
+  projects: {
+    select: {
+      name: true, sector: true, status: true,
+      rera_number: true, possession_label: true,
+    },
+    take: 25,
+  },
+  delivery_records: {
+    orderBy: { promised_date: 'asc' as const },
+    take: 40,
+  },
+};
+
 export async function getBuilderRecord(name: string): Promise<Record<string, unknown> | null> {
   const cleanName = (name ?? '').trim();
   if (!cleanName) return null;
@@ -18,19 +34,7 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
         ...(normalizedName.length >= 3 ? [{ name: { contains: normalizedName, mode: 'insensitive' as const } }] : []),
       ],
     },
-    include: {
-      projects: {
-        select: {
-          name: true, sector: true, status: true,
-          rera_number: true, possession_label: true,
-        },
-        take: 25,
-      },
-      delivery_records: {
-        orderBy: { promised_date: 'asc' },
-        take: 40,
-      },
-    },
+    include: BUILDER_INCLUDE,
   });
 
   if (!builder && normalizedName.length >= 3) {
@@ -42,19 +46,7 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
           { parent_group: { contains: normalizedName, mode: 'insensitive' as const } },
         ],
       },
-      include: {
-        projects: {
-          select: {
-            name: true, sector: true, status: true,
-            rera_number: true, possession_label: true,
-          },
-          take: 25,
-        },
-        delivery_records: {
-          orderBy: { promised_date: 'asc' },
-          take: 40,
-        },
-      },
+      include: BUILDER_INCLUDE,
     });
   }
 
@@ -62,12 +54,14 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
 
   const b = builder as any
 
+  // `== null` throughout: a genuine zero (0 delivered units, a 0 score) is a
+  // verified fact, not a missing one, and must not be reported as unverified.
   const dataGaps: string[] = []
-  if (!builder.delivered_units) dataGaps.push('delivery count unverified')
-  if (!b.delivery_score) dataGaps.push('delivery score unverified')
-  if (!b.construction_quality_score) dataGaps.push('construction quality unverified')
-  if (!b.rera_compliance_score) dataGaps.push('RERA compliance score unverified')
-  if (b.litigation_count === null || b.litigation_count === undefined) dataGaps.push('litigation count unverified')
+  if (builder.delivered_units == null) dataGaps.push('delivery count unverified')
+  if (b.delivery_score == null) dataGaps.push('delivery score unverified')
+  if (b.construction_quality_score == null) dataGaps.push('construction quality unverified')
+  if (b.rera_compliance_score == null) dataGaps.push('RERA compliance score unverified')
+  if (b.litigation_count == null) dataGaps.push('litigation count unverified')
 
   return {
     // Identity
@@ -131,15 +125,17 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
     })),
 
     // Promised vs actual, per project. delay_months is derived, never stored.
+    // A missing promised_date stays null: substituting today's date invented a
+    // builder promise and produced a delay figure measured against it.
     delivery_track_record: ((b.delivery_records as any[]) || []).map((r: any) => {
-      const promised = r.promised_date ? new Date(r.promised_date) : new Date()
+      const promised = r.promised_date ? new Date(r.promised_date) : null
       const actual = r.actual_date ? new Date(r.actual_date) : null
-      const delayMonths = actual
+      const delayMonths = promised && actual
         ? Math.round(((actual.getTime() - promised.getTime()) / (1000 * 60 * 60 * 24 * 30.44)) * 10) / 10
         : null
       return {
         project_name: r.project_name,
-        promised_date: promised.toISOString().split('T')[0],
+        promised_date: promised ? promised.toISOString().split('T')[0] : null,
         actual_date: actual ? actual.toISOString().split('T')[0] : null,
         delivered: !!actual,
         delay_months: delayMonths,
@@ -148,6 +144,6 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
     }),
 
     data_gaps: dataGaps,
-    note: 'Use ONLY the structured fields above. delivery_track_record gives promised vs actual per project — delay_months is derived from those two dates, positive means late. A null actual_date means not yet delivered, which is not the same as delayed. If legal_flag is non-null, it MUST be disclosed immediately — it represents a verified legal risk. Do not recommend this builder for new purchases if legal_flag is set. If a score is null, state "not yet verified" — do not infer scores from training memory. delivered_units is a total volume count, NOT a proxy for on-time delivery.',
+    note: 'Use ONLY the structured fields above. delivery_track_record gives promised vs actual per project — delay_months is derived from those two dates, positive means late. A null actual_date means not yet delivered, which is not the same as delayed. A null promised_date means the promised timeline is unknown — say so, do not treat it as on-time. If legal_flag is non-null, it MUST be disclosed immediately — it represents a verified legal risk. Do not recommend this builder for new purchases if legal_flag is set. If a score is null, state "not yet verified" — do not infer scores from training memory. delivered_units is a total volume count, NOT a proxy for on-time delivery.',
   }
 }

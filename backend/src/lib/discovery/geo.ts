@@ -196,6 +196,9 @@ export async function getProjectsWithinRadius(
         distance_km: calculateHaversineDistanceKm(anchorLat, anchorLng, p.lat!, p.lng!),
       }))
       .filter((p) => p.distance_km <= radiusKm)
+      // Nearest first — callers page this list, so an unordered result set means
+      // the closest projects can be the ones truncated away.
+      .sort((a, b) => a.distance_km - b.distance_km)
 
     return withDistance
   } catch (err) {

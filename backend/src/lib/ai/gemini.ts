@@ -83,12 +83,19 @@ export async function streamWithGemini(
     let inactivityTimer: NodeJS.Timeout | null = null
     const cycleUsage: GeminiUsage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 }
 
+    // The timer must abort the request, not just flip a flag: the flag was only
+    // read inside the `for await` loop, which is exactly what is blocked when no
+    // chunk arrives. That made the 8s initial deadline unreachable — failover
+    // waited on the 15s transport timeout instead.
+    const abortController = new AbortController()
+
     const resetInactivity = (isStreaming = false) => {
       if (inactivityTimer) clearTimeout(inactivityTimer)
       const timeoutMs = isStreaming ? STREAM_INACTIVITY_MS : INITIAL_TOKEN_TIMEOUT_MS
       inactivityTimer = setTimeout(() => {
         stalled = true
         console.warn(`[gemini] inactivity timeout cycle=${cycle} tokensSent=${tokensSentThisCycle} (after ${timeoutMs}ms)`)
+        abortController.abort()
       }, timeoutMs)
     }
     resetInactivity(false)
@@ -99,6 +106,7 @@ export async function streamWithGemini(
       const genConfig: any = {
         systemInstruction: system,
         maxOutputTokens: config.maxTokens,
+        abortSignal: abortController.signal,
       }
 
       // Only attach tools if explicitly requested and no functionCall cycles have occurred yet
@@ -106,7 +114,7 @@ export async function streamWithGemini(
         genConfig.tools = toGeminiTools()
       }
 
-      let targetModel = config.model || MODELS.GEMINI_MAIN
+      const targetModel = config.model || MODELS.GEMINI_MAIN
       if (process.env.DEBUG_FALLBACK) {
         console.log(`[gemini] requesting model=${targetModel}`)
       }
@@ -118,10 +126,14 @@ export async function streamWithGemini(
           config: genConfig,
         })
       } catch (err: any) {
+        if (stalled) throw err
         const errMsg = err?.message || String(err)
         if (errMsg.includes('404') || errMsg.includes('not found') || errMsg.includes('no longer available')) {
           const fallbackModel = targetModel === 'gemini-3.5-flash-lite' ? 'gemini-3.6-flash' : 'gemini-3.5-flash-lite'
           console.warn(`[gemini] Model '${targetModel}' failed (${errMsg.slice(0, 120)}...). Retrying with '${fallbackModel}'...`)
+          // Restart the first-token clock: the retry is a fresh request, and the
+          // dead model's latency should not be charged against its deadline.
+          resetInactivity(false)
           stream = await client.models.generateContentStream({
             model: fallbackModel,
             contents,
@@ -158,6 +170,10 @@ export async function streamWithGemini(
           functionCall = { name: calls[0].name!, args: (calls[0].args as Record<string, unknown>) ?? {} }
         }
       }
+    } catch (err) {
+      // Our own timeout aborted the request — report it as a stall so callers
+      // roll over to the next provider instead of treating it as a hard error.
+      if (!stalled) throw err
     } finally {
       if (inactivityTimer) clearTimeout(inactivityTimer)
       // Each tool cycle is a separate billed request — sum them.

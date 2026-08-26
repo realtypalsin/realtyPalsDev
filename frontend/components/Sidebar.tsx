@@ -9,7 +9,7 @@ import {
   ClockCounterClockwise,
   List
 } from '@phosphor-icons/react';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -141,7 +141,7 @@ export default function Sidebar({
     router.replace("/auth");
   };
 
-  const menuItems = [
+  const menuItems: { id: SidebarView; label: string; icon: React.ElementType; href: string }[] = [
     {
       id: "discovery",
       label: "Property Discovery",
@@ -191,6 +191,35 @@ export default function Sidebar({
     window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
     router.push('/discover');
   };
+
+  // Shared by the expanded and collapsed New Chat buttons.
+  const startNewChat = useCallback(() => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
+    closeMobile();
+    navigationTimeoutRef.current = setTimeout(() => setIsNavigating(false), 1000);
+    window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
+    router.push('/discover');
+  }, [isNavigating, router]);
+
+  // The button advertises Ctrl+N; without this the shortcut just opened a new
+  // browser window. Ctrl+K (focus input) is owned by DiscoveryContent.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        startNewChat();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [startNewChat]);
+
+  // Otherwise a pending navigation timer fires setState on an unmounted sidebar.
+  useEffect(() => () => {
+    if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
+  }, []);
 
   return (
     <>
@@ -293,15 +322,7 @@ export default function Sidebar({
           <div className="p-3 w-full shrink-0">
             <button
               type="button"
-              onClick={() => {
-                if (isNavigating) return;
-                setIsNavigating(true);
-                if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
-                closeMobile();
-                navigationTimeoutRef.current = setTimeout(() => setIsNavigating(false), 1000);
-                window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
-                router.push('/discover');
-              }}
+              onClick={startNewChat}
               disabled={isNavigating}
               className="group flex items-center justify-between w-full py-2 px-3 bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-semibold rounded-xl transition-all duration-150 border border-zinc-200/80 dark:border-zinc-700/60 shadow-2xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
@@ -320,15 +341,7 @@ export default function Sidebar({
           <div className="px-3 py-3 w-full shrink-0 flex justify-center">
             <button
               type="button"
-              onClick={() => {
-                if (isNavigating) return;
-                setIsNavigating(true);
-                if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
-                closeMobile();
-                navigationTimeoutRef.current = setTimeout(() => setIsNavigating(false), 1000);
-                window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
-                router.push('/discover');
-              }}
+              onClick={startNewChat}
               disabled={isNavigating}
               className="w-10 h-10 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center shadow-xs transition-all hover:opacity-90 active:scale-95 group relative disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               title="New chat"
@@ -357,7 +370,7 @@ export default function Sidebar({
                     onClick={(e) => {
                       handleMenuItemClick(e, item.id, item.href);
                       closeMobile();
-                      onViewChange?.(item.id as any);
+                      onViewChange?.(item.id);
                     }}
                     className={`flex items-center w-full gap-2.5 px-3 py-2 rounded-xl transition-all duration-150 ${
                       isActive
@@ -385,7 +398,7 @@ export default function Sidebar({
                   onClick={(e) => {
                     handleMenuItemClick(e, item.id, item.href);
                     closeMobile();
-                    onViewChange?.(item.id as any);
+                    onViewChange?.(item.id);
                   }}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all group relative ${
                     isActive
@@ -489,24 +502,29 @@ export default function Sidebar({
         {!isCollapsed ? (
           <div className="p-3 border-t border-gray-100/60 dark:border-gray-800/60 shrink-0 w-full">
             {userId ? (
-              <button
-                type="button"
-                onClick={() => { router.push('/account'); closeMobile(); }}
-                className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
-              >
-                <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold text-sm">
-                  {userInitial}
-                </div>
-                <div className="flex-1 flex items-center justify-between min-w-0">
+              /* Two sibling buttons, not a clickable icon nested inside a button:
+                 the old form made sign-out mouse-only and unreachable by keyboard. */
+              <div className="w-full flex items-center gap-1 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => { router.push('/account'); closeMobile(); }}
+                  className="flex-1 min-w-0 flex items-center gap-2.5 px-2 py-1.5 rounded-xl transition-colors cursor-pointer"
+                >
+                  <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-semibold text-sm">
+                    {userInitial}
+                  </div>
                   <span className="text-[12.5px] font-medium tracking-tight text-zinc-700 dark:text-zinc-200 truncate">My Account</span>
-                  <SignOut 
-                    size={16} 
-                    weight="bold" 
-                    className="text-zinc-400 hover:text-red-500 transition-colors" 
-                    onClick={(e) => { e.stopPropagation(); handleLogout(); closeMobile(); }}
-                  />
-                </div>
-              </button>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { handleLogout(); closeMobile(); }}
+                  title="Sign out"
+                  aria-label="Sign out"
+                  className="shrink-0 w-8 h-8 mr-1 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                >
+                  <SignOut size={16} weight="bold" />
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
