@@ -208,11 +208,11 @@ function getDiscoveryChips(inventory: ChipInventory | null): ChipAction[] {
 
   const areaGroup: ChipGroup = { id: 'popular_areas', label: 'Explore Areas', order: 1, emphasis: 'primary' }
   const topSectors = inventory.sectors.slice(0, 2)
-  for (const [idx, { sector, projectCount }] of topSectors.entries()) {
+  for (const [idx, { sector }] of topSectors.entries()) {
     chips.push(chip(
       `INTENT_PATCH:sector:${sector}`,
       'INTENT_PATCH',
-      `${sector} (${projectCount} projects)`,
+      sector,
       '',
       { patch: { sector }, label: sector },
       idx + 1,
@@ -363,11 +363,11 @@ async function getClarifyingChips(
       .slice(0, 3)
 
     if (candidates.length === 0) return chips
-    for (const { sector, projectCount } of candidates) {
+    for (const { sector } of candidates) {
       chips.push(chip(
         `INTENT_PATCH:clarify_sector:${sector.replace(/\s+/g, '_')}`,
         'INTENT_PATCH',
-        `${sector} (${projectCount} projects)`,
+        sector,
         '',
         { patch: { sector, ...(intent.bhk?.length ? { bhk: intent.bhk } : {}) }, label: sector },
         priority++,

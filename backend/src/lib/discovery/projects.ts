@@ -283,10 +283,10 @@ export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Pr
     const cleanBuilder = rawBuilder.replace(/\b(projects|group|developers|developer|infratech|infra|limited|ltd|pvt|llp|realtors|realtech|buildtech)\b/gi, '').trim()
     where.builder = {
       OR: [
-        { name: { contains: rawBuilder, mode: 'insensitive' } },
-        ...(cleanBuilder.length >= 3 ? [{ name: { contains: cleanBuilder, mode: 'insensitive' } }] : []),
+        { name: { contains: rawBuilder, mode: 'insensitive' as const } },
+        ...(cleanBuilder.length >= 3 ? [{ name: { contains: cleanBuilder, mode: 'insensitive' as const } }] : []),
       ],
-    }
+    } as any
   }
 
   // Possession — hard-filter status when buyer explicitly wants RTM.

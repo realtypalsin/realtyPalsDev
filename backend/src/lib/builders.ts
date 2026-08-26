@@ -11,11 +11,11 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
   if (!cleanName) return null;
   const normalizedName = normalizeBuilderSearchName(cleanName);
 
-  let builder = await prisma.builder.findFirst({
+  let builder = await (prisma.builder as any).findFirst({
     where: {
       OR: [
-        { name: { contains: cleanName, mode: 'insensitive' } },
-        ...(normalizedName.length >= 3 ? [{ name: { contains: normalizedName, mode: 'insensitive' } }] : []),
+        { name: { contains: cleanName, mode: 'insensitive' as const } },
+        ...(normalizedName.length >= 3 ? [{ name: { contains: normalizedName, mode: 'insensitive' as const } }] : []),
       ],
     },
     include: {
@@ -35,11 +35,11 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
 
   if (!builder && normalizedName.length >= 3) {
     const slugToken = normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    builder = await prisma.builder.findFirst({
+    builder = await (prisma.builder as any).findFirst({
       where: {
         OR: [
-          { slug: { contains: slugToken, mode: 'insensitive' } },
-          { parent_group: { contains: normalizedName, mode: 'insensitive' } },
+          { slug: { contains: slugToken, mode: 'insensitive' as const } },
+          { parent_group: { contains: normalizedName, mode: 'insensitive' as const } },
         ],
       },
       include: {
@@ -122,7 +122,7 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
     intelligence_completeness: b.intelligence_completeness ?? null,
 
     // Live project list
-    projects_in_db: builder.projects.map((p) => ({
+    projects_in_db: ((b.projects as any[]) || []).map((p: any) => ({
       name: p.name,
       sector: p.sector,
       status: String(p.status),
@@ -131,9 +131,9 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
     })),
 
     // Promised vs actual, per project. delay_months is derived, never stored.
-    delivery_track_record: builder.delivery_records.map((r) => {
-      const promised = r.promised_date
-      const actual = r.actual_date
+    delivery_track_record: ((b.delivery_records as any[]) || []).map((r: any) => {
+      const promised = r.promised_date ? new Date(r.promised_date) : new Date()
+      const actual = r.actual_date ? new Date(r.actual_date) : null
       const delayMonths = actual
         ? Math.round(((actual.getTime() - promised.getTime()) / (1000 * 60 * 60 * 24 * 30.44)) * 10) / 10
         : null
