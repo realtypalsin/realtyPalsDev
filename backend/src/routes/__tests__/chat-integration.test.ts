@@ -10,7 +10,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { classifyIntent, routeToModel } from '../../lib/ai/intentClassifier'
 import { trimMessagesToBudget } from '../chat-helpers'
-import { FALLBACK_CHAIN } from '../../lib/config'
+import { FALLBACK_CHAIN, GEMINI_TOOLS_ENABLED } from '../../lib/config'
 import type { Intent } from '../../lib/discovery'
 
 describe('Chat routing: classifyIntent → routeToModel', () => {
@@ -107,10 +107,32 @@ describe('FALLBACK_CHAIN shape', () => {
     // emit the tool catalogue at all. A wrong flag silently ships ~310 tokens of
     // tool descriptions to a provider that cannot call them, or withholds them
     // from one that can.
+    //
+    // Gemini is the exception: it can call tools, gated by ENABLE_GEMINI_TOOLS.
     for (const item of FALLBACK_CHAIN) {
       if (item.supportsTools) {
-        assert.equal(item.provider, 'openai', `${item.label} claims tool support`)
+        assert.ok(
+          item.provider === 'openai' || item.provider === 'gemini',
+          `${item.label} claims tool support`,
+        )
       }
+    }
+  })
+
+  it('Gemini tool support tracks ENABLE_GEMINI_TOOLS, never diverges from it', () => {
+    // gemini.ts attaches the tool definitions from this same constant. If the two
+    // ever disagree, Gemini receives a tool catalogue alongside a system prompt
+    // that tells it "You cannot call tools here" — or the reverse.
+    for (const item of FALLBACK_CHAIN.filter(i => i.provider === 'gemini')) {
+      assert.equal(item.supportsTools, GEMINI_TOOLS_ENABLED, item.label)
+    }
+  })
+
+  it('defaults Gemini tools off — turning them on changes every production answer', () => {
+    // Gemini is tier 1 and serves nearly all traffic. This is a reminder that the
+    // flip is a deliberate rollout, not an incidental config change.
+    if (process.env.ENABLE_GEMINI_TOOLS !== 'true') {
+      assert.equal(GEMINI_TOOLS_ENABLED, false)
     }
   })
 

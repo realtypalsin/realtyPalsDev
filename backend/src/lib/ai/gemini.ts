@@ -1,6 +1,6 @@
 // backend/src/lib/ai/gemini.ts
 import { GoogleGenAI } from '@google/genai'
-import { MODELS } from '../config'
+import { MODELS, GEMINI_TOOLS_ENABLED } from '../config'
 import { toGeminiTools, validateToolArgs, capToolResult } from './tools'
 import { INFERENCE_DEFAULTS, type InferenceConfig } from './openai'
 import { recordUsage } from './cost'
@@ -109,8 +109,10 @@ export async function streamWithGemini(
         abortSignal: abortController.signal,
       }
 
-      // Only attach tools if explicitly requested and no functionCall cycles have occurred yet
-      if (cycle === 0 && process.env.ENABLE_GEMINI_TOOLS === 'true') {
+      // Only attach tools if explicitly requested and no functionCall cycles have occurred yet.
+      // Reads the same constant FALLBACK_CHAIN uses for supportsTools, so the tool
+      // definitions and the system prompt can never disagree about whether tools exist.
+      if (cycle === 0 && GEMINI_TOOLS_ENABLED) {
         genConfig.tools = toGeminiTools()
       }
 

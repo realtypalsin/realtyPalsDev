@@ -54,12 +54,32 @@ export interface FallbackKeyConfig {
   label: string
 }
 
+/**
+ * Whether Gemini is allowed to call tools.
+ *
+ * Two switches used to control this independently and could disagree:
+ * gemini.ts attaches the tool definitions when ENABLE_GEMINI_TOOLS === 'true',
+ * while FALLBACK_CHAIN hardcoded supportsTools: false — and that flag is what
+ * getBaseSystemPrompt(toolsEnabled) keys off. Setting the env var alone
+ * therefore handed Gemini a tool catalogue together with a system prompt whose
+ * NO LIVE LOOKUPS section states, verbatim, "You cannot call tools here."
+ *
+ * Deriving both from one constant makes that state unreachable. Default is
+ * unchanged (off): Gemini is tier 1 and serves nearly all traffic, so turning
+ * tools on there changes every response and wants a deliberate rollout.
+ *
+ * NOTE: while this is off, every tool-backed lookup — floor plans, price
+ * history, cost sheets, amenities, builder records, RERA — is unreachable in
+ * production, and the model answers from the NO LIVE LOOKUPS branch instead.
+ */
+export const GEMINI_TOOLS_ENABLED = process.env.ENABLE_GEMINI_TOOLS === 'true'
+
 export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: false, label: 'Google Gemini 3.6 Flash (Primary)' },
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: false, label: 'Google Gemini 3.5 Flash Lite (Backup)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Primary)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Backup)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: MISTRAL & CEREBRAS (High-Speed Failover Layer)
