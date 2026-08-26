@@ -9,6 +9,7 @@ import { extractIntent } from '../lib/ai/intent'
 import { hydrateIntentFromMemory, persistIntentToMemory, trackPropertyReaction } from '../lib/ai/sessionMemory'
 import { gradeResponseAsync } from '../lib/ai/responseGrader'
 import { IntentSchema, getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel } from '../lib/discovery'
+import { readLastProjectIds, readLastProjectCards } from '../lib/discovery/lastProjects'
 import type { Intent, ScoredProject } from '../lib/discovery'
 import { postProcessIntent } from '../lib/discovery/intentPostProcessor'
 import { computeConfidence, buildClarificationOptions } from '../lib/discovery/confidence'
@@ -322,8 +323,43 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
+
+    // Neither of these reads depends on the extracted intent, so start them now.
+    // They previously sat inside the Promise.all *below* the `await extractIntent`,
+    // which meant the LLM round-trip and the DB reads ran back to back instead of
+    // overlapping — the comment claimed parallelism the control flow did not give.
+    //
+    // getMemory() swallows its own errors and resolves null. The session read can
+    // reject, and a rejection landing while we are still awaiting extractIntent
+    // would be an unhandled rejection, so it is captured here and rethrown at the
+    // join point to keep the original error semantics.
+    let sessionReadError: unknown
+    const memoryPromise = getMemory(userId, guestToken)
+    const sessionPromise = (sessionId
+      ? prisma.chatSession.findUnique({
+          where: { id: sessionId },
+          select: {
+            id: true,
+            user_id: true,
+            guest_token: true,
+            summary: true,
+            summary_location: true,
+            summary_financial: true,
+            summary_timeline: true,
+            property_reactions: true,
+            last_projects: true,
+            chat_phase: true,
+            messages: { orderBy: { created_at: 'desc' }, take: 50, select: { id: true, role: true, content: true, created_at: true } },
+          },
+        })
+      : Promise.resolve(null)
+    ).catch((err: unknown) => {
+      sessionReadError = err
+      return null
+    })
+
     let rawIntentResult = { intent: prevIntent as Intent, degraded: false }
-    
+
     // FAST PATH: bypass LLM extraction if action is INTENT_PATCH
     if (action.type === 'INTENT_PATCH') {
       console.log('[CHAT] INTENT_PATCH fast path — skipping LLM extraction')
@@ -341,29 +377,15 @@ router.post('/', async (req: Request, res: Response) => {
       rawIntentResult = await extractIntent(message, prevIntent)
     }
 
-    // Phase 2: Parallelize intent extraction with DB prefetch — while LLM generates intent, prefetch DB data
+    // Join point: the two reads above have been in flight for the whole duration
+    // of intent extraction. Only the hydrate step genuinely depends on the intent.
     const baseIntent = rawIntentResult.intent
     const [, memory, sessionData] = await Promise.all([
-      // Hydrate intent after DB data arrives (depend only on intent result)
       hydrateIntentFromMemory(sessionId ?? '', baseIntent).then(h => (hydratedIntent = h)),
-      getMemory(userId, guestToken),
-      sessionId ? prisma.chatSession.findUnique({
-        where: { id: sessionId },
-        select: {
-          id: true,
-          user_id: true,
-          guest_token: true,
-          summary: true,
-          summary_location: true,
-          summary_financial: true,
-          summary_timeline: true,
-          property_reactions: true,
-          last_projects: true,
-          chat_phase: true,
-          messages: { orderBy: { created_at: 'desc' }, take: 50, select: { id: true, role: true, content: true, created_at: true } },
-        },
-      }) : null,
+      memoryPromise,
+      sessionPromise,
     ])
+    if (sessionReadError) throw sessionReadError
     console.log('[CHAT] END intent/memory/session', Date.now())
 
     // Ownership check — prevent resuming/poisoning another user's conversation (IDOR).
@@ -404,9 +426,8 @@ router.post('/', async (req: Request, res: Response) => {
       chatHistory.push({ role: 'user', content: message })
     }
 
-    const cachedProjectsFromSession: ScoredProject[] | null = sessionData?.last_projects
-      ? (sessionData.last_projects as unknown as ScoredProject[])
-      : null
+    const cachedProjectsFromSession: ScoredProject[] | null =
+      readLastProjectCards(sessionData?.last_projects)
 
     /**
      * How long the buyer has been sitting on the same shortlist, used to escalate
@@ -476,7 +497,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Post-process intent: qualify sectors with cities, resolve project context
-    const previousProjectIds = (sessionData?.last_projects as string[]) ?? []
+    const previousProjectIds = readLastProjectIds(sessionData?.last_projects)
     const postProcessed = await postProcessIntent(hydratedIntent, previousProjectIds, 'Noida')
     hydratedIntent = postProcessed.intent
     const projectContext = postProcessed.projectContext
