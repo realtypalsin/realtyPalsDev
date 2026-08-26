@@ -1657,9 +1657,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 ) : (
                   <button
                     onClick={() => setShowHeaderDropdown(!showHeaderDropdown)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xs hover:bg-white dark:hover:bg-zinc-800 transition-all text-gray-800 dark:text-gray-200 group cursor-pointer"
+                    className="flex items-center gap-1.5 h-9.5 sm:h-10 px-3.5 sm:px-4 rounded-full bg-white/90 dark:bg-zinc-800/80 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xs hover:bg-white dark:hover:bg-zinc-800 transition-all text-gray-800 dark:text-gray-200 group cursor-pointer"
                   >
-                    <span className="text-[12.5px] sm:text-sm font-bold truncate max-w-[130px] sm:max-w-xs">{sessionTitle || 'Conversation'}</span>
+                    <span className="text-xs sm:text-[13.5px] font-bold truncate max-w-[130px] sm:max-w-xs">{sessionTitle || 'Conversation'}</span>
                     <CaretDown size={13} weight="bold" className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
                   </button>
                 )}
@@ -1667,12 +1667,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 {/* Dropdown Menu */}
                 {showHeaderDropdown && (
                   <div className="absolute top-full left-12 md:left-0 mt-1.5 w-44 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-zinc-800 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
-                    <button onClick={handleStartRename} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+                    <button onClick={handleStartRename} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <PencilSimple size={15} weight="bold" className="text-gray-400" />
                       <span>Rename</span>
                     </button>
                     <div className="h-px bg-gray-100 dark:bg-zinc-800 my-1 mx-2" />
-                    <button onClick={handleDeleteSession} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer">
+                    <button onClick={handleDeleteSession} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer">
                       <Trash size={15} weight="bold" />
                       <span>Delete</span>
                     </button>
@@ -1683,7 +1683,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center justify-end gap-1.5 sm:gap-2 pointer-events-auto">
+        <div className="flex items-center justify-end gap-2 pointer-events-auto">
           {/* Floating New Chat button — only visible once chat has started */}
           <AnimatePresence>
             {hasUserReplied && (
@@ -1693,11 +1693,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.2 }}
                 onClick={handleNewChat}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md hover:bg-white dark:hover:bg-zinc-800 border border-black/5 dark:border-white/10 text-gray-800 dark:text-gray-100 text-[11.5px] sm:text-[12px] font-bold shadow-2xs active:scale-95 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 h-9.5 sm:h-10 px-3 sm:px-3.5 min-w-[38px] min-h-[38px] rounded-full bg-white/90 dark:bg-zinc-800/80 backdrop-blur-md hover:bg-white dark:hover:bg-zinc-800 border border-black/5 dark:border-white/10 text-gray-800 dark:text-gray-100 text-xs sm:text-[12.5px] font-semibold shadow-2xs active:scale-95 transition-all cursor-pointer"
                 title="Start new conversation"
                 aria-label="New Chat"
               >
-                <NotePencil size={15} weight="duotone" className="text-blue-600 dark:text-blue-400" />
+                <NotePencil size={18} weight="duotone" className="text-blue-600 dark:text-blue-400" />
                 <span className="hidden sm:inline">New Chat</span>
               </m.button>
             )}

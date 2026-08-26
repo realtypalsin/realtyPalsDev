@@ -33,14 +33,14 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-white/90 dark:bg-white/10 rounded-full transition-all duration-300 border border-gray-200/80 dark:border-white/10 shadow-xs hover:bg-white dark:hover:bg-white/20 active:scale-95 cursor-pointer"
+      className="w-9.5 h-9.5 sm:w-10 sm:h-10 min-w-[38px] min-h-[38px] flex items-center justify-center bg-white/90 dark:bg-zinc-800/80 backdrop-blur-md rounded-full transition-all duration-200 border border-gray-200/80 dark:border-white/10 shadow-2xs hover:bg-white dark:hover:bg-zinc-700 active:scale-95 cursor-pointer text-zinc-700 dark:text-zinc-200"
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={dark ? 'Light mode' : 'Dark mode'}
     >
       {dark ? (
-        <Sun size={17} weight="duotone" className="text-amber-400" />
+        <Sun size={18} weight="bold" className="text-amber-400 animate-in fade-in zoom-in-75 duration-200" />
       ) : (
-        <Moon size={17} weight="duotone" className="text-gray-700" />
+        <Moon size={18} weight="fill" className="text-zinc-700 animate-in fade-in zoom-in-75 duration-200" />
       )}
     </button>
   );

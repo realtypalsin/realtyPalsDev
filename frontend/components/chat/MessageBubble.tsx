@@ -333,16 +333,16 @@ export function SuggestionChipGroups({
 
   if (!hasLabelledGroups) {
     return (
-      <div className="flex items-center gap-2 overflow-x-auto sm:flex-wrap no-scrollbar py-1 px-1 -mx-1 sm:mx-0">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full py-1">
         {sorted.map(renderChip)}
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2.5 w-full">
       {[...groups.entries()].map(([label, groupChips]) => (
-        <div key={label || 'ungrouped'} className="flex flex-col gap-1.5">
+        <div key={label || 'ungrouped'} className="flex flex-col gap-1.5 w-full">
           {label && (
             <span
               className={`text-[10px] font-semibold uppercase tracking-widest px-1 ${
@@ -354,7 +354,7 @@ export function SuggestionChipGroups({
               {label}
             </span>
           )}
-          <div className="flex items-center gap-2 overflow-x-auto sm:flex-wrap no-scrollbar py-1 px-1 -mx-1 sm:mx-0">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full py-0.5">
             {groupChips.map(renderChip)}
           </div>
         </div>

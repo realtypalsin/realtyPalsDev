@@ -167,7 +167,7 @@ export async function streamWithGemini(
     }
 
     if (stalled) {
-      throw new GeminiStreamStallError('Gemini stream stalled — no chunk for ' + INACTIVITY_MS + 'ms', tokensSentThisCycle)
+      throw new GeminiStreamStallError(`Gemini stream stalled — no chunk within timeout (${tokensSentThisCycle ? STREAM_INACTIVITY_MS : INITIAL_TOKEN_TIMEOUT_MS}ms)`, tokensSentThisCycle)
     }
     if (!sawAnyChunk) {
       throw new GeminiStreamStallError('Gemini stream produced no chunks', false)
