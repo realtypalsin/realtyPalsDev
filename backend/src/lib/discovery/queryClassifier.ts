@@ -64,9 +64,23 @@ function getRenderTarget(queryKind: QueryKind): RenderTarget {
  * Deterministic pre-pass: keyword + pattern matching.
  * Returns classification if pattern is clear, otherwise returns null for LLM fallback.
  */
+export interface ClassifyOptions {
+  /**
+   * Whether `intent.projectNames` was checked against the database and matched.
+   *
+   * The extractor puts any capitalised noun phrase in `projectNames` — a brokerage,
+   * a bank, a person. When the caller has not verified them, an unmatched guess must
+   * not keep a question out of the open lane, or it routes into the project detail
+   * pipeline and comes back as "no record, want properties in Sector 79 instead?".
+   * Defaults to trusting the list, which preserves existing callers.
+   */
+  hasVerifiedProjectNames?: boolean
+}
+
 export function classifyQueryDeterministic(
   userMessage: string,
   intent: Record<string, unknown>,
+  opts: ClassifyOptions = {},
 ): QueryClassification | null {
   const msg = userMessage.toLowerCase().trim()
   const intentObj = intent as Partial<Intent>
@@ -88,7 +102,9 @@ export function classifyQueryDeterministic(
   // Runs before the attribute/DRILLDOWN checks because those match on words like
   // "reputation" and "details" that also appear in "what is X's track record" —
   // and DRILLDOWN routes into the project pipeline, which has no row to answer from.
-  const openDetection = detectOpenQuery(userMessage, (intentObj.projectNames?.length ?? 0) > 0)
+  const namesAreRealProjects =
+    (intentObj.projectNames?.length ?? 0) > 0 && (opts.hasVerifiedProjectNames ?? true)
+  const openDetection = detectOpenQuery(userMessage, namesAreRealProjects)
   if (openDetection) {
     return {
       queryKind: 'OPEN',
@@ -223,9 +239,10 @@ export function parseQueryKindFromIntent(rawIntent: Record<string, unknown>): Qu
 export function classifyQuery(
   userMessage: string,
   intent: Record<string, unknown>,
+  opts: ClassifyOptions = {},
 ): QueryClassification {
   // Try deterministic first
-  const deterministic = classifyQueryDeterministic(userMessage, intent)
+  const deterministic = classifyQueryDeterministic(userMessage, intent, opts)
   if (deterministic) {
     return deterministic
   }
@@ -239,7 +256,14 @@ export function classifyQuery(
   // BHK, budget, sector or project name in it used to come back as property cards.
   // With no search signal, OPEN is the safer default: it answers or admits a gap,
   // where DISCOVERY answers a question the user did not ask.
-  if (queryKind === 'DISCOVERY' && !hasPropertySearchSignal(intent) && /\?|^(who|what|where|why|how|which|when|is|are|does|do|tell)\b/i.test(userMessage.trim())) {
+  // An unverified project name is not a search signal — it is usually the extractor
+  // mistaking a company for a project, which is exactly the case that must reach the
+  // open lane rather than the property pipeline.
+  const searchSignalIntent = opts.hasVerifiedProjectNames === false
+    ? { ...intent, projectNames: [] }
+    : intent
+
+  if (queryKind === 'DISCOVERY' && !hasPropertySearchSignal(searchSignalIntent) && /\?|^(who|what|where|why|how|which|when|is|are|does|do|tell)\b/i.test(userMessage.trim())) {
     queryKind = 'OPEN'
     reason = 'Question with no property-search signal — fail open to OPEN, not DISCOVERY'
   }

@@ -608,6 +608,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setIsSubmitting(true);
     userScrolledUp.current = false;
     setChipPicker(null);
+    setComparingMessageId(null);
+    setSelectedCompareProjects(new Map());
 
     const isText = action.type === 'TEXT_MESSAGE';
     const userText = isText ? (action.payload.text as string) : String(action.payload.label ?? action.type);
@@ -1269,6 +1271,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     const trimmed = newContent.trim();
     if (!trimmed) return;
 
+    setComparingMessageId(null);
+    setSelectedCompareProjects(new Map());
+
     setChatHistory(prev => {
       const idx = prev.findIndex(m => m.id === messageId);
       if (idx === -1) return prev;
@@ -1869,6 +1874,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                         selectedCompareIds={isComparingThis ? new Set(selectedCompareProjects.keys()) : undefined}
                         onToggleCompareSelect={handleToggleCompareSelect}
                         onStartCompare={handleStartCompare}
+                        onCancelCompare={handleCancelCompare}
                       />
                     </div>
                   );
@@ -1926,10 +1932,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               {!isInputMinimized && (
                 <m.div
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={{ opacity: comparingMessageId ? 0.35 : 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className={`absolute bottom-0 left-0 right-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-8 pointer-events-none bg-transparent ${keyboardOpen ? 'pb-safe' : ''}`}
+                  className={`absolute bottom-0 left-0 right-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-8 pointer-events-none bg-transparent ${keyboardOpen ? 'pb-safe' : ''} ${comparingMessageId ? 'opacity-35 pointer-events-none' : ''}`}
                   style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
                 >
                   <div className="px-4 w-full max-w-[880px] flex flex-col justify-center pointer-events-auto gap-2">
@@ -1975,7 +1981,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 px-6 py-3.5 bg-zinc-900/95 dark:bg-zinc-900/95 text-white border border-blue-500/30 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl max-w-lg w-[92vw]"
+            className="fixed bottom-[125px] sm:bottom-[135px] left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 px-6 py-3.5 bg-zinc-900/95 dark:bg-zinc-900/95 text-white border border-blue-500/30 rounded-2xl shadow-[0_16px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl max-w-lg w-[92vw]"
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold text-xs">

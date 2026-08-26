@@ -36,7 +36,7 @@ import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
 import { classifyQuery } from '../lib/discovery/queryClassifier'
 import { detectOpenQuery } from '../lib/discovery/openQuery'
 import { runGroundedAnswer, buildNoGroundingReply } from '../lib/ai/groundedAnswer'
-import { findProjectsMentioned, buildProseChips, linkProjectNames, findSectorsMentioned, buildOpenAnswerChips } from '../lib/discovery/proseEntities'
+import { findProjectsMentioned, buildProseChips, linkProjectNames, findSectorsMentioned, buildOpenAnswerChips, resolveProjectNames } from '../lib/discovery/proseEntities'
 import { computeConversationState, getFloorChips, CONVERTING_TURN_THRESHOLD } from '../lib/discovery/conversationEngine'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
@@ -566,15 +566,25 @@ router.post('/', async (req: Request, res: Response) => {
         intent.projectNames = [matched.name];
         (intent as any).targetProjectId = matched.id;
       } else {
-        // Persist active project focus from previous turn / session if user is asking follow-up detail query
-        const prevProjectName = (prevIntent as any)?.projectNames?.[0] || (hydratedIntent as any)?.projectNames?.[0] || cachedProjectsFromSession?.[0]?.name
-        const prevProjectId = (prevIntent as any)?.targetProjectId || (hydratedIntent as any)?.targetProjectId || cachedProjectsFromSession?.[0]?.id
+        // Detect if current query is a new sector search, builder query, or general discovery search
+        const isSectorOrLocationSearch = Boolean(intent.sector) || /\b(sector\s*\d+|expressway|greater\s*noida|noida\s*extension|central\s*noida)\b/i.test(message);
+        const isDiscoveryQuery = intent.queryKind === 'DISCOVERY' || /\b(show\s*(me)?|find|list|projects\s*in|flats\s*in|apartments\s*in|options\s*in|best\s*projects|top\s*societies)\b/i.test(message);
+        const isBuilderDiscovery = Boolean((intent as any).builderName) || /\b(projects\s*by|builder|developer)\b/i.test(message);
+        const isExplicitFollowUp = /\b(it|its|this\s*project|the\s*project|payment\s*plan|floor\s*plan|cost\s*sheet|construction|rera|who\s*is|developer|amenities|layout|bhk\s*sizes)\b/i.test(message);
 
-        if (prevProjectName) {
-          // Carry forward active project unless user explicitly starts a new sector or discovery search
-          const isNewSectorSearch = intent.sector && prevIntent?.sector && intent.sector !== prevIntent.sector
-          if (!isNewSectorSearch) {
-            console.log('[CHAT] Persisting active project focus from session:', prevProjectName);
+        const shouldClearProjectFocus = (isSectorOrLocationSearch || isDiscoveryQuery || isBuilderDiscovery) && !isExplicitFollowUp;
+
+        if (shouldClearProjectFocus) {
+          console.log('[CHAT] Fresh discovery / sector query detected — isolating project focus.');
+          intent.projectNames = undefined;
+          (intent as any).targetProjectId = undefined;
+        } else {
+          // Persist active project focus from previous turn / session only if user is asking follow-up detail query
+          const prevProjectName = (prevIntent as any)?.projectNames?.[0] || (hydratedIntent as any)?.projectNames?.[0] || cachedProjectsFromSession?.[0]?.name;
+          const prevProjectId = (prevIntent as any)?.targetProjectId || (hydratedIntent as any)?.targetProjectId || cachedProjectsFromSession?.[0]?.id;
+
+          if (prevProjectName && isExplicitFollowUp) {
+            console.log('[CHAT] Persisting active project focus for follow-up detail:', prevProjectName);
             intent.projectNames = [prevProjectName];
             if (prevProjectId) (intent as any).targetProjectId = prevProjectId;
           }
@@ -641,7 +651,27 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // ─── Phase 0: Query Classification (deterministic + LLM fallback)
-    const queryClassification = classifyQuery(message, intent as Record<string, unknown>)
+    //
+    // Resolve the extractor's guessed project names against real rows first. The
+    // guess is unreliable — "How is Wealth Clinic?" put a brokerage into
+    // projectNames, which routed the question into the project detail pipeline and
+    // produced "no verified record, want properties in Sector 79?". An unmatched
+    // name must not keep the question out of the open lane.
+    const verifiedProjectNames = await resolveProjectNames(
+      (intent as Intent).projectNames,
+      DEFAULT_CITY,
+    )
+    const hasVerifiedProjectNames = verifiedProjectNames.length > 0
+    if ((intent as Intent).projectNames?.length && !hasVerifiedProjectNames) {
+      console.log('[CHAT:UNVERIFIED_PROJECT_NAMES]', {
+        guessed: (intent as Intent).projectNames,
+        matched: 0,
+      })
+    }
+
+    const queryClassification = classifyQuery(message, intent as Record<string, unknown>, {
+      hasVerifiedProjectNames,
+    })
     intent.queryKind = queryClassification.queryKind
     renderTarget = queryClassification.renderTarget
     console.log('[CHAT] Query classification', Date.now(), {
@@ -658,7 +688,7 @@ router.post('/', async (req: Request, res: Response) => {
     // refused when neither grounds it. Exits before the discovery pipeline so an
     // unanswerable question can never come back as a list of unrelated properties.
     if (queryClassification.queryKind === 'OPEN') {
-      const openDetection = detectOpenQuery(message, ((intent as Intent).projectNames?.length ?? 0) > 0)
+      const openDetection = detectOpenQuery(message, hasVerifiedProjectNames)
         ?? { topic: 'GENERAL' as const, reason: 'Fail-open general question' }
 
       emitUiState({
@@ -2449,7 +2479,11 @@ For ready-to-move possession, prioritize **${filtered[0]?.name}** or **${filtere
             return
           }
 
-          send('token', { token: `I couldn't locate a verified database record matching "${plan.projectIds[0]}". Would you like me to show verified properties in ${activeSector}?` })
+          // Ask what they meant; never offer inventory in a sector they did not name.
+          // The old line pushed "properties in ${activeSector}" — a sector carried over
+          // from earlier in the session — at someone who had asked about something else
+          // entirely, which reads as a deflection into a sales funnel.
+          send('token', { token: `I don't have a verified record for "${plan.projectIds[0]}" in our database.\n\nIs that a project name, a builder, or a consultancy you're dealing with? Tell me which and what you wanted to know, and I'll check it properly instead of guessing.` })
           send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
           res.end()
           return
@@ -3192,12 +3226,21 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           }
 
           if (name === 'builder_lookup') {
-          const rec = await getBuilderRecord(args.name ?? '');
-          return rec ?? {
-            found: false,
-            message: `No verified record for "${args.name}" in the RealtyPals database. You may share clearly-labelled general knowledge or call web_search, but never invent specific delivery counts or reputation scores.`,
-          };
-        }
+            const rec = await getBuilderRecord(args.name ?? '');
+            if (!rec) {
+              console.warn('[TELEMETRY:DATA_GAP]', {
+                type: 'builder_not_found',
+                builderName: args.name,
+                sessionId: currentSessionId,
+                timestamp: new Date().toISOString(),
+              });
+              return {
+                found: false,
+                message: `No verified record for "${args.name}" in the RealtyPals database. You may share clearly-labelled general knowledge or call web_search, but never invent specific delivery counts or reputation scores.`,
+              };
+            }
+            return rec;
+          }
 
         // ── On-demand detail lookups ────────────────────────────────────────
         // Pull-based by design: these read tables the system prompt does not
@@ -3706,9 +3749,14 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
     const persistPromises: Promise<unknown>[] = []
 
-    // What actually gets written for the assistant turn. The prose-entity pass below
-    // may rewrite it with clickable project links before the insert runs.
-    let assistantTextToPersist = fullText
+    // Strip any residual web-search or provenance tags before persistence / rendering
+    const sanitizedFullText = (fullText || '')
+      .replace(/\s*\((?:web[-\s]?search|untrusted[-\s]?source|wikipedia|source:[^)]+)\)/gi, '')
+      .replace(/\[(?:Source|\d+)[^\]]*\]/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    let assistantTextToPersist = sanitizedFullText || fullText;
 
     if (isNewSession) {
       const newId = currentSessionId!

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Buildings, ShieldCheck, Scales, Compass } from '@phosphor-icons/react'
+import { ArrowRight, ShieldCheck, Scales, Compass } from '@phosphor-icons/react'
 import { getSupabaseClient } from '@/lib/supabase'
 
 export default function LandingPage() {
@@ -84,11 +84,11 @@ export default function LandingPage() {
             Sign In
           </Link>
           <Link
-            href="/builder-register"
-            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 text-white text-[11px] sm:text-xs font-bold rounded-xl border border-white/20 hover:border-white/40 transition-all duration-200 backdrop-blur-md active:scale-95 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap"
+            href="/discover"
+            className="px-3.5 sm:px-4 py-1.5 sm:py-2 bg-white text-zinc-950 hover:bg-zinc-100 text-[11px] sm:text-xs font-bold rounded-xl transition-all duration-200 shadow-[0_2px_12px_rgba(255,255,255,0.2)] active:scale-95 flex items-center gap-1.5 whitespace-nowrap"
           >
-            <Buildings size={13} weight="duotone" className="text-blue-400 shrink-0" />
-            <span>List with RealtyPals</span>
+            <span>Start Discovery</span>
+            <ArrowRight size={13} weight="bold" className="text-zinc-950 shrink-0" />
           </Link>
         </div>
       </header>

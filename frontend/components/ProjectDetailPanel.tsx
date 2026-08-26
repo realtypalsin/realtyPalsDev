@@ -615,7 +615,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             className="lg:col-span-5 relative rounded-3xl overflow-hidden h-[260px] lg:h-[280px] shadow-md group cursor-pointer"
           >
             <Image 
-              src={currentImg || "/images/properties/default-hero.jpg"} 
+              src={currentImg || "/placeholder.png"} 
               alt={d?.name || "Project Image"} 
               fill 
               priority 

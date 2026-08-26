@@ -1,5 +1,20 @@
 import Link from 'next/link'
-import { ArrowLeft, Shield, Scale, FileText, AlertTriangle, Building2, UserCheck, HelpCircle, CheckCircle2, PhoneCall, MapPin } from 'lucide-react'
+import {
+  ArrowLeft,
+  Shield,
+  Scale,
+  FileText,
+  AlertTriangle,
+  Building2,
+  UserCheck,
+  HelpCircle,
+  CheckCircle2,
+  PhoneCall,
+  MapPin,
+  Cpu,
+  Cookie,
+  Lock
+} from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -62,7 +77,7 @@ export default function TermsOfService() {
               <strong>Verified Public RERA Identifiers:</strong> Project RERA registration numbers and promoter details displayed across project cards, decision matrices, and detail drawers are referenced directly from public UP-RERA disclosures. Users are encouraged to cross-verify all statutory filings on the official government portal (<a href="https://up-rera.in" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">up-rera.in</a>).
             </li>
             <li>
-              <strong>Channel Partner &amp; Lead Fulfillment Routing:</strong> When a user requests a site visit, developer callback, or project cost sheet, lead coordination and site inspections may be facilitated directly by the respective UP-RERA registered developer or their authorized, UP-RERA registered Channel Partner (Real Estate Agent).
+              <strong>Channel Partner &amp; Lead Fulfillment Routing:</strong> When a user requests a site visit, developer callback, brochure, or project cost sheet, lead coordination and site inspections are facilitated either directly by the respective UP-RERA registered developer or via authorized UP-RERA registered Channel Partners (Real Estate Agents), displaying their statutory CP registration numbers where applicable.
             </li>
             <li>
               <strong>Technology Aggregator Status:</strong> RealtyPals functions strictly as an analytical intelligence layer. We do not solicit investments, underwrite developments, or act as an escrow agent.
@@ -74,7 +89,7 @@ export default function TermsOfService() {
     {
       id: 'lead-consent-trai',
       icon: PhoneCall,
-      title: '4. Lead Consent, Communications & TRAI / DND Waiver',
+      title: '4. Lead Consent, Developer Sharing & TRAI / DND Waiver',
       badge: 'TRAI TCCR Compliant',
       content: (
         <div className="space-y-3">
@@ -83,7 +98,7 @@ export default function TermsOfService() {
           </p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li>
-              <strong>Express Communication Authorization:</strong> You explicitly authorize RealtyPals, the concerned UP-RERA registered developers, and their authorized channel partners to contact you via Phone Calls, SMS, WhatsApp messages, and Electronic Mail regarding property updates, inventory availability, and scheduling details.
+              <strong>Express Communication Authorization:</strong> You explicitly authorize RealtyPals, the concerned UP-RERA registered developers, and their authorized UP-RERA registered channel partners to contact you via Phone Calls, SMS, WhatsApp messages, and Electronic Mail regarding property updates, inventory availability, and scheduling details.
             </li>
             <li>
               <strong>TRAI / National DND Registry Waiver:</strong> You expressly agree that this request constitutes an unsolicited commercial communications exemption under the Telecom Commercial Communications Customer Preference Regulations, 2018 (TRAI TCCR). This consent explicitly overrides any existing registration on the National Do Not Call (NDNC / DND) Registry or Telecom Service Provider preference registers for a period of 12 months or until explicit written consent revocation.
@@ -96,9 +111,80 @@ export default function TermsOfService() {
       ),
     },
     {
+      id: 'ai-telemetry-privacy',
+      icon: Cpu,
+      title: '5. AI Query Data Handling & Telemetry Privacy',
+      badge: 'Privacy Shield',
+      content: (
+        <div className="space-y-3">
+          <p>
+            When utilizing our conversational AI advisory engine, budget search matrix, or discovery tools:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Query &amp; Prompt Storage:</strong> Your chat transcripts, search parameters, and budget filters are stored encrypted at rest for session continuity and account synchronization.
+            </li>
+            <li>
+              <strong>No Unconsented Ad Profiling:</strong> We do not sell, rent, or trade your prompt history, financial parameters, or search queries to third-party ad networks, telemetry aggregators, or unauthorized third parties.
+            </li>
+            <li>
+              <strong>Zero-Retention Inference:</strong> External LLM inference pipelines operate under enterprise zero-data-retention agreements where user inputs are never utilized to train public foundation models.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'geolocation-cookies',
+      icon: Cookie,
+      title: '6. Geolocation, Analytics & Cookie Tracking',
+      content: (
+        <div className="space-y-3">
+          <p>
+            RealtyPals collects anonymous technical data and device telemetry to deliver localized real estate intelligence across Delhi NCR micro-markets:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Localized Recommendations:</strong> IP address and approximate geolocation data are processed ephemerally to calibrate distance matrices and recommend relevant sectors (such as Sector 150 Noida, Noida Expressway, Greater Noida West, and Yamuna Expressway).
+            </li>
+            <li>
+              <strong>Cookie Control:</strong> Essential cookies are strictly required for security and session state. You can control or clear non-essential cookies and local browser storage at any time via your browser settings.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'dpdp-principal-rights',
+      icon: Lock,
+      title: '7. DPDP Act 2023 Compliance & Data Principal Rights',
+      badge: 'Statutory DPDP Rights',
+      content: (
+        <div className="space-y-3">
+          <p>
+            In accordance with the Digital Personal Data Protection Act, 2023 (DPDP Act), all users (&quot;Data Principals&quot;) retain statutory rights:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Right to Access:</strong> Obtain a summary of personal data and processing activities executed on RealtyPals.
+            </li>
+            <li>
+              <strong>Right to Correction &amp; Erasure:</strong> Request the correction of inaccurate data or the complete erasure of your lead history, search trails, and registered profile.
+            </li>
+            <li>
+              <strong>Right to Nominate:</strong> Nominate an individual to manage or exercise your data rights in the event of death or incapacity.
+            </li>
+            <li>
+              <strong>Consent Withdrawal:</strong> Revoke consent at any time by contacting our Grievance Redressal Cell at <a href="mailto:grievance@realtypals.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">grievance@realtypals.in</a>.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
       id: 'platform-use',
       icon: UserCheck,
-      title: '5. Permitted Use & User Obligations',
+      title: '8. Permitted Use & User Obligations',
       content: (
         <div className="space-y-3">
           <p>As a condition of your use of the Platform, you agree to:</p>
@@ -113,7 +199,7 @@ export default function TermsOfService() {
     {
       id: 'builder-relationships',
       icon: Building2,
-      title: '6. Builder Specifications & Timeline Variations',
+      title: '9. Builder Specifications & Timeline Variations',
       content: (
         <div className="space-y-3">
           <p>
@@ -129,7 +215,7 @@ export default function TermsOfService() {
     {
       id: 'limitation-liability',
       icon: Scale,
-      title: '7. Limitation of Liability',
+      title: '10. Limitation of Liability',
       content: (
         <div className="space-y-3">
           <p>
@@ -141,7 +227,7 @@ export default function TermsOfService() {
     {
       id: 'governing-law',
       icon: CheckCircle2,
-      title: '8. Governing Law & Dispute Resolution',
+      title: '11. Governing Law & Dispute Resolution',
       content: (
         <div className="space-y-3">
           <p>

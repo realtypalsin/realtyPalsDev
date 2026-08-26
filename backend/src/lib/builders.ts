@@ -1,8 +1,23 @@
 import { prisma } from './db'
 
+export function normalizeBuilderSearchName(raw: string): string {
+  return raw
+    .replace(/\b(projects|group|developers|developer|infratech|infra|limited|ltd|pvt|llp|realtors|realtech|buildtech)\b/gi, '')
+    .trim();
+}
+
 export async function getBuilderRecord(name: string): Promise<Record<string, unknown> | null> {
-  const builder = await prisma.builder.findFirst({
-    where: { name: { contains: name, mode: 'insensitive' } },
+  const cleanName = (name ?? '').trim();
+  if (!cleanName) return null;
+  const normalizedName = normalizeBuilderSearchName(cleanName);
+
+  let builder = await prisma.builder.findFirst({
+    where: {
+      OR: [
+        { name: { contains: cleanName, mode: 'insensitive' } },
+        ...(normalizedName.length >= 3 ? [{ name: { contains: normalizedName, mode: 'insensitive' } }] : []),
+      ],
+    },
     include: {
       projects: {
         select: {
@@ -11,15 +26,39 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
         },
         take: 25,
       },
-      // Promised-vs-actual per project. Without this the model can only quote the
-      // delayed_projects_count aggregate and cannot say which project slipped.
       delivery_records: {
         orderBy: { promised_date: 'asc' },
         take: 40,
       },
     },
-  })
-  if (!builder) return null
+  });
+
+  if (!builder && normalizedName.length >= 3) {
+    const slugToken = normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    builder = await prisma.builder.findFirst({
+      where: {
+        OR: [
+          { slug: { contains: slugToken, mode: 'insensitive' } },
+          { parent_group: { contains: normalizedName, mode: 'insensitive' } },
+        ],
+      },
+      include: {
+        projects: {
+          select: {
+            name: true, sector: true, status: true,
+            rera_number: true, possession_label: true,
+          },
+          take: 25,
+        },
+        delivery_records: {
+          orderBy: { promised_date: 'asc' },
+          take: 40,
+        },
+      },
+    });
+  }
+
+  if (!builder) return null;
 
   const b = builder as any
 

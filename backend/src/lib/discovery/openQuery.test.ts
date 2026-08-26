@@ -123,3 +123,39 @@ describe('shopping vocabulary guard', () => {
     assert.equal(d?.topic, 'SECTOR_PROFILE')
   })
 })
+
+describe('third-party consultancy questions (Wealth Clinic regression)', () => {
+  it('detects "How is X?"', () => {
+    const d = detectOpenQuery('How is Wealth Clinic? Can I buy a property from them?', false)
+    assert.equal(d?.topic, 'ENTITY')
+    assert.equal(d?.entity, 'Wealth Clinic')
+  })
+
+  it('detects can-I-transact phrasing', () => {
+    assert.equal(detectOpenQuery('can i buy from Investors Clinic', false)?.entity, 'Investors Clinic')
+  })
+
+  it('detects opinion phrasing', () => {
+    assert.equal(detectOpenQuery('what do you think of Wealth Clinic', false)?.entity, 'Wealth Clinic')
+    assert.equal(detectOpenQuery('your opinion on Gaurs Group', false)?.entity, 'Gaurs Group')
+  })
+
+  it('detects trust checks', () => {
+    assert.equal(detectOpenQuery('is Wealth Clinic legit', false)?.entity, 'Wealth Clinic')
+  })
+
+  it('never treats a pronoun as a company', () => {
+    // "Can I buy a property from them?" on its own must not look up a firm called "them".
+    assert.equal(detectOpenQuery('Can I buy a property from them?', false), null)
+  })
+
+  it('reaches the open lane when the extractor guessed a name that is not a real project', () => {
+    // hasProjectNames=false is what the router now passes for an unmatched guess.
+    const d = detectOpenQuery('How is Wealth Clinic?', false)
+    assert.equal(d?.topic, 'ENTITY')
+  })
+
+  it('still defers to the project pipeline for a verified project name', () => {
+    assert.equal(detectOpenQuery('How is Godrej Woods?', true), null)
+  })
+})

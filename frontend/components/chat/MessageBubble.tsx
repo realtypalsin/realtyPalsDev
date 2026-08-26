@@ -160,6 +160,7 @@ export interface MessageBubbleProps {
   selectedCompareIds?: Set<string>
   onToggleCompareSelect?: (messageId: string, property: ProjectCardType) => void
   onStartCompare?: (messageId: string, properties: ProjectCardType[]) => void
+  onCancelCompare?: () => void
   currentIntent?: Record<string, unknown> | null
 }
 
@@ -331,7 +332,11 @@ export function SuggestionChipGroups({
   }
 
   if (!hasLabelledGroups) {
-    return <div className="flex flex-wrap gap-2">{sorted.map(renderChip)}</div>
+    return (
+      <div className="flex items-center gap-2 overflow-x-auto sm:flex-wrap no-scrollbar py-1 px-1 -mx-1 sm:mx-0">
+        {sorted.map(renderChip)}
+      </div>
+    )
   }
 
   return (
@@ -349,18 +354,122 @@ export function SuggestionChipGroups({
               {label}
             </span>
           )}
-          <div className="flex flex-wrap gap-2">{groupChips.map(renderChip)}</div>
+          <div className="flex items-center gap-2 overflow-x-auto sm:flex-wrap no-scrollbar py-1 px-1 -mx-1 sm:mx-0">
+            {groupChips.map(renderChip)}
+          </div>
         </div>
       ))}
     </div>
   )
 }
 
+// ── ChatGPT-Style Inline Message Editor ─────────────────────────────────────
+function InlineMessageEditor({
+  initialText,
+  onSave,
+  onCancel,
+  onToast,
+}: {
+  initialText: string
+  onSave: (text: string) => Promise<void>
+  onCancel: () => void
+  onToast: (msg: string) => void
+}) {
+  const [text, setText] = useState(initialText)
+  // Owned here rather than read from useInlineEdit: this editor manages its own
+  // draft and never calls the hook's handleSave, so the hook's isLoading could
+  // never leave false and the "Saving…" state was unreachable.
+  const [isLoading, setIsLoading] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-// ── Custom equality — only the actively-streaming (last) message re-renders ─
+  // Focus and set cursor to the END of the text on mount
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus()
+      const len = textareaRef.current.value.length
+      textareaRef.current.setSelectionRange(len, len)
+      textareaRef.current.scrollTop = textareaRef.current.scrollHeight
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.max(60, textareaRef.current.scrollHeight)}px`
+    }
+  }, [])
+
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setText(e.target.value)
+    e.target.style.height = 'auto'
+    e.target.style.height = `${Math.max(60, e.target.scrollHeight)}px`
+  }
+
+  const handleSubmit = async () => {
+    const trimmed = text.trim()
+    if (!trimmed || isLoading) return
+    setIsLoading(true)
+    try {
+      await onSave(trimmed)
+    } catch (err) {
+      console.error('Failed to edit message:', err)
+      onToast('Failed to save changes')
+      // Editor stays open with the draft intact so the edit can be retried.
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <m.div
+      initial={{ opacity: 0, y: 6, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 6, scale: 0.98 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="w-full max-w-2xl bg-[#f4f4f4] dark:bg-[#212121] text-gray-900 dark:text-white border border-gray-200/80 dark:border-white/10 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] flex flex-col gap-3.5"
+    >
+      <textarea
+        ref={textareaRef}
+        value={text}
+        onChange={handleInput}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            handleSubmit()
+          }
+          if (e.key === 'Escape') {
+            e.preventDefault()
+            onCancel()
+          }
+        }}
+        placeholder="Edit your message..."
+        rows={2}
+        className="w-full bg-transparent text-[15px] sm:text-[15.5px] leading-relaxed text-gray-900 dark:text-zinc-100 placeholder-gray-400 dark:placeholder-zinc-500 border-none outline-none resize-none p-0 focus:ring-0 focus:outline-none"
+      />
+
+      <div className="flex items-center justify-end gap-2 pt-1 border-t border-gray-200/60 dark:border-zinc-800">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-white rounded-full hover:bg-gray-200/70 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!text.trim() || isLoading}
+          className="px-5 py-1.5 text-xs font-bold text-white dark:text-black bg-blue-600 hover:bg-blue-500 dark:bg-white dark:hover:bg-zinc-200 rounded-full transition-all shadow-xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5"
+        >
+          {isLoading ? <span>Saving...</span> : <span>Save & Submit</span>}
+        </button>
+      </div>
+    </m.div>
+  )
+}
+
+
+// ── Custom equality — re-renders on active stream or compare state changes ─
 function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
   if (next.isSubmitting !== prev.isSubmitting) return false
   if (prev.isLast && prev.isSubmitting) return false
+  if (prev.comparingMessageId !== next.comparingMessageId) return false
+  if (prev.selectedCompareIds !== next.selectedCompareIds) return false
+  if (prev.isExpanded !== next.isExpanded) return false
   return (
     prev.message.content === next.message.content &&
     prev.message.properties === next.message.properties &&
@@ -376,7 +485,6 @@ function areEqual(prev: MessageBubbleProps, next: MessageBubbleProps): boolean {
     prev.message.images === next.message.images &&
     prev.message.is_verified === next.message.is_verified &&
     prev.message.spatialContext === next.message.spatialContext &&
-    prev.isExpanded === next.isExpanded &&
     prev.carouselIndex === next.carouselIndex &&
     prev.chips === next.chips &&
     prev.message.chips === next.message.chips
@@ -392,7 +500,7 @@ function MessageBubbleInner({
 
   onToggleExpanded, onSetChipPicker, onSetCarouselIndex,
   onSetSiteVisit, onOpenCalculator, onOpenShareSheet, onToast, onOpenCompare,
-  comparingMessageId, selectedCompareIds, onToggleCompareSelect, onStartCompare,
+  comparingMessageId, selectedCompareIds, onToggleCompareSelect, onStartCompare, onCancelCompare,
   currentIntent,
 }: MessageBubbleProps) {
   const isUser = message.type === 'user'
@@ -516,19 +624,35 @@ function MessageBubbleInner({
       className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} group/msg`}
     >
       <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}>
-        {/* Message bubble */}
-        <div
-          onContextMenu={handleContextMenu}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchEnd}
-          className={`transition-all duration-200 ${
-            isUser
-              ? 'max-w-[85%] sm:max-w-[75%] bg-[#edf3fd] dark:bg-[#152033] text-[#0f172a] dark:text-[#f0f6ff] border border-[#d2e2fa] dark:border-[#1e3252] shadow-[0_2px_10px_rgba(37,99,235,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] rounded-[22px] rounded-br-[6px] px-5 py-3.5 select-text'
-              : 'w-full max-w-full bg-transparent text-slate-800 dark:text-zinc-200 select-text px-0 py-0.5'
-          }`}
-        >
+        {isUser && inlineEdit.isEditing ? (
+          <InlineMessageEditor
+            initialText={displayContent}
+            onSave={async (newText) => {
+              // Await first, close second. Closing first unmounted the editor before
+              // the request resolved, so a failure surfaced a toast with the user's
+              // typed text already discarded — and no in-flight state could render.
+              // Throwing here is intentional: the editor's own catch shows the toast
+              // and keeps the draft on screen.
+              await onEditMessage(message.id, newText)
+              inlineEdit.setIsEditing(false)
+            }}
+            onCancel={() => inlineEdit.handleCancel()}
+            onToast={onToast}
+          />
+        ) : (
+          /* Message bubble */
+          <div
+            onContextMenu={handleContextMenu}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+            className={`transition-all duration-200 ${
+              isUser
+                ? 'max-w-[85%] sm:max-w-[75%] bg-[#edf3fd] dark:bg-[#152033] text-[#0f172a] dark:text-[#f0f6ff] border border-[#d2e2fa] dark:border-[#1e3252] shadow-[0_2px_10px_rgba(37,99,235,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] rounded-[22px] rounded-br-[6px] px-5 py-3.5 select-text'
+                : 'w-full max-w-full bg-transparent text-slate-800 dark:text-zinc-200 select-text px-0 py-0.5'
+            }`}
+          >
           {!isUser ? (
             <div className="relative z-10 space-y-3">
               {(() => {
@@ -746,51 +870,11 @@ function MessageBubbleInner({
                 return null
               })()}
             </div>
-          ) : isUser && inlineEdit.isEditing ? (
-            <div className="w-full space-y-2 relative z-10 min-w-[260px] sm:min-w-[320px]">
-              <textarea
-                autoFocus
-                value={inlineEdit.text}
-                onChange={(e) => inlineEdit.setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault()
-                    inlineEdit.handleSave((text) => onEditMessage(message.id, text)).catch((error) => {
-                      console.error('Failed to edit message:', error)
-                      onToast('Failed to save changes')
-                    })
-                  }
-                  if (e.key === 'Escape') {
-                    inlineEdit.handleCancel()
-                  }
-                }}
-                className="w-full min-h-[70px] p-3 text-[15px] font-medium text-gray-900 dark:text-white bg-white dark:bg-zinc-800 border border-blue-500/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
-              />
-              <div className="flex items-center justify-end gap-2 pt-0.5">
-                <button
-                  type="button"
-                  onClick={() => inlineEdit.handleCancel()}
-                  className="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-zinc-700/60 rounded-lg transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => inlineEdit.handleSave((text) => onEditMessage(message.id, text)).catch((error) => {
-                    console.error('Failed to edit message:', error)
-                    onToast('Failed to save changes')
-                  })}
-                  disabled={!inlineEdit.text.trim() || inlineEdit.isLoading}
-                  className="px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-                >
-                  {inlineEdit.isLoading ? 'Saving...' : 'Save & Submit'}
-                </button>
-              </div>
-            </div>
           ) : (
             <p className="whitespace-pre-wrap text-[15px] sm:text-[15.5px] font-normal leading-relaxed relative z-10">{displayContent}</p>
           )}
         </div>
+        )}
       </div>
 
       <div className={`mt-2 flex items-center w-full ${isUser ? 'justify-end' : 'justify-start'} gap-2.5 px-1`}>
@@ -1089,7 +1173,9 @@ function MessageBubbleInner({
                 {fullCardsForCompare.length >= 2 && (
                   <button
                     onClick={() => {
-                      if (onStartCompare) {
+                      if (comparingMessageId === message.id) {
+                        onCancelCompare?.()
+                      } else if (onStartCompare) {
                         onStartCompare(message.id, fullCardsForCompare)
                       } else {
                         onOpenCompare(fullCardsForCompare)
@@ -1097,12 +1183,12 @@ function MessageBubbleInner({
                     }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer border ${
                       comparingMessageId === message.id
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-blue-500/20'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-blue-500/30'
                         : 'bg-white/80 dark:bg-zinc-800/80 border-slate-200/80 dark:border-zinc-700/80 text-slate-700 dark:text-slate-200 hover:border-blue-400 dark:hover:border-blue-500'
                     }`}
                   >
                     <Scales size={13} weight="duotone" className={comparingMessageId === message.id ? 'text-white' : 'text-blue-500'} />
-                    <span className="hidden sm:inline">{comparingMessageId === message.id ? 'Comparing…' : 'Compare'}</span>
+                    <span className="hidden sm:inline">{comparingMessageId === message.id ? 'Exit Compare' : 'Compare'}</span>
                   </button>
                 )}
                 <button
@@ -1312,13 +1398,13 @@ function MessageBubbleInner({
         </div>
       )}
 
-      {/* Progressive chips from Conversation Engine */}
+      {/* Progressive chips from Conversation Engine — strictly active on the latest assistant turn */}
       {(() => {
+        const isLatestAiMessage = Boolean(isLast) && message.type === 'ai';
         const hasText = Boolean(displayContent);
         const hasProps = Boolean(message.exactResults?.length || message.nearbyResults?.length || message.properties?.length);
         const hasDb = Boolean(message.chatResponse);
-        const shouldShow = message.type === 'ai' && (hasText || hasProps || hasDb) && combinedChips.length > 0
-          && (!isLast || !isSubmitting);
+        const shouldShow = isLatestAiMessage && (hasText || hasProps || hasDb) && combinedChips.length > 0 && !isSubmitting;
         return shouldShow;
       })() && (
         <m.div

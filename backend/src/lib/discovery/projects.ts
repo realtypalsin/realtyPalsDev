@@ -277,9 +277,16 @@ export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Pr
     // (unit_types could be empty or all null-priced)
   }
 
-  // Builder
+  // Builder — fuzzy token match (e.g. "Purvanchal Projects" -> "Purvanchal")
   if (intent.builderName) {
-    where.builder = { name: { contains: intent.builderName, mode: 'insensitive' } }
+    const rawBuilder = intent.builderName.trim()
+    const cleanBuilder = rawBuilder.replace(/\b(projects|group|developers|developer|infratech|infra|limited|ltd|pvt|llp|realtors|realtech|buildtech)\b/gi, '').trim()
+    where.builder = {
+      OR: [
+        { name: { contains: rawBuilder, mode: 'insensitive' } },
+        ...(cleanBuilder.length >= 3 ? [{ name: { contains: cleanBuilder, mode: 'insensitive' } }] : []),
+      ],
+    }
   }
 
   // Possession — hard-filter status when buyer explicitly wants RTM.

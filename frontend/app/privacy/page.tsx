@@ -1,5 +1,22 @@
 import Link from 'next/link'
-import { ArrowLeft, Shield, Lock, Eye, Server, Cookie, UserCheck, HelpCircle, PhoneCall, Cpu, MapPin } from 'lucide-react'
+import {
+  ArrowLeft,
+  Shield,
+  Lock,
+  Eye,
+  Server,
+  Cookie,
+  UserCheck,
+  HelpCircle,
+  PhoneCall,
+  Cpu,
+  MapPin,
+  Landmark,
+  PhoneForwarded,
+  UserX,
+  Globe,
+  ExternalLink
+} from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -28,7 +45,7 @@ export default function PrivacyPolicy() {
               <strong>Lead &amp; Site Visit Data:</strong> Full name, mobile number, and email address provided voluntarily when scheduling site inspections, requesting brochures, or asking for developer callbacks.
             </li>
             <li>
-              <strong>Technical &amp; Geolocation Data:</strong> IP address, device fingerprints, approximate geolocation (used strictly to recommend nearby micro-markets such as Sector 150, Noida Expressway, or Greater Noida West), and anonymous session tokens via first-party analytics (PostHog).
+              <strong>Technical &amp; Geolocation Data:</strong> IP address, device fingerprints, approximate geolocation (used strictly to recommend nearby NCR micro-markets such as Sector 150, Noida Expressway, Yamuna Expressway, or Greater Noida West), and anonymous session tokens via first-party analytics (PostHog).
             </li>
           </ul>
         </div>
@@ -52,7 +69,49 @@ export default function PrivacyPolicy() {
               <strong>Overriding National DND / TRAI Preference:</strong> In accordance with the Telecom Commercial Communications Customer Preference Regulations, 2018 (TRAI TCCR), you agree that this inquiry grants express authorization for developers and channel partners to contact you via Voice Calls, SMS, WhatsApp, and Email, notwithstanding your registration on the National Do Not Call (NDNC / DND) Registry.
             </li>
             <li>
-              <strong>Zero Telemarketing Resale:</strong> We enforce strict partner agreements. Your contact details are shared solely with the specific developer/partner relevant to your requested project and are never sold, rented, or distributed to third-party telemarketing agencies or loan aggregators.
+              <strong>Zero Telemarketing Resale:</strong> We enforce strict partner agreements. Your contact details are shared solely with the specific developer/partner relevant to your requested project and are never sold, rented, or distributed to third-party telemarketing agencies.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'banking-loan-sharing',
+      icon: Landmark,
+      title: '3. Home Loan & Banking Partner Lead Sharing',
+      badge: 'Financial Partners',
+      content: (
+        <div className="space-y-3">
+          <p>
+            When you opt for home loan eligibility assistance, builder Approved Project Financials (APF) validation, or custom EMI calculations on RealtyPals:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Financial Data Transmission:</strong> You explicitly authorize RealtyPals to securely transmit your voluntarily submitted financial indicators (estimated budget, income range, employment type, loan requirement, and contact details) to scheduled partner commercial banks and NBFCs (e.g., HDFC Bank, State Bank of India, ICICI Bank, Axis Bank) or their officially registered Direct Selling Agents (DSAs).
+            </li>
+            <li>
+              <strong>Single-Purpose Processing:</strong> Transmitted financial data is used exclusively to evaluate home loan pre-approvals, check project APF tie-ups, and offer sanctioned interest rates.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'telephony-recording',
+      icon: PhoneForwarded,
+      title: '4. Telephony, WhatsApp & Call Recording Consent',
+      badge: 'Quality & Audit',
+      content: (
+        <div className="space-y-3">
+          <p>
+            To deliver prompt real-time connectivity between property seekers and verified developers/channel partners, RealtyPals integrates cloud telephony infrastructure (e.g., Exotel, MyOperator, Twilio) and official WhatsApp Business APIs:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Call &amp; Chat Monitoring:</strong> Inbound/outbound phone calls, IVR communications, WhatsApp messages, and virtual site tour sessions may be monitored, logged, or recorded.
+            </li>
+            <li>
+              <strong>Purpose of Recording:</strong> Such records are maintained strictly for operational quality assurance, buyer-broker dispute resolution, agent training, and statutory regulatory compliance under RERA and consumer protection directives.
             </li>
           </ul>
         </div>
@@ -61,7 +120,7 @@ export default function PrivacyPolicy() {
     {
       id: 'ai-prompt-privacy',
       icon: Cpu,
-      title: '3. AI Conversational Engine & Prompt Privacy',
+      title: '5. AI Conversational Engine & Prompt Privacy',
       badge: 'Zero-Retention Model',
       content: (
         <div className="space-y-3">
@@ -85,61 +144,108 @@ export default function PrivacyPolicy() {
     {
       id: 'usage',
       icon: UserCheck,
-      title: '4. Purpose & Lawful Grounds of Processing',
+      title: '6. Purpose & Lawful Grounds of Processing',
       content: (
         <div className="space-y-3">
           <p>We process personal data strictly under lawful grounds of consent and legitimate uses as defined by the DPDP Act 2023:</p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li><strong>Contextual Property Matching:</strong> Generating real-time market evaluations, RERA comparisons, and price benchmark calculations.</li>
-            <li><strong>Fulfilling User Inquiries:</strong> Enabling verified developers and RERA channel partners to coordinate site visits and pricing sheets.</li>
+            <li><strong>Fulfilling User Inquiries:</strong> Enabling verified developers, RERA channel partners, and lending partners to coordinate site visits, pricing sheets, and loan pre-approvals.</li>
             <li><strong>Platform Security &amp; Anomaly Prevention:</strong> Monitoring query volume to prevent denial-of-service, scraping, or automated system abuse.</li>
           </ul>
         </div>
       ),
     },
     {
-      id: 'processors',
-      icon: Server,
-      title: '5. Third-Party Infrastructure & Data Security',
+      id: 'minors-data-protection',
+      icon: UserX,
+      title: '7. Age Restriction & Protection of Minors (DPDP Act Section 9)',
+      badge: '18+ Platform',
+      content: (
+        <div className="space-y-3">
+          <p>
+            In strict compliance with Section 9 of the Digital Personal Data Protection Act, 2023:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Age Eligibility:</strong> RealtyPals is designed exclusively for individuals who are at least 18 years of age and legally competent to enter into binding contracts under the Indian Contract Act, 1872.
+            </li>
+            <li>
+              <strong>No Minor Data Collection:</strong> We do not knowingly collect, process, track, or target personal data or behavioral profiles of children under 18 years of age.
+            </li>
+            <li>
+              <strong>Immediate Deletion:</strong> If we discover that personal data of a minor has been collected without verifiable parental/guardian consent, we take immediate corrective steps to permanently delete such records from our databases.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
+      id: 'processors-cross-border',
+      icon: Globe,
+      title: '8. Cross-Border Data Transfer & Infrastructure Security',
       badge: 'Enterprise Security',
       content: (
         <div className="space-y-3">
           <p>
-            We partner with industry-leading infrastructure providers operating under strict ISO 27001 / SOC-2 compliance:
+            To deliver high availability, low-latency search indexing, and resilient AI advisory processing, RealtyPals utilizes global enterprise cloud partners:
           </p>
           <div className="grid sm:grid-cols-2 gap-3 mt-3">
             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
-              <span className="font-bold text-slate-900 dark:text-white text-xs block">Supabase / PostgreSQL</span>
+              <span className="font-bold text-slate-900 dark:text-white text-xs block">Supabase / PostgreSQL Cloud</span>
               <span className="text-xs text-slate-600 dark:text-slate-400 mt-1 block">Encrypted at rest (AES-256) with strict Row-Level Security (RLS) policies.</span>
             </div>
             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
-              <span className="font-bold text-slate-900 dark:text-white text-xs block">Vercel &amp; Render Cloud</span>
-              <span className="text-xs text-slate-600 dark:text-slate-400 mt-1 block">TLS 1.3 encryption in transit, automated DDoS mitigation, and edge caching.</span>
+              <span className="font-bold text-slate-900 dark:text-white text-xs block">Vercel &amp; Edge Delivery</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 mt-1 block">TLS 1.3 encryption in transit, automated DDoS mitigation, and global edge points of presence.</span>
             </div>
             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
-              <span className="font-bold text-slate-900 dark:text-white text-xs block">Enterprise AI Inference</span>
-              <span className="text-xs text-slate-600 dark:text-slate-400 mt-1 block">Stateless AI processing with zero-data-retention compliance agreements.</span>
+              <span className="font-bold text-slate-900 dark:text-white text-xs block">Enterprise AI Inference Providers</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 mt-1 block">Stateless AI processing governed by zero-data-retention and SOC 2 / ISO 27001 data safeguards.</span>
             </div>
             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
               <span className="font-bold text-slate-900 dark:text-white text-xs block">PostHog Analytics</span>
               <span className="text-xs text-slate-600 dark:text-slate-400 mt-1 block">First-party telemetry and UI performance metrics with privacy-preserving IP masking.</span>
             </div>
           </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+            In accordance with DPDP Act 2023 provisions on cross-border transfers, data may transit or be processed on secure overseas cloud servers that comply with rigorous international data protection benchmarks.
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: 'embedded-microsites',
+      icon: ExternalLink,
+      title: '9. Embedded Builder Microsites & Third-Party Widgets',
+      content: (
+        <div className="space-y-3">
+          <p>
+            RealtyPals showcases verified projects from premier developers across Delhi NCR (such as Godrej Properties, M3M, Gaurs Group, ATS, Eldeco, and others). In certain instances, property pages may incorporate embedded iframe brochures, 360° virtual tour players, or developer-hosted scheduling widgets:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
+            <li>
+              <strong>Independent Privacy Policies:</strong> Submitting information directly inside an embedded developer form or following external links navigates you outside RealtyPals' direct governance. Such actions are subject solely to the respective builder's or vendor's privacy policy.
+            </li>
+            <li>
+              <strong>Release of Liability:</strong> RealtyPals is not responsible for data handling, storage, or unsolicited outreach initiated through independent third-party microsites or off-platform interactions.
+            </li>
+          </ul>
         </div>
       ),
     },
     {
       id: 'cookies',
       icon: Cookie,
-      title: '6. Cookies, Local Storage & Geolocation Preferences',
+      title: '10. Cookies, Local Storage & Geolocation Preferences',
       content: (
         <div className="space-y-3">
           <p>
-            RealtyPals utilizes essential cookies and browser local storage to maintain session continuity, guest token states, and saved property shortlists. 
+            RealtyPals utilizes essential cookies and browser local storage to maintain session continuity, guest token states, and saved property shortlists:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li><strong>Essential Cookies:</strong> Required for user authentication, security verification, and session state.</li>
-            <li><strong>Geolocation Data:</strong> Used ephemerally to center the search radius to your relevant NCR sub-market (e.g. Noida vs Greater Noida). You can disable location permissions in your browser at any time without disrupting manual search.</li>
+            <li><strong>Geolocation Data:</strong> Used ephemerally to center the search radius to your relevant NCR sub-market (e.g. Noida vs Greater Noida or Yamuna Expressway). You can disable location permissions in your browser at any time without disrupting manual search.</li>
             <li><strong>Opt-Out:</strong> You can clear cookies or local storage directly in your browser settings at any time.</li>
           </ul>
         </div>
@@ -148,7 +254,7 @@ export default function PrivacyPolicy() {
     {
       id: 'dpdp-rights',
       icon: Shield,
-      title: '7. Data Principal Rights (DPDP Act 2023)',
+      title: '11. Data Principal Rights (DPDP Act 2023)',
       badge: 'Statutory Rights',
       content: (
         <div className="space-y-3">
@@ -167,7 +273,7 @@ export default function PrivacyPolicy() {
     {
       id: 'retention',
       icon: Lock,
-      title: '8. Data Retention & Erasure Schedule',
+      title: '12. Data Retention & Erasure Schedule',
       content: (
         <div className="space-y-3">
           <p>

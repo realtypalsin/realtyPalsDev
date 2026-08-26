@@ -96,19 +96,21 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
 
   return (
     <div ref={containerRef} className="w-full max-w-3xl mx-auto px-2">
-      {/* Claude-style Minimal Capsule Grid with Vibrant Color on Hover */}
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        {HOME_BUTTON_GROUPS.map((group) => {
+      {/* Clean fixed wrapping pills — 4 fixed buttons on mobile without horizontal scroll, full set on desktop */}
+      <div className="flex flex-wrap items-center justify-center gap-2 w-full py-1">
+        {HOME_BUTTON_GROUPS.map((group, idx) => {
+          // On mobile, show top 4 primary buttons to fit cleanly without scroll; on sm+ show all
+          const isExtraOnMobile = idx >= 4;
           const isOpen = openDropdownId === group.id;
           const hasOptions = group.options && group.options.length > 0;
           const style = groupHoverStyles[group.id] || defaultHover;
 
           return (
-            <div key={group.id} className="relative">
+            <div key={group.id} className={`relative ${isExtraOnMobile ? 'hidden sm:block' : 'block'}`}>
               <m.div
                 whileHover={{ y: -1, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                className={`group flex items-center rounded-full text-xs font-medium border transition-all duration-150 shadow-2xs ${
+                className={`group flex items-center rounded-full text-xs font-medium border transition-all duration-150 shadow-2xs whitespace-nowrap ${
                   isOpen
                     ? 'bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-zinc-100 shadow-sm'
                     : `bg-white/80 dark:bg-zinc-800/50 border-zinc-200/70 dark:border-zinc-700/60 ${style.pillHover}`
@@ -152,7 +154,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 4, scale: 0.98 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-full mt-1.5 z-50 w-64 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-xl p-1 left-1/2 -translate-x-1/2"
+                    className="absolute top-full mt-1.5 z-50 w-64 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-xl p-1 left-0 sm:left-1/2 sm:-translate-x-1/2"
                   >
                     <div className="space-y-0.5">
                       {group.options.map((option, idx) => (

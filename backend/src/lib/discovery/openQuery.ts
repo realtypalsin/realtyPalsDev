@@ -51,8 +51,24 @@ const ENTITY_PATTERNS: Array<{ re: RegExp; reason: string }> = [
     reason: 'Definitional "who/what is X" lookup',
   },
   {
-    re: /\bis\s+([^?.,\n]+?)\s+(?:legit|genuine|trustworthy|reliable|a\s+scam|safe\s+to\s+deal\s+with)\b/i,
+    re: /\bis\s+([^?.,\n]+?)\s+(?:legit|legitimate|genuine|trustworthy|reliable|credible|any\s+good|a\s+scam|safe\s+to\s+deal\s+with)\b/i,
     reason: 'Trust check on a named party',
+  },
+  {
+    re: /^\s*how\s+(?:is|are|good\s+is|reliable\s+is|reputed\s+is)\s+([^?.,\n]+)/i,
+    reason: '"How is X" quality question',
+  },
+  {
+    re: /\b(?:can|should|could)\s+i\s+(?:buy|purchase|book|deal|invest|work)\s+(?:a\s+\w+\s+)?(?:with|from|through|via)\s+([^?.,\n]+)/i,
+    reason: 'Can-I-transact-with-X question',
+  },
+  {
+    re: /\b(?:opinion|thoughts|view)\s+(?:on|about)\s+([^?.,\n]+)/i,
+    reason: 'Opinion request about a named party',
+  },
+  {
+    re: /\bwhat\s+do\s+you\s+think\s+(?:of|about)\s+([^?.,\n]+)/i,
+    reason: 'Opinion request about a named party',
   },
 ]
 
@@ -72,7 +88,7 @@ function cleanEntity(raw: string): string {
 }
 
 /** A "name" that is really us, or the user, or nothing at all. */
-const OWN_RECORD_RE = /^(?:noida|greater\s+noida|noida\s+extension|realtypals|you|this\s+project|the\s+project|this|that|it)$/i
+const OWN_RECORD_RE = /^(?:noida|greater\s+noida|noida\s+extension|realtypals|you|this\s+project|the\s+project|this|that|it|them|they|him|her|us|these|those)$/i
 
 /**
  * Property attributes that survive the "what is X" capture but are not names.

@@ -31,6 +31,42 @@ export async function findProjectsMentioned(
   }
 }
 
+/**
+ * Which of the extractor's guessed project names correspond to a real row.
+ *
+ * `intent.projectNames` is an LLM guess, not a verified reference. Any capitalised
+ * noun phrase can land there — a brokerage ("Wealth Clinic"), a bank, a person.
+ * Treating that guess as a project reference sent those queries into the project
+ * detail pipeline, which found nothing and offered inventory in an unrelated
+ * sector. Callers should verify before routing on it.
+ */
+export async function resolveProjectNames(
+  names: string[] | undefined,
+  city: string,
+): Promise<string[]> {
+  if (!names?.length) return []
+  try {
+    const rows = await prisma.project.findMany({
+      where: {
+        city,
+        OR: names.map((n) => ({ name: { contains: n, mode: 'insensitive' as const } })),
+      },
+      select: { name: true },
+    })
+    if (rows.length === 0) return []
+    const found = rows.map((r) => r.name.toLowerCase())
+    return names.filter((n) =>
+      found.some((f) => f.includes(n.toLowerCase()) || n.toLowerCase().includes(f)),
+    )
+  } catch (e) {
+    console.warn('[proseEntities] project name resolution failed', e)
+    // Fail closed: an unverifiable name is treated as unverified, so the query
+    // routes to the open lane (which can ask) rather than the detail pipeline
+    // (which pushes inventory).
+    return []
+  }
+}
+
 /** Escape a project name before it goes into a RegExp — names carry '&', '(', '.', '-'. */
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

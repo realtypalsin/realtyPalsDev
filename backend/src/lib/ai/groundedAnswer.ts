@@ -62,11 +62,14 @@ function buildGroundedSystemPrompt(
 ## SHAPE — obey exactly
 1. First sentence answers the question directly. No preamble, no restating the question, no "great question".
 2. Then at most 3 supporting facts, one short line each, each ending with its source in parentheses — "(RealtyPals data)" or the publication or site name.
-3. Optional last line: one specific next step we can actually do (a sector to look at, a comparison to run). Only if it follows from the answer. Never a generic offer to help.
+3. Last line: a question back, aimed at what the user is trying to decide — what they want to know next, or which reading of an ambiguous question they meant. Ask; never offer. "Are you checking whether they're credible, or comparing their fees?" is a question. "Would you like to see properties in Sector 79?" is a pitch, and it is banned.
 4. Hard ceiling: 120 words. No headings, no tables, no bullet list longer than 3 items.
 
+## NEVER ASSUME, ASK
+If the question could mean more than one thing — a company that might be a broker or a builder, a sector they might be buying in or comparing against — do not pick one and answer it. Say what you do know, then ask which they meant. A wrong assumption confidently answered costs more trust than a question does.
+
 ## DO NOT
-Pad with background the user did not ask for. List every fact in the blocks — pick the ones that answer the question. Add disclaimers beyond the single gap line. Use exclamation marks, superlatives about us, or sales language.
+Pad with background the user did not ask for. List every fact in the blocks — pick the ones that answer the question. Add disclaimers beyond the single gap line. Use exclamation marks, superlatives about us, or sales language. Never steer an unanswered question toward our inventory: if we could not answer what they asked, offering listings instead is a deflection, not a service.
 
 ${dbContext ? `## VERIFIED DATA (RealtyPals database)\n${dbContext}\n` : ''}${webContext ? `\n## WEB SOURCES\n${webContext}\n` : ''}`
 }
@@ -119,6 +122,20 @@ async function buildSectorContext(city: string): Promise<string> {
   })
 
   return `Sectors ranked by average price per sqft (highest first):\n${lines.join('\n')}`
+}
+
+/** Any builder we hold whose name appears in the message. Longest name wins. */
+async function findBuilderMentioned(message: string): Promise<string | null> {
+  try {
+    const builders = await prisma.builder.findMany({ select: { name: true } })
+    const haystack = message.toLowerCase()
+    const hit = builders
+      .filter((b) => b.name.length >= 4 && haystack.includes(b.name.toLowerCase()))
+      .sort((a, b) => b.name.length - a.name.length)[0]
+    return hit?.name ?? null
+  } catch {
+    return null
+  }
 }
 
 /** Builder record for a named entity, if we hold one. */
@@ -263,6 +280,12 @@ export async function runGroundedAnswer(
       dbContext = await buildSectorContext(city)
     } else if (detection.topic === 'ENTITY' && detection.entity) {
       dbContext = await buildEntityContext(detection.entity)
+    } else if (detection.topic === 'GENERAL') {
+      // GENERAL is the fail-open bucket, so it catches entity questions whose
+      // phrasing no pattern recognised. If the message names a builder we hold,
+      // answer from that row rather than treating the whole question as unknowable.
+      const builderGuess = await findBuilderMentioned(message)
+      if (builderGuess) dbContext = await buildEntityContext(builderGuess)
     }
   } catch (err) {
     console.warn('[GROUNDED:DB_ERROR]', err)
@@ -277,10 +300,13 @@ export async function runGroundedAnswer(
     const isEntity = detection.topic === 'ENTITY' && Boolean(detection.entity)
     const query = isEntity ? `${detection.entity} ${city} real estate` : `${message} ${city}`
     try {
-      // Entity lookups must bypass the trusted-domain allowlist: a brokerage's own
-      // site and its news coverage are almost never on the price-claim allowlist,
-      // so a restricted search for one returns nothing.
-      webContext = await webSearch(query, isEntity ? 4 : 3, { restrictDomains: !isEntity })
+      // The trusted-domain allowlist exists for price, market and RERA claims. Only
+      // SECTOR_PROFILE makes those. Entity and general questions must search the open
+      // web: a brokerage's own site and its news coverage are not on a list of
+      // property portals, so a restricted search for one returns nothing at all —
+      // which is how "How is Wealth Clinic?" ended up ungrounded.
+      const restrictDomains = detection.topic === 'SECTOR_PROFILE'
+      webContext = await webSearch(query, isEntity ? 4 : 3, { restrictDomains })
     } catch (err) {
       console.warn('[GROUNDED:WEB_ERROR]', err)
     }
@@ -343,10 +369,20 @@ export async function runGroundedAnswer(
   }
 }
 
-/** Honest line for when nothing could ground the answer. */
+/**
+ * What to say when nothing grounded the answer.
+ *
+ * Ends with a question about what the user wants, never an offer of inventory.
+ * The old behaviour on this path — "I couldn't find X, would you like properties
+ * in Sector 79?" — answered a question nobody asked and read as a sales deflection.
+ * If we do not know, the honest move is to say so and ask what they were after.
+ */
 export function buildNoGroundingReply(detection: OpenQueryDetection): string {
   if (detection.topic === 'ENTITY' && detection.entity) {
-    return `I don't have a verified record for ${detection.entity}, and a live check didn't return anything I'd stand behind. I won't guess at it. If they're a developer with UP projects, up-rera.in lists promoters by name — that's the reliable check.`
+    return `I don't have anything verified on ${detection.entity}, and a live check didn't return something I'd stand behind — so I won't guess.\n\nWhat were you hoping to find out about them: whether they're credible to deal with, what they charge, or something specific they've told you? Tell me which, and I'll dig into that rather than guess at the rest.`
   }
-  return `I can't verify that right now, and I'd rather say so than give you a number I can't source. Ask me about a specific sector or project and I can answer from our own data.`
+  if (detection.topic === 'SECTOR_PROFILE') {
+    return `I can't back that up from our data right now, and I'd rather say so than give you a number I can't source.\n\nWhat's driving the question — are you weighing up where to buy, or checking whether somewhere you've already seen is the right level? Either way I can work from what we do hold.`
+  }
+  return `I don't have a sourced answer for that, and I won't improvise one.\n\nTell me what you're actually trying to work out and I'll either answer it properly or say plainly that it's outside what I can verify.`
 }

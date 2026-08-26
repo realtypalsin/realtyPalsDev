@@ -90,14 +90,23 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
   const isRTM = project.status === 'ready_to_move'
   const isNew = project.status === 'new_launch'
   const isDelayed = project.possession_label ? (project.possession_label.toLowerCase().includes('delayed') || project.possession_label.toLowerCase().includes('disputed')) : false
+
+  // Format and shorten possession / status label for clean UI display without long overflow
+  const rawPossession = (project.possession_label || '').trim()
+  const cleanPossession = rawPossession
+    .replace(/^possession[:\s-]*/i, '')
+    .replace(/under construction\s*\(([^)]+)\)/i, '$1')
+    .replace(/under construction/i, 'Under Const.')
+    .trim()
+
   const statusLabel = isRTM
     ? 'Ready to Move'
     : isDelayed
-      ? 'Delayed / Disputed'
-      : project.possession_label
-        ? `Possession: ${project.possession_label}`
-        : isNew
-          ? 'New Launch'
+      ? 'Delayed'
+      : isNew
+        ? 'New Launch'
+        : cleanPossession
+          ? (cleanPossession.length > 20 ? cleanPossession.slice(0, 18) + '…' : cleanPossession)
           : 'Under Construction'
 
   const askPrompts: Array<{ icon: React.ElementType; label: string; text: string; type: string }> = [
@@ -196,12 +205,14 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
     <div
       data-project-id={project.id}
       onClick={handleCardClick}
-      className={`group relative w-full flex flex-col rounded-[20px] md:rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-300 ease-out cursor-pointer cv-auto contain-paint ${
+      className={`group relative w-full flex flex-col rounded-[20px] md:rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-200 ease-out cursor-pointer select-none ${
         isSelected
-          ? 'ring-2 ring-blue-600 dark:ring-blue-500 shadow-[0_8px_30px_rgba(37,99,235,0.25)] scale-[1.01] border-blue-500 z-20'
-          : isTopPick
-            ? 'ring-1 ring-inset ring-amber-500/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.2)]'
-            : 'ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]'
+          ? 'ring-2 ring-blue-600 dark:ring-blue-500 shadow-[0_8px_30px_rgba(37,99,235,0.3)] scale-[1.015] border-blue-500 z-20 bg-blue-50/10 dark:bg-blue-950/10'
+          : isSelectable
+            ? 'ring-1 ring-blue-400/40 hover:ring-2 hover:ring-blue-400/80 hover:shadow-md'
+            : isTopPick
+              ? 'ring-1 ring-inset ring-amber-500/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.2)]'
+              : 'ring-1 ring-inset ring-black/5 dark:ring-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]'
       } md:hover:-translate-y-1 active:scale-[0.98]`}
     >
       {/* ════════════════════════════════════════════════════════════════════════
@@ -213,7 +224,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
           <div className="space-y-1">
             {/* Top Badges: Status + RERA */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold ${
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold max-w-[140px] truncate ${
                 isRTM 
                   ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' 
                   : isDelayed
@@ -221,9 +232,9 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                     : isNew 
                       ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300' 
                       : 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${isRTM ? 'bg-emerald-500' : isDelayed ? 'bg-rose-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
-                {statusLabel}
+              }`} title={rawPossession || statusLabel}>
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isRTM ? 'bg-emerald-500' : isDelayed ? 'bg-rose-500' : isNew ? 'bg-blue-500' : 'bg-amber-500'}`} />
+                <span className="truncate">{statusLabel}</span>
               </span>
 
               {project.rera_number && (
@@ -350,9 +361,10 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onToggleSelect?.() }}
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] transition-all shadow-md ${
-                  isSelected ? 'bg-blue-600 text-white font-extrabold ring-2 ring-white' : 'bg-black/60 text-white/80'
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] transition-all shadow-md ${
+                  isSelected ? 'bg-blue-600 text-white font-extrabold ring-2 ring-white scale-105' : 'bg-black/60 text-white border border-white/40'
                 }`}
+                aria-label={isSelected ? 'Deselect property' : 'Select property'}
               >
                 {isSelected ? '✓' : ''}
               </button>
@@ -408,25 +420,6 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
       <div className="hidden md:flex flex-col w-full h-full">
         {/* ── Hero image ── */}
         <div className="relative h-[220px] overflow-hidden bg-gray-50 dark:bg-gray-900 flex-shrink-0">
-          {isSelectable && (
-            <div className="absolute top-3 right-3 z-30">
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onToggleSelect?.() }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-md cursor-pointer backdrop-blur-md ${
-                  isSelected
-                    ? 'bg-blue-600 text-white ring-2 ring-white/40 scale-105 shadow-blue-500/30'
-                    : 'bg-black/60 text-white/90 hover:bg-black/80 border border-white/20'
-                }`}
-                aria-label={isSelected ? 'Deselect property' : 'Select property'}
-              >
-                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isSelected ? 'bg-white text-blue-600 font-extrabold' : 'border border-white/60'}`} aria-hidden="true">
-                  {isSelected ? '✓' : ''}
-                </div>
-                <span>{isSelected ? 'Selected' : 'Select'}</span>
-              </button>
-            </div>
-          )}
           {workingImages.length > 0 && !allFailed ? (
             <>
               {workingImages.map((src, i) => (
@@ -485,13 +478,13 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
 
           {/* Status tag overlaid on image top-left */}
           <div className="absolute top-3 left-3 z-10">
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md border shadow-sm ${
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md border shadow-sm max-w-[170px] ${
               isRTM 
                 ? 'bg-black/50 border-emerald-500/40 text-white' 
                 : isDelayed 
                   ? 'bg-black/50 border-rose-500/50 text-white' 
                   : 'bg-black/45 border-white/15 text-white'
-            }`}>
+            }`} title={rawPossession || statusLabel}>
               <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                 isRTM 
                   ? 'bg-emerald-400' 
@@ -501,28 +494,45 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                       ? 'bg-blue-400' 
                       : 'bg-amber-400'
               }`} />
-              <span className="text-[10px] font-semibold tracking-wide">
+              <span className="text-[10px] font-semibold tracking-wide truncate">
                 {statusLabel}
               </span>
             </div>
           </div>
 
-          {/* Save button */}
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-            <button
-              type="button"
-              onClick={handleSave}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-[0_2px_8px_rgba(0,0,0,0.15)] ${
-                saved ? 'bg-black/40 backdrop-blur-md text-white' : 'bg-black/40 backdrop-blur-md text-white hover:bg-black/60 hover:scale-105'
-              }`}
-              title={saved ? 'Unsave' : 'Save property'}
-            >
-              {saved
-                ? <BookmarkSimple size={15} weight="fill" />
-                : <BookmarkSimple size={15} weight="bold" />
-              }
-            </button>
-          </div>
+          {/* Save / Select button on top-right */}
+          {isSelectable ? (
+            <div className="absolute top-3 right-3 z-30">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onToggleSelect?.() }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-md cursor-pointer backdrop-blur-md ${
+                  isSelected
+                    ? 'bg-blue-600 text-white ring-2 ring-white/60 scale-105 shadow-blue-500/40'
+                    : 'bg-black/60 text-white hover:bg-black/80 border border-white/30 hover:scale-105'
+                }`}
+                aria-label={isSelected ? 'Deselect property' : 'Select property'}
+              >
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] transition-transform ${isSelected ? 'bg-white text-blue-600 font-extrabold scale-110' : 'border border-white/70'}`} aria-hidden="true">
+                  {isSelected ? '✓' : ''}
+                </div>
+                <span>{isSelected ? 'Selected' : 'Select'}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+              <button
+                type="button"
+                onClick={handleSave}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-[0_2px_8px_rgba(0,0,0,0.15)] ${
+                  saved ? 'bg-black/40 backdrop-blur-md text-white' : 'bg-black/40 backdrop-blur-md text-white hover:bg-black/60 hover:scale-105'
+                }`}
+                title={saved ? 'Unsave' : 'Save property'}
+              >
+                {saved ? <BookmarkSimple size={15} weight="fill" className="text-amber-400" /> : <BookmarkSimple size={15} weight="bold" />}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── Body ── */}
