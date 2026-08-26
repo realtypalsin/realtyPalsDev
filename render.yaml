@@ -21,11 +21,26 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: OPENAI_API_KEY
+      # AI providers, in FALLBACK_CHAIN order (backend/src/lib/config.ts).
+      # GEMINI_API_KEY is tier 1 and was missing here, so a deploy provisioned
+      # purely from this file would silently start on a fallback provider.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: CEREBRAS_API_KEY
         sync: false
       - key: GROQ_API_KEY
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: JINA_API_KEY
+        sync: false
+      - key: SERPER_API_KEY
+        sync: false
+      - key: ADMIN_SECRET
         sync: false
       - key: ADMIN_PASSWORD
         sync: false

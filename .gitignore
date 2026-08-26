@@ -75,3 +75,13 @@ audit*.md
 **/.env.development
 **/.env.production
 **/.env.test
+
+# Local tool caches / indexes (large, machine-specific, regenerable)
+.tokensave/
+.code-review-graph/
+.impeccable/
+.gemini/
+.planning/
+.taskmaster/
+*.rvf
+*.rvf.lock
