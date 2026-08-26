@@ -2,7 +2,8 @@
 import type { Intent, ScoredProject, SectorContext, SectorOverview, NearbyExpansion } from '../../discovery'
 
 // ─── CONDITIONAL FORMAT BLOCKS ────────────────────────────────────────────────
-// Injected by buildAdvisorSystemPrompt() based on detected intent.
+// Injected based on detected intent. Consumed by buildAdvisorSystemPrompt()
+// (./index.ts, currently unused) — the live path is buildSystemPromptWithCache().
 // Content is identical to the original base.ts format sections — only the
 // injection point changed (conditional rather than always-on).
 

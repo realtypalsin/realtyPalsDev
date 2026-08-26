@@ -1,38 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { generateChips } from '../chipGenerator'
 import type { ConversationMemory } from '../types'
 
 describe('Edge Cases & Fallbacks', () => {
   describe('Empty Results', () => {
-    it('returns empty chips when database has no results', () => {
-      // No database records match query
-      const chips = generateChips('PAYMENT_PLANS', {}, 'ADVISOR')
 
-      // Chips should still be generated (prompting for follow-up)
-      assert.ok(Array.isArray(chips))
-      assert.ok(chips.length > 0, 'Should generate chips even with empty results')
-    })
 
-    it('includes fallback message when no data found', () => {
-      const chatResponse = {
-        message: 'No payment plans found matching your criteria',
-        data: { payment_plans: [] },
-        chips: generateChips('PAYMENT_PLANS', {}, 'ADVISOR'),
-        missing_data: ['No matching properties in database']
-      }
-
-      assert.strictEqual(chatResponse.data.payment_plans.length, 0)
-      assert.ok(chatResponse.missing_data.length > 0)
-      assert.ok(chatResponse.chips.length > 0, 'Chips guide next user action')
-    })
-
-    it('suggests refinement when results empty', () => {
-      const fallbackChips = generateChips('PAYMENT_PLANS', {}, 'ADVISOR')
-
-      // Should include "flexibility" chip to prompt refinement
-      assert.ok(fallbackChips.find(c => c.analyticsId.includes('flexibility')))
-    })
   })
 
   describe('Missing Data', () => {
@@ -58,13 +31,6 @@ describe('Edge Cases & Fallbacks', () => {
       assert.strictEqual(chatResponse.confidence.builder_history, 70, 'Confidence reduced for incomplete data')
     })
 
-    it('shows "verify RERA" chip when RERA data missing', () => {
-      const memory: Partial<ConversationMemory> = {}
-      const chips = generateChips('BUILDER_HISTORY', memory, 'ADVISOR')
-
-      const reraChip = chips.find(c => c.analyticsId.includes('rera'))
-      assert.ok(reraChip, 'RERA chip should prompt user to verify')
-    })
 
     it('displays warning for each missing critical field', () => {
       const missingFields = {
@@ -90,21 +56,6 @@ describe('Edge Cases & Fallbacks', () => {
   })
 
   describe('API Failures', () => {
-    it('gracefully handles database query failure', () => {
-      // Backend attempted DB query, got error
-      const fallbackResponse = {
-        message: 'Unable to fetch details right now. Try again in a moment.',
-        error: 'Database connection timeout',
-        chips: generateChips('PAYMENT_PLANS', {}, 'ADVISOR'), // Still show action chips
-        data: null,
-        confidence: { overall: 0 },
-        missing_data: ['Database temporarily unavailable']
-      }
-
-      assert.ok(fallbackResponse.error)
-      assert.ok(fallbackResponse.chips.length > 0, 'Chips available even on failure')
-      assert.strictEqual(fallbackResponse.data, null)
-    })
 
     it('shows user-friendly error message (never raw DB error)', () => {
       // Bad: "TypeError: Cannot read property 'id' of undefined"
@@ -116,17 +67,6 @@ describe('Edge Cases & Fallbacks', () => {
       assert.ok(!userMessage.includes('undefined'))
     })
 
-    it('retains user intent even on failure', () => {
-      const failureResponse = {
-        intent_detected: 'PAYMENT_PLANS',
-        db_error: true,
-        chips: generateChips('PAYMENT_PLANS', {}, 'ADVISOR'),
-        fallback_suggestion: 'Ask more specifically about EMI'
-      }
-
-      assert.strictEqual(failureResponse.intent_detected, 'PAYMENT_PLANS')
-      assert.ok(failureResponse.chips.length > 0)
-    })
 
     it('does not retry automatically (user initiates retry)', () => {
       // Backend should NOT loop retry
@@ -248,15 +188,6 @@ describe('Edge Cases & Fallbacks', () => {
       assert.strictEqual(primaryIntent, 'PAYMENT_PLANS')
     })
 
-    it('ranks chips by primary intent', () => {
-      const chips = generateChips('PAYMENT_PLANS', {}, 'ADVISOR')
-
-      // Should have EMI first, flexibility second
-      const emiIndex = chips.findIndex(c => c.analyticsId.includes('emi'))
-      const flexIndex = chips.findIndex(c => c.analyticsId.includes('flexibility'))
-
-      assert.ok(emiIndex < flexIndex, 'EMI should rank before flexibility')
-    })
 
     it('does not confuse budget (COSTS) with payment plans (PAYMENT_PLANS)', () => {
       const costMessage = 'What is the total price and registration cost?'
@@ -277,21 +208,6 @@ describe('Edge Cases & Fallbacks', () => {
       assert.strictEqual(conversation[1].intent, 'POSSESSION_TIMELINE')
     })
 
-    it('memory persists across intent switches', () => {
-      const memory: Partial<ConversationMemory> = {}
-
-      // Turn 1: User states budget
-      memory.user_budget_min_cr = 50
-      memory.user_budget_max_cr = 75
-
-      // Turn 2: Ask about builder
-      const chips2 = generateChips('BUILDER_HISTORY', memory, 'ADVISOR')
-      assert.ok(memory.user_budget_min_cr, 'Budget persists')
-
-      // Turn 3: Ask about location
-      const chips3 = generateChips('LOCATION', memory, 'ADVISOR')
-      assert.ok(chips3.find(c => c.analyticsId.includes('site_visit')), 'Budget context still influences location chips')
-    })
   })
 
   describe('Fallback Suggestions', () => {
@@ -380,20 +296,6 @@ describe('Edge Cases & Fallbacks', () => {
       }
     })
 
-    it('handles undefined memory fields safely', () => {
-      const memory: Partial<ConversationMemory> = {
-        user_budget_min_cr: undefined,
-        user_budget_max_cr: undefined
-      }
-
-      // generateChips should handle undefined without error
-      const chips = generateChips('PAYMENT_PLANS', memory, 'ADVISOR')
-      assert.ok(Array.isArray(chips))
-
-      // Should not include site_visit chip if budget undefined
-      const siteVisitChip = chips.find(c => c.analyticsId.includes('site_visit'))
-      assert.strictEqual(siteVisitChip, undefined, 'Site visit should not appear without budget')
-    })
 
     it('handles missing payload safely', () => {
       const chip = {

@@ -3,6 +3,7 @@ import { GoogleGenAI } from '@google/genai'
 import { MODELS } from '../config'
 import { toGeminiTools, validateToolArgs, capToolResult } from './tools'
 import { INFERENCE_DEFAULTS, type InferenceConfig } from './openai'
+import { recordUsage } from './cost'
 
 type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null }
 type SendFn = (event: string, data: Record<string, unknown>) => void
@@ -27,19 +28,14 @@ export class GeminiStreamStallError extends Error {
   }
 }
 
-// Phase 1.4: Simple hash-based system prompt cache (foundation for Gemini cachedContent)
-const systemPromptCache = new Map<string, { hash: string; ttl: number }>()
-function hashSystemPrompt(system: string): string {
-  const crypto = require('crypto')
-  return crypto.createHash('sha256').update(system).digest('hex').slice(0, 16)
-}
-function getSystemPromptCacheKey(system: string): string {
-  const hash = hashSystemPrompt(system)
-  const existing = Array.from(systemPromptCache.entries()).find(([_, v]) => v.hash === hash && v.ttl > Date.now())
-  if (existing) return existing[0]
-  const key = `sp_${hash}_${Date.now()}`
-  systemPromptCache.set(key, { hash, ttl: Date.now() + 3600000 }) // 1h TTL
-  return key
+// Accumulated token usage across all tool cycles of one streamWithGemini call.
+// Gemini reports usageMetadata on stream chunks (populated on the final chunk);
+// promptTokenCount already INCLUDES cachedContentTokenCount, so the uncached
+// billable input is promptTokenCount - cachedContentTokenCount.
+interface GeminiUsage {
+  promptTokens: number
+  completionTokens: number
+  cachedTokens: number
 }
 
 // Gemini's `contents` shape only knows 'user' and 'model' roles — system prompt
@@ -66,12 +62,16 @@ export async function streamWithGemini(
   onToolCall: ToolCallFn,
   config: InferenceConfig = INFERENCE_DEFAULTS,
   apiKeyOverride?: string,
+  userId?: string | null,
+  sessionId?: string | null,
 ): Promise<string> {
   const apiKey = apiKeyOverride ?? process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('No GEMINI_API_KEY configured')
   const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: INACTIVITY_MS } })
   const contents: GeminiContent[] = toGeminiContents(messages)
   let fullText = ''
+  const usage: GeminiUsage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 }
+  let billedModel = config.model || MODELS.GEMINI_MAIN
 
   async function runCycle(cycle: number): Promise<string> {
     if (cycle >= MAX_TOOL_CYCLES) return fullText
@@ -80,6 +80,7 @@ export async function streamWithGemini(
     let sawAnyChunk = false
     let stalled = false
     let inactivityTimer: NodeJS.Timeout | null = null
+    const cycleUsage: GeminiUsage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 }
 
     const resetInactivity = () => {
       if (inactivityTimer) clearTimeout(inactivityTimer)
@@ -124,6 +125,7 @@ export async function streamWithGemini(
             contents,
             config: genConfig,
           })
+          billedModel = fallbackModel
         } else {
           throw err
         }
@@ -133,6 +135,15 @@ export async function streamWithGemini(
         sawAnyChunk = true
         resetInactivity()
         if (stalled) break
+
+        // usageMetadata is populated on the final chunk; later chunks supersede
+        // earlier ones for the same cycle, so overwrite-then-accumulate per cycle.
+        const um = chunk.usageMetadata
+        if (um) {
+          cycleUsage.promptTokens = um.promptTokenCount ?? 0
+          cycleUsage.completionTokens = um.candidatesTokenCount ?? 0
+          cycleUsage.cachedTokens = um.cachedContentTokenCount ?? 0
+        }
 
         if (chunk.text) {
           fullText += chunk.text
@@ -147,6 +158,10 @@ export async function streamWithGemini(
       }
     } finally {
       if (inactivityTimer) clearTimeout(inactivityTimer)
+      // Each tool cycle is a separate billed request — sum them.
+      usage.promptTokens += cycleUsage.promptTokens
+      usage.completionTokens += cycleUsage.completionTokens
+      usage.cachedTokens += cycleUsage.cachedTokens
     }
 
     if (stalled) {
@@ -170,5 +185,31 @@ export async function streamWithGemini(
     return fullText
   }
 
-  return runCycle(0)
+  try {
+    return await runCycle(0)
+  } finally {
+    // Gemini is the paid primary — without this, recordUsage only ever saw
+    // Groq/OpenAI traffic and isOverDailyBudget read $0 for every Gemini user.
+    // Recorded in `finally` so a mid-stream stall still bills what was consumed.
+    if (usage.promptTokens > 0 || usage.completionTokens > 0) {
+      const uncachedPromptTokens = Math.max(0, usage.promptTokens - usage.cachedTokens)
+      if (usage.cachedTokens > 0) {
+        const pct = ((usage.cachedTokens / usage.promptTokens) * 100).toFixed(1)
+        console.log(`[gemini:cache] ${usage.cachedTokens}/${usage.promptTokens} prompt tokens served from cache (${pct}%)`)
+      } else {
+        console.log(`[gemini:cache] no cache hit — ${usage.promptTokens} prompt tokens billed at full rate`)
+      }
+      void recordUsage({
+        provider: 'gemini',
+        model: billedModel,
+        // Cached input tokens bill at a discount; charge them at 25% by
+        // folding the discounted remainder into the uncached count.
+        promptTokens: uncachedPromptTokens + Math.round(usage.cachedTokens * 0.25),
+        completionTokens: usage.completionTokens,
+        endpoint: 'chat',
+        userId,
+        sessionId,
+      })
+    }
+  }
 }

@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client'
 import type { Intent, ScoredProject } from '../lib/discovery'
 import { matchesProjectName, isCityLevel, getIntentState } from '../lib/discovery'
 import { estimateTokensReal } from '../lib/ai/tokenizer'
+import { CONTEXT_TOKEN_CEILING } from '../lib/ai/adaptiveMessaging'
 import { DEFAULT_CITY } from '../lib/config/cities'
 import { getChipInventory } from '../lib/discovery/chipInventory'
 import { computeConversationState } from '../lib/discovery/conversationEngine'
@@ -84,7 +85,9 @@ export function canReuseCache(
 
 // ── Issue 4: Token budget protection — prevent OpenAI 413 ────────────────────
 
-const SAFE_TOKEN_CEILING = 100_000
+// Single source of truth for the input context ceiling. Note DISCOVERY.SAFE_TOKEN_CEILING
+// in lib/config.ts is an OUTPUT cap despite the name — unrelated to this.
+const SAFE_TOKEN_CEILING = CONTEXT_TOKEN_CEILING
 export const estimateTokens = estimateTokensReal
 
 export function trimMessagesToBudget(
@@ -178,7 +181,8 @@ export async function buildRestoreUiState(
     await hydrateFromDb(currentSessionId)
   }
 
-  const uiState = await computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory, true)
+  // Session restore is a page load, not a turn — never spend an LLM call on it.
+  const uiState = await computeConversationState(intent, intentState, projects, intent.is_comparison_query ?? false, chatHistory, undefined, undefined, undefined, chipInventory, true, undefined, { allowLlmChips: false })
 
   if (currentSessionId) {
     const { filterNewChips } = await import('../lib/discovery/chipDedup')

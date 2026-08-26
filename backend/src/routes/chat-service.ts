@@ -1,6 +1,5 @@
 // backend/src/routes/chat-service.ts
 import { prisma } from '../lib/db'
-import { generateChips } from '../lib/discovery/chipGenerator'
 
 export async function generateDatabaseFallbackResponse(userMsg: string, projects: any[], sessionId?: string): Promise<any> {
   const queryLower = userMsg.toLowerCase()

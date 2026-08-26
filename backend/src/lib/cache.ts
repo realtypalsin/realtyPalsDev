@@ -59,6 +59,12 @@ export async function invalidateSessionList(userId: string): Promise<void> {
 }
 
 export async function getCached<T>(key: string): Promise<T | null> {
+  // Tests must not read a shared, persistent cache. Redis entries outlive the
+  // process (300s TTL on discovery results), so a run could be served a payload
+  // written by an EARLIER run against different code — which is exactly what made
+  // the discovery-pagination tests pass alone but fail intermittently in the
+  // suite. checkRateLimit above already short-circuits in test for the same reason.
+  if (process.env.NODE_ENV === 'test') return null
   const redis = getRedis()
   if (!redis) return null
   try {
@@ -72,6 +78,9 @@ export async function getCached<T>(key: string): Promise<T | null> {
 // Callers that require the write to succeed (e.g. admin session store) must check
 // the return value and handle false as an infrastructure failure.
 export async function setCached<T>(key: string, value: T, ttlSecs = 3600): Promise<boolean> {
+  // Never let a test run pollute the shared cache for the next one (or for a dev
+  // hitting the same Upstash instance). Paired with the guard in getCached.
+  if (process.env.NODE_ENV === 'test') return false
   const redis = getRedis()
   if (!redis) return false
   try {

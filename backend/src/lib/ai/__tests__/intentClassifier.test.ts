@@ -40,9 +40,25 @@ describe('Intent: classifyIntent', () => {
   })
 
   it('factual wins only when factualScore > advisoryScore AND ≥2', () => {
-    // 2 factual, 1 advisory — factual should win
-    const result = classifyIntent('what amenities and should I buy', {})
+    // 2 factual ('what', 'amenities'), 0 advisory — factual should win.
+    // NOTE: this case used to read 'what amenities and should I buy', which now
+    // classifies advisory. An explicit "should I" is a hard advisory signal that
+    // outranks keyword arithmetic — incidental nouns like "price" and "sector"
+    // appear in nearly every advisory question and were outvoting it, sending
+    // decision questions to the cheap lite model.
+    const result = classifyIntent('what amenities are listed', {})
     assert.equal(result.factualAdvisoryCategory, 'factual')
+  })
+
+  it('an explicit "should I" is advisory even when factual nouns dominate', () => {
+    const result = classifyIntent('should I invest in Sector 150 at current prices', {})
+    assert.equal(result.factualAdvisoryCategory, 'advisory')
+    assert.equal(routeToModel(result), 'smart')
+  })
+
+  it('a judgement request outranks the comparison flag', () => {
+    const result = classifyIntent('which of these should I buy', { is_comparison_query: true })
+    assert.equal(result.factualAdvisoryCategory, 'advisory')
   })
 
   it('factual==2, advisory==2 → advisory (tie)', () => {

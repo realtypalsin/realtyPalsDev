@@ -20,6 +20,15 @@ export interface FallbackChainOptions {
   send: SendFn
   onToolCall: ToolCallFn
   groqFallbackSuffix: string
+  /**
+   * Builds the system prompt for a provider given whether it can call tools.
+   *
+   * Preferred over `groqFallbackSuffix`: it lets the tool catalogue be omitted
+   * for tool-less providers instead of emitted-then-retracted. Called lazily, so
+   * the tools-enabled variant is only built if the chain reaches an OpenAI leg.
+   * When absent, the legacy systemPrompt + suffix behaviour applies.
+   */
+  buildSystemPrompt?: (supportsTools: boolean) => string
   projects?: ScoredProject[]
   userMessage?: string
   userId?: string | null
@@ -39,8 +48,28 @@ export interface FallbackChainResult {
 import { validateAgainstFactsSync } from './guardrails-v2'
 import { trackEvent } from '../monitoring/posthog'
 import { env } from '../env'
-import { adaptiveCapMessages } from './adaptiveMessaging'
+import { adaptiveCapMessages, CONTEXT_TOKEN_CEILING } from './adaptiveMessaging'
+import { STATIC_PREFIX_MARKER } from './systemPromptCache'
 import { estimateTokensReal } from './tokenizer'
+
+/** Remove the prefix sentinel — it must never reach a provider. */
+function stripMarker(prompt: string): string {
+  return prompt.replace(`\n${STATIC_PREFIX_MARKER}\n`, '\n')
+}
+
+/**
+ * Splice the no-tools block into the stable prefix rather than appending it
+ * after the per-request project data. Same text, same instructions — but it now
+ * sits inside the cacheable prefix instead of being billed fresh every request.
+ * Falls back to appending when the marker is absent (prompts built by paths that
+ * don't go through buildSystemPromptWithCache).
+ */
+function applyNoToolsBlock(prompt: string, block: string): string {
+  if (!block) return stripMarker(prompt)
+  const token = `\n${STATIC_PREFIX_MARKER}\n`
+  if (!prompt.includes(token)) return prompt + block
+  return prompt.replace(token, `\n${block}\n`)
+}
 
 function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLimit = 50) {
   let buffer = ''
@@ -106,10 +135,18 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     ? chainConfig
     : chainConfig.filter(item => item.provider !== 'gemini')
 
-  // Adaptive message capping: keep as many messages as fit within token budget
+  // Adaptive message capping: keep as many messages as fit within the INPUT
+  // context window, reserving room for the model's output. Passing the output
+  // maxTokens as the ceiling here silently truncated every request to the last
+  // 2 messages regardless of what the caller had already trimmed to.
   const systemPromptTokens = estimateTokensReal(systemPrompt)
-  const maxTokens = (options.config as any)?.maxTokens ?? 3000
-  const adaptiveResult = adaptiveCapMessages(messages, systemPromptTokens, maxTokens)
+  const responseReserve = options.config?.maxTokens ?? 3000
+  const adaptiveResult = adaptiveCapMessages(
+    messages,
+    systemPromptTokens,
+    CONTEXT_TOKEN_CEILING,
+    responseReserve,
+  )
   const cappedMessages = adaptiveResult.messages
 
   // Log chain initiation at info level
@@ -126,8 +163,14 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       continue
     }
 
-    const effectivePrompt = item.supportsTools ? systemPrompt : systemPrompt + groqFallbackSuffix
-    const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, systemPrompt)
+    const effectivePrompt = options.buildSystemPrompt
+      ? stripMarker(options.buildSystemPrompt(item.supportsTools))
+      : item.supportsTools
+        ? stripMarker(systemPrompt)
+        : applyNoToolsBlock(systemPrompt, groqFallbackSuffix)
+    // Validate against the prompt this provider actually received, not the
+    // pre-variant one — otherwise the fact-check reads a different tool section.
+    const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, effectivePrompt)
 
     const effectiveConfig = options.config || { maxTokens: 3000 }
     // Gemini ignores its FALLBACK_CHAIN item.model unless we thread it through here — without
@@ -148,7 +191,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       } else if (item.provider === 'mistral') {
         text = await streamWithMistral(effectivePrompt, cappedMessages, bufferedSend, apiKey)
       } else if (item.provider === 'gemini') {
-        text = await streamWithGemini(effectivePrompt, cappedMessages, bufferedSend, onToolCall, geminiConfig, apiKey)
+        text = await streamWithGemini(effectivePrompt, cappedMessages, bufferedSend, onToolCall, geminiConfig, apiKey, userId, sessionId)
       } else if (item.provider === 'openai') {
         text = await streamWithOpenAI(
           effectivePrompt,

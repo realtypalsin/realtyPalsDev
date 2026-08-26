@@ -213,7 +213,9 @@ export function SuggestionChipGroups({
 }) {
   if (chips.length === 0) return null
 
-  // Belt-and-suspenders dedup: normalize label text across ALL chips, then cap at 4
+  // Label-level dedup, then cap at 4. Session/id dedup already happened on the
+  // server (emitUiState) — this only guards against two different chip ids
+  // arriving with the same visible text.
   const dedupedMap = new Map<string, import('./types').ChipAction>()
   chips.forEach(c => {
     const normalized = c.label.toLowerCase().trim()
@@ -221,9 +223,25 @@ export function SuggestionChipGroups({
       dedupedMap.set(normalized, c)
     }
   })
-  const deduped = Array.from(dedupedMap.values()).slice(0, 4)
+  // Copy before sorting — Array.prototype.sort mutates, and this array is
+  // derived from props.
+  const sorted = [...dedupedMap.values()]
+    .sort((a, b) => {
+      const byGroup = (a.group?.order ?? -1) - (b.group?.order ?? -1)
+      return byGroup !== 0 ? byGroup : a.priority - b.priority
+    })
+    .slice(0, 4)
 
-  const sorted = deduped.sort((a, b) => a.priority - b.priority)
+  // The engine can label chips into sections (ChipGroup). This component used to
+  // drop that metadata entirely and always render one flat row, so group labels
+  // the backend built were never shown.
+  const groups = new Map<string, import('./types').ChipAction[]>()
+  for (const c of sorted) {
+    const key = c.group?.label ?? ''
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(c)
+  }
+  const hasLabelledGroups = [...groups.keys()].some(k => k !== '')
 
   const handleCardSelect = (chip: import('./types').ChipAction, projectId: string) => {
     // Convert card selection to TEXT_MESSAGE for the backend
@@ -293,29 +311,47 @@ export function SuggestionChipGroups({
     onAction(textChip)
   }
 
+  const renderChip = (chip: import('./types').ChipAction) => {
+    // Check if chip has multiple projects — use CardSelectorChip
+    const projects = (chip.payload as ChipCardPayload | undefined)?.projects
+    if (projects && projects.length > 1) {
+      return (
+        <CardSelectorChip
+          key={chip.id}
+          chip={chip}
+          projects={projects}
+          onSelect={handleCardSelect}
+          disabled={isDisabled}
+        />
+      )
+    }
+    return (
+      <SuggestionChip key={chip.id} chip={chip} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} disabled={isDisabled} />
+    )
+  }
+
+  if (!hasLabelledGroups) {
+    return <div className="flex flex-wrap gap-2">{sorted.map(renderChip)}</div>
+  }
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {sorted.map((chip) => {
-        // Check if chip has multiple projects — use CardSelectorChip
-        const projects = (chip.payload as ChipCardPayload | undefined)?.projects
-        const hasMultipleProjects = projects && projects.length > 1
-
-        if (hasMultipleProjects) {
-          return (
-            <CardSelectorChip
-              key={chip.id}
-              chip={chip}
-              projects={projects}
-              onSelect={handleCardSelect}
-              disabled={isDisabled}
-            />
-          )
-        }
-
-        return (
-          <SuggestionChip key={chip.id} chip={chip} chipPicker={chipPicker} onSetChipPicker={onSetChipPicker} onAction={onAction} disabled={isDisabled} />
-        )
-      })}
+    <div className="flex flex-col gap-3">
+      {[...groups.entries()].map(([label, groupChips]) => (
+        <div key={label || 'ungrouped'} className="flex flex-col gap-1.5">
+          {label && (
+            <span
+              className={`text-[10px] font-semibold uppercase tracking-widest px-1 ${
+                groupChips[0]?.group?.emphasis === 'primary'
+                  ? 'text-zinc-500 dark:text-zinc-400'
+                  : 'text-zinc-400 dark:text-zinc-500'
+              }`}
+            >
+              {label}
+            </span>
+          )}
+          <div className="flex flex-wrap gap-2">{groupChips.map(renderChip)}</div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -1,172 +1,122 @@
-// Integration tests: chat flow + fallback chain + cost optimization
+// Routing + context-budget tests for the chat pipeline.
+//
+// This file previously imported only `vitest` and `express`, pulled in zero
+// production code, and asserted things like `expect(window['DISCOVERY']).toBe(3)`
+// against object literals declared two lines above. It also carried a `.tocontain`
+// typo, so it had never executed under any runner. Rewritten to exercise the
+// real units it was gesturing at — all of which were otherwise untested.
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { Router, Request, Response } from 'express'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { classifyIntent, routeToModel } from '../../lib/ai/intentClassifier'
+import { trimMessagesToBudget } from '../chat-helpers'
+import { FALLBACK_CHAIN } from '../../lib/config'
+import type { Intent } from '../../lib/discovery'
 
-describe('Chat Integration Tests', () => {
-  describe('Intent classification routing', () => {
-    it('factual query routes to cheap model chain', () => {
-      // Intent: "what is the possession date for sector 150"
-      const userMessage = 'what is the possession date for Godrej Palm Retreat in Sector 150'
-
-      // Classification should detect factual keywords: possession, date, sector
-      // Should route to FALLBACK_CHAIN_CHEAP (8B models)
-      expect(userMessage.toLowerCase()).toContain('possession')
-      expect(userMessage.toLowerCase()).toContain('date')
-    })
-
-    it('advisory query routes to smart model chain', () => {
-      // Intent: "should I invest in this property"
-      const userMessage = 'should I invest in Sector 150 at current prices given the market'
-
-      // Classification should detect advisory keywords: should, invest, market
-      // Should route to FALLBACK_CHAIN (70B+ models)
-      expect(userMessage.toLowerCase()).toContain('should')
-      expect(userMessage.toLowerCase()).toContain('invest')
-    })
-
-    it('project_detail query bypasses discovery', () => {
-      // Intent: EMI calculation for a specific project
-      const userMessage = 'how much EMI for 2 crore loan at Godrej Meridien'
-
-      // Should detect PROJECT_DETAIL with detailType: 'payment'
-      // Should route through query planner, not main discovery
-      expect(userMessage.toLowerCase()).toContain('emi')
-      expect(userMessage.toLowerCase()).tocontain('godrej')
-    })
+describe('Chat routing: classifyIntent → routeToModel', () => {
+  it('keeps an open discovery search out of the query planner', () => {
+    // Cheap IS correct here: property cards carry the data and the prompt caps the
+    // lead-in at 35 words, so the lite tier is the deliberate cost optimisation.
+    // What must not happen is being mistaken for a single-project detail lookup.
+    const intent: Intent = { sector: 'Sector 150', bhk: [2], budgetMax: 1.5 }
+    const c = classifyIntent('show me 2BHK under 1.5 crore in Sector 150', intent)
+    assert.notEqual(c.category, 'project_detail')
+    assert.notEqual(routeToModel(c), 'query_planner')
   })
 
-  describe('Message trimming optimization', () => {
-    it('search queries keep only 3 messages', () => {
-      // DISCOVERY intent → maxWindow = 3
-      const window = {
-        'DISCOVERY': 3,
-        'DRILLDOWN': 4,
-        'COMPARISON': 5,
-        'ADVISORY': 8,
+  it('routes a named-project detail question to the query planner', () => {
+    const intent: Intent = { projectNames: ['Godrej Meridien'] }
+    const c = classifyIntent('what is the payment plan for Godrej Meridien', intent)
+    assert.equal(c.category, 'project_detail')
+    assert.equal(routeToModel(c), 'query_planner')
+  })
+
+  it('never routes an advisory question to the cheap tier', () => {
+    // "should I" questions need reasoning; sending them to the lite model was the
+    // failure mode the cost-routing work had to avoid.
+    for (const msg of [
+      'should I invest in Sector 150 at current prices',
+      'is this a good time to buy in Noida',
+      'rent vs buy for a 2 crore budget',
+    ]) {
+      const c = classifyIntent(msg, {})
+      assert.notEqual(routeToModel(c), 'cheap', `"${msg}" must not route cheap`)
+    }
+  })
+
+  it('classification is deterministic for the same input', () => {
+    const intent: Intent = { sector: 'Sector 79' }
+    const a = classifyIntent('what is the possession date', intent)
+    const b = classifyIntent('what is the possession date', intent)
+    assert.deepEqual(routeToModel(a), routeToModel(b))
+  })
+})
+
+describe('Context budget: trimMessagesToBudget', () => {
+  const msgs = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({
+      role: (i % 2 === 0 ? 'user' : 'assistant') as 'user' | 'assistant',
+      content: `turn ${i}`,
+    }))
+
+  it('keeps a wider window for advisory than for discovery', () => {
+    const advisory = trimMessagesToBudget('sys', msgs(12), { queryKind: 'ADVISORY' })
+    const discovery = trimMessagesToBudget('sys', msgs(12), { queryKind: 'DISCOVERY' })
+    assert.ok(
+      advisory.length > discovery.length,
+      `advisory (${advisory.length}) should exceed discovery (${discovery.length})`,
+    )
+  })
+
+  it('always keeps the most recent turn', () => {
+    const out = trimMessagesToBudget('sys', msgs(12), { queryKind: 'DISCOVERY' })
+    assert.equal(out[out.length - 1].content, 'turn 11')
+  })
+
+  it('degrades to the last exchange when the system prompt is enormous', () => {
+    const huge = 'x '.repeat(200_000)
+    const out = trimMessagesToBudget(huge, msgs(12), { queryKind: 'ADVISORY' })
+    assert.ok(out.length <= 2, `expected <=2 messages, got ${out.length}`)
+    assert.ok(out.length >= 1, 'must never return an empty context')
+  })
+
+  it('never returns an empty message list', () => {
+    for (const kind of ['DISCOVERY', 'DRILLDOWN', 'COMPARISON', 'ADVISORY', undefined]) {
+      const out = trimMessagesToBudget('sys', msgs(3), kind ? { queryKind: kind } : undefined)
+      assert.ok(out.length > 0, `empty context for queryKind=${kind}`)
+    }
+  })
+})
+
+describe('FALLBACK_CHAIN shape', () => {
+  it('leads with Gemini — it is the paid primary', () => {
+    assert.equal(FALLBACK_CHAIN[0].provider, 'gemini')
+  })
+
+  it('every entry has a distinct provider+key+model triple', () => {
+    const seen = new Set<string>()
+    for (const item of FALLBACK_CHAIN) {
+      const k = `${item.provider}|${item.envKey}|${item.model}`
+      assert.ok(!seen.has(k), `duplicate chain entry: ${k}`)
+      seen.add(k)
+    }
+  })
+
+  it('only tool-capable providers are flagged supportsTools', () => {
+    // getBaseSystemPrompt(toolsEnabled) keys off this flag to decide whether to
+    // emit the tool catalogue at all. A wrong flag silently ships ~310 tokens of
+    // tool descriptions to a provider that cannot call them, or withholds them
+    // from one that can.
+    for (const item of FALLBACK_CHAIN) {
+      if (item.supportsTools) {
+        assert.equal(item.provider, 'openai', `${item.label} claims tool support`)
       }
-
-      expect(window['DISCOVERY']).toBe(3)
-      expect(window['ADVISORY']).toBe(8)
-    })
-
-    it('advisory queries keep 8 messages for context', () => {
-      // ADVISORY intent → maxWindow = 8 (more context needed for reasoning)
-      const window = { 'ADVISORY': 8 }
-      expect(window['ADVISORY']).toBeGreaterThan(3)
-    })
+    }
   })
 
-  describe('System prompt caching', () => {
-    it('static base prompt is reused within 1 hour window', () => {
-      // FALLBACK_CHAIN_CHEAP reduces prompt size:
-      // - Static base: ~2.5K tokens (cached once/hour)
-      // - Dynamic injection: ~0.5K tokens/request
-      // vs original: ~5K tokens/request
-
-      const savedTokensPerRequest = 5000 - 500
-      const requestsPerHour = 50
-      const tokensSavedPerHour = savedTokensPerRequest * requestsPerHour
-
-      expect(tokensSavedPerHour).toBeGreaterThan(200000) // 200K+ tokens/hour
-    })
-  })
-
-  describe('Fallback chain resilience', () => {
-    it('FALLBACK_CHAIN_CHEAP has 3 tier-1 8B models', () => {
-      const cheapChain = [
-        { model: 'llama-3.1-8b-instant', provider: 'groq', key: 'GROQ_API_KEY' },
-        { model: 'llama-3.1-8b-instant', provider: 'groq', key: 'GROQ_API_KEY1' },
-        { model: 'llama-3.1-8b-instant', provider: 'groq', key: 'GROQ_API_KEY2' },
-      ]
-
-      expect(cheapChain).toHaveLength(3)
-      cheapChain.forEach(item => {
-        expect(item.provider).toBe('groq')
-        expect(item.model).toContain('8b')
-      })
-    })
-
-    it('FALLBACK_CHAIN_CHEAP falls back to 70B if 8B exhausted', () => {
-      // After tier-1 (3x 8B) and tier-2 (Gemini Flash, Mistral), fall back to 70B
-      // Ensures availability while optimizing cost
-      const fallbackTiers = {
-        tier1: '8B models',
-        tier2: 'Flash-class models',
-        tier3: '70B backup',
-      }
-
-      expect(fallbackTiers.tier3).toBeDefined()
-    })
-  })
-
-  describe('Cost reduction stacking', () => {
-    it('Phase 1 + Phase 2 reduce costs by 55%', () => {
-      const original = 100
-      const afterPhase1 = original * 0.70 // 30% reduction
-      const afterPhase2 = afterPhase1 * 0.65 // 35% of remaining
-
-      expect(Math.round(afterPhase2)).toBe(45)
-    })
-
-    it('Phase 4 adds another 20% reduction on factual queries', () => {
-      // 40-50% of queries are factual
-      // Each gets ~20% cheaper by using 8B instead of 70B
-      const afterPhase3 = 45
-      const factualRatio = 0.45
-      const factualSavings = 0.20
-
-      const phase4Reduction = afterPhase3 - (afterPhase3 * factualRatio * factualSavings)
-      expect(Math.round(phase4Reduction)).toBe(39) // Approximately $39/day
-    })
-  })
-
-  describe('Quality guards', () => {
-    it('factual classification requires 2+ keyword matches', () => {
-      // Guard: only label factual if factualScore >= 2
-      // Prevents misclassification of ambiguous queries
-
-      const factualKeywords = new Set([
-        'amenities', 'price', 'possession', 'timeline', 'possession date',
-        'handover', 'bhk', 'bedroom', 'carpet area', 'size',
-      ])
-
-      // "what is the possession date" → 2 keywords → factual
-      const msg1 = 'what is the possession date'
-      const score1 = Array.from(factualKeywords).filter(k => msg1.toLowerCase().includes(k)).length
-      expect(score1).toBeGreaterThanOrEqual(2)
-
-      // "should I buy this" → 0 keywords → not factual (advisory)
-      const msg2 = 'should I buy this'
-      const score2 = Array.from(factualKeywords).filter(k => msg2.toLowerCase().includes(k)).length
-      expect(score2).toBeLessThan(2)
-    })
-  })
-
-  describe('E2E chat flow', () => {
-    it('user message → intent extraction → classification → routing → response', async () => {
-      // Simplified E2E flow
-      const userMessage = 'show me 2BHK under 1.5 crore in Sector 150'
-
-      // Step 1: Extract intent
-      const expectedIntent = {
-        bhk: [2],
-        budgetMax: 1.5,
-        sector: 'Sector 150',
-      }
-      expect(expectedIntent.bhk).toContain(2)
-
-      // Step 2: Classify (DISCOVERY query, not factual)
-      const classification = { category: 'discovery' }
-      expect(classification.category).toBe('discovery')
-
-      // Step 3: Route to smart chain (not cheap)
-      const chain = 'FALLBACK_CHAIN' // smart, not FALLBACK_CHAIN_CHEAP
-      expect(chain).toBe('FALLBACK_CHAIN')
-
-      // Step 4: Message trimming (3 messages for DISCOVERY)
-      const windowSize = 3
-      expect(windowSize).toBe(3)
-    })
+  it('has at least one non-Gemini fallback so a Gemini outage is survivable', () => {
+    // Not hypothetical: Gemini returned 429 "prepayment credits are depleted"
+    // during this work and every turn fell through to the next tier.
+    assert.ok(FALLBACK_CHAIN.some(i => i.provider !== 'gemini'))
   })
 })

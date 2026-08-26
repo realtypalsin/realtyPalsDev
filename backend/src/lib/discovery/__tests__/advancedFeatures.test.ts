@@ -1,6 +1,19 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import type { Chip } from '../chipGenerator'
+// Was imported from the deleted chipGenerator module. These tests only assert the
+// shape of object literals they construct themselves — no production code is
+// involved — and they use NAVIGATE / OPEN_MODAL action types that the live
+// ChipAction contract (conversationEngine.ConversationActionType) does not define,
+// so the type is declared locally rather than repointed.
+interface Chip {
+  id: string
+  actionType: 'TEXT_MESSAGE' | 'NAVIGATE' | 'OPEN_MODAL'
+  label: string
+  icon: string
+  analyticsId: string
+  priority: number
+  payload: Record<string, unknown>
+}
 
 describe('Phase 4: Advanced Features', () => {
   describe('Multi-Option Comparisons', () => {

@@ -52,11 +52,30 @@ export function normalizeQueryKey(query: string): string {
 }
 
 /**
+ * Scope for a cache entry.
+ *
+ * `GLOBAL_SCOPE` is only correct for answers that contain no session-specific
+ * facts — statutory rates, "how do I check RERA", builder league tables. Any
+ * answer written around a particular project or sector MUST pass that project's
+ * id (or the sector name) as the scope: the cache key is otherwise just the
+ * normalized question text, so "show payment plans" asked while viewing one
+ * project would be served verbatim to the next user asking it about a different
+ * project.
+ */
+export const GLOBAL_SCOPE = 'global'
+
+function buildCacheKey(query: string, scope: string): string {
+  const normalized = normalizeQueryKey(query)
+  if (!normalized || normalized.length < 3) return ''
+  return `${scope}::${normalized}`
+}
+
+/**
  * Retrieves a cached advisory response if valid and unexpired.
  */
-export function getCachedResponse(query: string): CachedEntry | null {
-  const key = normalizeQueryKey(query)
-  if (!key || key.length < 3) return null
+export function getCachedResponse(query: string, scope: string = GLOBAL_SCOPE): CachedEntry | null {
+  const key = buildCacheKey(query, scope)
+  if (!key) return null
 
   const entry = cache.get(key)
   if (!entry) {
@@ -89,10 +108,11 @@ export function setCachedResponse(
     intentState?: string
     responseMode?: string
   },
-  ttlMs = CACHE_TTL_MS
+  ttlMs = CACHE_TTL_MS,
+  scope: string = GLOBAL_SCOPE
 ): void {
-  const key = normalizeQueryKey(query)
-  if (!key || key.length < 3 || !data.token) return
+  const key = buildCacheKey(query, scope)
+  if (!key || !data.token) return
 
   // Evict least-recently-used entry if capacity reached
   if (cache.size >= MAX_CACHE_ENTRIES) {

@@ -10,7 +10,8 @@ export async function generateDynamicChips(
   mode: 'research' | 'compare' | 'decide',
   results: ScoredProject[],
   chatHistory: any[],
-  usedProvider?: { provider: string; envKey: string }
+  usedProvider?: { provider: string; envKey: string },
+  allowLlmChips: boolean = true
 ): Promise<ChipAction[]> {
   const coreChips: ChipAction[] = []
 
@@ -152,10 +153,12 @@ export async function generateDynamicChips(
 
   // Optionally fetch LLM chips if there is a conversation history
   const finalChips: ChipAction[] = []
-  if (chatHistory.length > 0) {
+  if (allowLlmChips && chatHistory.length > 0) {
     try {
       const { generateContextualLLMChips } = await import('../ai/prompts/chips')
-      const llmChips = await generateContextualLLMChips(chatHistory, 0, usedProvider)
+      const llmChips = await generateContextualLLMChips(chatHistory, 0, usedProvider, {
+        projectNames: results.slice(0, 5).map(r => r.name),
+      })
 
       // Filter LLM chips to guarantee no repetition AND ground against available data
       const filteredLlmChips = llmChips.filter(c => {

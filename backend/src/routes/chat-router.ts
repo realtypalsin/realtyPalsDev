@@ -35,14 +35,13 @@ import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
 import { classifyQuery } from '../lib/discovery/queryClassifier'
 import { findProjectsMentioned, buildProseChips } from '../lib/discovery/proseEntities'
-import { computeConversationState } from '../lib/discovery/conversationEngine'
+import { computeConversationState, getFloorChips } from '../lib/discovery/conversationEngine'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
 import { maybeCompressTopical, TopicSummaries } from '../lib/chat/summaryCompression'
 import { scorePropertyEngagement } from '../lib/chat/propertyEngagement'
 import { detectPropertyReactions, PropertyReaction } from '../lib/chat/reactionDetector'
-import { buildAdvisorSystemPrompt } from '../lib/ai/prompts/index'
 import { buildSystemPromptWithCache } from '../lib/ai/systemPromptCache'
 import { streamWithGroq, GroqStreamStallError } from '../lib/ai/groq'
 import { streamWithOpenAI, StreamStallError } from '../lib/ai/openai'
@@ -58,7 +57,7 @@ import { getProjectDataForQuery, computeResponseConfidence } from '../lib/projec
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { generateMultiDimensionalContext, attachMultiDimensionalRecommendations } from '../lib/discovery/multidimensionalPromptEnricher'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
-import { filterNewChips, filterNewChipsWithFloor, markChipShown, hydrateFromDb, persistToDb, suppressTopicChips } from '../lib/discovery/chipDedup'
+import { filterNewChips, markChipShown, hydrateFromDb, persistToDb, suppressTopicChips } from '../lib/discovery/chipDedup'
 import { isOverDailyBudget } from '../lib/ai/cost'
 import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monitoring/posthog'
 import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
@@ -100,90 +99,12 @@ const asyncHandler = (fn: (req: any, res: any) => Promise<void>) => (req: any, r
   })
 }
 
-// Appended to system prompt when Groq is used as fallback.
-// Groq runs without tool support — no builder_lookup, web_search, rera_check,
-// or calculation tools. This suffix overrides default tool-routing instructions
-// so the model redirects instead of answering from training memory.
-const GROQ_FALLBACK_SUFFIX = `
-
-## FALLBACK MODE — REAL-TIME TOOLS UNAVAILABLE
-You are operating without access to real-time tools. builder_lookup, web_search, rera_check, commute, and calculation tools cannot be called in this session.
-
-REQUIRED behavior when a tool would normally be needed:
-
-BUILDER REPUTATION/TRACK RECORD queries (builder_lookup unavailable):
-→ DO NOT answer builder quality, delivery reliability, trustworthiness, delay record, or ranking questions from training memory.
-→ For single-builder queries: "I'm unable to access our real-time builder database right now. For [builder]'s track record, check up-rera.in for their project filings and search '[builder] complaints' or '[builder] reviews' on Google."
-→ For ranking queries ("best builder", "most trustworthy", "fewest delays", "rank top builders in Noida"): "I need to look up each builder in our database to make this comparison — that tool isn't available right now. Try again in a moment, or check up-rera.in and PropTiger for builder track records." STOP. Do NOT add "generally speaking", CREDAI quality signals, "well-regarded builders like", or training-memory builder names after this.
-→ For recommendation queries ("which builder would you recommend", "which is best for end-use"): "I can't make a recommendation without verified database data on each builder — that tool isn't available right now. Try again in a moment." STOP. Do NOT add any builder suggestions, established-builder hints, or quality signals after this.
-→ For "which builder to avoid" or "which builder is risky" queries:
-   - Apply Rule 6c FIRST — these are legal facts, not database lookups. NEVER recommend Supertech Limited, Amrapali Group, Unitech Group, or Wave Infratech for new purchases. State the known legal fact immediately (court proceedings / NBCC takeover / SC-appointed board / RERA cancellations).
-   - Apply Rule 6d — Jaypee Greens: state NCLT insolvency of parent company.
-   - For ALL other builders: "For other builders, we don't track complaint frequency or delay rates. Check up-rera.in for complaint history and search '[builder] complaints' on Google." STOP. Do NOT add generic risk warnings ("smaller builders tend to", "builders without CREDAI") or training-memory avoidance advice. NEVER name a non-legally-flagged builder as 'avoid' from training memory.
-→ Hard Rules 13, 17, 18, 19, and 25 remain fully active in fallback mode.
-
-COST-SHEET CHARGES (maintenance, floor rise, PLC, IFMS, parking, payment plans — Hard Rule 23):
-→ These are NEVER in our database. Hard Rule 23 remains fully active in fallback mode.
-→ Respond: "We don't track [charge name] in our database — request the complete cost sheet from the builder's sales team."
-→ DO NOT say "typically ₹X" even in fallback mode. These numbers vary by project and any estimate will be wrong.
-
-RERA VERIFICATION queries (rera_check unavailable):
-→ Say: "I can't verify RERA details right now — check up-rera.in directly: search for [project name] to confirm registration status and the registered completion date."
-→ NEVER generate a UPRERAPRJ number or any RERA registration string.
-→ If rera field in the data block is already present, you may quote it but note it should be verified at up-rera.in.
-
-LIVE WEB queries — market trends, news, metro updates (web_search unavailable):
-→ NEVER provide: market price trends, appreciation projections, historical price growth claims (e.g. "up X% since 2022"), construction progress on any project, project-specific facts from training memory, or possession timeline predictions based on builder history.
-→ If asked about any of the above: "I'm in limited mode right now — for current market data, check PropTiger or MagicBricks, or try your question again in a moment."
-→ You MAY share general knowledge ONLY for: area geography, expressways and roads, metro connectivity, schools, hospitals, and local landmarks. These MUST be labelled: "Based on general knowledge (not a live search) —"
-→ NEVER present any training-memory data as current or verified.
-
-EMI / FINANCIAL CALCULATIONS (calculate_emi unavailable):
-→ Use the formula and calibration anchors in CALCULATION FORMAT to calculate directly.
-→ This is the one tool-class that remains safe to compute in-prompt.
-
-PROJECT DATA INTEGRITY:
-→ Use ONLY what is in the Properties Found block. Do NOT supplement with training memory about unlisted projects.
-→ For every project that IS in the Properties Found block: describe ONLY the fields present in that JSON. Do NOT add from training memory:
-   - floor counts or construction progress estimates
-   - delivery timeline predictions or possession inferences (e.g. "this builder usually delivers within X months")
-   - builder reputation signals not present in the block
-   - appreciation projections or historical pricing for that project
-   - RERA numbers inferred from pattern — if the rera field is NOT_IN_DATABASE, do NOT invent a UPRERAPRJ string
-→ All sentinels (PROJECT_NOT_FOUND, SECTOR_NOT_COVERED, possession_status, NOT_IN_DATABASE) remain fully active.
-
-PROJECT_NOT_FOUND sentinel — explicit prohibition (Hard Rule 14, fully active in fallback mode):
-If the block contains PROJECT_NOT_FOUND: "[name]" — do NOT provide from training memory:
-  location, builder name, sector, price, BHK, possession date, project description,
-  amenities, RERA number, or comparison context for that project.
-Required response (verbatim): "This project is not currently in our tracked database."
-STOP after that sentence. Do NOT elaborate. Do NOT use the unlisted project as comparison
-context when describing tracked alternatives.
-
-BANK / HOME LOAN queries:
-→ NEVER predict loan approval, rank lenders, recommend specific banks, or estimate approval speed.
-→ Loan approval depends on CIBIL score, income documentation, and project legal status — none of which are in our database.
-→ Required response: "Loan approval depends on your profile and the project's legal status. Please consult a home-loan advisor or lender."
-
-PROPERTY DATA INTEGRITY GUARD (Hard Rule 24 — fully active in fallback mode):
-The following fields are NOT in the RealtyPals database. NEVER estimate, approximate, or infer them — not from training memory, not from "similar projects", not from general knowledge.
-Fields not tracked:
-  - Construction progress (% complete, floors, slab status)
-  - Sold inventory or unsold units
-  - Launch price or original booking price
-  - Price change or appreciation since launch
-  - Historical price appreciation for any specific project
-  - BSP vs all-inclusive price breakdown
-  - CC (Completion Certificate) status or date
-  - OC (Occupancy Certificate) status or date
-    EXCEPTION: possession_status "DELIVERED" in the data block means OC issued — state that fact only.
-  - Any government approval or certification status
-  - Maintenance charges, floor rise, PLC, IFMS, CLP stages, payment plan terms
-Required response for ALL of the above (verbatim):
-"We do not currently track this information in our database. Please verify directly with the builder or official project documents."
-DO NOT say "typically", "approximately", "usually", or "from general knowledge" for any of these fields.
-
-Keep responses concise — you have a 1024-token limit in this mode.`
+// The old GROQ_FALLBACK_SUFFIX lived here: ~1,826 tokens appended to every
+// tool-less provider to retract a tool catalogue we had just spent ~1,742 tokens
+// describing. Most of it restated base-prompt rules it itself declared "fully
+// active". The parts that were genuinely provider-conditional now live in the
+// NO LIVE LOOKUPS block of getBaseSystemPrompt(toolsEnabled=false), and the
+// bank/home-loan rule it uniquely carried is now a permanent base-prompt rule.
 
 const BodySchema = z.object({
   action: z.discriminatedUnion('type', [
@@ -486,6 +407,59 @@ router.post('/', async (req: Request, res: Response) => {
     const isNewSession = !sessionId || !sessionData
     const currentSessionId = sessionId || randomUUID()
 
+    /**
+     * Single exit for every ui_state this handler emits.
+     *
+     * The specialised answer branches below each authored their own literal chip
+     * array and called send('ui_state', …) directly. That bypassed session dedup
+     * entirely (so a chip the user had already been shown, or already clicked,
+     * came back every turn) and ignored the extracted intent (so a buyer who said
+     * "Sector 150" was offered "Flats in Sector 76"). Routing all of them through
+     * here fixes both without changing any branch's own chip choices.
+     */
+    const emitUiState = <C extends { id: string; label?: string; payload?: unknown }>(state: {
+      stage: string
+      thinking: string
+      chips: C[]
+      missingFields?: string[]
+      confidence?: string
+      [k: string]: unknown
+    }, opts: {
+      /** Branch-specific recovery set, used instead of the generic floor. */
+      fallbackChips?: C[]
+      /** CLARIFYING guidance chips must survive dedup — they are the whole answer. */
+      skipDedup?: boolean
+    } = {}): void => {
+      const activeSector = typeof intent?.sector === 'string' ? intent.sector : undefined
+
+      // Drop chips pinned to a sector the buyer has ruled out by naming another.
+      // A chip mentioning no sector, or the active one, is always kept.
+      const onSector = (c: C): boolean => {
+        if (!activeSector) return true
+        const mentioned = `${c.label ?? ''} ${JSON.stringify(c.payload ?? {})}`
+          .match(/Sector\s+\d+[A-Za-z]?/gi)
+        if (!mentioned?.length) return true
+        const wanted = activeSector.toLowerCase().replace(/\s+/g, ' ')
+        return mentioned.some(m => m.toLowerCase().replace(/\s+/g, ' ') === wanted)
+      }
+
+      let chips: C[] = (state.chips ?? []).filter(onSector)
+      if (!opts.skipDedup) {
+        chips = filterNewChips(currentSessionId, chips)
+      }
+
+      // Every step above is subtractive — this is the only additive one.
+      if (chips.length === 0) {
+        chips = opts.fallbackChips?.length
+          ? opts.fallbackChips
+          : (getFloorChips(intent, projects) as unknown as C[])
+      }
+
+      chips = chips.slice(0, 4)
+      chips.forEach(c => markChipShown(currentSessionId, c.id, c.label))
+      send('ui_state', { ...state, chips })
+    }
+
     // Post-process intent: qualify sectors with cities, resolve project context
     const previousProjectIds = (sessionData?.last_projects as string[]) ?? []
     const postProcessed = await postProcessIntent(hydratedIntent, previousProjectIds, 'Noida')
@@ -636,7 +610,7 @@ router.post('/', async (req: Request, res: Response) => {
       const successText = `✅ **Callback Request Registered!**\n\nThank you **${nameStr}**! Your contact number has been registered with our RealtyPals advisory team.\nOur senior consultant will reach out to you shortly with exclusive project details.\n\n*Need immediate pricing or floor plan details while you wait? Ask me anytime!*`
       
       send('token', { token: successText })
-      send('ui_state', {
+      emitUiState({
         stage: 'RESEARCH',
         thinking: 'Callback request registered.',
         chips: [
@@ -711,6 +685,10 @@ router.post('/', async (req: Request, res: Response) => {
       suppressTopicChips(currentSessionId, 'amenities')
     }
 
+    // Pre-search ui_state exists to set the stage + thinking loader. Its chips are
+    // always superseded by the post-response ui_state below (and the frontend hides
+    // chips while isLast && isSubmitting), so generating them via LLM was paying for
+    // output that could never render. Deterministic chips only here.
     const preSearchUiState = await computeConversationState(
       intent,
       intentState,
@@ -721,36 +699,44 @@ router.post('/', async (req: Request, res: Response) => {
       undefined,
       undefined,
       chipInventory,
-      true
+      true,
+      undefined,
+      { allowLlmChips: false }
     )
     
-    // For CLARIFYING stage, never deduplicate — these are essential guidance chips
-    // For other stages, deduplicate to avoid showing the same chip twice
-    let preChips = preSearchUiState.chips
-    if (preSearchUiState.stage !== 'CLARIFYING') {
-      preChips = filterNewChipsWithFloor(currentSessionId, preSearchUiState.chips, 2)
-      preChips.forEach(c => markChipShown(currentSessionId, c.id, c.label))
-    }
-    console.log('[CHAT] preSearchUiState chips:', preSearchUiState.chips.length, 'after', preSearchUiState.stage === 'CLARIFYING' ? 'CLARIFYING (no dedup)' : 'dedup', preChips.map(c => c.label))
-    preSearchUiState.chips = preChips
-
+    // No dedup and no mark-shown here on purpose. These chips are hidden by the
+    // client while the response is still streaming and are then replaced by the
+    // post-response ui_state, so the buyer never actually sees them — marking them
+    // as shown was suppressing those same chips from the set they DO see.
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
     // ─── GROUND TRUTH DATABASE PIPELINE (Lightweight Catalog Cache) ─────────────
-    const rawDbProjects = await prisma.project.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        sector: true,
-        status: true,
-        price_min_cr: true,
-        price_range_label: true,
-      }
-    })
-
-    // Filter out duplicate IITL Nimbus project permanently
-    const allDbProjects = rawDbProjects.filter(p => !p.name.toLowerCase().includes('iitl nimbus'))
+    // Whole-table read with no where/take. It has to be: this is the in-memory
+    // catalogue used for project-name matching throughout the handler, so it
+    // cannot be narrowed. It CAN be cached — names and sectors change only when
+    // an admin edits a project. Was running on every single chat turn.
+    type DbCatalogEntry = {
+      id: string; name: string; slug: string; sector: string
+      status: string; price_min_cr: number | null; price_range_label: string | null
+    }
+    let allDbProjects = await getCached<DbCatalogEntry[]>('chat:projectCatalog')
+    if (!allDbProjects) {
+      const rawDbProjects = await prisma.project.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          sector: true,
+          status: true,
+          price_min_cr: true,
+          price_range_label: true,
+        }
+      })
+      // Filter out duplicate IITL Nimbus project permanently
+      allDbProjects = rawDbProjects.filter(p => !p.name.toLowerCase().includes('iitl nimbus')) as DbCatalogEntry[]
+      // 5 min: short enough that a newly published project appears quickly.
+      await setCached('chat:projectCatalog', allDbProjects, 300)
+    }
 
     // 0. ADVERSARIAL & JAILBREAK SHIELD
     const isJailbreak = /ignore\s+(all\s+)?(previous\s+)?instructions|system\s+prompt|dan\s+mode|unrestricted\s+assistant|bypass\s+(paying\s+)?(taxes|laws)|jailbreak/i.test(message)
@@ -767,7 +753,7 @@ For legal statutory schedules (UP Stamp Duty, GST, TDS) or verified property che
       ]
 
       send('token', { token: jailbreakText })
-      send('ui_state', {
+      emitUiState({
         stage: 'RESEARCH',
         thinking: 'RealtyPals compliance and security protocols active:',
         chips: jbChips,
@@ -800,7 +786,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       ]
 
       send('token', { token: deflectionText })
-      send('ui_state', {
+      emitUiState({
         stage: 'RESEARCH',
         thinking: 'RealtyPals real estate advisory scope:',
         chips: outOfScopeChips,
@@ -915,7 +901,7 @@ To verify any residential or commercial project in Noida and Greater Noida:
           ]
 
           send('token', { token: reraText })
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: 'Official UP RERA & NCLT legal compliance check protocol:',
             chips: reraChips,
@@ -955,7 +941,7 @@ For an under-construction apartment, budget an additional **12–13% above Base 
           ]
 
           send('token', { token: taxText })
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: 'Verified Uttar Pradesh statutory tax and stamp duty rates:',
             chips: taxChips,
@@ -1007,7 +993,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           }))
 
           send('token', { token: reputationText })
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: 'Verified developer delivery scorecard from PostgreSQL database:',
             chips: repChips,
@@ -1070,7 +1056,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           ]
 
           send('token', { token: orientationText })
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: 'Curated sector orientation guide from database:',
             chips: orientationChips,
@@ -1125,7 +1111,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           ]
 
           send('token', { token: rtmText })
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: 'Verified ready-to-move and delivery status matrix:',
             projects: displayProjects,
@@ -1209,7 +1195,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
               const respText = `### Amenities & Lifestyle: ${targetProject.name} (${targetProject.sector})\n\n${specificStatus ? specificStatus + '\n\n' : ''}**Verified Project Amenities:**\n${topAmenities}\n\n**Open Space & Green Cover:**\n${targetProject.open_space_pct ? `${targetProject.open_space_pct}% open space` : '70%–80% landscaped open green area'} with 24/7 multi-tier security and power backup.`
 
               send('token', { token: respText })
-              send('ui_state', {
+              emitUiState({
                 stage: 'RESEARCH',
                 thinking: `Verified amenities for ${targetProject.name}:`,
                 chips: amenityChips,
@@ -1251,7 +1237,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           ]
 
           send('token', { token: amenityText })
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: 'Verified society lifestyle and amenities comparison:',
             chips: amenChips,
@@ -1319,7 +1305,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
               ]
 
               send('token', { token: configText })
-              send('ui_state', {
+              emitUiState({
                 stage: 'RESEARCH',
                 thinking: `Verified unit configurations for ${targetProject.name}:`,
                 chips: configChips,
@@ -1393,7 +1379,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           ]
 
           send('token', { token: outflowText })
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: `Calculated total all-inclusive cost with UP stamp duty and GST for ${projName}:`,
             chips: outflowChips,
@@ -1437,7 +1423,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           ]
 
           send('token', { token: connText })
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: 'Verified transit and distance matrix from database:',
             chips: connChips,
@@ -1527,7 +1513,7 @@ OUTPUT STRUCTURE:
             { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 3, payload: { text: 'Calculate EMI' } },
           ]
 
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: `Comparing ${s1} vs ${s2}:`,
             chips: sectorChips,
@@ -1561,7 +1547,7 @@ OUTPUT STRUCTURE:
           if (!planProject) {
             const clarifyText = `### Payment Plans in Noida & Greater Noida\n\nMost verified developers in Noida offer three standard RERA-compliant payment structures:\n\n1. **Construction Linked Plan (CLP)**: ~10% booking, 80% across milestone slabs, 10% on handover (lowest upfront risk).\n2. **Down Payment Plan**: ~10% booking, 85% in 45 days, 5% on handover (typical 5–8% BSP discount).\n3. **Flexi / Milestone Plan (30:70 / 20:80)**: 20–30% in first 90 days, balance upon superstructure or possession.\n\n*Which specific project would you like to view the detailed payment schedule for?*`
             send('token', { token: clarifyText })
-            send('ui_state', {
+            emitUiState({
               stage: 'RESEARCH',
               thinking: 'Select a project to view exact builder payment plans:',
               chips: [
@@ -1572,6 +1558,27 @@ OUTPUT STRUCTURE:
               confidence: 'HIGH'
             })
             send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent, responseMode: 'chat' })
+            res.end()
+            return
+          }
+
+          // Project-scoped cache read — the global read at the top of the handler
+          // runs before intent extraction, so it cannot see (and must not see)
+          // project-specific entries.
+          const planScope = `project:${planProject.id}`
+          const cachedPlan = getCachedResponse(message, planScope)
+          if (cachedPlan) {
+            send('token', { token: cachedPlan.token })
+            if (cachedPlan.chips?.length) {
+              emitUiState({
+                stage: 'RESEARCH',
+                thinking: `Verified payment schedules for ${planProject.name} (cached):`,
+                chips: cachedPlan.chips,
+                missingFields: [],
+                confidence: 'HIGH',
+              })
+            }
+            send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
             res.end()
             return
           }
@@ -1625,7 +1632,7 @@ OUTPUT STRUCTURE:
             { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_site_visit', priority: 3, payload: { text: 'Schedule a site visit' } },
           ]
 
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: `Analyzing payment plan schedules for ${planProject?.name}:`,
             chips: planChips,
@@ -1633,7 +1640,10 @@ OUTPUT STRUCTURE:
             confidence: 'HIGH'
           })
 
-          setCachedResponse(message, { token: fallbackResult.text, chips: planChips })
+          // Project-scoped: this answer is written around one specific project's
+          // payment schedule. Caching it globally served it to the next user who
+          // asked "show payment plans" about a different project entirely.
+          setCachedResponse(message, { token: fallbackResult.text, chips: planChips }, undefined, planScope)
           send('done', {
             sessionId: currentSessionId,
             intentState: 'SHORTLISTED',
@@ -1674,7 +1684,7 @@ OUTPUT STRUCTURE:
 > **Advisory Rule of Thumb:** For under-construction homes, budget roughly **12%–14% above BSP** for all-inclusive handover. For Ready-to-Move apartments with Occupancy Certificate (OC), the statutory & possession load is approximately **8%–9%** (zero GST).`
 
             send('token', { token: clarifyText })
-            send('ui_state', {
+            emitUiState({
               stage: 'RESEARCH',
               thinking: 'All-inclusive cost structure & statutory fee schedule:',
               chips: [
@@ -1736,7 +1746,7 @@ OUTPUT STRUCTURE:
             { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_site_visit', priority: 3, payload: { text: 'Schedule a site visit' } },
           ]
 
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: `Calculating all-inclusive cost breakdown for ${costProject?.name}:`,
             chips: costChips,
@@ -2085,7 +2095,7 @@ Buyers should factor an additional **12% to 14%** over the Basic Sale Price (BSP
             ]
           }
 
-          send('ui_state', {
+          emitUiState({
             stage: 'RESEARCH',
             thinking: 'Verified database details:',
             chips: responseChips,
@@ -2528,11 +2538,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         chipInventory,
         true
       )
-      const postDetailChips = filterNewChipsWithFloor(currentSessionId, postDetailUiState.chips, 2)
-      postDetailChips.forEach(c => markChipShown(currentSessionId, c.id, c.label))
-      postDetailUiState.chips = postDetailChips
-
-      send('ui_state', postDetailUiState as unknown as Record<string, unknown>)
+      emitUiState({ ...postDetailUiState, chips: postDetailUiState.chips })
 
       // Persist assistant message with property card artifacts for session restore
       const detailArtifacts: Array<Record<string, unknown>> = []
@@ -2705,7 +2711,16 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       // ─── MULTI-DIMENSIONAL RANKING ENHANCEMENT ────────────────────────────────
       // If we have projects, enhance with comprehensive multi-dimensional scoring
       // This enriches the basic discovery results with detailed explanations
-      if ((projects.length > 0 || nearbyProjects.length > 0) && action.type === 'TEXT_MESSAGE') {
+      // Only run when we are actually ranking a set. This pipeline costs a second
+      // full LLM intent extraction plus its own DB query + scoring pass, and its
+      // only consumer is generateMultiDimensionalContext (the "TOP RECOMMENDATION
+      // CONTEXT" prompt block). On a DRILLDOWN like "what amenities does X have"
+      // that block is noise, so the whole pipeline was pure spend.
+      const wantsMultiDim =
+        queryClassification.queryKind === 'DISCOVERY' ||
+        queryClassification.queryKind === 'RANKING'
+
+      if ((projects.length > 0 || nearbyProjects.length > 0) && action.type === 'TEXT_MESSAGE' && wantsMultiDim) {
         try {
           console.log('[MULTI_DIM:ENHANCEMENT] Starting multi-dimensional ranking enhancement')
           const multiDimResult = await getMultiDimensionalRecommendations(
@@ -2810,6 +2825,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         // Short-circuit: don't proceed to search until user clarifies city
         send('token', { token: disambiguationText })
         const clarifyState = await computeConversationState(intent, intentState, [], false, chatHistory, undefined, undefined, cityDisambiguation, chipInventory, true)
+        // Deliberately NOT routed through emitUiState: these chips are the question
+        // being asked ("Noida or Greater Noida?"), so neither the sector filter nor
+        // session dedup may remove them.
         send('ui_state', clarifyState as unknown as Record<string, unknown>)
         send('done', { sessionId: currentSessionId, intentState, intent })
         res.end()
@@ -2910,32 +2928,42 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
     // Phase 2: Use cached system prompt (static part cached, dynamic part injected)
     const multiDimContext = generateMultiDimensionalContext(projects)
-    let systemPrompt = buildSystemPromptWithCache(
-      intent as any,
-      trimmedProjects as any,
-      memory,
-      sectorCtx ?? undefined,
-      sectorsOverview ?? undefined,
-      discoveryExpansion ?? undefined,
-      trimmedNearby as any,
-      notFoundNames ?? [],
-      blockedBuilders,
-      intentState,
-      DEFAULT_CITY,
-      multiDimContext
-    ) + systemSuffix
 
-    // Inject dynamic, database-grounded micro-market corridor intelligence
+    // Micro-market block is fetched once and appended to whichever variant is built.
+    let microMarketsTail = ''
     try {
       const { buildCityMicroMarketsContext } = await import('../lib/discovery/sectorDataGateway')
       const city = (intent as any)?.city || DEFAULT_CITY
       const microMarketsBlock = await buildCityMicroMarketsContext(city)
       if (microMarketsBlock) {
-        systemPrompt += `\n\n${microMarketsBlock}`
+        microMarketsTail = `\n\n${microMarketsBlock}`
       }
     } catch (e) {
       console.warn('[CHAT:MICRO_MARKET_CONTEXT:WARN]', e)
     }
+
+    // Built per provider: only the OpenAI legs can call tools, so everyone else
+    // gets a prompt with no tool catalogue at all rather than the catalogue plus
+    // a suffix retracting it.
+    const buildPromptForProvider = (supportsTools: boolean): string =>
+      buildSystemPromptWithCache(
+        intent as any,
+        trimmedProjects as any,
+        memory,
+        sectorCtx ?? undefined,
+        sectorsOverview ?? undefined,
+        discoveryExpansion ?? undefined,
+        trimmedNearby as any,
+        notFoundNames ?? [],
+        blockedBuilders,
+        intentState,
+        DEFAULT_CITY,
+        multiDimContext,
+        supportsTools,
+      ) + systemSuffix + microMarketsTail
+
+    // Tool-less is the common path (Gemini is tier 1) — size and fact-check against it.
+    const systemPrompt = buildPromptForProvider(false)
 
     // Issue 4: trim message history if total token estimate exceeds safe ceiling
     // Phase 1: Aggressive trimming based on intent type (search=3, advisory=8)
@@ -3298,10 +3326,11 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
       fallbackResult = await executeWithFallbackChain({
         systemPrompt,
+        buildSystemPrompt: buildPromptForProvider,
         messages,
         send,
         onToolCall: handleToolCall,
-        groqFallbackSuffix: GROQ_FALLBACK_SUFFIX,
+        groqFallbackSuffix: '',
         projects,
         userMessage: message,
         userId,
@@ -3375,17 +3404,14 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       usedProvider // Pass provider that succeeded for main response
     )
 
-    // Deduplicate chips based on session — strictly progressive without resurrecting previously emitted chips
-    let postChips = postSearchUiState.chips
-    if (postSearchUiState.stage !== 'CLARIFYING') {
-      postChips = filterNewChipsWithFloor(currentSessionId, postSearchUiState.chips, 0)
-    }
-
-    // High quality adaptive floor fallback if deduplication or zero inventory yielded 0 chips
-    if (postChips.length === 0) {
+    // Branch-specific recovery set, handed to emitUiState as the fallback so the
+    // single dedup pass there decides whether it is needed. Previously this block
+    // ran its own dedup + mark-shown, duplicating what every other emission does.
+    let recoveryChips: typeof postSearchUiState.chips = []
+    {
       const sec = intent.sector || 'this sector'
       if (discoveryExpansion?.reason === 'no_inventory_in_exact_sector_nofallback') {
-        postChips = [
+        recoveryChips = [
           {
             id: `rec_sec_config_${Date.now()}`,
             actionType: 'TEXT_MESSAGE',
@@ -3415,7 +3441,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           },
         ]
       } else if (projects.length > 0) {
-        postChips = [
+        recoveryChips = [
           {
             id: `floor_rtm_${Date.now()}`,
             actionType: 'TEXT_MESSAGE',
@@ -3447,10 +3473,10 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       }
     }
 
-    postChips.forEach(c => markChipShown(currentSessionId, c.id, c.label))
-    postSearchUiState.chips = postChips
-
-    send('ui_state', postSearchUiState as unknown as Record<string, unknown>)
+    emitUiState(
+      { ...postSearchUiState, chips: postSearchUiState.chips },
+      { fallbackChips: recoveryChips, skipDedup: postSearchUiState.stage === 'CLARIFYING' },
+    )
 
     // ── Build artifact payload for the assistant message ──────────────────
     // Artifacts capture the structured widget data shown to the user so it
@@ -3614,21 +3640,23 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           const mentioned = await findProjectsMentioned(fullText, DEFAULT_CITY)
           const proseChips = buildProseChips(mentioned)
           if (proseChips.length > 0 || mentioned.length > 0) {
-            const emitted = proseChips.length > 0 ? filterNewChipsWithFloor(currentSessionId, proseChips, 2) : []
-            emitted.forEach(c => markChipShown(currentSessionId, c.id))
+            // Dedup + mark-shown is emitUiState's job now — doing it here as well
+            // marked these chips as seen, so emitUiState's own pass then filtered
+            // every one of them out and fell through to floor chips.
+            const emitted = proseChips
             // Convert project names to clickable markdown links: [Name](#entity:id)
             let linkedText = fullText
             for (const e of mentioned) {
               linkedText = linkedText.replace(new RegExp(`\\b${e.name}\\b`, 'g'), `[${e.name}](#entity:${e.id})`)
             }
-            send('ui_state', {
+            emitUiState({
               stage: 'RESEARCH',
               thinking: '',
               chips: emitted,
               missingFields: [],
               confidence: 'MEDIUM',
               entities: mentioned,
-            } as unknown as Record<string, unknown>)
+            })
             // Re-emit with linked content if entities found
             if (mentioned.length > 0 && linkedText !== fullText) {
               const linkedMessage = await prisma.chatMessage.findFirst({

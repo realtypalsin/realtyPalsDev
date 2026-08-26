@@ -46,10 +46,24 @@ const FACTUAL_KEYWORDS = new Set([
 const ADVISORY_KEYWORDS = new Set([
   'should', 'worth', 'good', 'bad', 'concern', 'risk', 'problem', 'issue',
   'avoid', 'recommend', 'advice', 'opinion', 'why', 'reason', 'wait', 'delay',
-  'investment', 'trust', 'reliable', 'safe', 'reputation', 'complaint', 'quality',
-  'decision', 'choose', 'best', 'better', 'vs', 'versus', 'comparison advice',
-  'trade-off', 'tradeoff', 'pros', 'cons', 'negative', 'positive', 'feel',
+  'invest', 'investment', 'trust', 'reliable', 'safe', 'reputation', 'complaint',
+  'quality', 'decision', 'choose', 'best', 'better', 'vs', 'versus',
+  'comparison advice', 'trade-off', 'tradeoff', 'pros', 'cons', 'negative',
+  'positive', 'feel',
 ]);
+
+// Unambiguous requests for a judgement. Plain keyword counting misroutes these:
+// "should I invest in Sector 150 at current prices" scores factual 2 ("price",
+// "sector") vs advisory 1 ("should") and lands on the cheap lite model — but the
+// system prompt allocates 100–250 words of reasoning to exactly this question type.
+// Location and price nouns appear in nearly every advisory question, so they must
+// not be able to outvote an explicit ask for a recommendation.
+const ADVISORY_HARD_SIGNALS = [
+  /\bshould i\b/, /\bshould we\b/, /\bis it worth\b/, /\bworth (it|buying|investing)\b/,
+  /\bwould you recommend\b/, /\bwhat do you (think|recommend|advise)\b/,
+  /\brent vs buy\b/, /\bpros and cons\b/, /\bgood time to (buy|invest)\b/,
+  /\bis this a good\b/, /\bany risks?\b/, /\bshould i avoid\b/,
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PROJECT_DETAIL Detection
@@ -153,8 +167,13 @@ export function classifyIntent(userMessage: string, intent?: Intent): IntentClas
   const lower = userMessage.toLowerCase()
   let factualAdvisoryCategory: 'factual' | 'advisory' = 'advisory'
 
-  // Hard signal: explicit comparison query is factual
-  if (intent?.is_comparison_query) {
+  // Hard signal: an explicit request for a judgement is always advisory, and
+  // outranks the comparison flag — "which of these should I buy" is a decision,
+  // not a spec table.
+  if (ADVISORY_HARD_SIGNALS.some(re => re.test(lower))) {
+    factualAdvisoryCategory = 'advisory'
+  } else if (intent?.is_comparison_query) {
+    // Hard signal: explicit comparison query is factual
     factualAdvisoryCategory = 'factual'
   } else {
     // Count keyword signals

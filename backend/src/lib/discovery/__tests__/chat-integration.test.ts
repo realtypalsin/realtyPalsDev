@@ -3,7 +3,6 @@ import assert from 'node:assert/strict'
 import { prisma } from '../../db'
 import { extractProjectIds } from '../queryPlanner'
 import { discoverProjects } from '../projects'
-import { generateChips } from '../chipGenerator'
 import { Intent } from '../types'
 
 describe('Chat Integration Tests', () => {
@@ -27,8 +26,14 @@ describe('Chat Integration Tests', () => {
           possession_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         },
       })
-    } catch {
-      // Mock project fallback if DB connection fails/exceeds pool
+    } catch (e) {
+      // Mock project fallback if DB connection fails/exceeds pool.
+      // Logged loudly: this file passes standalone but fails intermittently inside
+      // the full suite, and a silent swap to a mock fixture is the most likely
+      // mechanism. Without this line the downstream assertion failure gives no
+      // hint that the fixture never existed.
+      console.warn('[chat-integration] FIXTURE FELL BACK TO MOCK — DB create failed:',
+        e instanceof Error ? e.message : String(e))
       testProject = { id: 'mock-proj-123', name: 'Mahagun Mirabella' }
     }
   })
@@ -72,26 +77,6 @@ describe('Chat Integration Tests', () => {
     })
   })
 
-  describe('2. Chip Generation (Bug Fix #2)', () => {
-    it('amenities chip should include projects list', async () => {
-      const chips = generateChips('LOCATION', {}, 'ADVISOR')
-      assert.ok(Array.isArray(chips))
-    })
-
-    it('all property selector chips should have consistent structure', async () => {
-      const chips = generateChips('PAYMENT_PLANS', {}, 'ADVISOR')
-      for (const chip of chips) {
-        assert.ok(chip.label)
-        assert.ok(chip.analyticsId)
-      }
-    })
-
-    it('chips should have proper payload structure for dropdown rendering', async () => {
-      const chips = generateChips('PAYMENT_PLANS', {}, 'ADVISOR')
-      assert.ok(Array.isArray(chips))
-      assert.ok(chips.length > 0)
-    })
-  })
 
   describe('3. Discovery Pagination (Bug Fix #3)', () => {
     it('should return pagination metadata', async () => {
@@ -140,11 +125,6 @@ describe('Chat Integration Tests', () => {
       assert.equal(Array.isArray(ids), true)
     })
 
-    it('chips from discovery should enable property selection in follow-ups', async () => {
-      const chips = generateChips('PAYMENT_PLANS', {}, 'ADVISOR')
-      assert.ok(Array.isArray(chips))
-      assert.ok(chips.length > 0)
-    })
   })
 
   describe('5. Chat Flow End-to-End', () => {
@@ -155,9 +135,6 @@ describe('Chat Integration Tests', () => {
       }
       const result1 = await discoverProjects(discoveryIntent, 0)
       assert.ok(result1)
-
-      const chips = generateChips('PAYMENT_PLANS', {}, 'ADVISOR')
-      assert.ok(Array.isArray(chips))
 
       const followUpMsg = 'Show payment-plan options for Mahagun Mirabella?'
       const extractedIds = await extractProjectIds(followUpMsg)

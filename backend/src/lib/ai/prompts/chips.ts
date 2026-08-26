@@ -6,14 +6,23 @@ import { MODELS, FALLBACK_CHAIN, type FallbackKeyConfig } from '../../config'
 import type { ChipAction } from '../../discovery/conversationEngine'
 import { chip } from '../../discovery/conversationEngine'
 
-const CHIP_SYSTEM_PROMPT = `You are an elite conversation intent predictor and property discovery navigator for RealtyPals (Noida & Greater Noida real estate platform).
-Based on the conversation history, generate exactly 3 highly relevant, high-conversion follow-up action chips.
+const CHIP_SYSTEM_PROMPT = `You predict the buyer's next question for RealtyPals (Noida & Greater Noida real estate).
+Generate exactly 3 follow-up action chips.
 
-CRITICAL RULES:
-1. AT LEAST 1 TO 2 CHIPS MUST BE DIRECT PROPERTY DISCOVERY ACTIONS that lead the user to project cards (e.g. "Show projects in Sector 150", "View 3/4 BHK on Expressway", "Show ₹3 Cr properties in Central Noida", "Explore top RTM societies in Sector 75").
-2. The other chip can be a strategic comparison, legal/RERA check, or financial breakdown (e.g. "Compare Sector 150 vs Central 7X", "What are the payment plans?", "Check builder track record").
-3. Keep each question or action under 7 words.
-4. Output ONLY a valid JSON object with a single key "questions" containing an array of 3 strings. No markdown, no markdown formatting, no explanations.
+You receive: KNOWN CONSTRAINTS (what the buyer already told us), PROJECTS ON SCREEN,
+USER ASKED (their recent questions), and WE JUST ANSWERED (the reply they are reading now).
+
+RULES:
+1. Chips must follow on from WE JUST ANSWERED — pick up a thread that answer opened
+   or a gap it left. Do not suggest something the answer already covered in full.
+2. Respect KNOWN CONSTRAINTS. Never ask for a detail the buyer already gave, and never
+   suggest a sector, budget, or BHK that contradicts one.
+3. At least 1 chip must lead to property cards (e.g. "Show projects in Sector 150",
+   "Ready-to-move 3 BHK in Sector 75").
+4. Prefer PROJECTS ON SCREEN by name when suggesting a detail action. Never invent a
+   project name that was not given to you.
+5. Under 7 words each. No emojis.
+6. Output ONLY valid JSON: {"questions": ["...", "...", "..."]}. No markdown, no prose.
 
 Example output:
 {
@@ -42,6 +51,11 @@ import { completeWithMistral } from '../mistral'
 import { beautifyResponse } from '../responseBeautifier'
 
 async function tryProvider(item: FallbackKeyConfig, systemPrompt: string, historyText: string): Promise<string[]> {
+  // Never make real external LLM network calls during automated unit tests
+  if (process.env.NODE_ENV === 'test' && !process.env.ENABLE_TEST_LLM) {
+    return []
+  }
+
   const apiKey = process.env[item.envKey]
   if (!apiKey) return []
 
@@ -97,13 +111,66 @@ async function tryProvider(item: FallbackKeyConfig, systemPrompt: string, histor
   }
 }
 
+/** Compact facts the chip model needs. Cheaper and more on-target than raw history. */
+export interface ChipContext {
+  /** Current merged intent — lets chips respect constraints the user already gave. */
+  intent?: Record<string, unknown>
+  /** Names of projects actually on screen — keeps suggestions grounded in real inventory. */
+  projectNames?: string[]
+}
+
+const MAX_ANSWER_CHARS = 600
+const MAX_TURN_CHARS = 300
+
+/**
+ * Build the chip model's input.
+ *
+ * Previously this sent the last 10 messages verbatim — assistant answers include
+ * markdown comparison tables, so a single turn could run several thousand tokens
+ * for a 3-string output. What the model actually needs is: what the user is
+ * constrained to, what they just asked, and what we just told them.
+ */
+function buildChipContext(
+  chatHistory: { role: string; content: string }[],
+  context?: ChipContext,
+): string {
+  const parts: string[] = []
+
+  if (context?.intent) {
+    const known = Object.entries(context.intent)
+      .filter(([, v]) => v !== undefined && v !== null && !(Array.isArray(v) && v.length === 0))
+      .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join('/') : String(v)}`)
+    if (known.length) parts.push(`KNOWN CONSTRAINTS: ${known.join(', ')}`)
+  }
+
+  if (context?.projectNames?.length) {
+    parts.push(`PROJECTS ON SCREEN: ${context.projectNames.slice(0, 5).join(', ')}`)
+  }
+
+  // Last two user turns give the thread of what they're pursuing.
+  const userTurns = chatHistory.filter(m => m.role === 'user').slice(-2)
+  for (const t of userTurns) {
+    parts.push(`USER ASKED: ${String(t.content ?? '').slice(0, MAX_TURN_CHARS)}`)
+  }
+
+  // The answer we just gave — this is what makes chips follow the response
+  // rather than only the question.
+  const lastAssistant = [...chatHistory].reverse().find(m => m.role === 'assistant')
+  if (lastAssistant?.content) {
+    parts.push(`WE JUST ANSWERED: ${String(lastAssistant.content).slice(0, MAX_ANSWER_CHARS)}`)
+  }
+
+  return parts.join('\n')
+}
+
 export async function generateContextualLLMChips(
   chatHistory: { role: string; content: string }[] | null | undefined,
   priorityStart: number,
-  preferredProvider?: { provider: string; envKey: string } // Provider that succeeded for main response
+  preferredProvider?: { provider: string; envKey: string }, // Provider that succeeded for main response
+  context?: ChipContext,
 ): Promise<ChipAction[]> {
   if (!chatHistory?.length) return []
-  const historyText = chatHistory.slice(-10).map(m => `${m.role}: ${m.content}`).join('\n')
+  const historyText = buildChipContext(chatHistory, context)
   if (!historyText) return []
 
   let questions: string[] = []

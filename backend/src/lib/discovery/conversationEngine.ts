@@ -52,6 +52,16 @@ export interface ChipAction {
   group?: ChipGroup
 }
 
+export interface ConversationStateOptions {
+  /**
+   * When false, chip generation stays fully deterministic — no LLM call.
+   * Used for the pre-search ui_state and for session restore, where the chips
+   * are either overwritten by the post-response ui_state or not worth a
+   * paid round-trip on a page load.
+   */
+  allowLlmChips?: boolean
+}
+
 export interface ConversationState {
   stage: ConversationStage
   thinking: string
@@ -223,15 +233,19 @@ async function getClarifyingChips(
   results: ScoredProject[],
   chatHistory: { role: string; content: string }[],
   inventory: ChipInventory | null,
-  usedProvider?: { provider: string; envKey: string }
+  usedProvider?: { provider: string; envKey: string },
+  allowLlmChips: boolean = true
 ): Promise<ChipAction[]> {
   const chips: ChipAction[] = []
   let priority = 1
 
   // ─── 1. Dynamic Conversational Bridge (High Priority when history is present) ───
-  if (chatHistory.length > 0) {
+  if (allowLlmChips && chatHistory.length > 0) {
     try {
-      const llmChips = await generateContextualLLMChips(chatHistory, priority, usedProvider)
+      const llmChips = await generateContextualLLMChips(chatHistory, priority, usedProvider, {
+        intent: intent as unknown as Record<string, unknown>,
+        projectNames: results.slice(0, 5).map(r => r.name),
+      })
       if (llmChips.length > 0) {
         // If user already specified BHK, filter out any redundant BHK chips
         const filtered = (intent.bhk && intent.bhk.length > 0)
@@ -307,6 +321,36 @@ async function getClarifyingChips(
       chip(`INTENT_PATCH:budget_high:${sec}`, 'INTENT_PATCH', `₹1.6 Cr+`, '', { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.6 }, label: `₹1.6 Cr+` }, priority++),
       chip(`EXPLORE:tradeoffs:${sec}`, 'TEXT_MESSAGE', `${cleanSec} Pros & Cons`, '', { message: `What are the main advantages and drawbacks of living in ${cleanSec}?` }, priority++)
     )
+    return chips
+  }
+
+  // ─── 6. BHK known, sector still missing — ask where ──────────────────────────
+  // Without this the engine had no deterministic answer for "show me 3 BHK": every
+  // branch above needs intent.sector, and the bhk fallback below is skipped because
+  // bhk is already known, so it fell through to generic floor chips and never asked
+  // for location. The LLM chip path masked it whenever a provider was reachable.
+  if (!intent.sector && inventory?.sectors?.length) {
+    // Never offer a sector the buyer has already named — suggesting "Sector 150"
+    // to someone who just typed "3 BHK in Sector 150" reads as not listening.
+    const saidAlready = chatHistory
+      .filter(m => m.role === 'user')
+      .map(m => String(m.content ?? '').toLowerCase())
+      .join(' ')
+    const candidates = inventory.sectors
+      .filter(({ sector }) => !saidAlready.includes(sector.toLowerCase()))
+      .slice(0, 3)
+
+    if (candidates.length === 0) return chips
+    for (const { sector, projectCount } of candidates) {
+      chips.push(chip(
+        `INTENT_PATCH:clarify_sector:${sector.replace(/\s+/g, '_')}`,
+        'INTENT_PATCH',
+        `${sector} (${projectCount} projects)`,
+        '',
+        { patch: { sector, ...(intent.bhk?.length ? { bhk: intent.bhk } : {}) }, label: sector },
+        priority++,
+      ))
+    }
     return chips
   }
 
@@ -450,7 +494,7 @@ function capChips(candidates: ChipAction[]): ChipAction[] {
   return picked.slice(0, 4)
 }
 
-function getFloorChips(intent: Intent, results: ScoredProject[] = []): ChipAction[] {
+export function getFloorChips(intent: Intent, results: ScoredProject[] = []): ChipAction[] {
   const safeResults = results || []
   // If we do have results, offer actions grounded in them.
   if (safeResults.length > 0) {
@@ -497,8 +541,10 @@ export async function computeConversationState(
   cityDisambiguation?: { query: string; candidates: Array<{ city: string; label: string }> },
   chipInventory: ChipInventory | null = null,
   isUserMessage: boolean = false,
-  usedProvider?: { provider: string; envKey: string }
+  usedProvider?: { provider: string; envKey: string },
+  opts: ConversationStateOptions = {}
 ): Promise<ConversationState> {
+  const allowLlmChips = opts.allowLlmChips ?? true
   const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0, isUserMessage)
   const missingFields = getMissingFields(intent, intentState)
   const confidence = computeConfidenceLevel(intent)
@@ -542,7 +588,7 @@ export async function computeConversationState(
     // Populate chips dynamically based on the conversation stage
     switch (stage) {
       case 'CLARIFYING':
-        chips = await getClarifyingChips(intent, missingFields, results, chatHistory, chipInventory, usedProvider)
+        chips = await getClarifyingChips(intent, missingFields, results, chatHistory, chipInventory, usedProvider, allowLlmChips)
         break
       case 'DISCOVERY':
         chips = getDiscoveryChips(chipInventory)
@@ -552,13 +598,13 @@ export async function computeConversationState(
         chips = getSearchRefinementChips(intent, results, chatHistory, chipInventory)
         break
       case 'RESEARCH':
-        chips = await generateDynamicChips('research', results, chatHistory, usedProvider)
+        chips = await generateDynamicChips('research', results, chatHistory, usedProvider, allowLlmChips)
         break
       case 'COMPARING':
-        chips = await generateDynamicChips('compare', results, chatHistory, usedProvider)
+        chips = await generateDynamicChips('compare', results, chatHistory, usedProvider, allowLlmChips)
         break
       case 'DECIDING':
-        chips = await generateDynamicChips('decide', results, chatHistory, usedProvider)
+        chips = await generateDynamicChips('decide', results, chatHistory, usedProvider, allowLlmChips)
         break
       case 'CONVERTING':
         chips = []

@@ -529,6 +529,19 @@ function parseExtendedIntentJson(
 
   try {
     const parsed = JSON.parse(str)
+
+    // Models emit `"field": null` to mean "not specified", but ExtendedIntentSchema
+    // uses bare enums with no .nullable(). A single null therefore failed the WHOLE
+    // parse and dropped all 11 dimensions to the regex fallback — which is why
+    // sectorPreference and friends were always undefined in practice. Null means
+    // absent; strip before validating. (Same defect class as the legacy
+    // IntentSchema null handling in ai/intent.ts.)
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      for (const k of Object.keys(parsed)) {
+        if (parsed[k] === null) delete parsed[k]
+      }
+    }
+
     const result = ExtendedIntentSchema.safeParse(parsed)
 
     if (!result.success) {

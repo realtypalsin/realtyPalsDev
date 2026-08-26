@@ -51,7 +51,12 @@ describe('parseIntentJson — RERA query outputs', () => {
   it('returns previous intent on invalid JSON', () => {
     const previous = { bhk: [2] }
     const result = parseIntentJson('not json at all', previous)
-    assert.deepEqual(result, { ...previous, projectNames: undefined, is_comparison_query: undefined })
+    // Unparseable output returns previous EXACTLY. It used to fall through to a
+    // synthetic '{}' and run mergeIntent, which both stamped on per-turn keys and
+    // made a total parse failure indistinguishable from a successful empty
+    // extraction — so extractIntent reported it as a non-degraded success and
+    // never rolled over to the next provider.
+    assert.deepEqual(result, previous)
   })
 
   it('returns previous intent on schema mismatch', () => {
@@ -64,7 +69,10 @@ describe('parseIntentJson — RERA query outputs', () => {
   it('handles empty object — no-op on previous intent', () => {
     const previous = { bhk: [3], sector: 'Sector 150' }
     const result = parseIntentJson('{}', previous)
-    assert.deepEqual(result, { ...previous, projectNames: undefined, is_comparison_query: undefined })
+    // mergeIntent no longer leaves per-turn keys present-but-undefined, so an
+    // empty extraction is now a literal no-op rather than previous + two
+    // undefined keys. Same semantics, canonical shape.
+    assert.deepEqual(result, previous)
   })
 
   it('extracts projectNames from comparison query', () => {

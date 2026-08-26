@@ -17,27 +17,68 @@ let cachedBasePrompt: CachedSystemPrompt | null = null
 const CACHE_TTL = 3600000 // 1 hour
 
 /**
+ * Sentinel marking the end of the provider-independent static prefix.
+ * The no-tools block is spliced in here (see fallbackChain.applyNoToolsBlock)
+ * instead of being appended after the per-request project/memory data — that
+ * keeps ~1.8k tokens of stable text inside the prefix that Gemini can cache,
+ * rather than re-billing it as a fresh tail on every single request.
+ */
+export const STATIC_PREFIX_MARKER = '<!--rp:static-prefix-end-->'
+
+/**
  * Get cached base prompt OR generate + cache it.
  * Returns static prompt string once every hour.
  */
-function getCachedBasePrompt(): string {
+const baseVariants = new Map<string, CachedSystemPrompt>()
+
+/**
+ * Variant-keyed base prompt.
+ *
+ * This used to call getBaseSystemPrompt() with NO arguments, silently discarding
+ * intent (so `verbose: true` never widened the word budget), blockedBuilders (so
+ * the legal do-not-recommend list was empty in the rules section), city, intentState
+ * and queryKind (so dynamic tool filtering never ran on the live path).
+ *
+ * userMessage is deliberately NOT threaded through: it would make the prompt prefix
+ * unique per request and forfeit provider-side prefix caching for a marginally
+ * shorter tool list. queryKind alone still narrows the tool set.
+ *
+ * Note this is a JS string memo — it saves CPU, not tokens. Token savings come from
+ * the prefix being byte-stable enough for the provider to cache it.
+ */
+function getCachedBasePrompt(
+  intent?: Record<string, unknown>,
+  blockedBuilders?: Array<{ name: string; legal_flag?: string }>,
+  city?: string,
+  intentState?: string,
+  queryKind?: string,
+  toolsEnabled: boolean = true,
+): string {
   const now = Date.now()
-  if (
-    cachedBasePrompt &&
-    cachedBasePrompt.version === CACHE_VERSION &&
-    now - cachedBasePrompt.timestamp < CACHE_TTL
-  ) {
-    return cachedBasePrompt.static
+  const key = [
+    intent?.verbose === true ? 'verbose' : 'terse',
+    city ?? 'default',
+    intentState ?? 'none',
+    queryKind ?? 'none',
+    blockedBuilders?.length ?? 0,
+    toolsEnabled ? 'tools' : 'notools',
+  ].join('|')
+
+  const hit = baseVariants.get(key)
+  if (hit && hit.version === CACHE_VERSION && now - hit.timestamp < CACHE_TTL) {
+    return hit.static
   }
 
-  // Generate base (no intent-specific rules)
-  const base = getBaseSystemPrompt()
-  cachedBasePrompt = {
-    static: base,
-    timestamp: now,
-    version: CACHE_VERSION,
-  }
-
+  const base = getBaseSystemPrompt(
+    intent as never,
+    blockedBuilders,
+    city as never,
+    intentState,
+    queryKind as never,
+    undefined,
+    toolsEnabled,
+  )
+  baseVariants.set(key, { static: base, timestamp: now, version: CACHE_VERSION })
   return base
 }
 
@@ -59,9 +100,18 @@ export function buildSystemPromptWithCache(
   intentState: string,
   city: string,
   multiDimContext?: string,
+  /** False for providers that cannot call tools — drops the tool catalogue entirely. */
+  toolsEnabled: boolean = true,
 ): string {
-  // Get cached static base
-  const staticBase = getCachedBasePrompt()
+  // Get cached static base — now actually parameterised (see getCachedBasePrompt).
+  const staticBase = getCachedBasePrompt(
+    intent,
+    blockedBuilders,
+    city,
+    intentState,
+    (intent?.queryKind as string | undefined) ?? 'DISCOVERY',
+    toolsEnabled,
+  )
 
   // Build dynamic-only suffix (intent-specific, project-specific, memory)
   // These vary per request, so we don't cache them
@@ -78,8 +128,8 @@ export function buildSystemPromptWithCache(
     intentState,
   )
 
-  // Combine: static (cached) + dynamic (per-request)
-  return staticBase + dynamicRules + (multiDimContext ? `\n\n${multiDimContext}` : '')
+  // Combine: static (cached) + marker + dynamic (per-request)
+  return staticBase + `\n${STATIC_PREFIX_MARKER}\n` + dynamicRules + (multiDimContext ? `\n\n${multiDimContext}` : '')
 }
 
 /**
@@ -180,4 +230,5 @@ function buildDynamicRules(
  */
 export function clearSystemPromptCache(): void {
   cachedBasePrompt = null
+  baseVariants.clear()
 }

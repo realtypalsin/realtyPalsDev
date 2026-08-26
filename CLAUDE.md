@@ -283,7 +283,12 @@ High Intent Events (track all):
 * Direct `groq-sdk` (legacy, avoid in new code)
 * `cohere-ai` (not primary)
 
-**Next Step:** Install `@ai-sdk/google` and wire Gemini as primary in chat routes.
+**Done — do not re-do.** Gemini is already primary. It is wired directly via
+`@google/genai` (see `backend/src/lib/ai/gemini.ts`), NOT through `@ai-sdk/google`,
+and sits at tier 1 of `FALLBACK_CHAIN` in `backend/src/lib/config.ts`. Provider
+order: Gemini → Mistral → Cerebras → Groq → OpenAI. Only the OpenAI legs are
+`supportsTools: true`; everything above them receives a prompt with no tool
+catalogue (`getBaseSystemPrompt(..., toolsEnabled=false)`).
 
 ### Alternative Search Providers
 * **Web Search:** Tavily (for real-time data)
@@ -324,17 +329,27 @@ Always use the defined stack. Never suggest alternatives unless explicitly asked
 
 ## Folder Structure (Live)
 ```
-frontend/app/                    # Next.js App Router routes & API handlers
-frontend/components/             # React components (chat UI, forms, admin)
-frontend/lib/                    # Utilities (AI prompts, API client, validators)
-  ├── ai/                        # AI provider configs (groq.ts, cerebras.ts, etc.)
-  ├── auth.ts                    # Supabase authentication utilities
-  ├── authedFetch.ts             # Authenticated API calls
-  └── intentManager.ts           # User intent state management
+frontend/app/                    # Next.js App Router routes & pages
+frontend/components/             # React components
+  ├── chat/                      # Chat UI (MessageBubble.tsx owns chip rendering)
+  └── property-detail/           # Project detail tabs
+frontend/lib/                    # Client utilities (auth, authedFetch, chipIconUtils)
 frontend/types/                  # TypeScript types (project, property, intent)
 frontend/public/                 # Static assets
-frontend/__tests__/              # Test files
-prisma/                          # Prisma schema + migrations (DB source of truth)
+frontend/__tests__/              # Frontend tests
+
+backend/src/routes/              # Express route handlers
+  ├── chat-router.ts             # The chat pipeline (large; entry point for a turn)
+  ├── chat-helpers.ts            # Token trimming, cache reuse, session restore
+  └── admin.ts                   # Admin API
+backend/src/lib/
+  ├── ai/                        # Providers, prompts, guardrails, cost, caches
+  │   └── prompts/base.ts        # The system prompt (tool section is conditional)
+  ├── discovery/                 # Intent → query → scoring → chips
+  │   └── conversationEngine.ts  # Single source of stage + chip decisions
+  ├── chat/                      # Summary compression, reaction detection
+  └── db.ts                      # Prisma client
+backend/prisma/                  # Prisma schema + migrations (DB source of truth)
 .env.example                     # Environment variable template
 MEMORY.md                        # Decisions & context (session-scoped)
 ERRORS.md                        # Approaches that failed & why
@@ -596,7 +611,7 @@ None of this needs new infrastructure — all extend `CallbackRequest`/`ChatSess
 Current fields displayed: name, builder, location, amenities, payment plans, possession, images, price.
 
 **To add new fields:**
-1. Add to `Project` model in `frontend/prisma/schema.prisma`
+1. Add to `Project` model in `backend/prisma/schema.prisma`
 2. Update `/api/projects/:id` route handler
 3. Update `ProjectDetailPanel` component to render new fields
 4. Update admin project creation/edit form (`/admin/projects/new` + `[id]`)
@@ -715,5 +730,5 @@ Check ERRORS.md for approaches that failed before.
 
 ---
 
-**Last Updated:** 2026-08-16
+**Last Updated:** 2026-08-25
 **Last Refined For:** Gemini integration, Supabase auth clarification, AI SDK consolidation, premium doc pass (ChatGPT power-user chat design, lead-gen v2 refinements)

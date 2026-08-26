@@ -51,10 +51,16 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
 
   // Follow-up context queries (e.g. "show payment plans", "view cost sheet", "calculate EMI")
   // should preserve the active project context instead of wiping it
+  // `!update.sector` matters: isSectorSwitch only fires when a PREVIOUS sector
+  // existed, so a buyer who had one project in context and then names their first
+  // sector ("what about Sector 150?") was still treated as a follow-up and kept
+  // the old project attached — the assistant then answered about the wrong one.
+  // Naming any sector is a topic change, not a follow-up.
   const isFollowUpQuery = Boolean(
     previous.projectNames &&
     previous.projectNames.length === 1 &&
     !isSectorSwitch &&
+    !update.sector &&
     (!update.projectNames || update.projectNames.length === 0)
   )
 
@@ -74,55 +80,97 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
         areaMin: undefined,
         areaMax: undefined
     } : {}),
-    ...Object.fromEntries(Object.entries(update).filter(([, v]) => v !== undefined)),
+    // Drop nulls as well as undefined. IntentSchema is deliberately `.nullable()`
+    // because models emit `"sector": null` for "not specified", but letting that
+    // through put a literal null into Intent — and downstream isCityLevel(sector)
+    // calls .toLowerCase() on it. Null means "not specified", same as absent.
+    ...Object.fromEntries(Object.entries(update).filter(([, v]) => v !== undefined && v !== null)),
     ...(spatialScope ? { spatialScope } : {}),
   } as Intent
+
+  // Drop keys whose value is undefined. The per-turn resets above (projectNames,
+  // is_comparison_query) left the keys present-but-undefined, which is semantically
+  // identical to absent but makes Intent objects non-canonical — it broke deep
+  // equality and padded anything that enumerates keys.
+  for (const k of Object.keys(result)) {
+    if ((result as Record<string, unknown>)[k] === undefined) {
+      delete (result as Record<string, unknown>)[k]
+    }
+  }
 
   return result
 }
 
-/** Exported for unit testing only. Parses raw LLM JSON output into a merged Intent. */
-export function parseIntentJson(raw: string, previous: Intent): Intent {
-  // Empty or whitespace-only input returns previous unchanged
-  if (!raw || !raw.trim()) {
-    return previous
+// Fields the extraction prompt actually reasons about. Serialising the whole
+// merged Intent sent internal bookkeeping (targetProjectId, queryKind, radiusKm,
+// scoring residue) to the model on every single turn for no benefit.
+const PROMPT_INTENT_FIELDS = [
+  'bhk', 'budgetMin', 'budgetMax', 'possession', 'sector', 'areaMin', 'areaMax',
+  'purpose', 'builderName', 'lifestyleKeywords', 'projectNames', 'riskProfile',
+] as const
+
+/** Compact previous-intent payload for the extraction prompt. */
+export function slimIntentForPrompt(prev: Intent): string {
+  const out: Record<string, unknown> = {}
+  for (const k of PROMPT_INTENT_FIELDS) {
+    const v = (prev as Record<string, unknown>)[k]
+    if (v === undefined || v === null) continue
+    if (Array.isArray(v) && v.length === 0) continue
+    out[k] = v
   }
+  return JSON.stringify(out)
+}
+
+/**
+ * Strict parse: returns null when the provider's output was unusable (empty,
+ * non-JSON, or schema-invalid) so the caller can roll over to the next provider.
+ * A valid-but-empty `{}` is a legitimate result ("hello" → no constraints) and
+ * returns a merged Intent, not null.
+ */
+export function tryParseIntentJson(raw: string, previous: Intent): Intent | null {
+  if (!raw || !raw.trim()) return null
 
   const match = raw.match(/\{[\s\S]*\}/)
-  const str = match ? match[0] : '{}'
+  if (!match) return null
+
   try {
-    const result = IntentSchema.safeParse(JSON.parse(str))
+    const result = IntentSchema.safeParse(JSON.parse(match[0]))
     if (!result.success) {
       console.warn('[intent] schema mismatch:', result.error.message)
-      return previous
+      return null
     }
     return mergeIntent(previous, result.data)
   } catch {
-    return previous
+    return null
   }
 }
 
-async function extractWithCerebras(msg: string, prev: Intent, apiKey: string): Promise<Intent> {
+/** Exported for unit testing only. Parses raw LLM JSON output into a merged Intent. */
+export function parseIntentJson(raw: string, previous: Intent): Intent {
+  return tryParseIntentJson(raw, previous) ?? previous
+}
+
+async function extractWithCerebras(msg: string, prev: Intent, apiKey: string): Promise<Intent | null> {
   const { completeWithCerebras } = await import('./cerebras')
   const raw = await completeWithCerebras(
     INTENT_EXTRACTION_PROMPT,
-    `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}`,
+    `Previous intent: ${slimIntentForPrompt(prev)}\n\nUser message: ${msg}`,
     apiKey
   )
-  return parseIntentJson(raw, prev)
+  return tryParseIntentJson(raw, prev)
 }
 
-async function extractWithMistral(msg: string, prev: Intent, apiKey: string): Promise<Intent> {
+async function extractWithMistral(msg: string, prev: Intent, apiKey: string): Promise<Intent | null> {
   const { completeWithMistral } = await import('./mistral')
   const raw = await completeWithMistral(
     INTENT_EXTRACTION_PROMPT,
-    `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}`,
+    `Previous intent: ${slimIntentForPrompt(prev)}\n\nUser message: ${msg}`,
     apiKey
   )
-  return parseIntentJson(raw, prev)
+  return tryParseIntentJson(raw, prev)
 }
 
-async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string, timeout = 8000): Promise<Intent> {
+async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string, timeout = 8000): Promise<Intent | null> {
   const groq = new Groq({ apiKey, timeout })
   let raw = '{}'
   try {
@@ -130,7 +178,7 @@ async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string, tim
       model: MODELS.GROQ_SMART,
       messages: [
         { role: 'system', content: INTENT_EXTRACTION_PROMPT },
-        { role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` },
+        { role: 'user', content: `Previous intent: ${slimIntentForPrompt(prev)}\n\nUser message: ${msg}` },
       ],
       response_format: { type: 'json_object' },
       max_tokens: 256,
@@ -145,7 +193,7 @@ async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string, tim
         model: MODELS.GROQ_FAST,
         messages: [
           { role: 'system', content: INTENT_EXTRACTION_PROMPT },
-          { role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` },
+          { role: 'user', content: `Previous intent: ${slimIntentForPrompt(prev)}\n\nUser message: ${msg}` },
         ],
         response_format: { type: 'json_object' },
         max_tokens: 256,
@@ -161,10 +209,10 @@ async function extractWithGroqKey(msg: string, prev: Intent, apiKey: string, tim
       throw err
     }
   }
-  return parseIntentJson(raw, prev)
+  return tryParseIntentJson(raw, prev)
 }
 
-async function extractWithOpenAIKey(msg: string, prev: Intent, apiKey: string, signal: AbortSignal): Promise<Intent> {
+async function extractWithOpenAIKey(msg: string, prev: Intent, apiKey: string, signal: AbortSignal): Promise<Intent | null> {
   const client = new OpenAI({
     apiKey,
     baseURL: 'https://models.inference.ai.azure.com',
@@ -175,7 +223,7 @@ async function extractWithOpenAIKey(msg: string, prev: Intent, apiKey: string, s
       model: MODELS.MAIN,
       messages: [
         { role: 'system', content: INTENT_EXTRACTION_PROMPT },
-        { role: 'user', content: `Previous intent: ${JSON.stringify(prev)}\n\nUser message: ${msg}` },
+        { role: 'user', content: `Previous intent: ${slimIntentForPrompt(prev)}\n\nUser message: ${msg}` },
       ],
       response_format: { type: 'json_object' },
       max_tokens: 256,
@@ -184,7 +232,7 @@ async function extractWithOpenAIKey(msg: string, prev: Intent, apiKey: string, s
     { signal },
   )
   const raw = completion.choices[0]?.message?.content ?? '{}'
-  return parseIntentJson(raw, prev)
+  return tryParseIntentJson(raw, prev)
 }
 
 export interface IntentResult {
@@ -227,7 +275,7 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
         const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: config.timeout } })
         const res = await client.models.generateContent({
           model: config.model || 'gemini-3.6-flash',
-          contents: [{ role: 'user', parts: [{ text: `Previous intent: ${JSON.stringify(previousIntent)}\n\nUser message: ${message}` }] }],
+          contents: [{ role: 'user', parts: [{ text: `Previous intent: ${slimIntentForPrompt(previousIntent)}\n\nUser message: ${message}` }] }],
           config: {
             systemInstruction: INTENT_EXTRACTION_PROMPT,
             temperature: 0.1,
@@ -235,7 +283,7 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
           },
         })
         const raw = res.text?.trim() ?? '{}'
-        const result = parseIntentJson(raw, previousIntent)
+        const result = tryParseIntentJson(raw, previousIntent)
         if (result) return { intent: result, degraded: false }
       }
       if (config.provider === 'groq') {
@@ -281,7 +329,11 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
   return { intent: heuristicIntent, degraded: true }
 }
 
-function extractIntentHeuristic(message: string, previousIntent: Intent): Intent {
+/**
+ * Last-resort extraction when every LLM provider has failed. Exported so the
+ * degraded path is directly testable — it is what buyers hit during an outage.
+ */
+export function extractIntentHeuristic(message: string, previousIntent: Intent): Intent {
   const fallback = { ...previousIntent }
 
   // BHK extraction

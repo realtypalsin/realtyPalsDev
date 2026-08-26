@@ -1,6 +1,13 @@
 // Adaptive message capping: keep messages until approaching token ceiling
 import { estimateTokensReal } from './tokenizer'
 
+/**
+ * Total input context window we are willing to fill on any provider.
+ * This is an INPUT ceiling. Do not confuse it with an output `maxTokens`
+ * (see DISCOVERY.MAX_TOKENS_RESPONSE) — mixing the two collapses history.
+ */
+export const CONTEXT_TOKEN_CEILING = 100_000
+
 export interface AdaptiveCapResult {
   messages: Array<{ role: 'user' | 'assistant'; content: string }>
   messageCount: number
@@ -11,10 +18,17 @@ export interface AdaptiveCapResult {
 export function adaptiveCapMessages(
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   systemPromptTokens: number,
-  safeTokenCeiling: number,
+  /**
+   * Total INPUT context window to fit inside — NOT the output `maxTokens`.
+   * Passing an output limit here (e.g. 3000) makes messageBudget negative and
+   * silently collapses every request to the last 2 messages.
+   */
+  contextTokenCeiling: number,
+  /** Output tokens to reserve for the model's reply. */
+  responseTokenReserve: number = 3000,
   projectContextTokens: number = 500 // rough estimate for project data
 ): AdaptiveCapResult {
-  const messageBudget = safeTokenCeiling - systemPromptTokens - projectContextTokens - 300 // 300 for response buffer
+  const messageBudget = contextTokenCeiling - systemPromptTokens - projectContextTokens - responseTokenReserve
 
   let accumulatedTokens = 0
   let keepFromIndex = messages.length // start from end

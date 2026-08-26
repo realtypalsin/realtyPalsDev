@@ -184,9 +184,13 @@ export interface DiscoveryResult {
     candidates: Array<{ city: string; label: string }>
   }
   /** Pagination info for exactResults + nearbyResults combined */
-  pageIndex?: number
-  totalCount?: number
-  hasMore?: boolean
+  // Required, not optional: four return paths (name lookup + the three
+  // disambiguation branches) used to omit these, and the results are cached — so a
+  // consumer reading `hasMore` after a disambiguation got undefined. Keeping them
+  // mandatory makes tsc reject any new return path that forgets them.
+  pageIndex: number
+  totalCount: number
+  hasMore: boolean
   /** Spatial context: sector anchor, coordinates, search radius used */
   spatialContext?: {
     anchorSector?: string

@@ -12,6 +12,7 @@ import {
   buildDealBreakers,
   buildWhyNot,
 } from '../ai/intelligence'
+import { getSectorCentroid, getProjectsWithinRadius } from './geo'
 import {
   SCORE_THRESHOLD,
   BUILDER_ONLY_THRESHOLD,
@@ -713,6 +714,9 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
             query,
             candidates: byName.map((p) => ({ name: p.name, sector: p.sector, builder: (p as any).builder?.name || '' })),
           },
+          pageIndex: Math.floor(offset / RESULTS_PER_PAGE),
+          totalCount: 0,
+          hasMore: false,
         }
         await setCached(cacheKey, res, 300)
         return res
@@ -734,14 +738,23 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
       })),
       nearbyResults: [],
       ...(notFoundNames.length > 0 ? { notFoundNames } : {}),
+      // Direct name lookup is not paginated — one page, all matches.
+      pageIndex: 0,
+      totalCount: byName.length,
+      hasMore: false,
     }
     await setCached(cacheKey, res, 300)
     return res
   }
 
   // ── Branch 2: Spatial scope handling (EXACT vs PROXIMITY vs BROAD) ──────
-  // Import geospatial utilities
-  const { getSectorCentroid, getProjectsWithinRadius } = await import('./geo')
+  // geo is imported statically at the top of this file. It used to be a runtime
+  // `await import('./geo')`: extensionless specifiers go through Node's ESM
+  // resolver, which requires the extension, so this line threw
+  // ERR_MODULE_NOT_FOUND whenever the branch was actually reached under tsx.
+  // A Redis cache hit skipped the branch, which is why it only surfaced
+  // intermittently. geo.ts has no dependency on this file, so there was never a
+  // cycle to justify deferring it.
 
   interface SpatialCtx {
     anchorSector?: string
@@ -903,7 +916,10 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
                 city,
                 label: city
               }))
-            }
+            },
+            pageIndex: Math.floor(offset / RESULTS_PER_PAGE),
+            totalCount: 0,
+            hasMore: false,
           }
           await setCached(cacheKey, res, 300)
           return res
@@ -931,7 +947,10 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
           sectorDisambiguation: {
             query: effectiveIntent.sector,
             candidates: distinctSectors
-          }
+          },
+          pageIndex: Math.floor(offset / RESULTS_PER_PAGE),
+          totalCount: 0,
+          hasMore: false,
         }
         await setCached(cacheKey, res, 300)
         return res
@@ -1038,6 +1057,9 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
         spatialScope: 'EXACT',
         anchorSector: effectiveIntent.sector,
       },
+      pageIndex: Math.floor(offset / RESULTS_PER_PAGE),
+      totalCount: 0,
+      hasMore: false,
     }
     await setCached(cacheKey, res, 300)
     return res

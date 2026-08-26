@@ -49,7 +49,7 @@ describe('ConversationEngine: Stage Transitions', () => {
   test('CLARIFYING stage when user has sent message with partial intent', async () => {
     const intent: Intent = { bhk: [3] }
     const chatHistory = [{ role: 'user', content: 'show me 3 BHK' }]
-    const state = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
+    const state = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true, undefined, { allowLlmChips: false })
     assert.equal(state.stage, 'CLARIFYING')
   })
 
@@ -94,7 +94,7 @@ describe('ConversationEngine: Chip Generation', () => {
       { role: 'user', content: 'I need 3 BHK in Sector 150' },
       { role: 'assistant', content: 'Sector 150 has...' },
     ]
-    const state = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
+    const state = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true, undefined, { allowLlmChips: false })
     const sectorChips = state.chips.filter(c => c.label.includes('Sector'))
     const hasSector150 = sectorChips.some(c => c.label.includes('Sector 150'))
     assert(!hasSector150, 'Should not repeat Sector 150 when already in history')
@@ -104,8 +104,8 @@ describe('ConversationEngine: Chip Generation', () => {
     const intent: Intent = { bhk: [3] }
     const chatHistory = [{ role: 'user', content: 'show me 3 BHK' }]
 
-    const state1 = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
-    const state2 = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
+    const state1 = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true, undefined, { allowLlmChips: false })
+    const state2 = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true, undefined, { allowLlmChips: false })
 
     const ids1 = state1.chips.map(c => c.id).sort()
     const ids2 = state2.chips.map(c => c.id).sort()
@@ -119,7 +119,7 @@ describe('ConversationEngine: Chip Generation', () => {
       { role: 'user', content: 'show me 2 BHK and also 3 BHK' },
       { role: 'assistant', content: 'Here are options...' },
     ]
-    const state = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true)
+    const state = await computeConversationState(intent, 'GATHERING', [], false, chatHistory, undefined, undefined, undefined, mockInventory, true, undefined, { allowLlmChips: false })
 
     const labels = state.chips.map(c => c.label)
     const uniqueLabels = new Set(labels)
@@ -169,7 +169,11 @@ describe('ConversationEngine: Chip Factory', () => {
     assert.equal(action.id, 'C1')
     assert.equal(action.label, 'Test Label')
     assert.equal(action.actionType, 'INTENT_PATCH')
-    assert.equal(action.analyticsId, 'C1')
+    // analyticsId is a deliberately normalised key, not a copy of the id: real ids
+    // look like "INTENT_PATCH:sector:Sector 150", and the analytics sink wants
+    // "intent_patch_sector_sector_150". Asserting identity here would force a
+    // production change that renames every existing event key.
+    assert.equal(action.analyticsId, 'c1')
   })
 
   test('chip() with group preserves group data', () => {
