@@ -192,3 +192,79 @@ One-click refinements → Frictionless exploration
 (Archive here as sessions complete)
 
 ---
+
+## Session — 2026-08-27: production-readiness pass
+
+### Worked on
+Baseline gates, frontend bundle size, repo hygiene, test-suite honesty,
+accessibility, touch targets, and the chat pipeline's tool configuration.
+Seven commits, from `53532a9` to `b54a3e5`.
+
+### Completed
+
+**Bundle size.** `/discover` 529 kB → 359 kB First Load JS (-32%);
+`/property/[slug]` 449 kB → 337 kB (-25%). Three causes, all "imported at module
+scope for something nothing needs before first paint":
+1. `rehype-raw` pulls `parse5` (~565 KB raw). Both MessageBubble and
+   ResponseBlockRenderer imported the markdown plugins eagerly, which also
+   defeated the `dynamic()` already wrapping react-markdown. Consolidated into
+   one lazily-imported `components/response/Markdown.tsx`.
+2. Five of six project-detail tabs were static though only one mounts. Now
+   dynamic, with an idle prefetch so tab switches stay instant.
+3. `posthog-js` (~219 KB) sat in the root layout and in `lib/analytics.ts`. Now
+   loaded on idle behind a bounded replay queue (`lib/posthogClient.ts`).
+
+**Tests were 60% fiction.** 2079 cases across 23 files were `assert(true)` and
+could not fail — 774 backend (38% of that suite), 1305 frontend node:test (97%).
+All marked `todo`. Honest totals now: backend 1271 pass / 774 todo, frontend
+jest 109 pass, frontend node 44 pass / 1305 todo.
+
+**`npm run test:node` had never been wired into CI** and had two files failing
+permanently (jest globals in a node:test runner). Fixed and chained into
+`npm test`; root now has test/typecheck/lint/check-all.
+
+**CI coverage-gate was echoed checkmarks.** Replaced with a real check that each
+safety-critical suite exists and still carries ≥5 non-constant assertions.
+
+**`last_projects` type confusion.** The Json column is written as `string[]` by
+one branch and `ScoredProject[]` by two others, then read through two conflicting
+unchecked casts — so each reader was wrong whenever the other wrote last. The id
+reader feeds `postProcessIntent()`, so "tell me more about it" could silently
+lose the focused project. Normalised on read in `lib/discovery/lastProjects.ts`.
+
+**Chat TTFB.** A comment claimed intent extraction ran parallel to the DB
+prefetch; the code awaited `extractIntent` above the `Promise.all`, fully
+serialising them. Now genuinely overlapped.
+
+**Accessibility.** Nothing honoured `prefers-reduced-motion` despite
+framer-motion in 60+ components (and the tests asserting it were themselves
+`assert(true)`). Added `<MotionConfig reducedMotion="user">` plus a CSS block.
+
+**Repo hygiene.** Removed ~44k lines of stale session reports and scratch files;
+untracked committed tool caches; rewrote `.env.example` (it was a Task Master
+template naming keys we never read and omitting DATABASE_URL, SUPABASE_*, and
+GEMINI_API_KEY) and README.md (40 bytes of invalid UTF-8).
+
+### Decisions made
+- **Live-LLM tests are opt-in via `RUN_LIVE_LLM_TESTS=1`.** A provider key in
+  `.env` is not consent to spend money and assert on non-deterministic output on
+  every `npm test`. Rejected: loosening the assertions, which hides real drift.
+- **Placebo tests marked `todo`, not deleted.** They encode a real spec
+  checklist. Rejected: deleting (loses the backlog) and leaving them (they were
+  inflating the pass count and masking regressions).
+- **Gemini tool support unified into one `GEMINI_TOOLS_ENABLED` constant,
+  default still off.** Rejected: turning it on. See next section.
+- **Touch targets fixed only on the primary chat surface.** The other ~50 need a
+  layout decision, not a size change; a blanket CSS hit-area hack would make
+  adjacent buttons in tight rows steal each other's taps.
+
+### Open — needs a decision
+**No tool is reachable in production.** Gemini is tier 1 and every tier except
+OpenAI is `supportsTools: false`, so floor plans, price history, cost sheets,
+amenities, builder records, RERA and the calculators are all unreachable; the
+model answers from the prompt's NO LIVE LOOKUPS branch ("I can't reach our
+builder database right now"). This directly contradicts the chat bar set in
+CLAUDE.md. The plumbing exists (`toGeminiTools()`, function-call cycles in
+`gemini.ts`) behind `ENABLE_GEMINI_TOOLS`. Flipping it changes every production
+answer, so it wants a deliberate rollout with evals — not an overnight flip.
+
