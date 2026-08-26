@@ -1,259 +1,151 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 // LocationTab test suite — comprehensive coverage for location and connectivity
 
 describe('LocationTab Component', () => {
   describe('Map Display', () => {
-    it('renders interactive map', () => {
-      assert(true, 'Google Maps embedded with project coordinates')
-    })
+    it('renders interactive map', SPEC_TODO, () => {})
 
-    it('shows project pin on map', () => {
-      assert(true, 'Marker at lat/lng with popup')
-    })
+    it('shows project pin on map', SPEC_TODO, () => {})
 
-    it('displays sector/address info on map', () => {
-      assert(true, 'Popup shows project.sector + address')
-    })
+    it('displays sector/address info on map', SPEC_TODO, () => {})
 
-    it('map zooms to reasonable level', () => {
-      assert(true, 'zoom: 14-16 for locality view')
-    })
+    it('map zooms to reasonable level', SPEC_TODO, () => {})
 
-    it('handles missing coordinates gracefully', () => {
-      assert(true, 'lat/lng === null → show address only, no map')
-    })
+    it('handles missing coordinates gracefully', SPEC_TODO, () => {})
   })
 
   describe('Connectivity Display', () => {
-    it('shows nearby metro stations', () => {
-      assert(true, 'Lists metro connectivity with distance')
-    })
+    it('shows nearby metro stations', SPEC_TODO, () => {})
 
-    it('displays schools nearby', () => {
-      assert(true, 'Lists schools with distance_km')
-    })
+    it('displays schools nearby', SPEC_TODO, () => {})
 
-    it('shows hospitals nearby', () => {
-      assert(true, 'Lists hospitals with distance_km')
-    })
+    it('shows hospitals nearby', SPEC_TODO, () => {})
 
-    it('displays shopping malls', () => {
-      assert(true, 'Lists malls with distance_km')
-    })
+    it('displays shopping malls', SPEC_TODO, () => {})
 
-    it('shows airports and other landmarks', () => {
-      assert(true, 'Lists airports + landmarks with distance')
-    })
+    it('shows airports and other landmarks', SPEC_TODO, () => {})
 
-    it('does not fabricate connectivity data', () => {
       // P0 Fix: Removed 5 hardcoded fake nearby locations
-      assert(true, 'Uses real connectivity array, not defaults')
-    })
+    it('does not fabricate connectivity data', SPEC_TODO, () => {})
 
-    it('hides connectivity if none available', () => {
-      assert(true, 'Empty connectivity → show message')
-    })
+    it('hides connectivity if none available', SPEC_TODO, () => {})
   })
 
   describe('Distance & Commute Info', () => {
-    it('displays distances in kilometers', () => {
-      assert(true, 'connectivity.distance_km shown with "km" unit')
-    })
+    it('displays distances in kilometers', SPEC_TODO, () => {})
 
-    it('shows data source for each connectivity', () => {
-      assert(true, 'data_source: brochure/google/estimated/manual')
-    })
+    it('shows data source for each connectivity', SPEC_TODO, () => {})
 
-    it('marks estimated distances differently', () => {
-      assert(true, 'Estimated data shown with badge')
-    })
+    it('marks estimated distances differently', SPEC_TODO, () => {})
 
-    it('does not hardcode commute times', () => {
       // P0 Fix: Removed fake travel times based on string matching
-      assert(true, 'Uses real data or API, not fabricated')
-    })
+    it('does not hardcode commute times', SPEC_TODO, () => {})
 
-    it('hides commute calculator if not applicable', () => {
-      assert(true, 'Commute feature: show only if relevant')
-    })
+    it('hides commute calculator if not applicable', SPEC_TODO, () => {})
   })
 
   describe('Data Source Transparency', () => {
-    it('shows verification status for each item', () => {
-      assert(true, 'brochure/google/estimated/manual badge')
-    })
+    it('shows verification status for each item', SPEC_TODO, () => {})
 
-    it('color-codes data sources', () => {
-      assert(true, 'Brochure: green, Google: blue, estimated: yellow')
-    })
+    it('color-codes data sources', SPEC_TODO, () => {})
 
-    it('includes icon for data source', () => {
-      assert(true, 'Icon + text, not just color')
-    })
+    it('includes icon for data source', SPEC_TODO, () => {})
 
-    it('allows filtering by data source', () => {
-      assert(true, 'Optional: filter by brochure/google/estimated')
-    })
+    it('allows filtering by data source', SPEC_TODO, () => {})
   })
 
   describe('Amenity Categories', () => {
-    it('groups connectivity by type', () => {
-      assert(true, 'Categories: metro, school, hospital, mall, airport, landmark')
-    })
+    it('groups connectivity by type', SPEC_TODO, () => {})
 
-    it('displays category icon', () => {
-      assert(true, 'Icon from standard set (train, book, hospital, etc.)')
-    })
+    it('displays category icon', SPEC_TODO, () => {})
 
-    it('shows category count', () => {
-      assert(true, 'e.g., "3 Schools" header')
-    })
+    it('shows category count', SPEC_TODO, () => {})
 
-    it('sorts items within category by distance', () => {
-      assert(true, 'Nearest first')
-    })
+    it('sorts items within category by distance', SPEC_TODO, () => {})
 
-    it('expands/collapses categories', () => {
-      assert(true, 'Optional accordion behavior')
-    })
+    it('expands/collapses categories', SPEC_TODO, () => {})
   })
 
   describe('Responsive Design', () => {
-    it('map takes full width on desktop', () => {
-      assert(true, 'width: 100%')
-    })
+    it('map takes full width on desktop', SPEC_TODO, () => {})
 
-    it('map is 300px tall on mobile', () => {
-      assert(true, 'Mobile: height: 300px')
-    })
+    it('map is 300px tall on mobile', SPEC_TODO, () => {})
 
-    it('map is 500px tall on tablet+', () => {
-      assert(true, 'Tablet: height: 500px')
-    })
+    it('map is 500px tall on tablet+', SPEC_TODO, () => {})
 
-    it('connectivity list stacks vertically', () => {
-      assert(true, 'Single column on all sizes')
-    })
+    it('connectivity list stacks vertically', SPEC_TODO, () => {})
 
-    it('category sections are readable on mobile', () => {
-      assert(true, 'Font size ≥ 14px')
-    })
+    it('category sections are readable on mobile', SPEC_TODO, () => {})
 
-    it('distance text not truncated', () => {
-      assert(true, 'Responsive text overflow handling')
-    })
+    it('distance text not truncated', SPEC_TODO, () => {})
   })
 
   describe('Accessibility', () => {
-    it('map has aria-label', () => {
-      assert(true, 'aria-label={`Map showing ${project.name}`}')
-    })
+    it('map has aria-label', SPEC_TODO, () => {})
 
-    it('connectivity list is semantic HTML', () => {
-      assert(true, '<section> + <h2> + <ul><li>')
-    })
+    it('connectivity list is semantic HTML', SPEC_TODO, () => {})
 
-    it('distances are announced', () => {
-      assert(true, '"5 km from metro" announced, not just "5"')
-    })
+    it('distances are announced', SPEC_TODO, () => {})
 
-    it('data source badge has aria-label', () => {
-      assert(true, 'aria-label="Brochure verified"')
-    })
+    it('data source badge has aria-label', SPEC_TODO, () => {})
 
-    it('icons have alt text or aria-hidden', () => {
-      assert(true, 'Decorative: aria-hidden="true"')
-    })
+    it('icons have alt text or aria-hidden', SPEC_TODO, () => {})
 
-    it('distance numbers readable', () => {
-      assert(true, 'Sufficient color contrast (≥ 4.5:1)')
-    })
+    it('distance numbers readable', SPEC_TODO, () => {})
 
-    it('map keyboard accessible', () => {
-      assert(true, 'Focus ring visible, zoom controls accessible')
-    })
+    it('map keyboard accessible', SPEC_TODO, () => {})
   })
 
   describe('Error Handling', () => {
-    it('handles missing coordinates', () => {
-      assert(true, 'lat === null || lng === null → no map')
-    })
+    it('handles missing coordinates', SPEC_TODO, () => {})
 
-    it('handles missing connectivity data', () => {
-      assert(true, 'connectivity.length === 0 → "No data"')
-    })
+    it('handles missing connectivity data', SPEC_TODO, () => {})
 
-    it('handles null distances gracefully', () => {
-      assert(true, 'distance_km === null → "Distance N/A"')
-    })
+    it('handles null distances gracefully', SPEC_TODO, () => {})
 
-    it('handles invalid data sources', () => {
-      assert(true, 'Unknown source → show as "Unverified"')
-    })
+    it('handles invalid data sources', SPEC_TODO, () => {})
 
-    it('gracefully degrades without Google Maps API', () => {
-      assert(true, 'Show address text instead of map')
-    })
+    it('gracefully degrades without Google Maps API', SPEC_TODO, () => {})
   })
 
   describe('Performance', () => {
-    it('map lazy loads when in view', () => {
-      assert(true, 'IntersectionObserver for map container')
-    })
+    it('map lazy loads when in view', SPEC_TODO, () => {})
 
-    it('connectivity list does not render all at once', () => {
-      assert(true, 'Virtual scroll if 50+ items')
-    })
+    it('connectivity list does not render all at once', SPEC_TODO, () => {})
 
-    it('map is not re-rendered on prop changes if coords same', () => {
-      assert(true, 'Memoization on lat/lng')
-    })
+    it('map is not re-rendered on prop changes if coords same', SPEC_TODO, () => {})
 
-    it('distances formatted efficiently', () => {
-      assert(true, 'No expensive computations on every render')
-    })
+    it('distances formatted efficiently', SPEC_TODO, () => {})
   })
 
   describe('Interaction Patterns', () => {
-    it('clicking connectivity item opens details', () => {
-      assert(true, 'Optional: modal with full info')
-    })
+    it('clicking connectivity item opens details', SPEC_TODO, () => {})
 
-    it('marker click on map shows info window', () => {
-      assert(true, 'Shows project.name + address')
-    })
+    it('marker click on map shows info window', SPEC_TODO, () => {})
 
-    it('zoom controls visible on map', () => {
-      assert(true, 'Desktop: + - buttons visible')
-    })
+    it('zoom controls visible on map', SPEC_TODO, () => {})
 
-    it('map can be dragged', () => {
-      assert(true, 'Mouse drag or touch drag enabled')
-    })
+    it('map can be dragged', SPEC_TODO, () => {})
 
-    it('mobile: swipe to expand details', () => {
-      assert(true, 'Bottom sheet for connectivity list')
-    })
+    it('mobile: swipe to expand details', SPEC_TODO, () => {})
   })
 
   describe('Data Integrity Verification', () => {
-    it('all connectivity distances are positive', () => {
-      assert(true, 'distance_km > 0')
-    })
+    it('all connectivity distances are positive', SPEC_TODO, () => {})
 
-    it('no fabricated connectivity defaults', () => {
       // P0 Fix: Removed hardcoded 5-item fake array
-      assert(true, 'Uses real data or empty')
-    })
+    it('no fabricated connectivity defaults', SPEC_TODO, () => {})
 
-    it('sector matches address region', () => {
-      assert(true, 'Sector from schema, not user input')
-    })
+    it('sector matches address region', SPEC_TODO, () => {})
 
-    it('project coordinates within India bounds', () => {
-      assert(true, 'Validation: lat 8.4-35, lng 68-97')
-    })
+    it('project coordinates within India bounds', SPEC_TODO, () => {})
   })
 })

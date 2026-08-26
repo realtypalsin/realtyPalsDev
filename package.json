@@ -15,6 +15,10 @@
     "db:push": "cd frontend && npx prisma db push",
     "db:generate": "cd frontend && npx prisma generate && cd ../backend && npm run db:generate",
     "db:seed": "cd frontend && npm run db:seed",
+    "test": "npm --workspace=backend test && npm --workspace=frontend test",
+    "typecheck": "npm --workspace=backend run typecheck && npm --workspace=frontend run typecheck",
+    "lint": "npm --workspace=backend run lint && npm --workspace=frontend run lint",
+    "check-all": "npm run typecheck && npm run lint && npm test && npm run build",
     "doctor": "npx react-doctor@latest"
   },
   "devDependencies": {

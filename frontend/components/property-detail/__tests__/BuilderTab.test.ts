@@ -1,302 +1,176 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 // BuilderTab test suite — comprehensive coverage for builder information display
 
 describe('BuilderTab Component', () => {
   describe('Builder Information Display', () => {
-    it('displays builder name', () => {
-      assert(true, 'Shows builder.name')
-    })
+    it('displays builder name', SPEC_TODO, () => {})
 
-    it('displays builder logo if available', () => {
-      assert(true, 'Conditional: builder.logo_url ? <img> : null')
-    })
+    it('displays builder logo if available', SPEC_TODO, () => {})
 
-    it('shows builder tagline/description', () => {
-      assert(true, 'builder.tagline || builder.description')
-    })
+    it('shows builder tagline/description', SPEC_TODO, () => {})
 
-    it('displays founder name if available', () => {
-      assert(true, 'Conditional: builder.founder ? shown : null')
-    })
+    it('displays founder name if available', SPEC_TODO, () => {})
 
-    it('displays headquarters location if available', () => {
-      assert(true, 'Conditional: builder.headquarters ? shown : null')
-    })
+    it('displays headquarters location if available', SPEC_TODO, () => {})
 
-    it('shows company founding year', () => {
-      assert(true, 'Conditional: builder.founded_year ? "21+ Yrs" : null')
-    })
+    it('shows company founding year', SPEC_TODO, () => {})
 
-    it('displays website link if available', () => {
-      assert(true, 'Conditional: builder.website ? <link> : null')
-    })
+    it('displays website link if available', SPEC_TODO, () => {})
 
-    it('displays contact email if available', () => {
-      assert(true, 'Conditional: builder.email ? shown : null')
-    })
+    it('displays contact email if available', SPEC_TODO, () => {})
 
-    it('displays contact phone if available', () => {
-      assert(true, 'Conditional: builder.phone ? shown : null')
-    })
+    it('displays contact phone if available', SPEC_TODO, () => {})
   })
 
   describe('Data Integrity — No Fabrication', () => {
-    it('does not show fake "21+ Yrs Experience"', () => {
       // P0 Fix: Made conditional on builder.founded_year
-      assert(true, 'Built year present → show, else → hide')
-    })
+    it('does not show fake "21+ Yrs Experience"', SPEC_TODO, () => {})
 
-    it('does not hardcode "3,000+ Units"', () => {
       // P0 Fix: Removed fallback, now conditional
-      assert(true, 'delivered_units present → show, else → hide')
-    })
+    it('does not hardcode "3,000+ Units"', SPEC_TODO, () => {})
 
-    it('does not invent channel partners list', () => {
       // P0 Fix: Removed 5 fake channel partners array
-      assert(true, 'Uses real builder.channel_partners OR empty []')
-    })
+    it('does not invent channel partners list', SPEC_TODO, () => {})
 
-    it('does not fabricate "Featured Projects"', () => {
       // P0 Fix: Removed fake project names
-      assert(true, 'Uses real delivered_projects array, not defaults')
-    })
+    it('does not fabricate "Featured Projects"', SPEC_TODO, () => {})
 
-    it('does not invent awards/media', () => {
       // P0 Fix: Removed fake "Luxury Project of Year"
-      assert(true, 'Shows real builder.awards, not fabricated')
-    })
+    it('does not invent awards/media', SPEC_TODO, () => {})
 
-    it('does not hardcode "18,000+ Happy Families"', () => {
       // P0 Fix: Removed entirely (field deleted)
-      assert(true, 'Happy Families stat removed from display')
-    })
+    it('does not hardcode "18,000+ Happy Families"', SPEC_TODO, () => {})
   })
 
   describe('Builder Stats Grid', () => {
-    it('displays delivered units', () => {
-      assert(true, 'builder.delivered_units ? formatted : null')
-    })
+    it('displays delivered units', SPEC_TODO, () => {})
 
-    it('displays delivered projects count', () => {
-      assert(true, 'builder.delivered_projects.length shown')
-    })
+    it('displays delivered projects count', SPEC_TODO, () => {})
 
-    it('displays ongoing projects count', () => {
-      assert(true, 'builder.ongoing_projects.length shown')
-    })
+    it('displays ongoing projects count', SPEC_TODO, () => {})
 
-    it('displays total projects count', () => {
-      assert(true, 'builder.total_projects_count shown')
-    })
+    it('displays total projects count', SPEC_TODO, () => {})
 
-    it('only shows stats if data exists', () => {
-      assert(true, 'Each stat: field !== null && field !== undefined')
-    })
+    it('only shows stats if data exists', SPEC_TODO, () => {})
   })
 
   describe('Channel Partners Display', () => {
-    it('shows channel partners list if available', () => {
-      assert(true, 'Conditional: builder.channel_partners?.length > 0')
-    })
+    it('shows channel partners list if available', SPEC_TODO, () => {})
 
-    it('displays partner name and logo', () => {
-      assert(true, 'partner.name + partner.logo')
-    })
+    it('displays partner name and logo', SPEC_TODO, () => {})
 
-    it('hides section if no partners', () => {
-      assert(true, 'No partners → omit section, not "N/A"')
-    })
+    it('hides section if no partners', SPEC_TODO, () => {})
 
-    it('does not show fake partner defaults', () => {
       // P0 Fix: Removed 5 hardcoded fake partners
-      assert(true, 'Only real partners shown')
-    })
+    it('does not show fake partner defaults', SPEC_TODO, () => {})
   })
 
   describe('Projects Display', () => {
-    it('shows delivered projects list', () => {
-      assert(true, 'builder.delivered_projects array mapped')
-    })
+    it('shows delivered projects list', SPEC_TODO, () => {})
 
-    it('shows ongoing projects list', () => {
-      assert(true, 'builder.ongoing_projects array mapped')
-    })
+    it('shows ongoing projects list', SPEC_TODO, () => {})
 
-    it('displays project names', () => {
-      assert(true, 'Each project as list item')
-    })
+    it('displays project names', SPEC_TODO, () => {})
 
-    it('hides projects section if none', () => {
-      assert(true, 'Empty arrays → omit section')
-    })
+    it('hides projects section if none', SPEC_TODO, () => {})
   })
 
   describe('Trust & Compliance Indicators', () => {
-    it('displays RERA compliance score', () => {
-      assert(true, 'Conditional: builder.rera_compliance_score ? shown : null')
-    })
+    it('displays RERA compliance score', SPEC_TODO, () => {})
 
-    it('displays delivery score', () => {
-      assert(true, 'Conditional: builder.delivery_score ? shown : null')
-    })
+    it('displays delivery score', SPEC_TODO, () => {})
 
-    it('shows buyer satisfaction score', () => {
-      assert(true, 'Conditional: builder.buyer_satisfaction_score ? shown : null')
-    })
+    it('shows buyer satisfaction score', SPEC_TODO, () => {})
 
-    it('displays construction quality score', () => {
-      assert(true, 'Conditional: builder.construction_quality_score ? shown : null')
-    })
+    it('displays construction quality score', SPEC_TODO, () => {})
 
-    it('shows CREDAI member status', () => {
-      assert(true, 'builder.credai_member ? badge : null')
-    })
+    it('shows CREDAI member status', SPEC_TODO, () => {})
 
-    it('shows ISO certification badge', () => {
-      assert(true, 'builder.iso_certified ? badge : null')
-    })
+    it('shows ISO certification badge', SPEC_TODO, () => {})
 
-    it('displays litigation count if available', () => {
-      assert(true, 'Conditional: builder.litigation_count ? shown : null')
-    })
+    it('displays litigation count if available', SPEC_TODO, () => {})
 
-    it('shows legal flag if present', () => {
-      assert(true, 'builder.legal_flag ? warning : null')
-    })
+    it('shows legal flag if present', SPEC_TODO, () => {})
 
-    it('displays insolvency history if applicable', () => {
-      assert(true, 'builder.insolvency_history ? warning : null')
-    })
+    it('displays insolvency history if applicable', SPEC_TODO, () => {})
   })
 
   describe('Awards & Recognition', () => {
-    it('displays awards list', () => {
-      assert(true, 'builder.awards array mapped to badges')
-    })
+    it('displays awards list', SPEC_TODO, () => {})
 
-    it('shows award count', () => {
-      assert(true, 'builder.awards_count ? "N Awards" : null')
-    })
+    it('shows award count', SPEC_TODO, () => {})
 
-    it('hides awards section if none', () => {
-      assert(true, 'awards.length === 0 → omit section')
-    })
+    it('hides awards section if none', SPEC_TODO, () => {})
 
-    it('does not invent fake awards', () => {
       // P0 Fix: Removed fake "Luxury Project of Year 2023"
-      assert(true, 'Only real awards shown')
-    })
+    it('does not invent fake awards', SPEC_TODO, () => {})
 
-    it('displays certifications if available', () => {
-      assert(true, 'builder.certifications array mapped')
-    })
+    it('displays certifications if available', SPEC_TODO, () => {})
   })
 
   describe('Conditional Rendering', () => {
-    it('hides founded year if null', () => {
-      assert(true, 'founded_year === null → section hidden')
-    })
+    it('hides founded year if null', SPEC_TODO, () => {})
 
-    it('hides delivered units if null', () => {
-      assert(true, 'delivered_units === null → field hidden')
-    })
+    it('hides delivered units if null', SPEC_TODO, () => {})
 
-    it('hides website if not provided', () => {
-      assert(true, 'website === null → link not shown')
-    })
+    it('hides website if not provided', SPEC_TODO, () => {})
 
-    it('hides email if not provided', () => {
-      assert(true, 'email === null → contact not shown')
-    })
+    it('hides email if not provided', SPEC_TODO, () => {})
 
-    it('hides phone if not provided', () => {
-      assert(true, 'phone === null → contact not shown')
-    })
+    it('hides phone if not provided', SPEC_TODO, () => {})
 
-    it('hides all empty sections', () => {
-      assert(true, 'No fallback text for missing data')
-    })
+    it('hides all empty sections', SPEC_TODO, () => {})
   })
 
   describe('Responsive Design', () => {
-    it('displays builder logo responsively', () => {
-      assert(true, 'max-width: 100px mobile, 150px desktop')
-    })
+    it('displays builder logo responsively', SPEC_TODO, () => {})
 
-    it('stacks info sections on mobile', () => {
-      assert(true, 'Mobile: single column')
-    })
+    it('stacks info sections on mobile', SPEC_TODO, () => {})
 
-    it('shows 2-column layout on tablet+', () => {
-      assert(true, 'Tablet: info + stats side-by-side')
-    })
+    it('shows 2-column layout on tablet+', SPEC_TODO, () => {})
 
-    it('stats grid responsive', () => {
-      assert(true, '2 cols mobile, 4 cols desktop')
-    })
+    it('stats grid responsive', SPEC_TODO, () => {})
 
-    it('project lists wrap responsively', () => {
-      assert(true, 'Flex wrap with responsive gap')
-    })
+    it('project lists wrap responsively', SPEC_TODO, () => {})
   })
 
   describe('Accessibility', () => {
-    it('builder info has semantic structure', () => {
-      assert(true, '<section> + <h2> for builder name')
-    })
+    it('builder info has semantic structure', SPEC_TODO, () => {})
 
-    it('logo has alt text', () => {
-      assert(true, 'alt={builder.name + " logo"}')
-    })
+    it('logo has alt text', SPEC_TODO, () => {})
 
-    it('links have aria-label', () => {
-      assert(true, 'aria-label for website/email/phone links')
-    })
+    it('links have aria-label', SPEC_TODO, () => {})
 
-    it('scores have context text', () => {
-      assert(true, 'Score shown with label, not just number')
-    })
+    it('scores have context text', SPEC_TODO, () => {})
 
-    it('color not sole differentiator', () => {
-      assert(true, 'Status badges include text/icon, not just color')
-    })
+    it('color not sole differentiator', SPEC_TODO, () => {})
   })
 
   describe('Error Handling', () => {
-    it('handles missing logo gracefully', () => {
-      assert(true, 'logo_url === null → placeholder or omit')
-    })
+    it('handles missing logo gracefully', SPEC_TODO, () => {})
 
-    it('handles missing description', () => {
-      assert(true, 'tagline/description missing → omit section')
-    })
+    it('handles missing description', SPEC_TODO, () => {})
 
-    it('handles empty projects lists', () => {
-      assert(true, 'delivered_projects.length === 0 → omit')
-    })
+    it('handles empty projects lists', SPEC_TODO, () => {})
 
-    it('handles null scores', () => {
-      assert(true, 'score === null → omit, not "N/A"')
-    })
+    it('handles null scores', SPEC_TODO, () => {})
 
-    it('handles missing awards', () => {
-      assert(true, 'awards.length === 0 → omit section')
-    })
+    it('handles missing awards', SPEC_TODO, () => {})
   })
 
   describe('Data Source Transparency', () => {
-    it('builder data from verified source', () => {
-      assert(true, 'All data from database, not estimated')
-    })
+    it('builder data from verified source', SPEC_TODO, () => {})
 
-    it('scores show verification status', () => {
-      assert(true, 'Verified/Estimated badge where applicable')
-    })
+    it('scores show verification status', SPEC_TODO, () => {})
 
-    it('projects list is exhaustive', () => {
-      assert(true, 'Shows all delivered/ongoing, not subset')
-    })
+    it('projects list is exhaustive', SPEC_TODO, () => {})
   })
 })

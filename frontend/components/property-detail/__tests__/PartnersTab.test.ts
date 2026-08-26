@@ -1,261 +1,151 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 describe('PartnersTab Component', () => {
   describe('Channel Partners Display', () => {
-    it('displays channel partner list', () => {
-      assert(true, 'partner.name shown')
-    })
+    it('displays channel partner list', SPEC_TODO, () => {})
 
-    it('shows partner logo', () => {
-      assert(true, 'partner.logo_url rendered')
-    })
+    it('shows partner logo', SPEC_TODO, () => {})
 
-    it('displays partner description', () => {
-      assert(true, 'partner.description text')
-    })
+    it('displays partner description', SPEC_TODO, () => {})
 
-    it('shows partner website link', () => {
-      assert(true, 'Conditional: partner.website as link')
-    })
+    it('shows partner website link', SPEC_TODO, () => {})
 
-    it('shows partner contact info', () => {
-      assert(true, 'Conditional: partner.phone + email')
-    })
+    it('shows partner contact info', SPEC_TODO, () => {})
 
-    it('hides section if no partners', () => {
       // PartnersTab pattern: honest empty states
-      assert(true, 'channel_partners.length === 0 → omit section')
-    })
+    it('hides section if no partners', SPEC_TODO, () => {})
 
-    it('does not invent fake partners', () => {
       // Reference: PartnersTab.tsx pattern for data integrity
-      assert(true, 'Uses real channel_partners OR empty')
-    })
+    it('does not invent fake partners', SPEC_TODO, () => {})
   })
 
   describe('Partner Categories', () => {
-    it('groups partners by type if applicable', () => {
-      assert(true, 'Sales / Marketing / Financing / Construction')
-    })
+    it('groups partners by type if applicable', SPEC_TODO, () => {})
 
-    it('shows partner role/expertise', () => {
-      assert(true, 'partner.category description')
-    })
+    it('shows partner role/expertise', SPEC_TODO, () => {})
 
-    it('displays how many properties each partner covers', () => {
-      assert(true, 'project.channel_partners.length count')
-    })
+    it('displays how many properties each partner covers', SPEC_TODO, () => {})
   })
 
   describe('Finance Partners (Banks/NBFCs)', () => {
-    it('lists financing options available', () => {
-      assert(true, 'Bank / NBFC names')
-    })
+    it('lists financing options available', SPEC_TODO, () => {})
 
-    it('shows loan eligibility criteria', () => {
-      assert(true, 'Income / age / credit score requirements')
-    })
+    it('shows loan eligibility criteria', SPEC_TODO, () => {})
 
-    it('displays interest rates if available', () => {
-      assert(true, 'Conditional: interest_rate_percent')
-    })
+    it('displays interest rates if available', SPEC_TODO, () => {})
 
-    it('shows loan tenure options', () => {
-      assert(true, 'Min/max years available')
-    })
+    it('shows loan tenure options', SPEC_TODO, () => {})
 
-    it('displays LTV (Loan-to-Value) ratio', () => {
-      assert(true, 'Max loan as % of property value')
-    })
+    it('displays LTV (Loan-to-Value) ratio', SPEC_TODO, () => {})
 
-    it('shows processing fees', () => {
-      assert(true, 'Conditional: processing_fee_percent')
-    })
+    it('shows processing fees', SPEC_TODO, () => {})
 
-    it('hides finance section if none available', () => {
-      assert(true, 'No finance partners → omit')
-    })
+    it('hides finance section if none available', SPEC_TODO, () => {})
   })
 
   describe('Registration & Legal Partners', () => {
-    it('shows legal service providers', () => {
-      assert(true, 'Legal advisor, registration agent names')
-    })
+    it('shows legal service providers', SPEC_TODO, () => {})
 
-    it('displays services offered', () => {
-      assert(true, 'Document verification, registration, etc.')
-    })
+    it('displays services offered', SPEC_TODO, () => {})
 
-    it('shows contact info for legal partners', () => {
-      assert(true, 'partner.phone + email')
-    })
+    it('shows contact info for legal partners', SPEC_TODO, () => {})
 
-    it('hides if no legal partners', () => {
-      assert(true, 'legal_partners.length === 0 → omit')
-    })
+    it('hides if no legal partners', SPEC_TODO, () => {})
   })
 
   describe('Link to Contact', () => {
-    it('shows contact partner button', () => {
-      assert(true, 'CTA: "Contact Partner" or "Get Loan"')
-    })
+    it('shows contact partner button', SPEC_TODO, () => {})
 
-    it('clicking contact opens modal/form', () => {
-      assert(true, 'Modal for partner inquiry')
-    })
+    it('clicking contact opens modal/form', SPEC_TODO, () => {})
 
-    it('form captures user name and email', () => {
-      assert(true, 'Input: name, email, phone')
-    })
+    it('form captures user name and email', SPEC_TODO, () => {})
 
-    it('pre-fills user contact info if logged in', () => {
-      assert(true, 'Conditional: user.name + user.email')
-    })
+    it('pre-fills user contact info if logged in', SPEC_TODO, () => {})
 
-    it('sends inquiry to partner', () => {
-      assert(true, 'POST /leads/:partnerId/inquiry')
-    })
+    it('sends inquiry to partner', SPEC_TODO, () => {})
 
-    it('confirms submission success', () => {
-      assert(true, 'Toast: "Partner will contact you"')
-    })
+    it('confirms submission success', SPEC_TODO, () => {})
 
-    it('hides contact buttons if no partners', () => {
-      assert(true, 'No partners → no contact CTA')
-    })
+    it('hides contact buttons if no partners', SPEC_TODO, () => {})
   })
 
   describe('Responsive Design', () => {
-    it('partner cards stack on mobile', () => {
-      assert(true, 'Single column layout')
-    })
+    it('partner cards stack on mobile', SPEC_TODO, () => {})
 
-    it('partner logos scale responsively', () => {
-      assert(true, 'max-width: 100px mobile, 150px desktop')
-    })
+    it('partner logos scale responsively', SPEC_TODO, () => {})
 
-    it('contact form mobile-friendly', () => {
-      assert(true, 'Full-width inputs on mobile')
-    })
+    it('contact form mobile-friendly', SPEC_TODO, () => {})
 
-    it('text readable on all sizes', () => {
-      assert(true, '≥14px mobile')
-    })
+    it('text readable on all sizes', SPEC_TODO, () => {})
 
-    it('buttons touch-friendly', () => {
-      assert(true, 'Min 44px height')
-    })
+    it('buttons touch-friendly', SPEC_TODO, () => {})
   })
 
   describe('Accessibility', () => {
-    it('partners section has semantic structure', () => {
-      assert(true, '<section> + <h2>')
-    })
+    it('partners section has semantic structure', SPEC_TODO, () => {})
 
-    it('partner logos have alt text', () => {
-      assert(true, 'alt={partner.name + " logo"}')
-    })
+    it('partner logos have alt text', SPEC_TODO, () => {})
 
-    it('partner links have aria-label', () => {
-      assert(true, 'aria-label for external links')
-    })
+    it('partner links have aria-label', SPEC_TODO, () => {})
 
-    it('contact button has clear label', () => {
-      assert(true, 'aria-label="Contact {partner.name}"')
-    })
+    it('contact button has clear label', SPEC_TODO, () => {})
 
-    it('form is keyboard navigable', () => {
-      assert(true, 'Tab order: inputs → submit → close')
-    })
+    it('form is keyboard navigable', SPEC_TODO, () => {})
 
-    it('form has autocomplete hints', () => {
-      assert(true, 'autocomplete="email", "tel"')
-    })
+    it('form has autocomplete hints', SPEC_TODO, () => {})
 
-    it('success message is announced', () => {
-      assert(true, 'aria-live="polite" toast')
-    })
+    it('success message is announced', SPEC_TODO, () => {})
   })
 
   describe('Data Integrity', () => {
-    it('partner data from trusted source', () => {
-      assert(true, 'All data from database')
-    })
+    it('partner data from trusted source', SPEC_TODO, () => {})
 
-    it('partner names non-empty', () => {
-      assert(true, 'partner.name.length > 0')
-    })
+    it('partner names non-empty', SPEC_TODO, () => {})
 
-    it('partner contacts valid', () => {
-      assert(true, 'phone matches format, email valid')
-    })
+    it('partner contacts valid', SPEC_TODO, () => {})
 
-    it('no fabricated partner data', () => {
       // PartnersTab integrity: honest empty states
-      assert(true, 'Uses real data or empty, not defaults')
-    })
+    it('no fabricated partner data', SPEC_TODO, () => {})
   })
 
   describe('Error Handling', () => {
-    it('handles no partners gracefully', () => {
-      assert(true, 'channel_partners.length === 0 → section hidden')
-    })
+    it('handles no partners gracefully', SPEC_TODO, () => {})
 
-    it('handles missing partner logo', () => {
-      assert(true, 'logo === null → placeholder or initials')
-    })
+    it('handles missing partner logo', SPEC_TODO, () => {})
 
-    it('handles missing contact info', () => {
-      assert(true, 'phone/email === null → omit field')
-    })
+    it('handles missing contact info', SPEC_TODO, () => {})
 
-    it('handles invalid phone number', () => {
-      assert(true, 'Validation: 10 digits for India')
-    })
+    it('handles invalid phone number', SPEC_TODO, () => {})
 
-    it('handles invalid email', () => {
-      assert(true, 'Validation: email format check')
-    })
+    it('handles invalid email', SPEC_TODO, () => {})
 
-    it('handles form submission error', () => {
-      assert(true, 'Error toast: "Please try again"')
-    })
+    it('handles form submission error', SPEC_TODO, () => {})
 
-    it('handles missing user data', () => {
-      assert(true, 'Anonymous: show all form fields required')
-    })
+    it('handles missing user data', SPEC_TODO, () => {})
   })
 
   describe('Performance', () => {
-    it('partner logos lazy load', () => {
-      assert(true, 'loading="lazy" attribute')
-    })
+    it('partner logos lazy load', SPEC_TODO, () => {})
 
-    it('contact form only renders when needed', () => {
-      assert(true, 'Modal lazy load on open')
-    })
+    it('contact form only renders when needed', SPEC_TODO, () => {})
 
-    it('large partner lists virtualize', () => {
-      assert(true, '50+ partners → virtual scroll')
-    })
+    it('large partner lists virtualize', SPEC_TODO, () => {})
   })
 
   describe('State Management', () => {
-    it('tracking contact inquiries', () => {
-      assert(true, 'POST /leads/partner-inquiry tracked')
-    })
+    it('tracking contact inquiries', SPEC_TODO, () => {})
 
-    it('preventing duplicate submissions', () => {
-      assert(true, 'Disable button during submission')
-    })
+    it('preventing duplicate submissions', SPEC_TODO, () => {})
 
-    it('storing inquiry in user session', () => {
-      assert(true, 'Logged-in: save inquiry history')
-    })
+    it('storing inquiry in user session', SPEC_TODO, () => {})
 
-    it('showing submitted partners', () => {
-      assert(true, 'Optional: highlight inquired partners')
-    })
+    it('showing submitted partners', SPEC_TODO, () => {})
   })
 })

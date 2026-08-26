@@ -1,666 +1,356 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 // Admin Projects tab — detailed test coverage for all project operations
 
 describe('Admin — Projects Tab', () => {
   describe('Projects List View', () => {
-    it('displays projects in paginated table', () => {
-      assert(true, '20 per page, pagination shown')
-    })
+    it('displays projects in paginated table', SPEC_TODO, () => {})
 
-    it('shows project columns', () => {
-      assert(true, 'Name, Builder, City, Price, Possession, Status')
-    })
+    it('shows project columns', SPEC_TODO, () => {})
 
-    it('formats price correctly', () => {
-      assert(true, '₹1.5 Cr not 15000000')
-    })
+    it('formats price correctly', SPEC_TODO, () => {})
 
-    it('shows possession status badge', () => {
-      assert(true, '"Ready to Move", "Under Construction", "New Launch"')
-    })
+    it('shows possession status badge', SPEC_TODO, () => {})
 
-    it('shows publication status', () => {
-      assert(true, 'Published/Unpublished indicator')
-    })
+    it('shows publication status', SPEC_TODO, () => {})
 
-    it('pagination controls work', () => {
-      assert(true, 'Page 1, 2, 3... links navigate')
-    })
+    it('pagination controls work', SPEC_TODO, () => {})
 
-    it('handles last page correctly', () => {
-      assert(true, '13 items, page 1 (20 per) → shows 13')
-    })
+    it('handles last page correctly', SPEC_TODO, () => {})
 
-    it('preserves pagination on filter change', () => {
-      assert(true, 'Page 2 → filter → back to page 1')
-    })
+    it('preserves pagination on filter change', SPEC_TODO, () => {})
 
-    it('handles empty list', () => {
-      assert(true, 'No projects → "No projects found"')
-    })
+    it('handles empty list', SPEC_TODO, () => {})
 
-    it('table loads with skeleton', () => {
-      assert(true, 'Skeleton rows while fetching')
-    })
+    it('table loads with skeleton', SPEC_TODO, () => {})
 
-    it('shows loading indicator', () => {
-      assert(true, '"Loading..." or spinner shown')
-    })
+    it('shows loading indicator', SPEC_TODO, () => {})
 
-    it('handles load error', () => {
-      assert(true, 'Error message + retry button')
-    })
+    it('handles load error', SPEC_TODO, () => {})
   })
 
   describe('Search & Filter', () => {
-    it('search by project name', () => {
-      assert(true, 'Input: "Sector" → filters by name')
-    })
+    it('search by project name', SPEC_TODO, () => {})
 
-    it('search debouncing', () => {
-      assert(true, 'Type "xyz" → wait 300ms → search')
-    })
+    it('search debouncing', SPEC_TODO, () => {})
 
-    it('clear search', () => {
-      assert(true, 'X button clears search field')
-    })
+    it('clear search', SPEC_TODO, () => {})
 
-    it('filter by builder', () => {
-      assert(true, 'Dropdown: select builder → filters')
-    })
+    it('filter by builder', SPEC_TODO, () => {})
 
-    it('filter by city', () => {
-      assert(true, 'Dropdown: Noida, Gurgaon → filters')
-    })
+    it('filter by city', SPEC_TODO, () => {})
 
-    it('filter by sector', () => {
-      assert(true, 'Input: sector number 1-200')
-    })
+    it('filter by sector', SPEC_TODO, () => {})
 
-    it('filter by possession status', () => {
-      assert(true, 'Checkbox: Ready / Under / New Launch')
-    })
+    it('filter by possession status', SPEC_TODO, () => {})
 
-    it('filter by publication status', () => {
-      assert(true, 'Checkbox: Published / Unpublished')
-    })
+    it('filter by publication status', SPEC_TODO, () => {})
 
-    it('multiple filters combined', () => {
-      assert(true, 'Builder "X" + City "Noida" → both applied')
-    })
+    it('multiple filters combined', SPEC_TODO, () => {})
 
-    it('clear all filters', () => {
-      assert(true, '"Clear all" button resets form')
-    })
+    it('clear all filters', SPEC_TODO, () => {})
 
-    it('filter count shown', () => {
-      assert(true, '"Filters (3)" badge shows active')
-    })
+    it('filter count shown', SPEC_TODO, () => {})
 
-    it('saved filter presets', () => {
-      assert(true, '"Save filter" → reuse later')
-    })
+    it('saved filter presets', SPEC_TODO, () => {})
 
-    it('filter persistence on reload', () => {
-      assert(true, 'Filter in URL → reload preserves filters')
-    })
+    it('filter persistence on reload', SPEC_TODO, () => {})
   })
 
   describe('Sorting', () => {
-    it('sort by project name A-Z', () => {
-      assert(true, 'Click header → A-Z sorting')
-    })
+    it('sort by project name A-Z', SPEC_TODO, () => {})
 
-    it('sort by project name Z-A', () => {
-      assert(true, 'Click again → Z-A reverse')
-    })
+    it('sort by project name Z-A', SPEC_TODO, () => {})
 
-    it('sort by builder name', () => {
-      assert(true, 'Click Builder column → sort')
-    })
+    it('sort by builder name', SPEC_TODO, () => {})
 
-    it('sort by price ascending', () => {
-      assert(true, 'Click Price → low to high')
-    })
+    it('sort by price ascending', SPEC_TODO, () => {})
 
-    it('sort by price descending', () => {
-      assert(true, 'Click again → high to low')
-    })
+    it('sort by price descending', SPEC_TODO, () => {})
 
-    it('sort by date created', () => {
-      assert(true, 'Click Date → newest/oldest')
-    })
+    it('sort by date created', SPEC_TODO, () => {})
 
-    it('sort indicator shown', () => {
-      assert(true, '↑↓ arrow on sorted column')
-    })
+    it('sort indicator shown', SPEC_TODO, () => {})
 
-    it('sort with active filters', () => {
-      assert(true, 'Filter applied → sort within filtered')
-    })
+    it('sort with active filters', SPEC_TODO, () => {})
 
-    it('sort preserved on pagination', () => {
-      assert(true, 'Page 1 sorted, go page 2 → still sorted')
-    })
+    it('sort preserved on pagination', SPEC_TODO, () => {})
   })
 
   describe('Row Actions', () => {
-    it('click row to view detail', () => {
-      assert(true, 'Project row → detail page')
-    })
+    it('click row to view detail', SPEC_TODO, () => {})
 
-    it('view button', () => {
-      assert(true, '"View" icon → detail page')
-    })
+    it('view button', SPEC_TODO, () => {})
 
-    it('edit button', () => {
-      assert(true, '"Edit" icon → edit form')
-    })
+    it('edit button', SPEC_TODO, () => {})
 
-    it('delete button', () => {
-      assert(true, '"Delete" icon → confirm')
-    })
+    it('delete button', SPEC_TODO, () => {})
 
-    it('duplicate button', () => {
-      assert(true, '"Clone" → duplicate project')
-    })
+    it('duplicate button', SPEC_TODO, () => {})
 
-    it('publish toggle', () => {
-      assert(true, 'Eye icon toggles published')
-    })
+    it('publish toggle', SPEC_TODO, () => {})
 
-    it('action menu overflow', () => {
-      assert(true, 'More actions → dropdown menu')
-    })
+    it('action menu overflow', SPEC_TODO, () => {})
 
-    it('context menu on right-click', () => {
-      assert(true, 'Right-click → view/edit/delete')
-    })
+    it('context menu on right-click', SPEC_TODO, () => {})
 
-    it('hover shows all actions', () => {
-      assert(true, 'Row hover → all action buttons visible')
-    })
+    it('hover shows all actions', SPEC_TODO, () => {})
 
-    it('multiple row selection', () => {
-      assert(true, 'Checkbox per row, select multiple')
-    })
+    it('multiple row selection', SPEC_TODO, () => {})
 
-    it('select all checkbox', () => {
-      assert(true, 'Header checkbox → select all on page')
-    })
+    it('select all checkbox', SPEC_TODO, () => {})
 
-    it('bulk actions appear', () => {
-      assert(true, 'Rows selected → bulk action buttons show')
-    })
+    it('bulk actions appear', SPEC_TODO, () => {})
   })
 
   describe('Bulk Actions', () => {
-    it('bulk publish selected', () => {
-      assert(true, 'Select 3 → "Publish all" → all published')
-    })
+    it('bulk publish selected', SPEC_TODO, () => {})
 
-    it('bulk unpublish selected', () => {
-      assert(true, 'Select projects → "Unpublish all"')
-    })
+    it('bulk unpublish selected', SPEC_TODO, () => {})
 
-    it('bulk delete selected', () => {
-      assert(true, 'Select projects → "Delete all" → confirm')
-    })
+    it('bulk delete selected', SPEC_TODO, () => {})
 
-    it('bulk delete confirmation', () => {
-      assert(true, '"Delete 3 projects?" → confirm/cancel')
-    })
+    it('bulk delete confirmation', SPEC_TODO, () => {})
 
-    it('bulk action progress', () => {
-      assert(true, '"Deleting 3..." progress shown')
-    })
+    it('bulk action progress', SPEC_TODO, () => {})
 
-    it('bulk action error handling', () => {
-      assert(true, 'One fails → show which ones failed')
-    })
+    it('bulk action error handling', SPEC_TODO, () => {})
 
-    it('bulk action success message', () => {
-      assert(true, '"3 projects deleted successfully"')
-    })
+    it('bulk action success message', SPEC_TODO, () => {})
 
-    it('clear selection after bulk action', () => {
-      assert(true, 'After action → checkboxes unchecked')
-    })
+    it('clear selection after bulk action', SPEC_TODO, () => {})
 
-    it('partial bulk action', () => {
-      assert(true, '5 selected, 3 deleted, 2 failed → show results')
-    })
+    it('partial bulk action', SPEC_TODO, () => {})
 
-    it('bulk action cancel', () => {
-      assert(true, 'Cancel mid-action → stop processing')
-    })
+    it('bulk action cancel', SPEC_TODO, () => {})
   })
 
   describe('Project Detail View', () => {
-    it('shows project name and tagline', () => {
-      assert(true, 'project.name + project.tagline')
-    })
+    it('shows project name and tagline', SPEC_TODO, () => {})
 
-    it('shows hero image', () => {
-      assert(true, 'project.hero_image_url displayed')
-    })
+    it('shows hero image', SPEC_TODO, () => {})
 
-    it('shows basic info', () => {
-      assert(true, 'Builder, sector, address, area')
-    })
+    it('shows basic info', SPEC_TODO, () => {})
 
-    it('shows pricing', () => {
-      assert(true, 'price_min_cr to price_max_cr formatted')
-    })
+    it('shows pricing', SPEC_TODO, () => {})
 
-    it('shows possession info', () => {
-      assert(true, 'Status + date displayed')
-    })
+    it('shows possession info', SPEC_TODO, () => {})
 
-    it('shows unit types', () => {
-      assert(true, 'All unit types with counts')
-    })
+    it('shows unit types', SPEC_TODO, () => {})
 
-    it('shows amenities', () => {
-      assert(true, 'Icons + names listed')
-    })
+    it('shows amenities', SPEC_TODO, () => {})
 
-    it('shows connectivity', () => {
-      assert(true, 'Metro, airport, schools with distances')
-    })
+    it('shows connectivity', SPEC_TODO, () => {})
 
-    it('shows milestones', () => {
-      assert(true, 'Construction timeline')
-    })
+    it('shows milestones', SPEC_TODO, () => {})
 
-    it('shows images gallery', () => {
-      assert(true, 'All project images in carousel')
-    })
+    it('shows images gallery', SPEC_TODO, () => {})
 
-    it('shows floor plans', () => {
-      assert(true, 'Floor plans per unit type')
-    })
+    it('shows floor plans', SPEC_TODO, () => {})
 
-    it('back button', () => {
-      assert(true, 'Back → returns to list, preserves filters')
-    })
+    it('back button', SPEC_TODO, () => {})
 
-    it('edit button on detail', () => {
-      assert(true, '"Edit project" → edit form')
-    })
+    it('edit button on detail', SPEC_TODO, () => {})
 
-    it('delete button on detail', () => {
-      assert(true, '"Delete" → confirm → deleted')
-    })
+    it('delete button on detail', SPEC_TODO, () => {})
 
-    it('publish toggle on detail', () => {
-      assert(true, '"Publish/Unpublish" toggle')
-    })
+    it('publish toggle on detail', SPEC_TODO, () => {})
 
-    it('view count shown', () => {
-      assert(true, '"1,234 views" displayed')
-    })
+    it('view count shown', SPEC_TODO, () => {})
 
-    it('save count shown', () => {
-      assert(true, '"456 saved" displayed')
-    })
+    it('save count shown', SPEC_TODO, () => {})
 
-    it('leads related to project', () => {
-      assert(true, '"Leads interested" → list leads')
-    })
+    it('leads related to project', SPEC_TODO, () => {})
   })
 
   describe('Create Project', () => {
-    it('create project form', () => {
-      assert(true, '"New Project" → /admin/projects/new')
-    })
+    it('create project form', SPEC_TODO, () => {})
 
-    it('form fields displayed', () => {
-      assert(true, 'Name, builder, location, pricing, amenities')
-    })
+    it('form fields displayed', SPEC_TODO, () => {})
 
-    it('required field validation', () => {
-      assert(true, 'Empty name → "Required field" error')
-    })
+    it('required field validation', SPEC_TODO, () => {})
 
-    it('builder dropdown', () => {
-      assert(true, 'Searchable builder list')
-    })
+    it('builder dropdown', SPEC_TODO, () => {})
 
-    it('hero image upload', () => {
-      assert(true, 'Click → file picker → upload')
-    })
+    it('hero image upload', SPEC_TODO, () => {})
 
-    it('image preview after upload', () => {
-      assert(true, 'Show uploaded image preview')
-    })
+    it('image preview after upload', SPEC_TODO, () => {})
 
-    it('multiple floor plan upload', () => {
-      assert(true, 'Upload multiple floor plans')
-    })
+    it('multiple floor plan upload', SPEC_TODO, () => {})
 
-    it('amenities multi-select', () => {
-      assert(true, 'Checklist of amenities')
-    })
+    it('amenities multi-select', SPEC_TODO, () => {})
 
-    it('connectivity fields', () => {
-      assert(true, 'Metro distance, schools, hospitals')
-    })
+    it('connectivity fields', SPEC_TODO, () => {})
 
-    it('pricing fields', () => {
-      assert(true, 'price_min, price_max, registration %')
-    })
+    it('pricing fields', SPEC_TODO, () => {})
 
-    it('possession date picker', () => {
-      assert(true, 'Select date → formatted')
-    })
+    it('possession date picker', SPEC_TODO, () => {})
 
-    it('form save', () => {
-      assert(true, '"Save" → POST /admin/projects')
-    })
+    it('form save', SPEC_TODO, () => {})
 
-    it('form save success', () => {
-      assert(true, 'Created → redirect to detail')
-    })
+    it('form save success', SPEC_TODO, () => {})
 
-    it('form save error', () => {
-      assert(true, 'Error → show message, stay on form')
-    })
+    it('form save error', SPEC_TODO, () => {})
 
-    it('form autosave draft', () => {
-      assert(true, 'Optional: save to localStorage')
-    })
+    it('form autosave draft', SPEC_TODO, () => {})
 
-    it('form cancel', () => {
-      assert(true, '"Cancel" → back to list, discard')
-    })
+    it('form cancel', SPEC_TODO, () => {})
 
-    it('form dirty warning', () => {
-      assert(true, 'Unsaved → "Discard changes?" on leave')
-    })
+    it('form dirty warning', SPEC_TODO, () => {})
   })
 
   describe('Edit Project', () => {
-    it('edit project form loads', () => {
-      assert(true, 'Click edit → form pre-filled')
-    })
+    it('edit project form loads', SPEC_TODO, () => {})
 
-    it('form pre-filled with data', () => {
-      assert(true, 'All fields show current values')
-    })
+    it('form pre-filled with data', SPEC_TODO, () => {})
 
-    it('change project name', () => {
-      assert(true, 'Edit name → save → updated')
-    })
+    it('change project name', SPEC_TODO, () => {})
 
-    it('change builder', () => {
-      assert(true, 'Change builder → save → updated')
-    })
+    it('change builder', SPEC_TODO, () => {})
 
-    it('change images', () => {
-      assert(true, 'Replace hero image → save')
-    })
+    it('change images', SPEC_TODO, () => {})
 
-    it('add new amenities', () => {
-      assert(true, 'Check new amenities → save')
-    })
+    it('add new amenities', SPEC_TODO, () => {})
 
-    it('remove amenities', () => {
-      assert(true, 'Uncheck amenities → save')
-    })
+    it('remove amenities', SPEC_TODO, () => {})
 
-    it('update pricing', () => {
-      assert(true, 'Change price range → save')
-    })
+    it('update pricing', SPEC_TODO, () => {})
 
-    it('update possession date', () => {
-      assert(true, 'Change date → save')
-    })
+    it('update possession date', SPEC_TODO, () => {})
 
-    it('form validation on edit', () => {
-      assert(true, 'Clear required field → error on save')
-    })
+    it('form validation on edit', SPEC_TODO, () => {})
 
-    it('save success message', () => {
-      assert(true, '"Project updated successfully"')
-    })
+    it('save success message', SPEC_TODO, () => {})
 
-    it('save error handling', () => {
-      assert(true, 'Save fails → show error')
-    })
+    it('save error handling', SPEC_TODO, () => {})
 
-    it('revert unsaved changes', () => {
-      assert(true, '"Discard" → reverts form to saved')
-    })
+    it('revert unsaved changes', SPEC_TODO, () => {})
 
-    it('edit conflict handling', () => {
-      assert(true, 'Another admin edited → show conflict')
-    })
+    it('edit conflict handling', SPEC_TODO, () => {})
   })
 
   describe('Delete Project', () => {
-    it('delete button in detail', () => {
-      assert(true, '"Delete project" option')
-    })
+    it('delete button in detail', SPEC_TODO, () => {})
 
-    it('delete confirmation modal', () => {
-      assert(true, '"Delete [name]?" → confirm/cancel')
-    })
+    it('delete confirmation modal', SPEC_TODO, () => {})
 
-    it('delete warning', () => {
-      assert(true, '"This cannot be undone"')
-    })
+    it('delete warning', SPEC_TODO, () => {})
 
-    it('type to confirm delete', () => {
-      assert(true, 'Type "DELETE" to confirm optional')
-    })
+    it('type to confirm delete', SPEC_TODO, () => {})
 
-    it('delete success', () => {
-      assert(true, 'Deleted → redirect to list')
-    })
+    it('delete success', SPEC_TODO, () => {})
 
-    it('delete error', () => {
-      assert(true, 'Delete fails → show error')
-    })
+    it('delete error', SPEC_TODO, () => {})
 
-    it('cascade delete handling', () => {
-      assert(true, 'Units/images deleted with project')
-    })
+    it('cascade delete handling', SPEC_TODO, () => {})
 
-    it('delete undo', () => {
-      assert(true, 'Optional: "Undo delete" link in toast')
-    })
+    it('delete undo', SPEC_TODO, () => {})
 
-    it('deleted project visibility', () => {
-      assert(true, 'Deleted → hidden from users')
-    })
+    it('deleted project visibility', SPEC_TODO, () => {})
 
-    it('restore deleted project', () => {
-      assert(true, 'Admin can restore from trash')
-    })
+    it('restore deleted project', SPEC_TODO, () => {})
   })
 
   describe('Duplicate Project', () => {
-    it('duplicate button', () => {
-      assert(true, '"Clone project" option')
-    })
+    it('duplicate button', SPEC_TODO, () => {})
 
-    it('duplicate confirmation', () => {
-      assert(true, '"Create copy as [name] copy?" → confirm')
-    })
+    it('duplicate confirmation', SPEC_TODO, () => {})
 
-    it('duplicate success', () => {
-      assert(true, 'Copy created → show new project')
-    })
+    it('duplicate success', SPEC_TODO, () => {})
 
-    it('duplicate resets publication', () => {
-      assert(true, 'Copy starts unpublished')
-    })
+    it('duplicate resets publication', SPEC_TODO, () => {})
 
-    it('duplicate preserves data', () => {
-      assert(true, 'All fields copied except ID')
-    })
+    it('duplicate preserves data', SPEC_TODO, () => {})
 
-    it('duplicate with images', () => {
-      assert(true, 'Images also cloned')
-    })
+    it('duplicate with images', SPEC_TODO, () => {})
 
-    it('duplicate naming', () => {
-      assert(true, '"Original name copy" → edit to change')
-    })
+    it('duplicate naming', SPEC_TODO, () => {})
   })
 
   describe('Project Statistics', () => {
-    it('view count tracked', () => {
-      assert(true, 'Show total views of project')
-    })
+    it('view count tracked', SPEC_TODO, () => {})
 
-    it('save/favorite count', () => {
-      assert(true, 'Show how many saved it')
-    })
+    it('save/favorite count', SPEC_TODO, () => {})
 
-    it('lead count', () => {
-      assert(true, 'Show leads interested in project')
-    })
+    it('lead count', SPEC_TODO, () => {})
 
-    it('conversion rate', () => {
-      assert(true, 'Leads / views % shown')
-    })
+    it('conversion rate', SPEC_TODO, () => {})
 
-    it('daily views chart', () => {
-      assert(true, 'Line chart: views over 30 days')
-    })
+    it('daily views chart', SPEC_TODO, () => {})
 
-    it('device breakdown', () => {
-      assert(true, 'Desktop vs Mobile views')
-    })
+    it('device breakdown', SPEC_TODO, () => {})
 
-    it('source breakdown', () => {
-      assert(true, 'Chat, search, link → breakdown')
-    })
+    it('source breakdown', SPEC_TODO, () => {})
 
-    it('export stats', () => {
-      assert(true, '"Download report" → PDF')
-    })
+    it('export stats', SPEC_TODO, () => {})
   })
 
   describe('Export & Reporting', () => {
-    it('export projects list', () => {
-      assert(true, '"Export" → CSV of visible')
-    })
+    it('export projects list', SPEC_TODO, () => {})
 
-    it('export selected projects', () => {
-      assert(true, 'Select rows → "Export" → CSV')
-    })
+    it('export selected projects', SPEC_TODO, () => {})
 
-    it('export with filters', () => {
-      assert(true, 'Filtered view → export applies filters')
-    })
+    it('export with filters', SPEC_TODO, () => {})
 
-    it('export filename', () => {
-      assert(true, 'projects_YYYY-MM-DD.csv')
-    })
+    it('export filename', SPEC_TODO, () => {})
 
-    it('export columns customizable', () => {
-      assert(true, 'Choose which columns to include')
-    })
+    it('export columns customizable', SPEC_TODO, () => {})
 
-    it('export includes all data', () => {
-      assert(true, 'No truncation in export')
-    })
+    it('export includes all data', SPEC_TODO, () => {})
 
-    it('generate project report', () => {
-      assert(true, '"Generate report" → PDF full details')
-    })
+    it('generate project report', SPEC_TODO, () => {})
 
-    it('report includes stats', () => {
-      assert(true, 'Views, saves, leads in report')
-    })
+    it('report includes stats', SPEC_TODO, () => {})
 
-    it('schedule report email', () => {
-      assert(true, 'Optional: send report weekly')
-    })
+    it('schedule report email', SPEC_TODO, () => {})
   })
 
   describe('Error Scenarios', () => {
-    it('404 project not found', () => {
-      assert(true, '/admin/projects/999 → "Not found"')
-    })
+    it('404 project not found', SPEC_TODO, () => {})
 
-    it('builder deleted', () => {
-      assert(true, 'Project builder deleted → handle gracefully')
-    })
+    it('builder deleted', SPEC_TODO, () => {})
 
-    it('image upload fails', () => {
-      assert(true, 'File upload error → show message')
-    })
+    it('image upload fails', SPEC_TODO, () => {})
 
-    it('image too large', () => {
-      assert(true, '> 10MB → reject with message')
-    })
+    it('image too large', SPEC_TODO, () => {})
 
-    it('invalid file type', () => {
-      assert(true, '.exe upload → reject')
-    })
+    it('invalid file type', SPEC_TODO, () => {})
 
-    it('network error on save', () => {
-      assert(true, 'Save fails → show retry button')
-    })
+    it('network error on save', SPEC_TODO, () => {})
 
-    it('concurrent edit conflict', () => {
-      assert(true, 'Another admin edited → show conflict')
-    })
+    it('concurrent edit conflict', SPEC_TODO, () => {})
 
-    it('permission denied', () => {
-      assert(true, 'No permission → 403 error')
-    })
+    it('permission denied', SPEC_TODO, () => {})
 
-    it('form validation multiple errors', () => {
-      assert(true, 'Multiple fields invalid → all show errors')
-    })
+    it('form validation multiple errors', SPEC_TODO, () => {})
 
-    it('recovery from error', () => {
-      assert(true, 'After error, can retry without data loss')
-    })
+    it('recovery from error', SPEC_TODO, () => {})
   })
 
   describe('Performance', () => {
-    it('list loads < 2s', () => {
-      assert(true, 'FCP target: < 1s with skeleton')
-    })
+    it('list loads < 2s', SPEC_TODO, () => {})
 
-    it('detail page loads < 1s', () => {
-      assert(true, 'Show detail quickly with skeleton')
-    })
+    it('detail page loads < 1s', SPEC_TODO, () => {})
 
-    it('search debounced', () => {
-      assert(true, 'Don\'t search on every keystroke')
-    })
+    it('search debounced', SPEC_TODO, () => {})
 
-    it('images lazy loaded', () => {
-      assert(true, 'loading="lazy" on images')
-    })
+    it('images lazy loaded', SPEC_TODO, () => {})
 
-    it('gallery smooth scroll', () => {
-      assert(true, 'Carousel smooth, no jank')
-    })
+    it('gallery smooth scroll', SPEC_TODO, () => {})
 
-    it('form submission fast', () => {
-      assert(true, 'Save < 2s for normal file size')
-    })
+    it('form submission fast', SPEC_TODO, () => {})
 
-    it('bulk delete efficient', () => {
-      assert(true, 'Batch operation, not sequential')
-    })
+    it('bulk delete efficient', SPEC_TODO, () => {})
 
-    it('export doesn\'t block UI', () => {
-      assert(true, 'Export in background, show progress')
-    })
+    it('export doesn\'t block UI', SPEC_TODO, () => {})
 
-    it('virtualized list', () => {
-      assert(true, '10k projects → render visible only')
-    })
+    it('virtualized list', SPEC_TODO, () => {})
   })
 })

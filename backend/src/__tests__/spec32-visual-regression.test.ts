@@ -1,640 +1,346 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Every case below is a placeholder from the original spec checklist: the body
+// asserted ssert(true) and could not fail. 774 of them were reported as
+// passing, inflating the backend suite by ~38% and masking real regressions.
+// Marked 	odo so they surface honestly as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 describe('Spec 32: Visual Regression Testing', () => {
   describe('Landing page', () => {
-    it('hero section snapshot (desktop)', () => {
-      assert(true)
-    })
+    it('hero section snapshot (desktop)', SPEC_TODO, () => {})
 
-    it('hero section snapshot (mobile)', () => {
-      assert(true)
-    })
+    it('hero section snapshot (mobile)', SPEC_TODO, () => {})
 
-    it('hero section snapshot (tablet)', () => {
-      assert(true)
-    })
+    it('hero section snapshot (tablet)', SPEC_TODO, () => {})
 
-    it('features section snapshot', () => {
-      assert(true)
-    })
+    it('features section snapshot', SPEC_TODO, () => {})
 
-    it('testimonials section snapshot', () => {
-      assert(true)
-    })
+    it('testimonials section snapshot', SPEC_TODO, () => {})
 
-    it('FAQs section snapshot', () => {
-      assert(true)
-    })
+    it('FAQs section snapshot', SPEC_TODO, () => {})
 
-    it('footer snapshot', () => {
-      assert(true)
-    })
+    it('footer snapshot', SPEC_TODO, () => {})
 
-    it('no visual regressions from baseline', () => {
-      assert(true)
-    })
+    it('no visual regressions from baseline', SPEC_TODO, () => {})
 
-    it('CTA buttons pixel-perfect', () => {
-      assert(true)
-    })
+    it('CTA buttons pixel-perfect', SPEC_TODO, () => {})
 
-    it('dark mode matches baseline', () => {
-      assert(true)
-    })
+    it('dark mode matches baseline', SPEC_TODO, () => {})
   })
 
   describe('Chat interface', () => {
-    it('empty state snapshot', () => {
-      assert(true)
-    })
+    it('empty state snapshot', SPEC_TODO, () => {})
 
-    it('with messages snapshot', () => {
-      assert(true)
-    })
+    it('with messages snapshot', SPEC_TODO, () => {})
 
-    it('user message bubble', () => {
-      assert(true)
-    })
+    it('user message bubble', SPEC_TODO, () => {})
 
-    it('assistant message bubble', () => {
-      assert(true)
-    })
+    it('assistant message bubble', SPEC_TODO, () => {})
 
-    it('loading state spinner', () => {
-      assert(true)
-    })
+    it('loading state spinner', SPEC_TODO, () => {})
 
-    it('error state display', () => {
-      assert(true)
-    })
+    it('error state display', SPEC_TODO, () => {})
 
-    it('chips/suggestions display', () => {
-      assert(true)
-    })
+    it('chips/suggestions display', SPEC_TODO, () => {})
 
-    it('message with code block', () => {
-      assert(true)
-    })
+    it('message with code block', SPEC_TODO, () => {})
 
-    it('message with image', () => {
-      assert(true)
-    })
+    it('message with image', SPEC_TODO, () => {})
 
-    it('mobile chat layout (sticky input)', () => {
-      assert(true)
-    })
+    it('mobile chat layout (sticky input)', SPEC_TODO, () => {})
 
-    it('recommendation cards in chat', () => {
-      assert(true)
-    })
+    it('recommendation cards in chat', SPEC_TODO, () => {})
   })
 
   describe('Property detail page', () => {
-    it('hero + title section', () => {
-      assert(true)
-    })
+    it('hero + title section', SPEC_TODO, () => {})
 
-    it('image gallery (desktop)', () => {
-      assert(true)
-    })
+    it('image gallery (desktop)', SPEC_TODO, () => {})
 
-    it('image gallery (mobile)', () => {
-      assert(true)
-    })
+    it('image gallery (mobile)', SPEC_TODO, () => {})
 
-    it('tabs navigation', () => {
-      assert(true)
-    })
+    it('tabs navigation', SPEC_TODO, () => {})
 
-    it('overview tab content', () => {
-      assert(true)
-    })
+    it('overview tab content', SPEC_TODO, () => {})
 
-    it('pricing tab content', () => {
-      assert(true)
-    })
+    it('pricing tab content', SPEC_TODO, () => {})
 
-    it('location tab (map)', () => {
-      assert(true)
-    })
+    it('location tab (map)', SPEC_TODO, () => {})
 
-    it('documents tab', () => {
-      assert(true)
-    })
+    it('documents tab', SPEC_TODO, () => {})
 
-    it('intelligence tab', () => {
-      assert(true)
-    })
+    it('intelligence tab', SPEC_TODO, () => {})
 
-    it('CTA buttons layout', () => {
-      assert(true)
-    })
+    it('CTA buttons layout', SPEC_TODO, () => {})
 
-    it('comparison section', () => {
-      assert(true)
-    })
+    it('comparison section', SPEC_TODO, () => {})
 
-    it('full page (desktop)', () => {
-      assert(true)
-    })
+    it('full page (desktop)', SPEC_TODO, () => {})
 
-    it('full page (mobile)', () => {
-      assert(true)
-    })
+    it('full page (mobile)', SPEC_TODO, () => {})
   })
 
   describe('Comparison page', () => {
-    it('project selector', () => {
-      assert(true)
-    })
+    it('project selector', SPEC_TODO, () => {})
 
-    it('comparison table (desktop)', () => {
-      assert(true)
-    })
+    it('comparison table (desktop)', SPEC_TODO, () => {})
 
-    it('comparison table (mobile horizontal scroll)', () => {
-      assert(true)
-    })
+    it('comparison table (mobile horizontal scroll)', SPEC_TODO, () => {})
 
-    it('price comparison chart', () => {
-      assert(true)
-    })
+    it('price comparison chart', SPEC_TODO, () => {})
 
-    it('key differences highlighting', () => {
-      assert(true)
-    })
+    it('key differences highlighting', SPEC_TODO, () => {})
 
-    it('builder comparison section', () => {
-      assert(true)
-    })
+    it('builder comparison section', SPEC_TODO, () => {})
 
-    it('amenities comparison', () => {
-      assert(true)
-    })
+    it('amenities comparison', SPEC_TODO, () => {})
 
-    it('recommendation insight box', () => {
-      assert(true)
-    })
+    it('recommendation insight box', SPEC_TODO, () => {})
 
-    it('action buttons row', () => {
-      assert(true)
-    })
+    it('action buttons row', SPEC_TODO, () => {})
   })
 
   describe('Admin dashboard', () => {
-    it('login page', () => {
-      assert(true)
-    })
+    it('login page', SPEC_TODO, () => {})
 
-    it('dashboard home metrics', () => {
-      assert(true)
-    })
+    it('dashboard home metrics', SPEC_TODO, () => {})
 
-    it('leads list table', () => {
-      assert(true)
-    })
+    it('leads list table', SPEC_TODO, () => {})
 
-    it('lead detail modal', () => {
-      assert(true)
-    })
+    it('lead detail modal', SPEC_TODO, () => {})
 
-    it('projects list', () => {
-      assert(true)
-    })
+    it('projects list', SPEC_TODO, () => {})
 
-    it('project add/edit form', () => {
-      assert(true)
-    })
+    it('project add/edit form', SPEC_TODO, () => {})
 
-    it('builders management', () => {
-      assert(true)
-    })
+    it('builders management', SPEC_TODO, () => {})
 
-    it('analytics dashboard', () => {
-      assert(true)
-    })
+    it('analytics dashboard', SPEC_TODO, () => {})
 
-    it('navigation sidebar', () => {
-      assert(true)
-    })
+    it('navigation sidebar', SPEC_TODO, () => {})
 
-    it('mobile menu (hamburger)', () => {
-      assert(true)
-    })
+    it('mobile menu (hamburger)', SPEC_TODO, () => {})
   })
 
   describe('Forms & modals', () => {
-    it('login form', () => {
-      assert(true)
-    })
+    it('login form', SPEC_TODO, () => {})
 
-    it('signup form', () => {
-      assert(true)
-    })
+    it('signup form', SPEC_TODO, () => {})
 
-    it('callback request modal', () => {
-      assert(true)
-    })
+    it('callback request modal', SPEC_TODO, () => {})
 
-    it('site visit booking form', () => {
-      assert(true)
-    })
+    it('site visit booking form', SPEC_TODO, () => {})
 
-    it('form validation error state', () => {
-      assert(true)
-    })
+    it('form validation error state', SPEC_TODO, () => {})
 
-    it('form success state', () => {
-      assert(true)
-    })
+    it('form success state', SPEC_TODO, () => {})
 
-    it('date picker open', () => {
-      assert(true)
-    })
+    it('date picker open', SPEC_TODO, () => {})
 
-    it('time slot selector', () => {
-      assert(true)
-    })
+    it('time slot selector', SPEC_TODO, () => {})
   })
 
   describe('Components', () => {
-    it('navigation bar', () => {
-      assert(true)
-    })
+    it('navigation bar', SPEC_TODO, () => {})
 
-    it('navigation bar mobile', () => {
-      assert(true)
-    })
+    it('navigation bar mobile', SPEC_TODO, () => {})
 
-    it('breadcrumbs', () => {
-      assert(true)
-    })
+    it('breadcrumbs', SPEC_TODO, () => {})
 
-    it('pagination controls', () => {
-      assert(true)
-    })
+    it('pagination controls', SPEC_TODO, () => {})
 
-    it('toast notifications', () => {
-      assert(true)
-    })
+    it('toast notifications', SPEC_TODO, () => {})
 
-    it('error boundary message', () => {
-      assert(true)
-    })
+    it('error boundary message', SPEC_TODO, () => {})
 
-    it('loading skeleton', () => {
-      assert(true)
-    })
+    it('loading skeleton', SPEC_TODO, () => {})
 
-    it('buttons (all variants)', () => {
-      assert(true)
-    })
+    it('buttons (all variants)', SPEC_TODO, () => {})
 
-    it('cards (all variants)', () => {
-      assert(true)
-    })
+    it('cards (all variants)', SPEC_TODO, () => {})
 
-    it('badges & chips', () => {
-      assert(true)
-    })
+    it('badges & chips', SPEC_TODO, () => {})
   })
 
   describe('Responsive breakpoints', () => {
-    it('mobile (320px) all pages', () => {
-      assert(true)
-    })
+    it('mobile (320px) all pages', SPEC_TODO, () => {})
 
-    it('mobile landscape (568px)', () => {
-      assert(true)
-    })
+    it('mobile landscape (568px)', SPEC_TODO, () => {})
 
-    it('tablet (768px) all pages', () => {
-      assert(true)
-    })
+    it('tablet (768px) all pages', SPEC_TODO, () => {})
 
-    it('desktop (1024px) all pages', () => {
-      assert(true)
-    })
+    it('desktop (1024px) all pages', SPEC_TODO, () => {})
 
-    it('large desktop (1440px) all pages', () => {
-      assert(true)
-    })
+    it('large desktop (1440px) all pages', SPEC_TODO, () => {})
 
-    it('ultra-wide (1920px)', () => {
-      assert(true)
-    })
+    it('ultra-wide (1920px)', SPEC_TODO, () => {})
 
-    it('no horizontal scroll at any breakpoint', () => {
-      assert(true)
-    })
+    it('no horizontal scroll at any breakpoint', SPEC_TODO, () => {})
 
-    it('text readable at all sizes', () => {
-      assert(true)
-    })
+    it('text readable at all sizes', SPEC_TODO, () => {})
 
-    it('images scale proportionally', () => {
-      assert(true)
-    })
+    it('images scale proportionally', SPEC_TODO, () => {})
 
-    it('buttons accessible at all sizes', () => {
-      assert(true)
-    })
+    it('buttons accessible at all sizes', SPEC_TODO, () => {})
   })
 
   describe('Theme variants', () => {
-    it('light theme landing page', () => {
-      assert(true)
-    })
+    it('light theme landing page', SPEC_TODO, () => {})
 
-    it('dark theme landing page', () => {
-      assert(true)
-    })
+    it('dark theme landing page', SPEC_TODO, () => {})
 
-    it('light theme chat', () => {
-      assert(true)
-    })
+    it('light theme chat', SPEC_TODO, () => {})
 
-    it('dark theme chat', () => {
-      assert(true)
-    })
+    it('dark theme chat', SPEC_TODO, () => {})
 
-    it('light theme property detail', () => {
-      assert(true)
-    })
+    it('light theme property detail', SPEC_TODO, () => {})
 
-    it('dark theme property detail', () => {
-      assert(true)
-    })
+    it('dark theme property detail', SPEC_TODO, () => {})
 
-    it('theme transition smooth', () => {
-      assert(true)
-    })
+    it('theme transition smooth', SPEC_TODO, () => {})
 
-    it('contrast maintained in both themes', () => {
-      assert(true)
-    })
+    it('contrast maintained in both themes', SPEC_TODO, () => {})
   })
 
   describe('Browser consistency', () => {
-    it('Chrome rendering matches baseline', () => {
-      assert(true)
-    })
+    it('Chrome rendering matches baseline', SPEC_TODO, () => {})
 
-    it('Firefox rendering matches baseline', () => {
-      assert(true)
-    })
+    it('Firefox rendering matches baseline', SPEC_TODO, () => {})
 
-    it('Safari rendering matches baseline', () => {
-      assert(true)
-    })
+    it('Safari rendering matches baseline', SPEC_TODO, () => {})
 
-    it('Edge rendering matches baseline', () => {
-      assert(true)
-    })
+    it('Edge rendering matches baseline', SPEC_TODO, () => {})
 
-    it('mobile Safari rendering', () => {
-      assert(true)
-    })
+    it('mobile Safari rendering', SPEC_TODO, () => {})
 
-    it('Android Chrome rendering', () => {
-      assert(true)
-    })
+    it('Android Chrome rendering', SPEC_TODO, () => {})
 
-    it('no browser-specific visual bugs', () => {
-      assert(true)
-    })
+    it('no browser-specific visual bugs', SPEC_TODO, () => {})
   })
 
   describe('Animation states', () => {
-    it('message typing animation', () => {
-      assert(true)
-    })
+    it('message typing animation', SPEC_TODO, () => {})
 
-    it('modal entrance animation', () => {
-      assert(true)
-    })
+    it('modal entrance animation', SPEC_TODO, () => {})
 
-    it('loading spinner rotation', () => {
-      assert(true)
-    })
+    it('loading spinner rotation', SPEC_TODO, () => {})
 
-    it('page transition animation', () => {
-      assert(true)
-    })
+    it('page transition animation', SPEC_TODO, () => {})
 
-    it('form field focus animation', () => {
-      assert(true)
-    })
+    it('form field focus animation', SPEC_TODO, () => {})
 
-    it('button hover state', () => {
-      assert(true)
-    })
+    it('button hover state', SPEC_TODO, () => {})
 
-    it('button active state', () => {
-      assert(true)
-    })
+    it('button active state', SPEC_TODO, () => {})
 
-    it('disabled state visual', () => {
-      assert(true)
-    })
+    it('disabled state visual', SPEC_TODO, () => {})
   })
 
   describe('State variations', () => {
-    it('empty state (no saved projects)', () => {
-      assert(true)
-    })
+    it('empty state (no saved projects)', SPEC_TODO, () => {})
 
-    it('loading state', () => {
-      assert(true)
-    })
+    it('loading state', SPEC_TODO, () => {})
 
-    it('error state', () => {
-      assert(true)
-    })
+    it('error state', SPEC_TODO, () => {})
 
-    it('success state', () => {
-      assert(true)
-    })
+    it('success state', SPEC_TODO, () => {})
 
-    it('authenticated state (header)', () => {
-      assert(true)
-    })
+    it('authenticated state (header)', SPEC_TODO, () => {})
 
-    it('unauthenticated state (header)', () => {
-      assert(true)
-    })
+    it('unauthenticated state (header)', SPEC_TODO, () => {})
 
-    it('logged in admin view', () => {
-      assert(true)
-    })
+    it('logged in admin view', SPEC_TODO, () => {})
   })
 
   describe('Visual consistency', () => {
-    it('font usage consistent', () => {
-      assert(true)
-    })
+    it('font usage consistent', SPEC_TODO, () => {})
 
-    it('color palette consistent', () => {
-      assert(true)
-    })
+    it('color palette consistent', SPEC_TODO, () => {})
 
-    it('spacing/padding consistent', () => {
-      assert(true)
-    })
+    it('spacing/padding consistent', SPEC_TODO, () => {})
 
-    it('border radius consistent', () => {
-      assert(true)
-    })
+    it('border radius consistent', SPEC_TODO, () => {})
 
-    it('shadow treatment consistent', () => {
-      assert(true)
-    })
+    it('shadow treatment consistent', SPEC_TODO, () => {})
 
-    it('button styles consistent', () => {
-      assert(true)
-    })
+    it('button styles consistent', SPEC_TODO, () => {})
 
-    it('card styles consistent', () => {
-      assert(true)
-    })
+    it('card styles consistent', SPEC_TODO, () => {})
 
-    it('icon sizing consistent', () => {
-      assert(true)
-    })
+    it('icon sizing consistent', SPEC_TODO, () => {})
 
-    it('no random visual variations', () => {
-      assert(true)
-    })
+    it('no random visual variations', SPEC_TODO, () => {})
   })
 
   describe('Image rendering', () => {
-    it('hero images render correctly', () => {
-      assert(true)
-    })
+    it('hero images render correctly', SPEC_TODO, () => {})
 
-    it('property images load with correct aspect ratio', () => {
-      assert(true)
-    })
+    it('property images load with correct aspect ratio', SPEC_TODO, () => {})
 
-    it('lazy-loaded images render correctly', () => {
-      assert(true)
-    })
+    it('lazy-loaded images render correctly', SPEC_TODO, () => {})
 
-    it('missing images show placeholder', () => {
-      assert(true)
-    })
+    it('missing images show placeholder', SPEC_TODO, () => {})
 
-    it('no distorted images', () => {
-      assert(true)
-    })
+    it('no distorted images', SPEC_TODO, () => {})
 
-    it('WebP/avif format rendering', () => {
-      assert(true)
-    })
+    it('WebP/avif format rendering', SPEC_TODO, () => {})
 
-    it('responsive images at breakpoints', () => {
-      assert(true)
-    })
+    it('responsive images at breakpoints', SPEC_TODO, () => {})
   })
 
   describe('Snapshot regression detection', () => {
-    it('establish baseline snapshots', () => {
-      assert(true)
-    })
+    it('establish baseline snapshots', SPEC_TODO, () => {})
 
-    it('capture snapshots on every PR', () => {
-      assert(true)
-    })
+    it('capture snapshots on every PR', SPEC_TODO, () => {})
 
-    it('compare with tolerance 1% pixel diff', () => {
-      assert(true)
-    })
+    it('compare with tolerance 1% pixel diff', SPEC_TODO, () => {})
 
-    it('flag differences for review', () => {
-      assert(true)
-    })
+    it('flag differences for review', SPEC_TODO, () => {})
 
-    it('approve snapshots before merge', () => {
-      assert(true)
-    })
+    it('approve snapshots before merge', SPEC_TODO, () => {})
 
-    it('track snapshot changes in git', () => {
-      assert(true)
-    })
+    it('track snapshot changes in git', SPEC_TODO, () => {})
 
-    it('CI blocks merge if regression detected', () => {
-      assert(true)
-    })
+    it('CI blocks merge if regression detected', SPEC_TODO, () => {})
   })
 
   describe('Cross-page consistency', () => {
-    it('navigation looks identical across pages', () => {
-      assert(true)
-    })
+    it('navigation looks identical across pages', SPEC_TODO, () => {})
 
-    it('footer looks identical across pages', () => {
-      assert(true)
-    })
+    it('footer looks identical across pages', SPEC_TODO, () => {})
 
-    it('button styles consistent across pages', () => {
-      assert(true)
-    })
+    it('button styles consistent across pages', SPEC_TODO, () => {})
 
-    it('form styles consistent across pages', () => {
-      assert(true)
-    })
+    it('form styles consistent across pages', SPEC_TODO, () => {})
 
-    it('spacing consistent across pages', () => {
-      assert(true)
-    })
+    it('spacing consistent across pages', SPEC_TODO, () => {})
   })
 
   describe('Regression testing tools', () => {
-    it('Playwright screenshot tests', () => {
-      assert(true)
-    })
+    it('Playwright screenshot tests', SPEC_TODO, () => {})
 
-    it('Percy visual diffs', () => {
-      assert(true)
-    })
+    it('Percy visual diffs', SPEC_TODO, () => {})
 
-    it('Chromatic visual testing', () => {
-      assert(true)
-    })
+    it('Chromatic visual testing', SPEC_TODO, () => {})
 
-    it('BackstopJS baseline comparison', () => {
-      assert(true)
-    })
+    it('BackstopJS baseline comparison', SPEC_TODO, () => {})
 
-    it('GitHub Actions integration', () => {
-      assert(true)
-    })
+    it('GitHub Actions integration', SPEC_TODO, () => {})
 
-    it('Slack notifications on regression', () => {
-      assert(true)
-    })
+    it('Slack notifications on regression', SPEC_TODO, () => {})
 
-    it('regression dashboard available', () => {
-      assert(true)
-    })
+    it('regression dashboard available', SPEC_TODO, () => {})
   })
 
   describe('Documentation', () => {
-    it('visual regression testing guide', () => {
-      assert(true)
-    })
+    it('visual regression testing guide', SPEC_TODO, () => {})
 
-    it('how to update baselines documented', () => {
-      assert(true)
-    })
+    it('how to update baselines documented', SPEC_TODO, () => {})
 
-    it('approved changes tracked', () => {
-      assert(true)
-    })
+    it('approved changes tracked', SPEC_TODO, () => {})
 
-    it('regression history preserved', () => {
-      assert(true)
-    })
+    it('regression history preserved', SPEC_TODO, () => {})
   })
 })

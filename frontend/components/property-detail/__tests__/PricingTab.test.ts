@@ -1,277 +1,159 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 describe('PricingTab Component', () => {
   describe('Base Price Display', () => {
-    it('shows base price range', () => {
-      assert(true, 'project.price_min_cr to project.price_max_cr')
-    })
+    it('shows base price range', SPEC_TODO, () => {})
 
-    it('displays price per sqft', () => {
-      assert(true, 'Calculated: total_price / super_area')
-    })
+    it('displays price per sqft', SPEC_TODO, () => {})
 
-    it('shows price currency (INR)', () => {
-      assert(true, 'Prices shown in ₹ and crore')
-    })
+    it('shows price currency (INR)', SPEC_TODO, () => {})
 
-    it('displays unit type-specific prices', () => {
-      assert(true, 'Price range per BHK shown')
-    })
+    it('displays unit type-specific prices', SPEC_TODO, () => {})
 
-    it('hides prices if not available', () => {
-      assert(true, 'price_min === null → "Price on request"')
-    })
+    it('hides prices if not available', SPEC_TODO, () => {})
   })
 
   describe('Price Breakup', () => {
-    it('displays registration charges', () => {
-      assert(true, 'registration_charge_percent shown')
-    })
+    it('displays registration charges', SPEC_TODO, () => {})
 
-    it('shows GST applicability', () => {
-      assert(true, 'gst_applicable: yes/no/partial')
-    })
+    it('shows GST applicability', SPEC_TODO, () => {})
 
-    it('displays stamp duty estimate', () => {
-      assert(true, 'stamp_duty_percent for state')
-    })
+    it('displays stamp duty estimate', SPEC_TODO, () => {})
 
-    it('shows other charges', () => {
-      assert(true, 'maintenance / branding / amenity fees')
-    })
+    it('shows other charges', SPEC_TODO, () => {})
 
-    it('calculates total cost', () => {
-      assert(true, 'Base + registration + GST + stamp duty = total')
-    })
+    it('calculates total cost', SPEC_TODO, () => {})
 
-    it('hides breakup if charges unavailable', () => {
-      assert(true, 'All charges null → show "Details unavailable"')
-    })
+    it('hides breakup if charges unavailable', SPEC_TODO, () => {})
   })
 
   describe('Payment Plan Display', () => {
-    it('shows payment schedule milestones', () => {
-      assert(true, 'Booking → Foundation → Structure → Possession')
-    })
+    it('shows payment schedule milestones', SPEC_TODO, () => {})
 
-    it('displays percentage due at each stage', () => {
-      assert(true, 'milestone.due_percent for each stage')
-    })
+    it('displays percentage due at each stage', SPEC_TODO, () => {})
 
-    it('shows amount due (calculated)', () => {
-      assert(true, 'due_percent × total_price')
-    })
+    it('shows amount due (calculated)', SPEC_TODO, () => {})
 
-    it('shows due date for each milestone', () => {
-      assert(true, 'Conditional: milestone.due_date')
-    })
+    it('shows due date for each milestone', SPEC_TODO, () => {})
 
-    it('hides payment plan if not available', () => {
-      assert(true, 'No milestones → omit section')
-    })
+    it('hides payment plan if not available', SPEC_TODO, () => {})
   })
 
   describe('EMI Calculator', () => {
-    it('shows EMI calculator interface', () => {
-      assert(true, 'Input: loan amount, tenure, interest rate')
-    })
+    it('shows EMI calculator interface', SPEC_TODO, () => {})
 
-    it('calculates monthly EMI', () => {
-      assert(true, 'EMI = P × [r(1+r)^n] / [(1+r)^n - 1]')
-    })
+    it('calculates monthly EMI', SPEC_TODO, () => {})
 
-    it('shows total amount payable', () => {
-      assert(true, 'EMI × tenure months')
-    })
+    it('shows total amount payable', SPEC_TODO, () => {})
 
-    it('displays total interest', () => {
-      assert(true, 'Total amount - principal')
-    })
+    it('displays total interest', SPEC_TODO, () => {})
 
-    it('allows loan amount input', () => {
-      assert(true, 'User can adjust amount')
-    })
+    it('allows loan amount input', SPEC_TODO, () => {})
 
-    it('allows tenure adjustment', () => {
-      assert(true, 'User can change loan duration')
-    })
+    it('allows tenure adjustment', SPEC_TODO, () => {})
 
-    it('allows interest rate input', () => {
-      assert(true, 'User can set expected rate')
-    })
+    it('allows interest rate input', SPEC_TODO, () => {})
 
-    it('shows monthly vs annual view toggle', () => {
-      assert(true, 'Monthly EMI / yearly breakdown')
-    })
+    it('shows monthly vs annual view toggle', SPEC_TODO, () => {})
   })
 
   describe('Cost Comparison', () => {
-    it('shows price comparison across unit types', () => {
-      assert(true, 'Table: BHK, area, price, price/sqft')
-    })
+    it('shows price comparison across unit types', SPEC_TODO, () => {})
 
-    it('highlights best value unit', () => {
-      assert(true, 'Lowest price/sqft marked')
-    })
+    it('highlights best value unit', SPEC_TODO, () => {})
 
-    it('displays amortized cost breakdown', () => {
-      assert(true, 'Cost per year, per month')
-    })
+    it('displays amortized cost breakdown', SPEC_TODO, () => {})
 
-    it('hides comparison if only one unit type', () => {
-      assert(true, 'unitTypes.length === 1 → omit comparison')
-    })
+    it('hides comparison if only one unit type', SPEC_TODO, () => {})
   })
 
   describe('Affordable Housing & Incentives', () => {
-    it('shows affordable housing info if applicable', () => {
-      assert(true, 'Conditional: affordable_housing_percent')
-    })
+    it('shows affordable housing info if applicable', SPEC_TODO, () => {})
 
-    it('displays subsidy eligibility', () => {
-      assert(true, 'Conditional: subsidy_percent')
-    })
+    it('displays subsidy eligibility', SPEC_TODO, () => {})
 
-    it('shows incentives/discounts available', () => {
-      assert(true, 'Early bird, bulk purchase, etc.')
-    })
+    it('shows incentives/discounts available', SPEC_TODO, () => {})
 
-    it('hides incentives section if none', () => {
-      assert(true, 'No incentives → omit section')
-    })
+    it('hides incentives section if none', SPEC_TODO, () => {})
   })
 
   describe('Data Source & Transparency', () => {
-    it('shows price verification status', () => {
-      assert(true, 'brochure / google / estimated / manual')
-    })
+    it('shows price verification status', SPEC_TODO, () => {})
 
-    it('does not show fake price trends', () => {
       // P0 Fix: Removed "3.2% vs last month" fabricated badge
-      assert(true, 'No fabricated price movement trends')
-    })
+    it('does not show fake price trends', SPEC_TODO, () => {})
 
-    it('displays price last updated date', () => {
-      assert(true, 'Last verified timestamp')
-    })
+    it('displays price last updated date', SPEC_TODO, () => {})
 
-    it('shows data source badge', () => {
-      assert(true, 'Source: brochure/estimated/manual')
-    })
+    it('shows data source badge', SPEC_TODO, () => {})
 
-    it('marks estimated prices distinctly', () => {
-      assert(true, 'Estimated data has badge/label')
-    })
+    it('marks estimated prices distinctly', SPEC_TODO, () => {})
   })
 
   describe('Responsive Design', () => {
-    it('calculator is readable on mobile', () => {
-      assert(true, 'Single column, full-width inputs')
-    })
+    it('calculator is readable on mobile', SPEC_TODO, () => {})
 
-    it('price tables scroll horizontally on mobile', () => {
-      assert(true, 'overflow-x: auto for tables')
-    })
+    it('price tables scroll horizontally on mobile', SPEC_TODO, () => {})
 
-    it('EMI chart scales responsively', () => {
-      assert(true, 'Chart width: 100%, responsive height')
-    })
+    it('EMI chart scales responsively', SPEC_TODO, () => {})
 
-    it('input fields touch-friendly', () => {
-      assert(true, 'Min 44px tap targets')
-    })
+    it('input fields touch-friendly', SPEC_TODO, () => {})
 
-    it('text readable at all sizes', () => {
-      assert(true, '≥14px on mobile')
-    })
+    it('text readable at all sizes', SPEC_TODO, () => {})
   })
 
   describe('Accessibility', () => {
-    it('price has semantic structure', () => {
-      assert(true, '<section> + <h2>')
-    })
+    it('price has semantic structure', SPEC_TODO, () => {})
 
-    it('calculator inputs are labeled', () => {
-      assert(true, '<label> + <input id> association')
-    })
+    it('calculator inputs are labeled', SPEC_TODO, () => {})
 
-    it('EMI result is announced', () => {
-      assert(true, 'aria-live="polite" for EMI updates')
-    })
+    it('EMI result is announced', SPEC_TODO, () => {})
 
-    it('tables have proper headers', () => {
-      assert(true, '<thead> + <th scope>')
-    })
+    it('tables have proper headers', SPEC_TODO, () => {})
 
-    it('payment milestones announced', () => {
-      assert(true, '"Due 30% at foundation stage"')
-    })
+    it('payment milestones announced', SPEC_TODO, () => {})
 
-    it('currency is clear', () => {
-      assert(true, 'Rupees written, not just ₹')
-    })
+    it('currency is clear', SPEC_TODO, () => {})
 
-    it('prices not color-only', () => {
-      assert(true, 'Bold/size + color for emphasis')
-    })
+    it('prices not color-only', SPEC_TODO, () => {})
   })
 
   describe('Error Handling', () => {
-    it('handles missing base prices', () => {
-      assert(true, 'price_min === null → "Price on request"')
-    })
+    it('handles missing base prices', SPEC_TODO, () => {})
 
-    it('handles invalid EMI inputs', () => {
-      assert(true, 'Negative values → error message')
-    })
+    it('handles invalid EMI inputs', SPEC_TODO, () => {})
 
-    it('handles missing payment milestones', () => {
-      assert(true, 'No milestones → section omitted')
-    })
+    it('handles missing payment milestones', SPEC_TODO, () => {})
 
-    it('handles missing registration charges', () => {
-      assert(true, 'Charge === null → omit from calc')
-    })
+    it('handles missing registration charges', SPEC_TODO, () => {})
 
-    it('handles invalid interest rate', () => {
-      assert(true, '< 0 or > 30% → warning')
-    })
+    it('handles invalid interest rate', SPEC_TODO, () => {})
 
-    it('handles divide by zero in EMI', () => {
-      assert(true, '0% rate → show exception')
-    })
+    it('handles divide by zero in EMI', SPEC_TODO, () => {})
   })
 
   describe('Performance', () => {
-    it('EMI calculation debounced', () => {
-      assert(true, '500ms debounce on input change')
-    })
+    it('EMI calculation debounced', SPEC_TODO, () => {})
 
-    it('charts lazy load', () => {
-      assert(true, 'IntersectionObserver trigger')
-    })
+    it('charts lazy load', SPEC_TODO, () => {})
 
-    it('large payment schedules virtualized', () => {
-      assert(true, '50+ milestones → virtual scroll')
-    })
+    it('large payment schedules virtualized', SPEC_TODO, () => {})
   })
 
   describe('Data Integrity Checks', () => {
-    it('prices are positive', () => {
-      assert(true, 'price_min > 0 && price_max > 0')
-    })
+    it('prices are positive', SPEC_TODO, () => {})
 
-    it('price min ≤ price max', () => {
-      assert(true, 'price_min ≤ price_max')
-    })
+    it('price min ≤ price max', SPEC_TODO, () => {})
 
-    it('percentages are 0-100', () => {
-      assert(true, 'registration_percent, gst, stamp duty in [0, 100]')
-    })
+    it('percentages are 0-100', SPEC_TODO, () => {})
 
-    it('payment schedule sums to 100%', () => {
-      assert(true, 'Sum of milestone percentages ≈ 100%')
-    })
+    it('payment schedule sums to 100%', SPEC_TODO, () => {})
   })
 })

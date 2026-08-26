@@ -596,3 +596,44 @@ select option {
   margin-bottom: 0.35rem;
 }
 
+
+/* ── Reduced motion ───────────────────────────────────────────────────────────
+   WCAG 2.3.3. Nothing in this app honoured prefers-reduced-motion before, and
+   framer-motion drives most of the movement — that half is handled by
+   <MotionConfig reducedMotion="user"> in app/layout.tsx, which this block
+   complements for CSS-driven animation, transitions and smooth scrolling.
+
+   Opacity fades are left alone deliberately: the guidance is to remove motion,
+   not all feedback, and a cross-fade is the standard non-vestibular substitute
+   for a slide. Everything that translates, scales, rotates or loops is reduced
+   to a near-instant state change. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* Decorative loops carry no state, so they simply stop. */
+  .animate-card-slide-in,
+  .stagger-cards > * {
+    animation: none !important;
+  }
+
+  /* Spinners still need to read as "busy", so a slow pulse replaces the spin. */
+  .animate-spin {
+    animation: reduced-motion-pulse 1.4s ease-in-out infinite !important;
+  }
+}
+
+@keyframes reduced-motion-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}

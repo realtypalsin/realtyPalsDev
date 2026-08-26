@@ -1,100 +1,52 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 describe('Admin — Leads Tab', () => {
   describe('Leads List', () => {
-    it('displays leads with pagination', () => {
-      assert(true, '20 per page, columns: name, email, phone, status, date')
-    })
-    it('filter by status', () => {
-      assert(true, 'New, Contacted, Converted, Dead → filter')
-    })
-    it('filter by source', () => {
-      assert(true, 'Chat, Callback, Site visit → filter')
-    })
-    it('filter by assigned agent', () => {
-      assert(true, 'Dropdown agent filter')
-    })
-    it('search by name/email', () => {
-      assert(true, 'Search box debounced')
-    })
-    it('sort leads', () => {
-      assert(true, 'By date, name, phone, email')
-    })
-    it('bulk select leads', () => {
-      assert(true, 'Checkbox selection')
-    })
+    it('displays leads with pagination', SPEC_TODO, () => {})
+    it('filter by status', SPEC_TODO, () => {})
+    it('filter by source', SPEC_TODO, () => {})
+    it('filter by assigned agent', SPEC_TODO, () => {})
+    it('search by name/email', SPEC_TODO, () => {})
+    it('sort leads', SPEC_TODO, () => {})
+    it('bulk select leads', SPEC_TODO, () => {})
   })
 
   describe('Lead Detail', () => {
-    it('shows contact info', () => {
-      assert(true, 'Name, email, phone clickable')
-    })
-    it('shows conversation history', () => {
-      assert(true, 'All chats, callbacks, site visits')
-    })
-    it('assign to agent', () => {
-      assert(true, 'Dropdown: select agent')
-    })
-    it('change status', () => {
-      assert(true, 'Status dropdown with all options')
-    })
-    it('add note to lead', () => {
-      assert(true, 'Text input → save note')
-    })
-    it('view all notes', () => {
-      assert(true, 'Chronological list of notes')
-    })
-    it('view interested projects', () => {
-      assert(true, 'Projects user viewed/saved')
-    })
-    it('delete lead', () => {
-      assert(true, '"Delete" → confirm')
-    })
+    it('shows contact info', SPEC_TODO, () => {})
+    it('shows conversation history', SPEC_TODO, () => {})
+    it('assign to agent', SPEC_TODO, () => {})
+    it('change status', SPEC_TODO, () => {})
+    it('add note to lead', SPEC_TODO, () => {})
+    it('view all notes', SPEC_TODO, () => {})
+    it('view interested projects', SPEC_TODO, () => {})
+    it('delete lead', SPEC_TODO, () => {})
   })
 
   describe('Bulk Actions', () => {
-    it('bulk assign to agent', () => {
-      assert(true, 'Select leads → assign agent')
-    })
-    it('bulk status change', () => {
-      assert(true, 'Select leads → change status')
-    })
-    it('bulk delete', () => {
-      assert(true, 'Select leads → delete → confirm')
-    })
-    it('bulk export', () => {
-      assert(true, 'Select → export CSV')
-    })
-    it('bulk email', () => {
-      assert(true, 'Select → send email to all')
-    })
+    it('bulk assign to agent', SPEC_TODO, () => {})
+    it('bulk status change', SPEC_TODO, () => {})
+    it('bulk delete', SPEC_TODO, () => {})
+    it('bulk export', SPEC_TODO, () => {})
+    it('bulk email', SPEC_TODO, () => {})
   })
 
   describe('Lead Export', () => {
-    it('export all leads', () => {
-      assert(true, 'CSV with all data')
-    })
-    it('export filtered leads', () => {
-      assert(true, 'Filter applied → export filtered')
-    })
-    it('export with notes', () => {
-      assert(true, 'Include all lead notes in export')
-    })
-    it('export filename', () => {
-      assert(true, 'leads_YYYY-MM-DD.csv')
-    })
+    it('export all leads', SPEC_TODO, () => {})
+    it('export filtered leads', SPEC_TODO, () => {})
+    it('export with notes', SPEC_TODO, () => {})
+    it('export filename', SPEC_TODO, () => {})
   })
 
   describe('Performance', () => {
-    it('loads < 2s', () => {
-      assert(true, 'FCP < 1s with skeleton')
-    })
-    it('search debounced', () => {
-      assert(true, '300ms debounce before search')
-    })
-    it('virtualized list', () => {
-      assert(true, '10k leads → render visible only')
-    })
+    it('loads < 2s', SPEC_TODO, () => {})
+    it('search debounced', SPEC_TODO, () => {})
+    it('virtualized list', SPEC_TODO, () => {})
   })
 })

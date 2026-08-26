@@ -1,230 +1,136 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 // OverviewTab test suite — comprehensive coverage for project overview display
 
 describe('OverviewTab Component', () => {
   describe('Rendering & Data Display', () => {
-    it('renders project name and tagline', () => {
-      assert(true, 'Displays project.name + project.tagline')
-    })
+    it('renders project name and tagline', SPEC_TODO, () => {})
 
-    it('displays project hero image', () => {
-      assert(true, 'Shows project.hero_image_url with lazy loading')
-    })
+    it('displays project hero image', SPEC_TODO, () => {})
 
-    it('shows basic project info grid', () => {
-      assert(true, 'Displays: sector, address, land_area_acres, total_towers')
-    })
+    it('shows basic project info grid', SPEC_TODO, () => {})
 
-    it('displays possession status with label', () => {
-      assert(true, 'Shows project.possession_status + project.possession_label')
-    })
+    it('displays possession status with label', SPEC_TODO, () => {})
 
-    it('shows possession date if available', () => {
-      assert(true, 'Conditional: possession_date ? formatted_date : null')
-    })
+    it('shows possession date if available', SPEC_TODO, () => {})
 
-    it('displays price range', () => {
-      assert(true, 'Shows project.price_min_cr to project.price_max_cr')
-    })
+    it('displays price range', SPEC_TODO, () => {})
 
-    it('shows unit types summary', () => {
-      assert(true, 'Displays unit_types: count + BHK ranges (e.g., "1/2/3 BHK")')
-    })
+    it('shows unit types summary', SPEC_TODO, () => {})
 
-    it('displays architect and interior designer', () => {
-      assert(true, 'Conditional: architect/interior_designer if available')
-    })
+    it('displays architect and interior designer', SPEC_TODO, () => {})
 
-    it('shows design theme if available', () => {
-      assert(true, 'Conditional: design_theme if present')
-    })
+    it('shows design theme if available', SPEC_TODO, () => {})
 
-    it('displays marketing claims as badges', () => {
-      assert(true, 'Shows project.marketing_claims as icon badges')
-    })
+    it('displays marketing claims as badges', SPEC_TODO, () => {})
   })
 
   describe('Data Integrity — No Fabrication', () => {
-    it('does not hardcode fake channel partners', () => {
       // P0 Fix: Removed hardcoded fallback in OverviewTab:170-175
-      assert(true, 'Uses real data: project.channel_partners OR empty []')
-    })
+    it('does not hardcode fake channel partners', SPEC_TODO, () => {})
 
-    it('does not invent amenities list', () => {
       // Verified: Shows real top_amenities from data, not defaults
-      assert(true, 'Displays real amenities, not fabricated list')
-    })
+    it('does not invent amenities list', SPEC_TODO, () => {})
 
-    it('does not default connectivity data', () => {
       // Verified: Shows real connectivity or empty state
-      assert(true, 'Uses real top_connectivity, not fake distances')
-    })
+    it('does not default connectivity data', SPEC_TODO, () => {})
 
-    it('displays real marketing claims only', () => {
       // Verified: marketing_claims array from database
-      assert(true, 'Only shows real claims, no invented tags')
-    })
+    it('displays real marketing claims only', SPEC_TODO, () => {})
   })
 
   describe('Conditional Rendering', () => {
-    it('hides empty sections gracefully', () => {
-      assert(true, 'Missing data → omit section, not "N/A"')
-    })
+    it('hides empty sections gracefully', SPEC_TODO, () => {})
 
-    it('shows empty state for no amenities', () => {
-      assert(true, 'Empty amenities → "No amenities listed"')
-    })
+    it('shows empty state for no amenities', SPEC_TODO, () => {})
 
-    it('shows empty state for no connectivity', () => {
-      assert(true, 'Empty connectivity → "Location details not available"')
-    })
+    it('shows empty state for no connectivity', SPEC_TODO, () => {})
 
-    it('hides architect if not provided', () => {
-      assert(true, 'architect === null → section not shown')
-    })
+    it('hides architect if not provided', SPEC_TODO, () => {})
 
-    it('hides interior designer if not provided', () => {
-      assert(true, 'interior_designer === null → section not shown')
-    })
+    it('hides interior designer if not provided', SPEC_TODO, () => {})
 
-    it('hides design theme if not provided', () => {
-      assert(true, 'design_theme === null → section not shown')
-    })
+    it('hides design theme if not provided', SPEC_TODO, () => {})
   })
 
   describe('Amenities Display', () => {
-    it('shows top 6 amenities (sorted by category)', () => {
-      assert(true, 'Sorted: sports → lifestyle → wellness → kids → security → parking')
-    })
+    it('shows top 6 amenities (sorted by category)', SPEC_TODO, () => {})
 
-    it('displays amenity category icons', () => {
-      assert(true, 'Icon from ICON_MAP[amenity.category]')
-    })
+    it('displays amenity category icons', SPEC_TODO, () => {})
 
-    it('displays amenity name', () => {
-      assert(true, 'Shows amenity.name')
-    })
+    it('displays amenity name', SPEC_TODO, () => {})
 
-    it('hides amenities if none available', () => {
-      assert(true, 'No amenities → section omitted')
-    })
+    it('hides amenities if none available', SPEC_TODO, () => {})
   })
 
   describe('Connectivity Display', () => {
-    it('shows priority connectivity (metro, airport, road)', () => {
-      assert(true, 'Priority order: metro → airport → road')
-    })
+    it('shows priority connectivity (metro, airport, road)', SPEC_TODO, () => {})
 
-    it('displays connectivity type icon', () => {
-      assert(true, 'Icon from ICON_MAP[connectivity.type]')
-    })
+    it('displays connectivity type icon', SPEC_TODO, () => {})
 
-    it('shows connectivity distance in km', () => {
-      assert(true, 'Displays distance_km with "km" label')
-    })
+    it('shows connectivity distance in km', SPEC_TODO, () => {})
 
-    it('shows data source badge (brochure/google/estimated)', () => {
-      assert(true, 'Color-coded: verified/estimated/manual')
-    })
+    it('shows data source badge (brochure/google/estimated)', SPEC_TODO, () => {})
 
-    it('hides connectivity if none available', () => {
-      assert(true, 'Empty connectivity → section omitted')
-    })
+    it('hides connectivity if none available', SPEC_TODO, () => {})
   })
 
   describe('Marketing Claims Display', () => {
-    it('renders each marketing claim as badge', () => {
-      assert(true, 'project.marketing_claims.map(claim => <Badge>)')
-    })
+    it('renders each marketing claim as badge', SPEC_TODO, () => {})
 
-    it('shows claim icon and text', () => {
-      assert(true, 'Badge: icon + claim string')
-    })
+    it('shows claim icon and text', SPEC_TODO, () => {})
 
-    it('wraps claims in grid layout', () => {
-      assert(true, 'Responsive grid: 2-3 claims per row')
-    })
+    it('wraps claims in grid layout', SPEC_TODO, () => {})
 
-    it('hides claims section if empty', () => {
-      assert(true, 'marketing_claims.length === 0 → omit section')
-    })
+    it('hides claims section if empty', SPEC_TODO, () => {})
   })
 
   describe('Image Gallery', () => {
-    it('displays hero image with lazy loading', () => {
-      assert(true, 'project.images[0] shown as hero, loading="lazy"')
-    })
+    it('displays hero image with lazy loading', SPEC_TODO, () => {})
 
-    it('shows image thumbnail carousel', () => {
-      assert(true, 'Carousel: project.images.slice(0, 6)')
-    })
+    it('shows image thumbnail carousel', SPEC_TODO, () => {})
 
-    it('handles missing images gracefully', () => {
-      assert(true, 'No images → placeholder or omit carousel')
-    })
+    it('handles missing images gracefully', SPEC_TODO, () => {})
 
-    it('displays image captions if available', () => {
-      assert(true, 'image.caption ? shown : null')
-    })
+    it('displays image captions if available', SPEC_TODO, () => {})
   })
 
   describe('Responsive Design', () => {
-    it('stacks sections vertically on mobile', () => {
-      assert(true, 'Mobile: single column layout')
-    })
+    it('stacks sections vertically on mobile', SPEC_TODO, () => {})
 
-    it('shows 2-column grid on tablet', () => {
-      assert(true, 'Tablet: info + amenities side-by-side')
-    })
+    it('shows 2-column grid on tablet', SPEC_TODO, () => {})
 
-    it('hero image scales responsively', () => {
-      assert(true, 'max-width: 100%, height: auto')
-    })
+    it('hero image scales responsively', SPEC_TODO, () => {})
 
-    it('badges/chips wrap on narrow screens', () => {
-      assert(true, 'Responsive flex: gap + wrap')
-    })
+    it('badges/chips wrap on narrow screens', SPEC_TODO, () => {})
   })
 
   describe('Accessibility', () => {
-    it('has semantic heading hierarchy', () => {
-      assert(true, '<h2> for section titles, <h3> for subsections')
-    })
+    it('has semantic heading hierarchy', SPEC_TODO, () => {})
 
-    it('images have alt text', () => {
-      assert(true, 'alt={`${project.name} - ${image.caption || "image"}`}')
-    })
+    it('images have alt text', SPEC_TODO, () => {})
 
-    it('connectivity distance is accessible', () => {
-      assert(true, 'aria-label for connectivity with full distance info')
-    })
+    it('connectivity distance is accessible', SPEC_TODO, () => {})
 
-    it('claims are semantically marked', () => {
-      assert(true, '<span> with aria-label for badges')
-    })
+    it('claims are semantically marked', SPEC_TODO, () => {})
 
-    it('color not sole differentiator for data source', () => {
-      assert(true, 'Data source has icon + text, not just color')
-    })
+    it('color not sole differentiator for data source', SPEC_TODO, () => {})
   })
 
   describe('Error Handling', () => {
-    it('handles missing hero image', () => {
-      assert(true, 'hero_image_url === null → placeholder')
-    })
+    it('handles missing hero image', SPEC_TODO, () => {})
 
-    it('handles missing price range', () => {
-      assert(true, 'price_min/max === null → "Price on request"')
-    })
+    it('handles missing price range', SPEC_TODO, () => {})
 
-    it('handles missing possession date', () => {
-      assert(true, 'possession_date === null → omit field')
-    })
+    it('handles missing possession date', SPEC_TODO, () => {})
 
-    it('handles empty marketing claims array', () => {
-      assert(true, 'marketing_claims.length === 0 → hide section')
-    })
+    it('handles empty marketing claims array', SPEC_TODO, () => {})
   })
 })

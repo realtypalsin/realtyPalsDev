@@ -1,203 +1,121 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 describe('ConstructionTimeline Component', () => {
   describe('Timeline Display', () => {
-    it('renders construction milestones in chronological order', () => {
-      assert(true, 'Sorted by date ascending')
-    })
+    it('renders construction milestones in chronological order', SPEC_TODO, () => {})
 
-    it('displays each milestone as timeline node', () => {
-      assert(true, 'Vertical timeline with node + line')
-    })
+    it('displays each milestone as timeline node', SPEC_TODO, () => {})
 
-    it('shows milestone date', () => {
-      assert(true, 'milestone.date formatted (e.g., "Mar 2024")')
-    })
+    it('shows milestone date', SPEC_TODO, () => {})
 
-    it('shows milestone title', () => {
-      assert(true, 'milestone.title (e.g., "Foundation Laid")')
-    })
+    it('shows milestone title', SPEC_TODO, () => {})
 
-    it('shows milestone description', () => {
-      assert(true, 'milestone.description detailed info')
-    })
+    it('shows milestone description', SPEC_TODO, () => {})
 
-    it('displays milestone status/completion', () => {
-      assert(true, 'Completed / In Progress / Upcoming')
-    })
+    it('displays milestone status/completion', SPEC_TODO, () => {})
   })
 
   describe('Data Integrity — No Fabrication', () => {
-    it('does not show fake milestone timelines', () => {
       // P0 Fix: Removed defaultReadyToMoveMilestones + defaultUnderConstructionMilestones
-      assert(true, 'Uses real construction_milestones, not defaults')
-    })
+    it('does not show fake milestone timelines', SPEC_TODO, () => {})
 
-    it('does not invent milestone dates', () => {
-      assert(true, 'Dates from database, not fabricated')
-    })
+    it('does not invent milestone dates', SPEC_TODO, () => {})
 
-    it('does not fabricate "Fire NOC issued" status', () => {
-      assert(true, 'Only real milestones shown')
-    })
+    it('does not fabricate "Fire NOC issued" status', SPEC_TODO, () => {})
 
-    it('shows "Not available" if no milestones', () => {
       // P0 Fix: Removed fabricated timelines
-      assert(true, 'construction_milestones.length === 0 → "Not yet available"')
-    })
+    it('shows "Not available" if no milestones', SPEC_TODO, () => {})
   })
 
   describe('Timeline States', () => {
-    it('shows completed milestones in green', () => {
-      assert(true, 'status: completed → green checkmark')
-    })
+    it('shows completed milestones in green', SPEC_TODO, () => {})
 
-    it('shows in-progress milestones in blue', () => {
-      assert(true, 'status: in_progress → blue indicator')
-    })
+    it('shows in-progress milestones in blue', SPEC_TODO, () => {})
 
-    it('shows upcoming milestones in gray', () => {
-      assert(true, 'status: upcoming → gray text')
-    })
+    it('shows upcoming milestones in gray', SPEC_TODO, () => {})
 
-    it('completed milestones show actual date', () => {
-      assert(true, 'actual_date shown for completed')
-    })
+    it('completed milestones show actual date', SPEC_TODO, () => {})
 
-    it('upcoming milestones show expected date', () => {
-      assert(true, 'expected_date for upcoming')
-    })
+    it('upcoming milestones show expected date', SPEC_TODO, () => {})
   })
 
   describe('Possession Status', () => {
-    it('displays possession status prominently', () => {
-      assert(true, 'project.possession_status: "ready_to_move" / "under_construction" / "new_launch"')
-    })
+    it('displays possession status prominently', SPEC_TODO, () => {})
 
-    it('shows expected possession date', () => {
-      assert(true, 'project.possession_date formatted')
-    })
+    it('shows expected possession date', SPEC_TODO, () => {})
 
-    it('indicates delay status if applicable', () => {
-      assert(true, 'Compare actual vs expected, show delay days')
-    })
+    it('indicates delay status if applicable', SPEC_TODO, () => {})
 
-    it('displays delay reason if available', () => {
-      assert(true, 'Optional: reason for delay')
-    })
+    it('displays delay reason if available', SPEC_TODO, () => {})
   })
 
   describe('Responsive Design', () => {
-    it('vertical timeline on all screen sizes', () => {
-      assert(true, 'No horizontal scroll needed')
-    })
+    it('vertical timeline on all screen sizes', SPEC_TODO, () => {})
 
-    it('timeline nodes click/tap-able on mobile', () => {
-      assert(true, 'Minimum 44px touch target')
-    })
+    it('timeline nodes click/tap-able on mobile', SPEC_TODO, () => {})
 
-    it('milestone content readable on mobile', () => {
-      assert(true, 'Text wraps, no truncation')
-    })
+    it('milestone content readable on mobile', SPEC_TODO, () => {})
 
-    it('timeline spacing responsive', () => {
-      assert(true, 'Tighter spacing on mobile')
-    })
+    it('timeline spacing responsive', SPEC_TODO, () => {})
   })
 
   describe('Accessibility', () => {
-    it('timeline has semantic structure', () => {
-      assert(true, '<section> + <ol> for milestones')
-    })
+    it('timeline has semantic structure', SPEC_TODO, () => {})
 
-    it('milestone status announced', () => {
-      assert(true, '"Completed" / "In Progress" / "Upcoming" announced')
-    })
+    it('milestone status announced', SPEC_TODO, () => {})
 
-    it('dates announced', () => {
-      assert(true, '"March 2024" spoken, not just "3/2024"')
-    })
+    it('dates announced', SPEC_TODO, () => {})
 
-    it('timeline is keyboard navigable', () => {
-      assert(true, 'Tab through milestones')
-    })
+    it('timeline is keyboard navigable', SPEC_TODO, () => {})
 
-    it('color not sole status indicator', () => {
-      assert(true, 'Status has text + icon + color')
-    })
+    it('color not sole status indicator', SPEC_TODO, () => {})
   })
 
   describe('Error Handling', () => {
-    it('handles no milestones', () => {
-      assert(true, 'construction_milestones === [] → "Not yet available"')
-    })
+    it('handles no milestones', SPEC_TODO, () => {})
 
-    it('handles missing milestone dates', () => {
-      assert(true, 'date === null → "Date TBD"')
-    })
+    it('handles missing milestone dates', SPEC_TODO, () => {})
 
-    it('handles missing milestone titles', () => {
-      assert(true, 'title === null → generic "Milestone"')
-    })
+    it('handles missing milestone titles', SPEC_TODO, () => {})
 
-    it('handles invalid status', () => {
-      assert(true, 'Unknown status → treated as "upcoming"')
-    })
+    it('handles invalid status', SPEC_TODO, () => {})
 
-    it('handles null possession_date', () => {
-      assert(true, 'possession_date === null → "Date not confirmed"')
-    })
+    it('handles null possession_date', SPEC_TODO, () => {})
   })
 
   describe('Delay Tracking', () => {
-    it('shows original vs current dates', () => {
-      assert(true, 'Original date crossed out, current date shown')
-    })
+    it('shows original vs current dates', SPEC_TODO, () => {})
 
-    it('calculates delay in days/months', () => {
-      assert(true, 'e.g., "6 months delayed"')
-    })
+    it('calculates delay in days/months', SPEC_TODO, () => {})
 
-    it('displays delay reason if available', () => {
-      assert(true, 'Optional narrative reason')
-    })
+    it('displays delay reason if available', SPEC_TODO, () => {})
 
-    it('highlights delays prominently', () => {
-      assert(true, 'Red warning if delay > 3 months')
-    })
+    it('highlights delays prominently', SPEC_TODO, () => {})
   })
 
   describe('Historical Context', () => {
-    it('shows project launch date', () => {
-      assert(true, 'project.launch_date at top')
-    })
+    it('shows project launch date', SPEC_TODO, () => {})
 
-    it('shows completeness percentage', () => {
-      assert(true, 'X% complete based on milestones passed')
-    })
+    it('shows completeness percentage', SPEC_TODO, () => {})
 
-    it('shows time elapsed since launch', () => {
-      assert(true, 'e.g., "24 months elapsed"')
-    })
+    it('shows time elapsed since launch', SPEC_TODO, () => {})
 
-    it('estimates time remaining', () => {
-      assert(true, 'Days until possession_date')
-    })
+    it('estimates time remaining', SPEC_TODO, () => {})
   })
 
   describe('Footer Verification', () => {
-    it('does not show fabricated audit score', () => {
       // P0 Fix: Removed "9.4/10" footer score
-      assert(true, 'Footer shows real data or omitted')
-    })
+    it('does not show fabricated audit score', SPEC_TODO, () => {})
 
-    it('displays RERA verification status', () => {
-      assert(true, 'Verified / Pending / Not Applicable')
-    })
+    it('displays RERA verification status', SPEC_TODO, () => {})
 
-    it('shows last updated date', () => {
-      assert(true, 'Last verified/updated timestamp')
-    })
+    it('shows last updated date', SPEC_TODO, () => {})
   })
 })

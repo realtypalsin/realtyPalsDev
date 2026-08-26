@@ -1,6 +1,12 @@
+// node:test, matching the rest of components/chat/__tests__ — this directory is run
+// by `npm run test:node`, not by jest (jest ignores it in testPathIgnorePatterns).
+// The file previously used jest's global describe/it/expect and threw
+// "describe is not defined" on every run of that script.
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import type { ChatMessage } from '@/types/property'
 
-describe('MessageBubble', () => {
+describe('ChatMessage shape', () => {
   const createMockMessage = (overrides?: Partial<ChatMessage>): ChatMessage => ({
     id: 'msg-1',
     type: 'ai' as const,
@@ -11,18 +17,17 @@ describe('MessageBubble', () => {
     ...overrides,
   })
 
-  it('renders AI message correctly', () => {
+  it('defaults to an ai message with content', () => {
     const message = createMockMessage({ type: 'ai' })
-    expect(message.type).toBe('ai')
-    expect(message.content).toBe('Test message')
+    assert.equal(message.type, 'ai')
+    assert.equal(message.content, 'Test message')
   })
 
-  it('renders user message correctly', () => {
-    const message = createMockMessage({ type: 'user' })
-    expect(message.type).toBe('user')
+  it('carries a user message type', () => {
+    assert.equal(createMockMessage({ type: 'user' }).type, 'user')
   })
 
-  it('includes comparison table when showComparisonTable is true', () => {
+  it('carries comparison projects when showComparisonTable is set', () => {
     const message = createMockMessage({
       showComparisonTable: true,
       comparisonProjects: [
@@ -31,39 +36,35 @@ describe('MessageBubble', () => {
       ],
     })
 
-    expect(message.showComparisonTable).toBe(true)
-    expect(message.comparisonProjects).toHaveLength(2)
+    assert.equal(message.showComparisonTable, true)
+    assert.equal(message.comparisonProjects?.length, 2)
   })
 
-  it('handles responseMode comparison', () => {
+  it('carries responseMode comparison', () => {
     const message = createMockMessage({
       responseMode: 'comparison',
       showComparisonTable: true,
     })
 
-    expect(message.responseMode).toBe('comparison')
-    expect(message.showComparisonTable).toBe(true)
+    assert.equal(message.responseMode, 'comparison')
+    assert.equal(message.showComparisonTable, true)
   })
 
-  it('tracks property events on view', () => {
+  it('carries project cards', () => {
     const message = createMockMessage({
-      projectCards: [
-        { id: 'p1', name: 'Project 1', slug: 'proj-1' } as any,
-      ],
+      projectCards: [{ id: 'p1', name: 'Project 1', slug: 'proj-1' } as any],
     })
 
-    expect(message.projectCards).toBeDefined()
-    expect(message.projectCards![0].id).toBe('p1')
+    assert.ok(message.projectCards)
+    assert.equal(message.projectCards?.[0].id, 'p1')
   })
 
-  it('handles chip picker state transitions', () => {
+  it('carries chips', () => {
     const message = createMockMessage({
-      chips: [
-        { id: 'chip-1', label: 'Budget', actionType: 'filter' } as any,
-      ],
+      chips: [{ id: 'chip-1', label: 'Budget', actionType: 'filter' } as any],
     })
 
-    expect(message.chips).toHaveLength(1)
-    expect(message.chips![0].label).toBe('Budget')
+    assert.equal(message.chips?.length, 1)
+    assert.equal(message.chips?.[0].label, 'Budget')
   })
 })

@@ -1,115 +1,61 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 describe('Admin — Analytics Tab', () => {
   describe('Overview Metrics', () => {
-    it('shows key metrics cards', () => {
-      assert(true, 'Users, chats, leads, conversions')
-    })
-    it('shows trend indicators', () => {
-      assert(true, '↑↓ green/red with percentages')
-    })
-    it('metrics formatted', () => {
-      assert(true, '1.2K not 1200')
-    })
-    it('date range selector', () => {
-      assert(true, 'Last 7/30 days, custom range')
-    })
-    it('date range updates data', () => {
-      assert(true, 'Change date → metrics update')
-    })
+    it('shows key metrics cards', SPEC_TODO, () => {})
+    it('shows trend indicators', SPEC_TODO, () => {})
+    it('metrics formatted', SPEC_TODO, () => {})
+    it('date range selector', SPEC_TODO, () => {})
+    it('date range updates data', SPEC_TODO, () => {})
   })
 
   describe('Charts & Visualizations', () => {
-    it('line chart for trends', () => {
-      assert(true, 'Users/chats/leads over time')
-    })
-    it('bar chart for comparisons', () => {
-      assert(true, 'By city, by source')
-    })
-    it('pie chart for breakdown', () => {
-      assert(true, 'Leads by status %')
-    })
-    it('charts responsive', () => {
-      assert(true, 'Mobile: stack, desktop: side-by-side')
-    })
-    it('chart legend clickable', () => {
-      assert(true, 'Legend item → toggle series')
-    })
-    it('chart tooltip on hover', () => {
-      assert(true, 'Show values on hover')
-    })
-    it('chart export', () => {
-      assert(true, '"Download chart" → PNG')
-    })
+    it('line chart for trends', SPEC_TODO, () => {})
+    it('bar chart for comparisons', SPEC_TODO, () => {})
+    it('pie chart for breakdown', SPEC_TODO, () => {})
+    it('charts responsive', SPEC_TODO, () => {})
+    it('chart legend clickable', SPEC_TODO, () => {})
+    it('chart tooltip on hover', SPEC_TODO, () => {})
+    it('chart export', SPEC_TODO, () => {})
   })
 
   describe('User Analytics', () => {
-    it('signup trends', () => {
-      assert(true, 'Signups per day/week/month')
-    })
-    it('user demographics', () => {
-      assert(true, 'Age, location, budget distribution')
-    })
-    it('user retention', () => {
-      assert(true, 'Return rate, active users, churn')
-    })
-    it('user cohort analysis', () => {
-      assert(true, 'By signup date, location, budget')
-    })
+    it('signup trends', SPEC_TODO, () => {})
+    it('user demographics', SPEC_TODO, () => {})
+    it('user retention', SPEC_TODO, () => {})
+    it('user cohort analysis', SPEC_TODO, () => {})
   })
 
   describe('Property Analytics', () => {
-    it('property views trend', () => {
-      assert(true, 'Most viewed properties chart')
-    })
-    it('interest by budget', () => {
-      assert(true, 'Interest rate % by budget range')
-    })
-    it('interest by city', () => {
-      assert(true, 'Most viewed sectors/cities')
-    })
-    it('conversion funnel', () => {
-      assert(true, 'Views → leads → conversions %')
-    })
+    it('property views trend', SPEC_TODO, () => {})
+    it('interest by budget', SPEC_TODO, () => {})
+    it('interest by city', SPEC_TODO, () => {})
+    it('conversion funnel', SPEC_TODO, () => {})
   })
 
   describe('Search Analytics', () => {
-    it('popular search terms', () => {
-      assert(true, 'Most searched: budget, location, BHK')
-    })
-    it('search trends', () => {
-      assert(true, 'Searches per day line chart')
-    })
-    it('search funnel', () => {
-      assert(true, 'Searches → results shown → views')
-    })
-    it('zero-result searches', () => {
-      assert(true, 'Searches with no results')
-    })
+    it('popular search terms', SPEC_TODO, () => {})
+    it('search trends', SPEC_TODO, () => {})
+    it('search funnel', SPEC_TODO, () => {})
+    it('zero-result searches', SPEC_TODO, () => {})
   })
 
   describe('Export & Reporting', () => {
-    it('export metrics', () => {
-      assert(true, '"Export" → CSV of metrics')
-    })
-    it('export charts', () => {
-      assert(true, 'Download charts as images')
-    })
-    it('generate report', () => {
-      assert(true, '"Generate report" → PDF')
-    })
-    it('schedule report', () => {
-      assert(true, 'Email report weekly')
-    })
+    it('export metrics', SPEC_TODO, () => {})
+    it('export charts', SPEC_TODO, () => {})
+    it('generate report', SPEC_TODO, () => {})
+    it('schedule report', SPEC_TODO, () => {})
   })
 
   describe('Performance', () => {
-    it('charts load < 2s', () => {
-      assert(true, 'FCP with skeleton')
-    })
-    it('charts responsive', () => {
-      assert(true, 'Resize window → reflow')
-    })
+    it('charts load < 2s', SPEC_TODO, () => {})
+    it('charts responsive', SPEC_TODO, () => {})
   })
 })

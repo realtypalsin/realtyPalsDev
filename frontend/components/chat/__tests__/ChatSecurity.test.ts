@@ -1,488 +1,264 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 // Security-focused test suite for chat component — XSS, injection, CSRF, data leakage
 
 describe('Chat Security Hardening', () => {
   describe('XSS Prevention', () => {
-    it('escapes HTML in user text input', () => {
-      assert(true, '<script>alert(1)</script> → &lt;script&gt;')
-    })
+    it('escapes HTML in user text input', SPEC_TODO, () => {})
 
-    it('escapes HTML in AI response', () => {
-      assert(true, 'Backend response with <img onerror=x> → sanitized')
-    })
+    it('escapes HTML in AI response', SPEC_TODO, () => {})
 
-    it('sanitizes markdown with XSS payload', () => {
-      assert(true, '[xss](javascript:alert(1)) → no execution')
-    })
+    it('sanitizes markdown with XSS payload', SPEC_TODO, () => {})
 
-    it('prevents iframe injection', () => {
-      assert(true, '<iframe src=...> in response → stripped or escaped')
-    })
+    it('prevents iframe injection', SPEC_TODO, () => {})
 
-    it('prevents style injection', () => {
-      assert(true, '<style>body{display:none}</style> → escaped')
-    })
+    it('prevents style injection', SPEC_TODO, () => {})
 
-    it('prevents event handler injection', () => {
-      assert(true, 'onclick="..." onload="..." → removed')
-    })
+    it('prevents event handler injection', SPEC_TODO, () => {})
 
-    it('escapes backticks in code blocks', () => {
-      assert(true, '```<script>``` → safe code fence')
-    })
+    it('escapes backticks in code blocks', SPEC_TODO, () => {})
 
-    it('prevents data URI XSS', () => {
-      assert(true, 'href="data:text/html..." → blocked')
-    })
+    it('prevents data URI XSS', SPEC_TODO, () => {})
 
-    it('sanitizes SVG with script tags', () => {
-      assert(true, '<svg><script> in response → escaped or removed')
-    })
+    it('sanitizes SVG with script tags', SPEC_TODO, () => {})
 
-    it('prevents html5 form-hijacking', () => {
-      assert(true, '<form action=evil.com> → removed from response')
-    })
+    it('prevents html5 form-hijacking', SPEC_TODO, () => {})
 
-    it('escapes HTML entities properly', () => {
-      assert(true, '&lt; &gt; &quot; &apos; → rendered as text')
-    })
+    it('escapes HTML entities properly', SPEC_TODO, () => {})
 
-    it('handles nested HTML escaping', () => {
-      assert(true, '<<script>> → double-escaped safely')
-    })
+    it('handles nested HTML escaping', SPEC_TODO, () => {})
 
-    it('prevents mutation-based XSS', () => {
-      assert(true, '<svg><img src=x><script>eval(...)</script> → safe')
-    })
+    it('prevents mutation-based XSS', SPEC_TODO, () => {})
   })
 
   describe('SQL Injection & Query Injection', () => {
-    it('parameterizes all database queries', () => {
-      assert(true, 'Prepared statements, no string concatenation')
-    })
+    it('parameterizes all database queries', SPEC_TODO, () => {})
 
-    it('validates sector number input', () => {
-      assert(true, 'sector: "75 OR 1=1" → rejected or treated as string')
-    })
+    it('validates sector number input', SPEC_TODO, () => {})
 
-    it('validates budget range', () => {
-      assert(true, 'budget: "1; DROP TABLE projects" → safe')
-    })
+    it('validates budget range', SPEC_TODO, () => {})
 
-    it('rejects SQL keywords in location', () => {
-      assert(true, 'location: "Sector 75; DELETE" → rejected')
-    })
+    it('rejects SQL keywords in location', SPEC_TODO, () => {})
 
-    it('uses type validation on numeric fields', () => {
-      assert(true, 'budget !== number → reject or coerce')
-    })
+    it('uses type validation on numeric fields', SPEC_TODO, () => {})
 
-    it('sanitizes filter labels', () => {
-      assert(true, 'Label: "Pool<script>" → escaped when displayed')
-    })
+    it('sanitizes filter labels', SPEC_TODO, () => {})
 
-    it('validates enum values', () => {
-      assert(true, 'possession_status: "invalid" → rejected')
-    })
+    it('validates enum values', SPEC_TODO, () => {})
 
-    it('prevents time-based blind SQL injection', () => {
-      assert(true, 'Input with SLEEP/WAITFOR → timeout + error')
-    })
+    it('prevents time-based blind SQL injection', SPEC_TODO, () => {})
 
-    it('prevents boolean-based blind injection', () => {
-      assert(true, 'OR 1=1 in filter → no unexpected results')
-    })
+    it('prevents boolean-based blind injection', SPEC_TODO, () => {})
 
-    it('escapes wildcards in like queries', () => {
-      assert(true, 'Search: "Sector%100" → treated as literal')
-    })
+    it('escapes wildcards in like queries', SPEC_TODO, () => {})
   })
 
   describe('Command Injection & Server-Side Execution', () => {
-    it('never executes user input as code', () => {
-      assert(true, 'No eval(), exec(), child_process, etc.')
-    })
+    it('never executes user input as code', SPEC_TODO, () => {})
 
-    it('validates transcription service response', () => {
-      assert(true, 'Whisper response parsed + validated')
-    })
+    it('validates transcription service response', SPEC_TODO, () => {})
 
-    it('rejects invalid JSON from server', () => {
-      assert(true, 'Malformed SSE event → skip + log')
-    })
+    it('rejects invalid JSON from server', SPEC_TODO, () => {})
 
-    it('validates project IDs before use', () => {
-      assert(true, 'projectId must be UUID or number, not path traversal')
-    })
+    it('validates project IDs before use', SPEC_TODO, () => {})
 
-    it('prevents path traversal in file operations', () => {
-      assert(true, 'Upload: "../../../etc/passwd" → rejected')
-    })
+    it('prevents path traversal in file operations', SPEC_TODO, () => {})
 
-    it('validates all API responses against schema', () => {
-      assert(true, 'Zod schema on /chat/stream responses')
-    })
+    it('validates all API responses against schema', SPEC_TODO, () => {})
 
-    it('limits response size', () => {
-      assert(true, 'Response > 10MB → abort stream')
-    })
+    it('limits response size', SPEC_TODO, () => {})
   })
 
   describe('CSRF & Cross-Origin Attacks', () => {
-    it('sends CSRF token on state-changing requests', () => {
-      assert(true, 'POST /chat/messages includes CSRF token')
-    })
+    it('sends CSRF token on state-changing requests', SPEC_TODO, () => {})
 
-    it('validates CSRF token on backend', () => {
-      assert(true, 'Backend rejects missing/invalid token')
-    })
+    it('validates CSRF token on backend', SPEC_TODO, () => {})
 
-    it('uses SameSite cookie attribute', () => {
-      assert(true, 'Set-Cookie: SameSite=Strict or Lax')
-    })
+    it('uses SameSite cookie attribute', SPEC_TODO, () => {})
 
-    it('verifies request origin', () => {
-      assert(true, 'Origin header matches expected domain')
-    })
+    it('verifies request origin', SPEC_TODO, () => {})
 
-    it('blocks cross-origin form submissions', () => {
-      assert(true, 'Fetch with credentials requires proper CORS headers')
-    })
+    it('blocks cross-origin form submissions', SPEC_TODO, () => {})
 
-    it('sends credentials only to same origin', () => {
-      assert(true, 'fetch(..., {credentials: "same-origin"})')
-    })
+    it('sends credentials only to same origin', SPEC_TODO, () => {})
 
-    it('uses POST for state changes, not GET', () => {
-      assert(true, 'No GET /chat/messages/delete or similar')
-    })
+    it('uses POST for state changes, not GET', SPEC_TODO, () => {})
 
-    it('regenerates session after sensitive action', () => {
-      assert(true, 'After signup → new sessionId issued')
-    })
+    it('regenerates session after sensitive action', SPEC_TODO, () => {})
 
-    it('includes nonce in forms', () => {
-      assert(true, 'Session nonce regenerated per page load')
-    })
+    it('includes nonce in forms', SPEC_TODO, () => {})
 
-    it('validates Referer header', () => {
-      assert(true, 'Backend logs/blocks unexpected Referer')
-    })
+    it('validates Referer header', SPEC_TODO, () => {})
   })
 
   describe('Authentication & Authorization', () => {
-    it('rejects unauthenticated chat submissions', () => {
-      assert(true, '!userId && !guestToken → 401 or redirect')
-    })
+    it('rejects unauthenticated chat submissions', SPEC_TODO, () => {})
 
-    it('validates JWT token format', () => {
-      assert(true, 'Token malformed → reject + re-login')
-    })
+    it('validates JWT token format', SPEC_TODO, () => {})
 
-    it('checks token expiration', () => {
-      assert(true, 'Expired token → 401 + refresh or re-login')
-    })
+    it('checks token expiration', SPEC_TODO, () => {})
 
-    it('verifies user owns session', () => {
-      assert(true, 'User A cannot access User B session')
-    })
+    it('verifies user owns session', SPEC_TODO, () => {})
 
-    it('validates guest token format', () => {
-      assert(true, 'Guest token UUID verified')
-    })
+    it('validates guest token format', SPEC_TODO, () => {})
 
-    it('limits guest session duration', () => {
-      assert(true, 'Guest token expires after 7 days')
-    })
+    it('limits guest session duration', SPEC_TODO, () => {})
 
-    it('prevents token leakage in URLs', () => {
-      assert(true, 'No auth token in query string, only headers')
-    })
+    it('prevents token leakage in URLs', SPEC_TODO, () => {})
 
-    it('prevents token leakage in logs', () => {
-      assert(true, 'Logs sanitize sensitive headers/tokens')
-    })
+    it('prevents token leakage in logs', SPEC_TODO, () => {})
 
-    it('uses HTTPS only for auth', () => {
-      assert(true, 'Never sends auth over HTTP')
-    })
+    it('uses HTTPS only for auth', SPEC_TODO, () => {})
 
-    it('implements logout', () => {
-      assert(true, 'Logout invalidates token server-side')
-    })
+    it('implements logout', SPEC_TODO, () => {})
 
-    it('prevents token replay attacks', () => {
-      assert(true, 'Nonce per request, server verifies uniqueness')
-    })
+    it('prevents token replay attacks', SPEC_TODO, () => {})
 
-    it('uses secure storage for token', () => {
-      assert(true, 'HttpOnly, Secure cookies or secure localStorage alternative')
-    })
+    it('uses secure storage for token', SPEC_TODO, () => {})
   })
 
   describe('Data Leakage Prevention', () => {
-    it('never logs sensitive user data', () => {
-      assert(true, 'Passwords, tokens, emails → never logged')
-    })
+    it('never logs sensitive user data', SPEC_TODO, () => {})
 
-    it('sanitizes error messages', () => {
-      assert(true, 'Error doesn\'t reveal internal paths or queries')
-    })
+    it('sanitizes error messages', SPEC_TODO, () => {})
 
-    it('hides database schema in errors', () => {
-      assert(true, 'DB error: "Column X not found" → generic error to user')
-    })
+    it('hides database schema in errors', SPEC_TODO, () => {})
 
-    it('redacts API keys from error logs', () => {
-      assert(true, 'GROQ_API_KEY never logged, even on error')
-    })
+    it('redacts API keys from error logs', SPEC_TODO, () => {})
 
-    it('hides internal user IDs when possible', () => {
-      assert(true, 'UI never shows numeric UUID to users')
-    })
+    it('hides internal user IDs when possible', SPEC_TODO, () => {})
 
-    it('prevents timing attacks on password comparison', () => {
-      assert(true, 'Constant-time comparison used if password checked client-side')
-    })
+    it('prevents timing attacks on password comparison', SPEC_TODO, () => {})
 
-    it('expires session data appropriately', () => {
-      assert(true, 'Old sessions cleared from cache after 30 days')
-    })
+    it('expires session data appropriately', SPEC_TODO, () => {})
 
-    it('clears cache on logout', () => {
-      assert(true, 'localStorage cleared, session purged')
-    })
+    it('clears cache on logout', SPEC_TODO, () => {})
 
-    it('hides other users\' intent data', () => {
-      assert(true, 'User A cannot see User B shortlist/intent')
-    })
+    it('hides other users\' intent data', SPEC_TODO, () => {})
 
-    it('filters PII in analytics', () => {
-      assert(true, 'Analytics never includes email, phone, full address')
-    })
+    it('filters PII in analytics', SPEC_TODO, () => {})
 
-    it('implements request rate limiting', () => {
-      assert(true, 'rate limiting: 5 messages per 15 seconds per user')
-    })
+    it('implements request rate limiting', SPEC_TODO, () => {})
 
-    it('implements per-user daily limits', () => {
-      assert(true, 'Guests: max 20 AI messages/day')
-    })
+    it('implements per-user daily limits', SPEC_TODO, () => {})
 
-    it('hides rate limit reset time from user', () => {
-      assert(true, 'No "retry after X seconds" that leaks backend clock')
-    })
+    it('hides rate limit reset time from user', SPEC_TODO, () => {})
   })
 
   describe('Content Security Policy (CSP)', () => {
-    it('sets CSP header', () => {
-      assert(true, 'Content-Security-Policy header sent')
-    })
+    it('sets CSP header', SPEC_TODO, () => {})
 
-    it('restricts inline scripts', () => {
-      assert(true, "script-src 'none' or specific nonces")
-    })
+    it('restricts inline scripts', SPEC_TODO, () => {})
 
-    it('restricts style sources', () => {
-      assert(true, "style-src 'self' only, no unsafe-inline")
-    })
+    it('restricts style sources', SPEC_TODO, () => {})
 
-    it('restricts image sources', () => {
-      assert(true, 'img-src restricts to safe domains')
-    })
+    it('restricts image sources', SPEC_TODO, () => {})
 
-    it('restricts form submissions', () => {
-      assert(true, 'form-action controls where forms can POST')
-    })
+    it('restricts form submissions', SPEC_TODO, () => {})
 
-    it('restricts frames', () => {
-      assert(true, 'frame-ancestors to same origin')
-    })
+    it('restricts frames', SPEC_TODO, () => {})
 
-    it('restricts object embeds', () => {
-      assert(true, 'object-src restricts plugins')
-    })
+    it('restricts object embeds', SPEC_TODO, () => {})
 
-    it('CSP nonce present on scripts', () => {
-      assert(true, '<script nonce={cspNonce}>')
-    })
+    it('CSP nonce present on scripts', SPEC_TODO, () => {})
 
-    it('CSP violations logged', () => {
-      assert(true, 'report-uri configured for violations')
-    })
+    it('CSP violations logged', SPEC_TODO, () => {})
   })
 
   describe('Input Validation', () => {
-    it('validates message length', () => {
-      assert(true, 'Max 2000 chars, reject longer')
-    })
+    it('validates message length', SPEC_TODO, () => {})
 
-    it('validates message type', () => {
-      assert(true, 'Must be string, not object/array')
-    })
+    it('validates message type', SPEC_TODO, () => {})
 
-    it('trims whitespace', () => {
-      assert(true, 'Empty after trim → reject')
-    })
+    it('trims whitespace', SPEC_TODO, () => {})
 
-    it('validates action type', () => {
-      assert(true, 'action.type must be enum (TEXT_MESSAGE, CHIP_SELECTED, etc)')
-    })
+    it('validates action type', SPEC_TODO, () => {})
 
-    it('validates intent fields', () => {
-      assert(true, 'budget: number, location: string, etc. — type checking')
-    })
+    it('validates intent fields', SPEC_TODO, () => {})
 
-    it('validates project IDs', () => {
-      assert(true, 'projectId UUID or numeric, never string path')
-    })
+    it('validates project IDs', SPEC_TODO, () => {})
 
-    it('validates sessionId', () => {
-      assert(true, 'sessionId must be UUID format')
-    })
+    it('validates sessionId', SPEC_TODO, () => {})
 
-    it('validates sector input', () => {
-      assert(true, 'sector: 1-200 only, no strings or negative')
-    })
+    it('validates sector input', SPEC_TODO, () => {})
 
-    it('validates floor number', () => {
-      assert(true, 'floor: >= -5 (basement) and <= 100')
-    })
+    it('validates floor number', SPEC_TODO, () => {})
 
-    it('validates BHK count', () => {
-      assert(true, 'bhk: 1-5 typical range, rejects studio/commercial')
-    })
+    it('validates BHK count', SPEC_TODO, () => {})
 
-    it('validates budget range', () => {
-      assert(true, 'minBudget <= maxBudget, both positive')
-    })
+    it('validates budget range', SPEC_TODO, () => {})
 
-    it('rejects conflicting filters', () => {
-      assert(true, 'Ready-to-move + under-construction together → error')
-    })
+    it('rejects conflicting filters', SPEC_TODO, () => {})
 
-    it('validates array inputs', () => {
-      assert(true, 'amenities: string array, not nested objects')
-    })
+    it('validates array inputs', SPEC_TODO, () => {})
 
-    it('limits array sizes', () => {
-      assert(true, 'amenities: max 50 items')
-    })
+    it('limits array sizes', SPEC_TODO, () => {})
   })
 
   describe('Rate Limiting & DDoS Prevention', () => {
-    it('rate limits by user + IP', () => {
-      assert(true, 'Per-user 5 msg/15min, per-IP 100 msg/hour')
-    })
+    it('rate limits by user + IP', SPEC_TODO, () => {})
 
-    it('increments rate limit counter on each attempt', () => {
-      assert(true, 'Failed attempt still counts toward limit')
-    })
+    it('increments rate limit counter on each attempt', SPEC_TODO, () => {})
 
-    it('returns Retry-After header', () => {
-      assert(true, 'HTTP 429 includes Retry-After: 60')
-    })
+    it('returns Retry-After header', SPEC_TODO, () => {})
 
-    it('stores rate limit state server-side', () => {
-      assert(true, 'Not client-side tracking, backend enforces')
-    })
+    it('stores rate limit state server-side', SPEC_TODO, () => {})
 
-    it('resets counter periodically', () => {
-      assert(true, 'Counter resets every 15 min / 1 hour')
-    })
+    it('resets counter periodically', SPEC_TODO, () => {})
 
-    it('protects signup endpoint', () => {
-      assert(true, '5 signup attempts per IP per hour')
-    })
+    it('protects signup endpoint', SPEC_TODO, () => {})
 
-    it('protects login endpoint', () => {
-      assert(true, '10 login attempts per IP per hour')
-    })
+    it('protects login endpoint', SPEC_TODO, () => {})
 
-    it('protects password reset', () => {
-      assert(true, '3 reset requests per email per hour')
-    })
+    it('protects password reset', SPEC_TODO, () => {})
 
-    it('protects callback request endpoint', () => {
-      assert(true, '2 callbacks per user per day')
-    })
+    it('protects callback request endpoint', SPEC_TODO, () => {})
 
-    it('prevents request flooding', () => {
-      assert(true, 'Concurrent requests capped per session')
-    })
+    it('prevents request flooding', SPEC_TODO, () => {})
 
-    it('implements backoff on repeated 429s', () => {
-      assert(true, 'Client waits exponentially longer')
-    })
+    it('implements backoff on repeated 429s', SPEC_TODO, () => {})
 
-    it('logs rate limit violations', () => {
-      assert(true, 'Suspicious patterns detected + alerted')
-    })
+    it('logs rate limit violations', SPEC_TODO, () => {})
   })
 
   describe('Third-Party Integrations Security', () => {
-    it('validates Groq API responses', () => {
-      assert(true, 'Response schema validation before use')
-    })
+    it('validates Groq API responses', SPEC_TODO, () => {})
 
-    it('never logs Groq API key', () => {
-      assert(true, 'GROQ_API_KEY never in logs')
-    })
+    it('never logs Groq API key', SPEC_TODO, () => {})
 
-    it('uses HTTPS for Groq', () => {
-      assert(true, 'Only secure TLS 1.2+ connections')
-    })
+    it('uses HTTPS for Groq', SPEC_TODO, () => {})
 
-    it('validates Google Maps responses', () => {
-      assert(true, 'Coordinates within India bounds')
-    })
+    it('validates Google Maps responses', SPEC_TODO, () => {})
 
-    it('prevents API key exposure in frontend', () => {
-      assert(true, 'API calls made server-side, not from browser')
-    })
+    it('prevents API key exposure in frontend', SPEC_TODO, () => {})
 
-    it('timeout on external service', () => {
-      assert(true, '10s timeout on external APIs')
-    })
+    it('timeout on external service', SPEC_TODO, () => {})
 
-    it('handles external service outage', () => {
-      assert(true, 'Fallback to degraded UI, not error to user')
-    })
+    it('handles external service outage', SPEC_TODO, () => {})
 
-    it('monitors quota usage', () => {
-      assert(true, 'Alerts if quota running low')
-    })
+    it('monitors quota usage', SPEC_TODO, () => {})
   })
 
   describe('Secrets & Credentials', () => {
-    it('never exposes API keys in frontend', () => {
-      assert(true, 'API keys only in .env.local')
-    })
+    it('never exposes API keys in frontend', SPEC_TODO, () => {})
 
-    it('never logs secrets', () => {
-      assert(true, 'No API key, password, token logs')
-    })
+    it('never logs secrets', SPEC_TODO, () => {})
 
-    it('uses environment variables', () => {
-      assert(true, 'process.env.* for secrets, never hardcoded')
-    })
+    it('uses environment variables', SPEC_TODO, () => {})
 
-    it('rotates secrets regularly', () => {
-      assert(true, 'Plan: API key rotation quarterly')
-    })
+    it('rotates secrets regularly', SPEC_TODO, () => {})
 
-    it('invalidates compromised secrets', () => {
-      assert(true, 'Process for emergency key revocation exists')
-    })
+    it('invalidates compromised secrets', SPEC_TODO, () => {})
 
-    it('isolates service account credentials', () => {
-      assert(true, 'Supabase service role limited to necessary permissions')
-    })
+    it('isolates service account credentials', SPEC_TODO, () => {})
 
-    it('monitors secret usage', () => {
-      assert(true, 'Alerts on unusual API key activity')
-    })
+    it('monitors secret usage', SPEC_TODO, () => {})
   })
 })

@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "check-all": "npm run typecheck && npm run lint && npm run build",
+    "check-all": "npm run typecheck && npm run lint && npm test && npm run build",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
@@ -22,7 +22,8 @@
     "db:re-embed": "tsx scripts/re-embed.ts",
     "db:seed-images": "tsx scripts/seed-images.ts",
     "test:bedrock": "tsx scripts/test-bedrock.ts",
-    "test": "jest",
+    "test": "npm run test:jest && npm run test:node",
+    "test:jest": "jest",
     "test:node": "tsx --test app/admin/__tests__/*.ts components/**/__tests__/*.ts components/__tests__/*.ts",
     "test:watch": "jest --watch"
   },

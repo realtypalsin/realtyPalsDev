@@ -1,3 +1,9 @@
+// node:test, matching the rest of components/__tests__ — this directory is run by
+// `npm run test:node`, not by jest (jest ignores it in testPathIgnorePatterns).
+// The file previously used jest's global describe/it/expect, so it threw
+// "describe is not defined" on every run of that script.
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
 import { buildPickerMessage } from '@/components/chat/MessageBubble'
 import type { ProjectCard } from '@/types/project'
 
@@ -8,10 +14,10 @@ describe('Compare feature', () => {
       { id: '2', name: 'Ace Hanei', slug: 'ace-hanei', builder: { name: 'Ace' }, unit_types: [] } as any,
     ]
     const msg = buildPickerMessage('compare', props)
-    expect(msg).toContain('Fusion The Brook')
-    expect(msg).toContain('Ace Hanei')
-    expect(msg).toContain('Compare')
-    expect(msg).toContain('vs')
+    assert.match(msg, /Fusion The Brook/)
+    assert.match(msg, /Ace Hanei/)
+    assert.match(msg, /Compare/)
+    assert.match(msg, /vs/)
   })
 
   it('builds correct message for 3+ properties', () => {
@@ -24,8 +30,8 @@ describe('Compare feature', () => {
     })) as any
 
     const msg = buildPickerMessage('compare', props)
-    expect(msg).toContain('Project 0')
-    expect(msg).toContain('Project 3')
-    expect(msg).toContain('Compare')
+    assert.match(msg, /Project 0/)
+    assert.match(msg, /Project 3/)
+    assert.match(msg, /Compare/)
   })
 })

@@ -7,7 +7,7 @@ import { PostHogProvider } from "@/components/PostHogProvider";
 import { Toaster } from "sonner";
 import { PingBackend } from "@/components/PingBackend";
 import CookiesBanner from "@/components/CookiesBanner";
-import { LazyMotion, domAnimation } from 'framer-motion'
+import { LazyMotion, domAnimation, MotionConfig } from 'framer-motion'
 import ProgressBar from '@/components/ProgressBar'
 
 const inter = Inter({
@@ -108,9 +108,16 @@ export default function RootLayout({
         </a>
         <ProgressBar />
         <PingBackend />
-        <LazyMotion features={domAnimation}>
-          <PostHogProvider>{children}</PostHogProvider>
-        </LazyMotion>
+        {/* reducedMotion="user" makes every `m.*` component in the app honour
+            the OS "reduce motion" setting: transform and layout animations are
+            dropped, opacity still cross-fades. Nothing respected that before,
+            and framer-motion drives most of the movement here. CSS-driven
+            animation is handled by the matching block in globals.css. */}
+        <MotionConfig reducedMotion="user">
+          <LazyMotion features={domAnimation}>
+            <PostHogProvider>{children}</PostHogProvider>
+          </LazyMotion>
+        </MotionConfig>
         <Toaster position="bottom-right" richColors closeButton theme="light" />
         <CookiesBanner />
 

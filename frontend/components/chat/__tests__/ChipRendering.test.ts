@@ -2,6 +2,12 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Chip } from '@/lib/discovery/chipGenerator'
 
+// Cases marked SPEC_TODO are placeholders from the original spec checklist: the
+// body asserted a constant and could not fail, so they reported as passing and
+// overstated how much of this area is really covered. Marked `todo` so they
+// surface as outstanding work instead of green.
+const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
+
 // Component-level chip rendering tests for MessageBubble and SuggestionChipGroups
 
 describe('Chip Rendering in MessageBubble', () => {
@@ -199,7 +205,6 @@ describe('Chip Rendering in MessageBubble', () => {
       assert.strictEqual(messageData.chips.length, 1)
     })
 
-    it('maintains proper spacing between matrix and chips', () => {
       // CSS should provide consistent spacing:
       // <MessageBubble>
       //   <message-text />
@@ -209,8 +214,7 @@ describe('Chip Rendering in MessageBubble', () => {
       //
       // Total spacing = table margin-bottom + chips margin-top
       // Should be consistent (e.g., 16px + 8px = 24px)
-      assert.ok(true) // Layout tested via visual regression
-    })
+    it('maintains proper spacing between matrix and chips', SPEC_TODO, () => {})
   })
 
   describe('Memory-Influenced Chip Generation', () => {
@@ -364,11 +368,9 @@ describe('Chip Rendering in MessageBubble', () => {
       assert.ok(chip.label) // Semantic label
     })
 
-    it('chips are keyboard navigable', () => {
       // Chips rendered as <button> elements
       // Should be included in tab order
       // Should respond to Enter/Space keypress
-      assert.ok(true) // Verified via component structure
-    })
+    it('chips are keyboard navigable', SPEC_TODO, () => {})
   })
 })
