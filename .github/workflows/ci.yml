@@ -96,9 +96,12 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/realtypals_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/realtypals_test
 
+      # `npm test` is now a chain (jest, then the node:test suite), so extra argv
+      # cannot be forwarded with `-- --passWithNoTests` — it would be appended to
+      # the second command in the chain, not to jest.
       - name: Frontend unit tests
         working-directory: ./frontend
-        run: npm test -- --passWithNoTests
+        run: npm test
         env:
           NODE_ENV: test
 
@@ -132,15 +135,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # This job used to be a list of echoed checkmarks: it asserted nothing and
+      # passed even if every file below had been deleted. It now verifies each
+      # safety-critical suite still exists AND still contains real assertions,
+      # so a file that gets emptied or converted to `todo` placeholders fails CI.
       - name: Check safety test coverage
+        shell: bash
         run: |
-          echo "Safety paths coverage gate:"
-          echo "✓ guardrails.test.ts — prompt injection, RERA hallucination, price/name fabrication"
-          echo "✓ conversationEngine.test.ts — stage transitions, chip cap, dedup, no-hardcoded-lifestyle"
-          echo "✓ confidence.test.ts — confidence scoring"
-          echo "✓ scoring.test.ts — ranking math"
-          echo "✓ calculators.test.ts — money math (EMI, GST, stamp duty)"
-          echo "✓ adminAuth.test.ts — session management, Bearer token"
-          echo "✓ chat.test.ts — cache logic, rate limiting, IDOR, fallback"
-          echo "✓ MessageBubble.test.tsx — chips cap 4, dedup, a11y"
-          echo "All critical safety paths have test coverage."
+          set -euo pipefail
+          fail=0
+          check() {
+            local path="$1" desc="$2"
+            if [ ! -f "$path" ]; then
+              echo "MISSING  $path — $desc"
+              fail=1
+              return
+            fi
+            # Count assertions that are not asserting a constant.
+            local n
+            n=$(grep -cE '(assert|expect)\b' "$path" | head -1)
+            local placebo
+            placebo=$(grep -cE 'assert(\.ok)?\(\s*true\b' "$path" || true)
+            local real=$(( n - placebo ))
+            if [ "$real" -lt 5 ]; then
+              echo "WEAK     $path — only $real real assertions ($desc)"
+              fail=1
+            else
+              echo "ok       $path — $real assertions ($desc)"
+            fi
+          }
+
+          check backend/src/lib/ai/__tests__/guardrails.test.ts        "prompt injection, RERA hallucination, price/name fabrication"
+          check backend/src/lib/discovery/__tests__/conversationEngine.test.ts "stage transitions, chip cap, dedup"
+          check backend/src/lib/discovery/__tests__/scoring.test.ts    "ranking math"
+          check backend/src/lib/discovery/__tests__/confidence.test.ts "confidence scoring"
+          check backend/src/lib/__tests__/calculators.test.ts          "money math (EMI, GST, stamp duty)"
+          check backend/src/lib/__tests__/adminAuth.test.ts            "session management, Bearer token"
+          check backend/src/routes/__tests__/chat.test.ts              "cache logic, rate limiting, IDOR, fallback"
+          check frontend/__tests__/MessageBubble.test.tsx              "chips cap 4, dedup, a11y"
+
+          if [ "$fail" -ne 0 ]; then
+            echo
+            echo "Safety coverage gate failed."
+            exit 1
+          fi
+          echo
+          echo "All critical safety paths still carry real assertions."
