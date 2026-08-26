@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { computeConversationState } from './conversationEngine'
+import { computeConversationState, getConvertingChips, CONVERTING_TURN_THRESHOLD } from './conversationEngine'
 import type { Intent, ScoredProject } from './types'
 
 const mockResults: ScoredProject[] = [
@@ -165,5 +165,43 @@ describe('computeConversationState', () => {
     const ids = state.chips.map(c => c.id)
     const uniqueIds = new Set(ids)
     assert.equal(ids.length, uniqueIds.size)
+  })
+})
+
+describe('CONVERTING stage', () => {
+  const shortlist = [
+    { id: 'p1', name: 'Alpha Towers' },
+    { id: 'p2', name: 'Beta Heights' },
+  ] as unknown as ScoredProject[]
+
+  it('stays in DECIDING on the first turn with a shortlist', async () => {
+    const state = await computeConversationState(
+      {} as Intent, 'SHORTLISTED', shortlist, false, [], undefined, undefined, undefined,
+      null, true, undefined, { allowLlmChips: false, stageTurnCount: 0 },
+    )
+    assert.equal(state.stage, 'DECIDING')
+  })
+
+  it('escalates to CONVERTING once the buyer stays with the shortlist', async () => {
+    const state = await computeConversationState(
+      {} as Intent, 'SHORTLISTED', shortlist, false, [], undefined, undefined, undefined,
+      null, true, undefined, { allowLlmChips: false, stageTurnCount: CONVERTING_TURN_THRESHOLD },
+    )
+    assert.equal(state.stage, 'CONVERTING')
+  })
+
+  it('offers grounded handoff chips, never an empty row', async () => {
+    const state = await computeConversationState(
+      {} as Intent, 'SHORTLISTED', shortlist, false, [], undefined, undefined, undefined,
+      null, true, undefined, { allowLlmChips: false, stageTurnCount: CONVERTING_TURN_THRESHOLD },
+    )
+    assert.ok(state.chips.length > 0)
+    assert.ok(state.chips.some(c => c.actionType === 'BOOK_VISIT'))
+    // Handoff must name a real shortlisted project, not a generic "talk to us".
+    assert.ok(state.chips.some(c => JSON.stringify(c.payload).includes('Alpha Towers')))
+  })
+
+  it('returns no converting chips when the shortlist is empty', () => {
+    assert.deepEqual(getConvertingChips([]), [])
   })
 })

@@ -21,7 +21,7 @@ export interface Intent {
   journeyStage?: 'relocation' | 'first_time_buyer' | 'yield_investor' | 'nri_investor' | 'upgrader' | 'market_evaluator' | 'general'
 
   // Phase 0: Query classification
-  queryKind?: 'DISCOVERY' | 'DRILLDOWN' | 'RANKING' | 'COMPARISON' | 'SUMMARY' | 'ADVISORY' | 'CLARIFY'
+  queryKind?: 'DISCOVERY' | 'DRILLDOWN' | 'RANKING' | 'COMPARISON' | 'SUMMARY' | 'ADVISORY' | 'CLARIFY' | 'OPEN'
 
   // Spatial scope: disambiguate "in Sector 75" (EXACT) vs "near Sector 75" (PROXIMITY)
   spatialScope?: 'EXACT' | 'PROXIMITY' | 'BROAD'

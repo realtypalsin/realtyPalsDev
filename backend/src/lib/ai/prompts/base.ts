@@ -40,7 +40,8 @@ export const getBaseSystemPrompt = (
     ? `**Word Budget Override**: The user has requested a detailed explanation. Provide a comprehensive, in-depth analysis without artificial word count limits.`
     : `**Response Length Guidelines:**
 - **Search Results (when property cards are rendered)**: 35 words. Keep search lead-in concise since property cards display the listings.
-- **Advisory, Fiduciary, Legal, RERA, Utilities (Water/Power), Rent-vs-Buy, Calculations, Comparisons, and Market Analysis**: Provide a comprehensive, data-backed explanation (100–250 words). Break down trade-offs, statutory facts, calculations, and ground realities clearly. Show all working for financial queries.`;
+- **Everything else**: answer in the first sentence, then only the facts that change the buyer's decision. 120 words is the working length. Go to 250 only when the user asked for a breakdown, a calculation, or a comparison — and in those cases show the working: trade-offs, statutory facts, ground realities.
+- **Never pad to reach a length.** A correct two-sentence answer is a complete answer. Length is a ceiling, never a target.`;
 
   const toolsSection = toolsEnabled
     ? `## TOOLS

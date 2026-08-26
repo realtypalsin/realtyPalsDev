@@ -16,16 +16,19 @@ export function EditMessageModal({ isOpen, initialText, onClose, onSave, isLoadi
   const [text, setText] = useState(initialText)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // Seed the field and park the caret at the end, once per open.
+  // `text` must stay out of the deps: with it there, this re-ran on every
+  // keystroke and yanked the caret to the end, so the middle of a message could
+  // not be edited — and on open it read a stale `text`, collapsing the caret to
+  // position 0. Both come from the same dependency.
   useEffect(() => {
+    if (!isOpen) return
     setText(initialText)
-  }, [initialText, isOpen])
-
-  useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      textareaRef.current.focus()
-      textareaRef.current.setSelectionRange(text.length, text.length)
-    }
-  }, [isOpen, text])
+    const el = textareaRef.current
+    if (!el) return
+    el.focus()
+    el.setSelectionRange(initialText.length, initialText.length)
+  }, [isOpen, initialText])
 
   const handleSave = () => {
     const trimmed = text.trim()

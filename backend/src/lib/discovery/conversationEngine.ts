@@ -60,6 +60,14 @@ export interface ConversationStateOptions {
    * paid round-trip on a page load.
    */
   allowLlmChips?: boolean
+  /**
+   * Consecutive turns already spent in the stage this turn resolves to.
+   *
+   * Chip selection was previously a pure function of the current turn, so a buyer
+   * on their fifth turn with the same shortlist saw the same chips as on their
+   * first. This is the only progression signal the engine has.
+   */
+  stageTurnCount?: number
 }
 
 export interface ConversationState {
@@ -81,17 +89,31 @@ function isChatMessage(msg: unknown): msg is ChatMessage {
 
 // ─── Stage computation ────────────────────────────────────────────────────────
 
+/**
+ * Turns spent in DECIDING before the conversation is treated as ready to convert.
+ *
+ * Two is the point where the buyer has looked at a shortlist, come back, and looked
+ * again — interest a first glance does not prove. Escalating on turn one reads as a
+ * sales push; never escalating (the old behaviour, where CONVERTING was unreachable)
+ * means the handoff chips never appear at all.
+ */
+export const CONVERTING_TURN_THRESHOLD = 2
+
 function computeStage(
   intent: Intent,
   intentState: IntentState,
   results: ScoredProject[] = [],
   isComparison: boolean = false,
   hasHistory: boolean = false,
-  isUserMessage: boolean = false
+  isUserMessage: boolean = false,
+  stageTurnCount: number = 0
 ): ConversationStage {
   const safeResults = results || []
   if (isComparison) return 'COMPARING'
-  if (safeResults.length > 0 && intentState === 'SHORTLISTED') return 'DECIDING'
+  if (safeResults.length > 0 && intentState === 'SHORTLISTED') {
+    // Sustained engagement with a live shortlist — move to handoff.
+    return stageTurnCount >= CONVERTING_TURN_THRESHOLD ? 'CONVERTING' : 'DECIDING'
+  }
   if (safeResults.length > 0) return 'RESEARCH'
   if (intentState === 'READY_TO_SEARCH') return 'SEARCHING'
   
@@ -494,6 +516,34 @@ function capChips(candidates: ChipAction[]): ChipAction[] {
   return picked.slice(0, 4)
 }
 
+/**
+ * Handoff actions, offered only once the buyer has stayed with a shortlist.
+ *
+ * Deliberately grounded in the actual shortlist rather than a generic "talk to us":
+ * a visit or callback tied to a named project is a real next step, and it is the
+ * point where the AI genuinely cannot go further (CLAUDE.md: escalation is a favour,
+ * not a funnel). Keeps one non-conversion chip so the row is never a dead end for
+ * someone who is not ready.
+ */
+export function getConvertingChips(results: ScoredProject[] = []): ChipAction[] {
+  const safeResults = results || []
+  if (safeResults.length === 0) return []
+  const projects = safeResults.slice(0, 3).map(r => ({ id: r.id, name: r.name }))
+  const pIds = projects.map(p => p.id).join(':')
+  const top = projects[0]
+
+  return [
+    chip(`BOOK_VISIT:convert_visit:${pIds}`, 'BOOK_VISIT', 'Book a site visit', '',
+      { mode: 'single', projects }, 1),
+    chip(`TEXT_MESSAGE:convert_callback:${pIds}`, 'TEXT_MESSAGE', 'Talk to an advisor', '',
+      { text: `I'd like a callback about ${top.name}.` }, 2),
+    chip(`CALCULATE_EMI:convert_emi:${pIds}`, 'CALCULATE_EMI', 'Work out the EMI', '',
+      { mode: 'single', projects }, 3),
+    chip(`TEXT_MESSAGE:convert_doubts:${pIds}`, 'TEXT_MESSAGE', 'What should worry me?', '',
+      { actionPrefix: 'What are the risks, delays or hidden costs I should worry about with', projects, actionSuffix: '?' }, 4),
+  ]
+}
+
 export function getFloorChips(intent: Intent, results: ScoredProject[] = []): ChipAction[] {
   const safeResults = results || []
   // If we do have results, offer actions grounded in them.
@@ -545,7 +595,8 @@ export async function computeConversationState(
   opts: ConversationStateOptions = {}
 ): Promise<ConversationState> {
   const allowLlmChips = opts.allowLlmChips ?? true
-  const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0, isUserMessage)
+  const stageTurnCount = opts.stageTurnCount ?? 0
+  const stage = computeStage(intent, intentState, results, isComparison, chatHistory.length > 0, isUserMessage, stageTurnCount)
   const missingFields = getMissingFields(intent, intentState)
   const confidence = computeConfidenceLevel(intent)
   const thinking = getThinkingMessage(stage, intent)
@@ -607,7 +658,7 @@ export async function computeConversationState(
         chips = await generateDynamicChips('decide', results, chatHistory, usedProvider, allowLlmChips)
         break
       case 'CONVERTING':
-        chips = []
+        chips = getConvertingChips(results)
         break
     }
   }

@@ -16,6 +16,7 @@
 
 import type { Intent } from './types'
 import { inferRankingProfile, type RankingProfile } from './rankingProfiles'
+import { detectOpenQuery, hasPropertySearchSignal } from './openQuery'
 
 export type QueryKind =
   | 'DISCOVERY'   // User searching for properties
@@ -25,6 +26,7 @@ export type QueryKind =
   | 'SUMMARY'     // High-level overview
   | 'ADVISORY'    // Ask for advice/opinion
   | 'CLARIFY'     // Need clarification
+  | 'OPEN'        // General real-estate question, not a property search
 
 export type RenderTarget = 'cards' | 'text' | 'both'
 
@@ -48,6 +50,7 @@ function getRenderTarget(queryKind: QueryKind): RenderTarget {
     case 'SUMMARY':
     case 'ADVISORY':
     case 'CLARIFY':
+    case 'OPEN':
       return 'text'
     case 'COMPARISON':
     case 'RANKING':
@@ -78,6 +81,20 @@ export function classifyQueryDeterministic(
       renderTarget: 'both',
       confidence: 'HIGH',
       reason: 'Explicit comparison request with 2+ project names',
+    }
+  }
+
+  // OPEN: general real-estate question with no property-search shape.
+  // Runs before the attribute/DRILLDOWN checks because those match on words like
+  // "reputation" and "details" that also appear in "what is X's track record" —
+  // and DRILLDOWN routes into the project pipeline, which has no row to answer from.
+  const openDetection = detectOpenQuery(userMessage, (intentObj.projectNames?.length ?? 0) > 0)
+  if (openDetection) {
+    return {
+      queryKind: 'OPEN',
+      renderTarget: 'text',
+      confidence: 'HIGH',
+      reason: openDetection.reason,
     }
   }
 
@@ -189,7 +206,7 @@ export function needsLLMFallback(classification: QueryClassification | null): bo
 export function parseQueryKindFromIntent(rawIntent: Record<string, unknown>): QueryKind {
   const queryKind = rawIntent.queryKind as string | undefined
 
-  const valid: QueryKind[] = ['DISCOVERY', 'DRILLDOWN', 'RANKING', 'COMPARISON', 'SUMMARY', 'ADVISORY', 'CLARIFY']
+  const valid: QueryKind[] = ['DISCOVERY', 'DRILLDOWN', 'RANKING', 'COMPARISON', 'SUMMARY', 'ADVISORY', 'CLARIFY', 'OPEN']
 
   if (queryKind && valid.includes(queryKind as QueryKind)) {
     return queryKind as QueryKind
@@ -214,14 +231,24 @@ export function classifyQuery(
   }
 
   // Fallback to LLM-provided queryKind (already in intent from extractIntent)
-  const queryKind = parseQueryKindFromIntent(intent)
-  const renderTarget = getRenderTarget(queryKind)
+  let queryKind = parseQueryKindFromIntent(intent)
+  let reason = 'LLM classification'
+
+  // parseQueryKindFromIntent fails open to DISCOVERY. That is right when the user
+  // is shopping and wrong when they are asking — an unclassifiable question with no
+  // BHK, budget, sector or project name in it used to come back as property cards.
+  // With no search signal, OPEN is the safer default: it answers or admits a gap,
+  // where DISCOVERY answers a question the user did not ask.
+  if (queryKind === 'DISCOVERY' && !hasPropertySearchSignal(intent) && /\?|^(who|what|where|why|how|which|when|is|are|does|do|tell)\b/i.test(userMessage.trim())) {
+    queryKind = 'OPEN'
+    reason = 'Question with no property-search signal — fail open to OPEN, not DISCOVERY'
+  }
 
   return {
     queryKind,
-    renderTarget,
+    renderTarget: getRenderTarget(queryKind),
     confidence: 'MEDIUM', // LLM-derived, less confident than deterministic
-    reason: 'LLM classification',
+    reason,
   }
 }
 

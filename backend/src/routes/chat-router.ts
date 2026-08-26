@@ -34,8 +34,10 @@ import { FINANCIAL, MODELS } from '../lib/config'
 import { webSearch, areaInfo, commute, readPage } from '../lib/web'
 import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
 import { classifyQuery } from '../lib/discovery/queryClassifier'
-import { findProjectsMentioned, buildProseChips } from '../lib/discovery/proseEntities'
-import { computeConversationState, getFloorChips } from '../lib/discovery/conversationEngine'
+import { detectOpenQuery } from '../lib/discovery/openQuery'
+import { runGroundedAnswer, buildNoGroundingReply } from '../lib/ai/groundedAnswer'
+import { findProjectsMentioned, buildProseChips, linkProjectNames, findSectorsMentioned, buildOpenAnswerChips } from '../lib/discovery/proseEntities'
+import { computeConversationState, getFloorChips, CONVERTING_TURN_THRESHOLD } from '../lib/discovery/conversationEngine'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
@@ -357,6 +359,7 @@ router.post('/', async (req: Request, res: Response) => {
           summary_timeline: true,
           property_reactions: true,
           last_projects: true,
+          chat_phase: true,
           messages: { orderBy: { created_at: 'desc' }, take: 50, select: { id: true, role: true, content: true, created_at: true } },
         },
       }) : null,
@@ -404,6 +407,18 @@ router.post('/', async (req: Request, res: Response) => {
     const cachedProjectsFromSession: ScoredProject[] | null = sessionData?.last_projects
       ? (sessionData.last_projects as unknown as ScoredProject[])
       : null
+
+    /**
+     * How long the buyer has been sitting on the same shortlist, used to escalate
+     * chips from DECIDING to CONVERTING.
+     *
+     * ponytail: one turn of history, read from the persisted chat_phase, so this
+     * saturates at the threshold rather than counting true depth. That is all the
+     * current threshold (2) needs and it costs no schema change. A real counter
+     * column on ChatSession is the upgrade if chips ever need more than two rungs.
+     */
+    const previousPhase = sessionData?.chat_phase ?? null
+    const priorShortlistTurns = previousPhase === 'SHORTLISTED' ? CONVERTING_TURN_THRESHOLD : 0
     const isNewSession = !sessionId || !sessionData
     const currentSessionId = sessionId || randomUUID()
 
@@ -635,6 +650,108 @@ router.post('/', async (req: Request, res: Response) => {
       confidence: queryClassification.confidence,
       reason: queryClassification.reason,
     })
+
+    // ─── OPEN QUERY LANE (grounded general answers) ────────────────────────────
+    // Questions that are not property searches: "which sector do the richest people
+    // live in", "tell me about Investors Clinic", "who founded Elite Group".
+    // Answered from sector_intelligence / Builder first, live web second, and
+    // refused when neither grounds it. Exits before the discovery pipeline so an
+    // unanswerable question can never come back as a list of unrelated properties.
+    if (queryClassification.queryKind === 'OPEN') {
+      const openDetection = detectOpenQuery(message, ((intent as Intent).projectNames?.length ?? 0) > 0)
+        ?? { topic: 'GENERAL' as const, reason: 'Fail-open general question' }
+
+      emitUiState({
+        stage: 'RESEARCH',
+        thinking: openDetection.topic === 'ENTITY'
+          ? `Checking our records and live sources for ${openDetection.entity}…`
+          : 'Checking verified sector data…',
+        chips: [],
+        missingFields: [],
+        confidence: 'MEDIUM',
+      })
+
+      const grounded = await runGroundedAnswer({
+        message,
+        detection: openDetection,
+        city: DEFAULT_CITY,
+        userId,
+        sessionId: currentSessionId,
+      })
+
+      const rawOpenText = grounded?.text ?? buildNoGroundingReply(openDetection)
+
+      // Make the answer clickable and build chips from what it actually said.
+      // An open answer returns no cards by design, so inline links and sector chips
+      // are the only route from "Sector 128 is the most expensive" into the
+      // inventory there — without them the turn is a dead end.
+      let openText = rawOpenText
+      let openChips: Array<{ id: string; actionType: string; label: string; icon: string; analyticsId: string; priority: number; payload: Record<string, unknown> }> = []
+      try {
+        const mentionedProjects = await findProjectsMentioned(rawOpenText, DEFAULT_CITY)
+        const mentionedSectors = findSectorsMentioned(rawOpenText)
+        openText = linkProjectNames(rawOpenText, mentionedProjects)
+        openChips = buildOpenAnswerChips(mentionedProjects, mentionedSectors)
+      } catch (e) {
+        console.warn('[CHAT:OPEN_LANE:CHIP_ERROR]', e)
+      }
+
+      console.log('[CHAT:OPEN_LANE]', {
+        topic: openDetection.topic,
+        entity: openDetection.entity,
+        grounded: Boolean(grounded),
+        fromDatabase: grounded?.fromDatabase ?? false,
+        fromWeb: grounded?.fromWeb ?? false,
+        cached: grounded?.cached ?? false,
+      })
+
+      send('token', { token: openText })
+
+      // This lane returns before the main pipeline's persistence, so it writes its
+      // own turn. Without this the next message has no record the exchange happened
+      // and the assistant re-asks what it just answered.
+      try {
+        await prisma.chatMessage.createMany({
+          data: [
+            {
+              session_id: currentSessionId,
+              role: 'user',
+              content: message,
+              intent_snapshot: intent as unknown as Prisma.InputJsonValue,
+            },
+            {
+              session_id: currentSessionId,
+              role: 'assistant',
+              content: openText,
+            },
+          ],
+        })
+        await prisma.chatSession.update({
+          where: { id: currentSessionId },
+          data: { message_count: { increment: 2 } },
+        })
+        if (userId) await invalidateSessionList(userId).catch(() => {})
+      } catch (e) {
+        console.warn('[CHAT:OPEN_LANE:PERSIST_ERROR]', e)
+      }
+
+      emitUiState({
+        stage: 'RESEARCH',
+        thinking: grounded?.fromWeb ? 'Answered from our data plus live sources:' : 'Answered from verified data:',
+        chips: openChips,
+        missingFields: [],
+        confidence: grounded ? 'HIGH' : 'LOW',
+        entities: [],
+      })
+      send('done', {
+        sessionId: currentSessionId,
+        intentState: 'GATHERING',
+        intent,
+        responseMode: 'chat',
+      })
+      res.end()
+      return
+    }
 
     // ─── GATHERING Loop Fallback
     const currentIntentState = getIntentState(intent)
@@ -1047,7 +1164,18 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             }).join('\n')
           }
 
-          const orientationText = `### Noida & Greater Noida Locality Guide for Families & Investors\n\n| Micro-Market / Sector | Price Spectrum | Locality Highlights | Top Listed Projects |\n| :--- | :--- | :--- | :--- |\n${rows}\n\n### Recommendation\nFor **metro connectivity and immediate family infrastructure**, prioritize **Sector 75 / 76**. For **expressway corporate commute and modern high-rises**, explore **Sector 137 / 150**.`
+          const rawOrientationText = `### Noida & Greater Noida Locality Guide for Families & Investors\n\n| Micro-Market / Sector | Price Spectrum | Locality Highlights | Top Listed Projects |\n| :--- | :--- | :--- | :--- |\n${rows}\n\n### Recommendation\nFor **metro connectivity and immediate family infrastructure**, prioritize **Sector 75 / 76**. For **expressway corporate commute and modern high-rises**, explore **Sector 137 / 150**.`
+
+          // The "Top Listed Projects" column is real project names read straight from
+          // the database. Leaving them as plain text makes the most card-ready moment
+          // in the whole guide unclickable.
+          let orientationText = rawOrientationText
+          try {
+            const orientationMentions = await findProjectsMentioned(rawOrientationText, DEFAULT_CITY, 8)
+            orientationText = linkProjectNames(rawOrientationText, orientationMentions)
+          } catch (e) {
+            console.warn('[CHAT:ORIENTATION:LINK_ERROR]', e)
+          }
 
           const orientationChips = [
             { id: `chip_s76_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Flats in Sector 76', icon: 'building', analyticsId: 'chip_s76', priority: 1, payload: { text: 'Show 2 BHK and 3 BHK flats in Sector 76' } },
@@ -2977,7 +3105,14 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     let fallbackResult: any = null
 
     // Phase 5.4: Meta-awareness handler — user asking "what have you assumed about me?"
-    const isMetaQuestion = /what.*(assum|remember|know).*about.*me|what.*constraints.*i|what.*filters|what.*do you.*think|what.*my.*profile/i.test(message)
+    // Meta-awareness: the user asking what WE have inferred about THEM.
+    //
+    // `what.*do you.*think` used to be in here, which made "what do you think about
+    // Investors Clinic" — an ordinary question about a third party — return the
+    // "You've told me: Sector 70, ..." profile dump. Every branch now requires an
+    // explicit self-reference (me / my / I), so opinion questions about a company,
+    // sector or project fall through to the real answer.
+    const isMetaQuestion = /what.*(assum|remember|know).*about\s+me\b|what.*constraints.*\bi\b|what.*(my|our)\s+(filters|profile|preferences|requirements)|what.*have\s+i\s+told|what.*do you.*think.*about\s+me\b/i.test(message)
 
     const isPropertySearchWithResults = projects.length > 0 &&
       queryClassification.queryKind !== 'DRILLDOWN' &&
@@ -3401,7 +3536,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       undefined,
       chipInventory, // Reuse inventory loaded earlier for consistency
       true, // isUserMessage
-      usedProvider // Pass provider that succeeded for main response
+      usedProvider, // Pass provider that succeeded for main response
+      // Second consecutive turn on the same shortlist escalates DECIDING → CONVERTING.
+      { stageTurnCount: priorShortlistTurns }
     )
 
     // Branch-specific recovery set, handed to emitUiState as the fallback so the
@@ -3569,6 +3706,10 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
     const persistPromises: Promise<unknown>[] = []
 
+    // What actually gets written for the assistant turn. The prose-entity pass below
+    // may rewrite it with clickable project links before the insert runs.
+    let assistantTextToPersist = fullText
+
     if (isNewSession) {
       const newId = currentSessionId!
       // Chain: session create must complete before message insert (FK constraint).
@@ -3636,19 +3777,57 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       // cards. Without this, that turn renders zero chips (verified user report).
       // Only DB-matched names become chips, so nothing is invented.
       try {
-        if (fullText && projects.length === 0) {
-          const mentioned = await findProjectsMentioned(fullText, DEFAULT_CITY)
-          const proseChips = buildProseChips(mentioned)
+        if (fullText) {
+          // Names already rendered as cards this turn stay plain — a link beside the
+          // card is noise. Everything else the model named becomes clickable, which
+          // is the only route into detail for a project the search did not return.
+          const cardedIds = new Set([...projects, ...nearbyProjects].map((p) => p.id))
+          const allMentioned = await findProjectsMentioned(fullText, DEFAULT_CITY)
+          const mentioned = allMentioned.filter((m) => !cardedIds.has(m.id))
+          const proseChips = projects.length === 0 ? buildProseChips(mentioned) : []
+
+          // Cards for the projects the answer itself named.
+          //
+          // The failure this fixes: discovery resolves nothing (vague sector, or the
+          // filters excluded everything), the model answers in prose naming three
+          // real projects, and the turn renders no cards at all — so there is no way
+          // to click into any of them, and the "Compare these 3" chip has an empty
+          // shortlist to work with. These are not fallback or filler cards: every one
+          // is a name the assistant put in this specific answer, matched to a real
+          // row. Text-only turns are still excluded.
+          if (projects.length === 0 && nearbyProjects.length === 0 && mentioned.length > 0 && renderTarget !== 'text') {
+            try {
+              const namedCards = await prisma.project.findMany({
+                where: { id: { in: mentioned.map((m) => m.id) } },
+                include: {
+                  builder: { select: { id: true, name: true, slug: true } },
+                  unit_types: true,
+                  images: { take: 3, orderBy: { sort_order: 'asc' } },
+                  amenities: { take: 10 },
+                  connectivity: { take: 5, orderBy: { distance_km: 'asc' } },
+                },
+              })
+              if (namedCards.length > 0) {
+                send('properties', {
+                  exactResults: namedCards,
+                  nearbyResults: [],
+                  expansion: null,
+                  renderTarget: 'cards',
+                })
+                console.log('[CHAT:PROSE_CARDS]', { count: namedCards.length, names: namedCards.map((p) => p.name) })
+              }
+            } catch (e) {
+              console.warn('[CHAT:PROSE_CARDS:ERROR]', e)
+            }
+          }
+
           if (proseChips.length > 0 || mentioned.length > 0) {
             // Dedup + mark-shown is emitUiState's job now — doing it here as well
             // marked these chips as seen, so emitUiState's own pass then filtered
             // every one of them out and fell through to floor chips.
             const emitted = proseChips
             // Convert project names to clickable markdown links: [Name](#entity:id)
-            let linkedText = fullText
-            for (const e of mentioned) {
-              linkedText = linkedText.replace(new RegExp(`\\b${e.name}\\b`, 'g'), `[${e.name}](#entity:${e.id})`)
-            }
+            const linkedText = linkProjectNames(fullText, mentioned, cardedIds)
             emitUiState({
               stage: 'RESEARCH',
               thinking: '',
@@ -3657,18 +3836,14 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
               confidence: 'MEDIUM',
               entities: mentioned,
             })
-            // Re-emit with linked content if entities found
+            // Persist the linked form with THIS turn's message.
+            //
+            // This used to findFirst() the newest assistant row and update it — but
+            // this turn's row is written by the createMany below, so the newest row
+            // at this point is the PREVIOUS turn's, and it got overwritten with the
+            // current answer. Hand the text to the insert instead.
             if (mentioned.length > 0 && linkedText !== fullText) {
-              const linkedMessage = await prisma.chatMessage.findFirst({
-                where: { session_id: currentSessionId, role: 'assistant' },
-                orderBy: { created_at: 'desc' }
-              })
-              if (linkedMessage) {
-                await prisma.chatMessage.update({
-                  where: { id: linkedMessage.id },
-                  data: { content: linkedText }
-                })
-              }
+              assistantTextToPersist = linkedText
             }
           }
         }
@@ -3688,7 +3863,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
             {
               session_id: currentSessionId!,
               role: 'assistant',
-              content: fullText || '[streamed]',
+              content: assistantTextToPersist || '[streamed]',
               ...(messageArtifacts.length > 0
                 ? { artifacts: messageArtifacts as unknown as Prisma.InputJsonValue }
                 : {}),

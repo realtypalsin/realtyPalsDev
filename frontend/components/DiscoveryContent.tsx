@@ -1301,11 +1301,23 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       }
 
       if (action.payload.mode === 'multi') {
-        if (lastShortlist.length < 2) {
-          dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: 'Compare projects' } });
-        } else {
+        if (lastShortlist.length >= 2) {
           setCompareOverlayProperties(lastShortlist);
+          return;
         }
+        // The chip carries the projects it was built from. Prose chips are emitted
+        // precisely when the search returned no cards, so lastShortlist is empty
+        // there — reading only lastShortlist made "Compare these 3" dispatch a
+        // contentless "Compare projects" and appear to do nothing.
+        const named = (action.payload.projects ?? []) as Array<{ id: string; name: string }>;
+        if (named.length >= 2) {
+          dispatchAction({
+            type: 'TEXT_MESSAGE',
+            payload: { text: `Compare ${named.map(p => p.name).join(' and ')}` },
+          });
+          return;
+        }
+        dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: 'Compare projects' } });
         return;
       }
     }
@@ -1395,14 +1407,23 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         });
         return;
       }
-      case 'COMPARE_PROPERTIES':
+      case 'COMPARE_PROPERTIES': {
         // COMPARE_PROPERTIES with <2 resolvable slugs → open compare selector
-        if (lastShortlist.length < 2) {
-          dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: 'Compare projects' } });
-        } else {
+        if (lastShortlist.length >= 2) {
           setCompareOverlayProperties(lastShortlist);
+          return;
         }
+        const namedFallback = (action.payload?.projects ?? []) as Array<{ id: string; name: string }>;
+        dispatchAction({
+          type: 'TEXT_MESSAGE',
+          payload: {
+            text: namedFallback.length >= 2
+              ? `Compare ${namedFallback.map(p => p.name).join(' and ')}`
+              : 'Compare projects',
+          },
+        });
         return;
+      }
       default:
         console.error('[CHIP:EXHAUSTIVE] unhandled action type:', action.actionType);
         setToast({ message: "That option isn't available right now." });

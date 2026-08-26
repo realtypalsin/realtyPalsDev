@@ -40,7 +40,25 @@ export function isSafeUrl(urlString: string): boolean {
 
 interface WebResult { title: string; url: string; content: string }
 
-async function searchTavily(query: string, maxResults: number): Promise<{ answer: string; results: WebResult[] } | null> {
+/**
+ * Domains trusted for price, market and RERA claims.
+ *
+ * Deliberately narrow: a market-trend number is only as good as its source. It is
+ * the wrong list for looking up who founded a company or what a brokerage does —
+ * pass `restrictDomains: false` for those, or the search returns nothing at all.
+ */
+const TRUSTED_DOMAINS = [
+  'up-rera.in', 'credai.org', '99acres.com', 'magicbricks.com',
+  'nobroker.in', 'housing.com', 'economictimes.com', 'hindustantimes.com',
+  'thehindu.com', 'ndtv.com', 'moneycontrol.com',
+]
+
+export interface WebSearchOptions {
+  /** Restrict results to TRUSTED_DOMAINS. Default true. */
+  restrictDomains?: boolean
+}
+
+async function searchTavily(query: string, maxResults: number, restrictDomains: boolean): Promise<{ answer: string; results: WebResult[] } | null> {
   const key = process.env.TAVILY_API_KEY
   if (!key) return null
   const res = await fetch('https://api.tavily.com/search', {
@@ -52,11 +70,7 @@ async function searchTavily(query: string, maxResults: number): Promise<{ answer
       search_depth: 'basic',
       max_results: maxResults,
       include_answer: true,
-      include_domains: [
-        'up-rera.in', 'credai.org', '99acres.com', 'magicbricks.com',
-        'nobroker.in', 'housing.com', 'economictimes.com', 'hindustantimes.com',
-        'thehindu.com', 'ndtv.com', 'moneycontrol.com',
-      ],
+      ...(restrictDomains ? { include_domains: TRUSTED_DOMAINS } : {}),
     }),
     signal: AbortSignal.timeout(5000),
   })
@@ -86,10 +100,11 @@ async function searchSerper(query: string, maxResults: number): Promise<{ answer
 }
 
 /** Returns a compact, source-attributed context string, or '' if nothing found. */
-export async function webSearch(query: string, maxResults = 3): Promise<string> {
+export async function webSearch(query: string, maxResults = 3, opts: WebSearchOptions = {}): Promise<string> {
+  const restrictDomains = opts.restrictDomains !== false
   let data: { answer: string; results: WebResult[] } | null = null
   try {
-    data = await searchTavily(query, maxResults)
+    data = await searchTavily(query, maxResults, restrictDomains)
     if (!data || (!data.answer && data.results.length === 0)) data = await searchSerper(query, maxResults)
   } catch {
     try { data = await searchSerper(query, maxResults) } catch { data = null }

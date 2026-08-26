@@ -31,6 +31,101 @@ export async function findProjectsMentioned(
   }
 }
 
+/** Escape a project name before it goes into a RegExp — names carry '&', '(', '.', '-'. */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Turn every DB-matched project name in the text into a clickable entity link.
+ *
+ * Skips names already linked, so it is safe to run over text that went through
+ * this once. `alreadyCarded` holds ids rendered as cards on the same turn — those
+ * names are left as plain text, since a link next to the card is noise.
+ */
+export function linkProjectNames(
+  text: string,
+  mentioned: Array<{ id: string; name: string }>,
+  alreadyCarded: Set<string> = new Set(),
+): string {
+  let out = text
+  for (const entity of mentioned) {
+    if (alreadyCarded.has(entity.id)) continue
+    if (out.includes(`](#entity:${entity.id})`)) continue
+    // Explicit boundaries rather than \b: a name ending in a non-word character
+    // ("M3M (Phase 1)") has no word boundary after it, so \b never matches and the
+    // name silently stays unlinked.
+    const pattern = new RegExp(`(?<![A-Za-z0-9])${escapeRegExp(entity.name)}(?![A-Za-z0-9])`, 'g')
+    out = out.replace(pattern, `[${entity.name}](#entity:${entity.id})`)
+  }
+  return out
+}
+
+/** Sectors the assistant named, in the order they appear. */
+export function findSectorsMentioned(text: string, limit = 3): string[] {
+  const hits = text.match(/\bSector\s+\d+[A-Za-z]?\b/gi) ?? []
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const raw of hits) {
+    const normalized = raw.replace(/\s+/g, ' ').trim()
+    const key = normalized.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(normalized)
+    if (out.length >= limit) break
+  }
+  return out
+}
+
+/**
+ * Chips for an answer that returned no cards, built from what the answer actually
+ * said. A generic "show projects there" is dead weight when the reply named no
+ * place; a chip naming the sector the user just read about is one tap from cards.
+ */
+export function buildOpenAnswerChips(
+  projects: Array<{ id: string; name: string }>,
+  sectors: string[],
+): ChipAction[] {
+  const out: ChipAction[] = []
+  let priority = 1
+
+  for (const sector of sectors.slice(0, 2)) {
+    out.push(chip(
+      `TEXT_MESSAGE:open_sector:${sector.replace(/\s+/g, '_')}`,
+      'TEXT_MESSAGE', `Projects in ${sector}`, '',
+      { text: `Show me projects in ${sector}` },
+      priority++,
+    ))
+  }
+
+  if (projects.length >= 2) {
+    out.push(chip(
+      `COMPARE_PROPERTIES:open_compare:${projects.map(p => p.id).join(':')}`,
+      'COMPARE_PROPERTIES', `Compare these ${projects.length}`, '',
+      { mode: 'multi', projects },
+      priority++,
+    ))
+  } else if (projects.length === 1) {
+    out.push(chip(
+      `TEXT_MESSAGE:open_project:${projects[0].id}`,
+      'TEXT_MESSAGE', `About ${projects[0].name}`, '',
+      { text: `Tell me about ${projects[0].name}` },
+      priority++,
+    ))
+  }
+
+  if (sectors.length >= 2) {
+    out.push(chip(
+      `TEXT_MESSAGE:open_sector_compare:${sectors.slice(0, 2).join('_').replace(/\s+/g, '_')}`,
+      'TEXT_MESSAGE', `${sectors[0]} vs ${sectors[1]}`, '',
+      { text: `Compare ${sectors[0]} with ${sectors[1]}` },
+      priority++,
+    ))
+  }
+
+  return out
+}
+
 /** Zero-typing actions for projects the assistant named but did not return as cards. */
 export function buildProseChips(projects: Array<{ id: string; name: string }>): ChipAction[] {
   if (projects.length === 0) return []
