@@ -1922,6 +1922,12 @@ OUTPUT STRUCTURE:
         // Execute only if target projects were explicitly identified
         if (targetProjects.length > 0) {
           const targetIds = targetProjects.map(p => p.id)
+          // Detected before the query, not after it. The facts block was already
+          // topic-gated, so the heavy relations below were fetched on every turn
+          // and then dropped on the floor — the cost was paid in the database and
+          // over the wire, where no prompt gating could reach it.
+          const askedFactTopics = detectFactTopics(message)
+
           const detailedTargetProjects = await prisma.project.findMany({
             where: { id: { in: targetIds } },
             include: {
@@ -1935,12 +1941,23 @@ OUTPUT STRUCTURE:
               recommendation_profile: true,
               decision_profile: true,
               persona_profile: true,
-              // Bounded: these feed the facts block, which caps them again, and
-              // an unbounded include here would scale with a project's history.
-              price_history: { take: 8, orderBy: { recorded_at: 'desc' } },
-              construction_milestones: { take: 10, orderBy: { sort_order: 'asc' } },
-              spec_items: { take: 30, orderBy: [{ is_highlight: 'desc' }, { sort_order: 'asc' }] },
-              dna: true,
+              // Demand-driven, and bounded when taken. buildProjectFacts only reads
+              // these when the same topic fired, so fetching them unconditionally
+              // bought nothing: measured at ~35% of the facts block for detail
+              // almost no turn asks for.
+              ...(askedFactTopics.has('price_history')
+                ? { price_history: { take: 8, orderBy: { recorded_at: 'desc' as const } } }
+                : {}),
+              ...(askedFactTopics.has('construction')
+                ? { construction_milestones: { take: 10, orderBy: { sort_order: 'asc' as const } } }
+                : {}),
+              ...(askedFactTopics.has('specifications')
+                ? { spec_items: { take: 30, orderBy: [{ is_highlight: 'desc' as const }, { sort_order: 'asc' as const }] } }
+                : {}),
+              // dna is deliberately absent. ProjectDna is INTERNAL_ONLY_RELATIONS:
+              // redactProject strips it from the client and buildProjectFacts never
+              // reads it, so every turn fetched a relation that could not legally be
+              // shown and was never looked at.
             }
           })
 
@@ -1956,10 +1973,6 @@ OUTPUT STRUCTURE:
           })
 
           const totalInquiries = Array.from(projectMentionCounts.values()).reduce((sum, item) => sum + item.count, 0)
-
-          // Heavy relations (price history, fittings, construction milestones) are pulled
-          // in only when the buyer's message is about them — see detectFactTopics.
-          const askedFactTopics = detectFactTopics(message)
 
           const dbFactsJson = JSON.stringify(detailedTargetProjects.map(p => {
             const mentions = projectMentionCounts.get(p.id)?.count || 1
