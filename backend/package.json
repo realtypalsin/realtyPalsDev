@@ -18,6 +18,7 @@
     "postinstall": "prisma generate",
     "typecheck": "tsc --noEmit",
     "swagger:generate": "tsx scripts/sync-swagger.ts",
+    "verify:observability": "tsx scripts/verify-observability.ts",
     "check-all": "npm run lint && npm run typecheck && npm test"
   },
   "prisma": {
