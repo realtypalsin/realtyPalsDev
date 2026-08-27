@@ -51,7 +51,6 @@ jest.mock('@/components/property-detail/IntelligenceTab', () => () => <div data-
 jest.mock('@/components/property-detail/ResidencesTab', () => () => <div data-testid="residences-tab">ResidencesTab</div>);
 jest.mock('@/components/property-detail/ProjectPricingTab', () => () => <div data-testid="pricing-tab">PricingTab</div>);
 jest.mock('@/components/property-detail/LocationTab', () => () => <div data-testid="location-tab">LocationTab</div>);
-jest.mock('@/components/property-detail/DocumentsTab', () => () => <div data-testid="documents-tab">DocumentsTab</div>);
 
 const mockProject: ProjectCardType = {
   id: 'elite-x',

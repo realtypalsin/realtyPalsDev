@@ -28,10 +28,6 @@ jest.mock('@/components/ProjectCard', () => ({
   default: () => <div data-testid="project-card">ProjectCard</div>,
 }));
 
-jest.mock('@/components/chat/PropertyCardWithRecommendation', () => ({
-  __esModule: true,
-  default: () => <div data-testid="property-card-with-rec">PropertyCardWithRecommendation</div>,
-}));
 
 jest.mock('@/components/response/ResponseBlockRenderer', () => ({
   ResponseBlockRenderer: ({ blocks }: any) => (
