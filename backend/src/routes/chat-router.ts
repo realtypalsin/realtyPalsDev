@@ -1295,11 +1295,15 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             }
           }
 
-          const sec = intent.sector || 'Sector 76'
+          // No hardcoded sector default: falling back to "Sector 76" turned a
+          // general amenities question into an answer about one arbitrary place.
+          // With no sector we answer from whatever the buyer was already looking
+          // at, and the query below simply matches on those ids.
+          const sec = typeof intent.sector === 'string' && intent.sector ? intent.sector : ''
           const amenityProjects = await prisma.project.findMany({
             where: {
               OR: [
-                { sector: { contains: sec.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+                ...(sec ? [{ sector: { contains: sec.replace(/Sector\s*/i, ''), mode: 'insensitive' as const } }] : []),
                 { id: { in: (cachedProjectsFromSession || []).map(p => p.id) } }
               ]
             },
@@ -1307,15 +1311,21 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             take: 5
           })
 
+          // Every cell reads from the project's own rows. This table previously
+          // filled each gap with a plausible constant — a clubhouse and a set of
+          // sports facilities for projects whose amenity list was empty, and an
+          // identical "70%–80% Open Greens" for every row regardless of the
+          // recorded open_space_pct. A comparison whose columns do not vary tells
+          // the buyer the projects are equivalent.
           const rows = amenityProjects.map(p => {
             const amNames = (p.amenities || []).map(a => a.name)
-            const clubhouse = amNames.find(a => /club/i.test(a)) || 'Equipped Clubhouse & Gym'
-            const sports = amNames.filter(a => /court|pool|swim|sport|track|tennis/i.test(a)).slice(0, 3).join(', ') || 'Swimming pool & sports courts'
-            const green = '70%–80% Open Greens'
+            const clubhouse = amNames.find(a => /club/i.test(a)) || '—'
+            const sports = amNames.filter(a => /court|pool|swim|sport|track|tennis/i.test(a)).slice(0, 3).join(', ') || '—'
+            const green = p.open_space_pct != null ? `${p.open_space_pct}% open` : '—'
             return `| **${p.name}** | ${clubhouse} | ${sports} | ${green} |`
           }).join('\n')
 
-          const amenityText = `### Lifestyle & Amenities Comparison Matrix (${sec})\n\n| Society / Project | Clubhouse Scale & Wellness | Sports & Recreational Facilities | Open Green Cover |\n| :--- | :--- | :--- | :--- |\n${rows}\n\n### Lifestyle Verdict\nFor large-scale integrated amenities, choose established mega-societies with dedicated clubhouses and sports facilities.`
+          const amenityText = `### Amenities — ${sec}\n\n| Project | Clubhouse | Sports & recreation | Open green |\n| :--- | :--- | :--- | :--- |\n${rows}\n\nA dash means we have not captured that amenity for the project — it is not a statement that the project lacks it.`
 
           const amenChips = [
             { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show Ready-to-Move Flats', icon: 'check-circle', analyticsId: 'chip_rtm_am', priority: 1, payload: { text: 'Which of these are ready to move in?' } },
