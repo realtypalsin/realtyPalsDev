@@ -9,7 +9,10 @@
   added at publish time. Opening it directly in a browser still renders, but
   without the light/dark host chrome.
 
-  Last published: 2026-08-27, at HEAD b02e8a2.
+  Last edited: 2026-08-28, at HEAD 4b4b0e1 (overnight pass).
+  NOT YET REPUBLISHED — the publish tool refused a same-URL update as a
+  duplicate; the live artifact still shows the 2026-08-27 numbers. Republish
+  this file to the URL above to bring it in step.
 -->
 <title>RealtyPals Readiness</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
@@ -390,24 +393,25 @@
   <header class="masthead">
     <div class="eyebrow">Production Readiness · Audit</div>
     <h1>RealtyPals</h1>
-    <p class="standfirst">Fifty commits. What shipped, what each part of the system is worth, and the shortest path to ninety.</p>
+    <p class="standfirst">Fifty-six commits. What shipped, what each part of the system is worth, and what is still only proven by a test rather than by a click.</p>
   </header>
 
   <div class="figure">
     <div class="figure-main">
-      <span class="figure-num">87</span><span class="figure-pct">%</span>
+      <span class="figure-num">91</span><span class="figure-pct">%</span>
     </div>
     <div class="figure-side">
       <div class="figure-label">Readiness</div>
-      <div class="track"><i style="width:87%"></i></div>
+      <div class="track"><i style="width:91%"></i></div>
       <div class="track-scale"><span>0</span><span>start&nbsp;55</span><span>100</span></div>
-      <div class="delta">+32 this session · soft launch viable</div>
+      <div class="delta">+36 · every component at 7 or above</div>
     </div>
     <div class="figure-side">
       <div class="figure-label">Verification</div>
-      <div class="terminal" style="margin:0"><b>1,419</b> backend passing   <b>0</b> failing
-<b>159</b> frontend jest    <b>44</b> node
-typecheck clean, both workspaces</div>
+      <div class="terminal" style="margin:0"><b>1,433</b> backend passing   <b>0</b> failing
+<b>234</b> frontend jest    <b>44</b> node
+typecheck clean · production build clean
+<b>no browser verification</b></div>
     </div>
   </div>
 
@@ -483,6 +487,7 @@ typecheck clean, both workspaces</div>
       <table>
         <thead><tr><th>Component</th><th>Score</th><th></th><th>Note</th></tr></thead>
         <tbody>
+          <tr><td>Location resolution<span class="up">new</span></td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Reads the database; no corridor is hardcoded</td></tr>
           <tr><td>Fact tiers &amp; no-fabrication</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Enforced by tests, not convention</td></tr>
           <tr><td>Field exposure policy</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Allowlist, redaction, schema-parsing guard</td></tr>
           <tr><td>Provider chain</td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Cooldown breaker, real failover</td></tr>
@@ -494,7 +499,7 @@ typecheck clean, both workspaces</div>
           <tr><td>Test suite</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>774 <code>todo</code> are honest, not hidden</td></tr>
           <tr><td>Observability</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>PostHog + Sentry, verify script</td></tr>
           <tr><td>Prompt caching</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Built and tested; blocked on billing</td></tr>
-          <tr><td><code>chat-router.ts</code><span class="up">+2</span></td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>3,834 lines; still hosts the shared pipeline</td></tr>
+          <tr><td><code>chat-router.ts</code><span class="up">+3</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>3,536 lines; tool handlers now their own module</td></tr>
         </tbody>
       </table>
     </div>
@@ -513,9 +518,9 @@ typecheck clean, both workspaces</div>
           <tr><td>Admin analytics<span class="up">+2</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Empty states exist — my earlier 5 was wrong</td></tr>
           <tr><td>Bundle</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>−32% earlier; PostHog lazy</td></tr>
           <tr><td>Mobile polish</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Fixed but browser-unverified</td></tr>
-          <tr><td>Accessibility</td><td><span class="score s-lo">6</span></td><td><div class="bar"><i class="lo" style="width:60%"></i></div></td><td>Targets fixed; keyboard nav untested</td></tr>
-          <tr><td>ProjectDetailPanel</td><td><span class="score s-lo">6</span></td><td><div class="bar"><i class="lo" style="width:60%"></i></div></td><td>Large, many tabs, untouched</td></tr>
-          <tr><td><code>DiscoveryContent.tsx</code></td><td><span class="score s-lo">5</span></td><td><div class="bar"><i class="lo" style="width:50%"></i></div></td><td>2,083 lines; SSE + session + UI in one</td></tr>
+          <tr><td>Accessibility<span class="up">+2</span></td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Focus trapped, Escape closes, focus restored; 21 tests</td></tr>
+          <tr><td>ProjectDetailPanel<span class="up">+1</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Real tablist, roving tabindex, arrow keys</td></tr>
+          <tr><td><code>DiscoveryContent.tsx</code><span class="up">+2</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>1,954 lines; shaping and restore extracted, 49 tests</td></tr>
         </tbody>
       </table>
     </div>
@@ -526,42 +531,42 @@ typecheck clean, both workspaces</div>
     <p class="sec-note">In dependency order — step one gates everything visual, and step two is a billing switch rather than an engineering problem.</p>
 
     <ol class="steps">
-      <li>
-        <div>
-          <div class="step-title">Browser QA pass</div>
-          <div class="step-body">Every mobile change this session is unverified in a real browser — the automation dropped mid-session. The filter dock, the card shelf, the horizontal rail, the configurations overlay and the intent flow all typecheck and pass tests, but none has been clicked. This is the single largest risk on the board and it costs an hour.</div>
-          <div class="step-cost">blocking · ~1h · +2</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <div class="step-title">Enable Gemini billing</div>
-          <div class="step-body">Explicit caching is implemented, tested and wired. It returned <code>limit=0</code> — cache storage is unavailable on the free tier entirely, which is also why implicit caching never hit. Nothing further to build; input cost should fall roughly 60% the moment billing is on.</div>
-          <div class="step-cost">no code · ~60% input cost · +1</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <div class="step-title">Split <code>DiscoveryContent.tsx</code></div>
-          <div class="step-body">2,083 lines holding the SSE stream, session restore, and the entire chat UI. Extract <code>useChatStream()</code> and <code>useSessionRestore()</code> — bounded, one commit and one test each, the same shape as the handler extraction that just worked.</div>
-          <div class="step-cost">~3h · +2</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <div class="step-title">Accessibility sweep</div>
-          <div class="step-body">Keyboard navigation is untested end to end, focus order through the dock popovers is unproven, and the chat log's live-region behaviour has never been checked with a screen reader. Touch targets are already fixed.</div>
-          <div class="step-cost">~2h · +1</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <div class="step-title">ProjectDetailPanel</div>
-          <div class="step-body">The one large component that has had no attention. Tab state, loading behaviour per tab, and freshness badges on stale sections.</div>
-          <div class="step-cost">~2h · +1</div>
-        </div>
-      </li>
-    </ol>
+        <li>
+          <div>
+            <div class="step-title">Browser QA pass</div>
+            <div class="step-body">Still the largest risk on the board, and now larger: the filter dock moved below the input, its pills wrap instead of scrolling, the chat stream is driven through an extracted reducer, and the detail panel's tabs became a real tablist. All of it typechecks, passes 1,667 tests and builds — none of it has been clicked. Nothing here should ship to a buyer before someone opens it on a phone.</div>
+            <div class="step-cost">blocking · ~1h · confirms the last four commits</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="step-title">Enable Gemini billing</div>
+            <div class="step-body">Unchanged and still free: explicit caching is implemented, tested and wired, and returned <code>limit=0</code> because cache storage is unavailable on the free tier. Nothing to build.</div>
+            <div class="step-cost">no code · ~60% input cost · +1</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="step-title">Tool access on the fallback legs</div>
+            <div class="step-body">Mistral, Cerebras and Groq all carry <code>supportsTools: false</code>. When Gemini rate-limits, <code>web_search</code>, <code>area_info</code>, <code>rera_check</code> and <code>commute</code> silently vanish for that turn — the prompt correctly switches to its no-lookups variant, so nothing is fabricated, but the advisor quietly gets less capable and nothing surfaces it. Three of five legs are blind. <code>SERPER_API_KEY</code> is also empty, so Tavily has no fallback. Both are cost decisions rather than engineering ones.</div>
+            <div class="step-cost">a decision, not a task</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="step-title">Label the corridor's far end</div>
+            <div class="step-body">Sectors 151 and 152 sit past the last sector tagged <code>micro_market = 'Noida Expressway'</code>, so the axis stops short of them. This is the design working as intended: tag them in <code>SectorIntelligence</code> and the corridor extends itself. Every attempt to reach them geometrically pulled old Noida in first.</div>
+            <div class="step-cost">data, not code · two rows</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="step-title">Extract the shared project pipeline</div>
+            <div class="step-body">The last structural item in <code>chat-router.ts</code>. The tool handlers are out; the pipeline every response path shares is not. Worth doing when someone can verify a turn end to end, not overnight.</div>
+            <div class="step-cost">~4h · unblocks the last two handlers</div>
+          </div>
+        </li>
+      </ol>
 
     <div class="callout">
       <strong>The remaining 10% is not a feature.</strong> It is verification. Almost everything on this list is “prove it works” rather than “build it”, which is the right shape for a product whose entire differentiator is that its data can be trusted.
@@ -580,6 +585,65 @@ typecheck clean, both workspaces</div>
           <tr><td>Extract the shared project pipeline</td><td><span class="score s-lo">8</span></td><td><div class="bar"><i class="lo" style="width:80%"></i></div></td><td>Unblocks the last two handlers</td></tr>
         </tbody>
       </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The overnight pass</h2>
+    <p class="sec-note">Six commits against the four components rated below seven, plus the defect that started it. Everything below is verified by tests, a typecheck and a clean production build — and by nothing a human has looked at.</p>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">A corridor asked which of its own sectors you meant</span>
+          <span class="tag sev">Dead end</span>
+        </div>
+        <div class="item-why">Two defects stacked. <code>SECTOR_CORRIDOR_ALIASES</code> mapped "Noida Expressway" to four sectors while two other files documented it as 128–158 and the database put fifteen on it. Then the sector-disambiguation guard saw four distinct sectors, discarded every result and asked <em>"did you mean 107, 137, 143 or 150?"</em> — the corridor's own contents, returned as a question. Every answer re-entered the same state. The corridor could not produce a card at all, in any phrasing.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Location now resolves from the database</span>
+          <span class="tag perf">Adaptive</span>
+        </div>
+        <div class="item-why">No list survives. A phrase resolves through tiers that each read live data: an exact sector, a numeric band ("132 to 150"), <code>SectorIntelligence.micro_market</code>, and geometric expansion along the axis through the sectors an analyst has labelled. That last tier is the point — label three sectors and the geometry finds the rest, including inventory added next month that nobody thought to tag. A corridor is a line, not a disc: a radius around the seeds put Central Noida inside the Expressway when measured, so membership is perpendicular distance to the axis at a 2km half-width. Verified against live rows: 15 sectors, 76 projects, no cross-city bleed.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">The filter dock read <code>INTENT_PATCH</code> back to the buyer</span>
+          <span class="tag sev">Trust</span>
+        </div>
+        <div class="item-why">Changing the sector from 75 to 79 put the literal string "INTENT_PATCH" in the transcript as the buyer's own turn, and handed the model <code>[User selected UI option: updated search]</code> — no field, no value. It answered about the old sector, confidently. Both halves now carry the sentence the buyer actually chose. Found alongside: clearing a budget fired two dispatches, and the second lost to the submit lock.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Dialogs a keyboard could open and not leave</span>
+          <span class="tag ux">Access</span>
+        </div>
+        <div class="item-why">Worse than the "untested" the last audit claimed. Tab walked straight out of the compare sheet into the chat behind the backdrop, where the focus ring is invisible and the buyer is typing into a form they cannot see. Escape did nothing. Closing dropped focus on <code>&lt;body&gt;</code>. One hook now traps, closes and restores across three dialogs. The detail panel's six tabs were six loose buttons — a screen reader announced "Overview, button" with no hint it was one of six; they are now a tablist with a roving tabindex and arrow keys.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Untestable logic, made testable</span>
+          <span class="tag perf">Structure</span>
+        </div>
+        <div class="item-why">Two hundred lines of stream message shaping and three restore decisions lived inside effects inside a 2,089-line component, reachable only by running a chat turn. Both are pure and now sit in <code>lib/chat/</code> under 49 tests — including that a gathering turn never shows a property spinner, that a question sorts above the answer written in the same millisecond, and that <code>responseMode</code> comes from the backend rather than from what the frontend can see. Three hundred lines of tool dispatch left the request handler the same way.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Connectivity distances are synthetic</span>
+          <span class="tag sev">Data</span>
+        </div>
+        <div class="item-why">Worth knowing before anyone builds on them: 280 identical "Noida - Greater Noida Expressway" rows from the enrichment script, and at a 3km threshold they return Sector 62 and Greater Noida West. They were the obvious source for deriving a corridor and they are unusable. <code>lat</code>/<code>lng</code> is the only trustworthy geo signal — 280 of 280 populated, 253 distinct.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>The honest limit.</strong> Every claim above rests on tests, a typecheck and a build. The chat was never opened, no turn was streamed from a live provider, and no phone was held. A green suite proves the shaping is right; it cannot prove the dock is reachable with a thumb.
     </div>
   </section>
 
@@ -616,7 +680,7 @@ typecheck clean, both workspaces</div>
 
   <footer>
     <span>RealtyPals · production readiness audit</span>
-    <span class="mono">50 commits · 1,419 + 203 tests passing · 0 failing</span>
+    <span class="mono">56 commits · 1,433 + 278 tests passing · 0 failing</span>
   </footer>
 
 </div>
