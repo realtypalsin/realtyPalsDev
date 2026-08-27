@@ -581,7 +581,22 @@ function MessageBubbleInner({
           desktop grid further down is hidden at this breakpoint so the cards
           render once, not twice. */}
       {!isUser && (
-        <MobileCardShelf projects={shelfProjects}>
+        <MobileCardShelf
+          projects={shelfProjects}
+          sector={shelfProjects[0]?.sector ?? null}
+          onMap={() => window.dispatchEvent(new CustomEvent('realtypals:open-map'))}
+          canCompare={shelfProjects.length >= 2}
+          compareActive={comparingMessageId === message.id}
+          onCompare={() => {
+            if (comparingMessageId === message.id) {
+              onCancelCompare?.()
+            } else if (onStartCompare) {
+              onStartCompare(message.id, shelfProjects)
+            } else {
+              onOpenCompare(shelfProjects)
+            }
+          }}
+        >
           <div className="flex flex-col gap-3 w-full">
             {shelfProjects.map((property, pi) => (
               <ProjectCard
@@ -1119,7 +1134,7 @@ function MessageBubbleInner({
           : (rawExactList[0]?.sector || rawNearbyList[0]?.sector || rawLegacyList[0]?.sector)
 
         return (
-          <div className="mt-2 w-full">
+          <div className="hidden sm:block mt-2 w-full">
 
             <m.div
               initial={{ opacity: 0, y: -6 }}
@@ -1221,7 +1236,7 @@ function MessageBubbleInner({
                 {/* Property Results Grid */}
                 {(useNewFormat ? exactList : legacyList).length > 0 && (
                   <div className="mt-3">
-                    <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {(useNewFormat ? exactList : legacyList).map((property, pi) => (
                         <m.div
                           key={property.id}
@@ -1278,7 +1293,7 @@ function MessageBubbleInner({
                         </span>
                       </div>
                     )}
-                    <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {nearbyList.map((property, pi) => (
                         <m.div
                           key={property.id}
