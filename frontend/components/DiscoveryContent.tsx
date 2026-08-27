@@ -38,6 +38,13 @@ import {
 import { FilterDock } from '@/components/chat/FilterDock';
 import { useSessions } from '@/hooks/useSessions';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
+import {
+  restoreMessage,
+  sortRestoredMessages,
+  lastMessageWithResults,
+  attachTrailingChips,
+  type StoredMessage,
+} from '@/lib/chat/sessionRestore';
 import { ChatPhase2Skeleton } from '@/components/skeletons';
 
 const DEBUG = process.env.NODE_ENV !== 'production'
@@ -927,7 +934,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           }
           const restoredHistory = (cached.restored ?? []) as ChatMessage[];
           setChatHistory(restoredHistory);
-          const lastMsgWithResults = [...restoredHistory].reverse().find(m => ((m.exactResults?.length ?? 0) > 0 || (m.nearbyResults?.length ?? 0) > 0));
+          const lastMsgWithResults = lastMessageWithResults(restoredHistory);
           if (lastMsgWithResults) {
             setExpandedShortlists(new Set([lastMsgWithResults.id]));
           }
@@ -992,53 +999,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           }
           const mapperT0 = performance.now()
           const restored: ChatMessage[] = data.messages.map((m: RawMessage) => {
-            const base: ChatMessage = {
-              id: m.id,
-              type: m.role === 'user' ? 'user' : 'ai',
-              content: m.content,
-              timestamp: m.created_at,
-            }
-            for (const artifact of (m.artifacts ?? [])) {
-              if (artifact.type === 'property_results') {
-                base.exactResults = artifact.exactResults as ProjectCardType[]
-                base.nearbyResults = artifact.nearbyResults as ProjectCardType[]
-                base.expansion = artifact.expansion as NearbyExpansion | null
-                base.responseMode = 'search'
-              }
-              if (artifact.type === 'comparison') {
-                base.showComparisonTable = true
-                base.responseMode = 'comparison'
-                if (Array.isArray(artifact.projects) && artifact.projects.length >= 2) {
-                  base.comparisonProjects = (artifact.projects as ProjectCardType[]).slice(0, 4)
-                } else if (artifact.left && artifact.right) {
-                  base.comparisonProjects = [artifact.left as ProjectCardType, artifact.right as ProjectCardType]
-                }
-              }
-              if (artifact.type === 'ui_state' || artifact.chips) {
-                base.chips = (artifact.chips || (artifact as any).ui_state?.chips) as any
-              }
-            }
-            return base
+            return restoreMessage(m as unknown as StoredMessage)
           })
-          if (data.ui_state?.chips && Array.isArray(data.ui_state.chips) && data.ui_state.chips.length > 0) {
-            const lastAiMsg = [...restored].reverse().find(m => m.type === 'ai');
-            if (lastAiMsg && (!lastAiMsg.chips || (lastAiMsg.chips as any[]).length === 0)) {
-              lastAiMsg.chips = data.ui_state.chips;
-            }
-          }
+          const withChips = attachTrailingChips(restored, data.ui_state?.chips)
           const mapperMs = performance.now() - mapperT0
           if (DEBUG && nt) console.log(`[NAV] 8. mapper            +${(performance.now() - nt.t0).toFixed(1)}ms  (took ${mapperMs.toFixed(1)}ms, ${data.messages.length} msgs)`)
 
           navTimingsRef.current = { restoreStart, authMs, fetchMs, mapperMs, setHistoryAt: performance.now() }
 
-          restored.sort((a: any, b: any) => {
-            const timeA = new Date(a.timestamp || 0).getTime()
-            const timeB = new Date(b.timestamp || 0).getTime()
-            if (timeA !== timeB) return timeA - timeB
-            if (a.type === 'user' && b.type === 'ai') return -1
-            if (a.type === 'ai' && b.type === 'user') return 1
-            return 0
-          });
+          const ordered = sortRestoredMessages(withChips);
 
           LOCAL_SESSION_CACHE.set(initialSessionId, {
             session_id: data.session_id,
@@ -1047,12 +1016,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             last_intent: data.last_intent,
             last_projects: data.last_projects,
             ui_state: data.ui_state,
-            restored
+            restored: ordered
           });
 
           setIsRestoring(true);
-          setChatHistory(restored);
-          const lastMsgWithResults = [...restored].reverse().find(m => ((m.exactResults?.length ?? 0) > 0 || (m.nearbyResults?.length ?? 0) > 0));
+          setChatHistory(ordered);
+          const lastMsgWithResults = lastMessageWithResults(ordered);
           if (lastMsgWithResults) {
             setExpandedShortlists(new Set([lastMsgWithResults.id]));
           }
