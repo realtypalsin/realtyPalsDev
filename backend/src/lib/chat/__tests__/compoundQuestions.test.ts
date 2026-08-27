@@ -44,10 +44,15 @@ describe('multi-topic questions bypass the single-topic shortcuts', () => {
     )
   })
 
-  it('the amenity branch declines a multi-topic message', () => {
+  it('the amenity handler declines a multi-topic message', () => {
+    // The branch has since moved out of the router into its own handler, so the
+    // gate lives in the matcher rather than an inline guard. Same rule, and it
+    // now reads as a condition on the handler instead of a condition buried in
+    // a 4,000-line function.
+    const src = readFileSync(join(HANDLER_DIR, 'amenityLifestyle.ts'), 'utf8')
     assert.match(
-      ROUTER,
-      /if \(isAmenityQuery && singleTopic &&/,
+      src,
+      /ctx\.flags\.singleTopic === true/,
       'the amenity shortcut must not fire when the buyer asked about more than one topic',
     )
   })
@@ -55,7 +60,11 @@ describe('multi-topic questions bypass the single-topic shortcuts', () => {
   it('singleTopic reaches the extracted handlers', () => {
     const start = ROUTER.indexOf('flags: {')
     assert.ok(start !== -1, 'handler flags block not found')
-    const flags = ROUTER.slice(start, start + 900)
+    // Sized to the whole flags object rather than a fixed window: every
+    // extraction adds a flag, and a window that fitted yesterday silently stops
+    // covering the field it was written to check.
+    const end = ROUTER.indexOf('},', start)
+    const flags = ROUTER.slice(start, end === -1 ? start + 2000 : end)
     assert.match(flags, /\bsingleTopic,/, 'singleTopic must be passed to the handler registry')
   })
 

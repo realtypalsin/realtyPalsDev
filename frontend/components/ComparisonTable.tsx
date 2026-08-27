@@ -566,7 +566,7 @@ function ProjectMiniCard({
       {/* Info */}
       <div className="p-3">
         <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5 truncate">
-          {project.builder.name}
+          {project.builder?.name || 'Developer'}
         </p>
         <h4 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2 tracking-tight">
           {project.name}

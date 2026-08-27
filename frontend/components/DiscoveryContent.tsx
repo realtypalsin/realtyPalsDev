@@ -29,7 +29,7 @@ import {
   ArrowUp,
   MapPin
 } from '@phosphor-icons/react';
-import { EditableIntentChips } from '@/components/chat/EditableIntentChips';
+import { IntegratedIntentPills } from '@/components/chat/IntegratedIntentPills';
 import { useSessions } from '@/hooks/useSessions';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { ChatPhase2Skeleton } from '@/components/skeletons';
@@ -1504,24 +1504,45 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const handleOpenCalculator = useCallback(() => setShowCalculator(true), [])
   const handleOpenShareSheet = useCallback(() => setShareSheetOpen(true), [])
 
+  const handleIntentPillPatch = useCallback((patch: Record<string, unknown>) => {
+    const texts: string[] = []
+    if (patch.sector) texts.push(`Show me properties in ${patch.sector}`)
+    if (Array.isArray(patch.bhk) && patch.bhk.length) texts.push(`${patch.bhk.join(', ')} BHK`)
+    if (patch.possession) {
+      const possMap: Record<string, string> = {
+        immediate: 'ready to move',
+        '1year': 'possession in 1 year',
+        '2year': 'possession in 2 years',
+        '3year+': 'possession in 3+ years',
+      }
+      texts.push(possMap[String(patch.possession)] ?? String(patch.possession))
+    }
+    if (patch.budgetMin || patch.budgetMax) {
+      const min = patch.budgetMin ? `₹${patch.budgetMin} Cr` : ''
+      const max = patch.budgetMax ? `₹${patch.budgetMax} Cr` : ''
+      texts.push(`within budget ${[min, max].filter(Boolean).join(' - ')}`)
+    }
+    const naturalText = texts.join(' ') || 'refine search'
+    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: naturalText } })
+  }, [dispatchAction])
+
+  const handleIntentPillRemove = useCallback((field: string) => {
+    const fieldTitles: Record<string, string> = {
+      sector: 'Show all locations without sector filter',
+      bhk: 'Show all BHK configurations',
+      possession: 'Show all possession timelines',
+      budgetMax: 'Clear budget filter',
+      budgetMin: 'Clear min budget filter',
+      projectNames: 'Clear project filter',
+      builderName: 'Clear builder filter',
+    }
+    const prompt = fieldTitles[field] || `Remove ${field} filter`
+    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: prompt } })
+  }, [dispatchAction])
+
   // ── Unified Floating Bento Input Dock ──
   const chatInputForm = (
     <div className={`relative w-full transition-all duration-300 ${isInputMinimized ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
-      <div className="relative w-full">
-        {/* The intent as controls, sitting with the input.
-            The ribbon above the conversation stays as the at-a-glance summary;
-            this is where the buyer changes it, because this is where they are
-            already looking when they want to revise. Editing dispatches the
-            existing INTENT_PATCH, which the chat turns back into a natural
-            turn — the conversation is refined, never restarted. */}
-        {hasUserReplied && currentIntent && !isInputMinimized && (
-          <EditableIntentChips
-            intent={currentIntent as unknown as Record<string, unknown>}
-            disabled={isSubmitting}
-            onPatch={patch => dispatchAction({ type: 'INTENT_PATCH', payload: { patch } })}
-            onRemove={field => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
-          />
-        )}
         {rateLimitUntil && (
           <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
         )}
@@ -1551,19 +1572,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           </div>
 
           {/* Integrated Bento Bottom Action Strip */}
-          <div className="flex items-center justify-between pt-1 px-2 border-t border-slate-100 dark:border-zinc-800/60 mt-1">
-            {/* Left: Active context indicator or search shortcut */}
-            <div className="flex items-center gap-1.5 min-w-0">
-              {currentIntent?.sector ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200/70 dark:border-blue-800/60 text-[11px] font-semibold text-blue-700 dark:text-blue-300 truncate">
-                  <MapPin size={12} weight="fill" className="text-blue-600 dark:text-blue-400 shrink-0" />
-                  <span className="truncate">{String(currentIntent.sector)}</span>
-                </span>
-              ) : (
-                <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 hidden sm:inline">
-                  AI Real Estate Advisor · Noida & Greater Noida
-                </span>
-              )}
+          <div className="flex items-center justify-between pt-1 px-2 border-t border-slate-100 dark:border-zinc-800/60 mt-1 relative overflow-visible">
+            {/* Left: Active context pills (Sector, BHK, Budget, Possession) */}
+            <div className="flex items-center gap-1.5 flex-1 min-w-0 relative overflow-visible">
+              <IntegratedIntentPills
+                intent={hasUserReplied ? (currentIntent as unknown as Record<string, unknown>) : null}
+                onPatch={handleIntentPillPatch}
+                onRemove={handleIntentPillRemove}
+                disabled={isSubmitting}
+              />
             </div>
 
             {/* Right: Voice Input + Send/Stop Controls */}
@@ -1632,8 +1649,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div

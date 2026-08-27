@@ -53,12 +53,31 @@ export interface MarkdownProps {
   raw?: boolean
 }
 
+const DEFAULT_COMPONENTS: Components = {
+  table: ({ ...props }) => (
+    <div className="my-3 w-full overflow-x-auto touch-pan-x rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 shadow-2xs">
+      <table className="w-full text-left text-xs border-collapse min-w-[320px]" {...props} />
+    </div>
+  ),
+  thead: ({ ...props }) => (
+    <thead className="bg-slate-50/90 dark:bg-zinc-800/90 border-b border-slate-200/80 dark:border-zinc-750" {...props} />
+  ),
+  th: ({ ...props }) => (
+    <th className="px-3.5 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300" {...props} />
+  ),
+  td: ({ ...props }) => (
+    <td className="px-3.5 py-2.5 text-xs text-slate-700 dark:text-zinc-300 border-t border-slate-100 dark:border-zinc-800/60 leading-relaxed" {...props} />
+  ),
+}
+
 export default function Markdown({ children, components, raw = false }: MarkdownProps) {
+  const mergedComponents = components ? { ...DEFAULT_COMPONENTS, ...components } : DEFAULT_COMPONENTS
+
   return (
     <ReactMarkdown
       remarkPlugins={REMARK_PLUGINS}
       rehypePlugins={raw ? REHYPE_PLUGINS : undefined}
-      components={components}
+      components={mergedComponents}
     >
       {children}
     </ReactMarkdown>

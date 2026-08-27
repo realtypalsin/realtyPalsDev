@@ -1,5 +1,10 @@
 import type { ChatTopicHandler } from '../handlerContext'
 import { builderReputationHandler } from './builderReputation'
+import { newcomerOrientationHandler } from './newcomerOrientation'
+import { amenityLifestyleHandler } from './amenityLifestyle'
+import { sectorComparisonHandler } from './sectorComparison'
+import { paymentPlansHandler } from './paymentPlans'
+import { costSheetHandler } from './costSheet'
 import { reraVerificationHandler } from './reraVerification'
 import { statutoryTaxHandler } from './statutoryTax'
 import { possessionStatusHandler } from './possessionStatus'
@@ -38,6 +43,11 @@ import { unitConfigurationHandler } from './unitConfiguration'
  */
 export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
   builderReputationHandler,
+  newcomerOrientationHandler,
+  amenityLifestyleHandler,
+  sectorComparisonHandler,
+  paymentPlansHandler,
+  costSheetHandler,
   reraVerificationHandler,
   statutoryTaxHandler,
   possessionStatusHandler,

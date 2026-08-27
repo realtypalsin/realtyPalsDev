@@ -20,6 +20,17 @@
 import type { Response } from 'express'
 import type { Intent } from '../discovery'
 
+/** The catalogue columns the router caches. Structural, so handlers stay decoupled. */
+export interface CatalogEntry {
+  id: string
+  name: string
+  slug: string
+  sector: string
+  status: string
+  price_min_cr: number | null
+  price_range_label: string | null
+}
+
 /** The builder columns the router selects. Structural, so handlers stay decoupled. */
 export interface BuilderRow {
   id: string
@@ -104,12 +115,40 @@ export interface ChatHandlerContext {
   builders: ReadonlyArray<BuilderRow>
 
   /**
+   * The project the turn is about, when one resolved.
+   *
+   * Either the first name the extractor found or the id it resolved to — the
+   * same value the router's own branches keyed off, so a handler and the router
+   * cannot disagree about which project is in scope.
+   */
+  activeProjectName?: string
+
+  /**
+   * The lightweight project catalogue the router already loaded for this turn.
+   *
+   * Name and sector only — enough for a handler to resolve which project the
+   * buyer meant without issuing its own findMany against every row.
+   */
+  catalog: ReadonlyArray<CatalogEntry>
+
+  /** Conversation state as the router computed it for this turn. */
+  intentState: string
+
+  /** Sectors named in the message, in order. Empty when none were. */
+  sectorMatches: ReadonlyArray<string>
+
+  /**
    * Writes this turn's answer into the semantic cache.
    *
    * Handlers that produce a deterministic answer should call it; the next
    * buyer asking the same thing then costs nothing.
    */
-  setCachedResponse: (message: string, payload: { token: string; chips: ChatChip[] }) => void
+  setCachedResponse: (
+    message: string,
+    payload: { token: string; chips?: ChatChip[]; intentState?: string; responseMode?: string },
+    ttlMs?: number,
+    scope?: string,
+  ) => void
 }
 
 export interface ChatTopicHandler {
