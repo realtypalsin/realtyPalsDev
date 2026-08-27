@@ -1540,15 +1540,20 @@ function MessageBubbleInner({
 
 
 
-      // A hardcoded "Want to know more?" grid used to sit here: four fixed
-      // follow-ups (Explain the cost / Builder background / What could go wrong /
-      // How does it compare) in their own blue style.
-      //
-      // It was a second chip layer stacked under the real one. The conversation
-      // engine already emits contextual chips for this turn through combinedChips;
-      // these four were static, ignored the intent, and rendered in a palette
-      // nothing else uses, so the buyer saw two different-looking chip rows and
-      // no way to tell which was which. Removed in favour of the engine.
+      {/* A hardcoded "Want to know more?" grid used to sit here: four fixed
+          follow-ups (Explain the cost / Builder background / What could go wrong /
+          How does it compare) in their own blue style.
+
+          It was a second chip layer stacked under the real one. The conversation
+          engine already emits contextual chips for the turn through combinedChips;
+          these four were static, ignored the intent, and rendered in a palette
+          nothing else uses, so the buyer saw two different-looking chip rows and
+          no way to tell which was which. Removed in favour of the engine.
+
+          NOTE: keep this as a braced JSX comment. Bare double-slash lines in a
+          JSX children position are not comments at all — React renders them as
+          literal text, which is exactly what shipped: the whole paragraph
+          appeared in the chat above the results header. */}
 
       {/* Comparison table */}
       {message.type === 'ai' && message.showComparisonTable && (message.comparisonProjects?.length ?? 0) >= 2 && (
