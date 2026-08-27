@@ -131,7 +131,25 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [showContextWarning, setShowContextWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
-  const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
+  const [sessionId, setSessionIdState] = useState<string | null>(initialSessionId ?? null);
+
+  /**
+   * The session id as of *right now*, not as of the last render.
+   *
+   * The backend returns the id it created on the `done` event of the first turn.
+   * Sending read `sessionId` from React state, so a second message sent before
+   * that state commit went out with `sessionId: undefined` — and the backend,
+   * seeing no session, created a second one. The conversation silently split
+   * across two rows, and half of it vanished on refresh.
+   *
+   * A ref is written synchronously, so the next send sees the id even if React
+   * has not re-rendered yet.
+   */
+  const sessionIdRef = useRef<string | null>(initialSessionId ?? null);
+  const setSessionId = useCallback((id: string | null) => {
+    sessionIdRef.current = id;
+    setSessionIdState(id);
+  }, []);
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [compareOverlayProperties, setCompareOverlayProperties] = useState<ProjectCardType[] | null>(null);
   const [currentIntent, setCurrentIntent] = useState<Record<string, unknown> | null>(null);
@@ -661,7 +679,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     let localProjects: ProjectCardType[] = [];
 
     streamChatBackend(action, {
-      sessionId: sessionId ?? undefined,
+      // Ref, not state: a second message sent before the first turn's `done`
+      // committed used to go out with no session id, and the backend forked a
+      // second session for the same conversation.
+      sessionId: sessionIdRef.current ?? sessionId ?? undefined,
       userId: userId ?? undefined,
       guestToken: guestToken ?? undefined,
       intent: currentIntent ?? undefined,

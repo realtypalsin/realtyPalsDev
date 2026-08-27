@@ -62,6 +62,7 @@ import { unverified, unverifiedFeature, confidenceFor, headingFor, UP_STATUTORY,
 import { redactProject } from '../lib/projectExposure'
 import { buildProjectFacts, detectFactTopics } from '../lib/projectFactsBlock'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
+import { loadMentionedProjectCards } from '../lib/chat/mentionedProjectCards'
 import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
 import { CHAT_TOPIC_HANDLERS } from '../lib/chat/handlers'
@@ -739,19 +740,38 @@ router.post('/', async (req: Request, res: Response) => {
 
       const rawOpenText = grounded?.text ?? buildNoGroundingReply(openDetection)
 
-      // Make the answer clickable and build chips from what it actually said.
-      // An open answer returns no cards by design, so inline links and sector chips
-      // are the only route from "Sector 128 is the most expensive" into the
-      // inventory there — without them the turn is a dead end.
+      // Make the answer clickable, build chips from what it said, and show cards
+      // for the projects it actually named.
+      //
+      // The lane used to emit no cards at all. Right for "who founded Elite
+      // Group"; wrong for "what are the most premium gated communities in Sector
+      // 78", which the classifier reads as open but whose answer names four real
+      // projects we hold. The buyer got prose and had to re-ask in listing
+      // phrasing to get anything they could save, compare or open.
+      //
+      // The card set is exactly what the answer named — nothing back-filled, no
+      // sector widened, no "similar projects" appended. A name the model invented
+      // resolves against no row and produces no card.
       let openText = rawOpenText
       let openChips: Array<{ id: string; actionType: string; label: string; icon: string; analyticsId: string; priority: number; payload: Record<string, unknown> }> = []
+      let openCards: unknown[] = []
       try {
         const mentionedProjects = await findProjectsMentioned(rawOpenText, DEFAULT_CITY)
         const mentionedSectors = findSectorsMentioned(rawOpenText)
         openText = linkProjectNames(rawOpenText, mentionedProjects)
         openChips = buildOpenAnswerChips(mentionedProjects, mentionedSectors)
+        openCards = await loadMentionedProjectCards(mentionedProjects)
       } catch (e) {
         console.warn('[CHAT:OPEN_LANE:CHIP_ERROR]', e)
+      }
+
+      if (openCards.length > 0) {
+        send('properties', {
+          exactResults: openCards,
+          nearbyResults: [],
+          expansion: null,
+          renderTarget: 'both',
+        })
       }
 
       console.log('[CHAT:OPEN_LANE]', {
@@ -4110,9 +4130,20 @@ router.delete('/intent', async (req: Request, res: Response) => {
   }
 
   await prisma.userMemory.deleteMany({ where: { user_id: userId } })
-  const newSession = await prisma.chatSession.create({ data: { user_id: userId } })
 
-  res.json({ ok: true, session_id: newSession.id })
+  // Deliberately does not create a session.
+  //
+  // It used to, and the row it made was worse than wasted. The client adopted
+  // that id, so the next message arrived with a sessionId whose row already
+  // existed — `isNewSession` was therefore false, and the branch that titles a
+  // session from its first message never ran. Every conversation started this
+  // way stayed titled "Chat" forever, and clicking "New chat" without typing
+  // left a permanent empty row in the sidebar.
+  //
+  // The end-of-turn persist already creates the session with a real title on the
+  // first message, for guests and signed-in users alike. Nothing needs to exist
+  // before then.
+  res.json({ ok: true })
 })
 
 // POST /session/:id/summarize — weighted summary of chat with property mention counts
@@ -4229,44 +4260,45 @@ router.get('/sessions/list', asyncHandler(async (req: Request, res: Response) =>
 
   const where = userId ? { user_id: userId } : { guest_token: guestToken }
 
+  // Only sessions that actually contain a conversation. A row with no messages
+  // is an artifact of clicking "New chat" and walking away, not something the
+  // buyer would recognise in their history — it used to appear as an untitled
+  // "Chat" with 0 messages and cluttered the sidebar.
   const sessions = await prisma.chatSession.findMany({
-    where,
+    where: { ...where, messages: { some: {} } },
     select: {
       id: true,
       title: true,
       summary: true,
       created_at: true,
+      // One query instead of a count per session.
+      _count: { select: { messages: true } },
+      // The first user message is the title fallback. Taking it here costs one
+      // join rather than a findFirst per row: the previous version issued two
+      // extra queries for every session, so a 50-row sidebar cost 101 queries.
+      messages: {
+        orderBy: { created_at: 'asc' },
+        take: 1,
+        select: { content: true },
+      },
     },
     orderBy: { created_at: 'desc' },
     take: 50,
   })
 
-  // Generate title and count messages
-  const withTitles = await Promise.all(
-    sessions.map(async (session) => {
-      let title = session.title || 'Chat'
-      if (!title || title === 'Chat') {
-        const firstMsg = await prisma.chatMessage.findFirst({
-          where: { session_id: session.id },
-          orderBy: { created_at: 'asc' },
-          select: { content: true },
-        })
-        if (firstMsg) {
-          title = firstMsg.content.substring(0, 60)
-        }
-      }
-
-      const messageCount = await prisma.chatMessage.count({
-        where: { session_id: session.id },
-      })
-
-      return {
-        ...session,
-        title,
-        messageCount,
-      }
-    })
-  )
+  const withTitles = sessions.map(session => {
+    const stored = session.title?.trim()
+    // 'Chat' is the old placeholder, not a title anyone chose.
+    const usable = stored && stored !== 'Chat' ? stored : null
+    const title = usable ?? session.messages[0]?.content.slice(0, 60) ?? 'Untitled'
+    return {
+      id: session.id,
+      title,
+      summary: session.summary,
+      created_at: session.created_at,
+      messageCount: session._count.messages,
+    }
+  })
 
   res.json({ sessions: withTitles })
 }))
