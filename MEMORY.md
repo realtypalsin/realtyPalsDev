@@ -364,3 +364,49 @@ have meant reviewing it twice and shipping it wrong once.
 **Still inline:** builder reputation, sector orientation, amenities, unit
 configuration, sector compare, payment plans, cost sheet, project detail,
 open-query lane. Nine handlers.
+
+### Session 3 — 2026-08-27: scope discipline, fabrication sweep, final audit
+
+**The trust rule, enforced.** A buyer asking about a project we do not hold used
+to receive **eight unrelated Noida projects** under "Verified Projects Status"
+with a "Recommendation" naming two of them — a `city contains 'Noida'` query
+with a hardcoded `'Sector 79, Noida'` fallback. An honest reply existed directly
+below and was unreachable. Removed. `lib/chat/unknownProject.ts` now says we do
+not hold it, then delegates to `runGroundedAnswer` (DB first, web for the gap,
+ungrounded sentences stripped). The "not ours" line always precedes web content;
+confidence is LOW whenever the web contributed.
+
+**Repo-wide fabrication sweep.** Wrote `noAssertedVerification.test.ts`, which
+fails when a verification word is the right-hand side of a `||`/`??` fallback.
+It found the pattern in four files sharing no code:
+
+| Site | Claim invented |
+|---|---|
+| `projectDataGateway` | builder delivery 85/100, RERA 90/100, quality 80/100, satisfaction 85/100, 10 delivered — all `validated: true, confidence: 1.0` |
+| `projectDataGateway` | null `insolvency_history` reported as "Clean (No NCLT filings)"; null litigation rendered as the string `"null active litigation records"` |
+| `chat-service` | no project at all → "Verified Project Details" + "Verified RERA Approved"; invented 10:70:20 CLP schedule; parking rendered `₹600000 Lakhs` (rupees labelled as lakhs) |
+| `BuilderTab` / `OverviewTab` | partner with no RERA registration → "Verified RERA Agent"; award with no body → "Verified Industry Recognition" |
+| `layout.tsx` | project description → "by a verified builder" |
+
+**`unit_configuration`: the `as any` bug.** The handler read
+`(u as any)?.balconies_count` — the column is `balconies`. The expression was
+always undefined, so `u.bhk >= 3 ? '3 Balconies' : '2 Balconies'` fired on
+**every request ever made**. Every balcony count shown was derived from the
+bedroom count. The cast is what let it compile.
+
+**Chips.** `chipInventory` already computed quartile budget bands from live
+prices; `conversationEngine` ignored them for hardcoded ₹1.2/₹1.6 bands, so a
+sector where nothing sells under ₹3 Cr offered "Under ₹1.2 Cr". Now derived.
+Sector-comparison chip no longer hardcodes "Sector 75 vs 76".
+
+**Decision — `noAssertedVerification` is the highest-leverage test written.**
+It is a grep, not a unit test, and it found five years of drift across
+unrelated files in one run. Rejected: fixing each site as found. The pattern
+recurs because nothing forbade it; the guard is what forbids it.
+
+**Admin auth verified sound** — `router.use(requireAdmin)` at router level on
+both admin routers; only `POST /auth` (login) is open, correctly.
+
+**Handler registry: 6 of 14 extracted**, chat-router 4,635 → 3,904 lines.
+Still inline: builder reputation, sector orientation, amenities, sector compare,
+payment plans, cost sheet, project detail, open-query lane.
