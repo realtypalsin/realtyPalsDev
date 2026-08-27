@@ -1099,6 +1099,46 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
         const matchedBuilders = dbBuilders.filter(b => message.toLowerCase().includes(b.name.toLowerCase()))
         const isBuilderCompare = matchedBuilders.length >= 2 && /compare|vs|versus|better|difference|track record|builder|developer/i.test(message)
 
+        // ─── PROJECT CARDS FOR THE TOPIC LANE ─────────────────────────────────────
+        // Every topic handler below answers and then ends the response, and not one
+        // of them emitted a card. So "does Ace Divino have a pool?" returned a
+        // correct, well-formatted answer about a project the buyer then had no way
+        // to save, open or compare — they had to re-ask in listing phrasing to make
+        // a card appear.
+        //
+        // Emitting here rather than inside each handler is deliberate: there are
+        // twelve of them across two files, a thirteenth is a matter of time, and a
+        // card is not something any one of them should have to remember. The client
+        // replaces its card set on each properties event, so a later lane that emits
+        // its own set simply wins.
+        //
+        // Scope rule holds: loadMentionedProjectCards resolves names against Project
+        // rows and returns only what was named. One project asked about, one card —
+        // no sector back-fill, no "similar projects" appended.
+        // Keyed on the resolved id, not the name: loadMentionedProjectCards looks
+        // rows up by id, and a drilldown turn has already resolved targetProjectId.
+        const topicCardId = typeof (intent as { targetProjectId?: unknown }).targetProjectId === 'string'
+          ? (intent as { targetProjectId: string }).targetProjectId
+          : ''
+        if (topicCardId) {
+          try {
+            const topicCards = await loadMentionedProjectCards([
+              { id: topicCardId, name: String(activeProjectName ?? '') },
+            ])
+            if (topicCards.length > 0) {
+              send('properties', {
+                exactResults: topicCards,
+                nearbyResults: [],
+                expansion: null,
+                renderTarget: 'both',
+              })
+            }
+          } catch (e) {
+            // A card is an enhancement; never fail the answer over it.
+            console.warn('[CHAT:TOPIC_CARDS]', e)
+          }
+        }
+
         // ─── TOPIC HANDLER REGISTRY ────────────────────────────────────────────────
         // Handlers extracted from this function into lib/chat/handlers/. Each was a
         // sibling `if (isXQuery) { … res.end(); return }` block here. The registry
