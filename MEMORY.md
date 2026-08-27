@@ -268,3 +268,49 @@ CLAUDE.md. The plumbing exists (`toGeminiTools()`, function-call cycles in
 `gemini.ts`) behind `ENABLE_GEMINI_TOOLS`. Flipping it changes every production
 answer, so it wants a deliberate rollout with evals — not an overnight flip.
 
+
+### Follow-up — data coverage, fabrication, exposure policy
+
+**Correction to the note above.** "No tool is reachable in production" was true of
+the *tool* path but wrong about the product: amenities, payment plans and cost
+sheet are answered by dedicated pre-LLM branches in chat-router that query Prisma
+directly and return before the tool path. Buyers were getting answers.
+
+**The real problem was the opposite.** Those branches fabricated when the DB was
+empty and labelled it `Verified` / `confidence: 'HIGH'`: an invented "**Yes**,
+<project> features an Olympic-Size Swimming Pool" that fired *because* no amenity
+matched; invented payment schedules; a cost sheet with specific rupee figures; an
+identical price band printed for every sector. Removed, and guarded by
+`lib/__tests__/noFabrication.test.ts`, which greps the router for hardcoded
+figures and for the exact strings the old fallbacks emitted.
+
+**Decision — four fact tiers** (`lib/factPresentation.ts`): verified (this
+project's rows) / statutory (fixed by UP law) / market (Noida-wide, must carry
+its qualifier) / missing (say so, offer the handoff). Confidence follows the
+weakest tier used; the word "Verified" is reserved for fully-verified answers.
+Rejected: a "typical value" fallback for project-specific facts — a Noida average
+cannot answer "does this building have a pool", and a wrong yes is discovered on
+the site visit. Market ranges are kept only where the question is genuinely
+market-wide (no project named).
+
+**Coverage was the bigger gap.** The facts block handed to the model was eleven
+hand-picked fields out of ~150 columns already on the fetched row. Maintenance,
+pet policy, lift count, water source, land tenure, airport/school distances,
+flood risk, AQI, OC status, litigation, escrow, NRI eligibility, resale lock-in —
+all held, none visible to the model. `lib/projectFactsBlock.ts` now projects the
+whole public allowlist, omitting empties (so an absent key reads as "we don't
+hold this"), keeping `false` and `0` as real answers. New fields become
+answerable when populated — no branch, no tool.
+
+**Security — `lib/projectExposure.ts`.** Project has relations to other users'
+rows (`saved_by`, `chat_sessions`, `property_feedback`); one `include` would have
+put them in a prompt. Now forbidden. `embedding`, `ai_search_keywords`,
+`builder_theme` classified internal-only. `projectExposure.test.ts` parses
+schema.prisma and fails on any unclassified column or relation, so a new field
+cannot silently leak. Applied to the chat `send('properties')` payload, which had
+been shipping whole rows to the browser.
+
+**Still open:** the 14 hardcoded topic handlers still shadow the gateway path at
+chat-router:2347. They work, but each is a separate place to keep honest. Folding
+them into the gateway is the next structural step. `ENABLE_GEMINI_TOOLS` remains
+off (see above).
