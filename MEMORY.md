@@ -458,3 +458,44 @@ structural work, not correctness work.
 
 **Live DB state:** 280 projects, 117 builders, 789 unit types, 100% cost-sheet
 coverage, 620 payment plans, 18,220 amenities.
+
+---
+
+## Session — 2026-08-28: adaptive location, extractions, keyboard access
+
+**Decision — location phrases resolve from the database, never a list.**
+`SECTOR_CORRIDOR_ALIASES` mapped "Noida Expressway" to four sectors while
+`SECTOR_ADJACENCY` and `sectorToCity` both documented the corridor as 128–158,
+and our rows put fifteen sectors on it. `lib/discovery/locationResolver.ts`
+replaces it with tiers that all read live data: exact sector, numeric band
+("132 to 150"), `SectorIntelligence.micro_market`, and geometric expansion
+along the axis through the labelled sectors. Rejected: a corrected hardcoded
+list (goes stale the same way), and an LLM resolution tier (intent extraction
+upstream has already turned the sentence into a location string; a second call
+would spend money to repeat work and add a way to be wrong).
+
+**A corridor is a line, not a disc.** Radial expansion from the seeds put
+Central Noida inside the Expressway. Membership is perpendicular distance to
+the axis, half-width 2km — measured, not guessed. Extending the axis past the
+terminal seeds was tried at 1/1.5/2/3km and rejected at every value: it pulls
+in old Noida (43/45/46) before it reaches 151/152.
+
+**Known gap, fixable with data not code:** Sectors 151 and 152 sit past the
+last labelled seed. Tag them with `micro_market = 'Noida Expressway'` in
+`SectorIntelligence` and the corridor extends itself.
+
+**Connectivity distances are synthetic — do not build on them.** 280 identical
+"Noida - Greater Noida Expressway" rows from `enrich-all-connectivity.ts`. At a
+3km threshold they return Sector 62 and Greater Noida West. `lat`/`lng` is the
+only trustworthy geo signal (280/280 populated, 253 distinct).
+
+**Open risk — three of five provider legs are tool-blind.** Mistral, Cerebras
+and Groq carry `supportsTools: false`, so when Gemini rate-limits, `web_search`,
+`area_info`, `rera_check` and `commute` silently vanish for that turn. The
+prompt correctly switches to its no-lookups variant, so nothing is fabricated —
+the assistant just quietly gets less capable and nothing surfaces it.
+`SERPER_API_KEY` is also empty, so Tavily has no fallback. Both are cost
+decisions, not code ones.
+
+**Everything this session is browser-unverified.** Typecheck, 1,433 backend and
+234 frontend tests, and a clean production build — no clicks.
