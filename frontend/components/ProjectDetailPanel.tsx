@@ -17,6 +17,7 @@ import { usePreferredImages } from '@/lib/hooks'
 import { useProjectDetailData, useProjectMediaDetection } from '@/lib/hooks/useProjectDetail'
 import type { ProjectDocumentPublic } from '@/lib/hooks/useProjectDetail'
 import { handleReraClick, handleEscapeKey, imageTypeRank } from '@/lib/projectDetailHandlers'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
 import PriceInclusions from '@/components/property-detail/PriceInclusions'
@@ -82,6 +83,38 @@ type Tab = typeof SECTION_TABS[number]
 
 const tierLabel: Record<string, string> = { STRONG_BUY: 'Strong Buy', BUY: 'Buy', HOLD: 'Hold', WATCH: 'Watch', AVOID: 'Avoid' }
 
+/** Stable ids so each tab can point at the panel it controls. */
+const PANEL_ID = 'project-detail-panel-content'
+const tabId = (tab: Tab): string => `project-detail-tab-${tab.toLowerCase().replace(/\s+/g, '-')}`
+
+/**
+ * Arrow keys move between tabs; Home and End jump to the ends.
+ *
+ * Exported for the test — the behaviour is a small state machine over an
+ * ordered list, and it is easier to prove here than through six rendered
+ * buttons. Returns the tab that should become active, or null for a key we do
+ * not handle.
+ */
+export function nextTabForKey(key: string, current: Tab): Tab | null {
+  const i = SECTION_TABS.indexOf(current)
+  switch (key) {
+    // Wraps deliberately: at the last tab, Right returns to the first rather
+    // than dead-ending, which is what the tablist pattern specifies.
+    case 'ArrowRight':
+    case 'ArrowDown':
+      return SECTION_TABS[(i + 1) % SECTION_TABS.length]
+    case 'ArrowLeft':
+    case 'ArrowUp':
+      return SECTION_TABS[(i - 1 + SECTION_TABS.length) % SECTION_TABS.length]
+    case 'Home':
+      return SECTION_TABS[0]
+    case 'End':
+      return SECTION_TABS[SECTION_TABS.length - 1]
+    default:
+      return null
+  }
+}
+
 export default function ProjectDetailPanel({ project, onClose, inline, initialDetail, userId }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -90,6 +123,31 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
     const tab = searchParams.get('tab')
     return (SECTION_TABS.includes(tab as Tab) ? tab : 'Overview') as Tab
   })
+  /**
+   * Arrow-key navigation for both tab bars. Focus follows the selection, which
+   * is what makes a roving tabindex usable: the newly active tab is the one
+   * stop in the set, so it has to actually receive focus.
+   */
+  const onTabKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    const next = nextTabForKey(e.key, activeTab)
+    if (!next) return
+    e.preventDefault()
+    // Captured now: currentTarget is cleared once the handler returns.
+    const list = e.currentTarget
+    setActiveTab(next)
+    // Focus after React has swapped which button is the tab stop.
+    requestAnimationFrame(() => {
+      list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus()
+    })
+  }, [activeTab])
+
+  // Tab stays inside the panel, Escape closes it, focus returns to the card
+  // that opened it. Inline renders are part of the page, not a dialog, so they
+  // must not trap anything.
+  const isDialog = !inline && !!project
+  const desktopDialogRef = useDialogA11y<HTMLDivElement>(isDialog && !isMobile, onClose)
+  const mobileDialogRef = useDialogA11y<HTMLDivElement>(isDialog && isMobile, onClose)
+
   const { detail, documents, loading, paymentPlan, costSheet } = useProjectDetailData(project, initialDetail || null, 'Overview', userId, activeTab)
   const [showVisitScheduler, setShowVisitScheduler] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -431,12 +489,29 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
           <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 flex-shrink-0 hidden md:block" />
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0 justify-start sm:justify-center px-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {/* A real tablist. These were six plain buttons: a screen reader
+            announced "Overview, button" with no hint that they were a set of
+            six or which one was showing, and a keyboard had to Tab through
+            every one to reach the last. */}
+        <div
+          role="tablist"
+          aria-label="Project sections"
+          onKeyDown={onTabKeyDown}
+          className="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0 justify-start sm:justify-center px-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
           {SECTION_TABS.map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
+                id={tabId(tab)}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={PANEL_ID}
+                // Roving tabindex: one stop for the whole set, arrows move
+                // within it. This is what the pattern expects, and it is the
+                // difference between one Tab press and six.
+                tabIndex={isActive ? 0 : -1}
                 onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold rounded-xl transition-all whitespace-nowrap cursor-pointer ${
                   isActive
@@ -481,12 +556,22 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
 
   const mobileTabBar = (
     <div className="sticky top-0 z-30 w-full bg-white/95 dark:bg-[#120f0d]/95 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shadow-xs flex-shrink-0">
-      <div className="flex items-center justify-around px-0.5 py-1">
+      <div
+        role="tablist"
+        aria-label="Project sections"
+        onKeyDown={onTabKeyDown}
+        className="flex items-center justify-around px-0.5 py-1"
+      >
         {SECTION_TABS.map((tab) => {
           const isActive = activeTab === tab
           return (
             <button
               key={tab}
+              id={`${tabId(tab)}-mobile`}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={PANEL_ID}
+              tabIndex={isActive ? 0 : -1}
               onClick={() => {
                 setActiveTab(tab)
                 if (scrollContainerMobileRef.current) {
@@ -946,10 +1031,22 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
                 transition={{ duration: 0.22, ease: 'easeOut' }}
                 className="relative flex flex-col w-[95vw] max-w-[1200px] h-[90vh] max-h-[900px]
                            rounded-3xl bg-gray-50 dark:bg-slate-800 overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.4)]"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${project?.name ?? 'Project'} details`}
+                ref={desktopDialogRef}
                 onClick={(e) => e.stopPropagation()}
               >
               {/* Scrollable Content */}
-              <div ref={scrollContainerRef} className="flex-1 overflow-y-auto w-full relative pb-24 hide-scrollbar" onScroll={handleScroll}>
+              <div
+                ref={scrollContainerRef}
+                id={PANEL_ID}
+                role="tabpanel"
+                aria-labelledby={tabId(activeTab)}
+                tabIndex={0}
+                className="flex-1 overflow-y-auto w-full relative pb-24 hide-scrollbar"
+                onScroll={handleScroll}
+              >
                 {/* Hero Section */}
                 {renderHero()}
 
@@ -1008,6 +1105,10 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               className="relative flex flex-col w-full h-[92dvh] max-h-[92dvh]
                          bg-white dark:bg-[#120f0d] rounded-t-[24px] overflow-hidden
                          shadow-[0_-8px_40px_rgba(0,0,0,0.25)]"
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${project?.name ?? 'Project'} details`}
+              ref={mobileDialogRef}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Subtle top grab handle */}
@@ -1016,8 +1117,12 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
               </div>
 
               {/* Scrollable container containing Hero, sticky mobile Tab Bar, and Tab Content */}
-              <div 
-                ref={scrollContainerMobileRef} 
+              <div
+                ref={scrollContainerMobileRef}
+                id={PANEL_ID}
+                role="tabpanel"
+                aria-labelledby={`${tabId(activeTab)}-mobile`}
+                tabIndex={0}
                 className="flex-1 overflow-y-auto overscroll-contain relative pb-20 dark:bg-[#0a0a0a]"
               >
                 {/* Full-height luxury Mobile Hero */}

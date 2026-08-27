@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { CaretDown, Check, MagnifyingGlass, X } from '@phosphor-icons/react'
 
 /**
@@ -159,7 +160,10 @@ export function FilterDock({
   const [mounted, setMounted] = useState(false)
 
   const pillRefs = useRef<Record<string, HTMLDivElement | null>>({})
-  const panelRef = useRef<HTMLDivElement>(null)
+  // Tab cycles inside the open panel, Escape closes it, and focus returns to
+  // the pill that opened it. Without the last one, dismissing a filter dropped
+  // the keyboard back at the top of the page.
+  const panelRef = useDialogA11y<HTMLDivElement>(openField !== null, () => setOpenField(null))
 
   useEffect(() => setMounted(true), [])
 
@@ -385,6 +389,7 @@ export function FilterDock({
             <div
               ref={panelRef}
               role="dialog"
+              aria-modal="true"
               aria-label={spec.title}
               className="relative w-full rounded-t-2xl border-t border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl p-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] max-h-[70dvh] overflow-y-auto overscroll-contain"
             >
@@ -395,6 +400,7 @@ export function FilterDock({
           <div
             ref={panelRef}
             role="dialog"
+            aria-modal="true"
             aria-label={spec.title}
             style={{ left: anchor?.left ?? 0, bottom: anchor?.bottom ?? 0, width: 224 }}
             className="fixed z-[999] rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl shadow-black/5 dark:shadow-black/40 p-1.5"

@@ -4,6 +4,7 @@ import React, { useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { CheckCircle, Circle, X } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 
 interface CompareSelectorOverlayProps {
   properties: ProjectCardType[]
@@ -39,16 +40,10 @@ export default function CompareSelectorOverlay({
     onConfirm(selectedProps)
   }, [selected, properties, onConfirm])
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onCancel()
-    }
-  }, [onCancel])
-
-  React.useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [handleKeyDown])
+  // Escape, a focus trap, and focus restored to whatever opened this. Tab used
+  // to walk straight out of the sheet into the chat behind the backdrop, where
+  // the focus ring is invisible.
+  const dialogRef = useDialogA11y<HTMLDivElement>(true, onCancel)
 
   const getBhkRange = (property: ProjectCardType): string => {
     if (!property.unit_types || property.unit_types.length === 0) return ''
@@ -62,12 +57,16 @@ export default function CompareSelectorOverlay({
       onClick={onCancel}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="compare-selector-title"
         className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Select Properties to Compare</h2>
+          <h2 id="compare-selector-title" className="text-xl font-bold text-gray-900 dark:text-white">Select Properties to Compare</h2>
           <button
             onClick={onCancel}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
