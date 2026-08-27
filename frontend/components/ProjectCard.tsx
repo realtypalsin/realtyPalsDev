@@ -63,6 +63,9 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
 export default function ProjectCard({ project, userId, sessionId, index = 0, isSelectable = false, isSelected = false, onToggleSelect, onDetailOpen, onToast, onAskAI, onSetSiteVisit, onCall, onShare, quickActions }: Props) {
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  // Per-card, not lifted: one card expanding its configurations says nothing
+  // about the others, and the panel closes when the card unmounts.
+  const [showAllConfigs, setShowAllConfigs] = useState(false)
   const [expandedUnits, setExpandedUnits] = useState(false)
   const [askMenuOpen, setAskMenuOpen] = useState(false)
 
@@ -208,7 +211,11 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
     <div
       data-project-id={project.id}
       onClick={handleCardClick}
-      className={`group relative w-full flex flex-col rounded-[20px] md:rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-200 ease-out cursor-pointer select-none ${
+      // h-full is what makes the grid uniform. Grid items stretch, so the
+      // wrapper was already full height, but the card inside sized to its own
+      // content — a project with a shorter tagline produced a shorter card and
+      // the row looked ragged.
+      className={`group relative w-full h-full flex flex-col rounded-[20px] md:rounded-[16px] overflow-hidden bg-white dark:bg-[#111] transition-all duration-200 ease-out cursor-pointer select-none ${
         isSelected
           ? 'ring-2 ring-blue-600 dark:ring-blue-500 shadow-[0_8px_30px_rgba(37,99,235,0.3)] scale-[1.015] border-blue-500 z-20 bg-blue-50/10 dark:bg-blue-950/10'
           : isSelectable
@@ -578,8 +585,17 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               </p>
             </div>
 
-            {/* Configurations — Uniform Fixed Height Slot (56px) */}
-            <div className="min-h-[56px] max-h-[56px] flex flex-col justify-center gap-1 mb-4 overflow-hidden">
+            {/* Configurations — fixed-height slot, sized to its worst case.
+                It was capped at 56px with overflow-hidden, which fits two rows
+                and nothing else: on any project with three or more
+                configurations the "+X more" line rendered and was then clipped
+                by the very container meant to keep the cards uniform. The buyer
+                could see there were more configurations only if they happened
+                to notice a sliver of text.
+
+                76px fits two rows, the gap and the link together, so nothing is
+                cut and every card is still exactly the same height. */}
+            <div className="relative min-h-[76px] max-h-[76px] flex flex-col justify-center gap-1 mb-4">
               {bhkGroups.slice(0, 2).map(g => (
                 <div key={g.bhk} className="flex items-center text-[12.5px] group">
                   <span className="font-semibold text-gray-800 dark:text-gray-200 shrink-0">{g.bhk} BHK</span>
@@ -595,8 +611,42 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                 </div>
               )}
               {bhkGroups.length > 2 && (
-                <div className="text-[10.5px] font-semibold text-blue-600 dark:text-blue-400 truncate">
-                  +{bhkGroups.length - 2} more configurations available
+                <button
+                  type="button"
+                  onClick={e => {
+                    // The card itself opens the detail panel on click.
+                    e.stopPropagation()
+                    setShowAllConfigs(v => !v)
+                  }}
+                  aria-expanded={showAllConfigs}
+                  className="self-start text-[10.5px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer truncate"
+                >
+                  {showAllConfigs ? 'Show fewer' : `+${bhkGroups.length - 2} more configurations available`}
+                </button>
+              )}
+
+              {/* Expanded in place, inside the card's own footprint.
+                  Growing the card would have pushed this row of the grid taller
+                  than its neighbours, which is the thing the fixed slot exists
+                  to prevent — so the full list overlays the slot instead and
+                  scrolls if it needs to. The grid never reflows. */}
+              {showAllConfigs && bhkGroups.length > 2 && (
+                <div
+                  className="absolute inset-x-0 -top-1 z-20 max-h-[128px] overflow-y-auto overscroll-contain rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-[#161616] shadow-lg p-2.5"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <p className="text-[9.5px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+                    All configurations
+                  </p>
+                  {bhkGroups.map(g => (
+                    <div key={g.bhk} className="flex items-center text-[12px] py-0.5">
+                      <span className="font-semibold text-gray-800 dark:text-gray-200 shrink-0">{g.bhk} BHK</span>
+                      <div className="flex-1 mx-2 border-b border-dotted border-gray-300 dark:border-gray-700/60" />
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium text-right shrink-0">
+                        {g.areas.join(', ')}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
