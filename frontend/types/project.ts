@@ -247,6 +247,61 @@ export interface ProjectDetail extends ProjectCard {
   payment_plan: PaymentPlan | null
   payment_plans: PaymentPlan[]
   cost_sheet: CostSheet | null
+
+  // ── Disclosure ────────────────────────────────────────────────────────────
+  // The API has always returned these — the detail route spreads the whole
+  // project row — but nothing in the frontend read them, so the page showed the
+  // amenities and the price and silently dropped everything a cautious buyer
+  // would want. CLAUDE.md: never hide property weaknesses.
+
+  /** What the headline price does and does not include. */
+  price_includes_plc?: boolean | null
+  price_includes_club?: boolean | null
+  price_includes_taxes?: boolean | null
+
+  /** Occupancy Certificate — drives GST rate and bank lending. */
+  oc_obtained?: boolean | null
+  oc_obtained_date?: string | null
+  oc_valid_until?: string | null
+  oc_restrictions?: string | null
+  occupancy_certificate_status?: string | null
+
+  /** RERA standing. */
+  rera_valid_until?: string | null
+  rera_compliance_score?: number | null
+
+  /** How much to trust the possession date. */
+  possession_confidence?: string | null
+  possession_confidence_note?: string | null
+  expected_handover_quarter?: string | null
+  average_builder_delay_months?: number | null
+
+  /** Legal and registry standing. */
+  legal_flag?: string | null
+  legal_flag_detail?: string | null
+  project_risk_flag?: string | null
+  registry_status?: string | null
+  registry_embargo_reasons?: string[] | null
+  ongoing_litigation_count?: number | null
+  litigation_types?: string[] | null
+  nclt_status?: string | null
+  fir_against_project?: boolean | null
+  authority_dues_cleared?: boolean | null
+
+  /** Location analysis — advantages must never appear without concerns. */
+  location_advantages?: unknown
+  location_concerns?: string[] | null
+  location_verdict?: string | null
+  walkability_score?: number | null
+
+  /** Environmental risk. */
+  flood_waterlogging_risk?: string | null
+  flood_zone?: string | null
+  aqi_annual_avg?: number | null
+  air_quality_index_avg?: number | null
+  noise_level_db?: number | null
+
+  project_type?: string | null
 }
 
 // ── Intelligence Engine Types ─────────────────────────────────────────

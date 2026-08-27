@@ -19,6 +19,7 @@ import type { ProjectDocumentPublic } from '@/lib/hooks/useProjectDetail'
 import { handleReraClick, handleEscapeKey, imageTypeRank } from '@/lib/projectDetailHandlers'
 import SiteVisitScheduler from '@/components/SiteVisitScheduler'
 import FloorPlanViewer from '@/components/FloorPlanViewer'
+import PriceInclusions from '@/components/property-detail/PriceInclusions'
 import OverviewTab from '@/components/property-detail/OverviewTab'
 import {
   IntelligenceTabSkeleton,
@@ -691,9 +692,15 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
             <p className="text-[20px] sm:text-[24px] md:text-[26px] xl:text-[28px] font-black tracking-tighter text-gray-900 dark:text-white leading-tight break-words">
               {displayPrice}
             </p>
+            {/* This line read "ALL INCLUSIVE" unconditionally, regardless of the
+                project's own price_includes_plc / _club / _taxes flags — so the
+                page asserted a claim the database frequently contradicted. It now
+                states what is actually recorded, and says nothing when we hold
+                none of the three. */}
             <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.1em] mt-1.5">
-              ALL INCLUSIVE {unitTypes.length > 0 && `· STARTS ₹${Math.min(...unitTypes.map(u => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter(v => v !== Infinity))}/SQFT`}
+              {unitTypes.length > 0 && `STARTS ₹${Math.min(...unitTypes.map(u => u.super_area_sqft && u.price_min_cr ? Math.round((u.price_min_cr * 10000000) / u.super_area_sqft) : Infinity).filter(v => v !== Infinity))}/SQFT`}
             </p>
+            <PriceInclusions project={(detail ?? d ?? {}) as ProjectDetail} className="mt-1" />
           </div>
 
           {/* Highlighted Possession Badge */}

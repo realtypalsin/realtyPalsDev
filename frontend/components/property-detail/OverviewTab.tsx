@@ -36,6 +36,7 @@ import ConstructionTimeline from './ConstructionTimeline'
 import { SpecificationGrid } from './SpecificationGrid'
 import { OverviewBentoSkeleton } from '@/components/skeletons'
 import { AmenityCard } from './AmenityVisual'
+import VerificationPanel from './VerificationPanel'
 
 // Color token system for consistency
 const TOKEN = {
@@ -405,6 +406,11 @@ export default function OverviewTab({
           </div>
         </div>
       )}
+
+      {/* VERIFICATION & RISK — compliance, legal standing, environment.
+          Sits above the timeline deliberately: a buyer should meet the risk
+          record before the delivery narrative, not after it. */}
+      {detail && <VerificationPanel project={detail} />}
 
       {/* 5. CONSTRUCTION TIMELINE */}
       <ConstructionTimeline
