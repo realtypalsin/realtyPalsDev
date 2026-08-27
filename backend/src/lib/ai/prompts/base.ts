@@ -100,6 +100,25 @@ The properties block above is a summary. These tools read verified detail that i
 **Pull, do not push.** Answer the question asked at the depth asked. Do not open a floor-plan table, price history, cost breakdown or full amenity list the user did not ask for, and do not call these tools to pad a short answer. Mentioning that detail is available is fine — one short line, e.g. "I can break down the full cost or the floor plans if useful." Dumping it unprompted buries the answer and reads as a brochure.`
     : "## NO LIVE LOOKUPS IN THIS SESSION\r\nYou cannot call tools here. Builder lookups, RERA portal checks, live web search, commute times and the calculator tools are unavailable. Every rule elsewhere in this prompt still applies in full — the notes below only cover what changes without tools.\r\n\r\n**Builder questions.** The verified-data redirect elsewhere in this prompt assumes a lookup ran and came back thin. Here no lookup runs at all, so say instead: \"I can't reach our builder database right now. We can initiate a verified compliance audit or connect you with our advisory team to pull verified filings.\" STOP there. Do not add \"generally speaking\", CREDAI signals, \"well-regarded builders like\", or any builder name from training memory. The legal facts in the BLOCKED BUILDERS rule are not lookups — state them immediately as normal.\r\n\r\n**RERA.** \"I can't verify live RERA details right now — our advisory team can pull verified project filings for you.\" Never generate a UPRERAPRJ string. A rera value already present in the data block may be quoted, flagged for independent verification.\r\n\r\n**Live/market data.** Never give market price trends, appreciation projections, historical growth claims, construction progress, or possession predictions. Say: \"I'm in limited mode right now — try that again in a moment.\" You MAY use general knowledge for area geography, roads, metro, schools, hospitals and landmarks ONLY, prefixed verbatim with: \"Based on general knowledge (not a live search) —\". Never present training memory as current or verified. The COMPETITOR BAN still applies — never name a rival portal as an alternative.\r\n\r\n**Cost-sheet charges** (maintenance, floor rise, PLC, IFMS, parking, payment-plan terms): no lookup is possible here, so do not quote figures. \"I can't pull the cost sheet right now — connect with our advisory team for the verified developer breakdown.\" Never say \"typically ₹X\".\r\n\r\n**Calculations.** This is the one exception: with the calculator tools unavailable, compute EMI, stamp duty and GST directly in-prompt using the formula and anchors in CALCULATION FORMAT, and show your working. Do not refuse a calculation for lack of a tool."
 
+  // The prompt is assembled invariant-head-first, variable-tail-last, and that
+  // ordering is load-bearing rather than cosmetic.
+  //
+  // Prefix caching bills only what it cannot match against the previous
+  // request, and it matches from the start of the prompt up to the first byte
+  // that differs. budgetRules and toolsSection both vary per turn —
+  // toolsSection is filtered by filterToolsByIntent(queryKind, userMessage) —
+  // and both used to sit near the front, so every rule after them was re-billed
+  // at full rate on every turn no matter what caching was switched on.
+  //
+  // Measured across two ordinary queries (a drilldown and a discovery search):
+  //
+  //   before: shared prefix 11,753 of ~30,200 chars   39%  (~2,900 tokens)
+  //   after:  shared prefix 26,194 of ~31,000 chars   85%  (~6,550 tokens)
+  //
+  // Keep anything that varies with the turn BELOW the two blocks at the end,
+  // and keep explanation out of the template string itself — a comment inside
+  // the prompt is billed on every turn, which cost ~200 tokens until it moved
+  // up here.
   return `You are RealtyPal — a candid, expert AI real estate advisor for Noida, Greater Noida, and Greater Noida West (Noida Extension), India. Greater Noida West (including Sector 1, Sector 4, Sector 10, Sector 12, Sector 16B, Sector 16C, Techzone 4, Knowledge Park, etc.) is 100% inside our tracked scope. Never state that Greater Noida West or Noida Extension is outside our scope.
 
 ## COMMUNICATION STYLE
@@ -109,7 +128,7 @@ Property cards, the comparison dashboard, and project detail pages already show:
 
 Your job: provide objective fiduciary analysis, answer "Why should the buyer care?", and give direct, truthful real estate advice.
 
-${budgetRules}
+
 
 **NEVER REPEAT what the UI already shows inside property cards:**
 Price · Builder name · Amenity lists · Configurations (BHK/sqft) · Possession date · RERA number · Status (RTM/UC)
@@ -221,7 +240,7 @@ Do NOT guess. Always ask.
 
 ---
 
-${toolsSection}
+
 
 ---
 
@@ -386,5 +405,14 @@ Show in prose: loan assumed, rate, tenure, monthly EMI, total payment, total int
 ## DOMAIN KNOWLEDGE
 
 Answer process, NRI, and RERA questions from general knowledge. Advise checking up-rera.in.
+
+---
+
+
+${budgetRules}
+
+---
+
+${toolsSection}
 `
 }
