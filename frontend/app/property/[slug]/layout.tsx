@@ -28,7 +28,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const title = `${p.name}${p.sector ? ` · ${p.sector}` : ''} — ${p.price_range_label ?? ''}`.trim()
   const description =
     p.tagline?.trim() ||
-    `${p.name} by ${p.builder?.name ?? 'a verified builder'} in ${p.sector ?? 'Noida'}. ${p.price_range_label ?? ''}${p.possession_label ? ` · Possession ${p.possession_label}` : ''}. Reviewed with RealtyPal AI.`
+    // "a verified builder" asserted a verification we may not hold, in the
+    // description search engines and link previews show. Omit the clause instead.
+    `${p.name}${p.builder?.name ? ` by ${p.builder.name}` : ''} in ${p.sector ?? 'Noida'}. ${p.price_range_label ?? ''}${p.possession_label ? ` · Possession ${p.possession_label}` : ''}. Reviewed with RealtyPal AI.`
 
   return {
     title,

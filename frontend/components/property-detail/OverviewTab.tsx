@@ -257,10 +257,14 @@ export default function OverviewTab({
 
   // Channel Partners: Clean extraction from DB
   const rawChannelPartners = (d as any)?.channel_partners || (detail as any)?.channel_partners || (overview as any)?.channel_partners || []
+  // A partner with no RERA registration on file used to be labelled a
+  // "Verified RERA Agent" and one with no name a "RERA Authorized Partner" —
+  // asserting a regulatory registration for a third party we hold nothing
+  // about. Absent is now null and the row omits the line.
   const channelPartners = Array.isArray(rawChannelPartners) ? rawChannelPartners.map((cp: any) => ({
-    name: cp.name || cp.company_name || cp.channel_partner?.name || 'RERA Authorized Partner',
-    company_name: cp.company_name || cp.type || cp.channel_partner?.type || 'Authorized Realty Advisor',
-    rera_registration: cp.rera_registration || cp.rera_registration_number || cp.channel_partner?.rera_registration || 'Verified RERA Agent',
+    name: cp.name || cp.company_name || cp.channel_partner?.name || 'Partner',
+    company_name: cp.company_name || cp.type || cp.channel_partner?.type || null,
+    rera_registration: cp.rera_registration || cp.rera_registration_number || cp.channel_partner?.rera_registration || null,
     phone: cp.phone || cp.channel_partner?.phone || null,
   })) : []
 
@@ -453,7 +457,9 @@ export default function OverviewTab({
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-[12.5px] sm:text-[14px] font-black text-gray-900 dark:text-white truncate">{partner.name}</h4>
-                    <p className="text-[10px] sm:text-[11px] text-gray-500 font-semibold truncate">{partner.company_name || 'Authorized Partner'}</p>
+                    {partner.company_name && (
+                      <p className="text-[10px] sm:text-[11px] text-gray-500 font-semibold truncate">{partner.company_name}</p>
+                    )}
                     {partner.rera_registration && (
                       <p className="text-[9px] sm:text-[10px] font-mono text-gray-400 truncate mt-0.5">RERA: {partner.rera_registration}</p>
                     )}

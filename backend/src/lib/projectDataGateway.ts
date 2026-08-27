@@ -695,7 +695,7 @@ export async function getProjectDataForQuery(params: {
     price_max_cr: { fact: 'Maximum Price', value: (project as any).price_max_cr ? `₹${(project as any).price_max_cr} Cr` : 'Price on Request', source: 'database', confidence: 0.95, validated: !!(project as any).price_max_cr },
     project_status: { fact: 'Current Project Status', value: (project as any).project_status || (project as any).status || null, source: 'database', confidence: 1.0, validated: !!(project as any).project_status || !!(project as any).status },
     possession_date: { fact: 'Expected Possession Date', value: (project as any).possession_date ? new Date((project as any).possession_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : null, source: 'database', confidence: 0.95, validated: !!(project as any).possession_date },
-    rera_status: { fact: 'RERA Registration Status', value: (project as any).is_rera_approved ? `RERA Approved (${(project as any).rera_id || 'Verified'})` : null, source: 'database', confidence: 0.98, validated: !!(project as any).is_rera_approved },
+    rera_status: { fact: 'RERA Registration Status', value: (project as any).is_rera_approved ? ((project as any).rera_id ? `RERA Approved (${(project as any).rera_id})` : 'RERA Approved') : null, source: 'database', confidence: 0.98, validated: !!(project as any).is_rera_approved },
     rental_yield_annual_percent: { fact: 'Estimated Annual Rental Yield', value: (project as any).rental_yield_annual_percent ? `${(project as any).rental_yield_annual_percent}% per annum` : 'Market-dependent', source: 'database', confidence: (project as any).rental_yield_annual_percent ? 0.85 : 0.6, validated: !!(project as any).rental_yield_annual_percent },
     appreciation_potential_5yr: { fact: '5-Year Appreciation Potential', value: (project as any).appreciation_potential_5yr ? `${(project as any).appreciation_potential_5yr}% estimated` : 'Sector-dependent growth', source: 'database', confidence: (project as any).appreciation_potential_5yr ? 0.8 : 0.6, validated: !!(project as any).appreciation_potential_5yr }
   }
@@ -750,17 +750,62 @@ async function getBuilderWithValidation(
 
     const b = project.builder
     if (b) {
-      facts['builder_name'] = { fact: 'Builder / Developer Name', value: b.name, source: 'database', confidence: 1.0, validated: true }
-      facts['builder_founded_year'] = { fact: 'Founded Year', value: b.founded_year ? String(b.founded_year) : 'Established Developer', source: 'database', confidence: 1.0, validated: true }
-      facts['builder_experience'] = { fact: 'Experience in Industry', value: b.experience_years || '20+ Years', source: 'database', confidence: 1.0, validated: true }
-      facts['builder_delivery_score'] = { fact: 'Track Record & Delivery Score', value: `${b.delivery_score ?? 85}/100`, source: 'database', confidence: 1.0, validated: true }
-      facts['builder_rera_score'] = { fact: 'RERA Compliance Score', value: `${b.rera_compliance_score ?? 90}/100`, source: 'database', confidence: 1.0, validated: true }
-      facts['builder_construction_quality'] = { fact: 'Construction Quality Score', value: `${b.construction_quality_score ?? 80}/100`, source: 'database', confidence: 1.0, validated: true }
-      facts['builder_buyer_satisfaction'] = { fact: 'Buyer Satisfaction Score', value: `${b.buyer_satisfaction_score ?? 85}/100`, source: 'database', confidence: 1.0, validated: true }
-      facts['projects_delivered_count'] = { fact: 'Total Delivered Projects', value: b.projects_delivered_count ?? 10, source: 'database', confidence: 1.0, validated: true }
-      facts['litigation_status'] = { fact: 'Litigation & Legal Clearances', value: b.litigation_count === 0 ? 'Clean Record (0 active litigations)' : `${b.litigation_count} active litigation records`, source: 'database', confidence: 1.0, validated: true }
-      facts['insolvency_status'] = { fact: 'Insolvency History', value: b.insolvency_history ? 'Flagged' : 'Clean (No NCLT / Insolvency filings)', source: 'database', confidence: 1.0, validated: true }
-      facts['rera_registration'] = { fact: 'RERA Standing', value: `Verified RERA Approved Project (RERA Compliance Score: ${b.rera_compliance_score ?? 90}/100)`, source: 'database', confidence: 1.0, validated: true }
+      // Builder trust is the thing CLAUDE.md is most explicit about never
+      // fabricating, and every line here was doing it — with `validated: true`
+      // and `confidence: 1.0`, the strongest assertion the gateway can make:
+      //
+      //   delivery_score ?? 85, rera_compliance_score ?? 90,
+      //   construction_quality_score ?? 80, buyer_satisfaction_score ?? 85,
+      //   projects_delivered_count ?? 10, experience_years || '20+ Years',
+      //   founded_year -> 'Established Developer'
+      //
+      // A builder we hold nothing about scored 85/100 on delivery and 90/100 on
+      // RERA compliance. Two further defects: `litigation_count === 0` is false
+      // when the count is null, so an unknown count rendered as the string
+      // "null active litigation records"; and a null insolvency_history was
+      // reported as "Clean (No NCLT / Insolvency filings)" — asserting a clean
+      // insolvency record for a builder we had never checked.
+      //
+      // An absent value is now omitted entirely, so downstream sees a gap rather
+      // than a number. `validated` tracks whether the value is real.
+      const builderFact = (key: string, fact: string, value: unknown) => {
+        if (value === null || value === undefined || value === '') return
+        facts[key] = { fact, value, source: 'database', confidence: 1.0, validated: true }
+      }
+
+      builderFact('builder_name', 'Builder / Developer Name', b.name)
+      builderFact('builder_founded_year', 'Founded Year', b.founded_year ? String(b.founded_year) : null)
+      builderFact('builder_experience', 'Experience in Industry', b.experience_years)
+      builderFact('builder_delivery_score', 'Track Record & Delivery Score', b.delivery_score != null ? `${b.delivery_score}/100` : null)
+      builderFact('builder_rera_score', 'RERA Compliance Score', b.rera_compliance_score != null ? `${b.rera_compliance_score}/100` : null)
+      builderFact('builder_construction_quality', 'Construction Quality Score', b.construction_quality_score != null ? `${b.construction_quality_score}/100` : null)
+      builderFact('builder_buyer_satisfaction', 'Buyer Satisfaction Score', b.buyer_satisfaction_score != null ? `${b.buyer_satisfaction_score}/100` : null)
+      builderFact('projects_delivered_count', 'Total Delivered Projects', b.projects_delivered_count)
+
+      // "Clean" is a finding, not a default. It requires a recorded zero.
+      builderFact(
+        'litigation_status',
+        'Litigation & Legal Clearances',
+        b.litigation_count == null
+          ? null
+          : b.litigation_count === 0
+            ? 'No active litigation on record'
+            : `${b.litigation_count} active litigation record${b.litigation_count === 1 ? '' : 's'}`,
+      )
+      builderFact(
+        'insolvency_status',
+        'Insolvency History',
+        b.insolvency_history == null
+          ? null
+          : b.insolvency_history
+            ? 'Flagged — insolvency history on record'
+            : 'No NCLT or insolvency filings on record',
+      )
+      builderFact(
+        'rera_registration',
+        'RERA Standing',
+        b.rera_compliance_score != null ? `RERA compliance score ${b.rera_compliance_score}/100` : null,
+      )
     } else {
       facts['builder_name'] = { fact: 'Builder Name', value: null, source: 'database', confidence: 0, validated: false }
       facts['rera_registration'] = { fact: 'RERA Status', value: null, source: 'database', confidence: 0, validated: false }

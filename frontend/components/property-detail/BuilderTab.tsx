@@ -67,11 +67,15 @@ export default function BuilderTab({ builder, project, documents = [], loading }
       ? (builder as any).channel_partners
       : []
 
+  // A partner with no RERA registration on file used to be labelled
+  // "Verified RERA Agent", and one with no recorded type "RERA Registered
+  // Partner" — asserting a regulatory registration for a third party we hold
+  // nothing about. Absent is now null, and the row below simply omits the line.
   const channelPartnersList = rawPartners.map((cp: any) => {
-    const cpName = cp?.name ?? cp?.company_name ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.name : null) ?? 'Authorized Partner'
-    const cpType = cp?.type ?? cp?.partner_type ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.type : null) ?? 'RERA Registered Partner'
+    const cpName = cp?.name ?? cp?.company_name ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.name : null) ?? 'Partner'
+    const cpType = cp?.type ?? cp?.partner_type ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.type : null) ?? null
     const cpLogo = cp?.logo_url ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.logo_url : null) ?? cp?.logo ?? '🛡️'
-    const cpRera = cp?.rera_registration ?? cp?.reraReg ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.rera_registration : null) ?? 'Verified RERA Agent'
+    const cpRera = cp?.rera_registration ?? cp?.reraReg ?? (typeof cp?.channel_partner === 'object' ? cp.channel_partner?.rera_registration : null) ?? null
     return { name: cpName, type: cpType, logo: cpLogo, reraReg: cpRera, phone: cp?.phone ?? null }
   })
 
@@ -392,8 +396,13 @@ export default function BuilderTab({ builder, project, documents = [], loading }
 
               <div className="grid grid-cols-2 lg:grid-cols-2 gap-2.5 sm:gap-3 pt-1">
                 {dbAwards.slice(0, 4).map((award: any, i: number, arr: any[]) => {
-                  const awardTitle = typeof award === 'string' ? award : (award?.title || award?.name || 'Real Estate Excellence Award')
-                  const awardOrg = typeof award === 'string' && award.includes('-') ? award.split('-')[0].trim() : (award?.organization || award?.year || 'Verified Industry Recognition')
+                  // An award with no recorded title used to be printed as a
+                  // "Real Estate Excellence Award", and one with no awarding body
+                  // as "Verified Industry Recognition" — inventing both the
+                  // accolade and the authority behind it.
+                  const awardTitle = typeof award === 'string' ? award : (award?.title || award?.name || null)
+                  const awardOrg = typeof award === 'string' && award.includes('-') ? award.split('-')[0].trim() : (award?.organization || award?.year || null)
+                  if (!awardTitle) return null
                   const isOddLast = arr.length % 2 !== 0 && i === arr.length - 1
                   return (
                     <div
@@ -407,7 +416,9 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                       </div>
                       <div className="min-w-0">
                         <h4 className="text-[12px] sm:text-[13px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2">{awardTitle}</h4>
-                        <p className="text-[10px] sm:text-[10.5px] text-gray-400 font-medium mt-1 truncate">{awardOrg}</p>
+                        {awardOrg && (
+                          <p className="text-[10px] sm:text-[10.5px] text-gray-400 font-medium mt-1 truncate">{awardOrg}</p>
+                        )}
                       </div>
                     </div>
                   )
@@ -478,7 +489,9 @@ export default function BuilderTab({ builder, project, documents = [], loading }
                 </div>
                 <div className="overflow-hidden min-w-0">
                   <h4 className="text-[12px] sm:text-[12.5px] font-black text-gray-900 dark:text-white leading-tight truncate">{partner.name}</h4>
-                  <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-semibold truncate mt-0.5">{partner.type}</p>
+                  {partner.type && (
+                    <p className="text-[9.5px] sm:text-[10px] text-gray-400 font-semibold truncate mt-0.5">{partner.type}</p>
+                  )}
                   <span className="text-[9px] sm:text-[9.5px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 mt-0.5 truncate">
                     <ShieldCheck size={10} /> Verified
                   </span>

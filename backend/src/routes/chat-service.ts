@@ -1,4 +1,5 @@
 // backend/src/routes/chat-service.ts
+import { UP_STATUTORY } from '../lib/factPresentation'
 import { prisma } from '../lib/db'
 
 export async function generateDatabaseFallbackResponse(userMsg: string, projects: any[], sessionId?: string): Promise<any> {
@@ -85,13 +86,18 @@ export async function generateDatabaseFallbackResponse(userMsg: string, projects
       let plansText = ''
       if (plansList.length > 0) {
         plansText = plansList.map((plan: any) => {
-          const planName = plan.plan_name || plan.name || plan.plan_type || 'Payment Plan'
-          const downPay = plan.down_payment_pct != null ? `${plan.down_payment_pct}%` : '10%'
-          const bookingAmt = plan.booking_amount ? `₹${plan.booking_amount}` : (plan.booking_amount_lakh ? `₹${plan.booking_amount_lakh} Lakhs` : 'As per scheme')
-          const tenure = plan.total_duration_months ? `${plan.total_duration_months} Months` : '36 Months'
-          const discount = plan.discount_offered || (plan.discount_pct ? `${plan.discount_pct}%` : 'None')
-          const bestFor = plan.best_for || 'Buyers seeking structured payment flexibility'
-          const watchOut = plan.watch_out || plan.penalty_clause || 'Timely payment of stage demand notes required'
+          // Each of these had an invented default: a 10% down payment, a 36-month
+          // tenure, a "Buyers seeking structured payment flexibility" rationale
+          // and a "Timely payment of stage demand notes required" caveat — all
+          // presented under a "Verified Payment Plan Options" heading. Payment
+          // terms are the basis of a buyer's cash-flow planning.
+          const planName = plan.plan_name || plan.name || plan.plan_type || 'Payment plan'
+          const downPay = plan.down_payment_pct != null ? `${plan.down_payment_pct}%` : '—'
+          const bookingAmt = plan.booking_amount ? `₹${plan.booking_amount}` : (plan.booking_amount_lakh ? `₹${plan.booking_amount_lakh} Lakh` : '—')
+          const tenure = plan.total_duration_months ? `${plan.total_duration_months} months` : '—'
+          const discount = plan.discount_offered || (plan.discount_pct ? `${plan.discount_pct}%` : '—')
+          const bestFor = plan.best_for || null
+          const watchOut = plan.watch_out || plan.penalty_clause || '—'
 
           let milestonesMarkdown = ''
           if (Array.isArray(plan.milestones) && plan.milestones.length > 0) {
@@ -104,7 +110,7 @@ export async function generateDatabaseFallbackResponse(userMsg: string, projects
           }
 
           return `> ### **${planName}**\n` +
-            `> _${bestFor}_\n` +
+            (bestFor ? `> _${bestFor}_\n` : '') +
             `>\n` +
             `> | Highlight | Details |\n` +
             `> | :--- | :--- |\n` +
@@ -116,41 +122,54 @@ export async function generateDatabaseFallbackResponse(userMsg: string, projects
             milestonesMarkdown
         }).join('\n\n---\n\n')
       } else {
-        plansText = `> ### **Construction Linked Plan (10:90 CLP)**\n` +
-          `> _Standard milestone-based payment schedule_\n` +
-          `>\n` +
-          `> | Milestone | Share |\n` +
-          `> | :--- | :--- |\n` +
-          `> | Booking Token | 10% |\n` +
-          `> | Foundation & Superstructure | 70% |\n` +
-          `> | Possession & Handover | 20% |`
+        // A complete 10:70:20 schedule used to be invented here and printed
+        // under "Verified Payment Plan Options" for a project whose plans we do
+        // not hold. The percentages were not this developer's — they were not
+        // anyone's.
+        plansText = `We don't have ${name}'s payment schedule verified in our records yet. Our advisory team can pull the developer's official terms — want me to arrange that?`
       }
 
-      const replyText = `### Verified Payment Plan Options for **${name}** (${sector})\n\n**Overall Project Price Range**: ${priceText}\n\n${plansText}`
+      const heading = plansList.length > 0 ? 'Payment plans' : 'Payment plans — not yet on record'
+      const replyText = `### ${heading} — **${name}** (${sector})\n\n**Price range**: ${priceText}\n\n${plansText}`
       return { message: replyText }
     }
 
     // 2. Full Cost Sheet & Maintenance Breakdown + Rental Yield
     if (queryLower.includes('cost') || queryLower.includes('charge') || queryLower.includes('sheet') || queryLower.includes('breakdown') || queryLower.includes('gst') || queryLower.includes('stamp') || queryLower.includes('bsp') || queryLower.includes('maintenance') || queryLower.includes('society') || queryLower.includes('fee') || queryLower.includes('yield') || queryLower.includes('rental') || queryLower.includes('roi')) {
+      // Developer charges are per-project: a dash where we hold nothing. The
+      // previous defaults claimed a 'Standard' floor rise, a '₹2.5 – ₹3.5/sq.ft'
+      // maintenance band and — worst — 'Included / Standard' parking, telling a
+      // buyer parking was bundled when we simply had no figure.
+      //
+      // parking_cost / ifms / club_membership are stored in RUPEES (see the unit
+      // note on the CostSheet model). This rendered ₹6,00,000 as "₹600000 Lakhs".
       const cs = p.cost_sheet || {}
-      const bsp = cs.base_price_per_sqft ? `₹${cs.base_price_per_sqft}/sq.ft` : 'As per layout'
-      const floorRise = cs.floor_rise_per_floor ? `₹${cs.floor_rise_per_floor}/sq.ft per floor` : 'Standard'
-      const gstRate = cs.gst_rate_pct != null ? `${cs.gst_rate_pct}%` : (p.status === 'Ready to Move' ? '0% (RTM Exempt)' : '5% (Under Construction)')
-      const stampDuty = cs.stamp_duty_pct != null ? `${cs.stamp_duty_pct}%` : '6.0% (Uttar Pradesh)'
-      const maintenance = cs.maintenance_psf_monthly ? `₹${cs.maintenance_psf_monthly}/sq.ft per month` : '₹2.5 – ₹3.5/sq.ft'
-      const rentalYield = (p as any).rental_yield_annual_percent ? `${(p as any).rental_yield_annual_percent}% per annum` : 'Market-dependent'
+      const NOT_RECORDED = '—'
+      const inr = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`
+      const bsp = cs.base_price_per_sqft ? `${inr(cs.base_price_per_sqft)}/sq.ft` : NOT_RECORDED
+      const floorRise = cs.floor_rise_per_floor ? `${inr(cs.floor_rise_per_floor)}/sq.ft per floor` : NOT_RECORDED
+      // GST and stamp duty are statutory, so a default here is a rate not a guess.
+      const gstRate = cs.gst_rate_pct != null
+        ? `${cs.gst_rate_pct}%`
+        : `${UP_STATUTORY.gstUnderConstructionPct}% (${UP_STATUTORY.gstReadyToMovePct}% once OC is granted)`
+      const stampDuty = cs.stamp_duty_pct != null ? `${cs.stamp_duty_pct}%` : `${UP_STATUTORY.stampDutyPct}%`
+      const maintenance = cs.maintenance_psf_monthly ? `${inr(cs.maintenance_psf_monthly)}/sq.ft per month` : NOT_RECORDED
+      const parking = cs.parking_cost ? inr(cs.parking_cost) : NOT_RECORDED
+      const anyMissing = [bsp, floorRise, maintenance, parking].includes(NOT_RECORDED)
 
       return {
-        message: `### Cost Sheet & Additional Charges for **${name}** (${sector})\n\n` +
-          `| Charge Component | Rate / Details |\n` +
+        message: `### Cost sheet — **${name}** (${sector})\n\n` +
+          `| Component | Rate |\n` +
           `| :--- | :--- |\n` +
-          `| **Base Price (BSP)** | **${bsp}** |\n` +
-          `| **Floor Rise Charge** | ${floorRise} |\n` +
-          `| **GST Applicable** | **${gstRate}** |\n` +
-          `| **Stamp Duty & Registration** | **${stampDuty} + 1.0%** |\n` +
-          `| **Maintenance Deposit** | ${maintenance} |\n` +
-          `| **Parking Allotment** | ${cs.parking_cost ? `₹${cs.parking_cost} Lakhs` : 'Included / Standard'} |\n` +
-          `| **Estimated Rental Yield (Annual)** | **${rentalYield}** |`
+          `| **Base price (BSP)** | **${bsp}** |\n` +
+          `| **Floor rise** | ${floorRise} |\n` +
+          `| **GST** | **${gstRate}** |\n` +
+          `| **Stamp duty & registration** | **${stampDuty} + ${UP_STATUTORY.registrationPct}%** |\n` +
+          `| **Maintenance** | ${maintenance} |\n` +
+          `| **Covered parking** | ${parking} |` +
+          (anyMissing
+            ? `\n\nA dash means the developer's figure is not in our records — it is not a statement that the charge does not apply. Our advisory team can pull the official booking cost sheet.`
+            : '')
       }
     }
 
@@ -161,21 +180,37 @@ export async function generateDatabaseFallbackResponse(userMsg: string, projects
     }
   }
 
-  const fallbackName = p ? p.name : 'this project'
-  const fallbackSector = p ? p.sector : 'Noida'
+  // This block ran when we had no project at all, yet announced "Verified
+  // Project Details", "Here are the verified records on file", a status of
+  // "Active Verified Project" and — for a project with no RERA number — a RERA
+  // registration reading "Verified RERA Approved". Four separate assertions of
+  // verification about something we did not have.
+  if (!p) {
+    return {
+      message:
+        `I don't have a verified record for that project.\n\n` +
+        `Tell me the project name and sector and I'll check properly, or our advisory team can look it up for you.`,
+    }
+  }
+
+  const lines = [
+    p.status ? `- **Status**: ${p.status}` : null,
+    `- **Location**: ${p.sector}, ${p.city ?? 'Noida'}`,
+    p.price_range_label
+      ? `- **Price**: ${p.price_range_label}`
+      : p.price_min_cr ? `- **Price**: ₹${p.price_min_cr} Cr onwards` : null,
+    p.rera_number ? `- **RERA**: ${p.rera_number}` : null,
+  ].filter(Boolean)
+
   return {
-    message: `### Verified Project Details for **${fallbackName}** (${fallbackSector})\n\n` +
-      `Here are the verified records on file for **${fallbackName}**:\n` +
-      `- **Status**: ${p?.status || 'Active Verified Project'}\n` +
-      `- **Location**: ${fallbackSector}, ${p?.city || 'Noida'}\n` +
-      `- **Price Range**: ${p?.price_range_label || (p?.price_min_cr ? `₹${p.price_min_cr} Cr onwards` : 'Available on request')}\n` +
-      `- **RERA Registration**: ${p?.rera_number || 'Verified RERA Approved'}\n\n` +
-      `*For specific unlisted document requests or personalized project files, complete the official advisory request form below:*`,
+    message: `### ${p.name} (${p.sector})\n\n` +
+      `${lines.join('\n')}\n\n` +
+      `Ask about payment plans, the cost sheet, amenities, location or possession and I'll pull what we hold.`,
     components: [
       {
         type: 'lead-form',
         props: {
-          projectName: fallbackName,
+          projectName: p.name,
           inquiryTopic: userMsg,
         }
       }
