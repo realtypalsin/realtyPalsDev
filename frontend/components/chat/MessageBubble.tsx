@@ -23,6 +23,7 @@ import { track, trackPropertyEvent } from '@/lib/analytics'
 import { parseResponseBlocks } from '@/lib/responseParser'
 import { ResponseBlockRenderer } from '@/components/response/ResponseBlockRenderer'
 import ProjectCard from '@/components/ProjectCard'
+import { MobileCardShelf } from '@/components/chat/MobileCardShelf'
 import PropertyQuickActions from '@/components/chat/PropertyQuickActions'
 import { SuggestionChip } from '@/components/chat/SuggestionChip'
 import { CardSelectorChip } from '@/components/chat/CardSelectorChip'
@@ -558,6 +559,15 @@ function MessageBubbleInner({
     touchStartPos.current = null;
   };
 
+  // The card set the mobile shelf shows. Exact results are what the buyer
+  // asked for; nearby is the fallback the grid below uses for the same reason.
+  const shelfProjects = (
+    (message.exactResults?.length ? message.exactResults : null) ??
+    (message.nearbyResults?.length ? message.nearbyResults : null) ??
+    message.properties ??
+    []
+  ) as ProjectCardType[];
+
   return (
     <m.div
       initial={isRestoring ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: isUser ? 20 : -20, scale: 0.95 }}
@@ -565,6 +575,32 @@ function MessageBubbleInner({
       transition={isRestoring ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 20 }}
       className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} group/msg`}
     >
+      {/* Mobile: cards above the answer, collapsed.
+          The response's table pushed every card below the fold on a phone, so
+          the one thing the buyer can act on was the hardest to reach. The
+          desktop grid further down is hidden at this breakpoint so the cards
+          render once, not twice. */}
+      {!isUser && (
+        <MobileCardShelf projects={shelfProjects}>
+          <div className="flex flex-col gap-3 w-full">
+            {shelfProjects.map((property, pi) => (
+              <ProjectCard
+                key={`shelf-${property.id}`}
+                project={property}
+                userId={userId}
+                sessionId={sessionId}
+                index={pi}
+                onDetailOpen={onDetailOpen}
+                onToast={onToast}
+                onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
+                onSetSiteVisit={onSetSiteVisit}
+                onCall={onCallback}
+              />
+            ))}
+          </div>
+        </MobileCardShelf>
+      )}
+
       <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}>
         {isUser && inlineEdit.isEditing ? (
           <InlineMessageEditor
@@ -1185,7 +1221,7 @@ function MessageBubbleInner({
                 {/* Property Results Grid */}
                 {(useNewFormat ? exactList : legacyList).length > 0 && (
                   <div className="mt-3">
-                    <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                    <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {(useNewFormat ? exactList : legacyList).map((property, pi) => (
                         <m.div
                           key={property.id}
@@ -1242,7 +1278,7 @@ function MessageBubbleInner({
                         </span>
                       </div>
                     )}
-                    <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                    <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {nearbyList.map((property, pi) => (
                         <m.div
                           key={property.id}

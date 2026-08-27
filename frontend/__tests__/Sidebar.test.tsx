@@ -57,8 +57,10 @@ describe('Sidebar Component', () => {
   it('renders Sidebar with user logged in', () => {
     render(<Sidebar userId="user-123" />);
     
-    expect(screen.getByText('Property Discovery')).toBeInTheDocument();
-    expect(screen.getByText('Saved Property')).toBeInTheDocument();
+    // 'Property Discovery' was removed: it navigated to /discover, which the
+    // wordmark and New chat already do. Compare took the freed slot.
+    expect(screen.getByText('Compare')).toBeInTheDocument();
+    expect(screen.getByText('Saved')).toBeInTheDocument();
     expect(screen.getByText('My Account')).toBeInTheDocument();
     
     // Group headers should be rendered based on dates
@@ -237,6 +239,8 @@ describe('Sidebar Identity Display', () => {
 
     // Component should verify ownership of sessions before display
     // This is implicit in the component rendering only useSessions data
-    expect(screen.getByText('Property Discovery')).toBeInTheDocument();
+    // 'Property Discovery' was removed: it navigated to /discover, which the
+    // wordmark and New chat already do. Compare took the freed slot.
+    expect(screen.getByText('Compare')).toBeInTheDocument();
   });
 });

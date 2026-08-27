@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  Compass,
   BookmarkSimple,
+  ArrowsLeftRight,
   SidebarSimple,
   SignOut,
   NotePencil,
@@ -90,6 +90,10 @@ export default function Sidebar({
   const [leadsToday, setLeadsToday] = useState<number | null>(null);
   const [userInitial, setUserInitial] = useState("U");
   const [isNavigating, setIsNavigating] = useState(false);
+  // Saved projects power the counts beside Saved/Compare and the collapsed
+  // rail's tray. Null means "not loaded yet" so a badge never flashes 0.
+  const [savedCount, setSavedCount] = useState<number | null>(null);
+  const [savedThumbs, setSavedThumbs] = useState<{ id: string; name: string; image?: string }[]>([]);
   const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
@@ -141,14 +145,40 @@ export default function Sidebar({
     router.replace("/auth");
   };
 
-  const menuItems: { id: SidebarView; label: string; icon: React.ElementType; href: string }[] = [
-    {
-      id: "discovery",
-      label: "Property Discovery",
-      icon: Compass,
-      href: "/discover",
-    },
-    { id: "saved", label: "Saved Property", icon: BookmarkSimple, href: "/saved" },
+  useEffect(() => {
+    if (!userId && !guestToken) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API_BASE}/saved`, { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+        const rows: Array<Record<string, unknown>> = Array.isArray(data) ? data : (data?.projects ?? []);
+        if (cancelled) return;
+        setSavedCount(rows.length);
+        setSavedThumbs(
+          rows.slice(0, 6).map(r => ({
+            id: String(r.id ?? r.slug ?? ''),
+            name: String(r.name ?? ''),
+            image: typeof r.cover_image === 'string' ? r.cover_image : undefined,
+          })),
+        );
+      } catch {
+        // A count is decoration; never let it break the sidebar.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [userId, guestToken]);
+
+  // "Property Discovery" was removed: it navigated to /discover, which is
+  // exactly where the wordmark above and the New chat button already go. Three
+  // controls, one destination — the menu read as padding rather than navigation.
+  // Compare takes the freed slot; /compare and ComparisonTable already existed
+  // and had simply never been reachable from the sidebar.
+  const menuItems: { id: SidebarView; label: string; icon: React.ElementType; href: string; count?: number }[] = [
+    { id: "saved", label: "Saved", icon: BookmarkSimple, href: "/saved", count: savedCount ?? undefined },
+    { id: "compare", label: "Compare", icon: ArrowsLeftRight, href: "/compare", count: savedCount ?? undefined },
   ];
 
   useEffect(() => {
@@ -380,6 +410,15 @@ export default function Sidebar({
                   >
                     <Icon size={16} strokeWidth={isActive ? 2.2 : 1.8} className={isActive ? 'text-white dark:text-zinc-900' : 'text-zinc-500 dark:text-zinc-400'} />
                     <span className="text-[12.5px] tracking-tight">{item.label}</span>
+                    {typeof item.count === 'number' && item.count > 0 && (
+                      <span className={`ml-auto text-[10.5px] font-semibold tabular-nums px-1.5 py-0.5 rounded-md ${
+                        isActive
+                          ? 'bg-white/20 text-white dark:bg-zinc-900/15 dark:text-zinc-900'
+                          : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
+                      }`}>
+                        {item.count}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -407,12 +446,50 @@ export default function Sidebar({
                   }`}
                 >
                   <Icon size={17} strokeWidth={isActive ? 2.2 : 1.8} />
+                  {typeof item.count === 'number' && item.count > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-1 flex items-center justify-center rounded-full bg-blue-600 text-white text-[9.5px] font-bold tabular-nums leading-none ring-2 ring-white dark:ring-zinc-950">
+                      {item.count > 9 ? '9+' : item.count}
+                    </span>
+                  )}
                   <span className="absolute left-full ml-2.5 px-2.5 py-1 bg-zinc-900 text-white text-[11px] font-medium rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100]">
                     {item.label}
                   </span>
                 </Link>
               );
             })}
+          </div>
+        )}
+
+        {/* Compare tray — collapsed rail only.
+            Collapsed, the rail was the expanded menu with the words removed:
+            the same two icons and nothing else, so collapsing bought space and
+            gave nothing back. These are the buyer's saved projects, the set
+            /compare actually operates on, so the rail becomes a way in rather
+            than a smaller copy of the menu. */}
+        {isCollapsed && savedThumbs.length > 0 && (
+          <div className="px-3 mt-2 pt-2.5 w-full flex flex-col items-center gap-1.5 border-t border-zinc-200/70 dark:border-zinc-800/70">
+            {savedThumbs.map((t) => (
+              <Link
+                key={t.id}
+                href={`/compare?ids=${encodeURIComponent(t.id)}`}
+                prefetch={false}
+                onClick={closeMobile}
+                title={t.name}
+                aria-label={`Compare ${t.name}`}
+                className="w-9 h-9 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-200/70 dark:ring-zinc-700/70 hover:ring-blue-500 transition-all group relative shrink-0"
+              >
+                {t.image ? (
+                  <Image src={t.image} alt="" width={36} height={36} className="w-full h-full object-cover" unoptimized />
+                ) : (
+                  <span className="w-full h-full flex items-center justify-center text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                    {t.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <span className="absolute left-full ml-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-zinc-900 text-white text-[11px] font-medium rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100]">
+                  {t.name}
+                </span>
+              </Link>
+            ))}
           </div>
         )}
 
