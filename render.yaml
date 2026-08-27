@@ -26,12 +26,33 @@ services:
       # purely from this file would silently start on a fallback provider.
       - key: GEMINI_API_KEY
         sync: false
-      # Off means Gemini — tier 1, and therefore nearly all traffic — cannot call
-      # any tool, so floor plans, price history, cost sheets, amenities, builder
-      # records and RERA lookups are unreachable and the model answers from the
-      # prompt's NO LIVE LOOKUPS branch instead. Flip deliberately.
+      # Gates tool calling for Gemini, which is tier 1 and therefore nearly all
+      # traffic. Drives both the tool definitions and the system prompt from one
+      # constant, so the two cannot disagree. Off means every lookup — floor
+      # plans, price history, cost sheets, builder records, RERA, the calculators
+      # — is unreachable and the model answers from the NO LIVE LOOKUPS branch.
       - key: ENABLE_GEMINI_TOOLS
-        value: "false"
+        value: "true"
+      - key: GEMINI_API_KEY1
+        sync: false
+      - key: GROQ_API_KEY1
+        sync: false
+      - key: GROQ_API_KEY2
+        sync: false
+      - key: GROQ_API_KEY3
+        sync: false
+      - key: OPENAI_API_KEY1
+        sync: false
+      - key: OPENAI_API_KEY2
+        sync: false
+      - key: OPENAI_API_KEY3
+        sync: false
+      - key: CEREBRAS_API_KEY1
+        sync: false
+      - key: POSTHOG_API_KEY
+        sync: false
+      - key: POSTHOG_HOST
+        value: https://us.posthog.com
       - key: MISTRAL_API_KEY
         sync: false
       - key: CEREBRAS_API_KEY

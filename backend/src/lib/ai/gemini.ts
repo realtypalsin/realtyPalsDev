@@ -109,10 +109,20 @@ export async function streamWithGemini(
         abortSignal: abortController.signal,
       }
 
-      // Only attach tools if explicitly requested and no functionCall cycles have occurred yet.
       // Reads the same constant FALLBACK_CHAIN uses for supportsTools, so the tool
       // definitions and the system prompt can never disagree about whether tools exist.
-      if (cycle === 0 && GEMINI_TOOLS_ENABLED) {
+      //
+      // Tools stay attached across cycles rather than only the first. Attaching
+      // them on cycle 0 alone capped a turn at exactly one lookup, so "compare the
+      // payment plans and the cost sheet" could answer only half the question and
+      // had to guess or decline the rest. The cycle ceiling prevents a runaway
+      // loop; withholding the tools was never the right mechanism for that.
+      //
+      // The LAST allowed cycle is deliberately tool-free. runCycle returns early
+      // at MAX_TOOL_CYCLES, so a tool call made on the final cycle would be
+      // executed and then thrown away without ever reaching the model — the
+      // buyer would wait for a lookup whose result was silently discarded.
+      if (cycle < MAX_TOOL_CYCLES - 1 && GEMINI_TOOLS_ENABLED) {
         genConfig.tools = toGeminiTools()
       }
 
@@ -191,7 +201,9 @@ export async function streamWithGemini(
       throw new GeminiStreamStallError('Gemini stream produced no chunks', false)
     }
 
-    if (functionCall) {
+    // Mirrors the attach condition above: a call can only arrive on a cycle that
+    // was given tools, and its result must have a later cycle to be read in.
+    if (functionCall && cycle < MAX_TOOL_CYCLES - 1) {
       const validatedArgs = validateToolArgs(functionCall.name, functionCall.args)
       const result = await onToolCall(functionCall.name, validatedArgs)
       const capped = capToolResult(result, functionCall.name)

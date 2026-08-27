@@ -240,42 +240,6 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
     },
   },
   {
-    name: 'best_value_projects',
-    description: 'Phase 5: Get best value projects for a sector and budget. Ranked by price position + amenities. Use for "best value projects", "affordable options", "best bang for buck".',
-    parameters: {
-      type: 'object',
-      properties: {
-        sector: { type: 'string', description: 'Sector name, e.g. "Sector 150"' },
-        budget_max_cr: { type: 'number', description: 'Maximum budget in crore (optional)' },
-      },
-      required: ['sector'],
-    },
-  },
-  {
-    name: 'fastest_possession_projects',
-    description: 'Phase 5: Get fastest possession projects for a sector and budget. Ranked by possession timeline. Use for "fastest possession", "ready soon", "quickest available".',
-    parameters: {
-      type: 'object',
-      properties: {
-        sector: { type: 'string', description: 'Sector name, e.g. "Sector 150"' },
-        budget_max_cr: { type: 'number', description: 'Maximum budget in crore (optional)' },
-      },
-      required: ['sector'],
-    },
-  },
-  {
-    name: 'best_for_families_projects',
-    description: 'Phase 5: Get best projects for families (schools, amenities, connectivity). Use for "best for families", "schools nearby", "family-friendly".',
-    parameters: {
-      type: 'object',
-      properties: {
-        sector: { type: 'string', description: 'Sector name, e.g. "Sector 150"' },
-        budget_max_cr: { type: 'number', description: 'Maximum budget in crore (optional)' },
-      },
-      required: ['sector'],
-    },
-  },
-  {
     name: 'sector_projects',
     description: 'List projects in a sector or city ranked by RealtyPals verified score, optionally filtered by BHK and budget. Use for "top properties in Sector 79", "what is available in Noida under 2 crore", "best projects in this area". Ranking is by our verified score then entry price — never describe it as a market ranking.',
     parameters: {

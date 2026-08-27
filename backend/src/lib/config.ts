@@ -78,7 +78,8 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Primary)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Key 1)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY1', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Key 2)' },
   { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Backup)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -91,8 +92,16 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 3: GROQ & OPENAI (Resilience Layer)
   // ═══════════════════════════════════════════════════════════════════════════
+  // Rotation legs. Each numbered key is its own chain entry, so a key that is
+  // rate-limited or revoked falls through to the next rather than failing the
+  // turn. GROQ_API_KEY2/3 and OPENAI_API_KEY2/3 were configured in the
+  // environment but absent from this list, so they were never tried.
   { provider: 'groq', envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 1)' },
   { provider: 'groq', envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 2)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY2', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 3)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY3', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 4)' },
   { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 1)' },
   { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 2)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY2', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 3)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY3', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 4)' },
 ]

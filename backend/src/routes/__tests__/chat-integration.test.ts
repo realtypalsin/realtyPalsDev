@@ -128,11 +128,19 @@ describe('FALLBACK_CHAIN shape', () => {
     }
   })
 
-  it('defaults Gemini tools off — turning them on changes every production answer', () => {
-    // Gemini is tier 1 and serves nearly all traffic. This is a reminder that the
-    // flip is a deliberate rollout, not an incidental config change.
-    if (process.env.ENABLE_GEMINI_TOOLS !== 'true') {
-      assert.equal(GEMINI_TOOLS_ENABLED, false)
+  it('reads Gemini tool support from the environment, both ways', () => {
+    // Tools are enabled in this project (render.yaml sets ENABLE_GEMINI_TOOLS=true).
+    // The invariant that matters is that the flag is the single source of truth —
+    // never a literal — so it can be turned off again without a code change.
+    assert.equal(GEMINI_TOOLS_ENABLED, process.env.ENABLE_GEMINI_TOOLS === 'true')
+  })
+
+  it('gives every provider key in the chain its own entry so rotation works', () => {
+    // GROQ_API_KEY2/3 and OPENAI_API_KEY2/3 were set in the environment but absent
+    // from the chain, so a rate-limited key had nothing to fall through to.
+    const envKeys = FALLBACK_CHAIN.map(i => i.envKey)
+    for (const key of ['GEMINI_API_KEY1', 'GROQ_API_KEY2', 'GROQ_API_KEY3', 'OPENAI_API_KEY2', 'OPENAI_API_KEY3']) {
+      assert.ok(envKeys.includes(key), `${key} is configured but never tried`)
     }
   })
 
