@@ -268,3 +268,81 @@ export function redactProject<T extends Record<string, unknown>>(row: T): Partia
 export function isPublicField(field: string): boolean {
   return PUBLIC_FIELD_SET.has(field)
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Relation-level policy
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Bookkeeping present on effectively every relation row. Stripped everywhere —
+ * a buyer has no use for a uuid, and a raw foreign key invites the model to
+ * echo it.
+ */
+const UNIVERSAL_INTERNAL = ['id', 'project_id', 'unit_type_id', 'channel_partner_id', 'created_at', 'updated_at']
+
+/**
+ * Per-relation fields that are analyst- or operator-facing only.
+ *
+ * `advisor_notes`, `admin_notes` and `internal_confidence` are where an analyst
+ * records hedges and internal reasoning. They are written for the sales desk,
+ * not the buyer, and putting them in a prompt is how they end up quoted back.
+ */
+export const RELATION_INTERNAL_FIELDS: Record<string, readonly string[]> = {
+  decision_profile: ['advisor_notes', 'recommendation_notes', 'confidence_sources', 'verified_by', 'last_verified_at', 'status'],
+  recommendation_profile: ['internal_confidence', 'admin_notes', 'verified_by', 'last_verified_at', 'status'],
+  persona_profile: ['verified_by', 'last_verified_at'],
+  cost_sheet: ['verified_by', 'verified_at'],
+  payment_plans: ['verified_by', 'verified_at', 'notes'],
+  spec_items: ['verified_by', 'verified_at', 'notes'],
+  price_history: ['verified_by', 'verified_at', 'notes'],
+  construction_milestones: ['verified_by', 'verified_at', 'notes'],
+  construction_updates: ['verified_by', 'verified_at'],
+  lifecycle_updates: ['verified_by', 'verified_at'],
+}
+
+/**
+ * Relations excluded from buyer-facing output entirely.
+ *
+ * ProjectDna is a set of manually-entered 0-100 analyst scores with
+ * last_verified_at commonly null. Handing the model "builder_score: 95" invites
+ * it to present an unverified internal number as a rating, which is precisely
+ * the "fake confidence score" CLAUDE.md forbids. The buyer-facing narrative
+ * lives in decision_profile and recommendation_profile instead; DNA stays an
+ * input to ranking.
+ */
+export const INTERNAL_ONLY_RELATIONS = ['dna'] as const
+
+/**
+ * Relations carrying an IntelligenceStatus. Analyst content is DRAFT until
+ * someone publishes it, and only PUBLISHED may reach a buyer — nothing in the
+ * chat path enforced that, so unreviewed opinion could be quoted as advisory.
+ */
+export const PUBLISH_GATED_RELATIONS = ['decision_profile', 'recommendation_profile'] as const
+
+/** True when a publish-gated relation row is cleared for buyer-facing use. */
+export function isPublished(row: unknown): boolean {
+  if (!row || typeof row !== 'object') return false
+  const status = (row as { status?: unknown }).status
+  // A relation with no status column is not gated; treat it as visible.
+  return status === undefined || status === null || status === 'PUBLISHED'
+}
+
+/**
+ * Strips bookkeeping and analyst-only fields from one relation row.
+ * Returns null when the row is publish-gated and not yet PUBLISHED.
+ */
+export function stripRelationInternals<T extends Record<string, unknown>>(
+  relation: string,
+  row: T,
+): Partial<T> | null {
+  if ((INTERNAL_ONLY_RELATIONS as readonly string[]).includes(relation)) return null
+  if ((PUBLISH_GATED_RELATIONS as readonly string[]).includes(relation) && !isPublished(row)) return null
+
+  const banned = new Set<string>([...UNIVERSAL_INTERNAL, ...(RELATION_INTERNAL_FIELDS[relation] ?? [])])
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(row)) {
+    if (banned.has(key)) continue
+    out[key] = value
+  }
+  return out as Partial<T>
+}

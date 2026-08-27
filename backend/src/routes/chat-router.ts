@@ -60,7 +60,7 @@ import { getProjectDataForQuery, computeResponseConfidence } from '../lib/projec
 import { FEATURE_PROBES } from '../lib/featureProbes'
 import { unverified, unverifiedFeature, confidenceFor, headingFor, UP_STATUTORY, NOIDA_MARKET_RANGES, MARKET_QUALIFIER, type FactTier } from '../lib/factPresentation'
 import { redactProject } from '../lib/projectExposure'
-import { buildProjectFacts } from '../lib/projectFactsBlock'
+import { buildProjectFacts, detectFactTopics } from '../lib/projectFactsBlock'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { generateMultiDimensionalContext, attachMultiDimensionalRecommendations } from '../lib/discovery/multidimensionalPromptEnricher'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
@@ -2104,9 +2104,15 @@ OUTPUT STRUCTURE:
               cost_sheet: true,
               amenities: true,
               images: { take: 3, orderBy: { sort_order: 'asc' } },
-              connectivity: { take: 5, orderBy: { distance_km: 'asc' } },
+              connectivity: { take: 12, orderBy: { distance_km: 'asc' } },
               recommendation_profile: true,
               decision_profile: true,
+              persona_profile: true,
+              // Bounded: these feed the facts block, which caps them again, and
+              // an unbounded include here would scale with a project's history.
+              price_history: { take: 8, orderBy: { recorded_at: 'desc' } },
+              construction_milestones: { take: 10, orderBy: { sort_order: 'asc' } },
+              spec_items: { take: 30, orderBy: [{ is_highlight: 'desc' }, { sort_order: 'asc' }] },
               dna: true,
             }
           })
@@ -2124,6 +2130,10 @@ OUTPUT STRUCTURE:
 
           const totalInquiries = Array.from(projectMentionCounts.values()).reduce((sum, item) => sum + item.count, 0)
 
+          // Heavy relations (price history, fittings, construction milestones) are pulled
+          // in only when the buyer's message is about them — see detectFactTopics.
+          const askedFactTopics = detectFactTopics(message)
+
           const dbFactsJson = JSON.stringify(detailedTargetProjects.map(p => {
             const mentions = projectMentionCounts.get(p.id)?.count || 1
             const weightagePct = totalInquiries > 0 ? Math.round((mentions / totalInquiries) * 100) : Math.round(100 / detailedTargetProjects.length)
@@ -2135,7 +2145,7 @@ OUTPUT STRUCTURE:
             // hold. Empty values are omitted, so an absent key reads to the
             // model as "we do not have this" rather than inviting a guess.
             const baseObj: Record<string, any> = {
-              ...buildProjectFacts(p as unknown as Record<string, unknown>),
+              ...buildProjectFacts(p as unknown as Record<string, unknown>, { topics: askedFactTopics }),
               location: `${p.sector}, ${p.city}`,
               status: p.status === 'ready_to_move' ? 'Ready to Move' : p.status === 'new_launch' ? 'New Launch' : 'Under Construction',
             }
@@ -2266,11 +2276,30 @@ USING THE FACTS:
             // Developer charges are per-project. We print them only when this
             // project's cost sheet holds them — a Noida average cannot stand in
             // for what one developer actually charges.
+            // Every figure below is read from this project's own cost_sheet row.
+            // parking_cost / ifms / club_membership are stored in RUPEES, not
+            // lakhs — see the unit note on the CostSheet model in schema.prisma.
+            const inr = (n: unknown) => `₹${Number(n).toLocaleString('en-IN')}`
             const developerRows: string[] = []
             if (p.price_range_label) developerRows.push(`| **Base Selling Price (BSP)** | ${p.price_range_label} | As per payment plan | Basic unit purchase price |`)
-            if (cs?.base_price_per_sqft) developerRows.push(`| **Base rate** | ₹${Number(cs.base_price_per_sqft).toLocaleString('en-IN')} / sq.ft | As per payment plan | Verified base rate |`)
-            if (p.maintenance_per_sqft_monthly) developerRows.push(`| **Maintenance** | ₹${p.maintenance_per_sqft_monthly} / sq.ft / month | Post possession | Verified |`)
-            if (p.dg_power_rate_per_unit) developerRows.push(`| **DG power** | ₹${p.dg_power_rate_per_unit} / unit | Post possession | Verified |`)
+            if (cs?.base_price_per_sqft) developerRows.push(`| **Base rate** | ${inr(cs.base_price_per_sqft)} / sq.ft | As per payment plan | Verified base rate |`)
+            if (cs?.floor_rise_per_floor) developerRows.push(`| **Floor rise** | ${inr(cs.floor_rise_per_floor)} / sq.ft per floor | With BSP | Verified |`)
+            if (Array.isArray(cs?.plc_charges) && cs.plc_charges.length > 0) {
+              const plc = (cs.plc_charges as Array<{ name?: string; psf?: number }>)
+                .filter(c => c?.name)
+                .map(c => `${c.name}${c.psf ? ` ${inr(c.psf)}/sq.ft` : ''}`)
+                .join(', ')
+              if (plc) developerRows.push(`| **Preferential location (PLC)** | ${plc} | With BSP | Verified |`)
+            }
+            if (cs?.parking_cost) developerRows.push(`| **Covered parking** | ${inr(cs.parking_cost)} | Initial installments | Verified |`)
+            if (cs?.club_membership) developerRows.push(`| **Club membership** | ${inr(cs.club_membership)} | On possession | Verified |`)
+            if (cs?.ifms) developerRows.push(`| **IFMS (refundable)** | ${inr(cs.ifms)} / sq.ft | On possession | Verified |`)
+            if (cs?.electricity_connection) developerRows.push(`| **Electricity connection** | ${inr(cs.electricity_connection)} | On possession | Verified |`)
+            if (cs?.water_sewer_connection) developerRows.push(`| **Water & sewer connection** | ${inr(cs.water_sewer_connection)} | On possession | Verified |`)
+            const maintenance = cs?.maintenance_psf_monthly ?? p.maintenance_per_sqft_monthly
+            if (maintenance) developerRows.push(`| **Maintenance** | ${inr(maintenance)} / sq.ft / month | Post possession | Verified |`)
+            if (p.dg_power_rate_per_unit) developerRows.push(`| **DG power** | ${inr(p.dg_power_rate_per_unit)} / unit | Post possession | Verified |`)
+            const assumptions = Array.isArray(cs?.assumptions) ? cs.assumptions.filter(Boolean) : []
 
             const developerBlock = developerRows.length > 0
               ? `**Developer charges on record:**\n\n| Parameter | Rate / Amount | Stage | Note |\n| :--- | :--- | :--- | :--- |\n${developerRows.join('\n')}`
@@ -2278,7 +2307,7 @@ USING THE FACTS:
 
             const tiers: FactTier[] = developerRows.length > 0 ? ['verified', 'statutory'] : ['missing', 'statutory']
 
-            responseText = `### Cost Breakdown — ${p.name}\n\n${developerBlock}\n\n**Statutory charges (fixed by UP law, same for every project):**\n\n| Parameter | Rate | Stage | Note |\n| :--- | :--- | :--- | :--- |\n${statutoryRows}\n\n**For budgeting:** allow roughly ${p.status === 'ready_to_move' ? NOIDA_MARKET_RANGES.allInclusiveLoadReadyToMovePct : NOIDA_MARKET_RANGES.allInclusiveLoadUnderConstructionPct} to cover statutory and possession charges — ${MARKET_QUALIFIER}.${tiers.includes('missing') ? `\n\nParking, club membership and IFMS vary by developer and are not in our records for ${p.name}; our advisory team can pull the official booking cost sheet.` : ''}`
+            responseText = `### Cost Breakdown — ${p.name}\n\n${developerBlock}\n\n**Statutory charges (fixed by UP law, same for every project):**\n\n| Parameter | Rate | Stage | Note |\n| :--- | :--- | :--- | :--- |\n${statutoryRows}\n\n**For budgeting:** allow roughly ${p.status === 'ready_to_move' ? NOIDA_MARKET_RANGES.allInclusiveLoadReadyToMovePct : NOIDA_MARKET_RANGES.allInclusiveLoadUnderConstructionPct} to cover statutory and possession charges — ${MARKET_QUALIFIER}.${assumptions.length ? `\n\n_Assumptions on record: ${assumptions.join('; ')}._` : ''}${tiers.includes('missing') ? `\n\nParking, club membership and IFMS vary by developer and are not in our records for ${p.name}; our advisory team can pull the official booking cost sheet.` : ''}`
             isDeterministic = true
           }
 

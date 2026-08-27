@@ -23,7 +23,7 @@
  *     by being added to the schema later.
  */
 
-import { redactProject, isPublicField } from './projectExposure'
+import { redactProject, isPublicField, stripRelationInternals } from './projectExposure'
 
 /** Columns rendered as "yes"/"no" rather than true/false. */
 const BOOLEAN_LABELS: Record<string, [string, string]> = {
@@ -110,11 +110,46 @@ function formatValue(key: string, value: unknown): string | null {
   return text.length ? text : null
 }
 
+/**
+ * Relations heavy enough to be worth fetching only when the question is about
+ * them. Measured on a fully-seeded record, these three were 2,857 of 8,201
+ * characters — 35% of the block for detail almost no turn asks for.
+ */
+export type FactTopic = 'price_history' | 'specifications' | 'construction'
+
+/**
+ * Which phrasings pull in a heavy relation.
+ *
+ * A declarative table rather than an if-chain so the routing stays reviewable
+ * and testable in one place, the same way FEATURE_PROBES works for amenities.
+ */
+export const FACT_TOPIC_PATTERNS: ReadonlyArray<{ topic: FactTopic; pattern: RegExp }> = [
+  { topic: 'price_history', pattern: /price (trend|history|movement|change)|appreciat|how much has|gone up|risen|cagr|capital gain/i },
+  { topic: 'specifications', pattern: /spec|fitting|finish|flooring|brand|kitchen|bathroom|sanitary|fixture|modular|vitrified|marble|material/i },
+  // "how far along", not a bare "how far" — "how far is the airport" is a
+  // distance question and must not drag in the construction timeline.
+  { topic: 'construction', pattern: /construction|progress|milestone|slab|superstructure|how far along|what stage|excavat|foundation|completion status/i },
+]
+
+/** Topics the buyer's message is asking about. */
+export function detectFactTopics(message: string): Set<FactTopic> {
+  const topics = new Set<FactTopic>()
+  for (const { topic, pattern } of FACT_TOPIC_PATTERNS) {
+    if (pattern.test(message)) topics.add(topic)
+  }
+  return topics
+}
+
 export interface ProjectFactsOptions {
   /** Cap on the long prose columns, which dominate the token cost. */
   maxDescriptionChars?: number
   /** Cap on list relations such as amenities. */
   maxListItems?: number
+  /**
+   * Heavy relations to include. Omit for the default core set; pass the result
+   * of detectFactTopics(message) to add the ones the question actually needs.
+   */
+  topics?: Set<FactTopic>
 }
 
 /**
@@ -145,12 +180,31 @@ export function projectScalarFacts(
 }
 
 interface RelationShapes {
-  builder?: { name?: string | null } | null
+  builder?: Record<string, unknown> | null
   unit_types?: Array<Record<string, unknown>> | null
   amenities?: Array<{ name?: string | null; category?: string | null }> | null
   connectivity?: Array<{ name?: string | null; type?: string | null; distance_km?: number | null; travel_time_min?: number | null }> | null
-  payment_plans?: Array<{ plan_name?: string | null; description?: string | null }> | null
+  payment_plans?: Array<Record<string, unknown>> | null
   cost_sheet?: Record<string, unknown> | null
+  decision_profile?: Record<string, unknown> | null
+  recommendation_profile?: Record<string, unknown> | null
+  persona_profile?: Record<string, unknown> | null
+  price_history?: Array<Record<string, unknown>> | null
+  construction_milestones?: Array<Record<string, unknown>> | null
+  spec_items?: Array<Record<string, unknown>> | null
+}
+
+/** Applies the relation policy and drops anything that came back empty. */
+function cleanRelation(name: string, row: Record<string, unknown> | null | undefined): Record<string, unknown> | null {
+  if (!row) return null
+  const stripped = stripRelationInternals(name, row)
+  if (!stripped) return null
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(stripped)) {
+    const formatted = formatValue(key, value)
+    if (formatted !== null) out[key] = formatted
+  }
+  return Object.keys(out).length ? out : null
 }
 
 /**
@@ -166,7 +220,7 @@ export function buildProjectFacts(
   const maxItems = options.maxListItems ?? 15
   const facts: Record<string, unknown> = projectScalarFacts(row, options)
 
-  if (row.builder?.name) facts.builder = row.builder.name
+  if (row.builder && typeof row.builder.name === 'string') facts.builder = row.builder.name
 
   if (row.unit_types?.length) {
     facts.unit_types = row.unit_types.slice(0, maxItems).map(u => {
@@ -195,14 +249,50 @@ export function buildProjectFacts(
     )
   }
 
-  if (row.cost_sheet && !isEmpty(row.cost_sheet)) {
-    const sheet: Record<string, string> = {}
-    for (const [key, value] of Object.entries(row.cost_sheet)) {
-      if (key === 'id' || key === 'project_id' || key.endsWith('_at')) continue
-      const formatted = formatValue(key, value)
-      if (formatted !== null) sheet[key] = formatted
-    }
-    if (Object.keys(sheet).length) facts.cost_sheet = sheet
+  const sheet = cleanRelation('cost_sheet', row.cost_sheet)
+  if (sheet) facts.cost_sheet = sheet
+
+  // ── Analyst intelligence ───────────────────────────────────────────────────
+  // base.ts rules 13-15 instruct the model to reason from decision_thesis,
+  // why_buy, why_avoid, tier and walk_away_conditions — and none of them were
+  // ever put in the prompt, so the model was told to use data it never received.
+  // stripRelationInternals also enforces the PUBLISHED gate here: DRAFT and
+  // IN_REVIEW analyst opinion must not reach a buyer.
+  const decision = cleanRelation('decision_profile', row.decision_profile)
+  if (decision) facts.decision_profile = decision
+
+  const recommendation = cleanRelation('recommendation_profile', row.recommendation_profile)
+  if (recommendation) facts.recommendation_profile = recommendation
+
+  const persona = cleanRelation('persona_profile', row.persona_profile)
+  if (persona) facts.buyer_fit = persona
+
+  // ── Heavy, topic-gated relations ───────────────────────────────────────────
+  // Included only when the question is about them. On a fully-seeded record
+  // these three are ~35% of the block, and a turn asking "is it pet friendly"
+  // has no use for six price snapshots and thirty fittings.
+  const topics = options.topics
+
+  if (topics?.has('price_history') && row.price_history?.length) {
+    facts.price_history = row.price_history
+      .slice(-maxItems)
+      .map(h => cleanRelation('price_history', h))
+      .filter(Boolean)
+  }
+
+  if (topics?.has('construction') && row.construction_milestones?.length) {
+    facts.construction_milestones = row.construction_milestones
+      .slice(0, maxItems)
+      .map(m => cleanRelation('construction_milestones', m))
+      .filter(Boolean)
+  }
+
+  // Fittings and finishes: brand-level detail buyers ask about by name.
+  if (topics?.has('specifications') && row.spec_items?.length) {
+    facts.specifications = row.spec_items.slice(0, 30).map(s => {
+      const brand = s.brand ? ` (${s.brand})` : ''
+      return `${s.category ? `${s.category}: ` : ''}${s.label} — ${s.value}${brand}`
+    })
   }
 
   return facts
