@@ -96,17 +96,29 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
 
   return (
     <div ref={containerRef} className="w-full max-w-3xl mx-auto px-2">
-      {/* Clean fixed wrapping pills — 4 fixed buttons on mobile without horizontal scroll, full set on desktop */}
-      <div className="flex flex-wrap items-center justify-center gap-2 w-full py-1">
+      {/* One horizontal rail on mobile, centred wrap on desktop.
+          flex-wrap stacked these into a tall vertical column on a phone, which
+          ate the fold and pushed the input off screen. A single scrolling row
+          under the input is the shape people already know from ChatGPT.
+
+          overscroll-x-contain matters: without it, swiping the rail past its
+          end chains to the page and the whole view jerks sideways. */}
+      <div
+        className="flex flex-nowrap sm:flex-wrap items-center sm:justify-center gap-2 w-full py-1
+                   overflow-x-auto sm:overflow-visible overscroll-x-contain
+                   snap-x snap-mandatory sm:snap-none scrollbar-none
+                   -mx-2 px-2 sm:mx-0 sm:px-0"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         {HOME_BUTTON_GROUPS.map((group, idx) => {
-          // On mobile, show top 4 primary buttons to fit cleanly without scroll; on sm+ show all
-          const isExtraOnMobile = idx >= 4;
+          // Previously the last groups were hidden below sm to avoid a horizontal
+          // scroll. The row scrolls on purpose now, so every group is reachable.
           const isOpen = openDropdownId === group.id;
           const hasOptions = group.options && group.options.length > 0;
           const style = groupHoverStyles[group.id] || defaultHover;
 
           return (
-            <div key={group.id} className={`relative ${isExtraOnMobile ? 'hidden sm:block' : 'block'}`}>
+            <div key={group.id} className="relative shrink-0 snap-start sm:snap-align-none">
               <m.div
                 whileHover={{ y: -1, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
@@ -119,7 +131,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                 <button
                   type="button"
                   onClick={(e) => handleMainClick(group.primaryPrompt, e)}
-                  className={`flex items-center gap-1.5 pl-3 py-1.5 ${hasOptions ? 'pr-1.5' : 'pr-3'} cursor-pointer min-w-0`}
+                  className={`flex items-center gap-1.5 pl-3.5 py-2.5 sm:py-1.5 min-h-[44px] sm:min-h-0 ${hasOptions ? 'pr-1.5' : 'pr-3.5'} cursor-pointer min-w-0`}
                   title={`Ask: "${group.primaryPrompt}"`}
                 >
                   <span className={`transition-colors ${style.iconHover}`}>
@@ -134,7 +146,7 @@ export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
                   <button
                     type="button"
                     onClick={(e) => handleToggle(group.id, e)}
-                    className="pr-2.5 pl-1 py-1.5 cursor-pointer text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors flex items-center justify-center"
+                    className="pr-3 pl-1.5 py-2.5 sm:py-1.5 min-h-[44px] min-w-[36px] sm:min-h-0 sm:min-w-0 cursor-pointer text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors flex items-center justify-center"
                     title="More options"
                   >
                     <CaretDown

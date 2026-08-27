@@ -1540,43 +1540,15 @@ function MessageBubbleInner({
 
 
 
-      {/* Persona chips: suggested follow-ups for first recommendation */}
-      {message.type === 'ai' && index <= 1 && isLast && (message.properties?.length ?? 0) > 0 && !isSubmitting && (
-        <m.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-          className="mt-4 space-y-2"
-        >
-          <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Want to know more?
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: 'Explain the cost', prompt: 'Break down the total cost of this property including EMI, stamp duty, GST, and registration fees.' },
-              { label: 'Builder background', prompt: 'What do you know about this builder? Why should I trust them?' },
-              { label: 'What could go wrong?', prompt: 'What are the potential risks or downsides of this property?' },
-              { label: 'How does it compare?', prompt: 'How does this property compare to other similar options in the area?' },
-            ].map((chip) => (
-              <button
-                key={chip.label}
-                onClick={() => onAction({
-                  id: `followup-${chip.label}`,
-                  actionType: 'TEXT_MESSAGE',
-                  label: chip.label,
-                  icon: '💬',
-                  analyticsId: `followup_${chip.label.replace(/\s+/g, '_').toLowerCase()}`,
-                  priority: 1,
-                  payload: { text: chip.prompt }
-                })}
-                className="text-left px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[13px] font-medium rounded-lg transition-colors border border-blue-200 dark:border-blue-700"
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-        </m.div>
-      )}
+      // A hardcoded "Want to know more?" grid used to sit here: four fixed
+      // follow-ups (Explain the cost / Builder background / What could go wrong /
+      // How does it compare) in their own blue style.
+      //
+      // It was a second chip layer stacked under the real one. The conversation
+      // engine already emits contextual chips for this turn through combinedChips;
+      // these four were static, ignored the intent, and rendered in a palette
+      // nothing else uses, so the buyer saw two different-looking chip rows and
+      // no way to tell which was which. Removed in favour of the engine.
 
       {/* Comparison table */}
       {message.type === 'ai' && message.showComparisonTable && (message.comparisonProjects?.length ?? 0) >= 2 && (

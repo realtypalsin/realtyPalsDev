@@ -1712,9 +1712,20 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-12 sm:top-13 left-0 right-0 z-20 flex justify-center px-4 pointer-events-none"
+            // In normal flow, not absolute.
+            //
+            // It used to be `absolute top-12` with the feed below compensating
+            // via a hardcoded `pt-24`. That holds only while the ribbon is one
+            // line: on a phone, an intent with a few fields wraps to two, grows
+            // past 96px and covers the buyer's own message — the query they just
+            // sent, hidden behind a summary of that query.
+            //
+            // Flow layout makes the overlap structurally impossible. The ribbon
+            // takes whatever height it needs and the feed starts under it, at any
+            // wrap count, with no magic number to keep in sync.
+            className="shrink-0 z-20 flex justify-center px-4 pt-14 sm:pt-16 pb-1"
           >
-            <div className="pointer-events-auto">
+            <div>
               <ContextRibbon
                 intent={currentIntent}
                 onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
@@ -1767,7 +1778,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 RealtyPals
               </h1>
               <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-1 font-[family-name:var(--font-afacad)]">
-                Search Better
+                Decide Better
               </h2>
             </div>
 
@@ -1805,7 +1816,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               aria-live="polite"
               aria-relevant="additions text"
               aria-label="Conversation with RealtyPal advisor"
-              className={`flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 ${currentIntent ? 'pt-24 sm:pt-26' : 'pt-14 sm:pt-16'} pb-36 relative z-10`}
+              className={`flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 ${currentIntent ? 'pt-2' : 'pt-14 sm:pt-16'} pb-36 relative z-10`}
 
               onScroll={(e) => {
                 const el = e.currentTarget;
