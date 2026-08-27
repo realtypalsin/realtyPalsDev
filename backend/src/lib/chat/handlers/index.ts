@@ -4,6 +4,7 @@ import { statutoryTaxHandler } from './statutoryTax'
 import { possessionStatusHandler } from './possessionStatus'
 import { connectivityHandler } from './connectivity'
 import { totalOutflowHandler } from './totalOutflow'
+import { unitConfigurationHandler } from './unitConfiguration'
 
 /**
  * Topic handlers, in priority order — the first match wins.
@@ -27,9 +28,11 @@ import { totalOutflowHandler } from './totalOutflow'
  * Also extracted:
  *   total_outflow       computed a full cost breakdown from an invented ₹1.35 Cr
  *   connectivity        printed identical commute figures for every project
+ *   unit_configuration  read a column that does not exist, so every balcony
+ *                       count ever shown was derived from the bedroom count
  *
  * Still inline in chat-router.ts: builder reputation, sector orientation,
- * amenities, unit configuration, sector compare, payment plans, cost sheet,
+ * amenities, sector compare, payment plans, cost sheet,
  * project detail, open-query lane.
  */
 export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
@@ -38,6 +41,7 @@ export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
   possessionStatusHandler,
   totalOutflowHandler,
   connectivityHandler,
+  unitConfigurationHandler,
 ]
 
 export {
@@ -46,4 +50,5 @@ export {
   possessionStatusHandler,
   totalOutflowHandler,
   connectivityHandler,
+  unitConfigurationHandler,
 }

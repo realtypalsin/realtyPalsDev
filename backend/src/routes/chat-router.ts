@@ -1070,6 +1070,9 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             isReadyToMoveQuery,
             isTotalOutflowQuery,
             isConnectivityQuery,
+            isConfigurationQuery,
+            isCompareRequest,
+            hasSingleNamedProject: (intent.projectNames?.length ?? 0) === 1,
             hasNamedProject: (intent.projectNames?.length ?? 0) > 0,
           },
         })) return
@@ -1083,11 +1086,19 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             .sort((a, b) => (b.delivery_score ?? 0) - (a.delivery_score ?? 0))
             .slice(0, 6)
 
+          // Three fabrications removed. A builder with no construction quality
+          // score was graded 'A-Grade'; one with no RERA compliance score was
+          // labelled 'Verified' — asserting a compliance standing we do not hold,
+          // about the exact subject a buyer is trying to assess. And a builder
+          // whose delivered count was unknown was credited with '5+ Projects'.
           const builderRows = topBuilders.map(b => {
-            const delayStr = b.average_delay_months === 0 ? 'On Time' : `${b.average_delay_months} months`
-            const qualStr = b.construction_quality_score ? `${b.construction_quality_score}/100` : 'A-Grade'
-            const reraStr = b.rera_compliance_score ? `${b.rera_compliance_score}/100` : 'Verified'
-            return `| **${b.name}** | ${b.delivery_score}/100 | ${delayStr} | ${b.projects_delivered_count || 5}+ Projects | ${qualStr} | ${reraStr} |`
+            const delayStr = b.average_delay_months === 0
+              ? 'On time'
+              : b.average_delay_months != null ? `${b.average_delay_months} months` : '—'
+            const qualStr = b.construction_quality_score ? `${b.construction_quality_score}/100` : '—'
+            const reraStr = b.rera_compliance_score ? `${b.rera_compliance_score}/100` : '—'
+            const deliveredStr = b.projects_delivered_count != null ? `${b.projects_delivered_count}` : '—'
+            return `| **${b.name}** | ${b.delivery_score != null ? `${b.delivery_score}/100` : '—'} | ${delayStr} | ${deliveredStr} | ${qualStr} | ${reraStr} |`
           }).join('\n')
 
           const topSafeNames = topBuilders.slice(0, 3).map(b => b.name).join(', ')
@@ -1347,75 +1358,6 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           return
         }
 
-        // ─── UNIT CONFIGURATION, BALCONY & FLOOR PLAN HANDLER ─────────────────────
-        if (isConfigurationQuery && !isCompareRequest && (intent.projectNames?.length ?? 0) < 2) {
-          const targetProjName = activeProjectName || (cachedProjectsFromSession?.[0]?.name)
-          if (targetProjName) {
-            const targetProject = await prisma.project.findFirst({
-              where: {
-                OR: [
-                  { name: { contains: targetProjName, mode: 'insensitive' } },
-                  { slug: { contains: targetProjName, mode: 'insensitive' } },
-                  { id: targetProjName.length === 36 ? targetProjName : undefined }
-                ]
-              },
-              include: { unit_types: { orderBy: { bhk: 'asc' } }, builder: true }
-            })
-
-            if (targetProject && targetProject.unit_types.length > 0) {
-              const units = targetProject.unit_types
-              const rows = units.map(u => {
-                const superArea = u.super_area_sqft ? `${u.super_area_sqft} sq.ft` : '—'
-                const carpetArea = u.carpet_area_sqft ? `${u.carpet_area_sqft} sq.ft` : (u.super_area_sqft ? `${Math.round(u.super_area_sqft * 0.70)} sq.ft (est.)` : '—')
-                const balconies = (u as any)?.balconies_count ? `${(u as any).balconies_count} Balconies` : (u.bhk >= 3 ? '3 Balconies' : '2 Balconies')
-                const priceStr = u.price_min_cr ? `₹${u.price_min_cr}${u.price_max_cr ? `–${u.price_max_cr}` : ''} Cr` : 'On Request'
-                return `| **${u.name || `${u.bhk} BHK`}** | ${u.bhk} BHK | ${superArea} | ${carpetArea} | ${balconies} | ${priceStr} |`
-              }).join('\n')
-
-              let specificAnswer = ''
-              const lowerMsg = message.toLowerCase()
-              if (/2\s*bhk/i.test(lowerMsg)) {
-                const u2 = units.find(u => u.bhk === 2)
-                if (u2) {
-                  const bCount = (u2 as any)?.balconies_count || 2
-                  specificAnswer = `**For 2 BHK units in ${targetProject.name}:**\n• **Balconies:** **${bCount} Spacious Balconies** (sit-out deck overlooking greens & utility balcony)\n• **Super Built-Up Area:** ${u2.super_area_sqft ? `${u2.super_area_sqft} sq.ft` : '980–1,150 sq.ft'}\n• **Carpet Area:** ${u2.carpet_area_sqft ? `${u2.carpet_area_sqft} sq.ft` : '680–805 sq.ft'}\n• **Price:** ${u2.price_min_cr ? `₹${u2.price_min_cr}–${u2.price_max_cr || u2.price_min_cr} Cr` : 'Available on Request'}\n\n`
-                }
-              } else if (/3\s*bhk/i.test(lowerMsg)) {
-                const u3 = units.find(u => u.bhk === 3)
-                if (u3) {
-                  const bCount = (u3 as any)?.balconies_count || 3
-                  specificAnswer = `**For 3 BHK units in ${targetProject.name}:**\n• **Balconies:** **${bCount} Large Balconies** (living room deck, master bedroom balcony & utility balcony)\n• **Super Built-Up Area:** ${u3.super_area_sqft ? `${u3.super_area_sqft} sq.ft` : '1,480–1,750 sq.ft'}\n• **Carpet Area:** ${u3.carpet_area_sqft ? `${u3.carpet_area_sqft} sq.ft` : '1,035–1,225 sq.ft'}\n• **Price:** ${u3.price_min_cr ? `₹${u3.price_min_cr}–${u3.price_max_cr || u3.price_min_cr} Cr` : 'Available on Request'}\n\n`
-                }
-              } else if (/4\s*bhk/i.test(lowerMsg)) {
-                const u4 = units.find(u => u.bhk === 4)
-                if (u4) {
-                  const bCount = (u4 as any)?.balconies_count || 4
-                  specificAnswer = `**For 4 BHK Luxury units in ${targetProject.name}:**\n• **Balconies:** **${bCount} Panoramic Balconies** (wrap-around corner balcony & utility)\n• **Super Built-Up Area:** ${u4.super_area_sqft ? `${u4.super_area_sqft} sq.ft` : '2,200+ sq.ft'}\n• **Carpet Area:** ${u4.carpet_area_sqft ? `${u4.carpet_area_sqft} sq.ft` : '1,540+ sq.ft'}\n\n`
-                }
-              }
-
-              const configText = `### Unit Layouts & Balcony Specifications: ${targetProject.name}\n\n${specificAnswer}| Configuration | BHK | Super Area | Usable Carpet Area | Balconies | Starting Price |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n${rows}\n\n*All floor plans strictly conform to sanctioned UP RERA carpet area norms with dedicated cross-ventilation decks.*`
-
-              const configChips = [
-                { id: `chip_fp_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Floor Plans', icon: 'layers', analyticsId: 'chip_fp', priority: 1, payload: { text: `Show floor plans for ${targetProject.name}` } },
-                { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & EMI', icon: 'calculator', analyticsId: 'chip_cost', priority: 2, payload: { text: `Show cost sheet and EMI for ${targetProject.name}` } },
-                { id: `chip_am_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Explore Amenities', icon: 'shield-check', analyticsId: 'chip_am', priority: 3, payload: { text: `What amenities are in ${targetProject.name}?` } }
-              ]
-
-              send('token', { token: configText })
-              emitUiState({
-                stage: 'RESEARCH',
-                thinking: `Verified unit configurations for ${targetProject.name}:`,
-                chips: configChips,
-                missingFields: [],
-                confidence: 'HIGH'
-              })
-              send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
-              res.end()
-              return
-            }
-          }
-        }
 
 
 
