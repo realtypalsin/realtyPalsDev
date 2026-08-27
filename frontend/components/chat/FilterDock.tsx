@@ -1,0 +1,315 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { CaretDown, Check, MagnifyingGlass, X } from '@phosphor-icons/react'
+
+/**
+ * The search refinement dock: the active filters, as controls, inside the input.
+ *
+ * Two things were wrong with what this replaces. The filters were rendered in
+ * two places — a read-only ribbon above the conversation and a chip row near
+ * the input — so the same state appeared twice in two styles, and the ribbon
+ * was the thing overlaying the buyer's own messages. And nothing was really
+ * editable: the only affordance was a remove button that stayed opacity-0 until
+ * hover, which on a touch device is a control you can neither see nor hit.
+ *
+ * This is the single place filters live. It sits in the input's bottom strip
+ * because that is where the buyer is already looking when they want to change
+ * something, and every pill both shows a value and opens the control for it.
+ *
+ * Popovers anchor to the pill that opened them (absolute bottom-full left-0)
+ * rather than to the dock, so the panel appears over the thing you tapped
+ * instead of somewhere along the row. They open upward because the dock sits at
+ * the bottom of the viewport.
+ *
+ * Dismissal is a window-level pointerdown listener in the capture phase. Click
+ * or a React onBlur both lose to a tap that lands on another interactive
+ * element, and capture-phase pointerdown fires before anything can swallow it,
+ * so a tap anywhere outside closes the panel on the first try.
+ *
+ * Changes dispatch INTENT_PATCH, which the chat turns back into a natural turn,
+ * so refining is a continuation of the conversation and never a restart.
+ */
+
+type Patch = Record<string, unknown>
+
+interface Choice {
+  label: string
+  /** The patch this choice applies. A band sets two fields at once. */
+  patch: Patch
+  /** True when the current intent already equals this choice. */
+  isActive: (intent: Record<string, unknown>) => boolean
+}
+
+interface PillSpec {
+  field: string
+  title: string
+  /** Placeholder shown when the filter is unset. */
+  empty: string
+  format: (intent: Record<string, unknown>) => string | null
+  choices?: Choice[]
+  /** Sector is a free-text search rather than a menu. */
+  freeText?: boolean
+  /** Fields cleared when the buyer removes this pill. */
+  clears: string[]
+}
+
+const num = (v: unknown): number | null => (typeof v === 'number' && !Number.isNaN(v) ? v : null)
+
+const POSSESSION_LABELS: Record<string, string> = {
+  immediate: 'Ready to Move',
+  '1year': 'Within 1 Year',
+  '2year': 'Within 2 Years',
+  '3year+': '3+ Years',
+}
+
+/**
+ * Budget reads as a band, not a ceiling.
+ *
+ * A buyer shopping at 1.4 Cr is not served by a list that only says "under 2
+ * Cr" — the band is how they already describe the search to themselves, and it
+ * sets a floor as well, which keeps obviously-too-cheap inventory out.
+ */
+const BUDGET_BANDS: Array<{ label: string; min: number | null; max: number | null }> = [
+  { label: 'Under ₹1 Cr', min: null, max: 1 },
+  { label: '₹1 – 1.5 Cr', min: 1, max: 1.5 },
+  { label: '₹1.5 – 2 Cr', min: 1.5, max: 2 },
+  { label: '₹2 – 3 Cr', min: 2, max: 3 },
+  { label: '₹3 Cr+', min: 3, max: null },
+]
+
+const PILLS: PillSpec[] = [
+  {
+    field: 'sector',
+    title: 'Location',
+    empty: 'Location',
+    freeText: true,
+    clears: ['sector'],
+    format: i => (typeof i.sector === 'string' && i.sector ? i.sector : null),
+  },
+  {
+    field: 'bhk',
+    title: 'Configuration',
+    empty: 'Configuration',
+    clears: ['bhk'],
+    format: i => (Array.isArray(i.bhk) && i.bhk.length ? `${i.bhk.join(', ')} BHK` : null),
+    choices: [1, 2, 3, 4, 5].map(n => ({
+      label: `${n} BHK`,
+      patch: { bhk: [n] },
+      isActive: i => Array.isArray(i.bhk) && i.bhk.length === 1 && i.bhk[0] === n,
+    })),
+  },
+  {
+    field: 'possession',
+    title: 'Possession',
+    empty: 'Possession',
+    clears: ['possession'],
+    format: i => (typeof i.possession === 'string' && i.possession ? POSSESSION_LABELS[i.possession] ?? i.possession : null),
+    choices: Object.entries(POSSESSION_LABELS).map(([value, label]) => ({
+      label,
+      patch: { possession: value },
+      isActive: i => i.possession === value,
+    })),
+  },
+  {
+    field: 'budget',
+    title: 'Budget',
+    empty: 'Budget',
+    clears: ['budgetMin', 'budgetMax'],
+    format: i => {
+      const lo = num(i.budgetMin)
+      const hi = num(i.budgetMax)
+      if (lo === null && hi === null) return null
+      const band = BUDGET_BANDS.find(b => b.min === lo && b.max === hi)
+      if (band) return band.label
+      if (lo !== null && hi !== null) return `₹${lo} – ${hi} Cr`
+      return hi !== null ? `Under ₹${hi} Cr` : `₹${lo} Cr+`
+    },
+    choices: BUDGET_BANDS.map(b => ({
+      label: b.label,
+      patch: { budgetMin: b.min, budgetMax: b.max },
+      isActive: i => num(i.budgetMin) === b.min && num(i.budgetMax) === b.max,
+    })),
+  },
+]
+
+export function FilterDock({
+  intent,
+  onPatch,
+  onRemove,
+  disabled = false,
+}: {
+  intent: Record<string, unknown> | null
+  onPatch: (patch: Patch) => void
+  onRemove: (field: string) => void
+  disabled?: boolean
+}) {
+  const [openField, setOpenField] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const dockRef = useRef<HTMLDivElement>(null)
+
+  // Capture-phase pointerdown: a tap on another control would otherwise be
+  // swallowed before a click or blur handler ever saw it, leaving the panel
+  // open until a second tap.
+  useEffect(() => {
+    if (!openField) return
+    const onDown = (e: PointerEvent) => {
+      if (!dockRef.current?.contains(e.target as Node)) setOpenField(null)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenField(null)
+    }
+    window.addEventListener('pointerdown', onDown, true)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('pointerdown', onDown, true)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [openField])
+
+  if (!intent) return null
+
+  const state = intent
+  const apply = (patch: Patch) => {
+    setOpenField(null)
+    setDraft('')
+    onPatch(patch)
+  }
+
+  return (
+    <div
+      ref={dockRef}
+      className="flex flex-nowrap items-center gap-1.5 min-w-0 overflow-x-auto overscroll-x-contain py-0.5"
+      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      aria-label="Search filters"
+    >
+      {PILLS.map(spec => {
+        const value = spec.format(state)
+        const isSet = value !== null
+        const isOpen = openField === spec.field
+
+        return (
+          <div key={spec.field} className="relative shrink-0">
+            <div
+              className={
+                'flex items-center rounded-full border text-[11px] font-semibold transition-colors ' +
+                (isOpen
+                  ? 'border-slate-400 dark:border-zinc-500 bg-white dark:bg-zinc-800'
+                  : isSet
+                    ? 'border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/70'
+                    : 'border-dashed border-slate-200 dark:border-zinc-700 bg-transparent')
+              }
+            >
+              <button
+                type="button"
+                disabled={disabled}
+                aria-expanded={isOpen}
+                aria-haspopup="dialog"
+                onClick={() => {
+                  setDraft(spec.freeText && typeof state[spec.field] === 'string' ? String(state[spec.field]) : '')
+                  setOpenField(isOpen ? null : spec.field)
+                }}
+                title={isSet ? `Change ${spec.title.toLowerCase()}` : `Set ${spec.title.toLowerCase()}`}
+                className={
+                  'flex items-center gap-1 pl-2.5 py-1.5 min-h-[30px] cursor-pointer ' +
+                  (isSet ? 'pr-1 text-slate-700 dark:text-zinc-200' : 'pr-2.5 text-slate-400 dark:text-zinc-500')
+                }
+              >
+                <span className="whitespace-nowrap max-w-[120px] truncate">{value ?? spec.empty}</span>
+                <CaretDown
+                  size={9}
+                  weight="bold"
+                  className={'shrink-0 opacity-60 transition-transform ' + (isOpen ? 'rotate-180' : '')}
+                />
+              </button>
+
+              {isSet && (
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => spec.clears.forEach(onRemove)}
+                  aria-label={`Clear ${spec.title.toLowerCase()}`}
+                  className="pr-2 pl-0.5 py-1.5 min-h-[30px] flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 cursor-pointer"
+                >
+                  <X size={9} weight="bold" />
+                </button>
+              )}
+            </div>
+
+            {isOpen && (
+              <div
+                role="dialog"
+                aria-label={spec.title}
+                className="absolute bottom-full left-0 mb-2 z-[60] w-[218px] rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl shadow-black/5 dark:shadow-black/40 p-1.5"
+              >
+                <div className="px-2 pt-0.5 pb-1.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-slate-400 dark:text-zinc-500">
+                  {spec.title}
+                </div>
+
+                {spec.freeText ? (
+                  <form
+                    onSubmit={e => {
+                      e.preventDefault()
+                      const v = draft.trim()
+                      if (v) apply({ [spec.field]: v })
+                    }}
+                    className="px-1 pb-1"
+                  >
+                    <div className="flex items-center gap-1.5 px-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 focus-within:border-slate-400 dark:focus-within:border-zinc-500 transition-colors">
+                      <MagnifyingGlass size={12} weight="bold" className="shrink-0 text-slate-400" />
+                      <input
+                        autoFocus
+                        value={draft}
+                        onChange={e => setDraft(e.target.value)}
+                        placeholder="e.g. Sector 10, Greater Noida"
+                        aria-label={spec.title}
+                        className="w-full bg-transparent py-2 text-[12px] text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 outline-none"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={!draft.trim()}
+                      className="mt-1.5 w-full py-2 rounded-lg text-[11.5px] font-bold bg-slate-900 dark:bg-white text-white dark:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-opacity"
+                    >
+                      Apply
+                    </button>
+                  </form>
+                ) : (
+                  <div className="flex flex-col">
+                    {spec.choices?.map(choice => {
+                      const active = choice.isActive(state)
+                      return (
+                        <button
+                          key={choice.label}
+                          type="button"
+                          onClick={() => apply(choice.patch)}
+                          aria-pressed={active}
+                          className="flex items-center gap-2.5 w-full px-2 py-2 min-h-[34px] rounded-lg text-left text-[12px] text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+                        >
+                          <span
+                            className={
+                              'shrink-0 w-[13px] h-[13px] rounded-full border flex items-center justify-center transition-colors ' +
+                              (active
+                                ? 'border-slate-900 dark:border-white'
+                                : 'border-slate-300 dark:border-zinc-600')
+                            }
+                          >
+                            {active && <span className="w-[6px] h-[6px] rounded-full bg-slate-900 dark:bg-white" />}
+                          </span>
+                          <span className="flex-1 truncate">{choice.label}</span>
+                          {active && <Check size={11} weight="bold" className="shrink-0 text-slate-400" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+export default FilterDock

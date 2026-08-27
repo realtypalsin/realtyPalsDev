@@ -89,18 +89,36 @@ function QuickPicksCard({ block }: { block: ResponseBlock }) {
   )
 }
 
-const BADGE: Record<string, { label: string; chip: string; accent: string }> = {
-  '🔵': { label: 'STRONG BUY', chip: 'bg-[#0064E5] text-white',    accent: 'bg-[#0064E5]' },
-  '🟢': { label: 'BUY',        chip: 'bg-emerald-600 text-white',   accent: 'bg-emerald-400' },
-  '🟡': { label: 'CONSIDER',   chip: 'bg-amber-500 text-white',     accent: 'bg-amber-400' },
-  '🟠': { label: 'WATCH',      chip: 'bg-orange-500 text-white',    accent: 'bg-orange-400' },
-  '🔴': { label: 'AVOID',      chip: 'bg-red-600 text-white',       accent: 'bg-red-400' },
+/**
+ * Verdict styling, keyed on the verdict word itself.
+ *
+ * This used to be keyed on a coloured emoji the model was asked to prefix the
+ * header with, and the parser took the header's first character as the key. The
+ * verdict word was already sitting beside it in bold, so the pictograph carried
+ * nothing the text did not — but it was the half the styling depended on.
+ *
+ * That coupling was dangerous. Anything that stopped the emoji arriving — a
+ * model that declines to use them, a provider that strips them, the editorial
+ * no-emoji rule — fell through to the CONSIDER default, and every project in
+ * the response was labelled CONSIDER regardless of what the advisor actually
+ * concluded. A fabricated verdict, rendered confidently.
+ */
+const BADGE: Record<string, { chip: string; accent: string }> = {
+  'STRONG BUY': { chip: 'bg-[#0064E5] text-white',   accent: 'bg-[#0064E5]' },
+  BUY:          { chip: 'bg-emerald-600 text-white', accent: 'bg-emerald-400' },
+  CONSIDER:     { chip: 'bg-amber-500 text-white',   accent: 'bg-amber-400' },
+  WATCH:        { chip: 'bg-orange-500 text-white',  accent: 'bg-orange-400' },
+  AVOID:        { chip: 'bg-red-600 text-white',     accent: 'bg-red-400' },
 }
 
+/** Neutral styling for a header whose verdict we could not read. */
+const BADGE_UNKNOWN = { chip: 'bg-slate-500 text-white', accent: 'bg-slate-400' }
+
 function SingleProjectCard({ block }: { block: ResponseBlock }) {
-  const { badge, label, name } = parseSingleProjectHeader(block.headerLine)
+  const { label, name } = parseSingleProjectHeader(block.headerLine)
   const bullets = extractSingleProjectBullets(block.body)
-  const cfg = BADGE[badge] ?? BADGE['🟡']
+  // An unreadable verdict renders neutrally rather than borrowing another one.
+  const cfg = BADGE[label] ?? BADGE_UNKNOWN
   return (
     <Card accentCls={cfg.accent}>
       <div className="flex items-center gap-2 mb-2.5">

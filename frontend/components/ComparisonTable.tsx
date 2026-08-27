@@ -23,43 +23,43 @@ const TIER_CFG: Record<string, {
 }> = {
   STRONG_BUY: {
     label: 'STRONG BUY',
-    dot: '🔵',
+    dot: 'bg-[#0064E5]',
     chipCls: 'bg-[#0064E5] text-white',
     borderCls: 'ring-2 ring-[#0064E5]/30 border-[#0064E5]/40 dark:border-[#0064E5]/50',
   },
   BUY: {
     label: 'BUY',
-    dot: '🟢',
+    dot: 'bg-emerald-500',
     chipCls: 'bg-emerald-600 text-white',
     borderCls: 'ring-1 ring-emerald-400/30 border-emerald-300 dark:border-emerald-700',
   },
   HOLD: {
     label: 'CONSIDER',
-    dot: '🟡',
+    dot: 'bg-amber-400',
     chipCls: 'bg-amber-500 text-white',
     borderCls: 'border-amber-300 dark:border-amber-700',
   },
   WATCH: {
     label: 'WATCH',
-    dot: '🟠',
+    dot: 'bg-orange-500',
     chipCls: 'bg-orange-500 text-white',
     borderCls: 'border-orange-300 dark:border-orange-700',
   },
   AVOID: {
     label: 'AVOID',
-    dot: '🔴',
+    dot: 'bg-red-500',
     chipCls: 'bg-red-600 text-white',
     borderCls: 'border-red-300 dark:border-red-700',
   },
 }
 
 const PERSONA_LABEL: Record<string, string> = {
-  FAMILY: '👨‍👩‍👧 Family',
-  PROFESSIONAL: '💼 Professional',
-  INVESTOR: '📈 Investor',
+  FAMILY: 'Family',
+  PROFESSIONAL: 'Professional',
+  INVESTOR: 'Investor',
   NRI: '✈️ NRI',
-  UPGRADER: '🔝 Upgrader',
-  RETIREE: '🏡 Retiree',
+  UPGRADER: 'Upgrader',
+  RETIREE: 'Retiree',
 }
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
@@ -164,7 +164,7 @@ function formatArea(d: ProjectDetail | null): React.ReactNode {
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-300/60 dark:border-blue-800/60'
               : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
           }`}>
-          ⚡ {effPct}% Space Efficiency
+          {effPct}% Space Efficiency
         </span>
       )}
     </div>
@@ -343,7 +343,7 @@ function buildMatrix(details: (ProjectDetail | null)[], projects: ProjectCard[])
       const cfg = t ? TIER_CFG[t] : null
       return cfg ? (
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide ${cfg.chipCls}`}>
-          {cfg.dot} {cfg.label}
+          <span className={`inline-block w-2 h-2 rounded-full mr-1.5 align-middle ${cfg.dot}`} />{cfg.label}
         </span>
       ) : (
         <span className="text-gray-400 text-[11px]">—</span>
@@ -366,9 +366,9 @@ function buildMatrix(details: (ProjectDetail | null)[], projects: ProjectCard[])
         r === 'Low' ? 'text-emerald-600 dark:text-emerald-400' :
           r === 'High' ? 'text-red-500 dark:text-red-400' :
             'text-amber-500'
-      const dot = r === 'Low' ? '🟢' : r === 'High' ? '🔴' : '🟡'
+      const dot = r === 'Low' ? 'bg-emerald-500' : r === 'High' ? 'bg-red-500' : 'bg-amber-400'
       return (
-        <span key={i} className={`text-[11px] font-bold ${cls}`}>{dot} {r}</span>
+        <span key={i} className={`text-[11px] font-bold inline-flex items-center gap-1.5 ${cls}`}><span className={`inline-block w-2 h-2 rounded-full ${dot}`} />{r}</span>
       )
     }),
     winners: winnerIdx(risks.map(r => RISK_ORDER[r] ?? 0)),
@@ -566,7 +566,7 @@ function ProjectMiniCard({
       {/* Info */}
       <div className="p-3">
         <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5 truncate">
-          {project.builder?.name || 'Developer'}
+          {project.builder.name}
         </p>
         <h4 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2 tracking-tight">
           {project.name}
@@ -690,11 +690,11 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
   }, [matrixRows, onlyDifferences, projects.length])
 
   const EXEC_CATS = [
-    { key: 'overall', label: 'Best Overall', icon: '🏆' },
-    { key: 'value', label: 'Best Value', icon: '💰' },
-    { key: 'risk', label: 'Lowest Risk', icon: '🛡️' },
-    { key: 'family', label: 'Best Family', icon: '👨‍👩‍👧' },
-    { key: 'investor', label: 'Best Investor', icon: '📈' },
+    { key: 'overall', label: 'Best Overall' },
+    { key: 'value', label: 'Best Value' },
+    { key: 'risk', label: 'Lowest Risk' },
+    { key: 'family', label: 'Best Family' },
+    { key: 'investor', label: 'Best Investor' },
     { key: 'luxury', label: 'Best Luxury', icon: '✨' },
   ] as const
 
@@ -789,7 +789,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                           : 'bg-gray-50/60 dark:bg-gray-800/30 border-gray-100 dark:border-gray-700/40 opacity-60'
                         }`}
                     >
-                      <span className="text-[15px] leading-none block mb-1">{cat.icon}</span>
+
                       <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide block">
                         {cat.label}
                       </span>
@@ -839,7 +839,7 @@ export default function ComparisonTable({ projects }: { projects: ProjectCard[] 
                               : 'text-slate-700 dark:text-slate-300'
                             }`}
                         >
-                          {overallWinnerIdx === i && <span className="text-blue-500 mr-1">🏆</span>}
+                          {overallWinnerIdx === i && <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 align-middle" />}
                           {p.name.split(' ').slice(0, 2).join(' ')}
                         </th>
                       ))}

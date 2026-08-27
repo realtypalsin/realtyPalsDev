@@ -15,7 +15,6 @@ import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-van
 import MessageBubble, { buildPickerMessage } from '@/components/chat/MessageBubble';
 import type { ChipPickerState } from '@/components/chat/types';
 import CompareSelectorOverlay from '@/components/chat/CompareSelectorOverlay';
-import ContextRibbon from '@/components/chat/ContextRibbon';
 import {
   WarningCircle,
   CaretDown,
@@ -29,7 +28,7 @@ import {
   ArrowUp,
   MapPin
 } from '@phosphor-icons/react';
-import { IntegratedIntentPills } from '@/components/chat/IntegratedIntentPills';
+import { FilterDock } from '@/components/chat/FilterDock';
 import { useSessions } from '@/hooks/useSessions';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { ChatPhase2Skeleton } from '@/components/skeletons';
@@ -1504,45 +1503,10 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const handleOpenCalculator = useCallback(() => setShowCalculator(true), [])
   const handleOpenShareSheet = useCallback(() => setShareSheetOpen(true), [])
 
-  const handleIntentPillPatch = useCallback((patch: Record<string, unknown>) => {
-    const texts: string[] = []
-    if (patch.sector) texts.push(`Show me properties in ${patch.sector}`)
-    if (Array.isArray(patch.bhk) && patch.bhk.length) texts.push(`${patch.bhk.join(', ')} BHK`)
-    if (patch.possession) {
-      const possMap: Record<string, string> = {
-        immediate: 'ready to move',
-        '1year': 'possession in 1 year',
-        '2year': 'possession in 2 years',
-        '3year+': 'possession in 3+ years',
-      }
-      texts.push(possMap[String(patch.possession)] ?? String(patch.possession))
-    }
-    if (patch.budgetMin || patch.budgetMax) {
-      const min = patch.budgetMin ? `₹${patch.budgetMin} Cr` : ''
-      const max = patch.budgetMax ? `₹${patch.budgetMax} Cr` : ''
-      texts.push(`within budget ${[min, max].filter(Boolean).join(' - ')}`)
-    }
-    const naturalText = texts.join(' ') || 'refine search'
-    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: naturalText } })
-  }, [dispatchAction])
-
-  const handleIntentPillRemove = useCallback((field: string) => {
-    const fieldTitles: Record<string, string> = {
-      sector: 'Show all locations without sector filter',
-      bhk: 'Show all BHK configurations',
-      possession: 'Show all possession timelines',
-      budgetMax: 'Clear budget filter',
-      budgetMin: 'Clear min budget filter',
-      projectNames: 'Clear project filter',
-      builderName: 'Clear builder filter',
-    }
-    const prompt = fieldTitles[field] || `Remove ${field} filter`
-    dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: prompt } })
-  }, [dispatchAction])
-
   // ── Unified Floating Bento Input Dock ──
   const chatInputForm = (
     <div className={`relative w-full transition-all duration-300 ${isInputMinimized ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+      <div className="relative w-full">
         {rateLimitUntil && (
           <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
         )}
@@ -1572,15 +1536,26 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           </div>
 
           {/* Integrated Bento Bottom Action Strip */}
-          <div className="flex items-center justify-between pt-1 px-2 border-t border-slate-100 dark:border-zinc-800/60 mt-1 relative overflow-visible">
-            {/* Left: Active context pills (Sector, BHK, Budget, Possession) */}
-            <div className="flex items-center gap-1.5 flex-1 min-w-0 relative overflow-visible">
-              <IntegratedIntentPills
-                intent={hasUserReplied ? (currentIntent as unknown as Record<string, unknown>) : null}
-                onPatch={handleIntentPillPatch}
-                onRemove={handleIntentPillRemove}
-                disabled={isSubmitting}
-              />
+          <div className="flex items-center justify-between pt-1 px-2 border-t border-slate-100 dark:border-zinc-800/60 mt-1">
+            {/* Left: the search refinement dock.
+                This slot used to show either a read-only sector badge or a
+                tagline, while the filters themselves lived in a chip row above
+                the input and again in a ribbon above the conversation. Same
+                state, three places, editable in none of them. The dock is now
+                the single source, and every pill is the control for its field. */}
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              {hasUserReplied && currentIntent ? (
+                <FilterDock
+                  intent={currentIntent as unknown as Record<string, unknown>}
+                  disabled={isSubmitting}
+                  onPatch={patch => dispatchAction({ type: 'INTENT_PATCH', payload: { patch } })}
+                  onRemove={field => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
+                />
+              ) : (
+                <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 hidden sm:inline">
+                  AI Real Estate Advisor · Noida &amp; Greater Noida
+                </span>
+              )}
             </div>
 
             {/* Right: Voice Input + Send/Stop Controls */}
@@ -1649,7 +1624,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           </div>
         </div>
       </div>
-    );
+    </div>
+  );
 
   return (
     <div
@@ -1737,33 +1713,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
       {/* Sticky Top Intent Ribbon (Remains pinned at top during scroll) */}
       <AnimatePresence>
-        {hasUserReplied && currentIntent && (
-          <m.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            // In normal flow, not absolute.
-            //
-            // It used to be `absolute top-12` with the feed below compensating
-            // via a hardcoded `pt-24`. That holds only while the ribbon is one
-            // line: on a phone, an intent with a few fields wraps to two, grows
-            // past 96px and covers the buyer's own message — the query they just
-            // sent, hidden behind a summary of that query.
-            //
-            // Flow layout makes the overlap structurally impossible. The ribbon
-            // takes whatever height it needs and the feed starts under it, at any
-            // wrap count, with no magic number to keep in sync.
-            className="shrink-0 z-20 flex justify-center px-4 pt-14 sm:pt-16 pb-1"
-          >
-            <div>
-              <ContextRibbon
-                intent={currentIntent}
-                onRemove={(field) => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
-              />
-            </div>
-          </m.div>
-        )}
+      {/* The intent ribbon used to sit here, absolutely positioned above the
+          conversation. It showed the same fields the input dock now shows, but
+          read-only, and its remove buttons were opacity-0 until hover — on a
+          phone, invisible. It was also what overlapped the buyer's own message
+          when the intent wrapped to a second line.
+
+          One dock, in the input, is the whole of it now. */}
       </AnimatePresence>
 
       {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}

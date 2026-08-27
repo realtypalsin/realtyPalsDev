@@ -135,12 +135,31 @@ export function extractCoverageIntro(body: string): string {
   })?.trim() ?? ''
 }
 
+/**
+ * Reads the verdict and project name out of a single-project header.
+ *
+ * The verdict comes from the first bold run, which is where the advisor writes
+ * it. It used to come from the header's first character — a coloured emoji —
+ * and defaulted to CONSIDER whenever that character was anything else. Any
+ * response that arrived without the emoji therefore claimed every project was a
+ * CONSIDER: a verdict the advisor never gave, shown as though it had.
+ *
+ * An unrecognised verdict now returns an empty label, and the renderer styles
+ * that neutrally rather than picking one on the buyer's behalf.
+ */
+const VERDICTS = ['STRONG BUY', 'BUY', 'CONSIDER', 'WATCH', 'AVOID']
+
 export function parseSingleProjectHeader(headerLine: string): {
-  badge: string; label: string; name: string
+  label: string; name: string
 } {
-  const badge = headerLine[0] ?? '🟡'
-  const bolds = [...headerLine.matchAll(/\*\*([^*]+)\*\*/g)].map(m => m[1])
-  return { badge, label: bolds[0] ?? 'CONSIDER', name: bolds[1] ?? bolds[0] ?? '' }
+  const bolds = [...headerLine.matchAll(/\*\*([^*]+)\*\*/g)].map(m => m[1].trim())
+  const first = (bolds[0] ?? '').toUpperCase()
+  const isVerdict = VERDICTS.includes(first)
+  return {
+    label: isVerdict ? first : '',
+    // With no verdict in front, the first bold run is the project name.
+    name: isVerdict ? bolds[1] ?? '' : bolds[0] ?? '',
+  }
 }
 
 export function extractSingleProjectBullets(body: string): string[] {

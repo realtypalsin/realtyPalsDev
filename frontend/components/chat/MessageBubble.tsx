@@ -15,7 +15,9 @@ import {
   CheckCircle,
   MapPin,
   Scales,
-  CaretDown
+  CaretDown,
+  MagnifyingGlass,
+  Warning
 } from '@phosphor-icons/react'
 import { ResponseFormatter } from './ResponseFormatter'
 import DomainExecutionTimeline from './DomainExecutionTimeline'
@@ -785,7 +787,7 @@ function MessageBubbleInner({
 
                       {message.is_verified === false && (
                         <div className="mb-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
-                          <p className="text-[12px] text-amber-900 dark:text-amber-200 font-medium">⚠️ This data is not verified by us. Please confirm with our advisory team before making decisions.</p>
+                          <p className="text-[12px] text-amber-900 dark:text-amber-200 font-medium inline-flex items-start gap-1.5"><Warning size={13} weight="fill" className="shrink-0 mt-0.5" /> This data is not verified by us. Please confirm with our advisory team before making decisions.</p>
                         </div>
                       )}
 
@@ -1009,7 +1011,7 @@ function MessageBubbleInner({
                 className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/40 shadow-[0_4px_20px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
               >
                 <div className="flex gap-3">
-                  <div className="flex-shrink-0 text-2xl">⚠️</div>
+                  <div className="flex-shrink-0"><Warning size={22} weight="fill" className="text-amber-500" /></div>
                   <div className="flex-1 min-w-0">
                     {/* State the actual reason. This banner fires on the backend's
                         NO-FALLBACK path, which means the sector was searched and
@@ -1040,7 +1042,7 @@ function MessageBubbleInner({
               <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-gradient-header dark:bg-gradient-header-dark border border-blue-500/15 dark:border-blue-400/20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md mb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-blue-600/10 dark:bg-blue-400/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs shadow-2xs">
-                    ⚖️
+                    <Scales size={15} weight="duotone" className="text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[13.5px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -1144,7 +1146,11 @@ function MessageBubbleInner({
             >
               <div className="flex items-center gap-2.5">
                 <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-blue-600/10 dark:bg-blue-400/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs shadow-2xs">
-                  {useNewFormat && !hasExact && hasNearby ? '📍' : (isLast && isSubmitting ? '🔍' : '✓')}
+                  {useNewFormat && !hasExact && hasNearby
+                    ? <MapPin size={13} weight="fill" />
+                    : isLast && isSubmitting
+                      ? <MagnifyingGlass size={13} weight="bold" />
+                      : <CheckCircle size={13} weight="fill" />}
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[13.5px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -1217,7 +1223,7 @@ function MessageBubbleInner({
                 transition={{ duration: 0.3 }}
                 className="mt-3 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-start gap-3"
               >
-                <span className="text-amber-500 text-base mt-0.5 flex-shrink-0">⚠️</span>
+                <Warning size={15} weight="fill" className="text-amber-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-[13px] font-semibold text-amber-800 dark:text-amber-300">
                     We couldn&apos;t find an exact match in {String(expansion.requestedSector)}
@@ -1289,7 +1295,7 @@ function MessageBubbleInner({
                     {hasExact && (
                       <div className="mb-3 flex items-center gap-2">
                         <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          📍 Nearby alternatives · {expansion?.searchedSectors.join(', ')}
+                          <MapPin size={12} weight="fill" className="inline-block mr-1 -mt-0.5" />Nearby alternatives · {expansion?.searchedSectors.join(', ')}
                         </span>
                       </div>
                     )}
