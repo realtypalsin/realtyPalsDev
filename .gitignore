@@ -85,3 +85,7 @@ audit*.md
 .taskmaster/
 *.rvf
 *.rvf.lock
+
+# Playwright HTML report (build artifact)
+frontend/playwright-report/
+frontend/test-results/

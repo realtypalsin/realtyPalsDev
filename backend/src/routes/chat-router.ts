@@ -4609,8 +4609,21 @@ router.post('/feedback', asyncHandler(async (req: Request, res: Response) => {
         },
       })
 
-      // Track analytics
-      trackEvent('property_feedback_recorded', feedback)
+      // Signature is trackEvent(userId, event, properties). This passed the
+      // event name as the distinctId and the entire created row as the event
+      // name, so PostHog recorded a stringified DB record — including the
+      // buyer's free-text comment — as an event.
+      //
+      // The comment stays out of analytics deliberately: it is user-authored
+      // prose and belongs in the database, not in a third-party event stream.
+      trackEvent(userId ?? null, 'property_feedback_recorded', {
+        project_id: projectId,
+        session_id: sessionId,
+        sentiment: sentiment || 'neutral',
+        rating: rating ?? null,
+        reason_count: Array.isArray(reasons) ? reasons.length : 0,
+        has_comment: !!comment,
+      })
     }
   } catch (err) {
     console.warn('[FEEDBACK] Failed to save:', err instanceof Error ? err.message : err)

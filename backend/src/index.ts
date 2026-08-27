@@ -23,6 +23,7 @@ import marketComparisonRouter from './routes/marketComparison'
 import priceAlertsRouter from './routes/priceAlerts'
 import aqiRouter from './routes/aqi'
 import commuteRouter from './routes/commute'
+import { flushPostHog } from './lib/monitoring/posthog'
 import builderReputationRouter from './routes/builderReputation'
 import transcribeRouter from './routes/transcribe'
 import documentsRouter from './routes/documents'
@@ -32,6 +33,7 @@ import builderApplicationsRouter from './routes/builderApplications'
 import analyticsRouter from './routes/analytics'
 import adminIntelligenceRouter from './routes/admin-intelligence'
 import { initializeCaches } from './lib/projectDataGateway.cache'
+import { FALLBACK_CHAIN } from './lib/config'
 
 // Initialize Sentry for error tracking and monitoring
 if (process.env.SENTRY_DSN) {
@@ -52,9 +54,17 @@ for (const key of ['ADMIN_PASSWORD', 'DATABASE_URL'] as const) {
 }
 
 // Require at least one AI provider for the core chat functionality.
-// This allows fallback to Groq if OpenAI is missing, or vice versa.
-if (!process.env.OPENAI_API_KEY && !process.env.GROQ_API_KEY) {
-  logger.fatal('Neither OPENAI_API_KEY nor GROQ_API_KEY is configured. At least one AI provider is required. Refusing to start.')
+//
+// Derived from FALLBACK_CHAIN rather than naming providers here: this guard
+// used to test only OPENAI_API_KEY and GROQ_API_KEY, so a deploy configured
+// with Gemini alone — tier 1, and the intended primary — would refuse to boot,
+// while one holding a key for a retired tier would start happily.
+const configuredProviders = FALLBACK_CHAIN.filter(item => !!process.env[item.envKey])
+if (configuredProviders.length === 0) {
+  logger.fatal(
+    { expected: [...new Set(FALLBACK_CHAIN.map(i => i.envKey))] },
+    'No AI provider key is configured. At least one entry of FALLBACK_CHAIN must have its key set. Refusing to start.',
+  )
   process.exit(1)
 }
 
@@ -247,19 +257,34 @@ async function startup() {
   const server = app.listen(PORT, '0.0.0.0', () => {
     const elapsed = Date.now() - startTime
     logger.info({ port: PORT, elapsed }, `listening — ready`)
+    // GEMINI_API_KEY is tier 1 of FALLBACK_CHAIN and was missing from this
+    // log, as were the two observability keys — so a deploy running without
+    // its primary provider, without error reporting or without analytics
+    // looked identical in the logs to a healthy one.
     const keys = {
+      GEMINI_API_KEY:           !!process.env.GEMINI_API_KEY,
+      MISTRAL_API_KEY:          !!process.env.MISTRAL_API_KEY,
+      CEREBRAS_API_KEY:         !!process.env.CEREBRAS_API_KEY,
       GROQ_API_KEY:             !!process.env.GROQ_API_KEY,
       OPENAI_API_KEY:           !!process.env.OPENAI_API_KEY,
       GOOGLE_MAPS_API_KEY:      !!process.env.GOOGLE_MAPS_API_KEY,
       TAVILY_API_KEY:           !!process.env.TAVILY_API_KEY,
       SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      SENTRY_DSN:               !!process.env.SENTRY_DSN,
+      POSTHOG_API_KEY:          !!process.env.POSTHOG_API_KEY,
     }
     logger.info({ keys }, 'optional env configured')
+    if (!process.env.GEMINI_API_KEY) {
+      logger.warn('GEMINI_API_KEY missing — tier 1 of the provider chain is unavailable, every turn will fall through')
+    }
   })
 
   async function shutdown(signal: string) {
     logger.info({ signal }, 'draining connections')
     server.close(async () => {
+      // posthog-node batches on a 30s flushInterval, so without this every
+      // deploy and restart silently dropped up to 30s of backend events.
+      await flushPostHog().catch(err => logger.warn({ err }, 'posthog flush failed'))
       await prisma.$disconnect()
       logger.info('clean exit')
       process.exit(0)

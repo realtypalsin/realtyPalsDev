@@ -216,7 +216,10 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       // Track fallback response
       if (userId && sessionId) {
         try {
-          await trackEvent('fallback_response_generated', userId, {
+          // Signature is trackEvent(userId, event, properties) — these two were
+          // swapped, so the event landed in PostHog with distinctId
+          // "fallback_response_generated" and the user id as the event name.
+          trackEvent(userId, 'fallback_response_generated', {
             provider: item.provider,
             model: item.model,
             text_length: text.length,

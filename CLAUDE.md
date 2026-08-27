@@ -524,6 +524,7 @@ Optional improvements ranked by impact.
 ## Context Files (Read When Relevant)
 * ai-context/project-overview.md
 * ai-context/product-prd.md
+* ai-context/PRD-V1.md (full blueprint)
 * ai-context/architecture.md
 * ai-context/database-model.md
 * ai-context/ai-behavior.md
