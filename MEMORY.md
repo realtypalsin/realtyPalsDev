@@ -314,3 +314,53 @@ been shipping whole rows to the browser.
 chat-router:2347. They work, but each is a separate place to keep honest. Folding
 them into the gateway is the next structural step. `ENABLE_GEMINI_TOOLS` remains
 off (see above).
+
+### Session 2 — 2026-08-27: tools on, disclosure shipped, registry started
+
+**Observability is live.** Backend PostHog + Sentry both accepting real events
+(`npm run verify:observability`). Found and fixed underneath: `trackEvent` called
+with swapped arguments at two sites — the feedback route passed the entire DB row
+as the event name, which would have shipped buyers' free-text comments to
+PostHog; no flush on shutdown (30s of events lost per deploy); and a boot guard
+requiring OpenAI/Groq that would have **refused to start a Gemini-only deploy**.
+
+**Env files consolidated.** `frontend/.env` merged into `.env.local` and removed
+— the two split keys arbitrarily and defined `DATABASE_URL` and
+`NEXT_PUBLIC_BACKEND_URL` twice with different values. Both files now sectioned
+and documented. Values verified key-by-key against a backup.
+
+**Gemini tools enabled.** Three things had to be fixed first:
+- Tools attached only on `cycle === 0`, capping a turn at one lookup.
+- The last cycle would fetch a tool result and discard it — attach/recurse now
+  stop one cycle earlier so a final cycle always answers.
+- Three tools (`best_value_projects`, `fastest_possession_projects`,
+  `best_for_families_projects`) were advertised with no handler. Removed;
+  `toolCatalogue.test.ts` now fails if advertised and handled sets drift.
+- `GEMINI_API_KEY1`, `GROQ_API_KEY2/3`, `OPENAI_API_KEY2/3` were configured but
+  absent from `FALLBACK_CHAIN`, so rotation never worked. Wired.
+
+**Disclosure shipped.** `VerificationPanel` + `PriceInclusions`. The price label
+was hardcoded to "ALL INCLUSIVE" regardless of `price_includes_*` — asserting a
+claim the DB often contradicted. Also strips `ai_search_keywords` from the
+project API response.
+
+**Handler registry started** (`lib/chat/handlerContext.ts` + `handlers/`).
+Five of fourteen extracted, chat-router 4,635 → 4,405 lines. **Every single
+extraction found a fabrication**, which is the argument for finishing it:
+
+| Handler | Defect found |
+|---|---|
+| `rera_verification` | Sent buyers to up-rera.in — violates prompt rule 17 |
+| `statutory_tax` | All seven UP rates typed in as literals |
+| `possession_status` | Defaulted to Sector 76; fabricated a "Verified RERA" table row |
+| `total_outflow` | Computed a full cost breakdown from an invented ₹1.35 Cr for "Standard Luxury Apartment" |
+| `connectivity` | Same hardcoded expressway/airport/hospital strings for every project |
+
+**Decision — extraction is not behaviour-preserving.** Each handler was rewritten
+to fix what it was doing wrong. Rejected: a pure code-motion refactor first, then
+fixes. Moving a fabrication unchanged into a new file and calling it done would
+have meant reviewing it twice and shipping it wrong once.
+
+**Still inline:** builder reputation, sector orientation, amenities, unit
+configuration, sector compare, payment plans, cost sheet, project detail,
+open-query lane. Nine handlers.
