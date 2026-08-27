@@ -172,6 +172,51 @@ Budget: 2-4 crore. Needs: Remote verification, Builder credibility, RERA visibil
 
 ---
 
+## Answering With Data We Hold — the four tiers
+
+"Never invent data" was already the rule, and five places in the chat handler
+did it anyway, because nothing said *what to do instead*. `lib/factPresentation.ts`
+is that answer. Every fact presented to a buyer belongs to exactly one tier:
+
+| Tier | Means | How it may be stated |
+|------|-------|----------------------|
+| `verified` | Read from **this project's** own rows | Plainly. |
+| `statutory` | Fixed by UP law, identical for every project (stamp duty, registration, GST) | Plainly, without a lookup. |
+| `market` | Genuinely Noida-wide, **not** verified for this project | Only with `MARKET_QUALIFIER` attached, every time. |
+| `missing` | We do not hold it | Say so and offer the advisory handoff. Never substitute a typical value. |
+
+Rules that follow from this, and are enforced by `noFabrication.test.ts`:
+
+* **A project-specific fact has no market tier.** A Noida average cannot answer
+  "does this building have a pool". A wrong yes is discovered on the site visit.
+* **No hardcoded figures in the router.** Project-specific values are read from
+  the database; market-wide ranges live in `NOIDA_MARKET_RANGES` and render
+  through `marketFigure()`.
+* **"Verified" and `confidence: 'HIGH'` are reserved** for answers built only
+  from the project's own rows. Confidence follows the weakest tier used.
+* An **absent field means absent**. Omitting it from the prompt is the signal;
+  never let a gap invite a guess.
+
+## Field Exposure — adding a column is a disclosure decision
+
+`lib/projectExposure.ts` is the policy for `Project` data leaving the server.
+
+* `Project` has relations to **other users' rows** — `saved_by`,
+  `chat_sessions`, `property_feedback`. These are in `FORBIDDEN_RELATIONS` and
+  must never be selected into a prompt or a response.
+* Internal columns (`embedding`, `ai_search_keywords`, `builder_theme`) and
+  analyst-only relation fields (`admin_notes`, `advisor_notes`,
+  `internal_confidence`) never reach a buyer.
+* `DecisionProfile` and `RecommendationProfile` carry an `IntelligenceStatus`.
+  Only `PUBLISHED` is buyer-facing — `DRAFT` and `IN_REVIEW` are unreviewed.
+* `ProjectDna` scores stay internal. They are manually-entered numbers, often
+  unverified; presenting one as a rating is the fake confidence score this file
+  forbids elsewhere.
+
+**Adding a column to `schema.prisma` does not expose it.** It is absent from
+`PROJECT_PUBLIC_SELECT` until classified, and `projectExposure.test.ts` parses
+the schema and fails on anything unclassified. Make the call deliberately.
+
 ## AI Assistant Rules
 The assistant must:
 * Be honest
@@ -265,30 +310,30 @@ High Intent Events (track all):
 * **Deployment:** Vercel
 
 ### AI Provider Strategy
-**Primary:** Google Gemini (requires @ai-sdk/google installation)
-**Fallback Chain:**
-1. Google Gemini (`@ai-sdk/google` + GOOGLE_API_KEY)
-2. OpenAI GPT (`@ai-sdk/openai` + OPENAI_API_KEY)
-3. Anthropic Claude (`@ai-sdk/anthropic` + ANTHROPIC_API_KEY)
-4. Groq Llama (`@ai-sdk/groq` + GROQ_API_KEY)
-5. OpenAI fallback (cheaper tier)
 
-**Currently Installed SDKs:**
-* `@ai-sdk/amazon-bedrock` (not primary)
-* `@ai-sdk/anthropic` (primary fallback)
-* `@ai-sdk/groq` (secondary fallback)
-* `@ai-sdk/openai` (secondary fallback)
-* `@ai-sdk/react` (client-side hooks)
-* `ai` (Vercel AI SDK core)
-* Direct `groq-sdk` (legacy, avoid in new code)
-* `cohere-ai` (not primary)
+`backend/src/lib/config.ts` is the source of truth. Do not restate the chain
+anywhere else — derive from `FALLBACK_CHAIN`.
 
-**Done — do not re-do.** Gemini is already primary. It is wired directly via
-`@google/genai` (see `backend/src/lib/ai/gemini.ts`), NOT through `@ai-sdk/google`,
-and sits at tier 1 of `FALLBACK_CHAIN` in `backend/src/lib/config.ts`. Provider
-order: Gemini → Mistral → Cerebras → Groq → OpenAI. Only the OpenAI legs are
-`supportsTools: true`; everything above them receives a prompt with no tool
-catalogue (`getBaseSystemPrompt(..., toolsEnabled=false)`).
+**Order:** Gemini → Mistral → Cerebras → Groq → OpenAI.
+
+Gemini is wired **directly** via `@google/genai` (`backend/src/lib/ai/gemini.ts`),
+not through `@ai-sdk/google`. Each numbered key variant (`GEMINI_API_KEY1`,
+`GROQ_API_KEY2`…) is its own chain entry, so a rate-limited key falls through to
+the next rather than failing the turn.
+
+**Tool support.** `GEMINI_TOOLS_ENABLED` (from `ENABLE_GEMINI_TOOLS`) drives both
+the tool definitions passed to Gemini and the `toolsEnabled` argument to
+`getBaseSystemPrompt`. They come from one constant so they cannot disagree —
+before that, setting the env var alone gave Gemini a tool catalogue alongside a
+prompt reading "You cannot call tools here." Tools are currently **on**.
+The OpenAI legs are also `supportsTools: true`; Mistral, Cerebras and Groq are not.
+
+Anything advertised in the tool catalogue must have a handler in the router.
+`toolCatalogue.test.ts` enforces this — three tools were once offered to the
+model with nothing behind them.
+
+**Do not add an `@ai-sdk/*` provider.** The Vercel AI SDK packages in
+`frontend/package.json` are legacy and unused by the chat path.
 
 ### Alternative Search Providers
 * **Web Search:** Tavily (for real-time data)
@@ -314,9 +359,25 @@ Always use the defined stack. Never suggest alternatives unless explicitly asked
 * Never bypass Prisma migrations.
 * Never modify production schemas manually.
 
+### Testing
+* **A test that cannot fail is not a test.** `assert(true)` bodies accumulated to
+  2,079 cases across 23 files — 60% of the reported suite — and every one of them
+  passed while the area it named went unverified. They are now marked `todo`.
+* Writing a placeholder is fine; write it as `it('name', { todo: '…' }, () => {})`
+  so it reports as outstanding work rather than as green.
+* Live-LLM suites are opt-in via `RUN_LIVE_LLM_TESTS=1`. A provider key sitting
+  in `.env` is not consent to spend money and assert on non-deterministic output
+  on every `npm test`.
+* `npm test` runs jest **and** the node:test suite in both workspaces. CI's
+  coverage gate checks that each safety-critical suite still carries real
+  assertions, so a file cannot be quietly hollowed out.
+
 ### Error Handling
 * Do not swallow errors.
 * Use: Structured logging, Error boundaries, Retry mechanisms where appropriate.
+* Analytics and error reporting must never break a request — they no-op when
+  unconfigured. That also means a misconfigured deploy looks healthy, so verify
+  with `npm run verify:observability` rather than assuming.
 
 ### Code Organization
 * Do not redesign, restyle, or otherwise modify visual components, input fields, or chat interface styling unless explicitly requested.
@@ -552,15 +613,9 @@ Leads are stored in `CallbackRequest` model. Currently shown to sales team:
 **Enhancement Required:** Link `CallbackRequest → ChatSession` (add `chat_session_id` FK to CallbackRequest).
 Then sales team accesses complete profile: summaries + reactions + transcript.
 
-**Further Lead-Gen Refinements (v2, beyond the FK link):**
-
-1. **Talk-track auto-draft.** At callback creation, generate one AI line the sales rep can open the call with — "Ask about their 3BHK timeline, they've viewed 2 similar projects and flagged possession delay as a concern." Saves the rep from reading a full transcript cold. Cheap once `chat_session_id` exists — one LLM call over the linked summaries.
-2. **Duplicate-lead detection.** Same phone number across multiple `ChatSession`s should merge into one lead with combined history, not spawn disconnected rows. Check phone before insert; attach new session to existing lead if found.
-3. **Lead-source attribution.** Record which message/question triggered the callback CTA — tells sales *why* the person converted, not just *that* they did.
-4. **Soft re-engagement signal.** Users who decline the callback CTA but keep chatting are still high-intent — surface as a lower-urgency follow-up queue instead of losing them once they say no to the form.
-5. **Urgency surfacing, not just tier.** HOT/WARM/COLD is a snapshot; add a lightweight recency signal ("active in chat 4 minutes ago") so sales calls while intent is fresh.
-
-None of this needs new infrastructure — all extend `CallbackRequest`/`ChatSession` once the FK link lands. Sequence: FK link → talk-track draft → dedup → attribution → re-engagement queue. Each independently shippable.
+**Lead-gen v2 refinements** (talk-track draft, duplicate detection, source
+attribution, re-engagement queue, urgency signal) are sequenced in
+`ai-context/lead-gen-v2.md`. None are V1.
 
 ### Admin Panel Sections
 
@@ -672,16 +727,32 @@ The chat must answer ANY database-backed question:
 - Financing: "Can I get an EMI estimate for 1.5Cr?"
 - Comparison: "How does this compare to Godrej Woods?"
 
-**Implementation:** Chat should fetch from:
-- `Project` (amenities, possession, price, builder)
-- `Project.amenities` (structured list)
-- `Project.paymentPlans` (terms)
-- `Builder` (reputation, past projects)
-- `BuilderReputation` (if implemented)
-- Calculations: EMI, stamp duty, GST (done in frontend)
-- Related projects (for comparison)
+**How this actually works now.** `lib/projectFactsBlock.ts` projects the whole
+public field allowlist into the prompt — around 150 columns plus the relations —
+rather than a hand-picked subset. A field becomes answerable the moment it is
+populated: no new branch, no new tool, no schema change.
 
-**Current:** Chat likely uses LLM to generate. **Upgrade:** Use database queries first (verified data), then LLM for reasoning/summary.
+Three rules keep that affordable and honest:
+
+* **Empty values are omitted.** An absent key tells the model we do not hold the
+  fact. `false` and `0` are kept — "not pet friendly" and "0 litigation" are
+  real answers, not gaps.
+* **Heavy relations are demand-driven.** `price_history`, `spec_items` and
+  `construction_milestones` were 35% of the block for detail almost no turn
+  needs. `detectFactTopics(message)` pulls them in only when asked.
+* **The field set comes from `projectExposure`**, so nothing internal can leak in
+  by being added to the schema later.
+
+The analyst narrative (`decision_profile`, `recommendation_profile`,
+`persona_profile`) is included too — prompt rules 13–15 in `prompts/base.ts`
+instruct the model to reason from `decision_thesis`, `why_buy`, `why_avoid`,
+`tier` and `walk_away_conditions`, and for a long time none of them were ever
+sent, so those rules were dead.
+
+**Still open:** fourteen hardcoded topic handlers in `chat-router.ts` run before
+the generic path and return early. They work, but each is a separate place to
+keep honest. Folding them into a handler registry and removing them as the
+generic path proves equivalent is the next structural step.
 
 ### Sales Team Workflow
 
@@ -731,5 +802,5 @@ Check ERRORS.md for approaches that failed before.
 
 ---
 
-**Last Updated:** 2026-08-25
-**Last Refined For:** Gemini integration, Supabase auth clarification, AI SDK consolidation, premium doc pass (ChatGPT power-user chat design, lead-gen v2 refinements)
+**Last Updated:** 2026-08-27
+**Last Refined For:** Fact tiers & the no-fabrication standard, field-exposure policy, the real provider chain & tool gating, the testing standard, observability verification. Lead-gen v2 moved to ai-context/.
