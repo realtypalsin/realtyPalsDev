@@ -29,6 +29,7 @@ import {
   ArrowUp,
   MapPin
 } from '@phosphor-icons/react';
+import { EditableIntentChips } from '@/components/chat/EditableIntentChips';
 import { useSessions } from '@/hooks/useSessions';
 import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { ChatPhase2Skeleton } from '@/components/skeletons';
@@ -1507,6 +1508,20 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const chatInputForm = (
     <div className={`relative w-full transition-all duration-300 ${isInputMinimized ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="relative w-full">
+        {/* The intent as controls, sitting with the input.
+            The ribbon above the conversation stays as the at-a-glance summary;
+            this is where the buyer changes it, because this is where they are
+            already looking when they want to revise. Editing dispatches the
+            existing INTENT_PATCH, which the chat turns back into a natural
+            turn — the conversation is refined, never restarted. */}
+        {hasUserReplied && currentIntent && !isInputMinimized && (
+          <EditableIntentChips
+            intent={currentIntent as unknown as Record<string, unknown>}
+            disabled={isSubmitting}
+            onPatch={patch => dispatchAction({ type: 'INTENT_PATCH', payload: { patch } })}
+            onRemove={field => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
+          />
+        )}
         {rateLimitUntil && (
           <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
         )}

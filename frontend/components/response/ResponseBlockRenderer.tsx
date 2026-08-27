@@ -134,7 +134,7 @@ function WhyWinsCard({ block }: { block: ResponseBlock }) {
           <span className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.12em]">Why {winner} wins</span>
         </div>
       )}
-      <div className="overflow-x-auto touch-pan-x custom-scrollbar">
+      <div className="overflow-x-auto overscroll-x-contain custom-scrollbar">
         <table className="w-full text-[11px] sm:text-xs">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-800/60">
@@ -224,7 +224,7 @@ function TextBlock({ block }: { block: ResponseBlock }) {
           'realty-box': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { type?: string; title?: string }) => <RealtyBox type={props.type ?? ''} title={props.title}>{props.children}</RealtyBox>,
           'realty-action': ({ node, ...props }: { node?: unknown } & React.HTMLAttributes<HTMLElement> & { label?: string }) => <ContactButton label={props.label || 'Request Callback'} className="my-2" />,
           table: ({ node, ...props }: any) => (
-            <div className="my-3 sm:my-4 overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-y overscroll-x-contain">
+            <div className="my-3 sm:my-4 overflow-x-auto overscroll-x-contain rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#111622] shadow-xs custom-scrollbar touch-pan-y overscroll-x-contain">
               <table className="w-full table-auto border-collapse text-left text-[11px] sm:text-xs md:text-sm text-slate-700 dark:text-zinc-300" {...props} />
             </div>
           ),

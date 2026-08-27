@@ -809,7 +809,7 @@ function MessageBubbleInner({
                                 // something rather than leaking an unknown element.
                                 'realty-action': ({ node, ...props }: { node?: unknown } & HTMLAttributes<HTMLElement> & { label?: string }) => <ContactButton label={props.label || 'Request Callback'} className="my-2" />,
                                 table: ({ node, ...props }: any) => (
-                                  <div className="my-3.5 overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/60 dark:bg-[#121214] shadow-2xs custom-scrollbar touch-pan-y overscroll-x-contain">
+                                  <div className="my-3.5 overflow-x-auto overscroll-x-contain rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/60 dark:bg-[#121214] shadow-2xs custom-scrollbar touch-pan-y overscroll-x-contain">
                                     <table className="w-full table-auto border-collapse text-left text-xs sm:text-[13.5px] text-slate-800 dark:text-zinc-200" {...props} />
                                   </div>
                                 ),
