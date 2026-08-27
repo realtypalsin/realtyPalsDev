@@ -22,7 +22,11 @@ export const possessionStatusHandler: ChatTopicHandler = {
   id: 'possession_status',
   description: 'Ready-to-move vs under-construction status across projects',
 
-  matches: ctx => ctx.flags.isReadyToMoveQuery === true,
+  // Declines a multi-topic message so the generic grounded answer can
+
+  // cover every part of it — see singleTopic in chat-router.ts.
+
+  matches: ctx => ctx.flags.singleTopic === true && (ctx.flags.isReadyToMoveQuery === true),
 
   handle: async ctx => {
     const sectorMatch = ctx.message.match(/Sector\s*(\d+[A-Za-z]?)/i)

@@ -45,7 +45,11 @@ export const connectivityHandler: ChatTopicHandler = {
   id: 'connectivity',
   description: 'Metro, expressway, airport and civic distances per project',
 
-  matches: ctx => ctx.flags.isConnectivityQuery === true,
+  // Declines a multi-topic message so the generic grounded answer can
+
+  // cover every part of it — see singleTopic in chat-router.ts.
+
+  matches: ctx => ctx.flags.singleTopic === true && (ctx.flags.isConnectivityQuery === true),
 
   handle: async ctx => {
     const sector = typeof ctx.intent.sector === 'string' ? ctx.intent.sector : null

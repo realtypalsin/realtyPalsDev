@@ -1047,9 +1047,38 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const isTotalOutflowQuery = /(total (price|cost|amount|outflow)|on.?road|all.?inclusive price|how much (in total|total will it cost)|with registry|final price)/i.test(message)
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
+    // A project-specific RERA number question ("what is X's RERA number") is a
+    // plain fact lookup, so it has no branch of its own — isReraCheckQuery is
+    // deliberately builder-level (it requires zero named projects). It still
+    // has to COUNT as a topic, or a compound question containing it looks
+    // single-topic and gets short-circuited below.
+    const isReraFactQuery = /rera/i.test(message) && Boolean(activeProjectName)
+
+    // How many distinct things the buyer asked for in this one message.
+    //
+    // The narrow branches below each answer exactly one topic and then return,
+    // so on "does it have a pool, and what is its RERA number?" the amenity
+    // branch answered the pool and the RERA half vanished with no
+    // acknowledgement — the buyer is left to conclude we do not hold RERA data.
+    // Every fact those branches serve is already in the generic grounded
+    // answer's facts block, so for a multi-topic message the correct move is to
+    // decline the shortcut and let the generic path answer all parts at once.
+    const topicFlagCount = [
+      isAmenityQuery,
+      isConnectivityQuery,
+      isConfigurationQuery,
+      isReadyToMoveQuery,
+      isReraFactQuery,
+      isPaymentPlanRequest,
+      isCostSheetRequest,
+      isStatutoryTaxQuery,
+      isTotalOutflowQuery,
+    ].filter(Boolean).length
+    const singleTopic = topicFlagCount <= 1
+
     if (!isInventorySearch && (activeProjectName || isSummaryRequest || isCompareRequest || isSectorCompare || isPaymentPlanRequest || isCostSheetRequest || isStatutoryTaxQuery || isReraCheckQuery || isBuilderReputationQuery || isNewcomerOrientation || isReadyToMoveQuery || isAmenityQuery || isConnectivityQuery || isConfigurationQuery || isTotalOutflowQuery) && action.type === 'TEXT_MESSAGE') {
       try {
-        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest, isSectorCompare, isPaymentPlanRequest, isCostSheetRequest, isStatutoryTaxQuery, isReraCheckQuery, isBuilderReputationQuery, isNewcomerOrientation, isReadyToMoveQuery, isAmenityQuery, isConnectivityQuery, sectorMatches })
+        console.log('[CHAT:GROUND_TRUTH_DB] Executing Ground Truth DB Pipeline...', { activeProjectName, isSummaryRequest, isCompareRequest, isSectorCompare, isPaymentPlanRequest, isCostSheetRequest, isStatutoryTaxQuery, isReraCheckQuery, isBuilderReputationQuery, isNewcomerOrientation, isReadyToMoveQuery, isAmenityQuery, isConnectivityQuery, isReraFactQuery, topicFlagCount, sectorMatches })
 
         // Check for Builder Comparison
         const dbBuilders = await prisma.builder.findMany({
@@ -1094,6 +1123,11 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             isCompareRequest,
             hasSingleNamedProject: (intent.projectNames?.length ?? 0) === 1,
             hasNamedProject: (intent.projectNames?.length ?? 0) > 0,
+            // False when the buyer asked about more than one topic in one
+            // message. Handlers whose whole answer is already in the generic
+            // facts block decline in that case so the generic path can answer
+            // every part, instead of one part winning and the rest vanishing.
+            singleTopic,
           },
         })) return
 
@@ -1257,7 +1291,7 @@ A dash means we have not scored that dimension for the developer — it is not a
 
 
         // ─── AMENITY & LIFESTYLE HANDLER ───────────────────────────────────────────
-        if (isAmenityQuery && !isCompareRequest && (intent.projectNames?.length ?? 0) < 2) {
+        if (isAmenityQuery && singleTopic && !isCompareRequest && (intent.projectNames?.length ?? 0) < 2) {
           if (activeProjectName) {
             const targetProject = await prisma.project.findFirst({
               where: {

@@ -142,6 +142,13 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
   }, [project])
 
   useEffect(() => {
+    // Only mirror the tab into the URL while a project is actually open. The
+    // panel mounts with project={null} on /discover, and this effect ran anyway
+    // — so simply loading the chat rewrote the address to /discover?tab=Overview,
+    // a query string describing a panel that was not on screen. It then became
+    // part of any link the buyer copied.
+    if (!project) return
+
     const currentTab = searchParams.get('tab')
     if (currentTab !== activeTab) {
       const params = new URLSearchParams(searchParams.toString())
@@ -149,7 +156,7 @@ export default function ProjectDetailPanel({ project, onClose, inline, initialDe
       const newUrl = `${window.location.pathname}?${params.toString()}`
       window.history.replaceState({}, '', newUrl)
     }
-  }, [activeTab, searchParams])
+  }, [activeTab, searchParams, project])
 
   useEffect(() => {
     const el = marketRef.current

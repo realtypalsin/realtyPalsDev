@@ -39,9 +39,22 @@ function load(): Promise<void> | null {
   loading = import('posthog-js')
     .then(({ default: posthog }) => {
       posthog.init(key, {
-        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://app.posthog.com',
+        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
         person_profiles: 'identified_only',
+        // Pageviews are captured manually in PostHogProvider so they fire on
+        // App Router navigations, which posthog-js does not see on its own.
         capture_pageview: false,
+        // Feature flags are not enabled on this project: the flags endpoint
+        // returns 401 and its remote-config asset 404s, producing 18 console
+        // errors on every page load. Event capture is unaffected — the key was
+        // verified good against the ingestion endpoint — but that volume of red
+        // hides real errors from anyone looking at the console.
+        //
+        // Session Replay is deliberately NOT disabled here: it needs the decide
+        // call, and it is the single most useful thing to turn on once enabled
+        // in the PostHog project settings.
+        advanced_disable_feature_flags: true,
+        advanced_disable_feature_flags_on_first_load: true,
         loaded: ph => {
           if (process.env.NODE_ENV === 'development') ph.debug()
         },

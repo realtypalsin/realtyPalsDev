@@ -43,7 +43,10 @@ export const unitConfigurationHandler: ChatTopicHandler = {
   id: 'unit_configuration',
   description: 'Unit sizes, carpet area, balconies and layout per configuration',
 
+  // Declines a multi-topic message so the generic grounded answer can
+  // cover every part of it — see singleTopic in chat-router.ts.
   matches: ctx =>
+    ctx.flags.singleTopic === true &&
     ctx.flags.isConfigurationQuery === true &&
     ctx.flags.isCompareRequest !== true &&
     ctx.flags.hasSingleNamedProject === true,

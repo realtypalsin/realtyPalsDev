@@ -89,3 +89,7 @@ audit*.md
 # Playwright HTML report (build artifact)
 frontend/playwright-report/
 frontend/test-results/
+
+# Local QA harness (see NEXT_DIST_DIR in frontend/next.config.js)
+.next-qa/
+.playwright-mcp/

@@ -2,6 +2,11 @@ const { withSentryConfig } = require('@sentry/nextjs')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Two `next dev` instances sharing one .next directory corrupt each other's
+  // chunks — the browser gets "require.e is not a function" and renders a blank
+  // page. Set NEXT_DIST_DIR to run a second instance (a QA pass against a
+  // different backend, say) without disturbing the one already running.
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -120,8 +125,27 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: (() => {
-              const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '')
-              const connectSrc = `'self' ${backendUrl} https://*.supabase.co https://*.supabase.in https://*.posthog.com https://us.posthog.com https://app.posthog.com https://maps.googleapis.com https://*.onrender.com https://*.vercel.app https: wss:`
+              // Must allow every origin the browser actually calls, which means
+              // mirroring lib/env.ts's precedence exactly. It did not: env.ts
+              // prefers NEXT_PUBLIC_API_URL, this read NEXT_PUBLIC_BACKEND_URL
+              // first. Setting the two to different hosts made the CSP block
+              // every API request — silently, with the app simply not loading
+              // any data. Both origins are allowed now so the two cannot drift.
+              const origins = new Set(
+                [
+                  process.env.NEXT_PUBLIC_API_URL,
+                  process.env.NEXT_PUBLIC_BACKEND_URL,
+                  process.env.BACKEND_URL,
+                  'http://localhost:3001',
+                ]
+                  .filter(Boolean)
+                  .map(u => {
+                    try { return new URL(u.replace(/\/$/, '')).origin } catch { return null }
+                  })
+                  .filter(Boolean),
+              )
+              // PostHog's asset and ingestion hosts are separate from the app host.
+              const connectSrc = `'self' ${[...origins].join(' ')} https://*.supabase.co https://*.supabase.in https://*.posthog.com https://*.i.posthog.com https://us.posthog.com https://app.posthog.com https://maps.googleapis.com https://*.onrender.com https://*.vercel.app https: wss:`
               const scriptSrc = "'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://maps.googleapis.com https://*.posthog.com https://us.posthog.com https://app.posthog.com"
               const fontSrc = "'self' https://fonts.gstatic.com https://fonts.googleapis.com data: https:"
               return `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src ${fontSrc}; img-src 'self' data: blob: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
