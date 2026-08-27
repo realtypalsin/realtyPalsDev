@@ -11,10 +11,16 @@ import { NEUTRAL_TOOLS, toOpenAITools, toGeminiTools } from '../tools'
 // buyer asking for "best value in Sector 150" got "temporarily unavailable" from
 // a tool that had never existed. This keeps them in step.
 
-const ROUTER = readFileSync(join(__dirname, '../../../routes/chat-router.ts'), 'utf8')
+// Handlers used to live inline in chat-router.ts and now sit in their own
+// module. Both are read, so the check holds wherever a handler is written and
+// this test does not have to be edited again when one moves.
+const HANDLER_SOURCES = [
+  '../../../routes/chat-router.ts',
+  '../tools/handlers.ts',
+].map(rel => readFileSync(join(__dirname, rel), 'utf8')).join('\n')
 
 function handledToolNames(): Set<string> {
-  return new Set([...ROUTER.matchAll(/name === '([a-z_]+)'/g)].map(m => m[1]))
+  return new Set([...HANDLER_SOURCES.matchAll(/name === '([a-z_]+)'/g)].map(m => m[1]))
 }
 
 function advertisedToolNames(): Set<string> {
