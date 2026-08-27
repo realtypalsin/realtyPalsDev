@@ -60,6 +60,7 @@ import { getProjectDataForQuery, computeResponseConfidence } from '../lib/projec
 import { FEATURE_PROBES } from '../lib/featureProbes'
 import { unverified, unverifiedFeature, confidenceFor, headingFor, UP_STATUTORY, NOIDA_MARKET_RANGES, MARKET_QUALIFIER, type FactTier } from '../lib/factPresentation'
 import { redactProject } from '../lib/projectExposure'
+import { buildProjectFacts } from '../lib/projectFactsBlock'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { generateMultiDimensionalContext, attachMultiDimensionalRecommendations } from '../lib/discovery/multidimensionalPromptEnricher'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
@@ -2127,19 +2128,16 @@ OUTPUT STRUCTURE:
             const mentions = projectMentionCounts.get(p.id)?.count || 1
             const weightagePct = totalInquiries > 0 ? Math.round((mentions / totalInquiries) * 100) : Math.round(100 / detailedTargetProjects.length)
 
+            // Every populated public field, not a hand-picked eleven. The row
+            // already carries ~150 columns; projecting only a dozen of them is
+            // why the model could not answer "what's the maintenance charge",
+            // "is it pet friendly" or "how far is the airport" from data we
+            // hold. Empty values are omitted, so an absent key reads to the
+            // model as "we do not have this" rather than inviting a guess.
             const baseObj: Record<string, any> = {
-              name: p.name,
-              builder: p.builder ? p.builder.name : 'Unknown Builder',
+              ...buildProjectFacts(p as unknown as Record<string, unknown>),
               location: `${p.sector}, ${p.city}`,
               status: p.status === 'ready_to_move' ? 'Ready to Move' : p.status === 'new_launch' ? 'New Launch' : 'Under Construction',
-              rera_number: p.rera_number,
-              price_range: p.price_range_label,
-              launch_date: p.launch_date ? p.launch_date.toISOString().split('T')[0] : 'N/A',
-              possession_date: p.possession_date ? p.possession_date.toISOString().split('T')[0] : (p.possession_label || 'N/A'),
-              description: p.description,
-              payment_plans: p.payment_plans.map(pp => pp.plan_name),
-              unit_types: p.unit_types.map(ut => `${ut.bhk} BHK (${ut.super_area_sqft} sq ft)`),
-              amenities: p.amenities.map(a => a.name).slice(0, 10),
             }
             if (isSummaryRequest) {
               baseObj.session_inquiry_count = mentions
@@ -2220,7 +2218,20 @@ EXECUTIVE INSTRUCTIONS:
 1. Answer ONLY what the user explicitly asked for. Be extremely concise.
 2. Structure your answer with small bullet points or a concise 2-column Markdown Table (| Parameter | Value |).
 3. Do NOT output long text paragraphs or dump lists of unit types/payment plans unless the user explicitly requested them.
-4. Maintain a clean executive tone without decorative emojis.`
+4. Maintain a clean executive tone without decorative emojis.
+
+USING THE FACTS:
+5. The facts block carries every field we hold for these projects — maintenance,
+   pet policy, lift count, water source, ceiling height, land tenure, distances
+   to school/hospital/airport, flood risk, AQI, safety scores, OC and RERA
+   standing, litigation, escrow, NRI eligibility, resale lock-in and more. If
+   the user asks about any of them and the key is present, answer it directly.
+6. A key that is ABSENT means we do not hold that fact. Say so plainly — "that
+   isn't in our records for this project, our advisory team can confirm it" —
+   and never substitute a typical, standard or estimated value. An absent key is
+   never permission to guess.
+7. Quote the value as given. Do not round a distance, re-scale a score, or
+   convert a range into a single number.`
           }
 
           let responseText = ''
