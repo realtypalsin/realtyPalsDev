@@ -2242,7 +2242,13 @@ USING THE FACTS:
             intentState: 'SHORTLISTED',
             intent,
             responseMode,
-            ...(isCompareRequest && targetProjects.length >= 2 ? { comparisonProjects: targetProjects } : {})
+            // redactProject, like exactResults above. This emitted the raw rows:
+            // every comparison shipped the internal columns the exposure policy
+            // exists to withhold. detailedTargetProjects also carries the builder
+            // relation, which the bare targetProjects rows do not.
+            ...(isCompareRequest && targetProjects.length >= 2
+              ? { comparisonProjects: detailedTargetProjects.map(redactProject) }
+              : {})
           })
           res.end()
           return
