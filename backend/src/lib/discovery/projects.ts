@@ -35,6 +35,7 @@ import { getMarketTier } from './marketTiers'
 import { isCityLevel } from './intent'
 import { normalizeBuilderSearchName } from '../builders'
 import { CITY_LEVEL_ALIASES } from './constants'
+import { resolveLocationTerm } from './locationResolver'
 import { SUPPORTED_CITIES } from '../config/cities'
 
 /** Bidirectional substring match — mirrors SQL ILIKE fallback used in discovery Branch 1. Safe against null/undefined. */
@@ -197,48 +198,19 @@ function regionFilter(region: 'noida' | 'greater_noida' | 'greater_noida_west'):
   }
 }
 
-export const SECTOR_CORRIDOR_ALIASES: Record<string, string[]> = {
-  '7x': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
-  'sector 7x': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
-  '7x sectors': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
-  'central noida 7x': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
-  'central noida': ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79'],
-  'expressway': ['Sector 107', 'Sector 137', 'Sector 143', 'Sector 150'],
-  'noida expressway': ['Sector 107', 'Sector 137', 'Sector 143', 'Sector 150'],
-  'expressway corridor': ['Sector 107', 'Sector 137', 'Sector 143', 'Sector 150'],
-}
-
-export function expandSectorAliases(sector?: string): string[] {
-  if (!sector) return []
-  const norm = sector.toLowerCase().replace(/[,.-]/g, '').trim()
-  if (SECTOR_CORRIDOR_ALIASES[norm]) {
-    return SECTOR_CORRIDOR_ALIASES[norm]
-  }
-  if (norm.includes('7x') || norm.includes('70s')) {
-    return ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 77', 'Sector 78', 'Sector 79']
-  }
-  return [sector]
-}
-
 /**
- * A corridor alias — "Noida Expressway", "7X", "Central Noida" — names a SET of
- * sectors deliberately. It is functionally city-level: a belt, not an address.
+ * `overrideSectors` is how a location phrase becomes a sector set.
  *
- * This exists because the sector-disambiguation guard could not tell the two
- * apart. "Noida Expressway" expanded to Sectors 107/137/143/150 exactly as
- * intended, the search matched projects in all four, and the guard then saw
- * four distinct sectors, threw every result away and asked "Did you mean:
- * Sector 107, 137, 143, 150?" — the buyer said the corridor BECAUSE they wanted
- * the corridor. Answering with its own contents is a loop: picking a corridor
- * chip re-asked the same question, forever, and no card ever rendered.
+ * There used to be a hand-written alias map here — "noida expressway" to four
+ * sector strings — and it was wrong: the corridor is fifteen sectors in our own
+ * data, and the map had gone stale years before anyone noticed, because nothing
+ * about editing the database reminds you to edit a constant. Membership is now
+ * resolved from the database by `resolveLocationTerm` and passed in.
  *
- * The guard is still right for what it was built for: "Sector 1" fuzzy-matching
- * Sector 1, 100 and 110 is a genuine ambiguity the buyer has to settle.
+ * When no override is given, the sector is matched literally. That is the
+ * honest default: we hold what we hold, and an unrecognised phrase finds
+ * nothing rather than quietly standing in for a guess.
  */
-export function isCorridorAlias(sector?: string): boolean {
-  return expandSectorAliases(sector).length > 1
-}
-
 export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Prisma.ProjectWhereInput {
   const where: Prisma.ProjectWhereInput = {}
 
@@ -247,9 +219,9 @@ export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Pr
     if (region) where.AND = [regionFilter(region)]
   }
 
-  // Sector — whole-word match (case-insensitive) with corridor alias expansion (e.g. 7X -> Sectors 74-79)
-  const initialSectors = overrideSectors || (intent.sector && !isCityLevel(intent.sector) ? expandSectorAliases(intent.sector) : [])
-  const sectorsToSearch = initialSectors.flatMap(s => expandSectorAliases(s))
+  // Sector — whole-word match (case-insensitive) over the resolved sector set.
+  const sectorsToSearch = overrideSectors
+    ?? (intent.sector && !isCityLevel(intent.sector) ? [intent.sector] : [])
 
   if (sectorsToSearch.length > 0) {
     where.OR = sectorsToSearch.flatMap((sectorStr) => {
@@ -674,6 +646,25 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     ? { ...intent, projectNames: realProjectNames.length > 0 ? realProjectNames : undefined }
     : intent
 
+  /**
+   * What the buyer's location phrase covers, read from the database.
+   *
+   * Resolved once per query and reused by the hard filter and by the
+   * disambiguation guard, so the two can never disagree about whether a phrase
+   * named one sector or a belt of them — which is precisely how "Noida
+   * Expressway" came to be searched correctly and then thrown away.
+   */
+  const location = effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)
+    ? await resolveLocationTerm(effectiveIntent.sector)
+    : null
+  /** The phrase named an area, not an address: several sectors, on purpose. */
+  const isAreaTerm = !!location && location.source !== 'literal' && location.sectors.length > 1
+  if (location && location.source !== 'literal') {
+    console.log('[DISCOVERY:LOC]', {
+      term: effectiveIntent.sector, source: location.source, sectors: location.sectors.length,
+    })
+  }
+
   if ((effectiveIntent.projectNames?.length ?? 0) > 0) {
     console.log('[DISCOVERY:B1] requested:', JSON.stringify(effectiveIntent.projectNames))
     // Prisma `contains` = SQL ILIKE '%term%' — checks if DB name contains the search term.
@@ -864,7 +855,7 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
   // ── Branch 3: primary hard-filter query ────────────────────────────────
   // Use effectiveIntent so budget/sector signals still apply even when
   // generic names were stripped from projectNames above.
-  const where = buildHardFilters(effectiveIntent)
+  const where = buildHardFilters(effectiveIntent, location?.sectors)
 
   // Get total count and paginated results
   let totalCount = 0
@@ -919,10 +910,16 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
   }
 
   if (rawProjects.length > 0) {
-    // A corridor is excluded here for the same reason a city is: both name a
+    // An area term is excluded here for the same reason a city is: both name a
     // set of sectors on purpose, so spanning several of them is the answer, not
-    // an ambiguity. See isCorridorAlias.
-    if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector) && !isCorridorAlias(effectiveIntent.sector)) {
+    // an ambiguity. Asking "did you mean 128, 137 or 150?" of someone who said
+    // "Noida Expressway" hands them the corridor's own contents as a question,
+    // and every answer re-enters this branch — a loop with no card in it.
+    //
+    // The guard below is still right for what it was built for: "Sector 1"
+    // fuzzy-matching Sector 1, 100 and 110 is a real ambiguity, and only the
+    // buyer can settle it.
+    if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector) && !isAreaTerm) {
       // ── Check for CITY-LEVEL disambiguation first ──
       // If user provided only a sector (no BHK/budget/etc) and it exists in multiple cities, ask which city
       const isSectorOnly = !effectiveIntent.bhk?.length && !effectiveIntent.budgetMax && !effectiveIntent.builderName && !effectiveIntent.lifestyleKeywords?.length && !effectiveIntent.projectNames?.length
