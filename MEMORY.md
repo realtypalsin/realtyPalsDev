@@ -410,3 +410,51 @@ both admin routers; only `POST /auth` (login) is open, correctly.
 **Handler registry: 6 of 14 extracted**, chat-router 4,635 → 3,904 lines.
 Still inline: builder reputation, sector orientation, amenities, sector compare,
 payment plans, cost sheet, project detail, open-query lane.
+
+### Session 4 — 2026-08-27: the provider chain was mostly dead
+
+**`npm run health` is the most valuable thing added.** It makes a *real* call to
+every configured key. Because every integration fails soft by design, a broken
+key is indistinguishable from a working one until a buyer gets a degraded
+answer. First run, on keys that all looked fine:
+
+| Leg | Reality |
+|---|---|
+| Gemini 3.6 Flash × 2 | 429 quota exceeded — **tier 1 was dead** |
+| Cerebras × 2 | 404 model does not exist (`llama-3.3-70b` retired) |
+| GitHub Models × 4 | 410 `github_models_retirement_brownout` — permanently gone |
+| Groq × 4 | reported empty — **my probe was wrong**, `max_tokens: 5` starves reasoning models |
+
+So every conversation walked through both 429ing Gemini keys (~1.8s) before
+reaching a provider that answers, on every turn, invisibly.
+
+**Fixes:** Cerebras → `gpt-oss-120b` (verified against `/v1/models`); OpenAI legs
+excluded while `OPENAI_BASE_URL` points at GitHub Models; `providerCooldown.ts`
+gives the chain memory — durable failures (quota/auth/retired) cool for 5 min,
+transient ones (timeout/5xx) explicitly do **not**, since cooling those removes
+capacity during the outage the chain exists to survive.
+
+**Decision — cooldown keys on env-key + model, not provider.** Gemini main being
+out of quota must not disable Gemini lite, which the health check shows still
+answering. Rejected: per-provider keying, which would have taken the whole tier
+down.
+
+**Dead code: 65 frontend modules (363 KB) + 9 dependencies.** Including all of
+`frontend/lib/ai/` — an entire second AI layer nothing imported, which explains
+why an env audit showed the frontend "reading" GROQ/CEREBRAS/COHERE/JINA keys.
+Substring matching is why this survived earlier passes: grepping `PricingTab`
+matches `ProjectPricingTab`. Wrote a resolver that maps specifiers to real files.
+
+**Data freshness.** Tiered by volatility, not one window: construction 30/90d
+(hidden when stale), compliance 120/365d (**never** hidden — an old RERA number
+is still the RERA number). Unknown dates never hide anything: 196/280 projects
+have no timestamp, and hiding them would remove most of the site over a missing
+column. `lib/discovery/dataFreshness.ts` already existed and nothing used it —
+the third built-then-never-wired module found.
+
+**Fabrication sweep is now clean.** All 14 handlers audited; automated sweep of
+the chat path returns 0 suspicious fallbacks. Extraction (6/14) is now
+structural work, not correctness work.
+
+**Live DB state:** 280 projects, 117 builders, 789 unit types, 100% cost-sheet
+coverage, 620 payment plans, 18,220 amenities.

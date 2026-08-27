@@ -1102,14 +1102,18 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
           }).join('\n')
 
           const topSafeNames = topBuilders.slice(0, 3).map(b => b.name).join(', ')
-          const reputationText = `### Verified Developer Track Record (Noida & Greater Noida)
+          // The closing line named `topSafeNames || 'reputable tier-1 builders'`.
+          // With no builders on record it recommended prioritising "reputable
+          // tier-1 builders" — a recommendation with no referent, on the exact
+          // question the buyer asked. It now only names builders we actually
+          // scored, and says nothing when there are none.
+          const reputationText = `### Developer track record (Noida & Greater Noida)
 
-| Developer | Delivery Score | Avg Handover Delay | Delivered Track Record | Construction Quality | RERA Compliance |
+| Developer | Delivery score | Avg handover delay | Delivered | Construction quality | RERA compliance |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 ${builderRows}
 
-### Recommendation
-Prioritize developers with a Delivery Score above **85/100** and high RERA compliance (such as ${topSafeNames || 'reputable tier-1 builders'}) to minimize delivery delays and title risks.`
+A dash means we have not scored that dimension for the developer — it is not a low score.${topSafeNames ? `\n\n**On this data**, ${topSafeNames} carry the strongest delivery records of those we hold. Delivery history is the best available predictor of handover risk, but it is a record of past projects, not a guarantee about this one.` : ''}`
 
           const repChips = topBuilders.slice(0, 3).map((b, i) => ({
             id: `chip_b_${i}_${Date.now()}`,
