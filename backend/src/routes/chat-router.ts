@@ -62,6 +62,8 @@ import { unverified, unverifiedFeature, confidenceFor, headingFor, UP_STATUTORY,
 import { redactProject } from '../lib/projectExposure'
 import { buildProjectFacts, detectFactTopics } from '../lib/projectFactsBlock'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
+import { runTopicHandlers } from '../lib/chat/handlerContext'
+import { CHAT_TOPIC_HANDLERS } from '../lib/chat/handlers'
 import { generateMultiDimensionalContext, attachMultiDimensionalRecommendations } from '../lib/discovery/multidimensionalPromptEnricher'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
 import { filterNewChips, markChipShown, hydrateFromDb, persistToDb, suppressTopicChips } from '../lib/discovery/chipDedup'
@@ -1047,88 +1049,24 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
         const matchedBuilders = dbBuilders.filter(b => message.toLowerCase().includes(b.name.toLowerCase()))
         const isBuilderCompare = matchedBuilders.length >= 2 && /compare|vs|versus|better|difference|track record|builder|developer/i.test(message)
 
-        // ─── UP RERA & NCLT VERIFICATION PROTOCOL ─────────────────────────────────
-        if (isReraCheckQuery) {
-          const reraText = `### UP RERA & Project Title Verification Protocol
+        // ─── TOPIC HANDLER REGISTRY ────────────────────────────────────────────────
+        // Handlers extracted from this function into lib/chat/handlers/. Each was a
+        // sibling `if (isXQuery) { … res.end(); return }` block here. The registry
+        // runs the first match and returns, exactly as the inline order did.
+        if (await runTopicHandlers(CHAT_TOPIC_HANDLERS, {
+          message,
+          intent,
+          sessionId: currentSessionId,
+          userId,
+          guestToken,
+          send,
+          emitUiState,
+          res,
+          cachedProjects: cachedProjectsFromSession ?? [],
+          flags: { isReraCheckQuery, isStatutoryTaxQuery, isReadyToMoveQuery },
+        })) return
 
-To verify any residential or commercial project in Noida and Greater Noida:
 
-1. **Official UP RERA Portal**:
-   - Visit the official registry at **[up-rera.in](https://www.up-rera.in)**
-   - Navigate to **Important Links → Registered Projects** and enter the project RERA registration number or project name.
-
-2. **Check Promoter Defaulter & Revocation List**:
-   - Access **Promoter Defaulter List** on the UP-RERA portal to verify if the developer has pending recovery certificates (RCs) or revoked registrations.
-
-3. **NCLT Insolvency Verification**:
-   - Search the builder's corporate entity name on the Insolvency and Bankruptcy Board of India (**[ibbi.gov.in](https://ibbi.gov.in)**) to check if the company is under Corporate Insolvency Resolution Process (CIRP).
-
-4. **RealtyPals Pre-Screening**:
-   - All projects listed on RealtyPals are pre-screened against active UP-RERA registration certificates, sanctioned map approvals, and developer delivery records.`
-
-          const reraChips = [
-            { id: `chip_builders_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Top Safe Builders in Noida', icon: 'shield-check', analyticsId: 'chip_builders_safe', priority: 1, payload: { text: 'Which builders in Noida are safe and have on-time delivery?' } },
-            { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_tax_rera', priority: 2, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
-            { id: `chip_sec_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Explore Sector 76 Flats', icon: 'building', analyticsId: 'chip_sec76_rera', priority: 3, payload: { text: 'Show 2 BHK and 3 BHK flats in Sector 76' } },
-          ]
-
-          send('token', { token: reraText })
-          emitUiState({
-            stage: 'RESEARCH',
-            thinking: 'Official UP RERA & NCLT legal compliance check protocol:',
-            chips: reraChips,
-            missingFields: [],
-            confidence: 'HIGH'
-          })
-          send('done', {
-            sessionId: currentSessionId,
-            intentState: 'SHORTLISTED',
-            intent,
-            responseMode: 'chat',
-          })
-          res.end()
-          return
-        }
-
-        // ─── STATUTORY TAX & LEGAL KNOWLEDGE HANDLER ──────────────────────────────
-        if (isStatutoryTaxQuery) {
-          const taxText = `### Statutory Taxes & Registration Charges (Noida / Uttar Pradesh)
-
-| Statutory Component | Rate / Charge | Nature | When & To Whom Paid |
-| :--- | :--- | :--- | :--- |
-| **Stamp Duty (Standard)** | 7% of agreement / circle value | Mandatory | Paid to UP Stamp & Registration Dept at registry |
-| **Stamp Duty (Female Buyer)** | 6% (₹10,000 concession up to ₹10L) | Concession | Paid at registry for female primary owners |
-| **Registration Fee** | 1% of property value (max ₹30,000) | Mandatory | Paid to Sub-Registrar Office at deed execution |
-| **GST (Under-Construction)** | 5% (without ITC) | Statutory | Billed across construction milestones |
-| **GST (Ready-to-Move with OC)**| 0% (Fully Exempt) | Exemption | Nil GST on properties with Occupancy Certificate |
-| **TDS (Section 194-IA)** | 1% of total sale consideration | Mandatory | Deducted by buyer if value > ₹50L (Form 26QB) |
-
-### Recommendation
-For an under-construction apartment, budget an additional **12–13% above Base Sale Price (BSP)** to cover Stamp Duty, Registration, and GST. For a Ready-to-Move home with OC, the extra statutory load is approximately **7.5–8%**.`
-
-          const taxChips = [
-            { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Other Charges', icon: 'file-text', analyticsId: 'chip_cost', priority: 1, payload: { text: 'Show cost sheet and price breakdown' } },
-            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 2, payload: { text: 'Calculate EMI' } },
-            { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show Ready-to-Move (0% GST)', icon: 'check-circle', analyticsId: 'chip_rtm_tax', priority: 3, payload: { text: 'Show ready to move flats in Noida' } },
-          ]
-
-          send('token', { token: taxText })
-          emitUiState({
-            stage: 'RESEARCH',
-            thinking: 'Verified Uttar Pradesh statutory tax and stamp duty rates:',
-            chips: taxChips,
-            missingFields: [],
-            confidence: 'HIGH'
-          })
-          send('done', {
-            sessionId: currentSessionId,
-            intentState: 'SHORTLISTED',
-            intent,
-            responseMode: 'chat',
-          })
-          res.end()
-          return
-        }
 
         // ─── BUILDER REPUTATION & DELIVERY SCORECARD ──────────────────────────────
         if (isBuilderReputationQuery && !isBuilderCompare) {
@@ -1274,61 +1212,6 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           return
         }
 
-        // ─── READY-TO-MOVE VS UNDER-CONSTRUCTION STATUS GUIDE ──────────────────────
-        if (isReadyToMoveQuery) {
-          const secMatch = message.match(/Sector\s*(\d+[A-Za-z]?)/i)
-          const sec = secMatch ? `Sector ${secMatch[1]}` : (intent.sector || 'Sector 76')
-          const numOnly = sec.replace(/Sector\s*/i, '').trim()
-
-          const relevantProjects = await prisma.project.findMany({
-            where: {
-              OR: [
-                { sector: { contains: numOnly, mode: 'insensitive' } },
-                { sector: { contains: sec, mode: 'insensitive' } },
-                { id: { in: (cachedProjectsFromSession || []).map(p => p.id) } }
-              ]
-            },
-            include: { builder: true },
-            take: 6
-          })
-
-          const displayProjects = relevantProjects.length > 0 ? relevantProjects : (cachedProjectsFromSession || [])
-          const rows = displayProjects.slice(0, 6).map(p => {
-            const isRtm = p.status === 'ready_to_move' || p.possession_label?.toLowerCase().includes('delivered')
-            const moveStatus = isRtm ? 'Ready-to-Move' : (p.possession_label || 'Under Construction')
-            const ageStr = isRtm ? 'Delivered & occupied' : 'Under active construction'
-            const reraStr = p.rera_number ? 'UP-RERA Verified' : 'Registered'
-            const gstStr = isRtm ? '0% GST (Exempt)' : '5% GST'
-            return `| **${p.name}** | ${moveStatus} | ${ageStr} | ${reraStr} | ${gstStr} |`
-          }).join('\n')
-
-          const rtmText = `### Ready-to-Move vs. Delivery Status Guide (${sec})\n\n| Project Name | Move-in Status | Occupancy / Delivery Stage | RERA Status | GST Impact |\n| :--- | :--- | :--- | :--- | :--- |\n${rows || '| *Consult verified listings* | Available on request | Verified RERA | Active | 0%–5% |'}\n\n### Fiduciary Advisory on Ready Resale Units\nReady-to-Move units with Occupancy Certificate (OC) attract **0% GST**. Before token transfer, ensure the seller provides an executed Sub-Lease deed (Registry) or builder transfer NOC confirming zero pending authority penalties.`
-
-          const rtmChips = [
-            { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_tax_rtm', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
-            { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Other Charges', icon: 'file-text', analyticsId: 'chip_cost_rtm', priority: 2, payload: { text: 'Show cost sheet and price breakdown' } },
-            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit_rtm', priority: 3, payload: { text: 'Schedule a site visit' } }
-          ]
-
-          send('token', { token: rtmText })
-          emitUiState({
-            stage: 'RESEARCH',
-            thinking: 'Verified ready-to-move and delivery status matrix:',
-            projects: displayProjects,
-            chips: rtmChips,
-            missingFields: [],
-            confidence: 'HIGH'
-          })
-          send('done', {
-            sessionId: currentSessionId,
-            intentState: 'SHORTLISTED',
-            intent,
-            projects: displayProjects,
-            responseMode: 'chat'
-          })
-          res.end()
-          return
-        }
 
         // ─── AMENITY & LIFESTYLE HANDLER ───────────────────────────────────────────
         if (isAmenityQuery && !isCompareRequest && (intent.projectNames?.length ?? 0) < 2) {
