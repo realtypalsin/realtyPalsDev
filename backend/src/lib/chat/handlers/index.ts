@@ -1,4 +1,5 @@
 import type { ChatTopicHandler } from '../handlerContext'
+import { builderReputationHandler } from './builderReputation'
 import { reraVerificationHandler } from './reraVerification'
 import { statutoryTaxHandler } from './statutoryTax'
 import { possessionStatusHandler } from './possessionStatus'
@@ -36,6 +37,7 @@ import { unitConfigurationHandler } from './unitConfiguration'
  * project detail, open-query lane.
  */
 export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
+  builderReputationHandler,
   reraVerificationHandler,
   statutoryTaxHandler,
   possessionStatusHandler,

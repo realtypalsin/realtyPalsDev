@@ -20,6 +20,21 @@
 import type { Response } from 'express'
 import type { Intent } from '../discovery'
 
+/** The builder columns the router selects. Structural, so handlers stay decoupled. */
+export interface BuilderRow {
+  id: string
+  name: string
+  slug: string | null
+  projects_delivered_count: number | null
+  total_projects_count: number | null
+  average_delay_months: number | null
+  delivery_score: number | null
+  construction_quality_score: number | null
+  rera_compliance_score: number | null
+  founded_year: number | null
+  company_overview: string | null
+}
+
 /** A chip as emitted to the client. Structural, so handlers can build literals. */
 export interface ChatChip {
   id: string
@@ -77,6 +92,24 @@ export interface ChatHandlerContext {
 
   /** Classification flags computed once per turn by the router. */
   flags: Readonly<Record<string, boolean>>
+
+  /**
+   * Builder rows the router already fetched for this turn.
+   *
+   * Passed in rather than re-queried: the router needs them anyway to decide
+   * whether the message names two builders, and a handler issuing its own
+   * findMany for the same rows is how the old inline blocks each grew a
+   * private copy of the same query.
+   */
+  builders: ReadonlyArray<BuilderRow>
+
+  /**
+   * Writes this turn's answer into the semantic cache.
+   *
+   * Handlers that produce a deterministic answer should call it; the next
+   * buyer asking the same thing then costs nothing.
+   */
+  setCachedResponse: (message: string, payload: { token: string; chips: ChatChip[] }) => void
 }
 
 export interface ChatTopicHandler {
