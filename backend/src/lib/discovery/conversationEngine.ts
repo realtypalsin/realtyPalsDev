@@ -301,10 +301,27 @@ async function getClarifyingChips(
   }
 
   if (intent.journeyStage === 'market_evaluator') {
+    // The comparison chip named Sector 75 vs 76 regardless of what the buyer
+    // had shown interest in. It now uses the sector they named, or the two the
+    // inventory actually has most of — and is dropped entirely when we have
+    // neither, rather than pointing at an arbitrary pair.
+    const namedSector = typeof intent.sector === 'string' ? intent.sector : null
+    const topSectors = inventory?.sectors?.map(s => s.sector) ?? []
+    const [a, b] = namedSector
+      ? [namedSector, topSectors.find(s => s !== namedSector)]
+      : topSectors
+    if (a && b) {
+      chips.push(chip(
+        `EXPLORE:sector_delta:${a}_${b}`.replace(/\s+/g, '_'),
+        'TEXT_MESSAGE',
+        `${a} vs ${b}`,
+        { message: `Compare ${a} with ${b} — price, connectivity and who each suits.` },
+        priority++,
+      ))
+    }
     chips.push(
-      chip('EXPLORE:sec75_vs_76', 'TEXT_MESSAGE', 'Sector 75 vs 76 Delta', { message: 'Why is Sector 75 more expensive than Sector 76?' }, priority++),
-      chip('EXPLORE:carpet_vs_super', 'TEXT_MESSAGE', 'Carpet vs Super Area', { message: 'How does RERA carpet area differ from builder super built-up area?' }, priority++),
-      chip('EXPLORE:circle_rate_duty', 'TEXT_MESSAGE', 'Circle Rate & Tax Rules', { message: 'How are circle rates and stamp duty calculated in Noida?' }, priority++)
+      chip('EXPLORE:carpet_vs_super', 'TEXT_MESSAGE', 'Carpet vs super area', { message: 'How does RERA carpet area differ from builder super built-up area?' }, priority++),
+      chip('EXPLORE:circle_rate_duty', 'TEXT_MESSAGE', 'Circle rate & tax rules', { message: 'How are circle rates and stamp duty calculated in Noida?' }, priority++)
     )
     return chips
   }
@@ -336,12 +353,32 @@ async function getClarifyingChips(
   if (intent.sector && intent.bhk?.length && !intent.budgetMax) {
     const sec = intent.sector
     const cleanSec = sec.startsWith('Sector') ? sec : `Sector ${sec}`
-    chips.push(
-      chip(`INTENT_PATCH:budget_low:${sec}`, 'INTENT_PATCH', `Under ₹1.2 Cr`, { patch: { sector: sec, bhk: intent.bhk, budgetMax: 1.2 }, label: `Under ₹1.2 Cr` }, priority++),
-      chip(`INTENT_PATCH:budget_mid:${sec}`, 'INTENT_PATCH', `₹1.2 – ₹1.6 Cr`, { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.2, budgetMax: 1.6 }, label: `₹1.2 – ₹1.6 Cr` }, priority++),
-      chip(`INTENT_PATCH:budget_high:${sec}`, 'INTENT_PATCH', `₹1.6 Cr+`, { patch: { sector: sec, bhk: intent.bhk, budgetMin: 1.6 }, label: `₹1.6 Cr+` }, priority++),
-      chip(`EXPLORE:tradeoffs:${sec}`, 'TEXT_MESSAGE', `${cleanSec} Pros & Cons`, { message: `What are the main advantages and drawbacks of living in ${cleanSec}?` }, priority++)
-    )
+
+    // Budget bands come from the live price distribution, which chipInventory
+    // already computes as quartiles. They used to be hardcoded at ₹1.2 / ₹1.2–1.6
+    // / ₹1.6+, so in a sector where nothing sells under ₹3 Cr the buyer was
+    // offered "Under ₹1.2 Cr" — a click that returns nothing, and a strong
+    // signal that we do not know our own inventory.
+    const buckets = inventory?.budgetBuckets?.length ? inventory.budgetBuckets.slice(0, 3) : []
+    for (const [i, bucket] of buckets.entries()) {
+      chips.push(chip(
+        `INTENT_PATCH:budget_${i}:${sec}`,
+        'INTENT_PATCH',
+        bucket.label,
+        {
+          patch: {
+            sector: sec,
+            bhk: intent.bhk,
+            ...(bucket.min ? { budgetMin: bucket.min } : {}),
+            ...(bucket.max ? { budgetMax: bucket.max } : {}),
+          },
+          label: bucket.label,
+        },
+        priority++,
+      ))
+    }
+
+    chips.push(chip(`EXPLORE:tradeoffs:${sec}`, 'TEXT_MESSAGE', `${cleanSec} pros & cons`, { message: `What are the main advantages and drawbacks of living in ${cleanSec}?` }, priority++))
     return chips
   }
 
