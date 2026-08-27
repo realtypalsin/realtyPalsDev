@@ -13,16 +13,21 @@ import { CaretDown, Check, MagnifyingGlass, X } from '@phosphor-icons/react'
  * button held at opacity-0 until hover, which on a touch device is a control
  * you can neither see nor hit. This is the single place they live now.
  *
- * The panel is rendered through a portal, and that is not incidental. The dock
- * scrolls horizontally on narrow screens, and `overflow-x: auto` establishes a
- * clipping context in BOTH axes — a panel positioned `bottom-full` inside it is
- * clipped away entirely, which is exactly what happened: every pill opened, and
- * nothing appeared. Anchoring to the pill's measured rect in a portal escapes
- * that, and every other stacking and clipping context above it.
+ * The pills WRAP, they do not scroll. A horizontal rail hid pills off the right
+ * edge behind a gesture with no affordance — on a phone the buyer could not see
+ * that budget and possession existed at all. Four pills on two rows is worse
+ * layout and better product.
  *
- * On a phone the same panel becomes a bottom sheet. A 218px popover pinned to a
- * pill in a horizontally-scrolling rail is a target you fight; a sheet is
- * thumb-reachable, cannot land off-screen, and dismisses on the backdrop.
+ * The panel is still rendered through a portal, and that is not incidental. The
+ * dock sits under a rounded, backdrop-blurred input dock, and the rail itself
+ * was for a long time `overflow-x: auto`, which establishes a clipping context
+ * in BOTH axes — a panel positioned `bottom-full` inside it was clipped away
+ * entirely: every pill opened, and nothing appeared. Anchoring to the pill's
+ * measured rect in a portal escapes that and every stacking context above it.
+ *
+ * On a phone the same panel becomes a bottom sheet. A 224px popover pinned to a
+ * pill is a target you fight; a sheet is thumb-reachable, cannot land
+ * off-screen, and dismisses on the backdrop.
  *
  * Changes dispatch INTENT_PATCH, which the chat turns back into a natural turn,
  * so refining is a continuation of the conversation and never a restart.
@@ -136,8 +141,15 @@ export function FilterDock({
   disabled = false,
 }: {
   intent: Record<string, unknown> | null
-  onPatch: (patch: Patch) => void
-  onRemove: (field: string) => void
+  /**
+   * `label` is the buyer-facing sentence for the change. It becomes the user
+   * turn in the transcript AND the message the model reads. Without it the
+   * bubble rendered the literal string "INTENT_PATCH" and the model was handed
+   * "[User selected UI option: updated search]" — which named no field and no
+   * value, so the answer that came back was about the old search.
+   */
+  onPatch: (patch: Patch, label: string) => void
+  onRemove: (fields: string[], label: string) => void
   disabled?: boolean
 }) {
   const [openField, setOpenField] = useState<string | null>(null)
@@ -214,10 +226,10 @@ export function FilterDock({
   const state = intent
   const spec = PILLS.find(p => p.field === openField) ?? null
 
-  const apply = (patch: Patch) => {
+  const apply = (patch: Patch, label: string) => {
     setOpenField(null)
     setDraft('')
-    onPatch(patch)
+    onPatch(patch, label)
   }
 
   const panelBody = spec && (
@@ -243,7 +255,7 @@ export function FilterDock({
           onSubmit={e => {
             e.preventDefault()
             const v = draft.trim()
-            if (v) apply({ [spec.field]: v })
+            if (v) apply({ [spec.field]: v }, `Change ${spec.title.toLowerCase()} to ${v}`)
           }}
           className="px-1 pb-1"
         >
@@ -274,7 +286,7 @@ export function FilterDock({
               <button
                 key={choice.label}
                 type="button"
-                onClick={() => apply(choice.patch)}
+                onClick={() => apply(choice.patch, `Change ${spec.title.toLowerCase()} to ${choice.label}`)}
                 aria-pressed={active}
                 className="flex items-center gap-2.5 w-full px-2 py-2.5 min-h-[42px] sm:min-h-[36px] rounded-lg text-left text-[13px] sm:text-[12px] text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
               >
@@ -299,8 +311,7 @@ export function FilterDock({
   return (
     <>
       <div
-        className="flex flex-nowrap items-center gap-1.5 min-w-0 overflow-x-auto overscroll-x-contain py-0.5"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="flex flex-wrap items-center gap-1 sm:gap-1.5 min-w-0 w-full"
         aria-label="Search filters"
       >
         {PILLS.map(p => {
@@ -351,7 +362,10 @@ export function FilterDock({
                   <button
                     type="button"
                     disabled={disabled}
-                    onClick={() => p.clears.forEach(onRemove)}
+                    // One dispatch, not one per cleared field: budget clears two
+                    // fields, and the second call hit the submit lock and
+                    // surfaced "still working on your last request".
+                    onClick={() => onRemove(p.clears, `Clear ${p.title.toLowerCase()}`)}
                     aria-label={`Clear ${p.title.toLowerCase()}`}
                     className="pr-2 pl-0.5 py-1.5 min-h-[32px] flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 cursor-pointer"
                   >

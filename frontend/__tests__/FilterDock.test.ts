@@ -2,18 +2,20 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
- * The dock's panel must escape the rail that clips it.
+ * The dock's panel must escape every container that clips it, and the pills
+ * must never hide behind a scroll gesture.
  *
- * The pills scroll horizontally on narrow screens, and `overflow-x: auto`
- * establishes a clipping context in BOTH axes — the CSS spec resolves the other
- * axis to `auto` rather than leaving it visible. A panel positioned
- * `absolute bottom-full` inside that container is therefore clipped away
- * completely: every pill opened, its aria-expanded flipped, and nothing
- * appeared on screen.
+ * Two defects, one file. The pills used to sit in an `overflow-x: auto` rail,
+ * which (a) hid budget and possession off the right edge on a phone with no
+ * affordance that they existed, and (b) establishes a clipping context in BOTH
+ * axes — the CSS spec resolves the other axis to `auto` rather than leaving it
+ * visible — so a panel positioned `absolute bottom-full` inside it was clipped
+ * away completely: every pill opened, aria-expanded flipped, nothing appeared.
  *
- * Rendering through a portal anchored to the pill's measured rect is what fixes
- * it, and it is the kind of detail that gets "simplified" back to an absolute
- * child by someone who cannot see why it was done. Hence this file.
+ * The pills now wrap. The panel still goes through a portal anchored to the
+ * pill's measured rect, because the input dock above it is rounded and
+ * backdrop-blurred and clips just as well. Both are the kind of detail that
+ * gets "simplified" back by someone who cannot see why it was done.
  */
 
 const SRC = readFileSync(
@@ -28,11 +30,32 @@ describe('filter dock panel', () => {
     expect(SRC).toMatch(/document\.body/)
   })
 
-  it('does not position the panel relative to the clipping container', () => {
-    // absolute + bottom-full inside overflow-x-auto is the exact bug.
-    const railHasOverflow = /flex flex-nowrap items-center[^"]*overflow-x-auto/.test(SRC)
-    expect(railHasOverflow).toBe(true)
+  it('does not position the panel relative to a clipping container', () => {
+    // absolute + bottom-full inside a clipped ancestor is the exact bug.
     expect(SRC).not.toMatch(/absolute bottom-full/)
+  })
+
+  it('wraps the pills instead of scrolling them', () => {
+    // A horizontal rail put budget and possession off-screen on a phone,
+    // reachable only by a swipe nothing advertised.
+    expect(SRC).toMatch(/flex flex-wrap items-center/)
+    expect(SRC).not.toMatch(/overflow-x-auto/)
+    expect(SRC).not.toMatch(/flex-nowrap/)
+  })
+
+  it('names the field and the new value in the label it dispatches', () => {
+    // "[User selected UI option: updated search]" told the model nothing, so
+    // changing the sector came back as an answer about the old one.
+    expect(SRC).toMatch(/onPatch\(patch, label\)/)
+    expect(SRC).toMatch(/Change \$\{spec\.title\.toLowerCase\(\)\} to \$\{v\}/)
+    expect(SRC).toMatch(/Change \$\{spec\.title\.toLowerCase\(\)\} to \$\{choice\.label\}/)
+  })
+
+  it('clears a multi-field pill in one dispatch', () => {
+    // Budget clears budgetMin and budgetMax; two dispatches meant the second
+    // lost to the submit lock.
+    expect(SRC).toMatch(/onRemove\(p\.clears, /)
+    expect(SRC).not.toMatch(/clears\.forEach\(onRemove\)/)
   })
 
   it('anchors to the pill it was opened from', () => {

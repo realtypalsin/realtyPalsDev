@@ -160,8 +160,12 @@ router.post('/', async (req: Request, res: Response) => {
   const prevIntent = (parsed.data.intent ?? {}) as Record<string, unknown>
   let message = action.type === 'TEXT_MESSAGE' ? (action.payload.text as string) : ''
   if (action.type === 'INTENT_PATCH' || action.type === 'REMOVE_FILTER') {
+    // The label names the field AND the new value ("Change location to Sector
+    // 79"). It used to be absent for every dock change, so the model read
+    // "updated search" — no field, no value — and answered about the old one.
     const isPatch = action.type === 'INTENT_PATCH'
-    const label = isPatch ? ((action.payload.label as string) || 'updated search') : `removed ${(action.payload.field as string)} filter`
+    const label = (action.payload.label as string) ||
+      (isPatch ? 'updated search' : 'cleared a filter')
     message = `[User selected UI option: ${label}]`
   }
 
@@ -376,9 +380,13 @@ router.post('/', async (req: Request, res: Response) => {
       rawIntentResult = { intent: mergeIntent(prevIntent, patch), degraded: false }
     } else if (action.type === 'REMOVE_FILTER') {
       console.log('[CHAT] REMOVE_FILTER fast path')
-      const fieldToRemove = action.payload.field as string
+      // A band clears two fields (budgetMin + budgetMax) in one action. The
+      // single-`field` form is still accepted for any older caller.
+      const fields = Array.isArray(action.payload.fields)
+        ? (action.payload.fields as unknown[]).filter((f): f is string => typeof f === 'string')
+        : typeof action.payload.field === 'string' ? [action.payload.field] : []
       const newIntent = { ...prevIntent }
-      delete newIntent[fieldToRemove]
+      for (const f of fields) delete newIntent[f]
       rawIntentResult = { intent: newIntent as Intent, degraded: false }
     } else if (action.type === 'TEXT_MESSAGE' && message) {
       console.log('[CHAT] TEXT_MESSAGE — running LLM extraction')

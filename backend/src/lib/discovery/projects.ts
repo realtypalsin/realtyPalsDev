@@ -220,6 +220,25 @@ export function expandSectorAliases(sector?: string): string[] {
   return [sector]
 }
 
+/**
+ * A corridor alias — "Noida Expressway", "7X", "Central Noida" — names a SET of
+ * sectors deliberately. It is functionally city-level: a belt, not an address.
+ *
+ * This exists because the sector-disambiguation guard could not tell the two
+ * apart. "Noida Expressway" expanded to Sectors 107/137/143/150 exactly as
+ * intended, the search matched projects in all four, and the guard then saw
+ * four distinct sectors, threw every result away and asked "Did you mean:
+ * Sector 107, 137, 143, 150?" — the buyer said the corridor BECAUSE they wanted
+ * the corridor. Answering with its own contents is a loop: picking a corridor
+ * chip re-asked the same question, forever, and no card ever rendered.
+ *
+ * The guard is still right for what it was built for: "Sector 1" fuzzy-matching
+ * Sector 1, 100 and 110 is a genuine ambiguity the buyer has to settle.
+ */
+export function isCorridorAlias(sector?: string): boolean {
+  return expandSectorAliases(sector).length > 1
+}
+
 export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Prisma.ProjectWhereInput {
   const where: Prisma.ProjectWhereInput = {}
 
@@ -900,7 +919,10 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
   }
 
   if (rawProjects.length > 0) {
-    if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector)) {
+    // A corridor is excluded here for the same reason a city is: both name a
+    // set of sectors on purpose, so spanning several of them is the answer, not
+    // an ambiguity. See isCorridorAlias.
+    if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector) && !isCorridorAlias(effectiveIntent.sector)) {
       // ── Check for CITY-LEVEL disambiguation first ──
       // If user provided only a sector (no BHK/budget/etc) and it exists in multiple cities, ask which city
       const isSectorOnly = !effectiveIntent.bhk?.length && !effectiveIntent.budgetMax && !effectiveIntent.builderName && !effectiveIntent.lifestyleKeywords?.length && !effectiveIntent.projectNames?.length

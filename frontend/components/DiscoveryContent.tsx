@@ -1537,21 +1537,12 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
           {/* Integrated Bento Bottom Action Strip */}
           <div className="flex items-center justify-between pt-1 px-2 border-t border-slate-100 dark:border-zinc-800/60 mt-1">
-            {/* Left: the search refinement dock.
-                This slot used to show either a read-only sector badge or a
-                tagline, while the filters themselves lived in a chip row above
-                the input and again in a ribbon above the conversation. Same
-                state, three places, editable in none of them. The dock is now
-                the single source, and every pill is the control for its field. */}
+            {/* Left: the tagline. The filter dock used to live here, sharing a
+                single row with the voice and send buttons — on a phone that
+                left it about 150px, so four pills became a horizontal scroll
+                with no affordance. It now sits on its own row below the dock. */}
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              {hasUserReplied && currentIntent ? (
-                <FilterDock
-                  intent={currentIntent as unknown as Record<string, unknown>}
-                  disabled={isSubmitting}
-                  onPatch={patch => dispatchAction({ type: 'INTENT_PATCH', payload: { patch } })}
-                  onRemove={field => dispatchAction({ type: 'REMOVE_FILTER', payload: { field } })}
-                />
-              ) : (
+              {!(hasUserReplied && currentIntent) && (
                 <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 hidden sm:inline">
                   AI Real Estate Advisor · Noida &amp; Greater Noida
                 </span>
@@ -1623,6 +1614,21 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             </div>
           </div>
         </div>
+
+        {/* The search refinement dock, on its own row under the input. Filters
+            used to be rendered in three places, then in one — but inside the
+            input's action strip, squeezed beside voice and send. Here they get
+            the full width and wrap instead of scroll. */}
+        {hasUserReplied && currentIntent && (
+          <div className="px-2 pt-1.5">
+            <FilterDock
+              intent={currentIntent as unknown as Record<string, unknown>}
+              disabled={isSubmitting}
+              onPatch={(patch, label) => dispatchAction({ type: 'INTENT_PATCH', payload: { patch, label } })}
+              onRemove={(fields, label) => dispatchAction({ type: 'REMOVE_FILTER', payload: { fields, label } })}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
