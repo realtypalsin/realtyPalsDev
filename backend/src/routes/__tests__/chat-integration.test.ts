@@ -136,11 +136,34 @@ describe('FALLBACK_CHAIN shape', () => {
   })
 
   it('gives every provider key in the chain its own entry so rotation works', () => {
-    // GROQ_API_KEY2/3 and OPENAI_API_KEY2/3 were set in the environment but absent
+    // GROQ_API_KEY2/3 and GEMINI_API_KEY1 were set in the environment but absent
     // from the chain, so a rate-limited key had nothing to fall through to.
     const envKeys = FALLBACK_CHAIN.map(i => i.envKey)
-    for (const key of ['GEMINI_API_KEY1', 'GROQ_API_KEY2', 'GROQ_API_KEY3', 'OPENAI_API_KEY2', 'OPENAI_API_KEY3']) {
+    for (const key of ['GEMINI_API_KEY1', 'GROQ_API_KEY2', 'GROQ_API_KEY3']) {
       assert.ok(envKeys.includes(key), `${key} is configured but never tried`)
+    }
+  })
+
+  it('drops the OpenAI legs while OPENAI_BASE_URL points at retired GitHub Models', () => {
+    // models.inference.ai.azure.com no longer resolves and models.github.ai
+    // returns 410 github_models_retirement_brownout. Keeping those legs costs a
+    // failed request each, on every turn, before reaching a provider that answers.
+    const pointsAtGitHubModels = /models\.(inference\.ai\.azure|github\.ai)/.test(process.env.OPENAI_BASE_URL ?? '')
+    const hasOpenAiLeg = FALLBACK_CHAIN.some(i => i.provider === 'openai')
+    assert.equal(
+      hasOpenAiLeg,
+      !pointsAtGitHubModels,
+      pointsAtGitHubModels
+        ? 'OpenAI legs must be dropped while the base URL is GitHub Models'
+        : 'OpenAI legs should be present once a working base URL is configured',
+    )
+  })
+
+  it('never points Cerebras at a model it no longer serves', () => {
+    // llama-3.3-70b returned 404 "Model does not exist or you do not have access
+    // to it" on both keys; Cerebras serves gpt-oss-120b and gemma-4-31b.
+    for (const item of FALLBACK_CHAIN.filter(i => i.provider === 'cerebras')) {
+      assert.ok(!/llama/i.test(item.model), `${item.label} still requests ${item.model}`)
     }
   })
 

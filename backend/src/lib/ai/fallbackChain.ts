@@ -47,6 +47,7 @@ export interface FallbackChainResult {
 
 import { validateAgainstFactsSync } from './guardrails-v2'
 import { trackEvent } from '../monitoring/posthog'
+import { isCoolingDown, cooldownReason, recordFailure, recordSuccess } from './providerCooldown'
 import { env } from '../env'
 import { adaptiveCapMessages, CONTEXT_TOKEN_CEILING } from './adaptiveMessaging'
 import { STATIC_PREFIX_MARKER } from './systemPromptCache'
@@ -163,6 +164,17 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       continue
     }
 
+    // Skip a leg that recently failed for a reason retrying cannot fix — an
+    // exhausted quota, a revoked key, a retired model. Without this the chain
+    // has no memory and re-attempts the same dead leg on every turn: a live
+    // check found both tier-1 Gemini keys returning 429, costing ~1.8s before
+    // the first token of every conversation.
+    const cooldownKey = `${item.envKey}:${item.model}`
+    if (isCoolingDown(cooldownKey)) {
+      console.log(`[FALLBACK:COOLDOWN] ${item.label} — skipping: ${cooldownReason(cooldownKey)}`)
+      continue
+    }
+
     const effectivePrompt = options.buildSystemPrompt
       ? stripMarker(options.buildSystemPrompt(item.supportsTools))
       : item.supportsTools
@@ -230,11 +242,22 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         }
       }
 
+            // Answered — trust this leg again immediately, in case an earlier
+      // durable failure was resolved (billing topped up, quota window reset).
+      recordSuccess(cooldownKey)
       return { text: beautified, provider: item.provider, model: item.model, envKey: item.envKey, is_verified: false }
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err))
       const tokensSent = getTokensSent() || (err as any)?.tokensSent === true
       const errMsg = error.message || String(err)
+
+      // Start a cooldown only when retrying cannot help. A timeout, a stall or a
+      // 500 is exactly the case where the next turn should try this leg again —
+      // cooling it down would remove capacity during the outage it should survive.
+      const failureKind = recordFailure(cooldownKey, error)
+      if (failureKind === 'durable') {
+        console.warn(`[FALLBACK:DURABLE] ${item.label} — cooling down: ${errMsg.slice(0, 120)}`)
+      }
 
       if (process.env.DEBUG_FALLBACK) {
         console.warn(`[FALLBACK:FAIL] ✗ ${item.label} failed: ${errMsg.slice(0, 100)}...`)

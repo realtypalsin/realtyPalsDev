@@ -74,6 +74,17 @@ export interface FallbackKeyConfig {
  */
 export const GEMINI_TOOLS_ENABLED = process.env.ENABLE_GEMINI_TOOLS === 'true'
 
+/**
+ * True when OPENAI_BASE_URL still points at GitHub Models, which is retired.
+ *
+ * models.inference.ai.azure.com no longer resolves, and models.github.ai returns
+ * 410 github_models_retirement_brownout. Keeping those legs in the chain costs a
+ * failed request each, on every turn, before reaching a provider that answers.
+ */
+const isRetiredGitHubModels = /models\.(inference\.ai\.azure|github\.ai)/.test(
+  process.env.OPENAI_BASE_URL ?? '',
+)
+
 export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)
@@ -85,9 +96,13 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: MISTRAL & CEREBRAS (High-Speed Failover Layer)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small (Verified)' },
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'llama-3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (Key 1)' },
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY1', model: 'llama-3.3-70b', supportsTools: false, label: 'Cerebras Llama 70B (Key 2)' },
+  { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small' },
+  // `llama-3.3-70b` was returning 404 "Model does not exist or you do not have
+  // access to it" on both keys — Cerebras no longer serves it. Their live
+  // catalogue is gpt-oss-120b and gemma-4-31b (verified against /v1/models).
+  // Both Cerebras legs were dead in production and nothing surfaced it.
+  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'gpt-oss-120b', supportsTools: false, label: 'Cerebras gpt-oss-120b (Key 1)' },
+  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY1', model: 'gpt-oss-120b', supportsTools: false, label: 'Cerebras gpt-oss-120b (Key 2)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 3: GROQ & OPENAI (Resilience Layer)
@@ -100,8 +115,21 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   { provider: 'groq', envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 2)' },
   { provider: 'groq', envKey: 'GROQ_API_KEY2', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 3)' },
   { provider: 'groq', envKey: 'GROQ_API_KEY3', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 4)' },
-  { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 1)' },
-  { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 2)' },
-  { provider: 'openai', envKey: 'OPENAI_API_KEY2', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 3)' },
-  { provider: 'openai', envKey: 'OPENAI_API_KEY3', model: MODELS.MAIN, supportsTools: true, label: 'GitHub Models (Key 4)' },
+  // GitHub Models (models.inference.ai.azure.com) is being retired — the endpoint
+  // now returns 410 github_models_retirement_brownout, and the older host does not
+  // resolve at all. All four legs were dead, and because the chain fails soft,
+  // every turn was walking through them before reaching a provider that answers.
+  //
+  // They are kept only when OPENAI_BASE_URL points somewhere else, so setting a
+  // real OpenAI key and dropping the override brings them back with no code change.
+  // A `github_*` token cannot authenticate against api.openai.com, so leaving the
+  // GitHub host configured would just restore the dead legs.
+  ...(isRetiredGitHubModels
+    ? []
+    : ([
+        { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI (Key 1)' },
+        { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI (Key 2)' },
+        { provider: 'openai', envKey: 'OPENAI_API_KEY2', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI (Key 3)' },
+        { provider: 'openai', envKey: 'OPENAI_API_KEY3', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI (Key 4)' },
+      ] as FallbackKeyConfig[])),
 ]
