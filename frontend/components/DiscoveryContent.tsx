@@ -10,6 +10,13 @@ import Toast from '@/components/Toast';
 import { API_BASE } from '@/lib/env'
 import { track } from '@/lib/analytics';
 import { streamChat as streamChatBackend } from '@/lib/backend-api'
+import {
+  applyStreamEvent,
+  emptyStreamFallback,
+  pickShortlist,
+  shortlistKey,
+  buildSmartTitle,
+} from '@/lib/chat/streamReducer'
 import { authHeaders } from '@/lib/authedFetch'
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import MessageBubble, { buildPickerMessage } from '@/components/chat/MessageBubble';
@@ -698,72 +705,33 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       intent: currentIntent ?? undefined,
       signal: controller.signal,
       onEvent: (event) => {
+        // Message shape lives in lib/chat/streamReducer — pure, and tested.
+        // What stays here is the part that is genuinely a side effect.
+        setChatHistory(prev => prev.map(m =>
+          m.id === streamId ? applyStreamEvent(m, event, {
+            fallbackChips: conversationState?.chips,
+            projects: localProjects,
+          }) : m,
+        ));
+
         if (event.type === 'intent') {
           setCurrentIntent(event.intent);
-          // Only enter 'searching' when the backend confirmed a property search will
-          // happen. All other intent states (COLD, GATHERING, ADVISORY, unknown) keep
-          // the UI in 'extracting' until tokens arrive.
-          const isSearchState =
-            event.intentState === 'READY_TO_SEARCH' || event.intentState === 'SHORTLISTED'
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId ? {
-              ...m,
-              streamingPhase: isSearchState ? 'searching' : 'extracting',
-              streamingIntent: event.intent,
-              streamingIntentState: event.intentState,
-            } : m
-          ));
         } else if (event.type === 'properties') {
-          const exact = (event.exactResults ?? []) as unknown as ProjectCardType[];
-          const nearby = (event.nearbyResults ?? []) as unknown as ProjectCardType[];
-          const expansion = event.expansion;
-          const shortlist = exact.length > 0 ? exact : nearby;
+          const shortlist = pickShortlist(
+            (event.exactResults ?? []) as unknown as ProjectCardType[],
+            (event.nearbyResults ?? []) as unknown as ProjectCardType[],
+          );
           localProjects = shortlist;
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? {
-                ...m,
-                isSearching: false,
-                exactResults: exact,
-                nearbyResults: nearby,
-                expansion,
-                properties: shortlist,
-                streamingPhase: 'generating',
-                streamingResultCount: shortlist.length,
-              }
-              : m
-          ));
           setLastShortlist(prev => {
-            const prevIds = (prev || []).map(p => String(p.id || p.slug)).sort().join(',');
-            const newIds = shortlist.map(p => String(p.id || p.slug)).sort().join(',');
-            const isChanged = !prevIds || prevIds !== newIds;
-
-            if (shortlist.length > 0 && isChanged) {
+            // Only re-expand the shelf when the shortlist actually changed, or
+            // every turn re-opens cards the buyer just collapsed.
+            if (shortlist.length > 0 && shortlistKey(prev) !== shortlistKey(shortlist)) {
               setExpandedShortlists(ePrev => new Set(ePrev).add(streamId));
             }
             return shortlist;
           });
           track('recommendation_generated', { count: shortlist.length, session_id: sessionId });
-        } else if (event.type === 'token') {
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? { ...m, content: m.content + event.token, isSearching: false }
-              : m
-          ));
-        } else if (event.type === 'components') {
-          // Project detail pipeline response: structured data + component specs
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? {
-                ...m,
-                responseMode: 'components' as const,
-                componentResponse: event.response,
-                isSearching: false,
-              }
-              : m
-          ));
         } else if (event.type === 'ui_state') {
-          // New conversation engine backend state
           if (DEBUG) console.log('[UI_STATE]', { stage: event.stage, chipsCount: event.chips?.length ?? 0, chips: event.chips });
           setConversationState({
             stage: event.stage,
@@ -772,24 +740,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             missingFields: event.missingFields,
             confidence: event.confidence
           });
-          // Persist chips directly onto the message in chatHistory
-          if (Array.isArray(event.chips) && event.chips.length > 0) {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, chips: event.chips }
-                : m
-            ));
-          }
         } else if (event.type === 'focus') {
-          // Phase 3: Focus event for text-only queries
-          // Scroll and highlight existing card instead of re-rendering
+          // Text-only turn about a project already on screen: scroll to the
+          // card we already rendered instead of repeating it below the answer.
           if (DEBUG) console.log('[FOCUS]', { projectId: event.projectId, name: event.name, anchor: event.anchor });
-          // The frontend will scroll to and highlight the card with data-project-id={projectId}
-          // This is handled via ref callback in ProjectCard component
           const cardElement = document.querySelector(`[data-project-id="${event.projectId}"]`);
           if (cardElement) {
             cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            // Add highlight animation class temporarily
             cardElement.classList.add('ring-2', 'ring-amber-400');
             setTimeout(() => {
               cardElement.classList.remove('ring-2', 'ring-amber-400');
@@ -799,85 +756,27 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           }
         } else if (event.type === 'error') {
           if (event.message?.includes('sending messages a bit fast') || event.message?.includes('Too many messages')) {
-            // Rate limit: show countdown banner, remove the AI placeholder
+            // Rate limited: the placeholder is removed outright, and the
+            // reducer only ever edits — a deletion cannot be expressed there.
             setRateLimitUntil(Date.now() + 10_000);
             setChatHistory(prev => prev.filter(m => m.id !== streamId));
-          } else {
-            setChatHistory(prev => prev.map(m =>
-              m.id === streamId
-                ? { ...m, content: event.message || 'Something went wrong. Please try again.', isSearching: false }
-                : m
-            ));
           }
         } else if (event.type === 'done') {
           const newSessionId = event.sessionId ?? sessionId
           if (event.sessionId) {
             setSessionId(event.sessionId);
-            // Canonicalize URL on first session creation (new chat → /discover/sessionId)
-            // Uses replaceState to avoid triggering a React navigation/remount
+            // Canonicalize the URL on first session creation. replaceState so
+            // React does not navigate and remount mid-stream.
             if (!initialSessionId && !sessionId) {
               window.history.replaceState({}, '', `/discover/${event.sessionId}`);
             }
           }
-          // Backend owns responseMode — no inference on the frontend.
-          // Falls back to derived value only for old sessions that predate this change.
-          const responseMode: 'search' | 'comparison' | 'chat' | 'database' =
-            (event as any).responseMode ??
-            (localProjects.length > 0 ? 'search' : 'chat')
-          const comparisonProjects = (event as any).comparisonProjects || []
-          const isComparison = responseMode === 'comparison' && comparisonProjects.length >= 2
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? {
-                ...m,
-                isSearching: false,
-                responseMode,
-                showComparisonTable: isComparison,
-                ...(isComparison ? {
-                  comparisonProjects,
-                } : {}),
-                ...(responseMode === 'database' && (event as any).chatResponse ? {
-                  chatResponse: (event as any).chatResponse,
-                  chips: (event as any).chatResponse.chips || m.chips,
-                } : {}),
-                chips: m.chips || (event as any).chips || conversationState?.chips || [],
-              }
-              : m
-          ));
-          setChatHistory(prev => prev.map(m =>
-            m.id === streamId
-              ? { ...m, streamingPhase: null, streamingIntent: null, streamingResultCount: null }
-              : m
-          ));
 
-          // Auto-generate smart title on first turn only
+          // Auto-generate a smart title on the first turn only.
           if (chatTurnCount === 0 && (userId || guestToken) && newSessionId) {
-            const buildSmartTitle = (text: string, intent: Record<string, unknown> | null): string => {
-              if (!intent) return text.length > 35 ? text.slice(0, 35) + '...' : text;
-
-              const parts: string[] = [];
-
-              if (Array.isArray(intent.bhk) && intent.bhk.length > 0) {
-                parts.push(intent.bhk.join('/') + ' BHK');
-              }
-              if (typeof intent.sector === 'string' && intent.sector) {
-                parts.push(intent.sector);
-              }
-              if (typeof intent.budgetMax === 'number') {
-                const cr = intent.budgetMax;
-                parts.push(`₹${cr < 1 ? Math.round(cr * 100) + 'L' : cr.toFixed(1) + 'Cr'}`);
-              }
-              if (typeof intent.builderName === 'string' && intent.builderName) {
-                parts.push(intent.builderName);
-              }
-
-              if (parts.length >= 2) return parts.join(' · ');
-              return text.length > 35 ? text.slice(0, 35) + '...' : text;
-            };
-
             const smartTitle = buildSmartTitle(userText, currentIntent);
             setSessionTitle(smartTitle);
-            // Single sidebar refresh after PATCH — fires whether PATCH succeeds or fails.
+            // One sidebar refresh after the PATCH, whether it succeeded or not.
             authHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
               fetch(`${API_BASE}/chat/session/${newSessionId}`, {
                 method: 'PATCH',
@@ -888,7 +787,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               window.dispatchEvent(new CustomEvent('realtypals:session-updated'))
             }).catch(() => { })
           } else {
-            // All other turns: refresh immediately (no PATCH follows).
+            // Every other turn: refresh immediately, no PATCH follows.
             window.dispatchEvent(new CustomEvent('realtypals:session-updated'));
           }
         }
@@ -907,14 +806,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           })
           return
         }
-        // If stream closed cleanly but message is still empty and has no structured payload, replace with fallback message
-        setChatHistory(prev => {
-          const msg = prev.find(m => m.id === streamId)
-          if (msg && !msg.content && !msg.componentResponse && (!msg.properties || msg.properties.length === 0) && !controller.signal.aborted) {
-            return prev.map(m => m.id === streamId ? { ...m, content: "I've fetched the requested information for you. Please check the overview panel above." } : m)
-          }
-          return prev
-        })
+        // Closed cleanly with nothing to show: an empty bubble reads as a
+        // failure the buyer cannot act on.
+        setChatHistory(prev => prev.map(m =>
+          m.id === streamId ? emptyStreamFallback(m) : m,
+        ))
         if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
           setHasShownLengthWarning(true);
           setShowContextWarning(true);
