@@ -66,6 +66,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
   // Per-card, not lifted: one card expanding its configurations says nothing
   // about the others, and the panel closes when the card unmounts.
   const [showAllConfigs, setShowAllConfigs] = useState(false)
+  const configSlotRef = useRef<HTMLDivElement>(null)
   const [expandedUnits, setExpandedUnits] = useState(false)
   const [askMenuOpen, setAskMenuOpen] = useState(false)
 
@@ -74,6 +75,36 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
       console.warn(`[ProjectCard] isSelectable=true but onToggleSelect callback is missing for project ${project.id}`)
     }
   }, [isSelectable, onToggleSelect, project.id])
+
+  // Hover is a capability, not a screen width: a tablet at 1024px has none, a
+  // small laptop at 800px has one. Matching the pointer rather than the
+  // viewport is what keeps the configurations panel from opening on a device
+  // that can never close it by moving away.
+  const [canHover, setCanHover] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const sync = () => setCanHover(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  // Tap-to-open needs tap-to-dismiss. Capture phase, because a tap landing on
+  // another card would otherwise be handled there first and leave this panel
+  // open behind it.
+  useEffect(() => {
+    if (!showAllConfigs || canHover) return
+    const onDown = (e: PointerEvent) => {
+      if (!configSlotRef.current?.contains(e.target as Node)) setShowAllConfigs(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowAllConfigs(false) }
+    window.addEventListener('pointerdown', onDown, true)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('pointerdown', onDown, true)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [showAllConfigs, canHover])
 
   const askMenuRef = useRef<HTMLDivElement>(null)
   const { activeUrl, workingImages, allFailed, hasMultiple, imgIdx, markImageFailed, prevImg, nextImg, setImgIdx } = usePreferredImages(project)
@@ -595,7 +626,16 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
 
                 76px fits two rows, the gap and the link together, so nothing is
                 cut and every card is still exactly the same height. */}
-            <div className="relative min-h-[76px] max-h-[76px] flex flex-col justify-center gap-1 mb-4">
+            <div
+              ref={configSlotRef}
+              // Hover opens it where hover exists, tap opens it where it does
+              // not. onMouseEnter never fires on a touch device, so the two
+              // never fight; the guard keeps a hybrid laptop from opening the
+              // panel under a finger that was only scrolling past.
+              onMouseEnter={() => { if (canHover && bhkGroups.length > 2) setShowAllConfigs(true) }}
+              onMouseLeave={() => { if (canHover) setShowAllConfigs(false) }}
+              className="relative min-h-[76px] max-h-[76px] flex flex-col justify-center gap-1 mb-4"
+            >
               {bhkGroups.slice(0, 2).map(g => (
                 <div key={g.bhk} className="flex items-center text-[12.5px] group">
                   <span className="font-semibold text-gray-800 dark:text-gray-200 shrink-0">{g.bhk} BHK</span>

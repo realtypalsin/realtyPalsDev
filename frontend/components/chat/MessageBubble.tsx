@@ -479,17 +479,12 @@ function MessageBubbleInner({
       analyticsId: 'ready_to_move',
       icon: 'Clock'
     })
-    if (pList.length >= 2) {
-      rawChips.push({
-        id: 'compare-properties',
-        label: 'Compare Properties',
-        actionType: 'COMPARE_PROPERTIES',
-        payload: { mode: 'multi' },
-        priority: 3,
-        analyticsId: 'compare_multi',
-        icon: 'Scale'
-      })
-    }
+    // A "Compare Properties" chip used to be pushed here whenever two or more
+    // results were on screen. The results ribbon directly above the cards
+    // already carries a Compare control, and it is the one wired to the
+    // selection state, so the chip was a second entry point to the same action
+    // sitting a few pixels away from the first. Chips are for the next
+    // question, not for repeating a button the buyer can already see.
   }
 
   const combinedChips: import('./types').ChipAction[] = Array.from(new Map(rawChips.map((c) => [c.id || c.label, c])).values())
@@ -1039,16 +1034,16 @@ function MessageBubbleInner({
 
           return (
             <div className="mt-4 w-full">
-              <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-gradient-header dark:bg-gradient-header-dark border border-blue-500/15 dark:border-blue-400/20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md mb-3">
+              <div className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/50">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-blue-600/10 dark:bg-blue-400/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs shadow-2xs">
+                  <div className="flex items-center justify-center shrink-0 text-zinc-400 dark:text-zinc-500">
                     <Scales size={15} weight="duotone" className="text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[13.5px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                    <span className="text-[13.5px] font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                       Comparing {compProjects.length} Properties
                     </span>
-                    <span className="hidden sm:inline-flex items-center gap-1 text-[9.5px] font-black text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-950/80 border border-blue-200/80 dark:border-blue-800/80 px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-2xs">
+                    <span className="hidden sm:inline text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
                       Side-by-Side
                     </span>
                   </div>
@@ -1142,10 +1137,10 @@ function MessageBubbleInner({
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-4 flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-gradient-header dark:bg-gradient-header-dark border border-blue-500/15 dark:border-blue-400/20 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md"
+              className="mt-4 flex flex-wrap items-center justify-between gap-3 px-3.5 py-3 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/50"
             >
               <div className="flex items-center gap-2.5">
-                <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-blue-600/10 dark:bg-blue-400/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs shadow-2xs">
+                <div className="flex items-center justify-center shrink-0 text-zinc-400 dark:text-zinc-500">
                   {useNewFormat && !hasExact && hasNearby
                     ? <MapPin size={13} weight="fill" />
                     : isLast && isSubmitting
@@ -1153,15 +1148,15 @@ function MessageBubbleInner({
                       : <CheckCircle size={13} weight="fill" />}
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[13.5px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                  <span className="text-[13.5px] font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                     {headerLabel}
                   </span>
                   {headerSector && (
-                    <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 hidden sm:inline tracking-tight">
+                    <span className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 hidden sm:inline">
                       in {headerSector}
                     </span>
                   )}
-                  <span className="hidden sm:inline-flex items-center gap-1 text-[9.5px] font-black text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-950/80 border border-blue-200/80 dark:border-blue-800/80 px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-2xs">
+                  <span className="hidden sm:inline text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
                     Ranked by fit
                   </span>
                 </div>
