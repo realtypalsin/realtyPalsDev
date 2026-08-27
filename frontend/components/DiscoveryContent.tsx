@@ -34,7 +34,17 @@ import { LOCAL_SESSION_CACHE } from '@/lib/sessionCache';
 import { ChatPhase2Skeleton } from '@/components/skeletons';
 
 const DEBUG = process.env.NODE_ENV !== 'production'
-const WELCOME_MESSAGE = "Hi, I'm RealtyPal — your advisor for Noida & Greater Noida. Ask me anything: budgets in ₹ Lakh/Cr, RERA status, builder track records, or which sector fits your family. I'll give you straight answers, tradeoffs included."
+// A WELCOME_MESSAGE bubble used to be seeded here as chatHistory[0].
+//
+// It was never visible when it could have helped: until the buyer sends
+// something, hasUserReplied is false and the hero screen renders instead — its
+// own wordmark, placeholder and starter chips already introduce the product.
+// The bubble only appeared AFTER the first message, as an "Ask me anything"
+// greeting sitting above a question the buyer had already asked. An assistant
+// introducing itself after you have spoken reads as broken, which is exactly
+// how it looked.
+//
+// The chat now starts empty. The hero introduces; the first bubble is an answer.
 import { useDropoffDetection, useEngagementTracking, usePromotionalTracking } from '@/hooks/useAnalyticsTracking';
 
 // ── Dynamic imports — heavy components excluded from initial bundle ─────────
@@ -975,14 +985,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         console.error('Failed to reset intent:', e);
       }
     }
-    const welcomeMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      type: 'ai',
-      content: WELCOME_MESSAGE,
-
-      timestamp: new Date().toISOString(),
-    };
-    setChatHistory([welcomeMessage]);
+    setChatHistory([]);
     setIsInitialized(true);
     window.history.replaceState({}, '', '/discover');
   };
@@ -1002,12 +1005,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     if (!initialSessionId) {
       setRestoreError(false);
       loadedSessionIdRef.current = null;
-      setChatHistory([{
-        id: crypto.randomUUID(),
-        type: 'ai',
-        content: WELCOME_MESSAGE,
-        timestamp: new Date().toISOString(),
-      }]);
+      setChatHistory([]);
       setCurrentIntent(null);
       setChatPhase('DISCOVERY');
       setLastShortlist([]);
@@ -1168,12 +1166,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             setIsRestoring(false);
           }, 50);
         } else {
-          setChatHistory([{
-            id: crypto.randomUUID(),
-            type: 'ai',
-            content: WELCOME_MESSAGE,
-            timestamp: new Date().toISOString(),
-          }]);
+          setChatHistory([]);
           loadedSessionIdRef.current = initialSessionId;
         }
         } finally {
