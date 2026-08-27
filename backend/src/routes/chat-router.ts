@@ -57,6 +57,9 @@ import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
 import { getChipInventory } from '../lib/discovery/chipInventory'
 import { getProjectDataForQuery, computeResponseConfidence } from '../lib/projectDataGateway'
+import { FEATURE_PROBES } from '../lib/featureProbes'
+import { unverified, unverifiedFeature, confidenceFor, headingFor, UP_STATUTORY, NOIDA_MARKET_RANGES, MARKET_QUALIFIER, type FactTier } from '../lib/factPresentation'
+import { redactProject } from '../lib/projectExposure'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { generateMultiDimensionalContext, attachMultiDimensionalRecommendations } from '../lib/discovery/multidimensionalPromptEnricher'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
@@ -1194,25 +1197,42 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           ])
 
           const projsBySector: Record<string, string[]> = {}
+          const pricesBySector: Record<string, number[]> = {}
           activeProjects.forEach(p => {
             if (!projsBySector[p.sector]) projsBySector[p.sector] = []
             if (projsBySector[p.sector].length < 3) projsBySector[p.sector].push(p.name)
+            if (typeof p.price_min_cr === 'number') {
+              (pricesBySector[p.sector] ??= []).push(p.price_min_cr)
+            }
           })
+
+          // Real entry price for the sector, from the projects we hold. The fallback
+          // used to print an identical "₹0.95–2.50 Cr" band and an identical
+          // "Metro access & settled family enclaves" strength for every sector in
+          // the table, which told the buyer nothing true about any of them.
+          const sectorBand = (sec: string): string => {
+            const prices = pricesBySector[sec]
+            if (!prices?.length) return 'Not recorded'
+            const lo = Math.min(...prices)
+            const hi = Math.max(...prices)
+            return lo === hi ? `from ₹${lo.toFixed(2)} Cr` : `₹${lo.toFixed(2)}–${hi.toFixed(2)} Cr`
+          }
+          const sectorProjects = (sec: string): string => projsBySector[sec]?.join(', ') || 'Not recorded'
 
           let rows = ''
           if (sectorsIntel.length > 0) {
             rows = sectorsIntel.slice(0, 5).map(s => {
-              const socList = projsBySector[s.sector]?.join(', ') || 'Verified RERA societies'
-              const priceBand = s.avg_price_per_sqft ? `₹${Math.round(s.avg_price_per_sqft).toLocaleString('en-IN')}/sq.ft` : '₹7,500–12,000/sq.ft'
-              const strength = s.sector_strengths?.[0] || s.sector_overview?.slice(0, 70) || 'Established residential hub'
-              return `| **${s.sector}** (${s.city || 'Noida'}) | ${priceBand} | ${strength} | ${socList} |`
+              const priceBand = s.avg_price_per_sqft
+                ? `₹${Math.round(s.avg_price_per_sqft).toLocaleString('en-IN')}/sq.ft`
+                : sectorBand(s.sector)
+              const strength = s.sector_strengths?.[0] || s.sector_overview?.slice(0, 70) || 'Not recorded'
+              return `| **${s.sector}** (${s.city || 'Noida'}) | ${priceBand} | ${strength} | ${sectorProjects(s.sector)} |`
             }).join('\n')
           } else {
             const uniqueSectors = Array.from(new Set(activeProjects.map(p => p.sector))).slice(0, 5)
-            rows = uniqueSectors.map(sec => {
-              const socList = projsBySector[sec]?.join(', ') || 'Verified RERA societies'
-              return `| **${sec}** | ₹0.95–2.50 Cr | Metro access & settled family enclaves | ${socList} |`
-            }).join('\n')
+            rows = uniqueSectors.map(sec =>
+              `| **${sec}** | ${sectorBand(sec)} | Not recorded | ${sectorProjects(sec)} |`
+            ).join('\n')
           }
 
           const rawOrientationText = `### Noida & Greater Noida Locality Guide for Families & Investors\n\n| Micro-Market / Sector | Price Spectrum | Locality Highlights | Top Listed Projects |\n| :--- | :--- | :--- | :--- |\n${rows}\n\n### Recommendation\nFor **metro connectivity and immediate family infrastructure**, prioritize **Sector 75 / 76**. For **expressway corporate commute and modern high-rises**, explore **Sector 137 / 150**.`
@@ -1325,42 +1345,27 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             if (targetProject) {
               const amList = targetProject.amenities.map(a => a.name)
               let specificStatus = ''
+              const amenityTiers: FactTier[] = []
               
-              // Granular amenity lookup
-              const lowerMsg = message.toLowerCase()
-              const matchedAmenities = amList.filter(a => {
-                const lowerA = a.toLowerCase()
-                if (/snooker|billiard/i.test(lowerMsg) && /snooker|billiard/i.test(lowerA)) return true
-                if (/table tennis|\btt\b/i.test(lowerMsg) && /table tennis|tt/i.test(lowerA)) return true
-                if (/badminton/i.test(lowerMsg) && /badminton/i.test(lowerA)) return true
-                if (/tennis/i.test(lowerMsg) && /tennis/i.test(lowerA)) return true
-                if (/squash/i.test(lowerMsg) && /squash/i.test(lowerA)) return true
-                if (/cricket/i.test(lowerMsg) && /cricket/i.test(lowerA)) return true
-                if (/pool|swimming/i.test(lowerMsg) && /pool|swimming/i.test(lowerA)) return true
-                if (/gym|fitness/i.test(lowerMsg) && /gym|fitness/i.test(lowerA)) return true
-                if (/clubhouse|club/i.test(lowerMsg) && /club/i.test(lowerA)) return true
-                if (/ev|electric vehicle/i.test(lowerMsg) && /ev|electric vehicle/i.test(lowerA)) return true
-                if (/theatre|screening|movie/i.test(lowerMsg) && /theatre|screening|cinema/i.test(lowerA)) return true
-                if (/library|coworking|study/i.test(lowerMsg) && /library|reading|co-working/i.test(lowerA)) return true
-                if (/banquet|party/i.test(lowerMsg) && /banquet|party/i.test(lowerA)) return true
-                if (/sauna|steam|spa|jacuzzi/i.test(lowerMsg) && /sauna|steam|spa|jacuzzi/i.test(lowerA)) return true
-                if (/pet/i.test(lowerMsg) && /pet/i.test(lowerA)) return true
-                if (/creche|daycare/i.test(lowerMsg) && /creche|daycare/i.test(lowerA)) return true
-                if (/play|kid/i.test(lowerMsg) && /play|kid|adventure/i.test(lowerA)) return true
-                if (/jogging|cycling|track/i.test(lowerMsg) && /jogging|cycling|track/i.test(lowerA)) return true
-                return false
-              })
+              // Granular amenity lookup, driven by the shared FEATURE_PROBES table
+              // so the matcher and the "we can't confirm it" answer can never
+              // disagree about which features the buyer might be asking about.
+              const matchedAmenities = amList.filter(a =>
+                FEATURE_PROBES.some(p => p.pattern.test(message) && p.matches.test(a)),
+              )
 
+              // A named amenity is a yes/no fact about THIS building. When our
+              // rows do not confirm it we say so — the previous branches here
+              // answered "**Yes**, … Olympic-Size Swimming Pool" precisely
+              // BECAUSE nothing matched, inventing a specific feature the buyer
+              // would then plan around and discover missing on the site visit.
+              const askedAbout = FEATURE_PROBES.find(p => p.pattern.test(message))
               if (matchedAmenities.length > 0) {
                 specificStatus = `**Yes**, ${targetProject.name} is equipped with **${matchedAmenities.join('**, **')}**.`
-              } else if (/pool|swimming/i.test(message)) {
-                specificStatus = `**Yes**, ${targetProject.name} features an **Olympic-Size Swimming Pool & Toddler Splash Pool**.`
-              } else if (/snooker|billiard/i.test(message)) {
-                specificStatus = `**Yes**, ${targetProject.name} features a dedicated **Snooker & Billiards Room** inside the grand resident clubhouse.`
-              } else if (/gym|fitness/i.test(message)) {
-                specificStatus = `**Yes**, ${targetProject.name} features a **State-of-the-Art Technogym Fitness Center**.`
-              } else if (/club/i.test(message)) {
-                specificStatus = `**Yes**, ${targetProject.name} includes a **Grand Double-Height Resident Clubhouse** with recreational amenities.`
+                amenityTiers.push('verified')
+              } else if (askedAbout) {
+                specificStatus = unverifiedFeature(askedAbout.label, targetProject.name)
+                amenityTiers.push('missing')
               }
 
               const amenityChips = [
@@ -1369,17 +1374,29 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
                 { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit_am', priority: 3, payload: { text: `Schedule a site visit for ${targetProject.name}` } }
               ]
 
-              const topAmenities = amList.length > 0 ? amList.slice(0, 8).map(a => `• ${a}`).join('\n') : '• Swimming Pool & Kids Splash Zone\n• Equipped Clubhouse & Gymnasium\n• Multi-purpose Sports Courts\n• Landscaped Parks & Jogging Track'
+              // No invented list. An empty amenity table means we have not
+              // captured the data, which is a different statement from "this
+              // project has no amenities" — say the former, never imply either.
+              if (amList.length > 0) amenityTiers.push('verified')
+              const amenityBlock = amList.length > 0
+                ? `**Verified Project Amenities:**\n${amList.slice(0, 8).map(a => `• ${a}`).join('\n')}`
+                : unverified('amenity list', targetProject.name)
 
-              const respText = `### Amenities & Lifestyle: ${targetProject.name} (${targetProject.sector})\n\n${specificStatus ? specificStatus + '\n\n' : ''}**Verified Project Amenities:**\n${topAmenities}\n\n**Open Space & Green Cover:**\n${targetProject.open_space_pct ? `${targetProject.open_space_pct}% open space` : '70%–80% landscaped open green area'} with 24/7 multi-tier security and power backup.`
+              // open_space_pct is a per-project figure; a Noida-wide band cannot
+              // stand in for it, so it is simply omitted when absent.
+              const openSpaceLine = targetProject.open_space_pct
+                ? `\n\n**Open Space & Green Cover:**\n${targetProject.open_space_pct}% open space.`
+                : ''
+
+              const respText = `### ${headingFor('Amenities & Lifestyle', targetProject.name, amenityTiers)} (${targetProject.sector})\n\n${specificStatus ? specificStatus + '\n\n' : ''}${amenityBlock}${openSpaceLine}`
 
               send('token', { token: respText })
               emitUiState({
                 stage: 'RESEARCH',
-                thinking: `Verified amenities for ${targetProject.name}:`,
+                thinking: `Amenities for ${targetProject.name}:`,
                 chips: amenityChips,
-                missingFields: [],
-                confidence: 'HIGH'
+                missingFields: amList.length > 0 ? [] : ['amenities'],
+                confidence: confidenceFor(amenityTiers)
               })
               send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
               res.end()
@@ -1640,9 +1657,12 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
             return {
               sector: sName,
               totalProjects: projs.length,
-              priceRange: minP && maxP ? `₹${minP}–${maxP} Cr` : '₹0.95–2.5 Cr',
+              // These stats are fed to the model as "verified facts", so an
+              // invented band here is laundered into a confident sentence about a
+              // sector comparison. Absent means absent.
+              priceRange: minP && maxP ? `₹${minP}–${maxP} Cr` : 'Not recorded',
               readyCount,
-              topProjects: topNames || 'Top verified residential societies'
+              topProjects: topNames || 'Not recorded'
             }
           }
 
@@ -1763,14 +1783,36 @@ OUTPUT STRUCTURE:
           }
 
           const paymentPlans = planProject?.payment_plans || []
+
+          // When the developer's schedule is not in our records we say so rather
+          // than substituting three invented plans under a "Verified …" header,
+          // which is what this branch used to do. Payment terms are the basis of
+          // a buyer's cash-flow planning; a plausible-looking wrong schedule is
+          // worse here than no answer.
+          if (paymentPlans.length === 0) {
+            send('token', {
+              token: `### Payment Plans: ${planProject.name}\n\n${unverified('developer payment schedule', planProject.name)}\n\nWhat I can tell you now: most Noida developers offer some combination of a construction-linked plan, a down-payment plan (usually carrying an upfront discount on base price), and a flexi/milestone split — but which of those ${planProject.name} actually offers, and on what percentages, is exactly the part we would be guessing at.`,
+            })
+            emitUiState({
+              stage: 'RESEARCH',
+              thinking: `Payment schedule not yet verified for ${planProject.name}:`,
+              chips: [
+                { id: `chip_advisory_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Get the official schedule', icon: 'phone', analyticsId: 'chip_plan_advisory', priority: 1, payload: { text: `Connect me with an advisor about payment plans for ${planProject.name}` } },
+                { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_plan_emi', priority: 2, payload: { text: `Calculate EMI for ${planProject.name}` } },
+                { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_plan_cost', priority: 3, payload: { text: `Show cost sheet and price breakdown for ${planProject.name}` } },
+              ],
+              missingFields: ['payment_plans'],
+              confidence: confidenceFor(['missing']),
+            })
+            send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+            res.end()
+            return
+          }
+
           const planFactsJson = JSON.stringify({
             projectName: planProject?.name,
             developer: planProject?.builder?.name,
-            payment_plans: paymentPlans.length > 0 ? paymentPlans : [
-              { plan_name: 'Construction Linked Plan (CLP)', description: '10% on booking, 80% across construction milestones, 10% on offer of possession.' },
-              { plan_name: 'Down Payment Plan', description: '10% on booking, 85% within 45 days (with 5-8% upfront discount on BSP), 5% on possession.' },
-              { plan_name: 'Flexi / Milestone Plan (30:70 or 20:80)', description: '30% during construction, 70% upon super-structure or possession.' }
-            ]
+            payment_plans: paymentPlans,
           }, null, 2)
 
           const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
@@ -1781,19 +1823,24 @@ CRITICAL FORMATTING MANDATE:
 - Present the payment plans primarily in a clean, high-contrast Markdown Comparison Table.
 - Keep every data point super-summarized, concise, and scannable.
 
+GROUNDING RULE — this overrides the formatting mandate:
+Build every row of the table from the payment_plans array above and nothing else.
+One row per plan we actually hold. Never add a plan that is not in the data, and
+never fill an unknown percentage with a typical one — leave the cell as "Not
+specified". The example below shows the COLUMN SHAPE only; its numbers are
+illustrative and must not be copied into your answer.
+
 OUTPUT STRUCTURE:
 
 ### Verdict
-1-2 direct sentences explaining the financial advantage and cash flow tradeoff across available payment schedules for ${planProject?.name || 'this property'}.
+1-2 direct sentences explaining the cash-flow tradeoff across the schedules actually listed above for ${planProject?.name || 'this property'}.
 
 | Payment Plan | Initial Booking % | Construction Milestones | On Possession | Best Suited For |
 | :--- | :--- | :--- | :--- | :--- |
-| **Construction Linked (CLP)** | 10% on booking | 80% linked to slab casting | 10% on handover | Low upfront risk, salaried buyers with home loans |
-| **Down Payment Plan** | 10% on booking + 85% in 45 days | Nil during construction | 5% on handover | Cash-rich investors seeking 5–8% upfront BSP discount |
-| **Flexi / Milestone (30:70)** | 20–30% in first 90 days | 40% on top floor completion | 30–40% on handover | Balanced cash flow with minimal loan pre-EMI burden |
+| (one row per plan in payment_plans, values taken from that entry) | | | | |
 
 ### Recommendation
-1 actionable sentence advising which payment structure optimizes total out-of-pocket interest versus cash liquidity.`
+1 actionable sentence advising which of the listed structures optimizes total out-of-pocket interest versus cash liquidity.`
 
           const systemMsgHistory = [{ role: 'user' as const, content: message }]
           const fallbackResult = await executeWithFallbackChain({
@@ -1847,32 +1894,46 @@ OUTPUT STRUCTURE:
           }
 
           if (!costProject) {
-            const clarifyText = `### All-Inclusive Property Cost & Tax Structure (Noida)
+            // No specific project was identified, so this is the general "what does
+            // buying in Noida cost" question and market-wide ranges are the right
+            // answer. The two halves are separated and labelled: statutory rates are
+            // fixed by law, developer charges vary and are NOT verified for any
+            // particular project. Previously both sat under "Standard Rate" together.
+            const clarifyText = `### What buying in Noida costs
 
-| Acquisition Component | Standard Rate / Range | Stage Payable | Description & Applicability |
+**Statutory — fixed by UP law, identical for every project:**
+
+| Component | Rate | Stage | Note |
 | :--- | :--- | :--- | :--- |
-| **Base Sale Price (BSP)** | As per project & carpet size | Construction milestones | Basic apartment purchase consideration |
-| **UP Stamp Duty** | 7% of agreement value | At Registration | 6% for single/joint women owners |
-| **Registration Fee** | 1% of agreement value | At Registration | Sub-registrar administrative fee |
-| **GST (Goods & Services Tax)** | 5% (without ITC) | With construction milestones | Applicable on Under-Construction (**0% GST on RTM**) |
-| **Covered Car Parking** | ₹3.50–5.00 Lakhs | Initial installments | Dedicated basement slot |
-| **Club Membership** | ₹1.50–3.00 Lakhs | On Possession | Access to luxury clubhouse & sports amenities |
-| **IFMS (Maintenance Sinking Fund)** | ₹50–100 / sq.ft | On Possession | Refundable interest-free corpus deposit |
-| **Dual Power & Meter Connection** | ₹1.25–2.00 Lakhs | On Possession | 5–7.5 kVA DG backup & grid connection |
+| **UP Stamp Duty** | ${UP_STATUTORY.stampDutyPct}% of agreement value | At registration | ${UP_STATUTORY.stampDutyFemalePct}% for single/joint women owners |
+| **Registration Fee** | ${UP_STATUTORY.registrationPct}% (capped ₹${UP_STATUTORY.registrationCapInr.toLocaleString('en-IN')}) | At registration | Sub-registrar fee |
+| **GST** | ${UP_STATUTORY.gstUnderConstructionPct}% (without ITC) | With construction milestones | ${UP_STATUTORY.gstReadyToMovePct}% on ready-to-move with OC |
 
-> **Advisory Rule of Thumb:** For under-construction homes, budget roughly **12%–14% above BSP** for all-inclusive handover. For Ready-to-Move apartments with Occupancy Certificate (OC), the statutory & possession load is approximately **8%–9%** (zero GST).`
+**Developer charges — ${MARKET_QUALIFIER}.** These vary by developer, so treat them as a planning band, not a quote:
+
+| Component | Typical range | Stage |
+| :--- | :--- | :--- |
+| **Covered car parking** | ${NOIDA_MARKET_RANGES.coveredParkingInr} | Initial installments |
+| **Club membership** | ${NOIDA_MARKET_RANGES.clubMembershipInr} | On possession |
+| **IFMS (refundable)** | ${NOIDA_MARKET_RANGES.ifmsPerSqft} | On possession |
+| **Power backup & metering** | ${NOIDA_MARKET_RANGES.powerBackupInr} | On possession |
+
+> **Budgeting:** under-construction, allow ${NOIDA_MARKET_RANGES.allInclusiveLoadUnderConstructionPct}; ready-to-move with OC, ${NOIDA_MARKET_RANGES.allInclusiveLoadReadyToMovePct} (no GST).
+
+Name a project and I'll pull whichever of these we hold verified for it.`
 
             send('token', { token: clarifyText })
             emitUiState({
               stage: 'RESEARCH',
-              thinking: 'All-inclusive cost structure & statutory fee schedule:',
+              thinking: 'Statutory rates verified; developer charges are market-typical:',
               chips: [
                 { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View UP Stamp Duty & Tax Rates', icon: 'file-text', analyticsId: 'chip_tax_cs', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
                 { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show Ready-to-Move (0% GST)', icon: 'check-circle', analyticsId: 'chip_rtm_cs', priority: 2, payload: { text: 'Show ready to move flats in Noida' } },
                 { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi_cs', priority: 3, payload: { text: 'Calculate EMI' } }
               ],
               missingFields: [],
-              confidence: 'HIGH'
+              // Statutory half is verified; the developer-charge half is market-tier.
+              confidence: confidenceFor(['statutory', 'market'])
             })
             send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
             res.end()
@@ -1899,12 +1960,21 @@ CRITICAL FORMATTING MANDATE:
 
 OUTPUT STRUCTURE:
 
+GROUNDING RULE — this overrides the formatting mandate:
+Developer charges (parking, club, IFMS, EDC, power backup) may only appear with a
+figure if that figure is present in the facts above. If it is absent, write the
+row as "In the developer's booking cost sheet" — never a typical range, never an
+illustrative number. Statutory rates are the only figures you may state without
+support in the data, because they are fixed by UP law.
+
+OUTPUT STRUCTURE:
+
 ### Verdict
 1-2 direct sentences explaining the all-inclusive pricing structure versus base rate for ${costProject?.name || 'this property'}.
 
-| **IFMS (Maintenance Sinking Fund)**| ₹50–100 / sq.ft | On Possession | Refundable interest-free security deposit |
-| **GST (Goods & Services Tax)** | 5% (without ITC) | Statutory | Applicable on under-construction units |
-| **Stamp Duty & Registration** | 7% of agreement value | On Possession | State revenue authority fee |
+| Parameter | Rate / Amount | Stage | Note |
+| :--- | :--- | :--- | :--- |
+| (rows built from the facts above, plus the three statutory rates) | | | |
 
 ### Recommendation
 1 actionable sentence advising buyers to budget roughly 12–14% above BSP for all-inclusive handover.`
@@ -2040,9 +2110,12 @@ OUTPUT STRUCTURE:
             }
           })
 
-          // Emit project card(s) to frontend so project card is rendered above the facts
+          // Emit project card(s) to frontend so project card is rendered above the facts.
+          // Redacted: this include has no `select`, so the rows carry every Project
+          // column — ai_search_keywords (internal retrieval terms) and builder_theme
+          // (a commercial arrangement, with active_until) were going over the wire.
           send('properties', {
-            exactResults: detailedTargetProjects,
+            exactResults: detailedTargetProjects.map(redactProject),
             nearbyResults: [],
             expansion: null,
             renderTarget: 'both'
@@ -2153,39 +2226,48 @@ EXECUTIVE INSTRUCTIONS:
           let responseText = ''
           let isDeterministic = false
 
+          // Both branches below stream with zero LLM involvement, so whatever is
+          // written here reaches the buyer verbatim. They used to emit a fully
+          // invented payment schedule and cost sheet — specific rupee figures,
+          // specific percentages — for whichever project was asked about. Every
+          // row now comes from that project's own rows, or is labelled.
           if (isPaymentPlanRequest && detailedTargetProjects.length === 1) {
             const p = detailedTargetProjects[0]
-            responseText = `### Payment Structures — ${p.name}
-
-${p.name} provides flexible RERA-compliant payment schedules designed for cash-flow management and construction milestone transparency.
-
-| Payment Plan | Initial Booking | Milestone Breakdown | On Possession | Best Suited For |
-| :--- | :--- | :--- | :--- | :--- |
-| **Construction Linked (10:90 CLP)** | 10% on booking + 10% on excavation | 70% distributed across slab & finishing stages | 10% on handover | End-users and salaried buyers seeking bank loan disbursement linked to physical progress. |
-| **Down Payment Plan (8% Discount)** | 10% at booking + 80% within 45 days | Nil during active construction | 10% on handover | Cash-surplus buyers and investors seeking upfront BSP savings. |
-| **Possession Linked (20:80 / 30:70)** | 20%–30% within 60 days | 0% during structure completion | 70%–80% on notice of possession | Buyers seeking zero pre-EMI liability during construction. |
-
-### Advisory Recommendation
-For end-use buyers relying on home financing, the **10:90 Construction Linked Plan (CLP)** minimizes financial risk by ensuring disbursements track certified site milestones.`
+            const plans = p.payment_plans ?? []
+            if (plans.length > 0) {
+              const rows = plans
+                .map(pl => `| **${pl.plan_name}** | ${pl.description ?? 'Not specified'} |`)
+                .join('\n')
+              responseText = `### Payment Structures — ${p.name}\n\n| Payment Plan | Schedule |\n| :--- | :--- |\n${rows}\n\n_Schedules as recorded in our records. Confirm final terms in the developer's booking documents._`
+            } else {
+              responseText = `### Payment Structures — ${p.name}\n\n${unverified('developer payment schedule', p.name)}`
+            }
             isDeterministic = true
           } else if (isCostSheetRequest && detailedTargetProjects.length === 1) {
             const p = detailedTargetProjects[0]
-            responseText = `### Complete Cost Breakdown & Statutory Charges — ${p.name}
+            const cs = p.cost_sheet
+            const statutoryRows = [
+              `| **GST** | ${p.status === 'ready_to_move' ? `${UP_STATUTORY.gstReadyToMovePct}% (exempt — OC obtained)` : `${UP_STATUTORY.gstUnderConstructionPct}% (without ITC)`} | With construction installments | Statutory |`,
+              `| **UP Stamp Duty** | ${UP_STATUTORY.stampDutyPct}% of agreement value | At registration | ${UP_STATUTORY.stampDutyFemalePct}% for female primary owners |`,
+              `| **Registration Fee** | ${UP_STATUTORY.registrationPct}% (capped ₹${UP_STATUTORY.registrationCapInr.toLocaleString('en-IN')}) | At registration | Sub-registrar charge |`,
+            ].join('\n')
 
-| Parameter | Rate / Amount | Payment Stage | Description |
-| :--- | :--- | :--- | :--- |
-| **Base Selling Price (BSP)** | ${p.price_range_label || '₹10,800 – ₹11,200 / sq.ft'} | As per selected payment plan | Basic unit purchase price |
-| **Car Parking** | ₹3,50,000 (Covered) | With booking installment | Reserved basement slot |
-| **Club Membership** | ₹2,00,000 | On Possession | Access to luxury clubhouse & lifestyle amenities |
-| **Power Backup & Utilities** | ₹1,25,000 + ₹50 / sq.ft | On Possession | 5 kVA dual-meter DG infrastructure & power |
-| **Water & Sewerage Charges** | ₹35,000 | On Possession | Authority grid connection infrastructure |
-| **IFMS (Maintenance Security)** | ₹75 / sq.ft | On Possession | Refundable interest-free maintenance deposit |
-| **GST (Goods & Services Tax)** | 5% (without ITC) | With construction installments | Standard statutory tax on under-construction property |
-| **UP Stamp Duty** | 7% of agreement value | At Registration | UP state stamp duty (6% for female owners) |
-| **Registration Fee** | 1% of agreement value | At Registration | Sub-registrar administrative charge |
+            // Developer charges are per-project. We print them only when this
+            // project's cost sheet holds them — a Noida average cannot stand in
+            // for what one developer actually charges.
+            const developerRows: string[] = []
+            if (p.price_range_label) developerRows.push(`| **Base Selling Price (BSP)** | ${p.price_range_label} | As per payment plan | Basic unit purchase price |`)
+            if (cs?.base_price_per_sqft) developerRows.push(`| **Base rate** | ₹${Number(cs.base_price_per_sqft).toLocaleString('en-IN')} / sq.ft | As per payment plan | Verified base rate |`)
+            if (p.maintenance_per_sqft_monthly) developerRows.push(`| **Maintenance** | ₹${p.maintenance_per_sqft_monthly} / sq.ft / month | Post possession | Verified |`)
+            if (p.dg_power_rate_per_unit) developerRows.push(`| **DG power** | ₹${p.dg_power_rate_per_unit} / unit | Post possession | Verified |`)
 
-### Budgeting Advice
-Buyers should factor an additional **12% to 14%** over the Basic Sale Price (BSP) to account for statutory registration taxes, utility connection, and possession charges.`
+            const developerBlock = developerRows.length > 0
+              ? `**Developer charges on record:**\n\n| Parameter | Rate / Amount | Stage | Note |\n| :--- | :--- | :--- | :--- |\n${developerRows.join('\n')}`
+              : `**Developer charges:** ${unverified('itemised cost sheet', p.name)}`
+
+            const tiers: FactTier[] = developerRows.length > 0 ? ['verified', 'statutory'] : ['missing', 'statutory']
+
+            responseText = `### Cost Breakdown — ${p.name}\n\n${developerBlock}\n\n**Statutory charges (fixed by UP law, same for every project):**\n\n| Parameter | Rate | Stage | Note |\n| :--- | :--- | :--- | :--- |\n${statutoryRows}\n\n**For budgeting:** allow roughly ${p.status === 'ready_to_move' ? NOIDA_MARKET_RANGES.allInclusiveLoadReadyToMovePct : NOIDA_MARKET_RANGES.allInclusiveLoadUnderConstructionPct} to cover statutory and possession charges — ${MARKET_QUALIFIER}.${tiers.includes('missing') ? `\n\nParking, club membership and IFMS vary by developer and are not in our records for ${p.name}; our advisory team can pull the official booking cost sheet.` : ''}`
             isDeterministic = true
           }
 
