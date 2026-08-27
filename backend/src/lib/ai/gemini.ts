@@ -1,4 +1,6 @@
 // backend/src/lib/ai/gemini.ts
+import { getCachedPrefix } from './geminiCache'
+import { splitSystemPrompt } from './prompts/base'
 import { GoogleGenAI } from '@google/genai'
 import { MODELS, GEMINI_TOOLS_ENABLED } from '../config'
 import { toGeminiTools, validateToolArgs, capToolResult } from './tools'
@@ -70,6 +72,21 @@ export async function streamWithGemini(
   if (!apiKey) throw new Error('No GEMINI_API_KEY configured')
   const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: STREAM_INACTIVITY_MS } })
   const contents: GeminiContent[] = toGeminiContents(messages)
+
+  // The prompt splits into a byte-identical head and a per-turn tail. Only the
+  // head is worth caching; caching the whole thing would mint an entry per
+  // tool-filter variant and hit almost none of them.
+  const { head: systemHead, tail: systemTail } = splitSystemPrompt(system)
+  const cachedName = await getCachedPrefix(
+    client,
+    config.model || MODELS.GEMINI_MAIN,
+    apiKey,
+    systemHead,
+  )
+  // With a cache in play the head lives server-side and must NOT be resent:
+  // Gemini rejects systemInstruction alongside cachedContent. The tail still
+  // travels every turn, because it is different every turn.
+  const effectiveSystem = cachedName ? systemTail : system
   let fullText = ''
   const usage: GeminiUsage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 }
   let billedModel = config.model || MODELS.GEMINI_MAIN
@@ -104,7 +121,8 @@ export async function streamWithGemini(
 
     try {
       const genConfig: any = {
-        systemInstruction: system,
+        ...(cachedName ? { cachedContent: cachedName } : {}),
+        ...(effectiveSystem ? { systemInstruction: effectiveSystem } : {}),
         maxOutputTokens: config.maxTokens,
         abortSignal: abortController.signal,
       }

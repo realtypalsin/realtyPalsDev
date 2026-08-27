@@ -12,6 +12,36 @@ import type { Intent } from '../../discovery'
 // NOTE: the live path is buildSystemPromptWithCache() in ../systemPromptCache.ts.
 // buildAdvisorSystemPrompt() in ./index.ts is a second, unused assembler.
 
+/**
+ * Marks where the byte-identical head ends and the per-turn tail begins.
+ *
+ * Explicit context caching keys on the exact bytes of systemInstruction, so
+ * caching the whole prompt would mint a fresh cache entry for every tool-filter
+ * variant and hit almost none of them. Caching the head alone gives one entry
+ * every turn shares; the tail rides along in the request as usual.
+ *
+ * It is a readable banner rather than a zero-width token so a prompt dumped to
+ * a log still makes sense, and it is deliberately distinctive: a bare "---"
+ * also separates the two blocks inside the tail, so a naive search would split
+ * in the wrong place.
+ */
+export const SYSTEM_PROMPT_BOUNDARY = '--- PER-TURN CONTEXT BELOW ---'
+
+/**
+ * Splits a rendered prompt into the cacheable head and the per-turn tail.
+ *
+ * A missing marker yields the whole prompt as head and an empty tail, so a
+ * malformed prompt still runs (uncached) rather than arriving truncated.
+ */
+export function splitSystemPrompt(full: string): { head: string; tail: string } {
+  const at = full.indexOf(SYSTEM_PROMPT_BOUNDARY)
+  if (at === -1) return { head: full, tail: '' }
+  return {
+    head: full.slice(0, at).trimEnd(),
+    tail: full.slice(at + SYSTEM_PROMPT_BOUNDARY.length).trim(),
+  }
+}
+
 export const getBaseSystemPrompt = (
   intent?: Intent | Record<string, unknown>,
   blockedBuilders?: Array<{ name: string; legal_flag?: string }>,
@@ -406,7 +436,7 @@ Show in prose: loan assumed, rate, tenure, monthly EMI, total payment, total int
 
 Answer process, NRI, and RERA questions from general knowledge. Advise checking up-rera.in.
 
----
+${SYSTEM_PROMPT_BOUNDARY}
 
 
 ${budgetRules}
