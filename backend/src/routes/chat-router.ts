@@ -62,6 +62,7 @@ import { unverified, unverifiedFeature, confidenceFor, headingFor, UP_STATUTORY,
 import { redactProject } from '../lib/projectExposure'
 import { buildProjectFacts, detectFactTopics } from '../lib/projectFactsBlock'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
+import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
 import { CHAT_TOPIC_HANDLERS } from '../lib/chat/handlers'
 import { generateMultiDimensionalContext, attachMultiDimensionalRecommendations } from '../lib/discovery/multidimensionalPromptEnricher'
@@ -2361,58 +2362,40 @@ USING THE FACTS:
           const missing = handleMissingProject(plan.projectIds[0])
           console.log('[CHAT:PROJECT_DETAIL:NOT_FOUND]', missing.message, { query: message, sector: intent?.sector })
 
-          // Fallback: Check if the user is asking about ready-to-move, possession, pricing or general sector projects
-          const activeSector = intent?.sector || 'Sector 79, Noida'
-          const matchingDbProjects = await prisma.project.findMany({
-            where: {
-              OR: [
-                { sector: { contains: activeSector.split(',')[0].trim(), mode: 'insensitive' } },
-                { city: { contains: 'Noida', mode: 'insensitive' } }
-              ]
-            },
-            include: { unit_types: true, builder: true },
-            take: 8
+          // A city-wide substitution used to run here, and it shadowed the honest
+          // answer below. When the named project was not found it defaulted the
+          // sector to a literal 'Sector 79, Noida', queried `city contains Noida`,
+          // took eight arbitrary projects and printed them under "Verified
+          // Projects Status" with a "Recommendation" naming two of them — plus a
+          // '2, 3 BHK' fallback for any project whose configurations were unknown.
+          //
+          // So a buyer asking about one specific project they had heard of got a
+          // confident list of eight unrelated ones instead, with no indication
+          // that their question had not been answered. That is the substitution
+          // this product cannot make: answer the question asked, or say we cannot.
+
+          // Not in our database — say so, then look, keeping the two apart.
+          // buildUnknownProjectReply delegates to the grounded path, so our own
+          // tables are still tried first and anything from the web arrives with
+          // its ungrounded sentences already stripped.
+          const unknown = await buildUnknownProjectReply(String(plan.projectIds[0]), {
+            city: DEFAULT_CITY,
+            userId,
+            sessionId: currentSessionId,
           })
-
-          const isRtmQuery = /ready to move|rtm|immediate|possession/i.test(message)
-          const isBhkQuery = /\b([2345])\s*bhk\b/i.test(message)
-
-          if (matchingDbProjects.length > 0 && (isRtmQuery || isBhkQuery || /which of these|show me|list/i.test(message))) {
-            let filtered = matchingDbProjects
-            if (isRtmQuery) {
-              filtered = matchingDbProjects.filter(p => p.status === 'ready_to_move')
-            }
-            if (filtered.length === 0) filtered = matchingDbProjects.slice(0, 4)
-
-            const projectRows = filtered.map(p => {
-              const prices = p.unit_types.map(u => u.price_min_cr).filter((val): val is number => typeof val === 'number')
-              const minPrice = prices.length ? Math.min(...prices) : null
-              const priceStr = minPrice ? `₹${minPrice} Cr+` : p.price_range_label || 'On Request'
-              const bhks = Array.from(new Set(p.unit_types.map(u => `${u.bhk} BHK`))).join(', ') || '2, 3 BHK'
-              const statusStr = p.status === 'ready_to_move' ? 'Ready to Move' : 'Under Construction'
-              return `| **${p.name}** | ${p.sector} | ${statusStr} | ${bhks} | ${priceStr} |`
-            }).join('\n')
-
-            const responseText = `### Verified Projects Status
-
-| Project Name | Location | Status | Configurations | Price Spectrum |
-| :--- | :--- | :--- | :--- | :--- |
-${projectRows}
-
-### Recommendation
-For ready-to-move possession, prioritize **${filtered[0]?.name}** or **${filtered[1]?.name || filtered[0]?.name}** for immediate registry and verified occupancy.`
-
-            send('token', { token: responseText })
-            send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent })
-            res.end()
-            return
-          }
-
-          // Ask what they meant; never offer inventory in a sector they did not name.
-          // The old line pushed "properties in ${activeSector}" — a sector carried over
-          // from earlier in the session — at someone who had asked about something else
-          // entirely, which reads as a deflection into a sales funnel.
-          send('token', { token: `I don't have a verified record for "${plan.projectIds[0]}" in our database.\n\nIs that a project name, a builder, or a consultancy you're dealing with? Tell me which and what you wanted to know, and I'll check it properly instead of guessing.` })
+          send('token', { token: unknown.text })
+          emitUiState({
+            stage: 'RESEARCH',
+            thinking: unknown.fromWeb
+              ? 'Not in our records — reporting what public sources say:'
+              : 'Not in our records:',
+            chips: [
+              { id: `chip_verify_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Get it verified', icon: 'shield-check', analyticsId: 'chip_unknown_verify', priority: 1, payload: { text: `Can your advisory team verify ${plan.projectIds[0]} for me?` } },
+            ],
+            missingFields: ['project'],
+            // Web-sourced material is never presented as verified.
+            confidence: 'LOW',
+          }, { skipDedup: true })
           send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
           res.end()
           return
