@@ -2,6 +2,8 @@ import type { ChatTopicHandler } from '../handlerContext'
 import { reraVerificationHandler } from './reraVerification'
 import { statutoryTaxHandler } from './statutoryTax'
 import { possessionStatusHandler } from './possessionStatus'
+import { connectivityHandler } from './connectivity'
+import { totalOutflowHandler } from './totalOutflow'
 
 /**
  * Topic handlers, in priority order — the first match wins.
@@ -22,14 +24,26 @@ import { possessionStatusHandler } from './possessionStatus'
  *   statutory_tax       had every UP rate typed in as a literal
  *   possession_status   defaulted to Sector 76, and fabricated a table row
  *
+ * Also extracted:
+ *   total_outflow       computed a full cost breakdown from an invented ₹1.35 Cr
+ *   connectivity        printed identical commute figures for every project
+ *
  * Still inline in chat-router.ts: builder reputation, sector orientation,
- * amenities, unit configuration, total outflow, connectivity, sector compare,
- * payment plans, cost sheet, project detail, open-query lane.
+ * amenities, unit configuration, sector compare, payment plans, cost sheet,
+ * project detail, open-query lane.
  */
 export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
   reraVerificationHandler,
   statutoryTaxHandler,
   possessionStatusHandler,
+  totalOutflowHandler,
+  connectivityHandler,
 ]
 
-export { reraVerificationHandler, statutoryTaxHandler, possessionStatusHandler }
+export {
+  reraVerificationHandler,
+  statutoryTaxHandler,
+  possessionStatusHandler,
+  totalOutflowHandler,
+  connectivityHandler,
+}

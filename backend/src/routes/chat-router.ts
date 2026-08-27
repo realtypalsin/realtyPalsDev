@@ -1063,7 +1063,14 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
           emitUiState,
           res,
           cachedProjects: cachedProjectsFromSession ?? [],
-          flags: { isReraCheckQuery, isStatutoryTaxQuery, isReadyToMoveQuery },
+          flags: {
+            isReraCheckQuery,
+            isStatutoryTaxQuery,
+            isReadyToMoveQuery,
+            isTotalOutflowQuery,
+            isConnectivityQuery,
+            hasNamedProject: (intent.projectNames?.length ?? 0) > 0,
+          },
         })) return
 
 
@@ -1399,121 +1406,7 @@ Prioritize developers with a Delivery Score above **85/100** and high RERA compl
           }
         }
 
-        // ─── TOTAL ON-ROAD / ALL-INCLUSIVE OUTFLOW CALCULATOR ────────────────────
-        if (isTotalOutflowQuery) {
-          const targetProjName = activeProjectName || (cachedProjectsFromSession?.[0]?.name)
-          const targetProject = targetProjName ? await prisma.project.findFirst({
-            where: {
-              OR: [
-                { name: { contains: targetProjName, mode: 'insensitive' } },
-                { slug: { contains: targetProjName, mode: 'insensitive' } }
-              ]
-            },
-            include: { unit_types: { orderBy: { bhk: 'asc' } }, builder: true }
-          }) : null
 
-          const is3BHK = /3\s*bhk/i.test(message)
-          const is4BHK = /4\s*bhk/i.test(message)
-          const bhkNum = is4BHK ? 4 : is3BHK ? 3 : 2
-
-          let basePriceCr = targetProject?.price_min_cr || 1.35
-          let projName = targetProject?.name || 'Standard Luxury Apartment'
-          let sectorName = targetProject?.sector || (intent.sector || 'Sector 75, Noida')
-
-          if (targetProject?.unit_types && targetProject.unit_types.length > 0) {
-            const matchedUnit = targetProject.unit_types.find(u => u.bhk === bhkNum) || targetProject.unit_types[0]
-            if (matchedUnit.price_min_cr) {
-              basePriceCr = matchedUnit.price_min_cr
-            }
-          }
-
-          const baseAmount = basePriceCr * 10000000
-          const isRtm = targetProject?.status === 'ready_to_move' || targetProject?.possession_label?.toLowerCase().includes('delivered')
-          const gstPct = isRtm ? 0 : 0.05
-          const gstAmount = Math.round(baseAmount * gstPct)
-          const stampDutyAmount = Math.round(baseAmount * 0.07) // 7% in UP
-          const registrationFee = Math.min(30000, Math.round(baseAmount * 0.01))
-          const ifmsAndMeter = 250000 // IFMS + Dual meter + Club membership
-          const totalOutflow = baseAmount + gstAmount + stampDutyAmount + registrationFee + ifmsAndMeter
-          const totalOutflowCr = (totalOutflow / 10000000).toFixed(2)
-
-          const formatL = (val: number) => `₹${(val / 100000).toFixed(2)} L`
-
-          const outflowText = `### Total All-Inclusive Outflow: ${bhkNum} BHK in ${projName} (${sectorName})
-
-| Cost Component | Applicable Rate / Charge | Estimated Amount |
-| :--- | :--- | :--- |
-| **Base Agreement Value (BSP)** | Sanctioned Unit Pricing | **₹${basePriceCr.toFixed(2)} Cr** |
-| **Stamp Duty (UP RERA)** | 7.0% of Agreement Value | ${formatL(stampDutyAmount)} |
-| **Registration Fee** | 1.0% (Capped at ₹30k) | ₹30,000 |
-| **GST** | ${isRtm ? '0% (Exempt for OC RTM)' : '5.0% (Under-Construction)'} | ${isRtm ? '₹0 (Exempt)' : formatL(gstAmount)} |
-| **IFMS, Electricity Meter & Club** | Fixed One-Time Possession Outflow | ${formatL(ifmsAndMeter)} |
-| **GRAND TOTAL ALL-INCLUSIVE** | **Estimated Final Registry Cost** | **₹${totalOutflowCr} Cr** |
-
-*Note: Female primary owners receive a ₹10,000 concession on stamp duty. Bank financing covers up to 80% of Base Agreement Value.*`
-
-          const outflowChips = [
-            { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: `Calculate EMI for ₹${totalOutflowCr} Cr`, icon: 'calculator', analyticsId: 'chip_emi_outflow', priority: 1, payload: { text: `Calculate EMI for loan amount of ₹${(Number(totalOutflowCr) * 0.8).toFixed(2)} Cr` } },
-            { id: `chip_plan_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Construction Payment Plan', icon: 'file-text', analyticsId: 'chip_plan_outflow', priority: 2, payload: { text: `Show payment plan for ${projName}` } },
-            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit_outflow', priority: 3, payload: { text: `Schedule a site visit for ${projName}` } }
-          ]
-
-          send('token', { token: outflowText })
-          emitUiState({
-            stage: 'RESEARCH',
-            thinking: `Calculated total all-inclusive cost with UP stamp duty and GST for ${projName}:`,
-            chips: outflowChips,
-            missingFields: [],
-            confidence: 'HIGH'
-          })
-          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
-          res.end()
-          return
-        }
-
-        // ─── CONNECTIVITY & TRANSIT PROXIMITY MATRIX ──────────────────────────────
-        if (isConnectivityQuery) {
-          const sec = intent.sector || 'Sector 76'
-          const connProjects = await prisma.project.findMany({
-            where: {
-              OR: [
-                { sector: { contains: sec.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
-                { id: { in: (cachedProjectsFromSession || []).map(p => p.id) } }
-              ]
-            },
-            include: { connectivity: true, builder: true },
-            take: 5
-          })
-
-          const rows = connProjects.map(p => {
-            const metroConn = p.connectivity.find(c => /metro/i.test(c.name))
-            const metroStr = metroConn ? `${metroConn.name} (${metroConn.distance_km} km)` : 'Sector 76 / 50 Metro (1.5 km)'
-            const expStr = 'Noida-Gr Noida Expressway (12–15 mins)'
-            const airportStr = 'Jewar Airport (45 mins via FNG / Yamuna Exp)'
-            const infraStr = 'Fortis / Yatharth Hospital (10 mins)'
-            return `| **${p.name}** | ${metroStr} | ${expStr} | ${airportStr} | ${infraStr} |`
-          }).join('\n')
-
-          const connText = `### Connectivity & Transit Proximity Matrix (${sec})\n\n| Project Name | Nearest Metro Station | Expressway Connectivity | Jewar International Airport | Healthcare & Top Schools |\n| :--- | :--- | :--- | :--- | :--- |\n${rows}\n\n### Transit Overview\nProperties along the 7X sector corridor offer immediate Aqua Line Metro access connecting to the Blue Line at Sector 52, making daily commutes to Central Noida and Delhi seamless.`
-
-          const connChips = [
-            { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show Ready-to-Move Flats', icon: 'check-circle', analyticsId: 'chip_rtm_conn', priority: 1, payload: { text: 'Which of these are ready to move in?' } },
-            { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_tax_conn', priority: 2, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
-            { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit_conn', priority: 3, payload: { text: 'Schedule a site visit' } }
-          ]
-
-          send('token', { token: connText })
-          emitUiState({
-            stage: 'RESEARCH',
-            thinking: 'Verified transit and distance matrix from database:',
-            chips: connChips,
-            missingFields: [],
-            confidence: 'HIGH'
-          })
-          send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent, responseMode: 'chat' })
-          res.end()
-          return
-        }
 
         if (isSectorCompare && sectorMatches.length >= 2) {
           // ─── SECTOR VS SECTOR COMPARISON ──────────────────────────────────────────

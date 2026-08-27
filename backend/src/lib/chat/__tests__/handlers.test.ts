@@ -5,6 +5,8 @@ import {
   CHAT_TOPIC_HANDLERS,
   reraVerificationHandler,
   statutoryTaxHandler,
+  totalOutflowHandler,
+  connectivityHandler,
 } from '../handlers'
 import { runTopicHandlers, type ChatHandlerContext, type ChatTopicHandler } from '../handlerContext'
 import { UP_STATUTORY } from '../../factPresentation'
@@ -141,5 +143,51 @@ describe('statutory_tax handler', () => {
     // Mixing a statutory table with a market band means the answer is not
     // wholly verified, and the confidence must say so.
     assert.equal(out.uiStates[0].confidence, 'MEDIUM')
+  })
+})
+
+describe('total_outflow handler', () => {
+  it('refuses to compute without a real base price', async () => {
+    // It used to fall back to `price_min_cr || 1.35` for a project it named
+    // "Standard Luxury Apartment" in "Sector 75, Noida", then printed stamp
+    // duty, GST and a grand total derived from that invented figure — at
+    // confidence HIGH. A buyer plans their financing on this number.
+    const { ctx, out } = makeContext({
+      flags: { isTotalOutflowQuery: true, hasNamedProject: false },
+    })
+    await totalOutflowHandler.handle(ctx)
+
+    const text = tokenText(out)
+    assert.ok(!text.includes('Standard Luxury Apartment'), 'still invents a project name')
+    assert.ok(!text.includes('1.35'), 'still invents a base price')
+    assert.match(text, /I need a specific project/)
+    assert.equal(out.uiStates[0].confidence, 'LOW')
+    assert.equal(out.ended, true)
+  })
+
+  it('still states the statutory rates it can state without a project', async () => {
+    const { ctx, out } = makeContext({
+      flags: { isTotalOutflowQuery: true, hasNamedProject: false },
+    })
+    await totalOutflowHandler.handle(ctx)
+    const text = tokenText(out)
+    assert.match(text, new RegExp(`${UP_STATUTORY.stampDutyPct}%`))
+    // Market ranges may appear, but only carrying their qualifier.
+    if (/parking/i.test(text)) assert.match(text, /not verified for this project/)
+  })
+})
+
+describe('connectivity handler', () => {
+  it('declines rather than guessing when there is no sector and nothing cached', async () => {
+    // The branch it replaces defaulted to Sector 76 and then printed the same
+    // hardcoded expressway, airport and hospital strings for every project.
+    const { ctx, out } = makeContext({
+      flags: { isConnectivityQuery: true },
+      cachedProjects: [],
+    })
+    const result = await connectivityHandler.handle(ctx)
+    assert.equal(result, false, 'should fall through to the generic path')
+    assert.equal(out.ended, false, 'must not end the response when declining')
+    assert.equal(out.events.length, 0)
   })
 })
