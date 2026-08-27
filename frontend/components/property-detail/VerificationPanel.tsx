@@ -4,6 +4,8 @@ import {
   ShieldCheck, ShieldWarning, Scales, Wind, Drop, Buildings, Clock, Receipt,
 } from '@phosphor-icons/react'
 import type { ProjectDetail } from '@/types/project'
+import FreshnessBadge from './FreshnessBadge'
+import { FRESHNESS } from '@/lib/freshness'
 
 /**
  * The disclosure surface.
@@ -201,6 +203,9 @@ export function buildVerificationRows(project: ProjectDetail): Row[] {
 export default function VerificationPanel({ project }: { project: ProjectDetail }) {
   const rows = buildVerificationRows(project)
   const concerns = project.location_concerns?.filter(Boolean) ?? []
+  // dna.last_verified_at is the closest thing to a project-level verification
+  // stamp; decision_profile carries its own for the analyst narrative.
+  const verifiedAt = project.dna?.last_verified_at ?? project.decision_profile?.last_verified_at ?? null
 
   if (rows.length === 0 && concerns.length === 0) return null
 
@@ -210,12 +215,17 @@ export default function VerificationPanel({ project }: { project: ProjectDetail 
       className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111] overflow-hidden"
     >
       <header className="px-4 sm:px-5 py-3.5 border-b border-slate-100 dark:border-white/5">
-        <h3
-          id="verification-heading"
-          className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight"
-        >
-          Verification &amp; risk
-        </h3>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <h3
+            id="verification-heading"
+            className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight"
+          >
+            Verification &amp; risk
+          </h3>
+          {/* Compliance facts are never hidden for age — an old RERA number is
+              still the RERA number. Dating it is more honest than removing it. */}
+          <FreshnessBadge date={verifiedAt} policy={FRESHNESS.compliance} />
+        </div>
         <p className="text-[11.5px] sm:text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
           Compliance and risk records we hold for this project. Anything not listed is not in our records.
         </p>
