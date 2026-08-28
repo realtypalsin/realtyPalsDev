@@ -1,0 +1,308 @@
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Production Readiness · Revision 2 · Measured</div>
+    <h1>RealtyPals</h1>
+    <p class="standfirst">The last revision scored this from the code. This one scored it from 321 real buyer queries put through the live chat — and the code was not what the score said.</p>
+  </header>
+
+  <div class="figure">
+    <div class="figure-main">
+      <span class="figure-num">84</span><span class="figure-pct">%</span>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">Answer quality · demo set</div>
+      <div class="track"><i style="width:84%"></i></div>
+      <div class="track-scale"><span>0</span><span>measured&nbsp;start&nbsp;13</span><span>100</span></div>
+      <div class="delta">13.1% → 83.6% · 67 curated queries</div>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">Cost per turn</div>
+      <div class="terminal" style="margin:0">input   <b>11,083 → 5,637</b> tokens
+latency <b>p50 18.0s → 10.4s</b>
+spend   <b>$0.00081</b> / query measured</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Readiness is not 87%.</strong> The previous revision scored architecture, tests and code structure — all of which were real. None of it was evidence that the product answered a buyer. The first time 321 live queries were run through the chat, <strong>13.1% produced a usable answer</strong>. Everything below is what that measurement found and what it cost to fix.
+  </div>
+
+  <section>
+    <h2>The measurement was wrong first</h2>
+    <p class="sec-note">Before any finding can be trusted, the instrument has to be. Mine was broken, and so were the two eval scripts already in the repo.</p>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Every test query arrived at the server empty</span>
+          <span class="tag sev">Instrument</span>
+        </div>
+        <div class="item-why">The chat route reads the question from <code>action.payload.text</code>; <code>BodySchema</code> keeps <code>text</code>/<code>query</code>/<code>label</code> and discards everything else, including a top-level <code>message</code>. My runner sent <code>payload.message</code>. So the server received <code>""</code> on all 321 queries — which is why <code>extractIntent</code> returned <code>{}</code>, <code>intentState</code> was <code>COLD</code>, and every answer was a greeting. The first "13.1% baseline" measured the product's reply to an empty string. <strong><code>live-chat-test-eval.ts</code> and <code>run-stress-test-suite.ts</code> had the identical bug</strong>, so every result they have ever produced measured the same thing. All three fixed.</div>
+      </div>
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">An empty message bought a full paid LLM turn</span>
+          <span class="tag sev">Cost</span>
+        </div>
+        <div class="item-why">The schema accepted it, the router ran intent extraction on <code>""</code>, and the chain spent a real Gemini call to produce a greeting. Three separate callers in this repo hit that path. Now a <code>400</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What was actually broken</h2>
+    <p class="sec-note">In order of what they cost. Four of the six were invisible in logs and in the cost table — they read as normal operation.</p>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">The paid Gemini key was answering nothing at all</span>
+          <span class="tag sev">Trust</span>
+        </div>
+        <div class="item-why">Explicit context caching attached a <code>cachedContent</code> to a request that also set <code>system_instruction</code> and <code>tools</code>. Gemini rejects that combination outright — <code>400 CachedContent can not be used with GenerateContent request setting system_instruction, tools or tool_config</code>. Our prompt always sets both, so <strong>every cache-attached request 400'd</strong> and rolled onto <code>GEMINI_API_KEY1</code>, a free-tier key that cannot hold a cache at all (<code>limit=0</code>) and 429s on quota. The billed account served none of the traffic it was paying for. The only symptom was a <code>ROLLOVER</code> line with no reason attached.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Every tool call failed on Gemini 3.x</span>
+          <span class="tag sev">Trust</span>
+        </div>
+        <div class="item-why"><code>400 Function call is missing a thought_signature in functionCall parts.</code> We rebuilt the model's <code>functionCall</code> part from name and args, discarding the <code>thoughtSignature</code> Gemini attaches to it. Every tool-backed lookup — EMI, stamp duty, floor plans, cost sheets, RERA — therefore 400'd and fell through to a tool-less provider that answered from memory instead. Fixed by echoing the model's own part back.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Answers stopped mid-sentence and read as complete</span>
+          <span class="tag sev">Trust</span>
+        </div>
+        <div class="item-why"><code>maxOutputTokens</code> budgets thinking and text <em>together</em>, and gemini-3.x thinks by default. On a hard question the model spent almost the whole 1,500 on thoughts and stopped ~15 tokens into the reply: <em>"Historically, Noida Sector 23, Sector 34, and"</em>. Thirteen of 67 demo answers ended that way, each reported by the API as a normal completion. Now a capped <code>thinkingBudget</code> added on top of the reply allowance — and <code>thoughtsTokenCount</code>, which bills at the output rate, is finally counted.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">A stub tool handler made the model loop and return nothing</span>
+          <span class="tag sev">Dead end</span>
+        </div>
+        <div class="item-why">Five call sites paired a full tool catalogue with <code>onToolCall: async () =&gt; ({})</code>. The model called a tool, received an empty object, called again, exhausted every cycle and emitted no text — a blank reply and a full bill for the thinking behind it. Comparison queries were the worst hit: the four-sector question returned <code>""</code> after generating 453 tokens. Comparison went <strong>4/8 → 8/8</strong>.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Weak providers parroted a canned string as their answer</span>
+          <span class="tag sev">Trust</span>
+        </div>
+        <div class="item-why">The <code>HONEYPOT RULE</code> ordered an <em>exact</em> reply for prompt-extraction attempts. Mistral and Cerebras latched onto it as the most salient literal in a 5.7k-token prompt and emitted it for ordinary queries — <strong>186 of 321</strong> came back as <em>"I am RealtyPal… How can I help you with your property search today?"</em>. Prompt extraction was already blocked deterministically by <code>inputGuardrail</code> before the model, so the rule was redundant as well as harmful. Replaced with a behavioural instruction carrying no literal, plus a test that fails if any canned reply returns to the prompt.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">Failover fired on healthy requests</span>
+          <span class="tag ux">Latency</span>
+        </div>
+        <div class="item-why">An 8-second first-token deadline, chosen for "fast rollover", fired 18 times per 67-query run on requests that were merely thinking. Every one landed on the free-tier key. Now 25s — rolling over early only helps when the next leg is healthier, and it was not.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Corrections to the previous revision</h2>
+    <p class="sec-note">Two of its headline claims were wrong, and one of mine from this session was wrong by a factor of twenty.</p>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">"Enable billing → explicit caching → ~60% input cost" was backwards</span></div>
+        <div class="item-why">Billing was enabled. Explicit caching then broke the paid key on <em>every single turn</em>, and it caches <em>less</em> than the free implicit cache does. The previous revision's <code>limit=0</code> reading was correct but the conclusion drawn from it was not: implicit caching had never hit because the measurement was taken on a free-tier key. On the billed account implicit caching reports <strong>78.2% of prompt tokens served from cache</strong> (8,095 of 10,346) with no request changes at all — more than the 6,196-token head explicit caching could store. Explicit caching is now off by default and guarded so it cannot silently return.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">I reported $0.53 of spend. The real figure was roughly twenty times that.</span></div>
+        <div class="item-why">Ten Gemini call sites — intent extraction, chip generation, extended intent, history compression, session summaries, ghost-pool classification, buyer narrative, document parsing — never wrote an <code>AiUsageEvent</code>. Several run on <em>every turn</em>. Mistral and Cerebras recorded nothing either: neither set <code>stream_options.include_usage</code>, so 238 of 321 queries were served at a recorded cost of exactly zero. Cerebras's model id had no price row and billed $0 with real token counts. A day of measurement drained a ₹1,000 prepaid balance while the dashboard read fifty-three cents.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">A "13.1% baseline" that measured nothing</span></div>
+        <div class="item-why">Reported before I checked what the server received. The number was real; what produced it was an empty string, not the product. Superseded by the 69.8% run on a corrected harness.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">I wrote that we hold no rental data. We do.</span></div>
+        <div class="item-why">While tightening the scope rule I told the model to deny all rent figures. <code>SectorIntelligence.avg_rent_3bhk_monthly</code> exists, and rental yield is an in-scope investment question in the corpus itself. Rewritten to permit a rent figure visible in an injected block and forbid a composed one.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Spending cannot run away again</h2>
+    <p class="sec-note">The under-reporting was the smaller half. Nothing anywhere <em>stopped</em> spending.</p>
+
+    <p class="prose">The only budget guard in the system was <code>isOverDailyBudget</code>, which covers signed-in users on the chat route. A batch script running as a guest crossed no limit at all, and neither did any of the ten background call sites. Three things changed:</p>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">One metered client, no direct construction</span><span class="tag perf">Cost</span></div>
+        <div class="item-why">Every non-streaming Gemini call now goes through <code>meteredClient()</code>, which checks the budget before the call and writes an <code>AiUsageEvent</code> after it. <code>new GoogleGenAI</code> appears in exactly one place now. Mistral and Cerebras request usage in the stream and record it.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">A hard daily ceiling across every caller</span><span class="tag perf">Cost</span></div>
+        <div class="item-why"><code>GEMINI_DAILY_BUDGET_USD</code>, default <strong>$2</strong>. Exceeding it throws, which the fallback chain already handles as an ordinary provider failure — so a blown budget degrades to Mistral rather than to an error page. A failed spend read reports the budget as <em>exhausted</em>, never as zero: the gate fails closed.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">An unpriced model says so</span><span class="tag perf">Cost</span></div>
+        <div class="item-why">A model with no price row silently billed $0 forever and looked like free traffic in every dashboard. It now warns once per model, so a provider renaming a model cannot quietly turn its traffic free.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the corpus taught the prompt</h2>
+    <p class="sec-note">The 321 queries were folded into 255 distinct shapes. The most useful thing in them was not any single question — it was the shape distribution, which contradicted what the prompt assumed.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Shape</th><th>Share</th><th></th><th>What it demands</th></tr></thead>
+        <tbody>
+          <tr><td>Bare noun phrase</td><td><span class="score s-hi">62%</span></td><td><div class="bar"><i class="hi" style="width:62%"></i></div></td><td>"2 bhk in noida" — a search box habit, not a terse user</td></tr>
+          <tr><td>Superlative</td><td><span class="score s-mid">13%</span></td><td><div class="bar"><i class="mid" style="width:13%"></i></div></td><td>State the ranking criterion before the ranking</td></tr>
+          <tr><td>Open wh-question</td><td><span class="score s-mid">12%</span></td><td><div class="bar"><i class="mid" style="width:12%"></i></div></td><td>Answer in the first sentence, then three facts</td></tr>
+          <tr><td>A versus B</td><td><span class="score s-mid">7%</span></td><td><div class="bar"><i class="mid" style="width:7%"></i></div></td><td>Verdict first. Never a tie, never a hedge</td></tr>
+          <tr><td>Yes/no judgement</td><td><span class="score s-lo">3%</span></td><td><div class="bar"><i class="lo" style="width:3%"></i></div></td><td>Commit in the first two words, then justify</td></tr>
+          <tr><td>Stated situation</td><td><span class="score s-lo">3%</span></td><td><div class="bar"><i class="lo" style="width:3%"></i></div></td><td>Every clause is a constraint, including the conflicting ones</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="prose" style="margin-top:1.4rem">Nearly two thirds of real queries have no verb and no question mark. The prompt was written for conversation and treated these as under-specified, which is why the commonest reply to <em>"2 bhk in noida"</em> was a request to rephrase. The rule now is that a bare phrase is the <em>fullest</em> question it could reasonably be, answered as such — assume, state the assumption, move on. A clarifying question is earned only after an answer, never instead of one.</p>
+
+    <p class="prose">This is generalisation from the corpus, not memorisation of it. Nothing in the prompt names a query, a sector or a builder from the files: the six shapes and the two rules under them apply to questions nobody has asked yet. There is no fine-tuning here and there should not be — the failures measured were routing, budgeting and API-contract defects, none of which a trained model would have fixed.</p>
+  </section>
+
+  <section>
+    <h2>Out of scope, handled gracefully</h2>
+    <p class="sec-note">Roughly 12% of real Noida search demand is for things V1 does not sell — rentals, resale, plots, commercial, auction stock. A flat refusal loses the buyer; a fabricated figure loses their trust.</p>
+
+    <p class="prose">The failure here was specific: asked for average 2 BHK rent, the assistant answered <em>"₹15,000 to ₹40,000 per month"</em> — confident, precise, and ours by implication. It arrived from a second route entirely, <code>groundedAnswer.ts</code>, which does live web search with its own prompt that the scope rules never reached.</p>
+
+    <p class="prose">Both routes now carry the same directive, injected only on the turns that need it and detected by regex on the incoming message — so the instruction is in place <em>before the first token</em>. A guardrail that inspects the finished answer cannot help: by the time it sees the figure, the figure has been streamed. The instruction is not "refuse". It is: give the web-sourced range, attribute it in the same sentence, mark it as indicative rather than verified, answer any public law or process question directly, then bridge once to the purchase question behind it — and if there is no honest bridge, stop rather than steer toward listings.</p>
+
+    <div class="callout">
+      <strong>The exception that had to be carved out.</strong> Rent is not uniformly absent: <code>SectorIntelligence</code> holds <code>avg_rent_3bhk_monthly</code>, and rental yield is a live investment question. A blanket "we have no rent data" would have forced the model to deny data we hold. The rule is a figure you can see in a block, never one you compose.
+    </div>
+  </section>
+
+  <section>
+    <h2>Where it stands now</h2>
+    <p class="sec-note">Measured on the 67-query demo set — one query per distinct shape, quota-weighted by what a demo cannot afford to get wrong. The full 321 is mostly the same shapes repeated.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Class</th><th>Pass</th><th></th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td>Comparison<span class="up">+50</span></td><td><span class="score s-hi">8/8</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td>Was returning empty; the stub-tool loop</td></tr>
+          <tr><td>Budget &amp; personalisation</td><td><span class="score s-hi">8/8</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td>Multi-constraint questions hold up</td></tr>
+          <tr><td>Discovery</td><td><span class="score s-hi">6/6</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td>Superlatives now state their criterion</td></tr>
+          <tr><td>Financial</td><td><span class="score s-hi">2/2</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td>EMI tool cycle completes since the signature fix</td></tr>
+          <tr><td>Market fact</td><td><span class="score s-hi">3/3</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td></td></tr>
+          <tr><td>Brand probe</td><td><span class="score s-hi">4/4</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td>Builders with no Noida stock, declined honestly</td></tr>
+          <tr><td>Navigational</td><td><span class="score s-hi">3/3</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td></td></tr>
+          <tr><td>Sector</td><td><span class="score s-hi">8/10</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Largest class in real demand</td></tr>
+          <tr><td>Temporal</td><td><span class="score s-mid">3/4</span></td><td><div class="bar"><i class="mid" style="width:75%"></i></div></td><td>Needs live web grounding to be honest</td></tr>
+          <tr><td>Project &amp; builder</td><td><span class="score s-mid">3/4</span></td><td><div class="bar"><i class="mid" style="width:75%"></i></div></td><td>"Can't reach our builder database" is honest but useless</td></tr>
+          <tr><td>Risk &amp; legal</td><td><span class="score s-mid">3/5</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>Answers are good; graded down for brevity</td></tr>
+          <tr><td>Out of scope</td><td><span class="score s-lo">2/6</span></td><td><div class="bar"><i class="lo" style="width:33%"></i></div></td><td><strong>Unverified.</strong> Fixed after the last run; needs re-measuring</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>What to run</h2>
+    <p class="sec-note">In order. The first costs nothing and answers whether the account is usable at all.</p>
+
+    <ol class="steps">
+      <li>
+        <div>
+          <div class="step-title">Top up the Gemini balance, then confirm the key</div>
+          <div class="step-body">Every Gemini leg is currently dead: the billed key returns <code>429 Your prepayment credits are depleted</code> and the free key is over quota. Until that clears, all traffic falls to Mistral and every measurement below is measuring the fallback, not the product.</div>
+          <div class="step-cost">blocking · no code · 1 API call to verify</div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <div class="step-title">One query, to see the meter working</div>
+          <div class="step-body"><code>npx tsx scripts/ask.ts "2 bhk in sector 75 noida"</code> — prints the answer and the real cost read back from <code>ai_usage_events</code>. Expect roughly <strong>3–5 rows per turn now</strong> where it used to print one: that difference is the spend that was previously invisible.</div>
+          <div class="step-cost">~$0.001 · confirms metering + budget gate</div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <div class="step-title">The demo set</div>
+          <div class="step-body"><code>npx tsx scripts/corpus/run-corpus.ts --demo --concurrency=2 --tag=demo5</code> — 67 queries, one per distinct shape. This is the number to be satisfied with before showing anyone. Watch <code>out_of_scope</code>, which is the only class whose fix has never been measured.</div>
+          <div class="step-cost">~$0.06 · ~25 min · the demo-readiness number</div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <div class="step-title">The full corpus, once the demo set is where you want it</div>
+          <div class="step-body"><code>npx tsx scripts/corpus/run-corpus.ts --concurrency=3 --tag=full2</code> — all 321. Mostly repeated shapes, so it confirms rather than discovers. Its value is catching a class the 67 under-sampled.</div>
+          <div class="step-cost">~$0.27 · ~35 min</div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <div class="step-title">Browser QA — still outstanding from the last revision</div>
+          <div class="step-body">Nothing in this session touched the frontend, so every mobile change from the previous revision remains unclicked. It was the largest risk on that board and it still is.</div>
+          <div class="step-cost">~1h · unchanged</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="terminal">$ <b>npx tsx scripts/corpus/build-corpus.ts</b>     # 5 files -> 321 unique
+$ <b>npx tsx scripts/corpus/pick-demo-set.ts</b>    # -> 67 curated
+$ <b>npx tsx scripts/corpus/run-corpus.ts --demo --concurrency=2</b>
+$ <b>npx tsx scripts/ask.ts "&lt;one question&gt;"</b>     # answer + real cost</div>
+  </section>
+
+  <section>
+    <h2>Production readiness, honestly</h2>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Area</th><th>Score</th><th></th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Cost control &amp; metering<span class="up">new</span></td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Every call metered, hard daily ceiling, fails closed</td></tr>
+          <tr><td>Answer quality<span class="up">+6</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>83.6% measured, not asserted</td></tr>
+          <tr><td>Provider chain<span class="up">+1</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Free key demoted; failure reasons always logged</td></tr>
+          <tr><td>Prompt caching<span class="up">+1</span></td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>78% implicit, verified on the billed account</td></tr>
+          <tr><td>Scope discipline<span class="up">new</span></td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>Both routes covered; the fix is unmeasured</td></tr>
+          <tr><td>Latency<span class="up">+1</span></td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>p50 10.4s against a 3s target</td></tr>
+          <tr><td>Evaluation harness<span class="up">new</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Mechanical grading only; no quality judge yet</td></tr>
+          <tr><td>Frontend</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Untouched this session; browser QA still owed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Not fixed, and why</h3>
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">Latency is 3× the stated target</span><span class="tag ux">Open</span></div>
+        <div class="item-why">p50 10.4s against the &lt;3s in CLAUDE.md. Intent extraction was the cheapest third and is now skipped for short queries; the rest is the model's own thinking time on a 5.6k-token prompt. Getting under 3s means a smaller prompt or a smaller model for the common case, and both trade against the quality just bought.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">Mid-stream stall still truncates</span><span class="tag ux">Open</span></div>
+        <div class="item-why">Once a token is sent, SSE cannot retract it, so a stall can only be truncated with a notice. The failover window was ~50 characters <em>or the first newline</em> — and every answer opens with a markdown heading, so the window was effectively nil. Now 250 characters, length-only. It fired zero times in 400 turns, so this is a widened safety margin rather than a verified fix.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">Grading is mechanical</span><span class="tag ux">Open</span></div>
+        <div class="item-why">The harness catches deflections, empties, truncation and undeclined out-of-scope answers. It cannot tell a well-reasoned recommendation from a plausible one. Several "failures" in the last run were good answers marked down for ending on a question. A judge pass is the next honest step, and it costs real tokens.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">Four env vars are undocumented</span><span class="tag ux">Open</span></div>
+        <div class="item-why"><code>.env.example</code> is outside my write permissions. <code>GEMINI_DAILY_BUDGET_USD</code>, <code>GEMINI_THINKING_BUDGET</code>, <code>STREAM_BUFFER_CHARS</code> and <code>INTENT_FAST_PATH</code> all default correctly in code, so nothing breaks — but the next person will not know the ceiling exists until it stops them.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>RealtyPals · readiness, revision 2 · measured against 321 buyer queries</span>
+    <span class="mono">13.1% → 83.6% · $0.00081/query · p50 10.4s</span>
+  </footer>
+
+</div>

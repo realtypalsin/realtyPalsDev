@@ -12,11 +12,14 @@ interface ChatResponse {
 
 function sendChatMessage(message: string, sessionId?: string): Promise<ChatResponse> {
   return new Promise((resolve, reject) => {
+    // The route reads the question from action.payload.text — BodySchema keeps
+    // text/query/label and drops everything else, including a top-level
+    // `message`. Sending `payload: { message }` posted an empty question on
+    // every call, so every result this script has ever produced was the
+    // server's reply to "".
     const payload = JSON.stringify({
-      message,
       sessionId,
-      action: { type: 'TEXT_MESSAGE', payload: { message } },
-      chatHistory: [],
+      action: { type: 'TEXT_MESSAGE', payload: { text: message } },
     })
 
     const req = http.request(

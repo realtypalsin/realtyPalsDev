@@ -17,12 +17,13 @@ function sendChatMessage(
   guestToken: string = 'guest_stress_test_suite_runner'
 ): Promise<ChatResponse> {
   return new Promise((resolve, reject) => {
+    // See live-chat-test-eval.ts: the question must go in action.payload.text.
+    // `payload: { message }` posted an empty question on every turn, which is
+    // why multi-turn sessions here never carried any intent forward.
     const payload = JSON.stringify({
-      message,
       sessionId,
       guestToken,
-      action: { type: 'TEXT_MESSAGE', payload: { message } },
-      chatHistory,
+      action: { type: 'TEXT_MESSAGE', payload: { text: message } },
     })
 
     const req = http.request(

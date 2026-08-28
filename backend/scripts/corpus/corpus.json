@@ -1,0 +1,2728 @@
+[
+  {
+    "id": "q001",
+    "query": "1 bhk flats in sector 74 75 76 noida for rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q002",
+    "query": "1 bhk flats in sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q003",
+    "query": "1 bhk flats in sector 75 noida for rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q004",
+    "query": "2 bhk flats in sector 74 75 76 noida for rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q005",
+    "query": "2 bhk flats in sector 74 75 76 noida for sale",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q006",
+    "query": "2 bhk flats in sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q007",
+    "query": "2 bhk flats in sector 75 noida for rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q008",
+    "query": "2 bhk flats in sector 75 noida for sale",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q009",
+    "query": "2 bhk in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q010",
+    "query": "2 bhk in noida",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q011",
+    "query": "2 bhk in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q012",
+    "query": "2 bhk properties in noida",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q013",
+    "query": "2bhk properties in noida",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q014",
+    "query": "3 bhk flats for rent in sector 75 noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q015",
+    "query": "3 bhk flats in noida sector 75",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 20
+  },
+  {
+    "id": "q016",
+    "query": "3 bhk flats in sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 20
+  },
+  {
+    "id": "q017",
+    "query": "3 bhk in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q018",
+    "query": "3 bhk in noida",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q019",
+    "query": "3 bhk in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q020",
+    "query": "4 bhk flats in sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q021",
+    "query": "4 star properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q022",
+    "query": "5 star properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q023",
+    "query": "accor properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q024",
+    "query": "ace properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q025",
+    "query": "affordable properties in noida",
+    "class": "budget_personal",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q026",
+    "query": "airbnb properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q027",
+    "query": "amrapali properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q028",
+    "query": "apartments in noida",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q029",
+    "query": "apartments in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q030",
+    "query": "are all properties in noida leasehold",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q031",
+    "query": "are there freehold properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q032",
+    "query": "ats properties in greater noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q033",
+    "query": "ats properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 30
+  },
+  {
+    "id": "q034",
+    "query": "auction properties in greater noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q035",
+    "query": "auction properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 20
+  },
+  {
+    "id": "q036",
+    "query": "bank auction properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 20
+  },
+  {
+    "id": "q037",
+    "query": "best 2 bhk in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q038",
+    "query": "best 2 bhk under 1 crore in noida",
+    "class": "budget_personal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q039",
+    "query": "best 3 bhk in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q040",
+    "query": "best 3 bhk under 1.5 crore in Noida",
+    "class": "budget_personal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q041",
+    "query": "best builder in noida",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q042",
+    "query": "best builder in noida for apartments",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q043",
+    "query": "best commercial properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q044",
+    "query": "best investment properties in noida",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q045",
+    "query": "best investment properties in sector 107 noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q046",
+    "query": "best luxury properties in noida",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q047",
+    "query": "best new project in noida",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q048",
+    "query": "best new project in sector 150",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q049",
+    "query": "best properties in central noida",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q050",
+    "query": "best properties in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 40
+  },
+  {
+    "id": "q051",
+    "query": "best properties in noida",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 40
+  },
+  {
+    "id": "q052",
+    "query": "best properties in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 30
+  },
+  {
+    "id": "q053",
+    "query": "best properties in sector 107 noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q054",
+    "query": "best property in Noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q055",
+    "query": "best property under 1 crore in noida",
+    "class": "budget_personal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q056",
+    "query": "best property under 1.5 crore in noida",
+    "class": "budget_personal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q057",
+    "query": "best property under 2 crore in noida",
+    "class": "budget_personal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q058",
+    "query": "best property under 50 lakh in noida",
+    "class": "budget_personal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q059",
+    "query": "best property under 75 lakh in noida",
+    "class": "budget_personal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q060",
+    "query": "best residential properties in noida",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q061",
+    "query": "best sector for families in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q062",
+    "query": "best sector for working professionals in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q063",
+    "query": "best sector near metro in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q064",
+    "query": "best sector near noida expressway",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q065",
+    "query": "best sector near schools in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q066",
+    "query": "best sector to live in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q067",
+    "query": "best sector with good connectivity in Noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q068",
+    "query": "best sectors in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q069",
+    "query": "best society in noida extension",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q070",
+    "query": "best society in sector 137 noida",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q071",
+    "query": "best society in sector 150 noida",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q072",
+    "query": "best society in sector 75 noida",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q073",
+    "query": "best society in sector 78 noida",
+    "class": "project_builder",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q074",
+    "query": "buy 3 bhk flats in noida sector 75",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q075",
+    "query": "buy property in sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries3.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q076",
+    "query": "cheap properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q077",
+    "query": "cheapest properties in noida",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q078",
+    "query": "Compare Sector 75, Sector 78, Sector 137 and Sector 150 and tell me which one you would personally choose for a 5-year investment.",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q079",
+    "query": "Compare the best 3 BHK projects in Sector 75 and tell me which one offers the best value for money.",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q080",
+    "query": "damac properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q081",
+    "query": "damac properties office in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q082",
+    "query": "dlf properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q083",
+    "query": "eldeco properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q084",
+    "query": "emaar properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q085",
+    "query": "flats for rent in sector 75 noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 40
+  },
+  {
+    "id": "q086",
+    "query": "flats in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q087",
+    "query": "flats in indosam sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q088",
+    "query": "flats in noida",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q089",
+    "query": "flats in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q090",
+    "query": "flats in sector 74 75 76 noida for rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 40
+  },
+  {
+    "id": "q091",
+    "query": "flats in sector 74 75 76 noida for sale",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 30
+  },
+  {
+    "id": "q092",
+    "query": "flats in sector 75 noida for rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q093",
+    "query": "flats in sector 75 noida for sale",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q094",
+    "query": "flats in sector 75 noida rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q095",
+    "query": "flats on rent in sector 75 noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q096",
+    "query": "godrej properties flats in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q097",
+    "query": "godrej properties in greater noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 90
+  },
+  {
+    "id": "q098",
+    "query": "godrej properties in greater noida west",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q099",
+    "query": "godrej properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 880
+  },
+  {
+    "id": "q100",
+    "query": "godrej properties in noida extension",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q101",
+    "query": "godrej properties in noida for sale",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q102",
+    "query": "godrej properties in noida sector 150",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q103",
+    "query": "godrej properties in sector 44 noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q104",
+    "query": "How do I verify whether a Noida property project is RERA compliant?",
+    "class": "risk_legal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q105",
+    "query": "How should I compare two Noida projects when one has a lower price but the other has a better location and builder reputation?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q106",
+    "query": "I am buying my first home in Noida. Give me 5 options and rank them based on price, connectivity, livability and future appreciation.",
+    "class": "market_fact",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q107",
+    "query": "I am considering buying a flat from a relatively unknown builder in Noida because it is 20% cheaper than comparable projects. Should I do it?",
+    "class": "project_builder",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q108",
+    "query": "I earn ₹1.5 lakh per month and have ₹25 lakh available for a down payment. What type of property should I realistically consider in Noida?",
+    "class": "financial",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q109",
+    "query": "I found a 3 BHK in Noida that is ₹25 lakh cheaper than similar apartments nearby. What could explain the price difference, and what should I investigate before buying it?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q110",
+    "query": "I have ₹1 crore to invest in Noida. Where should I invest it for the best risk-adjusted return over the next 5 years?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q111",
+    "query": "I have ₹1.25 crore and want a 3 BHK. Compare my best options across Noida and Greater Noida West.",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q112",
+    "query": "I have ₹1.25 crore. I work near Sector 62, my wife works near Sector 135, we have one child, we need a 3 BHK, want a metro within reasonable reach, don't want a long daily commute, want good schools nearby, and may sell the property in 5 years. Compare Sector 75, Sector 78, Sector 137 and Sector 150 and tell me where I should buy, including the trade-offs.",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q113",
+    "query": "I have ₹1.5 crore available today and am deciding between a ready-to-move 3 BHK in Sector 75, a newer 3 BHK in Sector 150, and a larger 3 BHK in Noida Extension. I care about resale liquidity, rental yield, appreciation, commute, infrastructure, builder reputation and overall livability. Analyze all three, identify the biggest risks in each, and give me one final recommendation with the reasoning and data behind it.",
+    "class": "risk_legal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q114",
+    "query": "I have ₹2 crore and want a premium 3 or 4 BHK in Noida. Which sectors should I shortlist?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q115",
+    "query": "I have ₹80 lakh. I need a 2 BHK for my family, good metro connectivity, low traffic and decent schools nearby. Where should I look in Noida?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q116",
+    "query": "I want to buy a ₹1 crore flat but I don't want to spend more than ₹30,000 per month on EMI. Is that realistic?",
+    "class": "financial",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q117",
+    "query": "If I buy a ₹1.2 crore apartment in Noida, what rental yield can I realistically expect?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q118",
+    "query": "If I work near Sector 62, which nearby sectors should I consider for buying a 2 BHK?",
+    "class": "sector",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q119",
+    "query": "is it safe to buy property in noida",
+    "class": "risk_legal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q120",
+    "query": "is noida extension good for investment",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q121",
+    "query": "is noida good for property investment",
+    "class": "other",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q122",
+    "query": "Is Noida still affordable compared with Gurgaon for residential property?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q123",
+    "query": "is sector 137 good for investment",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q124",
+    "query": "Is Sector 137 Noida better than Sector 75 for property investment?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q125",
+    "query": "is sector 150 good for investment",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q126",
+    "query": "is sector 75 good for investment",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q127",
+    "query": "Is Sector 75 Noida a good place to buy a 3 BHK for my own use?",
+    "class": "sector",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q128",
+    "query": "Is Sector 78 Noida better for living or investing?",
+    "class": "sector",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q129",
+    "query": "jaypee properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 50
+  },
+  {
+    "id": "q130",
+    "query": "jp properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q131",
+    "query": "low rise properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q132",
+    "query": "luxury apartments & flats in noida sector 75",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q133",
+    "query": "luxury properties in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q134",
+    "query": "luxury properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 30
+  },
+  {
+    "id": "q135",
+    "query": "m3m properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q136",
+    "query": "mahagun properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q137",
+    "query": "marriott properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q138",
+    "query": "max properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q139",
+    "query": "most expensive properties in noida",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q140",
+    "query": "nbcc properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q141",
+    "query": "new launch properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q142",
+    "query": "new projects in noida",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q143",
+    "query": "new properties in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q144",
+    "query": "new properties in greater noida west",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q145",
+    "query": "new properties in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 20
+  },
+  {
+    "id": "q146",
+    "query": "noida extension vs noida",
+    "class": "comparison",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q147",
+    "query": "Noida Extension vs Noida: where should a first-time homebuyer buy a 2 BHK?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q148",
+    "query": "noida vs greater noida property",
+    "class": "comparison",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q149",
+    "query": "noida vs gurgaon for property investment",
+    "class": "comparison",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q150",
+    "query": "Noida vs Gurgaon: which is better for buying a ₹1.5 crore apartment?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q151",
+    "query": "omaxe properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q152",
+    "query": "pool properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q153",
+    "query": "prateek properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q154",
+    "query": "pre launch properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q155",
+    "query": "pre rental properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q156",
+    "query": "premium properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q157",
+    "query": "prestige properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q158",
+    "query": "properties for auction in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q159",
+    "query": "properties for rent in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q160",
+    "query": "properties for sale in greater noida west",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q161",
+    "query": "properties for sale in noida",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q162",
+    "query": "properties for sale in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 20
+  },
+  {
+    "id": "q163",
+    "query": "properties in central noida",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q164",
+    "query": "properties in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q165",
+    "query": "properties in greater noida for rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q166",
+    "query": "properties in greater noida for sale",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 170
+  },
+  {
+    "id": "q167",
+    "query": "properties in greater noida west",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 110
+  },
+  {
+    "id": "q168",
+    "query": "properties in new noida",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q169",
+    "query": "properties in noida",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 390
+  },
+  {
+    "id": "q170",
+    "query": "properties in noida expressway",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 50
+  },
+  {
+    "id": "q171",
+    "query": "properties in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 260
+  },
+  {
+    "id": "q172",
+    "query": "properties in noida extension with price",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q173",
+    "query": "properties in noida for purchase",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q174",
+    "query": "properties in noida for rent",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q175",
+    "query": "properties in noida for sale",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 590
+  },
+  {
+    "id": "q176",
+    "query": "properties in noida sector 137",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q177",
+    "query": "properties in noida sector 15",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q178",
+    "query": "properties in noida sector 150",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q179",
+    "query": "properties in noida sector 18",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q180",
+    "query": "properties in noida sector 34",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q181",
+    "query": "properties in noida sector 35",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q182",
+    "query": "properties in noida sector 44",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q183",
+    "query": "properties in noida sector 62",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q184",
+    "query": "properties in noida sector 75",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q185",
+    "query": "properties in noida sector 76",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q186",
+    "query": "properties in noida sector 78",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q187",
+    "query": "properties in noida to buy",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q188",
+    "query": "properties in noida under 1 crore",
+    "class": "budget_personal",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q189",
+    "query": "properties in rho greater noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q190",
+    "query": "properties in sector 105 noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q191",
+    "query": "properties in sector 128 noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q192",
+    "query": "properties in sector 45 noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q193",
+    "query": "properties in sector 50 noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q194",
+    "query": "properties in sector 74 noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q195",
+    "query": "properties on rent in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 590
+  },
+  {
+    "id": "q196",
+    "query": "properties to invest in noida",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q197",
+    "query": "properties to rent in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q198",
+    "query": "properties under 50 lakhs in noida",
+    "class": "navigational",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q199",
+    "query": "properties_in_noida_extension",
+    "class": "malformed",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q200",
+    "query": "properties.in.noida",
+    "class": "malformed",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q201",
+    "query": "propertiesin_noida",
+    "class": "malformed",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q202",
+    "query": "propertiesinnoida",
+    "class": "malformed",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q203",
+    "query": "propertiesinnoida_extaion",
+    "class": "malformed",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q204",
+    "query": "propertiesinnoida107",
+    "class": "malformed",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q205",
+    "query": "property dealers in sector 75 noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries3.csv"
+    ],
+    "volume": 40
+  },
+  {
+    "id": "q206",
+    "query": "property for rent in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q207",
+    "query": "property for sale in noida",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q208",
+    "query": "property for sale in sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries3.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q209",
+    "query": "property in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q210",
+    "query": "property in noida",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q211",
+    "query": "property in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q212",
+    "query": "property in sector 100 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q213",
+    "query": "property in sector 104 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q214",
+    "query": "property in sector 107 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q215",
+    "query": "property in sector 110 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q216",
+    "query": "property in sector 120 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q217",
+    "query": "property in sector 128 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q218",
+    "query": "property in sector 129 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q219",
+    "query": "property in sector 137 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q220",
+    "query": "property in sector 140 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q221",
+    "query": "property in sector 141 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q222",
+    "query": "property in sector 142 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q223",
+    "query": "property in sector 143 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q224",
+    "query": "property in sector 150 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q225",
+    "query": "property in sector 151 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q226",
+    "query": "property in sector 152 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q227",
+    "query": "property in sector 153 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q228",
+    "query": "property in sector 154 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q229",
+    "query": "property in sector 168 Noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q230",
+    "query": "property in sector 62 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q231",
+    "query": "property in sector 74 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q232",
+    "query": "property in sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q233",
+    "query": "property in sector 76 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q234",
+    "query": "property in sector 77 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q235",
+    "query": "property in sector 78 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q236",
+    "query": "property in sector 79 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q237",
+    "query": "property in sector 93 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q238",
+    "query": "property in sector 94 noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q239",
+    "query": "property investment in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q240",
+    "query": "property investment in noida",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q241",
+    "query": "property investment in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q242",
+    "query": "property investment near jewar airport",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q243",
+    "query": "property investment yamuna expressway",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q244",
+    "query": "property near jewar airport",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q245",
+    "query": "property near noida airport",
+    "class": "navigational",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q246",
+    "query": "property on yamuna expressway",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q247",
+    "query": "property rates in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q248",
+    "query": "property rates in noida",
+    "class": "market_fact",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q249",
+    "query": "property rates in noida extension",
+    "class": "sector",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q250",
+    "query": "property rates in sector 75 noida",
+    "class": "sector",
+    "sources": [
+      "queries3.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q251",
+    "query": "ready to move flats in noida sector 75",
+    "class": "sector",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q252",
+    "query": "ready to move properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q253",
+    "query": "real estate properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q254",
+    "query": "rental properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 590
+  },
+  {
+    "id": "q255",
+    "query": "resale flats in sector 75 noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q256",
+    "query": "resale properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q257",
+    "query": "residential properties in greater noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 40
+  },
+  {
+    "id": "q258",
+    "query": "residential properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 30
+  },
+  {
+    "id": "q259",
+    "query": "residential properties in sector 107 noida",
+    "class": "sector",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q260",
+    "query": "sarthi properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 110
+  },
+  {
+    "id": "q261",
+    "query": "sarthi properties in noida reviews",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q262",
+    "query": "sector 137 vs sector 150 noida",
+    "class": "comparison",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q263",
+    "query": "sector 150 vs sector 128 noida",
+    "class": "comparison",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q264",
+    "query": "Sector 150 vs Sector 128 Noida: which is better for long-term investment?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q265",
+    "query": "sector 62 vs sector 137 Noida",
+    "class": "comparison",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q266",
+    "query": "Sector 62 vs Sector 137: which is better if I work in the IT sector?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q267",
+    "query": "sector 75 vs sector 137 noida",
+    "class": "comparison",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q268",
+    "query": "Sector 75 vs Sector 137 Noida: which is better for a 3 BHK end-user?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q269",
+    "query": "sector 75 vs sector 76 noida",
+    "class": "comparison",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q270",
+    "query": "Should I buy an under-construction property or a ready-to-move property in Noida if my goal is investment?",
+    "class": "other",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q271",
+    "query": "sobha properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q272",
+    "query": "studio flats for rent in sector 74 75 76 noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries2.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q273",
+    "query": "taj properties in noida",
+    "class": "out_of_scope",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q274",
+    "query": "tata properties in noida",
+    "class": "brand_probe",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q275",
+    "query": "top 10 best properties in noida 2025",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q276",
+    "query": "top 10 properties in noida 2025",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q277",
+    "query": "top properties in noida",
+    "class": "discovery",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q278",
+    "query": "under construction properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q279",
+    "query": "upcoming properties in greater noida",
+    "class": "temporal",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 10
+  },
+  {
+    "id": "q280",
+    "query": "upcoming properties in noida",
+    "class": "temporal",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 20
+  },
+  {
+    "id": "q281",
+    "query": "villa properties in noida",
+    "class": "other",
+    "sources": [
+      "queries4.csv"
+    ],
+    "volume": 0
+  },
+  {
+    "id": "q282",
+    "query": "What are the advantages and disadvantages of buying a flat in Sector 150 Noida?",
+    "class": "sector",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q283",
+    "query": "What are the best sectors to buy a 2 BHK apartment in Noida under ₹1 crore?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q284",
+    "query": "What are the biggest risks I should check before buying a flat in Noida?",
+    "class": "risk_legal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q285",
+    "query": "what are the risks of buying property in noida",
+    "class": "risk_legal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q286",
+    "query": "What has changed in the Noida property market in the last 12 months, and how has it affected buyers?",
+    "class": "temporal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q287",
+    "query": "What is the average property price per sq ft in Noida right now?",
+    "class": "temporal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q288",
+    "query": "What is the average rent for a 2 BHK in Noida?",
+    "class": "out_of_scope",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q289",
+    "query": "What is the current price difference between Sector 75 and Sector 137 Noida?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q290",
+    "query": "What legal documents should I check before buying a resale apartment in Noida?",
+    "class": "risk_legal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q291",
+    "query": "what should i check before buying a flat in noida",
+    "class": "risk_legal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q292",
+    "query": "what should i check before buying resale property in Noida",
+    "class": "risk_legal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q293",
+    "query": "What upcoming infrastructure projects around Noida could affect property prices over the next 3–5 years?",
+    "class": "temporal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q294",
+    "query": "Where can I find a good 3 BHK in Noida under ₹1.5 crore?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q295",
+    "query": "Which are the best residential projects currently available in Noida for a 3 BHK under ₹1.5 crore?",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q296",
+    "query": "which area is best in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q297",
+    "query": "Which areas of Noida are best for families?",
+    "class": "discovery",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q298",
+    "query": "Which areas of Noida have the highest potential for capital appreciation?",
+    "class": "discovery",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q299",
+    "query": "Which builders have the best reputation for residential projects in Noida?",
+    "class": "discovery",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q300",
+    "query": "which builders should i avoid in noida",
+    "class": "risk_legal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q301",
+    "query": "which flat should i buy in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q302",
+    "query": "Which is a better investment today: Sector 150 Noida or Noida Extension?",
+    "class": "sector",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q303",
+    "query": "Which is better for a family: Sector 74, 75, 76 or 78 Noida?",
+    "class": "comparison",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q304",
+    "query": "Which Noida areas have historically had problems such as waterlogging, traffic congestion or poor infrastructure?",
+    "class": "risk_legal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q305",
+    "query": "Which Noida sector gives me the best combination of connectivity, livability and appreciation potential?",
+    "class": "discovery",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q306",
+    "query": "which noida sector has best rental yield",
+    "class": "market_fact",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q307",
+    "query": "which noida sectors are safe",
+    "class": "risk_legal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q308",
+    "query": "which noida sectors have high pollution",
+    "class": "risk_legal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q309",
+    "query": "which noida sectors have poor connectivity",
+    "class": "other",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q310",
+    "query": "Which Noida sectors have seen the strongest price appreciation recently?",
+    "class": "temporal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q311",
+    "query": "Which Noida sectors have the best metro connectivity?",
+    "class": "discovery",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q312",
+    "query": "Which Noida sectors have the highest property prices right now?",
+    "class": "temporal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q313",
+    "query": "Which Noida sectors have the highest rental yield?",
+    "class": "market_fact",
+    "sources": [
+      "queriesStress.md"
+    ]
+  },
+  {
+    "id": "q314",
+    "query": "which noida sectors have traffic problems",
+    "class": "other",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q315",
+    "query": "which noida sectors have waterlogging",
+    "class": "risk_legal",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q316",
+    "query": "which property is best for investment in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q317",
+    "query": "which property is best in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q318",
+    "query": "which sector is best for investment in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q319",
+    "query": "which sector is best in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q320",
+    "query": "which sector will appreciate most in noida",
+    "class": "discovery",
+    "sources": [
+      "queries1.md"
+    ]
+  },
+  {
+    "id": "q321",
+    "query": "Would you invest ₹1 crore in Noida today, or would you choose Gurgaon instead? Explain your reasoning.",
+    "class": "budget_personal",
+    "sources": [
+      "queriesStress.md"
+    ]
+  }
+]
