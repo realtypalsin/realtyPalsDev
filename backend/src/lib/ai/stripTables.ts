@@ -1,25 +1,4 @@
 // backend/src/lib/ai/stripTables.ts
-//
-// Drops markdown tables out of a stream, for turns where we have already
-// rendered one ourselves.
-//
-// The prompt tells the model a table is on screen and asks it not to draw
-// another. That is an instruction, not a guarantee — and the failure is
-// expensive twice over: the buyer sees the same figures in two grids, and we
-// paid output tokens for the duplicate. This is the mechanical backstop.
-//
-// It has to work on a stream. Tokens leave as they arrive, so by the time a
-// table is recognisable part of it has already gone out. The filter therefore
-// works a line at a time: text accumulates until a newline, and only then is
-// the completed line judged and either forwarded or dropped.
-//
-// Three things it has to get right, each of which was a way to corrupt a good
-// answer rather than merely fail to trim a bad one:
-//
-//   - A pipe inside a fenced code block is not a table row.
-//   - A heading whose only content was the dropped table has to go too, or the
-//     buyer is left reading "### Comparison" with nothing under it.
-//   - Dropping a block leaves a run of blank lines where it was.
 
 /** A table row or its `| :--- |` separator. Leading whitespace is allowed. */
 function isTableLine(line: string): boolean {
@@ -44,13 +23,7 @@ export interface TableStripper {
   droppedAnything(): boolean
 }
 
-/**
- * Wraps an emit function with a line filter that removes markdown tables.
- *
- * One line of lookahead is held for headings: a heading is only forwarded once
- * we know what follows it, because a heading immediately followed by a table
- * row belongs to that table and goes with it.
- */
+/** Wraps an emit function with a line filter that removes markdown tables. */
 export function createTableStripper(emit: (text: string) => void): TableStripper {
   let partial = ''
   let inFence = false
@@ -156,13 +129,7 @@ export function createTableStripper(emit: (text: string) => void): TableStripper
   }
 }
 
-/**
- * Non-streaming form, for text already assembled.
- *
- * Used for the copy that gets persisted and cached: the buyer saw the filtered
- * stream, so the transcript and the cache entry must match what they read
- * rather than what the model sent.
- */
+/** Non-streaming form, for text already assembled. */
 export function stripTables(text: string): string {
   let out = ''
   const s = createTableStripper((chunk) => {

@@ -1,25 +1,4 @@
 // backend/src/lib/discovery/adaptiveChips.ts
-//
-// Follow-up chips derived from what the answer actually contained, in code.
-//
-// Chips used to be a second model call: the conversation was handed back to an
-// LLM with "predict the buyer's next question". That is the expensive way and
-// the lossy way at once. It was the last remaining per-turn model call on a
-// lookup turn and roughly a quarter of that turn's cost, spent on three
-// suggestion buttons — and the model was guessing at what its own answer had
-// said, from a transcript, having already forgotten the structure.
-//
-// We do not have to guess. By the time chips are built we know exactly what the
-// buyer is looking at: which projects were in the table we rendered, which
-// sectors were compared, whether a payment schedule or a cost sheet was shown,
-// and which intent fields are still empty. Chips built from that are cheaper,
-// instant, deterministic, and more accurate than a model re-reading its own
-// output — a chip can name a project that is genuinely on screen, because we
-// put it there.
-//
-// The rule this encodes: a chip is only worth a tap if it goes somewhere the
-// buyer can see they want to go. "Payment plans for ACE Parkway" is a next step.
-// "Tell me more" is a shrug.
 
 import { chip, type ChipAction } from './conversationEngine'
 
@@ -39,10 +18,7 @@ export interface AnsweredContext {
 
 const MAX_CHIPS = 3
 
-/**
- * Deep-dive actions for a named project, in the order a buyer actually asks
- * them: what does it cost in full, how do I pay for it, is it legally clean.
- */
+/** Deep-dive actions for a named project, in the order a buyer actually asks */
 function projectChips(name: string, startPriority: number): ChipAction[] {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30)
   return [
@@ -70,13 +46,7 @@ function projectChips(name: string, startPriority: number): ChipAction[] {
   ]
 }
 
-/**
- * The chips for this turn.
- *
- * Ordered most-specific first: a project the buyer is looking at beats a sector,
- * which beats a generic prompt to narrow the search. Truncated to three, because
- * a row of chips the buyer has to read is not a shortcut.
- */
+/** The chips for this turn. */
 export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
   const out: ChipAction[] = []
   const seen = new Set<string>()

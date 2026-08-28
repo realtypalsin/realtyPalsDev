@@ -1,28 +1,4 @@
 // backend/src/lib/ai/marketTable.ts
-//
-// Market tables, rendered in code instead of by the model.
-//
-// Measured over 321 real answers: 54% of them contained a markdown table, and
-// those tables were 53% of ALL output tokens. Output is roughly two thirds of a
-// turn's cost, so the model drawing tables was about a third of the entire AI
-// bill — and most of what it drew was data we had already injected into its
-// prompt. We paid input to send it and output to have it copied back.
-//
-// The cost is the smaller half of the argument. Left to invent its own columns,
-// the model invented metrics it had no data for:
-//
-//   | Micro-Market | ... | 5-Yr Upside Risk-Adjusted Est. | Net Rental Yield |
-//   | Greater Noida West | ... | **25–35%** (Metro + Airport) | 3.5–4.0%       |
-//
-// Nothing in our database supports a five-year risk-adjusted upside figure. It
-// also emitted ⭐ and ⚠️ into cells while the prompt forbade emoji anywhere. A
-// rendered table cannot do either: every column here is a column we hold, and a
-// value we do not have prints as an explicit gap rather than a plausible number.
-//
-// The table is streamed to the buyer BEFORE the model's prose, as its own block.
-// That avoids a placeholder protocol entirely — no `{{table}}` token to survive
-// substitution and leak into the answer, which is the failure the prompt's ban
-// on custom tags exists to prevent.
 
 import type { MicroMarketSummary } from '../discovery/sectorDataGateway'
 
@@ -31,35 +7,20 @@ function rupees(n: number): string {
   return `₹${Math.round(n).toLocaleString('en-IN')}`
 }
 
-/**
- * The sentinel for a cell we hold no value for.
- *
- * Deliberately the same wording used elsewhere for absent facts. An em dash or
- * a blank cell reads as "nothing here"; this reads as "we did not find one",
- * which is the honest claim and the one the fact-tier rules require.
- */
+/** The sentinel for a cell we hold no value for. */
 const ABSENT = 'Not recorded'
 
 /** Escapes a pipe so a value containing one cannot break the row. */
 const cell = (s: string) => s.replace(/\|/g, '\\|').trim() || ABSENT
 
 export interface MarketTableOptions {
-  /**
-   * Cap on rows. A buyer choosing between twelve micro-markets is not choosing;
-   * the model's prose is what narrows it, and the table is the evidence.
-   */
+  /** Cap on rows. */
   limit?: number
   /** Ordering. Price ascending suits a budget question, descending a premium one. */
   order?: 'price_asc' | 'price_desc'
 }
 
-/**
- * The Noida micro-market table, from our own rows.
- *
- * Returns an empty string when there is nothing worth showing — one row is not
- * a comparison, and an empty table is worse than a sentence. The caller then
- * simply does not attach one, and the model writes prose as usual.
- */
+/** The Noida micro-market table, from our own rows. */
 export function renderMicroMarketTable(
   markets: MicroMarketSummary[],
   options: MarketTableOptions = {},
@@ -97,13 +58,7 @@ export function renderMicroMarketTable(
   return `${header}\n${body.join('\n')}`
 }
 
-/**
- * A sector we can describe from project rows but have no curated row for.
- *
- * Rendered in the same table as curated micro-markets, and marked, because the
- * two make different claims: a curated row asserts character ("Ultra Luxury &
- * Golf Township"), a derived one asserts only arithmetic over projects we hold.
- */
+/** A sector we can describe from project rows but have no curated row for. */
 export interface DerivedSectorRow {
   sector: string
   projectCount: number
@@ -112,13 +67,7 @@ export interface DerivedSectorRow {
   priceMaxCr: number | null
 }
 
-/**
- * Sectors we hold projects in but no sector intelligence for.
- *
- * Measured: 61 sectors have projects, 13 have curated rows, and 29 of the gap
- * hold two or more projects each. Every one of those was answered with "not
- * recorded" while priced projects sat in the same database.
- */
+/** Sectors we hold projects in but no sector intelligence for. */
 export function renderDerivedSectorTable(rows: DerivedSectorRow[], limit = 8): string {
   if (!rows || rows.length < 2) return ''
   const top = rows.slice(0, limit)
@@ -154,19 +103,7 @@ export interface ProjectRow {
 const sectorName = (s: ProjectRow['sector']): string =>
   typeof s === 'string' ? s : (s?.name ?? '')
 
-/**
- * The project shortlist table, from the rows discovery already returned.
- *
- * This is the shape the model drew most often and the most wasteful one:
- * `| Project | Builder | Status | Price Range |` over the same projects that
- * were injected into its prompt a moment earlier. Every column here is a
- * `Project` field, so nothing in it can be invented — and unlike the model's
- * version, a project with no recorded price says so instead of being given a
- * plausible band.
- *
- * Returns '' for fewer than two rows: one project is not a shortlist, and the
- * property cards already show it better than a table can.
- */
+/** The project shortlist table, from the rows discovery already returned. */
 export function renderProjectTable(projects: ProjectRow[], limit = 6): string {
   if (!projects || projects.length < 2) return ''
 
@@ -206,14 +143,7 @@ export interface PaymentPlanRow {
 const humanPlanType = (t?: string | null) =>
   (t ?? '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim()
 
-/**
- * The developer's payment plans, side by side.
- *
- * `watch_out` gets its own column deliberately. It is the one field on the row
- * that argues against the plan, and a payment schedule presented without its
- * catch is the kind of one-sided answer the trade-off rule exists to prevent.
- * The model used to have to remember to surface it; now it cannot be dropped.
- */
+/** The developer's payment plans, side by side. */
 export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): string {
   if (!plans || plans.length === 0) return ''
   const rows = plans.slice(0, limit)
@@ -240,11 +170,7 @@ export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): stri
 export interface CostSheetRow {
   base_price_per_sqft?: number | null
   base_cost_cr?: number | null
-  /**
-   * These three are RUPEES, not lakhs — see the warning on the CostSheet model
-   * in schema.prisma. Getting the unit wrong here would print a ₹3 lakh parking
-   * charge as ₹3, which reads as a typo rather than as the error it is.
-   */
+  /** These three are RUPEES, not lakhs — see the warning on the CostSheet model */
   parking_cost?: number | null
   ifms?: number | null
   club_membership?: number | null
@@ -263,15 +189,7 @@ function fromRupees(n?: number | null): string {
   return rupees(n)
 }
 
-/**
- * What the flat actually costs, line by line.
- *
- * Every row here was a line the model used to compose from injected numbers,
- * which is both the expensive way and the one that lets a rate drift. Statutory
- * percentages (GST, stamp duty, registration) come from the project's own sheet
- * where it has them and are omitted where it does not — never defaulted to a
- * figure that looks official.
- */
+/** What the flat actually costs, line by line. */
 export function renderCostSheetTable(sheet: CostSheetRow | null | undefined): string {
   if (!sheet) return ''
 
@@ -310,15 +228,7 @@ export interface SectorStats {
   topProjects: string
 }
 
-/**
- * Two sectors side by side, from counts we computed rather than prose we asked for.
- *
- * Only rows we can fill appear. The template this replaces asked the model for
- * "Metro & Transit", "Livability & Atmosphere" and "Social Infrastructure" —
- * three rows with nothing behind them in any table we hold, which the model
- * duly filled from memory and presented under a "Verified Sector Database
- * Facts" header.
- */
+/** Two sectors side by side, from counts we computed rather than prose we asked for. */
 export function renderSectorComparisonTable(a: SectorStats, b: SectorStats): string {
   if (!a?.sector || !b?.sector) return ''
 
@@ -334,14 +244,7 @@ export function renderSectorComparisonTable(a: SectorStats, b: SectorStats): str
   return `${header}\n${body.join('\n')}`
 }
 
-/**
- * True when this turn should get a rendered market table.
- *
- * Only for questions actually about the market across areas. A question about
- * one project, or one that names no place at all, gets prose — attaching a
- * city-wide table to "does Godrej Woods have a gym" is noise the buyer pays to
- * scroll past.
- */
+/** True when this turn should get a rendered market table. */
 export function wantsMarketTable(message: string, hasProjectFocus: boolean): boolean {
   if (hasProjectFocus) return false
   const m = (message || '').toLowerCase()

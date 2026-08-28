@@ -1,33 +1,9 @@
-/**
- * Short-lived cooldown for provider legs that just failed for a durable reason.
- *
- * The chain had no memory. A key that was out of quota was retried on every
- * single turn, in order, before the request reached a provider that answers —
- * and a live health check found exactly that: both tier-1 Gemini keys returning
- * 429 "You exceeded your current quota", costing roughly 1.8 seconds of dead
- * latency before the first token of every conversation.
- *
- * The distinction that matters is *durable* versus *transient*:
- *
- *   durable    quota exhausted, key revoked, model retired, billing required.
- *              Retrying in ten seconds cannot succeed. Skip the leg for a while.
- *   transient  a timeout, a stall, a 500, a dropped socket. Retrying is exactly
- *              the right response, and a cooldown here would remove capacity
- *              during the outage it is meant to survive.
- *
- * Deliberately in-process and unsynchronised. Each instance learns from its own
- * traffic within a minute; sharing this through Redis would add a network round
- * trip to the hot path to save a request that is already rare after the first.
- */
+/** Short-lived cooldown for provider legs that just failed for a durable reason. */
 
 /** How long a leg stays skipped. Long enough to matter, short enough to recover. */
 const COOLDOWN_MS = 5 * 60 * 1000
 
-/**
- * Cooldown for a per-minute rate limit. Free-tier windows are minute-length, so
- * this is long enough to clear one and short enough that the leg is back before
- * a busy minute is over.
- */
+/** Cooldown for a per-minute rate limit. */
 const RATE_LIMIT_COOLDOWN_MS = 65 * 1000
 
 /** Quota windows are usually per-minute or per-day; five minutes splits it sensibly. */
@@ -35,18 +11,7 @@ const cooldowns = new Map<string, { until: number; reason: string }>()
 
 export type FailureKind = 'durable' | 'transient' | 'rate_limited'
 
-/**
- * A per-minute rate limit, as opposed to an exhausted balance or day quota.
- *
- * These read almost identically — both arrive as 429 with the word "quota" in
- * them — but they want opposite handling. A free-tier key that has hit its
- * requests-per-minute ceiling is healthy and will answer again in under a
- * minute; cooling it for the full durable window throws away the only fallback
- * capacity there is. An exhausted prepaid balance will not recover today.
- *
- * Matched before the durable list, and deliberately narrow: anything that
- * mentions billing, credits or a daily limit falls through to durable.
- */
+/** A per-minute rate limit, as opposed to an exhausted balance or day quota. */
 const RATE_LIMIT_PATTERNS = [
   'rate limit',
   'rate_limit',
@@ -69,13 +34,7 @@ const NOT_MERELY_RATE_LIMITED = [
   'insufficient_quota',
 ]
 
-/**
- * Classifies a provider failure.
- *
- * Errors reach here as free text from four different SDKs, so this reads the
- * message rather than a status code. Anything unrecognised is treated as
- * transient: wrongly cooling a healthy provider costs more than one wasted retry.
- */
+/** Classifies a provider failure. */
 export function classifyFailure(error: unknown): FailureKind {
   const message = (error instanceof Error ? error.message : String(error ?? '')).toLowerCase()
 
@@ -132,10 +91,7 @@ export function cooldownReason(key: string): string | null {
   return entry && entry.until > Date.now() ? entry.reason : null
 }
 
-/**
- * Records a failure. Only durable ones start a cooldown.
- * Returns the kind so the caller can log it.
- */
+/** Records a failure. */
 export function recordFailure(key: string, error: unknown): FailureKind {
   const kind = classifyFailure(error)
   if (kind === 'durable' || kind === 'rate_limited') {

@@ -1,31 +1,4 @@
 // backend/src/lib/ai/semanticCache.ts
-//
-// Two-tier answer cache: an in-process LRU in front of a shared Redis store.
-//
-// L1 is the map below — nanoseconds, but it dies with the process and is private
-// to one instance. L2 is Upstash, already configured for rate limiting. Without
-// L2 every deploy started cold and every instance kept its own private copy, so
-// the cache only ever helped a user who repeated themselves inside one process.
-//
-// Why this is worth having at all: 62% of measured Noida demand is bare head
-// terms — "2 bhk in noida", "property rates in sector 75" — drawn from a long-
-// tailed but heavily repeated keyword distribution. Those are the same question
-// from every buyer who asks them, and at ~$0.004 a turn they are the cheapest
-// thing in the product to stop paying for twice.
-//
-// The danger is serving one buyer an answer written for another. Two things
-// prevent it:
-//
-//   - `scope`, which was already here: an answer about one project is keyed to
-//     that project and cannot surface for another. See semanticCacheScope.test.
-//   - the intent fingerprint added below. An answer shaped by a stated budget,
-//     sector or BHK is keyed to that shape. Two buyers in the same situation
-//     share it — which is correct, they would get the same answer — and a buyer
-//     in a different situation misses and gets their own.
-//
-// Every Redis path is wrapped and returns null on failure. A cache problem must
-// never cost a buyer their answer, and it must never delay one either: reads
-// carry a short timeout, writes are fire-and-forget.
 
 import { createHash } from 'node:crypto'
 import { getRedis } from '../cache'
@@ -64,11 +37,7 @@ let cacheHits = 0
 let cacheMisses = 0
 let accessCounter = 0 // Monotonic counter for access ordering
 
-/**
- * Normalizes query string for semantic matching:
- * - Lowercase
- * - Strips punctuation, extra spaces, and filler words (e.g. "please", "can you", "tell me")
- */
+/** Normalizes query string for semantic matching: */
 export function normalizeQueryKey(query: string): string {
   if (!query) return ''
   return query
@@ -79,27 +48,10 @@ export function normalizeQueryKey(query: string): string {
     .trim()
 }
 
-/**
- * Scope for a cache entry.
- *
- * `GLOBAL_SCOPE` is only correct for answers that contain no session-specific
- * facts — statutory rates, "how do I check RERA", builder league tables. Any
- * answer written around a particular project or sector MUST pass that project's
- * id (or the sector name) as the scope: the cache key is otherwise just the
- * normalized question text, so "show payment plans" asked while viewing one
- * project would be served verbatim to the next user asking it about a different
- * project.
- */
+/** Scope for a cache entry. */
 export const GLOBAL_SCOPE = 'global'
 
-/**
- * Intent fields that change what a correct answer says.
- *
- * Anything not listed is either bookkeeping (queryKind, radiusKm, loop counts)
- * or too fine-grained to be worth splitting the cache on. Getting this wrong in
- * the cautious direction only costs a cache miss; the other direction serves
- * one buyer an answer written around another's budget.
- */
+/** Intent fields that change what a correct answer says. */
 const ANSWER_SHAPING_FIELDS = [
   'sector',
   'bhk',
@@ -112,14 +64,7 @@ const ANSWER_SHAPING_FIELDS = [
   'lifestyleKeywords',
 ] as const
 
-/**
- * Short, stable digest of the intent an answer was written under.
- *
- * An empty intent — a first turn, a buyer who has stated nothing — digests to
- * `anon`, and that is the bucket the head terms land in. It is also the bucket
- * with by far the highest hit rate, which is the whole point: those are the
- * questions where one answer genuinely serves everyone.
- */
+/** Short, stable digest of the intent an answer was written under. */
 export function intentFingerprint(intent?: Record<string, unknown> | null): string {
   if (!intent) return 'anon'
   const shaping: Record<string, unknown> = {}
@@ -142,10 +87,7 @@ function buildCacheKey(query: string, scope: string, fingerprint = 'anon'): stri
   return `${scope}::${fingerprint}::${normalized}`
 }
 
-/**
- * L1 only. Synchronous, so it can be used where an await is impossible and by
- * the scope tests, which are about keying rather than about Redis.
- */
+/** L1 only. */
 export function getCachedResponseLocal(
   query: string,
   scope: string = GLOBAL_SCOPE,
@@ -156,12 +98,7 @@ export function getCachedResponseLocal(
   return readLocal(key)
 }
 
-/**
- * L1, then Redis.
- *
- * A Redis hit is promoted into L1, so a popular head term costs one network
- * round trip per instance per TTL and nothing after that.
- */
+/** L1, then Redis. */
 export async function getCachedResponse(
   query: string,
   scope: string = GLOBAL_SCOPE,
@@ -187,11 +124,7 @@ export async function getCachedResponse(
   return remote
 }
 
-/**
- * `countMiss` is false when the caller is about to consult Redis: an L1 miss
- * that Redis then serves is a hit, and counting both made the reported hit rate
- * describe the tiers rather than the cache.
- */
+/** `countMiss` is false when the caller is about to consult Redis: an L1 miss */
 function readLocal(key: string, countMiss = true): CachedEntry | null {
   const entry = cache.get(key)
   if (!entry) {
@@ -218,11 +151,7 @@ function readLocal(key: string, countMiss = true): CachedEntry | null {
 /** Namespace, so a key change is a cache flush rather than a wrong answer. */
 const REDIS_PREFIX = 'ac:v2:'
 
-/**
- * A read that takes longer than this is not worth waiting for — the LLM call it
- * would have saved is only a few seconds, and a slow cache that delays every
- * turn is worse than no cache.
- */
+/** A read that takes longer than this is not worth waiting for — the LLM call it */
 const REDIS_READ_TIMEOUT_MS = Number(process.env.ANSWER_CACHE_READ_TIMEOUT_MS ?? 250)
 
 /** Resolves to null rather than rejecting, and never waits past the deadline. */

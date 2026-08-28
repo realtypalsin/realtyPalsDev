@@ -34,14 +34,8 @@ export async function streamWithMistral(
     messages: msgs,
     stream: true,
     // Without this the stream carries no usage at all, so a turn answered here
-    // was invisible in ai_usage_events and read as $0.00 spend. 238 of 321
-    // corpus queries were served by this leg and by Cerebras, and the cost
-    // dashboard showed 16 billed queries.
     stream_options: { include_usage: true },
-    // From the turn's cost profile rather than a fixed 1024. This is the cheap
-    // leg — Mistral Small is roughly 5x cheaper per input token and 9x cheaper
-    // per output token than Gemini Flash — but a head term still has no use for
-    // a 1,024-token allowance, and a four-sector comparison is truncated by one.
+    // From the turn's cost profile rather than a fixed 1024.
     max_tokens: maxTokens ?? 1024,
     temperature: 0.7,
   })

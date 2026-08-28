@@ -1,25 +1,4 @@
 // backend/src/lib/discovery/derivedSectors.ts
-//
-// Sector-level facts computed from the projects we already hold, for the
-// sectors nobody has hand-written a SectorIntelligence row for.
-//
-// The numbers, measured: Project.sector covers 61 distinct sectors.
-// SectorIntelligence covers 13. Twenty-nine of the gap have two or more
-// projects each — enough to say something true about price and supply — and
-// every sector answer, every micro-market table and every "which area suits me"
-// question was blind to all of them.
-//
-// This is not new data. It is the arithmetic on data already in the database,
-// which was being thrown away because one table happened to be short. A buyer
-// asking about Sector 120 was told we had nothing, while four Sector 120
-// projects sat in the same database with prices on them.
-//
-// Derived rows are marked as such and kept behind curated ones. A hand-written
-// row carries judgement a GROUP BY cannot — micro-market grouping, lifestyle
-// character, who should buy there — so where a curated row exists it wins. What
-// derivation gives is the honest floor: how many projects, what they cost, how
-// many are ready. That is enough to answer a price question and enough to stop
-// saying "not recorded" about a sector we demonstrably cover.
 
 import { prisma } from '../db'
 
@@ -33,10 +12,7 @@ export interface DerivedSector {
   priceMaxCr: number | null
   /** Up to four project names, for a "landmark societies" cell. */
   topProjects: string[]
-  /**
-   * Always true. Present so a caller can label the row, because the honest
-   * claim differs: a curated row asserts character, this asserts arithmetic.
-   */
+  /** Always true. */
   derived: true
 }
 
@@ -46,12 +22,7 @@ const MIN_PROJECTS = 2
 const cache = new Map<string, { data: DerivedSector[]; expiresAt: number }>()
 const TTL_MS = 10 * 60 * 1000
 
-/**
- * Every sector we hold enough projects to describe, computed.
- *
- * One query, grouped in memory. The per-sector alternative was 61 queries on a
- * path that runs on most turns.
- */
+/** Every sector we hold enough projects to describe, computed. */
 export async function deriveSectorsFromProjects(city?: string): Promise<DerivedSector[]> {
   const key = (city ?? 'all').toLowerCase()
   const hit = cache.get(key)

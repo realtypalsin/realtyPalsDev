@@ -10,15 +10,6 @@ const PRICE: Record<string, { in: number; out: number }> = {
   'gpt-4o-mini': { in: 0.15, out: 0.6 },
   'claude-3-5-sonnet-20241022': { in: 3.0, out: 15.0 },
   // Verified against ai.google.dev/gemini-api/docs/pricing, paid tier, Aug 2026.
-  //
-  // These were previously 0.075/0.3 for Flash and 0.0375/0.15 for Flash-Lite —
-  // the CACHED-input rate mistaken for the standard one. Every Gemini row was
-  // therefore understated 8-16x, and a day of measurement that reported $0.53
-  // of spend had actually drawn about $8.50 off a prepaid balance. Anything
-  // reading this table — the daily budget gate, isOverDailyBudget, the admin
-  // cost view — was wrong by the same factor.
-  //
-  // Gemini 3.6/3.7 Flash carry promotional pricing that DOUBLES on 1 Jan 2027.
   'gemini-3.6-flash': { in: 0.75, out: 3.75 }, // → 1.50 / 7.50 from 2027-01-01
   'gemini-3.7-flash': { in: 0.75, out: 3.75 }, // → 1.50 / 7.50 from 2027-01-01
   'gemini-3.5-flash': { in: 1.5, out: 9.0 },
@@ -31,27 +22,13 @@ const PRICE: Record<string, { in: number; out: number }> = {
   'mistral-small-latest': { in: 0.14, out: 0.42 },
   'llama3.3-70b': { in: 0.5, out: 1.5 },
   // Cerebras serves gpt-oss-120b under the bare id; the 'openai/'-prefixed row
-  // above is Groq's id for the same weights at Groq's price. Without this row
-  // the model fell through to the {in:0, out:0} default and every Cerebras turn
-  // was recorded with real token counts and a cost of exactly zero.
   'gpt-oss-120b': { in: 0.25, out: 0.69 },
 }
 
-/**
- * Cached input as a fraction of the standard input rate.
- *
- * 10% on every current Gemini model — $0.075 against $0.75 on 3.6 Flash,
- * $0.03 against $0.30 on 3.5 Flash-Lite. Callers fold cached tokens in at this
- * ratio so PRICE can stay one rate per model.
- */
+/** Cached input as a fraction of the standard input rate. */
 export const CACHED_INPUT_RATIO = 0.1
 
-/**
- * USD for a given token count on a given model, from the one PRICE table.
- *
- * Exported so no caller has to restate a rate. The last copy of these numbers
- * living somewhere else was ten times low and silently governed a spend cap.
- */
+/** USD for a given token count on a given model, from the one PRICE table. */
 export function priceFor(model: string, promptTokens: number, completionTokens: number): number {
   const p = PRICE[model] ?? { in: 0, out: 0 }
   return (promptTokens * p.in + completionTokens * p.out) / 1_000_000
@@ -98,13 +75,7 @@ export async function recordUsage(args: {
   }
 }
 
-/**
- * Everything spent today on one provider, across all users and all routes.
- *
- * isOverDailyBudget below only sees one signed-in user's chat traffic, which
- * means anonymous traffic and every background job were outside any limit. This
- * is the figure the Gemini day-budget is checked against.
- */
+/** Everything spent today on one provider, across all users and all routes. */
 export async function spentTodayUsd(provider?: string): Promise<number> {
   const since = new Date()
   since.setUTCHours(0, 0, 0, 0)

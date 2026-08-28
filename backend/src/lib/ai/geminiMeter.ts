@@ -1,31 +1,9 @@
 // backend/src/lib/ai/geminiMeter.ts
-//
-// Every non-streaming Gemini call goes through here, so that all of them are
-// billed and all of them are stoppable.
-//
-// The streaming chat path (gemini.ts) has recorded its usage for a while. The
-// other ten call sites — intent extraction, chip generation, extended intent,
-// history compression, session summaries, ghost-pool classification, buyer
-// narrative, document parsing — did not, and several of them run on EVERY turn.
-// A day of corpus runs reported $0.53 spent against a bill several times that,
-// because ai_usage_events only ever saw one call in four.
-//
-// Under-reporting is the smaller half of the problem. Nothing anywhere stopped
-// spending: the per-user guard in cost.ts only covers signed-in users on the
-// chat route, so a batch script running as a guest could empty a prepaid
-// balance without crossing a single limit. `assertWithinGeminiBudget` is that
-// missing stop.
 
 import { GoogleGenAI } from '@google/genai'
 import { recordUsage, spentTodayUsd, priceFor, CACHED_INPUT_RATIO } from './cost'
 
-/**
- * Hard ceiling on Gemini spend per UTC day, across every caller.
- *
- * Zero disables the ceiling. The default is deliberately small: it is a
- * runaway-batch backstop, not a capacity plan, and it should be raised
- * consciously rather than discovered by a depleted balance.
- */
+/** Hard ceiling on Gemini spend per UTC day, across every caller. */
 const DAILY_BUDGET_USD = Number(process.env.GEMINI_DAILY_BUDGET_USD ?? '2')
 
 /** Refresh interval for the spend figure. A DB read per call would be absurd. */
@@ -44,14 +22,7 @@ export class GeminiBudgetExceededError extends Error {
   }
 }
 
-/**
- * Throws once the day's Gemini spend is over budget.
- *
- * Throwing rather than returning false is deliberate: every caller already has
- * a catch that falls through to the next provider or degrades gracefully, so a
- * throw routes traffic off Gemini without any caller needing to know the budget
- * exists. A silent `false` would have to be handled at ten sites to be safe.
- */
+/** Throws once the day's Gemini spend is over budget. */
 export async function assertWithinGeminiBudget(): Promise<void> {
   if (DAILY_BUDGET_USD <= 0) return
 
@@ -86,14 +57,7 @@ export interface MeteredClientOptions {
   timeoutMs?: number
 }
 
-/**
- * A GoogleGenAI client whose generateContent is budgeted and billed.
- *
- * Shaped like the real client so a call site changes on one line — the
- * construction — and the call below it is untouched. Ten sites had to be
- * converted; a signature that forced each call to be restructured would have
- * been ten chances to get a brace wrong in code nobody was about to re-test.
- */
+/** A GoogleGenAI client whose generateContent is budgeted and billed. */
 export function meteredClient(opts: MeteredClientOptions) {
   const apiKey = opts.apiKey ?? process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error(`No GEMINI_API_KEY configured (endpoint: ${opts.endpoint})`)
@@ -152,12 +116,7 @@ function meter(
   }
 }
 
-/**
- * Rough local cost, used only to keep the cached spend figure moving between
- * DB refreshes. Reads the same PRICE table the DB rows are costed from, so a
- * corrected rate cannot apply to one and not the other — the hardcoded rates
- * that used to live here were the cached-input rates, ten times low.
- */
+/** Rough local cost, used only to keep the cached spend figure moving between */
 function estimateCostUsd(model: string, inTokens: number, outTokens: number): number {
   return priceFor(model, inTokens, outTokens)
 }

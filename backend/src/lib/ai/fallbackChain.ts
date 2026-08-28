@@ -20,14 +20,7 @@ export interface FallbackChainOptions {
   send: SendFn
   onToolCall: ToolCallFn
   groqFallbackSuffix: string
-  /**
-   * Builds the system prompt for a provider given whether it can call tools.
-   *
-   * Preferred over `groqFallbackSuffix`: it lets the tool catalogue be omitted
-   * for tool-less providers instead of emitted-then-retracted. Called lazily, so
-   * the tools-enabled variant is only built if the chain reaches an OpenAI leg.
-   * When absent, the legacy systemPrompt + suffix behaviour applies.
-   */
+  /** Builds the system prompt for a provider given whether it can call tools. */
   buildSystemPrompt?: (supportsTools: boolean) => string
   projects?: ScoredProject[]
   userMessage?: string
@@ -35,14 +28,7 @@ export interface FallbackChainOptions {
   sessionId?: string | null
   chainConfig?: FallbackKeyConfig[] // Allows custom chain override for unit testing
   config?: InferenceConfig
-  /**
-   * Drop any markdown table the model emits.
-   *
-   * Set by callers that have already rendered one from our own rows. The prompt
-   * asks the model not to draw a second — this is what happens when it does
-   * anyway: the buyer would otherwise read the same figures in two grids, and
-   * we would have paid output tokens for the duplicate.
-   */
+  /** Drop any markdown table the model emits. */
   suppressTables?: boolean
 }
 
@@ -62,19 +48,14 @@ import { adaptiveCapMessages, CONTEXT_TOKEN_CEILING } from './adaptiveMessaging'
 import { STATIC_PREFIX_MARKER } from './systemPromptCache'
 import { estimateTokensReal } from './tokenizer'
 import { createTableStripper, stripTables } from './stripTables'
+import { sanitizeOutput } from './sanitizeOutput'
 
 /** Remove the prefix sentinel — it must never reach a provider. */
 function stripMarker(prompt: string): string {
   return prompt.replace(`\n${STATIC_PREFIX_MARKER}\n`, '\n')
 }
 
-/**
- * Splice the no-tools block into the stable prefix rather than appending it
- * after the per-request project data. Same text, same instructions — but it now
- * sits inside the cacheable prefix instead of being billed fresh every request.
- * Falls back to appending when the marker is absent (prompts built by paths that
- * don't go through buildSystemPromptWithCache).
- */
+/** Splice the no-tools block into the stable prefix rather than appending it */
 function applyNoToolsBlock(prompt: string, block: string): string {
   if (!block) return stripMarker(prompt)
   const token = `\n${STATIC_PREFIX_MARKER}\n`
@@ -82,28 +63,10 @@ function applyNoToolsBlock(prompt: string, block: string): string {
   return prompt.replace(token, `\n${block}\n`)
 }
 
-/**
- * How much of the answer is held back before the first token reaches the buyer.
- *
- * This window is the only thing that makes failover possible. Once a token has
- * been sent, a stall cannot roll over to the next provider — SSE cannot retract
- * a sentence — and the turn ends with "[Response truncated due to high
- * traffic]" mid-thought.
- *
- * It used to be 50 characters OR the first newline, whichever came first. Every
- * answer we produce opens with a markdown heading or a table row, so the
- * newline arrived within a few tokens and the window was effectively nil.
- * Holding ~250 characters costs a fraction of a second against a 3-4s time to
- * first token, and buys a real chance to recover.
- */
+/** How much of the answer is held back before the first token reaches the buyer. */
 const STREAM_BUFFER_CHARS = Number(process.env.STREAM_BUFFER_CHARS ?? 250)
 
-/**
- * Reply ceiling on a free-tier leg.
- *
- * Free quotas are counted in tokens per minute and requests per day. A verbose
- * answer there does not cost money, it costs the next buyer their turn.
- */
+/** Reply ceiling on a free-tier leg. */
 const FREE_TIER_MAX_TOKENS = Number(process.env.FREE_TIER_MAX_TOKENS ?? 900)
 
 function createBufferedSend(
@@ -195,9 +158,6 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     : chainConfig.filter(item => item.provider !== 'gemini')
 
   // Adaptive message capping: keep as many messages as fit within the INPUT
-  // context window, reserving room for the model's output. Passing the output
-  // maxTokens as the ceiling here silently truncated every request to the last
-  // 2 messages regardless of what the caller had already trimmed to.
   const systemPromptTokens = estimateTokensReal(systemPrompt)
   const responseReserve = options.config?.maxTokens ?? 3000
   const adaptiveResult = adaptiveCapMessages(
@@ -223,10 +183,6 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     }
 
     // Skip a leg that recently failed for a reason retrying cannot fix — an
-    // exhausted quota, a revoked key, a retired model. Without this the chain
-    // has no memory and re-attempts the same dead leg on every turn: a live
-    // check found both tier-1 Gemini keys returning 429, costing ~1.8s before
-    // the first token of every conversation.
     const cooldownKey = `${item.envKey}:${item.model}`
     if (isCoolingDown(cooldownKey)) {
       console.log(`[FALLBACK:COOLDOWN] ${item.label} — skipping: ${cooldownReason(cooldownKey)}`)
@@ -244,12 +200,6 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
 
     const effectiveConfig = options.config || { maxTokens: 3000 }
     // Gemini ignores its FALLBACK_CHAIN item.model unless we thread it through here — without
-    // this, the "backup" gemini entry silently re-requests the exact same model (and fails the
-    // exact same way on auth/config errors) instead of trying its distinct lite tier. An explicit
-    // caller override (e.g. cost-routing's config.model) still wins over the chain entry's default.
-    // The reply ceiling every leg honours, free-tier included. Without it the
-    // non-Gemini providers ignored the turn's profile entirely and always wrote
-    // up to 1,024 tokens.
     const legMaxTokens =
       item.tier === 'free'
         ? Math.min(effectiveConfig.maxTokens ?? 1500, FREE_TIER_MAX_TOKENS)
@@ -262,10 +212,6 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     }
 
     // A free-tier key is limited by tokens per minute and requests per day, not
-    // by spend, so the thing to conserve there is output — which is also the
-    // most expensive half of a paid turn. Thinking is dropped entirely and the
-    // reply ceiling is tightened: on a fallback leg, an answer that arrives is
-    // worth more than one that reasons for longer and then hits a quota wall.
     if (item.tier === 'free') {
       geminiConfig.thinkingBudget = 0
       geminiConfig.maxTokens = Math.min(geminiConfig.maxTokens ?? 1500, FREE_TIER_MAX_TOKENS)
@@ -301,20 +247,15 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
 
       flushRemaining()
 
-      // An empty string is a failed turn, not a successful one. A provider can
-      // return cleanly with nothing — the model spends its cycles on tool calls
-      // and never writes any text — and that used to be handed straight back to
-      // the buyer as a blank reply. Treat it like any other leg failure so the
-      // next provider gets a turn.
+      // An empty string is a failed turn, not a successful one.
       if (!text.trim() && !getTokensSent()) {
         throw new Error(`${item.label} returned no text`)
       }
 
       // The buyer saw the stripped stream, so the returned copy has to match:
-      // it is what gets persisted to the transcript and written to the answer
-      // cache. Leaving the model's raw text here would put a table into the
-      // record that never appeared on screen, and serve it from cache next time.
       if (options.suppressTables) text = stripTables(text)
+      // The buyer read the sanitised stream; the transcript and cache must match.
+      text = sanitizeOutput(text).text
 
       const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
       if (process.env.DEBUG_FALLBACK) {
@@ -355,10 +296,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         console.warn(`[FALLBACK:DURABLE] ${item.label} — cooling down: ${errMsg.slice(0, 120)}`)
       }
 
-      // Always logged, not gated on DEBUG_FALLBACK. The ROLLOVER line below is
-      // unconditional and says only that a leg failed; without the reason beside
-      // it a provider can fail on every turn in production and read as normal
-      // failover. That is how the paid Gemini leg went unnoticed.
+      // Always logged, not gated on DEBUG_FALLBACK.
       console.warn(`[FALLBACK:FAIL] ✗ ${item.label} failed: ${errMsg.slice(0, 300)}`)
 
       // Mid-stream stall: partial tokens were already sent to the SSE client.
