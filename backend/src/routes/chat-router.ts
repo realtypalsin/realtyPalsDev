@@ -74,8 +74,13 @@ import { isOverDailyBudget } from '../lib/ai/cost'
 import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monitoring/posthog'
 import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
 import { inputGuardrail } from '../lib/ai/guardrails'
+import { profileFor, classifyShape } from '../lib/ai/inferenceProfile'
+import { renderMicroMarketTable, renderProjectTable, wantsMarketTable } from '../lib/ai/marketTable'
+import { TABLE_ALREADY_SHOWN } from '../lib/ai/prompts/base'
+import { STATIC_PREFIX_MARKER } from '../lib/ai/systemPromptCache'
+import type { InferenceConfig } from '../lib/ai/openai'
 import { validateAgainstFacts } from '../lib/ai/guardrails-v2'
-import { getCachedResponse, setCachedResponse } from '../lib/ai/semanticCache'
+import { getCachedResponse, setCachedResponse, intentFingerprint, GLOBAL_SCOPE } from '../lib/ai/semanticCache'
 import {
   sameSet,
   logRouting,
@@ -168,6 +173,23 @@ router.post('/', async (req: Request, res: Response) => {
     const label = (action.payload.label as string) ||
       (isPatch ? 'updated search' : 'cleared a filter')
     message = `[User selected UI option: ${label}]`
+  }
+
+  // An empty TEXT_MESSAGE reaches here whenever a caller puts the question
+  // somewhere the payload transform above does not read — `payload.message`
+  // rather than text/query/label. The schema does not reject it, so the turn ran
+  // in full: intent extraction on "", intentState COLD, and a paid LLM call that
+  // could only answer with a greeting. Three separate scripts in this repo hit
+  // it and their results looked like product failures.
+  //
+  // 400 rather than a greeting: an empty question is a caller bug, and the only
+  // useful thing to do with it is say so.
+  if (action.type === 'TEXT_MESSAGE' && !message.trim()) {
+    res.status(400).json({
+      error: 'Empty message',
+      detail: 'action.payload.text is required for TEXT_MESSAGE (text, query or label).',
+    })
+    return
   }
 
   // Sanitize to prevent prompt injection (OWASP LLM01)
@@ -311,7 +333,10 @@ router.post('/', async (req: Request, res: Response) => {
   try {
     // ─── SEMANTIC FAQ CACHE (Instant $0.00 Token Fast Path) ────────────────────
     if (action.type === 'TEXT_MESSAGE' && message) {
-      const cached = getCachedResponse(message)
+      // Fingerprinted on the intent carried into this turn, so a cached answer
+      // written for a buyer who had stated a budget or a sector cannot surface
+      // for one who has stated nothing — and vice versa.
+      const cached = await getCachedResponse(message, GLOBAL_SCOPE, intentFingerprint(prevIntent))
       if (cached) {
         console.log('[CHAT:CACHE_HIT] Serving verified advisory response from cache:', message.slice(0, 50))
         send('token', { token: cached.token })
@@ -324,6 +349,47 @@ router.post('/', async (req: Request, res: Response) => {
             confidence: 'HIGH'
           })
         }
+        // A cached turn is still a turn the buyer had, and the transcript is
+        // what the sales team reads before calling them. This early return used
+        // to skip persistence entirely, so a cached answer left a hole in the
+        // conversation — the buyer's question and our reply simply absent from
+        // ChatMessage, and the turn missing from message_count.
+        //
+        // That was survivable while only a few handler answers were cached. Now
+        // that the main path caches every lookup and factual turn, it would have
+        // removed most first turns of most sessions from the record the lead
+        // qualification is built on. Saving model spend by losing lead data is
+        // not a saving.
+        //
+        // Awaited, not fire-and-forget: res.end() below ends the request, and a
+        // floating write can be cut off with it. Errors are swallowed — a
+        // persistence failure must not turn a good cached answer into an error.
+        if (sessionId) {
+          try {
+            await prisma.chatMessage.createMany({
+              data: [
+                {
+                  session_id: sessionId,
+                  role: 'user',
+                  content: message,
+                  intent_snapshot: prevIntent as unknown as Prisma.InputJsonValue,
+                },
+                {
+                  session_id: sessionId,
+                  role: 'assistant',
+                  content: cached.token,
+                },
+              ],
+            })
+            await prisma.chatSession.update({
+              where: { id: sessionId },
+              data: { message_count: { increment: 2 } },
+            })
+          } catch (dbErr) {
+            console.error('[CHAT:CACHE_HIT_SAVE_ERROR]', dbErr)
+          }
+        }
+
         send('done', {
           sessionId: sessionId ?? null,
           intentState: cached.intentState ?? 'SHORTLISTED',
@@ -1535,6 +1601,9 @@ USING THE FACTS:
               onToolCall: async () => ({}),
               groqFallbackSuffix: '',
               userMessage: message,
+              // See InferenceConfig.tools: a stub handler must not be paired
+              // with a tool catalogue, or the model loops and returns nothing.
+              config: { maxTokens: 1500, tools: false },
             })
             responseText = fallbackResult.text
           }
@@ -1913,7 +1982,10 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           onToolCall: async () => ({ error: 'No tools required for project detail' }),
           groqFallbackSuffix: '',
           userMessage: message,
-          // Project detail summary: use smart chain
+          // Project detail summary: use smart chain, without tools — the handler
+          // above answers every call with an error, so offering them only burns
+          // tool cycles. See InferenceConfig.tools.
+          config: { maxTokens: 1500, tools: false },
         })
         componentSummary = fallbackResult.text
       } catch (err) {
@@ -2443,11 +2515,81 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       console.warn('[CHAT:MICRO_MARKET_CONTEXT:WARN]', e)
     }
 
+    // ─── MARKET TABLE, RENDERED HERE RATHER THAN BY THE MODEL ──────────────────
+    //
+    // Tables were 53% of all output tokens across 321 measured answers, and
+    // output is ~2/3 of a turn's cost. Most of what the model drew was data we
+    // had just injected into its prompt — billed once going in and again coming
+    // back — and the columns it invented for the rest ("5-Yr Upside
+    // Risk-Adjusted Est.") had nothing behind them.
+    //
+    // Sent as its own block before the prose streams. No placeholder to
+    // substitute, so there is nothing that can leak half-rendered.
+    let renderedTable = ''
+    // A shortlist of real projects beats a city-wide table whenever discovery
+    // found any: it is what the buyer asked for, and it was the single most
+    // common table the model drew — over the very rows we had just sent it.
+    //
+    // Except when the cards are already rendering. "Show me 3 BHK in Sector 75"
+    // returns property cards carrying the name, builder, price and status — a
+    // table underneath them is the same five columns a second time, in a format
+    // the buyer cannot tap. The cards are the better surface; the table is
+    // redundant, and paying to draw one under them was waste on top of waste.
+    //
+    // Those turns get the micro-market table below instead, which says something
+    // the cards do not: what this sector costs against the alternatives.
+    const cardsAreRendering = renderTarget === 'cards' || renderTarget === 'both'
+    if (
+      message &&
+      !cardsAreRendering &&
+      trimmedProjects.length >= 2 &&
+      (intent.projectNames?.length ?? 0) === 0
+    ) {
+      renderedTable = renderProjectTable(trimmedProjects as any)
+    }
+    // Price context. Wanted either because the question is about places and
+    // rates, or because the cards are carrying the projects and the one thing
+    // they cannot show is what this sector costs against its neighbours.
+    const wantsPriceContext =
+      wantsMarketTable(message, (intent.projectNames?.length ?? 0) > 0) ||
+      (cardsAreRendering && trimmedProjects.length > 0)
+
+    if (!renderedTable && message && wantsPriceContext) {
+      try {
+        const { getCityMicroMarkets } = await import('../lib/discovery/sectorDataGateway')
+        const markets = await getCityMicroMarkets((intent as any)?.city || DEFAULT_CITY)
+        renderedTable = renderMicroMarketTable(markets, {
+          // A premium brief reads top-down, everything else bottom-up.
+          order: /\bpremium|luxury|\b[2-9]\s*crore/i.test(message) ? 'price_desc' : 'price_asc',
+        })
+      } catch (e) {
+        // A missing table costs the buyer nothing — the model still writes the
+        // answer, it just writes it without the evidence block attached.
+        console.warn('[CHAT:MARKET_TABLE] render skipped:', e instanceof Error ? e.message : e)
+      }
+    }
+
+    // The micro-markets block is city-level and byte-identical on every turn,
+    // but it used to be appended AFTER the per-request project facts. Prefix
+    // caching matches a prefix: stable bytes placed after variable bytes can
+    // never be cached, so those 472 tokens were billed at full rate on every
+    // single turn for no reason but ordering. Spliced into the stable prefix at
+    // the same marker the no-tools block uses.
+    const spliceIntoStaticPrefix = (prompt: string, block: string): string => {
+      if (!block) return prompt
+      const token = `\n${STATIC_PREFIX_MARKER}\n`
+      // No marker means this prompt was not built by buildSystemPromptWithCache;
+      // appending is then the only safe option and matches the old behaviour.
+      if (!prompt.includes(token)) return prompt + block
+      return prompt.replace(token, `\n${block}\n${token}`)
+    }
+
     // Built per provider: only the OpenAI legs can call tools, so everyone else
     // gets a prompt with no tool catalogue at all rather than the catalogue plus
     // a suffix retracting it.
     const buildPromptForProvider = (supportsTools: boolean): string =>
-      buildSystemPromptWithCache(
+      spliceIntoStaticPrefix(
+        buildSystemPromptWithCache(
         intent as any,
         trimmedProjects as any,
         memory,
@@ -2461,7 +2603,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         DEFAULT_CITY,
         multiDimContext,
         supportsTools,
-      ) + systemSuffix + microMarketsTail
+        ) + systemSuffix + (renderedTable ? TABLE_ALREADY_SHOWN : ''),
+        microMarketsTail,
+      )
 
     // Tool-less is the common path (Gemini is tier 1) — size and fact-check against it.
     const systemPrompt = buildPromptForProvider(false)
@@ -2527,8 +2671,31 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     // queries ("should I", "is this good") keep the smart default. Only affects the Gemini
     // leg of the fallback chain — deep-fallback providers (Groq/OpenAI) pick their own model.
     const modelRoute = routeToModel(classification)
+    // The cost profile for this turn: model, thinking budget and reply ceiling,
+    // chosen from the shape of the question. Output is ~2/3 of a turn's cost at
+    // real Gemini pricing and thinking is the largest line inside it, so this —
+    // not prompt size — is where the money is. A comparison still gets the full
+    // reasoning budget; a head term gets none, because none was ever used.
+    //
+    // `routeToModel` said cheap-or-smart and nothing about thinking. It is kept
+    // as the floor: anything it calls cheap stays on the lite tier even if the
+    // shape classifier reaches for the smart one.
+    const profile = profileFor(message)
+    const inferenceConfig: InferenceConfig = {
+      maxTokens: profile.maxTokens,
+      model: modelRoute === 'cheap' ? MODELS.GEMINI_LITE : profile.model,
+      thinkingBudget: profile.thinkingBudget,
+    }
+    console.log(
+      `[CHAT:PROFILE] shape=${profile.shape} model=${inferenceConfig.model} think=${profile.thinkingBudget} maxTokens=${profile.maxTokens}`,
+    )
     if (process.env.DEBUG_FALLBACK) {
       console.log(`[CHAT:MODEL_ROUTE] category=${classification.category} route=${modelRoute}`)
+    }
+
+    if (renderedTable) {
+      send('token', { token: `${renderedTable}\n\n` })
+      fullText += `${renderedTable}\n\n`
     }
 
     // Phase 2.2: Emit early "thinking" status before LLM inference to reduce perceived latency
@@ -2545,7 +2712,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         userMessage: message,
         userId,
         sessionId: currentSessionId,
-        config: modelRoute === 'cheap' ? { maxTokens: 1500, model: MODELS.GEMINI_LITE } : undefined,
+        config: inferenceConfig,
+        // We rendered the table above; drop any the model draws anyway.
+        suppressTables: Boolean(renderedTable),
       })
       fullText = fallbackResult.text
       usedProvider = { provider: fallbackResult.provider, envKey: fallbackResult.envKey }
@@ -2594,6 +2763,41 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       }
     }
 
+    // ─── ANSWER CACHE WRITE ────────────────────────────────────────────────────
+    //
+    // The main path never wrote to the cache, so the read at the top of this
+    // handler could only ever hit an answer some topic handler had left behind.
+    // 62% of real demand is repeated head terms; those were paying for a fresh
+    // model turn every single time anyone asked them.
+    //
+    // Written only when the answer is genuinely reusable:
+    //  - a lookup or factual shape, where the reply is about the market and not
+    //    about this buyer. Advisory and reasoning turns stay uncached: they are
+    //    written around a stated situation and are worth their cost.
+    //  - no project focus, since a project-specific reply belongs to that
+    //    project's scope, not the global one.
+    //  - the guardrails left the text alone.
+    //
+    // The key already carries the intent fingerprint, so "2 bhk in noida" asked
+    // cold and the same words asked with a ₹1.5cr budget in play are different
+    // entries. Two buyers in the same situation share one — which is right.
+    if (
+      action.type === 'TEXT_MESSAGE' &&
+      message &&
+      fullText &&
+      !fullText.startsWith("We're experiencing high traffic") &&
+      (classifyShape(message) === 'lookup' || classifyShape(message) === 'factual') &&
+      (intent.projectNames?.length ?? 0) === 0
+    ) {
+      setCachedResponse(
+        message,
+        { token: fullText, intentState, responseMode: 'chat' },
+        undefined,
+        GLOBAL_SCOPE,
+        intentFingerprint(intent as Record<string, unknown>),
+      )
+    }
+
     // Emit ui_state with provider affinity (after LLM response generated, so usedProvider is available)
     const postChatHistory = [
       ...chatHistory,
@@ -2612,8 +2816,21 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       chipInventory, // Reuse inventory loaded earlier for consistency
       true, // isUserMessage
       usedProvider, // Pass provider that succeeded for main response
-      // Second consecutive turn on the same shortlist escalates DECIDING → CONVERTING.
-      { stageTurnCount: priorShortlistTurns }
+      {
+        // Second consecutive turn on the same shortlist escalates DECIDING → CONVERTING.
+        stageTurnCount: priorShortlistTurns,
+        // No model call for chips on a head term. It is the last LLM call left
+        // on a lookup turn and roughly a quarter of that turn's cost, spent on
+        // three suggestion buttons.
+        //
+        // It also buys the least there. The chip prompt is built around "WE JUST
+        // ANSWERED — pick up a thread that answer opened", and a buyer who has
+        // typed "2 bhk in noida" has opened no thread. The static chips are
+        // driven by which intent fields are still missing, which is exactly the
+        // useful next question at that point. Advisory and reasoning turns keep
+        // the model chips: there, the answer really does open threads.
+        allowLlmChips: classifyShape(message) !== 'lookup',
+      }
     )
 
     // Branch-specific recovery set, handed to emitUiState as the fallback so the

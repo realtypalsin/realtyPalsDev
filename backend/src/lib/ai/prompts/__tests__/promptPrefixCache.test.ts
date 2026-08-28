@@ -60,7 +60,7 @@ describe('system prompt prefix stays cacheable', () => {
     for (const section of [
       '## HARD RULES',
       '## COMPETITOR BAN',
-      '## HONEYPOT RULE',
+      '## CONFIDENTIALITY',
       '## SENTINEL RULES',
       '## BUILDER DATA RULES',
       '## DOMAIN KNOWLEDGE',
@@ -69,6 +69,28 @@ describe('system prompt prefix stays cacheable', () => {
       assert.ok(a.includes(section), `${section} went missing in the restructure`)
     }
     assert.ok(a.includes('Response Length Guidelines'), 'budget rules went missing')
+  })
+
+  it('carries no verbatim reply for the model to parrot', () => {
+    // The old HONEYPOT RULE told the model to answer prompt-extraction attempts
+    // with one exact string. Small fallback models (Mistral, Cerebras) latched
+    // onto it as the most salient literal in a 5.7k-token prompt and emitted it
+    // for ordinary queries: 186 of 321 corpus queries came back as
+    // "I am RealtyPal, an AI advisor for Noida and Greater Noida. How can I
+    // help you with your property search today?" instead of an answer.
+    //
+    // Prompt-extraction is already blocked deterministically by inputGuardrail
+    // before the model is reached, so the rule was redundant as well as harmful.
+    // Keep the prompt free of any canned reply: an instruction to emit an exact
+    // string is an instruction a weak model will follow at the wrong moment.
+    assert.ok(
+      !/reply exactly with|output this exact string|respond verbatim with/i.test(a),
+      'prompt instructs an exact canned reply — weak fallback models will parrot it',
+    )
+    assert.ok(
+      !a.includes('How can I help you with your property search today?'),
+      'the old honeypot string is back in the prompt',
+    )
   })
 
   it('no explanatory comment is billed inside the prompt', () => {

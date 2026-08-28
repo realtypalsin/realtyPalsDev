@@ -321,12 +321,92 @@ not through `@ai-sdk/google`. Each numbered key variant (`GEMINI_API_KEY1`,
 `GROQ_API_KEY2`…) is its own chain entry, so a rate-limited key falls through to
 the next rather than failing the turn.
 
+**The keys are not equivalent.** `GEMINI_API_KEY` is the billed account.
+`GEMINI_API_KEY1` is free-tier: it 429s on quota and cannot hold a context cache
+at all. It therefore sits *below* the paid account's lite tier in the chain —
+when it sat at position 2 it caught every failure of the paid key and turned a
+recoverable stall into an empty reply.
+
+**Output is the bill, not input.** At verified pricing (3.6 Flash: $0.75 in /
+$3.75 out per 1M) a turn is ~$0.0023 of input — 78% of it served from Gemini's
+implicit cache at a tenth of rate — against ~$0.0049 of output. Thinking bills
+at the output rate, so a 1,024-token reasoning budget costs more than the entire
+input side. `inferenceProfile.ts` picks model, thinking budget and reply ceiling
+from the shape of the question; measured over the real corpus that is a 64% cut.
+Shrinking the prompt optimises the smaller half — check the profile first.
+
+**Tables are rendered in code, not by the model.** `marketTable.ts` builds the
+project shortlist, micro-market, sector-comparison, payment-plan and cost-sheet
+tables from rows we already hold, streams one before the prose, and tells the
+model it is on screen. **A project table is never rendered when property cards
+are** — the cards carry the same five columns and can be tapped.
+
+That instruction is backed mechanically: pass `suppressTables: true` to
+`executeWithFallbackChain` whenever you have rendered one, and `stripTables.ts`
+drops any table the model draws anyway — from the live stream and from the text
+returned for the transcript and the cache, so all three agree. It is line-based
+because the transport is a stream, and it leaves fenced code blocks alone.
+`[CHAT:TABLE_SUPPRESSED]` in the log means the prompt rule is being ignored. Measured over 321
+answers: 54% contained a table and tables were **53% of all output tokens** —
+mostly the same data we had just injected, billed once in and once out. Left to
+draw its own, the model also invented columns it had no data for (a "5-Yr Upside
+Risk-Adjusted Est.") and put emoji in cells the prompt forbade. A rendered table
+cannot do either: every column is one we hold, and a missing value prints
+"Not recorded". Adding a new table means a new renderer, not a prompt rule.
+
+**The output contract is per-question, and it goes last.** `outputContract()` in
+`prompts/base.ts` appends a short block naming what THIS answer should look
+like — length, whether a table is warranted, whether to commit to a verdict.
+Position is salience: it is the last thing the model reads. It replaced an
+unconditional "ALWAYS use markdown tables" in HARD RULES, which mandated the
+most token-expensive format we can emit on every turn including head terms.
+
+Splitting the prompt *body* by query type is not worth it and was measured:
+the head is served from Gemini's implicit cache at a tenth of rate, so trimming
+2,475 tokens of it saves ~$0.00007/turn. Splitting the OUTPUT contract pays,
+because output is ~2/3 of the bill. Shape comes from `classifyShape` — regex,
+no classifier call; a model to route to a cheaper model costs more than it saves.
+
+**Stable bytes must precede variable bytes.** Prefix caching matches a prefix,
+so anything constant appended after per-request data can never be cached. The
+city micro-markets block sat there and was billed at full rate every turn for
+no reason but ordering. `STATIC_PREFIX_MARKER` is the splice point for stable
+content; use it rather than concatenating.
+
+**Answers are cached in two tiers.** `semanticCache.ts` is an in-process LRU in
+front of Upstash. Keys are `scope :: intentFingerprint :: normalizedQuery`, so a
+project answer cannot surface for another project and an answer shaped by a
+stated budget cannot surface for a buyer who stated a different one. The main
+chat path writes only `lookup` and `factual` shapes with no project focus —
+advisory and reasoning turns are written around a situation and stay uncached.
+Redis failures are always non-fatal: reads carry a 250ms deadline, writes are
+fire-and-forget. Changing what a key means requires bumping `REDIS_PREFIX`,
+which flushes rather than serving stale answers under a new interpretation.
+
+**Prices live in one place.** `PRICE` in `cost.ts`, verified against
+ai.google.dev. They were once the *cached*-input rates entered as standard,
+understating every Gemini row 10x — which also meant the daily budget was
+enforcing ten times what it claimed. Note the 1 Jan 2027 doubling on 3.6/3.7.
+
+**Spending is capped.** `GEMINI_DAILY_BUDGET_USD` (default $2) is enforced in
+`geminiMeter.ts` across every caller. Exceeding it throws, which the chain
+handles as an ordinary Gemini failure and rolls on to Mistral. Every Gemini call
+goes through `meteredClient()` or `streamWithGemini`, both of which check the
+budget and write an `AiUsageEvent`. **Do not call `new GoogleGenAI` directly** —
+ten call sites once did, none of them recorded a rupee, and reported spend was
+under a quarter of actual.
+
 **Tool support.** `GEMINI_TOOLS_ENABLED` (from `ENABLE_GEMINI_TOOLS`) drives both
 the tool definitions passed to Gemini and the `toolsEnabled` argument to
 `getBaseSystemPrompt`. They come from one constant so they cannot disagree —
 before that, setting the env var alone gave Gemini a tool catalogue alongside a
-prompt reading "You cannot call tools here." Tools are currently **on**.
+prompt reading "You cannot call tools here." The constant defaults to **off**;
+`.env` sets `ENABLE_GEMINI_TOOLS=true`, so tools are on in this deployment.
 The OpenAI legs are also `supportsTools: true`; Mistral, Cerebras and Groq are not.
+
+A caller that passes a stub `onToolCall` must also pass `config.tools: false`.
+Offering a catalogue to a model whose tool results come back empty makes it loop
+through every tool cycle and return no text at all.
 
 Anything advertised in the tool catalogue must have a handler in the router.
 `toolCatalogue.test.ts` enforces this — three tools were once offered to the

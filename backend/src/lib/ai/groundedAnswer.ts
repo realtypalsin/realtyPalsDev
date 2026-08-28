@@ -22,6 +22,7 @@ import { webSearch } from '../web'
 import { executeWithFallbackChain } from './fallbackChain'
 import { getCachedResponse, setCachedResponse } from './semanticCache'
 import type { OpenQueryDetection } from '../discovery/openQuery'
+import { outOfScopeDirective } from './prompts/base'
 
 /** Cache scope. Open answers hold no session-specific facts, so they are shareable. */
 export const OPEN_CACHE_SCOPE = 'open'
@@ -45,6 +46,11 @@ function buildGroundedSystemPrompt(
   dbContext: string,
   webContext: string,
   city: string,
+  // Scope applies on this route too, and it has its own prompt — the ## SCOPE
+  // section of the main one never reaches here. With web sources attached this
+  // path will otherwise report a sourced rent range for a market we do not
+  // cover, correctly cited and still wrong to present as our advice.
+  userMessage: string,
 ): string {
   const gapLine =
     detection.topic === 'ENTITY'
@@ -71,7 +77,7 @@ If the question could mean more than one thing — a company that might be a bro
 ## DO NOT
 Pad with background the user did not ask for. List every fact in the blocks — pick the ones that answer the question. Add disclaimers beyond the single gap line. Use exclamation marks, superlatives about us, or sales language. Never steer an unanswered question toward our inventory: if we could not answer what they asked, offering listings instead is a deflection, not a service.
 
-${dbContext ? `## VERIFIED DATA (RealtyPals database)\n${dbContext}\n` : ''}${webContext ? `\n## WEB SOURCES\n${webContext}\n` : ''}`
+${dbContext ? `## VERIFIED DATA (RealtyPals database)\n${dbContext}\n` : ''}${webContext ? `\n## WEB SOURCES\n${webContext}\n` : ''}${outOfScopeDirective(userMessage)}`
 }
 
 // ── Database grounding ───────────────────────────────────────────────────────
@@ -268,7 +274,7 @@ export async function runGroundedAnswer(
 ): Promise<GroundedAnswer | null> {
   const { message, detection, city, userId, sessionId } = input
 
-  const cached = getCachedResponse(message, OPEN_CACHE_SCOPE)
+  const cached = await getCachedResponse(message, OPEN_CACHE_SCOPE)
   if (cached?.token) {
     return { text: cached.token, fromDatabase: false, fromWeb: false, cached: true }
   }
@@ -318,7 +324,7 @@ export async function runGroundedAnswer(
     return null
   }
 
-  const systemPrompt = buildGroundedSystemPrompt(detection, dbContext, webContext, city)
+  const systemPrompt = buildGroundedSystemPrompt(detection, dbContext, webContext, city, message)
 
   // Buffered, not streamed: the answer is checked before any of it reaches the user.
   const collected: string[] = []
