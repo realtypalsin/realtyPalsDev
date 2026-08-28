@@ -1,0 +1,234 @@
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Production Readiness · Revision 3 · Final</div>
+    <h1>RealtyPals</h1>
+    <p class="standfirst">Fifty real buyer queries, read one by one. The mechanical score says 96%. Reading the answers says something the score cannot see.</p>
+  </header>
+
+  <div class="figure">
+    <div class="figure-main">
+      <span class="figure-num">72</span><span class="figure-pct">%</span>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">Readiness, read not scored</div>
+      <div class="track"><i style="width:72%"></i></div>
+      <div class="track-scale"><span>0</span><span>mechanical&nbsp;96</span><span>100</span></div>
+      <div class="delta">soft launch viable · demo viable with a script</div>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">Measured, top-50 run</div>
+      <div class="terminal" style="margin:0">pass    <b>48/50</b> mechanical
+output  <b>421</b> tok/turn
+p50     <b>9.8s</b>   p90 16.2s
+tables  <b>40%</b> of text, rendered free</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The 96% is real but it is not the answer to your question.</strong> The grader checks for deflections, empty replies, truncation and out-of-scope answers that should have been declined. It cannot tell whether the answer addressed the question that was asked. I read all fifty. Three of them are confidently wrong in ways the grader scored as passes, and those three are the hardest queries in the set — the ones a demo would choose.
+  </div>
+
+  <section>
+    <h2>What reading the answers found</h2>
+    <p class="sec-note">Each of these passed the mechanical grade. Each is a defect a buyer would notice.</p>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">The hardest query compared the wrong two sectors</span>
+          <span class="tag sev">Fixed</span>
+        </div>
+        <div class="item-why">Asked: <em>"I have ₹1.25 crore. I work near Sector 62, my wife works near Sector 135, we have one child … Compare Sector 75, Sector 78, Sector 137 and Sector 150."</em> The answer compared <strong>Sector 62 against Sector 135</strong> — the two workplaces — and reported that Sector 135 has no inventory. The four sectors actually asked about were never looked at. <code>sectorComparison</code> takes <code>sectorMatches[0]</code> and <code>[1]</code>, the first two sector numbers anywhere in the message. Now it only claims a turn with exactly two; three or more is a brief and goes to the advisory path that sees the whole intent.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">A rent table built almost entirely from data we do not hold</span>
+          <span class="tag sev">Fixed</span>
+        </div>
+        <div class="item-why">"rental properties in noida" opened honestly — <em>"I can only provide rental benchmarks for the micro-markets we cover"</em> — and then drew a grid of 2 BHK and 3 BHK monthly ranges across four micro-markets. We hold <strong>one</strong> rent field, <code>avg_rent_3bhk_monthly</code>, on sector rows. Every other cell was invented, and the honest opener made it read as verified. The scope rule now permits a single benchmark inline in a sentence and forbids a rent table outright.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">The prompt contradicted itself on emoji, and the emoji won</span>
+          <span class="tag sev">Fixed</span>
+        </div>
+        <div class="item-why">One section reads <em>"NO EMOJI, ANYWHERE. Not in headings, not in table cells… An advisor writing about a two-crore decision does not decorate it."</em> Another mandates a <code>🏗️ Coverage Status</code> header. Five of fifty answers carried emoji. When a prompt contradicts itself the model picks one, and it picked the concrete instruction over the principle.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <span class="item-title">A brand we do not stock is answered with city-wide data</span>
+          <span class="tag ux">Open</span>
+        </div>
+        <div class="item-why">"godrej properties in noida" returned the micro-market rate table and never mentioned Godrej. "sarthi properties in noida" said <em>"I can't reach our builder database right now"</em> — which reads as a transient outage when the truth is we hold no Sarthi projects. Honest-sounding, and misleading in a different direction.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Component scorecard</h2>
+    <p class="sec-note">Out of ten. Every score below eight carries the specific thing that would raise it, and roughly what that is worth.</p>
+
+    <h3>Answer pipeline</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Component</th><th>Now</th><th></th><th>Scope of improvement</th></tr></thead>
+        <tbody>
+          <tr><td>Table rendering (5 renderers)<span class="up">new</span></td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Cannot invent a column or an emoji. Add floor-plan and amenity renderers → 10</td></tr>
+          <tr><td>Duplicate-table stripping<span class="up">new</span></td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Caught 11/50 real duplicates. Tokens still billed; only a firmer prompt recovers them</td></tr>
+          <tr><td>Cost metering &amp; budget cap<span class="up">new</span></td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Every call metered, fails closed. Needs one funded run to confirm end to end</td></tr>
+          <tr><td>Provider chain<span class="up">+2</span></td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Free-tier tier handling is unproven under sustained RPM pressure</td></tr>
+          <tr><td>Comparison answers<span class="up">+3</span></td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>9/9 on two-way. Three-way and multi-constraint briefs only just rerouted, unmeasured</td></tr>
+          <tr><td>Fact tiers &amp; no-fabrication<span class="up">−1</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Rendered tables cannot fabricate; model prose still can, and did. Rated down on evidence</td></tr>
+          <tr><td>Prompt architecture<span class="up">+1</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Two internal contradictions found by reading. A consistency test would find the rest</td></tr>
+          <tr><td>Scope discipline</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>3/4 out-of-scope handled well. The fourth invented a table</td></tr>
+          <tr><td>Answer cache (Redis)<span class="up">new</span></td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Correct by construction and by test; zero hits observed. Unproven in traffic</td></tr>
+          <tr><td>Brand / entity handling</td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>"We hold no Godrej projects" is the honest line and is not being said → 9</td></tr>
+          <tr><td>Latency</td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>p50 9.8s against a stated 3s target. Needs a smaller prompt or model for lookups</td></tr>
+          <tr><td>Evaluation harness<span class="up">new</span></td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>Mechanical only. It scored all three defects above as passes. A judge pass → 9</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Data &amp; coverage</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Component</th><th>Now</th><th></th><th>Scope of improvement</th></tr></thead>
+        <tbody>
+          <tr><td>Project depth</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>280 projects; payment plans, cost sheets and RERA on <strong>100%</strong> of them</td></tr>
+          <tr><td>Field exposure policy</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Allowlist, redaction, schema-parsing guard. Unchanged and still sound</td></tr>
+          <tr><td>Builder records</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>117 builders. The gap is saying so when a named builder is absent</td></tr>
+          <tr><td>Sector intelligence</td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td><strong>14 sectors.</strong> The corpus asks about ~30. Sector 135 returning nothing is a data gap, not a bug</td></tr>
+          <tr><td>Rental data</td><td><span class="score s-lo">4</span></td><td><div class="bar"><i class="lo" style="width:40%"></i></div></td><td>One field, 3 BHK only. Enough for yield, not enough for anything the model wants to build with it</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Untouched this session</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Component</th><th>Now</th><th></th><th>Scope of improvement</th></tr></thead>
+        <tbody>
+          <tr><td>Chat rendering (frontend)</td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Not touched. Browser QA still owed from revision 1</td></tr>
+          <tr><td>Chips</td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>See below — your adaptive-chip idea is the single best-value item left</td></tr>
+          <tr><td>Accessibility</td><td><span class="score s-lo">6</span></td><td><div class="bar"><i class="lo" style="width:60%"></i></div></td><td>Keyboard nav still unverified end to end</td></tr>
+          <tr><td><code>DiscoveryContent.tsx</code></td><td><span class="score s-lo">5</span></td><td><div class="bar"><i class="lo" style="width:50%"></i></div></td><td>2,083 lines, SSE + session + UI in one. Unchanged</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Token cost: what changed and what it is worth</h2>
+    <p class="sec-note">Two of these are measured. The rest are projections from the corpus and the verified price table, and are labelled as such.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Lever</th><th>Cut</th><th></th><th>Basis</th></tr></thead>
+        <tbody>
+          <tr><td>Prices corrected (were 10x low)</td><td><span class="score s-hi">—</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td><strong>Measured.</strong> Not a saving — the bill was always this. $0.73 reported vs $7.49 charged</td></tr>
+          <tr><td>Tables rendered in code</td><td><span class="score s-hi">22%</span></td><td><div class="bar"><i class="hi" style="width:88%"></i></div></td><td>Projected. 40% of displayed text is now rendered free — that part is measured</td></tr>
+          <tr><td>Shape-based thinking budgets</td><td><span class="score s-hi">64%</span></td><td><div class="bar"><i class="hi" style="width:100%"></i></div></td><td>Projected over the 321-query corpus. Unconfirmed on a funded key</td></tr>
+          <tr><td>Answer cache (Redis)</td><td><span class="score s-mid">~23%</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>Projected, and the weakest of these. Zero hits observed</td></tr>
+          <tr><td>Chips off for head terms</td><td><span class="score s-mid">26%</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>Of a lookup turn only. One LLM call removed</td></tr>
+          <tr><td>Micro-markets into cacheable prefix</td><td><span class="score s-lo">472 tok</span></td><td><div class="bar"><i class="lo" style="width:15%"></i></div></td><td>Per turn, was billed at full rate purely because of ordering</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Do not add these up.</strong> They overlap — a cached turn costs nothing, so the thinking budget saved on it is counted twice. The honest single figure is the one measured: <strong>$0.002 per turn</strong> on the top-50 run, against <strong>$0.0044</strong> measured before this session's work, at corrected prices. Roughly <strong>halved</strong>, with the larger projected cuts still unconfirmed because the paid key is credit-depleted.
+    </div>
+  </section>
+
+  <section>
+    <h2>How the answers actually read</h2>
+    <p class="sec-note">Rated by reading, not by the grader. Ten of the fifty, chosen as the extremes.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Query</th><th>Rating</th><th></th><th>What it did</th></tr></thead>
+        <tbody>
+          <tr><td>"sector 150 vs sector 128 noida"</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Rendered table with real counts, verdict, trade-away, choose-X-if. Exemplary</td></tr>
+          <tr><td>"are all properties in noida leasehold"</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Direct yes, 99-year lease, the authority named. Public fact answered as one</td></tr>
+          <tr><td>"properties on rent in noida"</td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Declined cleanly, offered the purchase bridge, invented nothing</td></tr>
+          <tr><td>"₹25 lakh cheaper — what should I investigate"</td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Four causes, then a concrete RERA next step. Genuinely advisory</td></tr>
+          <tr><td>"₹1.5 cr — Sec 75 vs 150 vs Noida Extension"</td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>Good on two of three. Noida Extension silently dropped</td></tr>
+          <tr><td>"properties in noida"</td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>Useful orientation table, carried an emoji the prompt bans</td></tr>
+          <tr><td>"godrej properties in noida"</td><td><span class="score s-lo">4</span></td><td><div class="bar"><i class="lo" style="width:40%"></i></div></td><td>Answered with city rates. Never mentioned Godrej</td></tr>
+          <tr><td>"sarthi properties in noida"</td><td><span class="score s-lo">4</span></td><td><div class="bar"><i class="lo" style="width:40%"></i></div></td><td>"Can't reach our builder database" — reads as an outage, is a data gap</td></tr>
+          <tr><td>"average rent for a 2 BHK in Noida"</td><td><span class="score s-lo">3</span></td><td><div class="bar"><i class="lo" style="width:30%"></i></div></td><td>Returned <em>only</em> a follow-up question. No answer at all</td></tr>
+          <tr><td>"₹1.25 cr, wife in Sec 135 — compare 75/78/137/150"</td><td><span class="score s-lo">2</span></td><td><div class="bar"><i class="lo" style="width:20%"></i></div></td><td>Compared the workplaces. Confidently answered a question nobody asked</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="prose" style="margin-top:1.4rem">The pattern is clear and it is not what a pass rate shows. The <strong>middle</strong> of the distribution is strong: two-way comparisons, budget briefs, statutory and process questions all read like a competent advisor. The <strong>extremes</strong> are where it breaks — the most constrained briefs get the wrong framing, and the barest head terms get generic orientation. Those extremes are exactly what a demo audience reaches for.</p>
+  </section>
+
+  <section>
+    <h2>Your two ideas, and what they are worth</h2>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">Chips that adapt to the answer just given</span><span class="tag perf">Highest value left</span></div>
+        <div class="item-why">The chip prompt already says "pick up a thread that answer opened" — but the chips are generated by a <em>second model call</em> that re-reads the conversation, which is both the expensive way and a lossy one. The answer we just rendered is structured: we know which projects were in the table, which sectors, whether a payment plan was shown. Chips can be <strong>derived from that structure in code</strong> — "Payment plans for ACE Parkway", "Why Sector 150 over 128", "Cost sheet for this project" — with no model call at all. That removes the last per-turn LLM call, makes chips deterministic, and makes them more relevant than a model re-reading its own output. This is the single best remaining item and it is not large.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">Database first, web second, never a third thing</span><span class="tag ux">Partly there</span></div>
+        <div class="item-why"><code>groundedAnswer.ts</code> already does this: our tables first, live web second, and it refuses when it has neither. Every claim must carry its source in parentheses, and web results are marked untrusted so instructions inside them are ignored. What is <strong>not</strong> yet enforced is the third case — the model answering from its own memory when both are empty. That is what produced the rent table and the invented sector metrics. The renderers close it for anything tabular; prose is still on trust.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where we are weak</h2>
+    <ol class="steps">
+      <li><div>
+        <div class="step-title">The grader cannot see wrongness</div>
+        <div class="step-body">It scored all three serious defects as passes. Every quality number in this document that is not from my own reading should be treated as "well-formed", not "correct". A judge pass over the top 50 is the highest-value verification left.</div>
+        <div class="step-cost">~2h · turns 96% into a number you can trust</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Sector coverage is 14, the market is ~30</div>
+        <div class="step-body">Sector 135 returning "Not recorded" is honest and correct behaviour over a real gap. But a buyer asking about a sector we do not hold gets a dead end, and the corpus is full of them. This is a data problem, not an engineering one, and no prompt fixes it.</div>
+        <div class="step-cost">data work · the largest single lift on answer quality</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Nothing is confirmed on a funded key</div>
+        <div class="step-body">The whole top-50 run was served by free-tier Flash-Lite. Every cost projection, the thinking budgets, the implicit-cache rate — all measured on a different model than production will use.</div>
+        <div class="step-cost">one top-up · ~$0.15 to re-run</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Latency is 3x the stated target</div>
+        <div class="step-body">p50 9.8s against the &lt;3s in CLAUDE.md. Intent extraction is already skipped where possible; the rest is model time on a 7k-token prompt. Getting under 3s trades against the quality just bought.</div>
+        <div class="step-cost">unresolved · needs a product decision, not a fix</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Browser QA, still owed from revision 1</div>
+        <div class="step-body">No frontend change has been clicked in a real browser. Unchanged from two revisions ago and still the largest unquantified risk.</div>
+        <div class="step-cost">~1h</div>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>The verdict</h2>
+    <p class="prose"><strong>Ready for a soft launch. Ready for a demo only with a chosen script.</strong></p>
+    <p class="prose">What is genuinely production-grade: the money cannot run away again — every call is metered, the day is capped, and the gate fails closed. Tables come from the database and cannot invent a column. The provider chain fails over for real reasons and logs why. 100% of projects carry payment plans, cost sheets and RERA.</p>
+    <p class="prose">What is not: the system can still be confidently wrong on the hardest questions, and I only know that because I read the answers rather than trusting the score. Two of the three defects I found are fixed and <strong>unmeasured</strong>; the third — brand and coverage gaps — is a data problem.</p>
+    <p class="prose">If you demo it, drive it through two-way comparisons, budget briefs, payment plans and cost sheets. Those read well and are backed by rendered data. Avoid four-sector briefs and named builders we do not stock until the reruns are in.</p>
+    <div class="callout">
+      <strong>The honest order:</strong> top up the key → re-run <code>--top50</code> → add a judge pass → fill sector coverage. The first two are an afternoon and turn every projection in this document into a fact.
+    </div>
+  </section>
+
+  <footer>
+    <span>RealtyPals · readiness, revision 3 · read, not scored</span>
+    <span class="mono">48/50 mechanical · 72% read · $0.002/turn · p50 9.8s</span>
+  </footer>
+
+</div>
