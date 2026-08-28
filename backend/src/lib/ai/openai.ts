@@ -49,6 +49,35 @@ function getOpenAIProvider(apiKeyOverride?: string): OpenAIProvider {
 export interface InferenceConfig {
   maxTokens: number
   model?: string
+  /**
+   * Whether this call may be offered the tool catalogue. Defaults to on.
+   *
+   * Set false by callers that pass a no-op `onToolCall`. Those exist: several
+   * topic handlers build a self-contained prompt with the facts already in it
+   * and stub the handler with `async () => ({})`. Offering tools anyway let the
+   * model call one, receive nothing, call again, and exhaust every tool cycle
+   * without ever emitting text — the turn ended with an empty reply and a full
+   * bill for the thinking behind it.
+   */
+  tools?: boolean
+  /**
+   * Tokens the model may spend thinking before it must start writing.
+   *
+   * Thinking bills at the OUTPUT rate and counts against maxOutputTokens, which
+   * makes it the largest single cost lever on a turn: 1,024 tokens is $0.0038
+   * on gemini-3.6-flash, more than the entire input side once the implicit
+   * cache is accounted for. 0 disables it. Absent keeps the module default.
+   * Chosen per query shape — see inferenceProfile.ts.
+   */
+  thinkingBudget?: number
+  /**
+   * Gemini API version for this call. Absent lets the SDK choose (v1beta).
+   *
+   * Only meaningful on a Gemini leg; ignored elsewhere. Pinning 'v1' trades the
+   * beta-only fields — thinking budgets, tool calling — for the stable surface,
+   * so a leg that pins it must also disable both.
+   */
+  apiVersion?: 'v1' | 'v1beta'
 }
 
 export const INFERENCE_DEFAULTS: InferenceConfig = {

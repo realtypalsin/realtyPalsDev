@@ -1,11 +1,12 @@
 // backend/src/lib/ai/gemini.ts
 import { getCachedPrefix } from './geminiCache'
+import { assertWithinGeminiBudget } from './geminiMeter'
 import { splitSystemPrompt } from './prompts/base'
 import { GoogleGenAI } from '@google/genai'
 import { MODELS, GEMINI_TOOLS_ENABLED } from '../config'
 import { toGeminiTools, validateToolArgs, capToolResult } from './tools'
 import { INFERENCE_DEFAULTS, type InferenceConfig } from './openai'
-import { recordUsage } from './cost'
+import { recordUsage, CACHED_INPUT_RATIO } from './cost'
 
 type Message = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null }
 type SendFn = (event: string, data: Record<string, unknown>) => void
@@ -13,10 +14,32 @@ type ToolCallFn = (name: string, args: Record<string, unknown>) => Promise<unkno
 
 const MAX_TOOL_CYCLES = 3
 
-// Tight initial timeout for fast rollover if provider is stalled/rate-limited,
-// and reasonable stream inactivity timeout between chunks.
-const INITIAL_TOKEN_TIMEOUT_MS = 8_000
-const STREAM_INACTIVITY_MS = 15_000
+// How long to wait for the FIRST chunk before giving up on this leg, and how
+// long to tolerate a gap between chunks once it is streaming.
+//
+// The initial deadline was 8s, chosen for "fast rollover if provider is
+// stalled". It was firing on healthy requests: gemini-3.6-flash thinks before
+// its first token, and a four-sector comparison or a multi-constraint budget
+// question routinely needs longer than 8s to produce one. Measured over a
+// 67-query run, 18 turns hit it — and every rollover landed on GEMINI_API_KEY1,
+// a free-tier key that answers 429, so the buyer got an empty or truncated
+// reply instead of the answer the paid key was in the middle of writing.
+//
+// Rolling over early only helps when the next leg is healthier. Here it is
+// strictly worse, so the deadline is now long enough to cover a thinking model
+// on a hard question. A genuinely dead leg still fails on connect or on the
+// transport timeout; this only governs the "connected but still thinking" case.
+const INITIAL_TOKEN_TIMEOUT_MS = Number(process.env.GEMINI_INITIAL_TOKEN_TIMEOUT_MS ?? 25_000)
+const STREAM_INACTIVITY_MS = Number(process.env.GEMINI_STREAM_INACTIVITY_MS ?? 20_000)
+
+/**
+ * Ceiling on tokens the model may spend thinking before it must start writing.
+ *
+ * Thinking is billed as output and counts against maxOutputTokens, so it is a
+ * cost, a latency and a truncation risk at once. Enough to plan a four-sector
+ * comparison, not enough to consume the reply budget.
+ */
+const THINKING_BUDGET_TOKENS = Number(process.env.GEMINI_THINKING_BUDGET ?? 1024)
 
 // Thrown when the stream stalls (no chunk within timeout) or produces nothing.
 // tokensSent indicates whether partial content was already sent to the SSE client —
@@ -70,19 +93,37 @@ export async function streamWithGemini(
 ): Promise<string> {
   const apiKey = apiKeyOverride ?? process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('No GEMINI_API_KEY configured')
-  const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: STREAM_INACTIVITY_MS } })
+  // The day-budget gate. Throwing here rolls the turn onto the next provider in
+  // the chain exactly as any other Gemini failure would, so an exhausted budget
+  // degrades to Mistral rather than to an error page.
+  await assertWithinGeminiBudget()
+  const client = new GoogleGenAI({
+    apiKey,
+    // Unset on the paid legs so the SDK picks v1beta, where thinking budgets
+    // and tool calling live. Pinned only where a leg has deliberately traded
+    // those away for the stable surface — see FallbackKeyConfig.apiVersion.
+    ...(config.apiVersion ? { apiVersion: config.apiVersion } : {}),
+    httpOptions: { timeout: STREAM_INACTIVITY_MS },
+  })
   const contents: GeminiContent[] = toGeminiContents(messages)
 
   // The prompt splits into a byte-identical head and a per-turn tail. Only the
   // head is worth caching; caching the whole thing would mint an entry per
   // tool-filter variant and hit almost none of them.
   const { head: systemHead, tail: systemTail } = splitSystemPrompt(system)
-  const cachedName = await getCachedPrefix(
-    client,
-    config.model || MODELS.GEMINI_MAIN,
-    apiKey,
-    systemHead,
-  )
+  // Gemini refuses CachedContent in a request that also sets system_instruction
+  // or tools, and this request sets both: the per-turn tail rides as
+  // systemInstruction, and the tool catalogue is attached below. Attaching a
+  // cache anyway 400'd every single turn on the paid key and pushed the whole
+  // conversation onto a free-tier fallback key that cannot cache at all.
+  //
+  // Explicit caching is therefore only reachable with tools off AND an empty
+  // tail. Anything else must not attach one. Gemini's implicit cache already
+  // covers ~78% of the prompt on a billed account and needs no request changes.
+  const cacheIsUsable = !GEMINI_TOOLS_ENABLED && !systemTail
+  const cachedName = cacheIsUsable
+    ? await getCachedPrefix(client, config.model || MODELS.GEMINI_MAIN, apiKey, systemHead)
+    : null
   // With a cache in play the head lives server-side and must NOT be resent:
   // Gemini rejects systemInstruction alongside cachedContent. The tail still
   // travels every turn, because it is different every turn.
@@ -90,6 +131,8 @@ export async function streamWithGemini(
   let fullText = ''
   const usage: GeminiUsage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 }
   let billedModel = config.model || MODELS.GEMINI_MAIN
+  // Per-turn where the caller has chosen one, module default otherwise.
+  const thinkingBudget = config.thinkingBudget ?? THINKING_BUDGET_TOKENS
 
   async function runCycle(cycle: number): Promise<string> {
     if (cycle >= MAX_TOOL_CYCLES) return fullText
@@ -118,12 +161,24 @@ export async function streamWithGemini(
     resetInactivity(false)
 
     let functionCall: { name: string; args: Record<string, unknown> } | null = null
+    /** The verbatim part Gemini emitted, carrying its thoughtSignature. */
+    let functionCallPart: { functionCall?: any; thoughtSignature?: string } | null = null
 
     try {
       const genConfig: any = {
         ...(cachedName ? { cachedContent: cachedName } : {}),
         ...(effectiveSystem ? { systemInstruction: effectiveSystem } : {}),
-        maxOutputTokens: config.maxTokens,
+        // maxOutputTokens is the budget for thinking AND text together, and
+        // gemini-3.x thinks by default. On a hard question it spent almost the
+        // whole 1500 on thoughts and stopped 15 tokens into the answer, mid
+        // sentence: "Historically, Noida Sector 23, Sector 34, and". Thirteen of
+        // 67 demo answers ended that way, each reported by the API as a normal
+        // completion, so nothing surfaced it as a failure.
+        //
+        // Capping the thinking budget and adding it on top keeps config.maxTokens
+        // meaning what every caller assumes it means — room for the reply.
+        maxOutputTokens: config.maxTokens + THINKING_BUDGET_TOKENS,
+        thinkingConfig: { thinkingBudget: THINKING_BUDGET_TOKENS },
         abortSignal: abortController.signal,
       }
 
@@ -140,7 +195,7 @@ export async function streamWithGemini(
       // at MAX_TOOL_CYCLES, so a tool call made on the final cycle would be
       // executed and then thrown away without ever reaching the model — the
       // buyer would wait for a lookup whose result was silently discarded.
-      if (cycle < MAX_TOOL_CYCLES - 1 && GEMINI_TOOLS_ENABLED) {
+      if (cycle < MAX_TOOL_CYCLES - 1 && GEMINI_TOOLS_ENABLED && config.tools !== false) {
         genConfig.tools = toGeminiTools()
       }
 
@@ -185,7 +240,10 @@ export async function streamWithGemini(
         const um = chunk.usageMetadata
         if (um) {
           cycleUsage.promptTokens = um.promptTokenCount ?? 0
-          cycleUsage.completionTokens = um.candidatesTokenCount ?? 0
+          // Thoughts are billed at the output rate but are reported separately
+          // from candidatesTokenCount, so leaving them out under-reported the
+          // real cost of every turn.
+          cycleUsage.completionTokens = (um.candidatesTokenCount ?? 0) + (um.thoughtsTokenCount ?? 0)
           cycleUsage.cachedTokens = um.cachedContentTokenCount ?? 0
         }
 
@@ -198,6 +256,17 @@ export async function streamWithGemini(
         const calls = chunk.functionCalls
         if (calls && calls.length > 0 && !functionCall) {
           functionCall = { name: calls[0].name!, args: (calls[0].args as Record<string, unknown>) ?? {} }
+          // Keep the model's own part, not a reconstruction of it. Gemini 3.x
+          // attaches a `thoughtSignature` to functionCall parts and rejects the
+          // follow-up turn without it:
+          //   400 "Function call is missing a thought_signature in functionCall
+          //   parts. This is required for tools to work correctly"
+          // Rebuilding the part from name+args drops that field, so every turn
+          // that actually called a tool 400'd and rolled over to the next
+          // provider — which is how the paid primary ended up serving none of
+          // the tool-backed lookups it was configured for.
+          functionCallPart =
+            chunk.candidates?.[0]?.content?.parts?.find((p: any) => p?.functionCall) ?? null
         }
       }
     } catch (err) {
@@ -226,7 +295,10 @@ export async function streamWithGemini(
       const result = await onToolCall(functionCall.name, validatedArgs)
       const capped = capToolResult(result, functionCall.name)
 
-      contents.push({ role: 'model', parts: [{ functionCall: { name: functionCall.name, args: functionCall.args } }] })
+      contents.push({
+        role: 'model',
+        parts: [functionCallPart ?? { functionCall: { name: functionCall.name, args: functionCall.args } }],
+      })
       contents.push({ role: 'user', parts: [{ functionResponse: { name: functionCall.name, response: { result: capped } } }] })
 
       return runCycle(cycle + 1)
@@ -252,9 +324,12 @@ export async function streamWithGemini(
       void recordUsage({
         provider: 'gemini',
         model: billedModel,
-        // Cached input tokens bill at a discount; charge them at 25% by
-        // folding the discounted remainder into the uncached count.
-        promptTokens: uncachedPromptTokens + Math.round(usage.cachedTokens * 0.25),
+        // Cached input bills at 10% of the standard input rate across every
+        // current Gemini model ($0.075 against $0.75 for 3.6 Flash, $0.03
+        // against $0.30 for 3.5 Flash-Lite). Folded in as a discounted token
+        // count so PRICE stays a single rate per model. Was 25%, which
+        // over-charged cache hits while the table under-charged everything else.
+        promptTokens: uncachedPromptTokens + Math.round(usage.cachedTokens * CACHED_INPUT_RATIO),
         completionTokens: usage.completionTokens,
         endpoint: 'chat',
         userId,

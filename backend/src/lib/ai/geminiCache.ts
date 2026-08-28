@@ -63,9 +63,36 @@ function keyFor(model: string, apiKey: string, head: string): string {
   return `${model}:${k}:${h}`
 }
 
-/** True when the caller has opted in. Off leaves behaviour exactly as before. */
+/**
+ * Off unless explicitly asked for. This default was inverted, and the reason it
+ * flipped is worth keeping:
+ *
+ * The header of this file says implicit caching "does nothing for us", measured
+ * as `cachedContentTokenCount: 0`. That measurement was taken on a free-tier
+ * key. On the billed account it is simply false — every turn now reports
+ * 8095/10346 prompt tokens served from the implicit cache (78.2%), which is
+ * MORE than the 6196-token head this module can store, because implicit caching
+ * also covers the stable start of the per-turn tail.
+ *
+ * Meanwhile explicit caching was failing 100% of turns. Gemini rejects
+ * CachedContent alongside `system_instruction` or `tools` in the same request:
+ *
+ *   "CachedContent can not be used with GenerateContent request setting
+ *    system_instruction, tools or tool_config."
+ *
+ * Our prompt always carries a per-turn tail as systemInstruction, and tools are
+ * on, so every request that attached a cache 400'd. The chain rolled the turn
+ * onto GEMINI_API_KEY1 — a free-tier key that cannot store caches at all
+ * ("TotalCachedContentStorageTokensPerModelFreeTier ... limit=0"). The paid
+ * primary was therefore never answering a single request, and the only visible
+ * symptom was a ROLLOVER line with no reason attached.
+ *
+ * So this stays off: it costs storage, it breaks the paid leg, and it caches
+ * less than the free implicit path. Turning it on again requires moving both
+ * the tools and the whole system instruction into the cache entry first.
+ */
 export function explicitCacheEnabled(): boolean {
-  return process.env.GEMINI_EXPLICIT_CACHE !== 'false'
+  return process.env.GEMINI_EXPLICIT_CACHE === 'true'
 }
 
 /**

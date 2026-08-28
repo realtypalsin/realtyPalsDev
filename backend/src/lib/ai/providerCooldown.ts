@@ -23,10 +23,51 @@
 /** How long a leg stays skipped. Long enough to matter, short enough to recover. */
 const COOLDOWN_MS = 5 * 60 * 1000
 
+/**
+ * Cooldown for a per-minute rate limit. Free-tier windows are minute-length, so
+ * this is long enough to clear one and short enough that the leg is back before
+ * a busy minute is over.
+ */
+const RATE_LIMIT_COOLDOWN_MS = 65 * 1000
+
 /** Quota windows are usually per-minute or per-day; five minutes splits it sensibly. */
 const cooldowns = new Map<string, { until: number; reason: string }>()
 
-export type FailureKind = 'durable' | 'transient'
+export type FailureKind = 'durable' | 'transient' | 'rate_limited'
+
+/**
+ * A per-minute rate limit, as opposed to an exhausted balance or day quota.
+ *
+ * These read almost identically — both arrive as 429 with the word "quota" in
+ * them — but they want opposite handling. A free-tier key that has hit its
+ * requests-per-minute ceiling is healthy and will answer again in under a
+ * minute; cooling it for the full durable window throws away the only fallback
+ * capacity there is. An exhausted prepaid balance will not recover today.
+ *
+ * Matched before the durable list, and deliberately narrow: anything that
+ * mentions billing, credits or a daily limit falls through to durable.
+ */
+const RATE_LIMIT_PATTERNS = [
+  'rate limit',
+  'rate_limit',
+  'requests per minute',
+  'too many requests',
+  'resource_exhausted: quota exceeded for quota metric',
+  'per minute',
+  'retry after',
+  'retry_after',
+]
+
+/** Signals a limit that will not clear on its own within the turn. */
+const NOT_MERELY_RATE_LIMITED = [
+  'credits are depleted',
+  'prepayment',
+  'billing',
+  'per day',
+  'daily limit',
+  'requests per day',
+  'insufficient_quota',
+]
 
 /**
  * Classifies a provider failure.
@@ -63,6 +104,14 @@ export function classifyFailure(error: unknown): FailureKind {
     '410',
   ]
 
+  // Checked before `durable`, because a per-minute limit also says "quota".
+  if (
+    RATE_LIMIT_PATTERNS.some(needle => message.includes(needle)) &&
+    !NOT_MERELY_RATE_LIMITED.some(needle => message.includes(needle))
+  ) {
+    return 'rate_limited'
+  }
+
   return durable.some(needle => message.includes(needle)) ? 'durable' : 'transient'
 }
 
@@ -89,9 +138,13 @@ export function cooldownReason(key: string): string | null {
  */
 export function recordFailure(key: string, error: unknown): FailureKind {
   const kind = classifyFailure(error)
-  if (kind === 'durable') {
+  if (kind === 'durable' || kind === 'rate_limited') {
     const reason = (error instanceof Error ? error.message : String(error ?? '')).slice(0, 120)
-    cooldowns.set(key, { until: Date.now() + COOLDOWN_MS, reason })
+    // A per-minute limit clears on its own; a depleted balance does not. Cooling
+    // a rate-limited free key for the full durable window would remove the only
+    // fallback capacity available precisely when the paid key is also struggling.
+    const ms = kind === 'rate_limited' ? RATE_LIMIT_COOLDOWN_MS : COOLDOWN_MS
+    cooldowns.set(key, { until: Date.now() + ms, reason })
   }
   return kind
 }

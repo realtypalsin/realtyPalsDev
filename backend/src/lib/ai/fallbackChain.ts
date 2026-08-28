@@ -35,6 +35,15 @@ export interface FallbackChainOptions {
   sessionId?: string | null
   chainConfig?: FallbackKeyConfig[] // Allows custom chain override for unit testing
   config?: InferenceConfig
+  /**
+   * Drop any markdown table the model emits.
+   *
+   * Set by callers that have already rendered one from our own rows. The prompt
+   * asks the model not to draw a second — this is what happens when it does
+   * anyway: the buyer would otherwise read the same figures in two grids, and
+   * we would have paid output tokens for the duplicate.
+   */
+  suppressTables?: boolean
 }
 
 export interface FallbackChainResult {
@@ -52,6 +61,7 @@ import { env } from '../env'
 import { adaptiveCapMessages, CONTEXT_TOKEN_CEILING } from './adaptiveMessaging'
 import { STATIC_PREFIX_MARKER } from './systemPromptCache'
 import { estimateTokensReal } from './tokenizer'
+import { createTableStripper, stripTables } from './stripTables'
 
 /** Remove the prefix sentinel — it must never reach a provider. */
 function stripMarker(prompt: string): string {
@@ -72,7 +82,45 @@ function applyNoToolsBlock(prompt: string, block: string): string {
   return prompt.replace(token, `\n${block}\n`)
 }
 
-function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLimit = 50) {
+/**
+ * How much of the answer is held back before the first token reaches the buyer.
+ *
+ * This window is the only thing that makes failover possible. Once a token has
+ * been sent, a stall cannot roll over to the next provider — SSE cannot retract
+ * a sentence — and the turn ends with "[Response truncated due to high
+ * traffic]" mid-thought.
+ *
+ * It used to be 50 characters OR the first newline, whichever came first. Every
+ * answer we produce opens with a markdown heading or a table row, so the
+ * newline arrived within a few tokens and the window was effectively nil.
+ * Holding ~250 characters costs a fraction of a second against a 3-4s time to
+ * first token, and buys a real chance to recover.
+ */
+const STREAM_BUFFER_CHARS = Number(process.env.STREAM_BUFFER_CHARS ?? 250)
+
+/**
+ * Reply ceiling on a free-tier leg.
+ *
+ * Free quotas are counted in tokens per minute and requests per day. A verbose
+ * answer there does not cost money, it costs the next buyer their turn.
+ */
+const FREE_TIER_MAX_TOKENS = Number(process.env.FREE_TIER_MAX_TOKENS ?? 900)
+
+function createBufferedSend(
+  originalSend: SendFn,
+  systemPrompt: string,
+  bufferLimit = STREAM_BUFFER_CHARS,
+  suppressTables = false,
+) {
+  // Sits between the buffer and the client, so it sees whole chunks and can
+  // reassemble the lines a table is made of.
+  const stripper = suppressTables
+    ? createTableStripper((text) => originalSend('token', { token: text }))
+    : null
+  const forwardToken = (token: string) => {
+    if (stripper) stripper.write(token)
+    else originalSend('token', { token })
+  }
   let buffer = ''
   let flushed = false
   let tokensSent = false
@@ -85,7 +133,7 @@ function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLi
     }
     flushed = true
     tokensSent = true
-    originalSend('token', { token: buffer })
+    forwardToken(buffer)
   }
 
   const bufferedSend: SendFn = (event: string, data: Record<string, unknown>) => {
@@ -96,13 +144,15 @@ function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLi
 
     if (flushed) {
       tokensSent = true
-      originalSend(event, data)
+      forwardToken(data.token)
       return
     }
 
     buffer += data.token
 
-    if (buffer.length >= bufferLimit || buffer.includes('\n')) {
+    // Length only. The newline trigger that used to sit here closed the
+    // failover window on the first line of every markdown answer.
+    if (buffer.length >= bufferLimit) {
       validateAndFlush()
     }
   }
@@ -110,6 +160,14 @@ function createBufferedSend(originalSend: SendFn, systemPrompt: string, bufferLi
   const flushRemaining = () => {
     if (!flushed && buffer.length > 0) {
       validateAndFlush()
+    }
+    // The stripper holds a partial line, and possibly a heading it has not yet
+    // decided about. Without this they never reach the buyer at all.
+    if (stripper) {
+      stripper.end()
+      if (stripper.droppedAnything()) {
+        console.log('[CHAT:TABLE_SUPPRESSED] model drew a table we had already rendered')
+      }
     }
   }
 
@@ -182,14 +240,36 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         : applyNoToolsBlock(systemPrompt, groqFallbackSuffix)
     // Validate against the prompt this provider actually received, not the
     // pre-variant one — otherwise the fact-check reads a different tool section.
-    const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, effectivePrompt)
+    const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, effectivePrompt, undefined, options.suppressTables === true)
 
     const effectiveConfig = options.config || { maxTokens: 3000 }
     // Gemini ignores its FALLBACK_CHAIN item.model unless we thread it through here — without
     // this, the "backup" gemini entry silently re-requests the exact same model (and fails the
     // exact same way on auth/config errors) instead of trying its distinct lite tier. An explicit
     // caller override (e.g. cost-routing's config.model) still wins over the chain entry's default.
-    const geminiConfig = { ...effectiveConfig, model: effectiveConfig.model ?? item.model }
+    // The reply ceiling every leg honours, free-tier included. Without it the
+    // non-Gemini providers ignored the turn's profile entirely and always wrote
+    // up to 1,024 tokens.
+    const legMaxTokens =
+      item.tier === 'free'
+        ? Math.min(effectiveConfig.maxTokens ?? 1500, FREE_TIER_MAX_TOKENS)
+        : effectiveConfig.maxTokens
+
+    const geminiConfig = {
+      ...effectiveConfig,
+      model: effectiveConfig.model ?? item.model,
+      ...(item.apiVersion ? { apiVersion: item.apiVersion } : {}),
+    }
+
+    // A free-tier key is limited by tokens per minute and requests per day, not
+    // by spend, so the thing to conserve there is output — which is also the
+    // most expensive half of a paid turn. Thinking is dropped entirely and the
+    // reply ceiling is tightened: on a fallback leg, an answer that arrives is
+    // worth more than one that reasons for longer and then hits a quota wall.
+    if (item.tier === 'free') {
+      geminiConfig.thinkingBudget = 0
+      geminiConfig.maxTokens = Math.min(geminiConfig.maxTokens ?? 1500, FREE_TIER_MAX_TOKENS)
+    }
 
     try {
       if (process.env.DEBUG_FALLBACK) {
@@ -199,9 +279,9 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
 
       let text = ''
       if (item.provider === 'cerebras') {
-        text = await streamWithCerebras(effectivePrompt, cappedMessages, bufferedSend, apiKey, item.model)
+        text = await streamWithCerebras(effectivePrompt, cappedMessages, bufferedSend, apiKey, item.model, userId, sessionId, legMaxTokens)
       } else if (item.provider === 'mistral') {
-        text = await streamWithMistral(effectivePrompt, cappedMessages, bufferedSend, apiKey)
+        text = await streamWithMistral(effectivePrompt, cappedMessages, bufferedSend, apiKey, userId, sessionId, legMaxTokens)
       } else if (item.provider === 'gemini') {
         text = await streamWithGemini(effectivePrompt, cappedMessages, bufferedSend, onToolCall, geminiConfig, apiKey, userId, sessionId)
       } else if (item.provider === 'openai') {
@@ -216,10 +296,26 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
           apiKey,
         )
       } else if (item.provider === 'groq') {
-        text = await streamWithGroq(effectivePrompt, cappedMessages, bufferedSend, userId, sessionId, apiKey)
+        text = await streamWithGroq(effectivePrompt, cappedMessages, bufferedSend, userId, sessionId, apiKey, legMaxTokens)
       }
 
       flushRemaining()
+
+      // An empty string is a failed turn, not a successful one. A provider can
+      // return cleanly with nothing — the model spends its cycles on tool calls
+      // and never writes any text — and that used to be handed straight back to
+      // the buyer as a blank reply. Treat it like any other leg failure so the
+      // next provider gets a turn.
+      if (!text.trim() && !getTokensSent()) {
+        throw new Error(`${item.label} returned no text`)
+      }
+
+      // The buyer saw the stripped stream, so the returned copy has to match:
+      // it is what gets persisted to the transcript and written to the answer
+      // cache. Leaving the model's raw text here would put a table into the
+      // record that never appeared on screen, and serve it from cache next time.
+      if (options.suppressTables) text = stripTables(text)
+
       const beautified = isResponseComplete(text) ? beautifyResponse(text) : text
       if (process.env.DEBUG_FALLBACK) {
         console.log(`[FALLBACK:SUCCESS] ✓ ${item.label} generated ${text.length} chars`)
@@ -259,9 +355,11 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         console.warn(`[FALLBACK:DURABLE] ${item.label} — cooling down: ${errMsg.slice(0, 120)}`)
       }
 
-      if (process.env.DEBUG_FALLBACK) {
-        console.warn(`[FALLBACK:FAIL] ✗ ${item.label} failed: ${errMsg.slice(0, 100)}...`)
-      }
+      // Always logged, not gated on DEBUG_FALLBACK. The ROLLOVER line below is
+      // unconditional and says only that a leg failed; without the reason beside
+      // it a provider can fail on every turn in production and read as normal
+      // failover. That is how the paid Gemini leg went unnoticed.
+      console.warn(`[FALLBACK:FAIL] ✗ ${item.label} failed: ${errMsg.slice(0, 300)}`)
 
       // Mid-stream stall: partial tokens were already sent to the SSE client.
       // Cannot switch providers mid-stream without duplicating output/headers.

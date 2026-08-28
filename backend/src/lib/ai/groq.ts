@@ -43,6 +43,8 @@ export async function streamWithGroq(
   userId?: string | null,
   sessionId?: string | null,
   apiKeyOverride?: string,
+  /** Reply ceiling for this turn, from the caller's inference profile. */
+  maxTokens?: number,
 ): Promise<string> {
   const groq = new Groq({
     apiKey: apiKeyOverride ?? process.env.GROQ_API_KEY!,
@@ -99,7 +101,8 @@ export async function streamWithGroq(
         model: MODELS.GROQ_SMART,
         messages: msgs,
         stream: true,
-        max_tokens: 1024,
+        // See mistral.ts: the reply ceiling comes from the turn's cost profile.
+        max_tokens: maxTokens ?? 1024,
         temperature: 0.7,
       },
       { signal: inactivityController.signal },

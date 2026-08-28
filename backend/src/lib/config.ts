@@ -52,6 +52,31 @@ export interface FallbackKeyConfig {
   model: string
   supportsTools: boolean
   label: string
+  /**
+   * Billing tier of the KEY, not the model.
+   *
+   * A free-tier key is not simply a slower paid one. It cannot store a context
+   * cache at all, its rate limits are per-minute and per-day rather than
+   * per-dollar, and it 429s where a paid key would queue. Treating the two
+   * identically is what let a stall on the paid key hand the turn to a free key
+   * that answered 429 — the buyer got nothing while both keys were healthy for
+   * their own tier.
+   *
+   * Defaults to 'paid' when absent, because assuming free of a paid key would
+   * needlessly shrink its prompts.
+   */
+  tier?: 'paid' | 'free'
+  /**
+   * Gemini API version for this leg. Unset lets the SDK choose (currently
+   * v1beta), which is what the paid legs want — thinking budgets and tool
+   * calling are only fully available there.
+   *
+   * Pin 'v1' on a leg that must favour stability over features: v1 is the
+   * stable surface and does not carry the beta-only fields, so a leg pinned
+   * here should also have tools off and no thinking budget, or the request will
+   * be rejected for fields the endpoint does not know.
+   */
+  apiVersion?: 'v1' | 'v1beta'
 }
 
 /**
@@ -90,8 +115,19 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)
   // ═══════════════════════════════════════════════════════════════════════════
   { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Key 1)' },
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY1', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Key 2)' },
+  // The lite tier on the SAME billed key comes before the second key.
+  //
+  // GEMINI_API_KEY1 is a free-tier key: it answers 429 on quota, and it cannot
+  // hold a context cache at all ("TotalCachedContentStorageTokensPerModelFreeTier
+  // ... limit=0"). Sitting at position 2 it caught every failure of the paid key
+  // and turned a recoverable stall into an empty or truncated reply. Retrying on
+  // the paid account's cheaper model is strictly the better second attempt;
+  // the free key is a last resort, below the paid legs but above no answer.
   { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Backup)' },
+  // Flash-Lite rather than Flash on the free key: the free tier's per-day
+  // request allowance is far higher on the lite model, so this leg keeps
+  // answering after a Flash-shaped one would be spent for the day.
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY1', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Free key)', tier: 'free' },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: MISTRAL & CEREBRAS (High-Speed Failover Layer)
