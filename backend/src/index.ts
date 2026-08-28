@@ -18,6 +18,7 @@ import savedRouter from './routes/saved'
 import leadsRouter from './routes/leads'
 import shareRouter from './routes/share'
 import adminRouter from './routes/admin'
+import { betaRouter } from './routes/betaObservability'
 import buildersRouter from './routes/builders'
 import marketComparisonRouter from './routes/marketComparison'
 import priceAlertsRouter from './routes/priceAlerts'
@@ -144,10 +145,19 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
     return next()
   }
   
+  // Keyed on the guest token or auth header when present, IP only as a
+  // fallback.
+  //
+  // A pure IP key means every beta user behind one office NAT or one mobile
+  // carrier gateway shares a single 100/minute budget. At 50-200 testers that
+  // produces throttling you cannot reproduce and they cannot explain, and the
+  // IP fallback still catches an unidentified flood.
   const ip = req.ip || '127.0.0.1'
-  // 100 requests per 60 seconds is a standard generous limit for public APIs
-  const rateLimit = await checkRateLimit(`global:${ip}`, 100, 60)
-  
+  const guestToken = (req.headers['x-guest-token'] as string | undefined)?.slice(0, 64)
+  const authHeader = (req.headers.authorization as string | undefined)?.slice(0, 128)
+  const identity = guestToken || authHeader || ip
+  const rateLimit = await checkRateLimit(`global:${identity}`, 100, 60)
+
   res.setHeader('X-RateLimit-Limit', 100)
   res.setHeader('X-RateLimit-Remaining', rateLimit.remaining)
   
@@ -188,6 +198,9 @@ app.use('/api/v1/projects', projectsRouter)
 app.use('/api/v1/saved', savedRouter)
 app.use('/api/v1/leads', leadsRouter)
 app.use('/api/v1/share', shareRouter)
+// Mounted before adminRouter: Express matches in order, and a /:id route in the
+// admin router would otherwise claim /beta before this ever sees it.
+app.use('/api/v1/admin/beta', betaRouter)
 app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/builders', buildersRouter)
 app.use('/api/v1/market-comparison', marketComparisonRouter)
@@ -299,6 +312,30 @@ async function startup() {
 
   process.on('SIGTERM', () => { void shutdown('SIGTERM') })
   process.on('SIGINT',  () => { void shutdown('SIGINT') })
+
+  // Node terminates the process on an unhandled rejection by default, and this
+  // codebase deliberately fires several promises without awaiting them —
+  // recordUsage, the Redis cache write, PostHog tracking. Each is written to
+  // swallow its own errors, but one that slips through would take the whole
+  // server down and every in-flight conversation with it.
+  //
+  // Logged and survived, not rethrown: a telemetry write failing is not a
+  // reason to drop a buyer mid-answer.
+  process.on('unhandledRejection', (reason) => {
+    logger.error(
+      { err: reason instanceof Error ? reason.message : String(reason) },
+      'unhandled promise rejection — surviving',
+    )
+  })
+
+  // An uncaught exception leaves the process in an undefined state, so this
+  // does NOT continue serving: it logs, then hands over to the same graceful
+  // shutdown SIGTERM uses, so in-flight responses get a chance to finish and
+  // the platform restarts a clean process.
+  process.on('uncaughtException', (err) => {
+    logger.error({ err: err.message, stack: err.stack }, 'uncaught exception — shutting down')
+    void shutdown('uncaughtException')
+  })
 }
 
 // Only start the HTTP server when run directly (not when imported by tests)

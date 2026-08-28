@@ -12,6 +12,7 @@ import {
   PhoneCall,
   NewspaperClipping,
   ChartLineUp,
+  ChatCircleText,
   SignOut,
   MagnifyingGlass,
   CaretRight,
@@ -27,6 +28,7 @@ const NAV = [
   { href: '/admin/builder-applications',  label: 'Registrations',        icon: IdentificationBadge },
   { href: '/admin/leads',                 label: 'Leads',                icon: PhoneCall },
   { href: '/admin/news',                  label: 'News',                 icon: NewspaperClipping },
+  { href: '/admin/conversations',         label: 'Conversations',        icon: ChatCircleText },
   { href: '/admin/analytics',             label: 'Analytics',            icon: ChartLineUp },
 ]
 
