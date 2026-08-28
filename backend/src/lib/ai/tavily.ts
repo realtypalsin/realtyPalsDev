@@ -33,10 +33,36 @@ async function searchTavily(
       search_depth: 'basic',
       max_results: maxResults,
       include_answer: true,
+      // Where a fact is allowed to come from, in descending order of authority.
+      //
+      // 99acres, MagicBricks, NoBroker and Housing.com were on this list. They
+      // are the four portals COMPETITOR_PATTERNS blocks by name and the prompt
+      // forbids mentioning — so we were searching sources we are not allowed to
+      // cite. The model then had two bad options: attribute the figure and trip
+      // the guardrail, or state it unattributed as though it were ours. The
+      // second is what a listing aggregate looks like when it reaches a buyer,
+      // and it is indistinguishable from invention.
+      //
+      // What is left is sources a buyer could check themselves and that we can
+      // name in an answer: the regulator, the authorities, the developer body,
+      // and financial press that reports the market rather than listing it.
       include_domains: [
-        'up-rera.in', 'credai.org', '99acres.com', 'magicbricks.com',
-        'nobroker.in', 'housing.com', 'economictimes.com', 'hindustantimes.com',
-        'thehindu.com', 'ndtv.com', 'moneycontrol.com',
+        // Regulator and authorities — the only true primary sources here.
+        'up-rera.in',
+        'noidaauthorityonline.in',
+        'greaternoidaauthority.in',
+        'yamunaexpresswayauthority.com',
+        'nhb.org.in',
+        // Industry body.
+        'credai.org',
+        // Financial and general press. Reports the market, does not sell it.
+        'economictimes.indiatimes.com',
+        'moneycontrol.com',
+        'livemint.com',
+        'business-standard.com',
+        'hindustantimes.com',
+        'thehindu.com',
+        'ndtv.com',
       ],
     }),
     signal: AbortSignal.timeout(5000),
