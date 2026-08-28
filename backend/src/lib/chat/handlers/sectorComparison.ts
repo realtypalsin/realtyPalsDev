@@ -1,4 +1,5 @@
 import { prisma } from '../../db'
+import { renderSectorComparisonTable } from '../../ai/marketTable'
 import { executeWithFallbackChain } from '../../ai/fallbackChain'
 import type { ChatTopicHandler } from '../handlerContext'
 
@@ -53,33 +54,31 @@ export const sectorComparisonHandler: ChatTopicHandler = {
 
     const s1Stats = getStats(s1DetailedProjs, s1)
     const s2Stats = getStats(s2DetailedProjs, s2)
+    // Rendered here rather than by the model. The old prompt was a table
+    // template with these very values already interpolated into its cells —
+    // `${s1Stats.priceRange}`, `${s1Stats.topProjects}` — so the model was paid
+    // to copy back bytes we had just paid to send it. The rows it was left to
+    // fill on its own (`[Price per sqft range]`, `[Nearest metro station]`) had
+    // no data behind them at all, which is where the invented figures came from.
+    const comparisonTable = renderSectorComparisonTable(s1Stats, s2Stats)
+    if (comparisonTable) {
+      ctx.send('token', { token: `### ${s1} vs ${s2}\n\n${comparisonTable}\n\n` })
+    }
+
     const sectorFactsJson = JSON.stringify({ [s1]: s1Stats, [s2]: s2Stats }, null, 2)
 
     const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
 Verified Sector Database Facts: ${sectorFactsJson}
 
-CRITICAL FORMATTING MANDATE:
-- Maintain a clean, executive, professional tone. Do NOT include decorative emojis or icons in headings or text.
-- Present the comparison primarily in a clean, high-contrast Markdown Comparison Table.
-- Keep every data point super-summarized, concise, and scannable.
+THE TABLE IS ALREADY ON SCREEN.
+A comparison of ${s1} and ${s2} has just been rendered for the buyer from our own rows — inventory counts, price bands and the landmark societies in each. Do not draw a table and do not restate its figures.
 
-OUTPUT STRUCTURE:
+Write three short paragraphs and nothing else:
+1. The verdict. Which of the two, and the single distinction that decides it.
+2. What the buyer trades away by taking that one. Every choice here costs something; name it.
+3. "Choose ${s1} if … choose ${s2} if …" — the condition that flips the answer.
 
-### Verdict
-1-2 direct sentences stating the overall winner and key distinction between ${s1} and ${s2}.
-
-| Comparison Parameter | ${s1} | ${s2} |
-| :--- | :--- | :--- |
-| **Average Price / sq.ft** | [Price per sqft range] | [Price per sqft range] |
-| **Budget Range** | ${s1Stats.priceRange} | ${s2Stats.priceRange} |
-| **Metro & Transit** | [Nearest metro station & road connectivity] | [Nearest metro station & road connectivity] |
-| **Livability & Atmosphere** | [Commercial vitality vs. quiet residential, density] | [Commercial vitality vs. quiet residential, density] |
-| **Social Infrastructure** | [Malls, schools, parks, convenience] | [Malls, schools, parks, convenience] |
-| **Top Landmark Societies** | ${s1Stats.topProjects} | ${s2Stats.topProjects} |
-| **Best Suited For** | [Ideal buyer profile] | [Ideal buyer profile] |
-
-### Recommendation
-1 actionable decision sentence: "Choose **${s1}** if [profile]; choose **${s2}** if [profile]."`
+Rows reading "Not recorded" are gaps in our data, not zeros. You may say so; never fill one. No headings, no emoji, around 140 words.`
 
     const systemMsgHistory = [{ role: 'user' as const, content: ctx.message }]
     const fallbackResult = await executeWithFallbackChain({
@@ -87,6 +86,12 @@ OUTPUT STRUCTURE:
       messages: systemMsgHistory,
       send: ctx.send,
       onToolCall: async () => ({}),
+      // No tools: this prompt already carries the facts it needs. Offering a
+      // catalogue alongside a stub handler made the model loop through every
+      // tool cycle and return nothing at all.
+      config: { maxTokens: 1500, tools: false },
+      // We rendered the table above; drop any the model draws anyway.
+      suppressTables: Boolean(comparisonTable),
       groqFallbackSuffix: '',
       userMessage: ctx.message,
     })

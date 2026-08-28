@@ -1,4 +1,5 @@
 import { prisma } from '../../db'
+import { renderPaymentPlanTable, type PaymentPlanRow } from '../../ai/marketTable'
 import { executeWithFallbackChain } from '../../ai/fallbackChain'
 import { getCachedResponse } from '../../ai/semanticCache'
 import { unverified, confidenceFor } from '../../factPresentation'
@@ -51,7 +52,7 @@ export const paymentPlansHandler: ChatTopicHandler = {
     // runs before intent extraction, so it cannot see (and must not see)
     // project-specific entries.
     const planScope = `project:${planProject.id}`
-    const cachedPlan = getCachedResponse(ctx.message, planScope)
+    const cachedPlan = await getCachedResponse(ctx.message, planScope)
     if (cachedPlan) {
       ctx.send('token', { token: cachedPlan.token })
       if (cachedPlan.chips?.length) {
@@ -95,6 +96,15 @@ export const paymentPlansHandler: ChatTopicHandler = {
       return true
     }
 
+    // Rendered here, not by the model. Payment tables were among the most
+    // expensive answers we produced — a full grid composed from numbers we had
+    // just injected — and the one column that argues against a plan
+    // (`watch_out`) was the easiest for the model to quietly drop.
+    const planTable = renderPaymentPlanTable(paymentPlans as PaymentPlanRow[])
+    if (planTable) {
+      ctx.send('token', { token: `### Payment plans — ${planProject.name}\n\n${planTable}\n\n` })
+    }
+
     const planFactsJson = JSON.stringify({
       projectName: planProject?.name,
       developer: planProject?.builder?.name,
@@ -104,29 +114,14 @@ export const paymentPlansHandler: ChatTopicHandler = {
     const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
 Verified Payment Plan Database Facts: ${planFactsJson}
 
-CRITICAL FORMATTING MANDATE:
-- Maintain a clean, executive tone. Do NOT use decorative emojis or icons in headings or text.
-- Present the payment plans primarily in a clean, high-contrast Markdown Comparison Table.
-- Keep every data point super-summarized, concise, and scannable.
+THE TABLE IS ALREADY ON SCREEN.
+The plans have just been rendered for the buyer from our own rows — plan name, booking amount, down payment, duration and the watch-out on each. Do not draw a table and do not restate its numbers.
 
-GROUNDING RULE — this overrides the formatting mandate:
-Build every row of the table from the payment_plans array above and nothing else.
-One row per plan we actually hold. Never add a plan that is not in the data, and
-never fill an unknown percentage with a typical one — leave the cell as "Not
-specified". The example below shows the COLUMN SHAPE only; its numbers are
-illustrative and must not be copied into your answer.
+Write two short paragraphs and nothing else:
+1. The cash-flow trade-off across these schedules. Which one costs less in total, which one keeps more cash free, and why that difference matters for someone buying at this price.
+2. Which to choose, and the condition that changes the answer — "take the down-payment plan if you have the cash idle; take construction-linked if you are still saving."
 
-OUTPUT STRUCTURE:
-
-### Verdict
-1-2 direct sentences explaining the cash-flow tradeoff across the schedules actually listed above for ${planProject?.name || 'this property'}.
-
-| Payment Plan | Initial Booking % | Construction Milestones | On Possession | Best Suited For |
-| :--- | :--- | :--- | :--- | :--- |
-| (one row per plan in payment_plans, values taken from that entry) | | | | |
-
-### Recommendation
-1 actionable sentence advising which of the listed structures optimizes total out-of-pocket interest versus cash liquidity.`
+No headings. No emoji. Around 120 words. If a cell said "Not recorded", you may say we do not hold that figure; never supply one.`
 
     const systemMsgHistory = [{ role: 'user' as const, content: ctx.message }]
     const fallbackResult = await executeWithFallbackChain({
@@ -134,6 +129,12 @@ OUTPUT STRUCTURE:
       messages: systemMsgHistory,
       send: ctx.send,
       onToolCall: async () => ({}),
+      // No tools: this prompt already carries the facts it needs. Offering a
+      // catalogue alongside a stub handler made the model loop through every
+      // tool cycle and return nothing at all.
+      config: { maxTokens: 1500, tools: false },
+      // We rendered the table above; drop any the model draws anyway.
+      suppressTables: Boolean(planTable),
       groqFallbackSuffix: '',
       userMessage: ctx.message,
     })

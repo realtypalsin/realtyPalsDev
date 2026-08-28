@@ -1,4 +1,5 @@
 import { prisma } from '../../db'
+import { renderCostSheetTable, type CostSheetRow } from '../../ai/marketTable'
 import { executeWithFallbackChain } from '../../ai/fallbackChain'
 import { confidenceFor, MARKET_QUALIFIER, NOIDA_MARKET_RANGES, UP_STATUTORY } from '../../factPresentation'
 import type { ChatTopicHandler } from '../handlerContext'
@@ -75,6 +76,16 @@ Name a project and I'll pull whichever of these we hold verified for it.`
       return true
     }
 
+    // Rendered here. The cost sheet is the answer most exposed to a drifting
+    // number: the model was composing a rate table from injected values while
+    // also being told to state statutory percentages from memory. Now every row
+    // is either read from this project's own cost_sheet or absent, and the
+    // rupees-vs-lakhs convention on parking/IFMS/club is handled in one place.
+    const costTable = renderCostSheetTable(costProject?.cost_sheet as CostSheetRow | null)
+    if (costTable) {
+      ctx.send('token', { token: `### Cost breakdown — ${costProject?.name}\n\n${costTable}\n\n` })
+    }
+
     const costFactsJson = JSON.stringify({
       projectName: costProject?.name,
       developer: costProject?.builder?.name,
@@ -86,33 +97,16 @@ Name a project and I'll pull whichever of these we hold verified for it.`
     const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
 Verified Pricing & Cost Sheet Facts: ${costFactsJson}
 
-CRITICAL FORMATTING MANDATE:
-- Maintain a clean, executive tone. Do NOT use decorative emojis or icons in headings or text.
-- Present the price breakdown primarily in a clean, high-contrast Markdown Table based ONLY on available verified facts.
-- For statutory taxes, always state 7% UP Stamp Duty, 1% Registration, and 5% GST on under-construction.
-- For non-statutory developer charges (parking, club, EDC), state that they are detailed in the project's official booking cost sheet.
-- Keep every data point super-summarized, concise, and scannable.
+THE TABLE IS ALREADY ON SCREEN.
+The cost breakdown has just been rendered for the buyer from this project's own cost sheet. Do not draw a table and do not restate its rows.
 
-OUTPUT STRUCTURE:
+Write two short paragraphs and nothing else:
+1. What the all-inclusive figure means against the headline base rate — the gap between the price they will see advertised and the cheque they will actually write.
+2. Which line in that gap is the one to check with the developer before booking, and why.
 
-GROUNDING RULE — this overrides the formatting mandate:
-Developer charges (parking, club, IFMS, EDC, power backup) may only appear with a
-figure if that figure is present in the facts above. If it is absent, write the
-row as "In the developer's booking cost sheet" — never a typical range, never an
-illustrative number. Statutory rates are the only figures you may state without
-support in the data, because they are fixed by UP law.
+Charges we do not hold are absent from the table on purpose. You may say they sit in the developer's booking cost sheet; never supply a typical figure for one. Statutory rates are the only numbers you may state without support in the data, because UP law fixes them.
 
-OUTPUT STRUCTURE:
-
-### Verdict
-1-2 direct sentences explaining the all-inclusive pricing structure versus base rate for ${costProject?.name || 'this property'}.
-
-| Parameter | Rate / Amount | Stage | Note |
-| :--- | :--- | :--- | :--- |
-| (rows built from the facts above, plus the three statutory rates) | | | |
-
-### Recommendation
-1 actionable sentence advising buyers to budget roughly 12–14% above BSP for all-inclusive handover.`
+No headings. No emoji. Around 120 words.`
 
     const systemMsgHistory = [{ role: 'user' as const, content: ctx.message }]
     const fallbackResult = await executeWithFallbackChain({
@@ -120,6 +114,12 @@ OUTPUT STRUCTURE:
       messages: systemMsgHistory,
       send: ctx.send,
       onToolCall: async () => ({}),
+      // No tools: this prompt already carries the facts it needs. Offering a
+      // catalogue alongside a stub handler made the model loop through every
+      // tool cycle and return nothing at all.
+      config: { maxTokens: 1500, tools: false },
+      // We rendered the table above; drop any the model draws anyway.
+      suppressTables: Boolean(costTable),
       groqFallbackSuffix: '',
       userMessage: ctx.message,
     })
