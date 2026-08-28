@@ -79,6 +79,7 @@ import { renderMicroMarketTable, renderProjectTable, renderDerivedSectorTable, w
 import { deriveSectorsFromProjects } from '../lib/discovery/derivedSectors'
 import { buildAdaptiveChips } from '../lib/discovery/adaptiveChips'
 import { sanitizeOutput } from '../lib/ai/sanitizeOutput'
+import { stripInternalFields } from '../lib/projectRepository'
 import { builderCoverage, sectorCoverage } from '../lib/chat/coverageAnswer'
 import { rentalAnswer, isRentalQuestion } from '../lib/chat/rentalAnswer'
 import { TABLE_ALREADY_SHOWN } from '../lib/ai/prompts/base'
@@ -298,6 +299,18 @@ router.post('/', async (req: Request, res: Response) => {
   // are stripped at this one point rather than trusting a prompt rule: both were
   // prompt rules first and both shipped anyway.
   const send = (event: string, data: Record<string, unknown>) => {
+    // Internal ranker artifacts never leave the server, whichever emit produced
+    // the payload. Measured: 51% of every project object, 80KB of a 120KB
+    // response, read by no client. Per-emit stripping missed three call sites.
+    if (event === 'properties') {
+      const shape = (list: unknown) =>
+        Array.isArray(list) ? list.map((p) => (p && typeof p === 'object' ? stripInternalFields(p as object) : p)) : list
+      return sseWrite(res, event, {
+        ...data,
+        exactResults: shape(data.exactResults),
+        nearbyResults: shape(data.nearbyResults),
+      })
+    }
     if (event === 'token' && typeof data.token === 'string') {
       const clean = sanitizeOutput(data.token)
       if (clean.strippedEmoji || clean.strippedPlatforms) {
@@ -2158,7 +2171,12 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       // Fix 3: sync frontend cards with filtered/reused result set
       // Phase 3: Guard on renderTarget — cards only emit when renderTarget !== 'text'
       if (renderTarget !== 'text' && (projects.length > 0 || nearbyProjects.length > 0)) {
-        send('properties', { exactResults: projects, nearbyResults: nearbyProjects, expansion: null, renderTarget })
+        send('properties', {
+      exactResults: projects,
+      nearbyResults: nearbyProjects,
+      expansion: null,
+      renderTarget,
+    })
       }
       logRouting('DISCOVERY_SKIPPED', { intentState })
     } else if (intentState === 'READY_TO_SEARCH' || intentState === 'SHORTLISTED') {
