@@ -97,6 +97,49 @@ export function renderMicroMarketTable(
   return `${header}\n${body.join('\n')}`
 }
 
+/**
+ * A sector we can describe from project rows but have no curated row for.
+ *
+ * Rendered in the same table as curated micro-markets, and marked, because the
+ * two make different claims: a curated row asserts character ("Ultra Luxury &
+ * Golf Township"), a derived one asserts only arithmetic over projects we hold.
+ */
+export interface DerivedSectorRow {
+  sector: string
+  projectCount: number
+  readyCount: number
+  priceMinCr: number | null
+  priceMaxCr: number | null
+}
+
+/**
+ * Sectors we hold projects in but no sector intelligence for.
+ *
+ * Measured: 61 sectors have projects, 13 have curated rows, and 29 of the gap
+ * hold two or more projects each. Every one of those was answered with "not
+ * recorded" while priced projects sat in the same database.
+ */
+export function renderDerivedSectorTable(rows: DerivedSectorRow[], limit = 8): string {
+  if (!rows || rows.length < 2) return ''
+  const top = rows.slice(0, limit)
+
+  const header =
+    '| Sector | Projects | Ready to move | Price from |\n' +
+    '| :--- | ---: | ---: | :--- |'
+
+  const body = top.map((r) => {
+    const price =
+      r.priceMinCr != null
+        ? r.priceMaxCr != null && r.priceMaxCr !== r.priceMinCr
+          ? `₹${r.priceMinCr} – ${r.priceMaxCr} Cr`
+          : `₹${r.priceMinCr} Cr`
+        : ABSENT
+    return `| **${cell(r.sector)}** | ${r.projectCount} | ${r.readyCount} | ${cell(price)} |`
+  })
+
+  return `${header}\n${body.join('\n')}`
+}
+
 /** The subset of a trimmed project this table needs. */
 export interface ProjectRow {
   name?: string

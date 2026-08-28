@@ -75,7 +75,9 @@ import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monito
 import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
 import { inputGuardrail } from '../lib/ai/guardrails'
 import { profileFor, classifyShape } from '../lib/ai/inferenceProfile'
-import { renderMicroMarketTable, renderProjectTable, wantsMarketTable } from '../lib/ai/marketTable'
+import { renderMicroMarketTable, renderProjectTable, renderDerivedSectorTable, wantsMarketTable } from '../lib/ai/marketTable'
+import { deriveSectorsFromProjects } from '../lib/discovery/derivedSectors'
+import { buildAdaptiveChips } from '../lib/discovery/adaptiveChips'
 import { TABLE_ALREADY_SHOWN } from '../lib/ai/prompts/base'
 import { STATIC_PREFIX_MARKER } from '../lib/ai/systemPromptCache'
 import type { InferenceConfig } from '../lib/ai/openai'
@@ -2526,6 +2528,8 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     // Sent as its own block before the prose streams. No placeholder to
     // substitute, so there is nothing that can leak half-rendered.
     let renderedTable = ''
+    /** Which table went on screen, so the chips can follow it. */
+    let renderedTableKind: 'projects' | 'micro-market' | null = null
     // A shortlist of real projects beats a city-wide table whenever discovery
     // found any: it is what the buyer asked for, and it was the single most
     // common table the model drew — over the very rows we had just sent it.
@@ -2546,6 +2550,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       (intent.projectNames?.length ?? 0) === 0
     ) {
       renderedTable = renderProjectTable(trimmedProjects as any)
+      if (renderedTable) renderedTableKind = 'projects'
     }
     // Price context. Wanted either because the question is about places and
     // rates, or because the cards are carrying the projects and the one thing
@@ -2829,9 +2834,34 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         // driven by which intent fields are still missing, which is exactly the
         // useful next question at that point. Advisory and reasoning turns keep
         // the model chips: there, the answer really does open threads.
-        allowLlmChips: classifyShape(message) !== 'lookup',
+        // The model no longer guesses the follow-ups. buildAdaptiveChips derives
+        // them below from what this turn actually put on screen, which is both
+        // free and more accurate — it can name a project because we rendered it.
+        allowLlmChips: false,
       }
     )
+
+    // Chips built from the answer, not from a second model call.
+    //
+    // The chip prompt used to ask an LLM to "pick up a thread that answer
+    // opened", handing it the transcript to work that out. We already know: the
+    // projects in the table are the ones we rendered, the sectors are the ones
+    // we compared, and missingFields says what the buyer has not told us. This
+    // was the last per-turn model call on a lookup turn and about a quarter of
+    // its cost, spent on three buttons.
+    const adaptiveChips = buildAdaptiveChips({
+      projects: projects.slice(0, 4).map((p) => ({ id: p.id, name: p.name })),
+      sectors: sectorMatches ?? [],
+      rendered: renderedTableKind,
+      missingFields: postSearchUiState.missingFields ?? [],
+      focusedProject:
+        (intent.projectNames?.length ?? 0) === 1 && projects[0]
+          ? { id: projects[0].id, name: projects[0].name }
+          : null,
+    })
+    if (adaptiveChips.length > 0) {
+      postSearchUiState.chips = adaptiveChips
+    }
 
     // Branch-specific recovery set, handed to emitUiState as the fallback so the
     // single dedup pass there decides whether it is needed. Previously this block

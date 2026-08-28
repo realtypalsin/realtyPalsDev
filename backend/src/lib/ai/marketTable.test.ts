@@ -6,6 +6,7 @@ import {
   renderPaymentPlanTable,
   renderCostSheetTable,
   renderSectorComparisonTable,
+  renderDerivedSectorTable,
   wantsMarketTable,
 } from './marketTable'
 import type { MicroMarketSummary } from '../discovery/sectorDataGateway'
@@ -224,5 +225,46 @@ describe('rendered sector comparison', () => {
     assert.match(t, /Projects we hold/)
     assert.match(t, /Price band/)
     assert.ok(!/Livability|Social Infrastructure|Metro & Transit/.test(t))
+  })
+})
+
+describe('derived sector table', () => {
+  const row = (o: Record<string, unknown> = {}) => ({
+    sector: 'Sector 120',
+    projectCount: 4,
+    readyCount: 2,
+    priceMinCr: 0.85,
+    priceMaxCr: 1.6,
+    ...o,
+  })
+
+  it('describes sectors that have projects but no curated intelligence', () => {
+    // 61 sectors have projects; 13 have curated rows. Every one of the other 48
+    // was answered with "not recorded" while priced projects sat in the same
+    // database. This is arithmetic on data we already had.
+    const t = renderDerivedSectorTable([row(), row({ sector: 'Sector 121', projectCount: 3 })])
+    assert.match(t, /Sector 120/)
+    assert.match(t, /₹0\.85 – 1\.6 Cr/)
+  })
+
+  it('collapses the band when there is only one price', () => {
+    const t = renderDerivedSectorTable([
+      row({ priceMaxCr: 0.85 }),
+      row({ sector: 'Sector 121' }),
+    ])
+    assert.match(t, /₹0\.85 Cr/)
+    assert.ok(!/0\.85 – 0\.85/.test(t))
+  })
+
+  it('says Not recorded rather than guessing an unpriced sector', () => {
+    const t = renderDerivedSectorTable([
+      row({ priceMinCr: null, priceMaxCr: null }),
+      row({ sector: 'Sector 121' }),
+    ])
+    assert.match(t, /Not recorded/)
+  })
+
+  it('renders nothing for a single sector', () => {
+    assert.equal(renderDerivedSectorTable([row()]), '')
   })
 })
