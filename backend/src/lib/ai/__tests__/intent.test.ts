@@ -133,19 +133,37 @@ describe('Intent: parseIntentJson', () => {
 })
 
 describe('Intent: extractIntent (with SDK mocking)', () => {
-  const originalOpenAI = process.env.OPENAI_API_KEY
-  const originalGroq = process.env.GROQ_API_KEY
+  // Every provider key, not two of them.
+  //
+  // This block removed OPENAI_API_KEY and GROQ_API_KEY and called that "no keys
+  // set". Gemini, Mistral and Cerebras stayed configured, so the "no keys"
+  // case reached a live provider over the network — the suite passed or failed
+  // on whichever key happened to be reachable that day, and took two seconds
+  // doing it.
+  const PROVIDER_KEYS = [
+    'GEMINI_API_KEY', 'GEMINI_API_KEY1', 'MISTRAL_API_KEY',
+    'GROQ_API_KEY', 'GROQ_API_KEY1', 'GROQ_API_KEY2', 'GROQ_API_KEY3',
+    'CEREBRAS_API_KEY', 'CEREBRAS_API_KEY1',
+    'OPENAI_API_KEY', 'OPENAI_API_KEY1', 'OPENAI_API_KEY2', 'OPENAI_API_KEY3',
+  ]
+  const saved: Record<string, string | undefined> = {}
+  let savedFastPath: string | undefined
 
   before(() => {
-    // Clear env for most tests; specific tests will set them
-    delete process.env.OPENAI_API_KEY
-    delete process.env.GROQ_API_KEY
+    for (const k of PROVIDER_KEYS) {
+      saved[k] = process.env[k]
+      delete process.env[k]
+    }
+    // The regex fast path answers short single-clause messages without ever
+    // entering the chain, so it has to be off for these to describe the chain.
+    savedFastPath = process.env.INTENT_FAST_PATH
+    process.env.INTENT_FAST_PATH = 'false'
   })
 
   after(() => {
-    // Restore original env
-    if (originalOpenAI) process.env.OPENAI_API_KEY = originalOpenAI
-    if (originalGroq) process.env.GROQ_API_KEY = originalGroq
+    for (const [k, v] of Object.entries(saved)) if (v !== undefined) process.env[k] = v
+    if (savedFastPath === undefined) delete process.env.INTENT_FAST_PATH
+    else process.env.INTENT_FAST_PATH = savedFastPath
   })
 
   it('no keys set returns degraded (previous intent)', async () => {

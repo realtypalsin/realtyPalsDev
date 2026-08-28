@@ -49,7 +49,15 @@ function fakeClient(behaviour: {
 }
 
 describe('explicit cache never costs the buyer an answer', () => {
-  beforeEach(() => resetGeminiCacheState())
+  beforeEach(() => {
+    resetGeminiCacheState()
+    // Explicit caching is now OFF by default — it 400'd every request that also
+    // set system_instruction or tools, which is every request we make, and it
+    // caches less than Gemini's implicit cache already does on a billed key.
+    // These cases are about the module's behaviour when it IS enabled, so they
+    // enable it rather than assuming the default.
+    process.env.GEMINI_EXPLICIT_CACHE = 'true'
+  })
   afterEach(() => {
     delete process.env.GEMINI_EXPLICIT_CACHE
     resetGeminiCacheState()
