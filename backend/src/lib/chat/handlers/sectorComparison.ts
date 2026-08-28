@@ -14,8 +14,26 @@ export const sectorComparisonHandler: ChatTopicHandler = {
   id: 'sector-comparison',
   description: 'Sector versus sector on inventory, price and connectivity',
 
+  /**
+   * Two sectors, and only two.
+   *
+   * This handler takes sectorMatches[0] and [1] — the first two sector numbers
+   * that appear anywhere in the message — and compares those. That is right for
+   * "Sector 150 vs Sector 128" and badly wrong for a brief:
+   *
+   *   "I have ₹1.25 crore. I work near Sector 62, my wife works near Sector 135
+   *    … Compare Sector 75, Sector 78, Sector 137 and Sector 150"
+   *
+   * produced a comparison of Sector 62 and Sector 135 — the two WORKPLACES —
+   * and reported that Sector 135 has no inventory. The four sectors the buyer
+   * actually asked about were never looked at, and the mechanical grader passed
+   * it because the answer was long and well-formed.
+   *
+   * Three or more sectors is a multi-way brief: it belongs on the main advisory
+   * path, which sees the whole intent rather than the first two regex hits.
+   */
   matches: ctx =>
-    ctx.flags.isSectorCompare === true && ctx.sectorMatches.length >= 2,
+    ctx.flags.isSectorCompare === true && ctx.sectorMatches.length === 2,
 
   handle: async ctx => {
     // ─── SECTOR VS SECTOR COMPARISON ──────────────────────────────────────────
