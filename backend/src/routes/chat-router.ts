@@ -78,6 +78,9 @@ import { profileFor, classifyShape } from '../lib/ai/inferenceProfile'
 import { renderMicroMarketTable, renderProjectTable, renderDerivedSectorTable, wantsMarketTable } from '../lib/ai/marketTable'
 import { deriveSectorsFromProjects } from '../lib/discovery/derivedSectors'
 import { buildAdaptiveChips } from '../lib/discovery/adaptiveChips'
+import { sanitizeOutput } from '../lib/ai/sanitizeOutput'
+import { builderCoverage, sectorCoverage } from '../lib/chat/coverageAnswer'
+import { rentalAnswer, isRentalQuestion } from '../lib/chat/rentalAnswer'
 import { TABLE_ALREADY_SHOWN } from '../lib/ai/prompts/base'
 import { STATIC_PREFIX_MARKER } from '../lib/ai/systemPromptCache'
 import type { InferenceConfig } from '../lib/ai/openai'
@@ -119,11 +122,6 @@ const asyncHandler = (fn: (req: any, res: any) => Promise<void>) => (req: any, r
 }
 
 // The old GROQ_FALLBACK_SUFFIX lived here: ~1,826 tokens appended to every
-// tool-less provider to retract a tool catalogue we had just spent ~1,742 tokens
-// describing. Most of it restated base-prompt rules it itself declared "fully
-// active". The parts that were genuinely provider-conditional now live in the
-// NO LIVE LOOKUPS block of getBaseSystemPrompt(toolsEnabled=false), and the
-// bank/home-loan rule it uniquely carried is now a permanent base-prompt rule.
 
 const BodySchema = z.object({
   action: z.discriminatedUnion('type', [
@@ -178,14 +176,6 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   // An empty TEXT_MESSAGE reaches here whenever a caller puts the question
-  // somewhere the payload transform above does not read — `payload.message`
-  // rather than text/query/label. The schema does not reject it, so the turn ran
-  // in full: intent extraction on "", intentState COLD, and a paid LLM call that
-  // could only answer with a greeting. Three separate scripts in this repo hit
-  // it and their results looked like product failures.
-  //
-  // 400 rather than a greeting: an empty question is a caller bug, and the only
-  // useful thing to do with it is say so.
   if (action.type === 'TEXT_MESSAGE' && !message.trim()) {
     res.status(400).json({
       error: 'Empty message',
@@ -303,7 +293,23 @@ router.post('/', async (req: Request, res: Response) => {
   res.setHeader('X-RateLimit-Remaining', String(remaining))
   res.flushHeaders()
 
-  const send = (event: string, data: Record<string, unknown>) => sseWrite(res, event, data)
+  // Every token the buyer sees passes through here, whatever produced it —
+  // model stream, topic handler, hardcoded fallback. Emoji and competitor names
+  // are stripped at this one point rather than trusting a prompt rule: both were
+  // prompt rules first and both shipped anyway.
+  const send = (event: string, data: Record<string, unknown>) => {
+    if (event === 'token' && typeof data.token === 'string') {
+      const clean = sanitizeOutput(data.token)
+      if (clean.strippedEmoji || clean.strippedPlatforms) {
+        console.warn(
+          `[CHAT:SANITISED] emoji=${clean.strippedEmoji} platforms=${clean.strippedPlatforms}`,
+        )
+      }
+      if (!clean.text) return
+      return sseWrite(res, event, { ...data, token: clean.text })
+    }
+    return sseWrite(res, event, data)
+  }
   const heartbeatTimer = setInterval(() => {
     if (!res.writableEnded) send('ping', {})
   }, 3000)
@@ -352,20 +358,6 @@ router.post('/', async (req: Request, res: Response) => {
           })
         }
         // A cached turn is still a turn the buyer had, and the transcript is
-        // what the sales team reads before calling them. This early return used
-        // to skip persistence entirely, so a cached answer left a hole in the
-        // conversation — the buyer's question and our reply simply absent from
-        // ChatMessage, and the turn missing from message_count.
-        //
-        // That was survivable while only a few handler answers were cached. Now
-        // that the main path caches every lookup and factual turn, it would have
-        // removed most first turns of most sessions from the record the lead
-        // qualification is built on. Saving model spend by losing lead data is
-        // not a saving.
-        //
-        // Awaited, not fire-and-forget: res.end() below ends the request, and a
-        // floating write can be cut off with it. Errors are swallowed — a
-        // persistence failure must not turn a good cached answer into an error.
         if (sessionId) {
           try {
             await prisma.chatMessage.createMany({
@@ -406,14 +398,6 @@ router.post('/', async (req: Request, res: Response) => {
     console.log('[CHAT] START intent/memory/session', Date.now(), { action: action.type })
 
     // Neither of these reads depends on the extracted intent, so start them now.
-    // They previously sat inside the Promise.all *below* the `await extractIntent`,
-    // which meant the LLM round-trip and the DB reads ran back to back instead of
-    // overlapping — the comment claimed parallelism the control flow did not give.
-    //
-    // getMemory() swallows its own errors and resolves null. The session read can
-    // reject, and a rejection landing while we are still awaiting extractIntent
-    // would be an unhandled rejection, so it is captured here and rethrown at the
-    // join point to keep the original error semantics.
     let sessionReadError: unknown
     const memoryPromise = getMemory(userId, guestToken)
     const sessionPromise = (sessionId
@@ -528,16 +512,7 @@ router.post('/', async (req: Request, res: Response) => {
     const isNewSession = !sessionId || !sessionData
     const currentSessionId = sessionId || randomUUID()
 
-    /**
-     * Single exit for every ui_state this handler emits.
-     *
-     * The specialised answer branches below each authored their own literal chip
-     * array and called send('ui_state', …) directly. That bypassed session dedup
-     * entirely (so a chip the user had already been shown, or already clicked,
-     * came back every turn) and ignored the extracted intent (so a buyer who said
-     * "Sector 150" was offered "Flats in Sector 76"). Routing all of them through
-     * here fixes both without changing any branch's own chip choices.
-     */
+    /** Single exit for every ui_state this handler emits. */
     const emitUiState = <C extends { id: string; label?: string; payload?: unknown }>(state: {
       stage: string
       thinking: string
@@ -757,12 +732,6 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // ─── Phase 0: Query Classification (deterministic + LLM fallback)
-    //
-    // Resolve the extractor's guessed project names against real rows first. The
-    // guess is unreliable — "How is Wealth Clinic?" put a brokerage into
-    // projectNames, which routed the question into the project detail pipeline and
-    // produced "no verified record, want properties in Sector 79?". An unmatched
-    // name must not keep the question out of the open lane.
     const verifiedProjectNames = await resolveProjectNames(
       (intent as Intent).projectNames,
       DEFAULT_CITY,
@@ -787,12 +756,46 @@ router.post('/', async (req: Request, res: Response) => {
       reason: queryClassification.reason,
     })
 
+    // ─── COVERAGE LANE ─────────────────────────────────────────────────────────
+    if (action.type === 'TEXT_MESSAGE' && message) {
+      let coverage: import('../lib/chat/coverageAnswer').CoverageAnswer | { text: string; projects?: never } | null = null
+
+      if (isRentalQuestion(message)) {
+        coverage = await rentalAnswer(message, (intent as any)?.city || DEFAULT_CITY)
+      }
+      if (!coverage) coverage = await builderCoverage(message)
+      if (!coverage && intent.sector && !isCityLevel(intent.sector)) {
+        coverage = await sectorCoverage(intent.sector)
+      }
+
+      if (coverage) {
+        console.log('[CHAT:COVERAGE] answered from database coverage, no model call')
+        // A builder we DO hold gets their projects rendered, not just described.
+        const covProjects = 'projects' in coverage ? coverage.projects : undefined
+        const covTable = covProjects?.length ? renderProjectTable(covProjects as any) : ''
+        if (covTable) send('token', { token: `${covTable}
+
+` })
+        send('token', { token: coverage.text })
+        emitUiState({
+          stage: 'RESEARCH',
+          thinking: 'Checking what we hold:',
+          chips: [],
+          missingFields: [],
+          confidence: 'HIGH',
+        })
+        send('done', {
+          sessionId: sessionId ?? null,
+          intentState,
+          intent,
+          responseMode: 'chat',
+        })
+        res.end()
+        return
+      }
+    }
+
     // ─── OPEN QUERY LANE (grounded general answers) ────────────────────────────
-    // Questions that are not property searches: "which sector do the richest people
-    // live in", "tell me about Investors Clinic", "who founded Elite Group".
-    // Answered from sector_intelligence / Builder first, live web second, and
-    // refused when neither grounds it. Exits before the discovery pipeline so an
-    // unanswerable question can never come back as a list of unrelated properties.
     if (queryClassification.queryKind === 'OPEN') {
       const openDetection = detectOpenQuery(message, hasVerifiedProjectNames)
         ?? { topic: 'GENERAL' as const, reason: 'Fail-open general question' }
@@ -818,17 +821,6 @@ router.post('/', async (req: Request, res: Response) => {
       const rawOpenText = grounded?.text ?? buildNoGroundingReply(openDetection)
 
       // Make the answer clickable, build chips from what it said, and show cards
-      // for the projects it actually named.
-      //
-      // The lane used to emit no cards at all. Right for "who founded Elite
-      // Group"; wrong for "what are the most premium gated communities in Sector
-      // 78", which the classifier reads as open but whose answer names four real
-      // projects we hold. The buyer got prose and had to re-ask in listing
-      // phrasing to get anything they could save, compare or open.
-      //
-      // The card set is exactly what the answer named — nothing back-filled, no
-      // sector widened, no "similar projects" appended. A name the model invented
-      // resolves against no row and produces no card.
       let openText = rawOpenText
       let openChips: Array<{ id: string; actionType: string; label: string; icon: string; analyticsId: string; priority: number; payload: Record<string, unknown> }> = []
       let openCards: unknown[] = []
@@ -957,10 +949,7 @@ router.post('/', async (req: Request, res: Response) => {
       suppressTopicChips(currentSessionId, 'amenities')
     }
 
-    // Pre-search ui_state exists to set the stage + thinking loader. Its chips are
-    // always superseded by the post-response ui_state below (and the frontend hides
-    // chips while isLast && isSubmitting), so generating them via LLM was paying for
-    // output that could never render. Deterministic chips only here.
+    // Pre-search ui_state exists to set the stage + thinking loader.
     const preSearchUiState = await computeConversationState(
       intent,
       intentState,
@@ -976,17 +965,10 @@ router.post('/', async (req: Request, res: Response) => {
       { allowLlmChips: false }
     )
     
-    // No dedup and no mark-shown here on purpose. These chips are hidden by the
-    // client while the response is still streaming and are then replaced by the
-    // post-response ui_state, so the buyer never actually sees them — marking them
-    // as shown was suppressing those same chips from the set they DO see.
+    // No dedup and no mark-shown here on purpose.
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
     // ─── GROUND TRUTH DATABASE PIPELINE (Lightweight Catalog Cache) ─────────────
-    // Whole-table read with no where/take. It has to be: this is the in-memory
-    // catalogue used for project-name matching throughout the handler, so it
-    // cannot be narrowed. It CAN be cached — names and sectors change only when
-    // an admin edits a project. Was running on every single chat turn.
     type DbCatalogEntry = {
       id: string; name: string; slug: string; sector: string
       status: string; price_min_cr: number | null; price_range_label: string | null
@@ -1125,21 +1107,9 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
     // A project-specific RERA number question ("what is X's RERA number") is a
-    // plain fact lookup, so it has no branch of its own — isReraCheckQuery is
-    // deliberately builder-level (it requires zero named projects). It still
-    // has to COUNT as a topic, or a compound question containing it looks
-    // single-topic and gets short-circuited below.
     const isReraFactQuery = /rera/i.test(message) && Boolean(activeProjectName)
 
     // How many distinct things the buyer asked for in this one message.
-    //
-    // The narrow branches below each answer exactly one topic and then return,
-    // so on "does it have a pool, and what is its RERA number?" the amenity
-    // branch answered the pool and the RERA half vanished with no
-    // acknowledgement — the buyer is left to conclude we do not hold RERA data.
-    // Every fact those branches serve is already in the generic grounded
-    // answer's facts block, so for a multi-topic message the correct move is to
-    // decline the shortcut and let the generic path answer all parts at once.
     const topicFlagCount = [
       isAmenityQuery,
       isConnectivityQuery,
@@ -1177,23 +1147,6 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
         const isBuilderCompare = matchedBuilders.length >= 2 && /compare|vs|versus|better|difference|track record|builder|developer/i.test(message)
 
         // ─── PROJECT CARDS FOR THE TOPIC LANE ─────────────────────────────────────
-        // Every topic handler below answers and then ends the response, and not one
-        // of them emitted a card. So "does Ace Divino have a pool?" returned a
-        // correct, well-formatted answer about a project the buyer then had no way
-        // to save, open or compare — they had to re-ask in listing phrasing to make
-        // a card appear.
-        //
-        // Emitting here rather than inside each handler is deliberate: there are
-        // twelve of them across two files, a thirteenth is a matter of time, and a
-        // card is not something any one of them should have to remember. The client
-        // replaces its card set on each properties event, so a later lane that emits
-        // its own set simply wins.
-        //
-        // Scope rule holds: loadMentionedProjectCards resolves names against Project
-        // rows and returns only what was named. One project asked about, one card —
-        // no sector back-fill, no "similar projects" appended.
-        // Keyed on the resolved id, not the name: loadMentionedProjectCards looks
-        // rows up by id, and a drilldown turn has already resolved targetProjectId.
         const topicCardId = typeof (intent as { targetProjectId?: unknown }).targetProjectId === 'string'
           ? (intent as { targetProjectId: string }).targetProjectId
           : ''
@@ -1217,9 +1170,6 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
         }
 
         // ─── TOPIC HANDLER REGISTRY ────────────────────────────────────────────────
-        // Handlers extracted from this function into lib/chat/handlers/. Each was a
-        // sibling `if (isXQuery) { … res.end(); return }` block here. The registry
-        // runs the first match and returns, exactly as the inline order did.
         if (await runTopicHandlers(CHAT_TOPIC_HANDLERS, {
           message,
           intent,
@@ -1254,9 +1204,6 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             isPaymentPlanRequest,
             isCostSheetRequest,
             // False when the buyer asked about more than one topic in one
-            // message. Handlers whose whole answer is already in the generic
-            // facts block decline in that case so the generic path can answer
-            // every part, instead of one part winning and the rest vanishing.
             singleTopic,
           },
         })) return
@@ -1358,10 +1305,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
         // Execute only if target projects were explicitly identified
         if (targetProjects.length > 0) {
           const targetIds = targetProjects.map(p => p.id)
-          // Detected before the query, not after it. The facts block was already
-          // topic-gated, so the heavy relations below were fetched on every turn
-          // and then dropped on the floor — the cost was paid in the database and
-          // over the wire, where no prompt gating could reach it.
+          // Detected before the query, not after it.
           const askedFactTopics = detectFactTopics(message)
 
           const detailedTargetProjects = await prisma.project.findMany({
@@ -1377,10 +1321,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
               recommendation_profile: true,
               decision_profile: true,
               persona_profile: true,
-              // Demand-driven, and bounded when taken. buildProjectFacts only reads
-              // these when the same topic fired, so fetching them unconditionally
-              // bought nothing: measured at ~35% of the facts block for detail
-              // almost no turn asks for.
+              // Demand-driven, and bounded when taken.
               ...(askedFactTopics.has('price_history')
                 ? { price_history: { take: 8, orderBy: { recorded_at: 'desc' as const } } }
                 : {}),
@@ -1390,17 +1331,11 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
               ...(askedFactTopics.has('specifications')
                 ? { spec_items: { take: 30, orderBy: [{ is_highlight: 'desc' as const }, { sort_order: 'asc' as const }] } }
                 : {}),
-              // dna is deliberately absent. ProjectDna is INTERNAL_ONLY_RELATIONS:
-              // redactProject strips it from the client and buildProjectFacts never
-              // reads it, so every turn fetched a relation that could not legally be
-              // shown and was never looked at.
+              // dna is deliberately absent.
             }
           })
 
           // Emit project card(s) to frontend so project card is rendered above the facts.
-          // Redacted: this include has no `select`, so the rows carry every Project
-          // column — ai_search_keywords (internal retrieval terms) and builder_theme
-          // (a commercial arrangement, with active_until) were going over the wire.
           send('properties', {
             exactResults: detailedTargetProjects.map(redactProject),
             nearbyResults: [],
@@ -1414,12 +1349,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             const mentions = projectMentionCounts.get(p.id)?.count || 1
             const weightagePct = totalInquiries > 0 ? Math.round((mentions / totalInquiries) * 100) : Math.round(100 / detailedTargetProjects.length)
 
-            // Every populated public field, not a hand-picked eleven. The row
-            // already carries ~150 columns; projecting only a dozen of them is
-            // why the model could not answer "what's the maintenance charge",
-            // "is it pet friendly" or "how far is the airport" from data we
-            // hold. Empty values are omitted, so an absent key reads to the
-            // model as "we do not have this" rather than inviting a guess.
+            // Every populated public field, not a hand-picked eleven.
             const baseObj: Record<string, any> = {
               ...buildProjectFacts(p as unknown as Record<string, unknown>, { topics: askedFactTopics }),
               location: `${p.sector}, ${p.city}`,
@@ -1524,10 +1454,6 @@ USING THE FACTS:
           let isDeterministic = false
 
           // Both branches below stream with zero LLM involvement, so whatever is
-          // written here reaches the buyer verbatim. They used to emit a fully
-          // invented payment schedule and cost sheet — specific rupee figures,
-          // specific percentages — for whichever project was asked about. Every
-          // row now comes from that project's own rows, or is labelled.
           if (isPaymentPlanRequest && detailedTargetProjects.length === 1) {
             const p = detailedTargetProjects[0]
             const plans = p.payment_plans ?? []
@@ -1549,12 +1475,7 @@ USING THE FACTS:
               `| **Registration Fee** | ${UP_STATUTORY.registrationPct}% (capped ₹${UP_STATUTORY.registrationCapInr.toLocaleString('en-IN')}) | At registration | Sub-registrar charge |`,
             ].join('\n')
 
-            // Developer charges are per-project. We print them only when this
-            // project's cost sheet holds them — a Noida average cannot stand in
-            // for what one developer actually charges.
-            // Every figure below is read from this project's own cost_sheet row.
-            // parking_cost / ifms / club_membership are stored in RUPEES, not
-            // lakhs — see the unit note on the CostSheet model in schema.prisma.
+            // Developer charges are per-project.
             const inr = (n: unknown) => `₹${Number(n).toLocaleString('en-IN')}`
             const developerRows: string[] = []
             if (p.price_range_label) developerRows.push(`| **Base Selling Price (BSP)** | ${p.price_range_label} | As per payment plan | Basic unit purchase price |`)
@@ -1734,10 +1655,7 @@ USING THE FACTS:
             intentState: 'SHORTLISTED',
             intent,
             responseMode,
-            // redactProject, like exactResults above. This emitted the raw rows:
-            // every comparison shipped the internal columns the exposure policy
-            // exists to withhold. detailedTargetProjects also carries the builder
-            // relation, which the bare targetProjects rows do not.
+            // redactProject, like exactResults above.
             ...(isCompareRequest && targetProjects.length >= 2
               ? { comparisonProjects: detailedTargetProjects.map(redactProject) }
               : {})
@@ -1861,21 +1779,8 @@ USING THE FACTS:
           console.log('[CHAT:PROJECT_DETAIL:NOT_FOUND]', missing.message, { query: message, sector: intent?.sector })
 
           // A city-wide substitution used to run here, and it shadowed the honest
-          // answer below. When the named project was not found it defaulted the
-          // sector to a literal 'Sector 79, Noida', queried `city contains Noida`,
-          // took eight arbitrary projects and printed them under "Verified
-          // Projects Status" with a "Recommendation" naming two of them — plus a
-          // '2, 3 BHK' fallback for any project whose configurations were unknown.
-          //
-          // So a buyer asking about one specific project they had heard of got a
-          // confident list of eight unrelated ones instead, with no indication
-          // that their question had not been answered. That is the substitution
-          // this product cannot make: answer the question asked, or say we cannot.
 
           // Not in our database — say so, then look, keeping the two apart.
-          // buildUnknownProjectReply delegates to the grounded path, so our own
-          // tables are still tried first and anything from the web arrives with
-          // its ungrounded sentences already stripped.
           const unknown = await buildUnknownProjectReply(String(plan.projectIds[0]), {
             city: DEFAULT_CITY,
             userId,
@@ -2258,9 +2163,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       logRouting('DISCOVERY_SKIPPED', { intentState })
     } else if (intentState === 'READY_TO_SEARCH' || intentState === 'SHORTLISTED') {
       // Builder-only queries always run discovery — no pre-disambiguation.
-      // discoverProjects() returns all matching projects via BUILDER_ONLY_THRESHOLD;
-      // the AI summarizes. Pre-disambiguation here blocked discoverProjects() from
-      // running, so no property cards were emitted for builder searches.
       const searchOffset = offset ?? 0
       console.log('[CHAT] START discoverProjects', Date.now(), { intent, offset: searchOffset })
       const cacheKey = `search:${JSON.stringify({ ...intent, offset: searchOffset })}`
@@ -2284,13 +2186,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       notFoundNames = discoveryResult.notFoundNames
 
       // ─── MULTI-DIMENSIONAL RANKING ENHANCEMENT ────────────────────────────────
-      // If we have projects, enhance with comprehensive multi-dimensional scoring
-      // This enriches the basic discovery results with detailed explanations
-      // Only run when we are actually ranking a set. This pipeline costs a second
-      // full LLM intent extraction plus its own DB query + scoring pass, and its
-      // only consumer is generateMultiDimensionalContext (the "TOP RECOMMENDATION
-      // CONTEXT" prompt block). On a DRILLDOWN like "what amenities does X have"
-      // that block is noise, so the whole pipeline was pure spend.
       const wantsMultiDim =
         queryClassification.queryKind === 'DISCOVERY' ||
         queryClassification.queryKind === 'RANKING'
@@ -2518,30 +2413,10 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     }
 
     // ─── MARKET TABLE, RENDERED HERE RATHER THAN BY THE MODEL ──────────────────
-    //
-    // Tables were 53% of all output tokens across 321 measured answers, and
-    // output is ~2/3 of a turn's cost. Most of what the model drew was data we
-    // had just injected into its prompt — billed once going in and again coming
-    // back — and the columns it invented for the rest ("5-Yr Upside
-    // Risk-Adjusted Est.") had nothing behind them.
-    //
-    // Sent as its own block before the prose streams. No placeholder to
-    // substitute, so there is nothing that can leak half-rendered.
     let renderedTable = ''
     /** Which table went on screen, so the chips can follow it. */
     let renderedTableKind: 'projects' | 'micro-market' | null = null
     // A shortlist of real projects beats a city-wide table whenever discovery
-    // found any: it is what the buyer asked for, and it was the single most
-    // common table the model drew — over the very rows we had just sent it.
-    //
-    // Except when the cards are already rendering. "Show me 3 BHK in Sector 75"
-    // returns property cards carrying the name, builder, price and status — a
-    // table underneath them is the same five columns a second time, in a format
-    // the buyer cannot tap. The cards are the better surface; the table is
-    // redundant, and paying to draw one under them was waste on top of waste.
-    //
-    // Those turns get the micro-market table below instead, which says something
-    // the cards do not: what this sector costs against the alternatives.
     const cardsAreRendering = renderTarget === 'cards' || renderTarget === 'both'
     if (
       message &&
@@ -2575,11 +2450,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     }
 
     // The micro-markets block is city-level and byte-identical on every turn,
-    // but it used to be appended AFTER the per-request project facts. Prefix
-    // caching matches a prefix: stable bytes placed after variable bytes can
-    // never be cached, so those 472 tokens were billed at full rate on every
-    // single turn for no reason but ordering. Spliced into the stable prefix at
-    // the same marker the no-tools block uses.
     const spliceIntoStaticPrefix = (prompt: string, block: string): string => {
       if (!block) return prompt
       const token = `\n${STATIC_PREFIX_MARKER}\n`
@@ -2627,13 +2497,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     let fallbackResult: any = null
 
     // Phase 5.4: Meta-awareness handler — user asking "what have you assumed about me?"
-    // Meta-awareness: the user asking what WE have inferred about THEM.
-    //
-    // `what.*do you.*think` used to be in here, which made "what do you think about
-    // Investors Clinic" — an ordinary question about a third party — return the
-    // "You've told me: Sector 70, ..." profile dump. Every branch now requires an
-    // explicit self-reference (me / my / I), so opinion questions about a company,
-    // sector or project fall through to the real answer.
     const isMetaQuestion = /what.*(assum|remember|know).*about\s+me\b|what.*constraints.*\bi\b|what.*(my|our)\s+(filters|profile|preferences|requirements)|what.*have\s+i\s+told|what.*do you.*think.*about\s+me\b/i.test(message)
 
     const isPropertySearchWithResults = projects.length > 0 &&
@@ -2672,19 +2535,8 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     const handleToolCall = createToolHandler({ userId, sessionId: currentSessionId });
 
     // Stream generation with cost-aware model routing (G5): factual queries (definitional,
-    // "what/list/price/amenities") route to Gemini's cheap lite tier; advisory/reasoning
-    // queries ("should I", "is this good") keep the smart default. Only affects the Gemini
-    // leg of the fallback chain — deep-fallback providers (Groq/OpenAI) pick their own model.
     const modelRoute = routeToModel(classification)
     // The cost profile for this turn: model, thinking budget and reply ceiling,
-    // chosen from the shape of the question. Output is ~2/3 of a turn's cost at
-    // real Gemini pricing and thinking is the largest line inside it, so this —
-    // not prompt size — is where the money is. A comparison still gets the full
-    // reasoning budget; a head term gets none, because none was ever used.
-    //
-    // `routeToModel` said cheap-or-smart and nothing about thinking. It is kept
-    // as the floor: anything it calls cheap stays on the lite tier even if the
-    // shape classifier reaches for the smart one.
     const profile = profileFor(message)
     const inferenceConfig: InferenceConfig = {
       maxTokens: profile.maxTokens,
@@ -2769,23 +2621,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     }
 
     // ─── ANSWER CACHE WRITE ────────────────────────────────────────────────────
-    //
-    // The main path never wrote to the cache, so the read at the top of this
-    // handler could only ever hit an answer some topic handler had left behind.
-    // 62% of real demand is repeated head terms; those were paying for a fresh
-    // model turn every single time anyone asked them.
-    //
-    // Written only when the answer is genuinely reusable:
-    //  - a lookup or factual shape, where the reply is about the market and not
-    //    about this buyer. Advisory and reasoning turns stay uncached: they are
-    //    written around a stated situation and are worth their cost.
-    //  - no project focus, since a project-specific reply belongs to that
-    //    project's scope, not the global one.
-    //  - the guardrails left the text alone.
-    //
-    // The key already carries the intent fingerprint, so "2 bhk in noida" asked
-    // cold and the same words asked with a ₹1.5cr budget in play are different
-    // entries. Two buyers in the same situation share one — which is right.
     if (
       action.type === 'TEXT_MESSAGE' &&
       message &&
@@ -2824,31 +2659,12 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       {
         // Second consecutive turn on the same shortlist escalates DECIDING → CONVERTING.
         stageTurnCount: priorShortlistTurns,
-        // No model call for chips on a head term. It is the last LLM call left
-        // on a lookup turn and roughly a quarter of that turn's cost, spent on
-        // three suggestion buttons.
-        //
-        // It also buys the least there. The chip prompt is built around "WE JUST
-        // ANSWERED — pick up a thread that answer opened", and a buyer who has
-        // typed "2 bhk in noida" has opened no thread. The static chips are
-        // driven by which intent fields are still missing, which is exactly the
-        // useful next question at that point. Advisory and reasoning turns keep
-        // the model chips: there, the answer really does open threads.
-        // The model no longer guesses the follow-ups. buildAdaptiveChips derives
-        // them below from what this turn actually put on screen, which is both
-        // free and more accurate — it can name a project because we rendered it.
+        // No model call for chips on a head term.
         allowLlmChips: false,
       }
     )
 
     // Chips built from the answer, not from a second model call.
-    //
-    // The chip prompt used to ask an LLM to "pick up a thread that answer
-    // opened", handing it the transcript to work that out. We already know: the
-    // projects in the table are the ones we rendered, the sectors are the ones
-    // we compared, and missingFields says what the buyer has not told us. This
-    // was the last per-turn model call on a lookup turn and about a quarter of
-    // its cost, spent on three buttons.
     const adaptiveChips = buildAdaptiveChips({
       projects: projects.slice(0, 4).map((p) => ({ id: p.id, name: p.name })),
       sectors: sectorMatches ?? [],
@@ -2938,9 +2754,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     )
 
     // ── Build artifact payload for the assistant message ──────────────────
-    // Artifacts capture the structured widget data shown to the user so it
-    // can be reconstructed on session restore. Only persisted on assistant
-    // messages; user messages never carry artifacts.
     const messageArtifacts: Array<Record<string, unknown>> = []
 
     if (projects.length > 0 || nearbyProjects.length > 0) {
@@ -3100,9 +2913,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       )
 
       // ── Prose-entity chips & entities ──────────────────────────────────────────────
-      // The model can name real projects in prose without the search tool returning
-      // cards. Without this, that turn renders zero chips (verified user report).
-      // Only DB-matched names become chips, so nothing is invented.
       try {
         if (fullText) {
           // Names already rendered as cards this turn stay plain — a link beside the
@@ -3114,14 +2924,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           const proseChips = projects.length === 0 ? buildProseChips(mentioned) : []
 
           // Cards for the projects the answer itself named.
-          //
-          // The failure this fixes: discovery resolves nothing (vague sector, or the
-          // filters excluded everything), the model answers in prose naming three
-          // real projects, and the turn renders no cards at all — so there is no way
-          // to click into any of them, and the "Compare these 3" chip has an empty
-          // shortlist to work with. These are not fallback or filler cards: every one
-          // is a name the assistant put in this specific answer, matched to a real
-          // row. Text-only turns are still excluded.
           if (projects.length === 0 && nearbyProjects.length === 0 && mentioned.length > 0 && renderTarget !== 'text') {
             try {
               const namedCards = await prisma.project.findMany({
@@ -3164,11 +2966,6 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
               entities: mentioned,
             })
             // Persist the linked form with THIS turn's message.
-            //
-            // This used to findFirst() the newest assistant row and update it — but
-            // this turn's row is written by the createMany below, so the newest row
-            // at this point is the PREVIOUS turn's, and it got overwritten with the
-            // current answer. Hand the text to the insert instead.
             if (mentioned.length > 0 && linkedText !== fullText) {
               assistantTextToPersist = linkedText
             }
@@ -3533,17 +3330,6 @@ router.delete('/intent', async (req: Request, res: Response) => {
   await prisma.userMemory.deleteMany({ where: { user_id: userId } })
 
   // Deliberately does not create a session.
-  //
-  // It used to, and the row it made was worse than wasted. The client adopted
-  // that id, so the next message arrived with a sessionId whose row already
-  // existed — `isNewSession` was therefore false, and the branch that titles a
-  // session from its first message never ran. Every conversation started this
-  // way stayed titled "Chat" forever, and clicking "New chat" without typing
-  // left a permanent empty row in the sidebar.
-  //
-  // The end-of-turn persist already creates the session with a real title on the
-  // first message, for guests and signed-in users alike. Nothing needs to exist
-  // before then.
   res.json({ ok: true })
 })
 
@@ -3661,10 +3447,7 @@ router.get('/sessions/list', asyncHandler(async (req: Request, res: Response) =>
 
   const where = userId ? { user_id: userId } : { guest_token: guestToken }
 
-  // Only sessions that actually contain a conversation. A row with no messages
-  // is an artifact of clicking "New chat" and walking away, not something the
-  // buyer would recognise in their history — it used to appear as an untitled
-  // "Chat" with 0 messages and cluttered the sidebar.
+  // Only sessions that actually contain a conversation.
   const sessions = await prisma.chatSession.findMany({
     where: { ...where, messages: { some: {} } },
     select: {
@@ -3757,13 +3540,7 @@ router.post('/feedback', asyncHandler(async (req: Request, res: Response) => {
         },
       })
 
-      // Signature is trackEvent(userId, event, properties). This passed the
-      // event name as the distinctId and the entire created row as the event
-      // name, so PostHog recorded a stringified DB record — including the
-      // buyer's free-text comment — as an event.
-      //
-      // The comment stays out of analytics deliberately: it is user-authored
-      // prose and belongs in the database, not in a third-party event stream.
+      // Signature is trackEvent(userId, event, properties).
       trackEvent(userId ?? null, 'property_feedback_recorded', {
         project_id: projectId,
         session_id: sessionId,
