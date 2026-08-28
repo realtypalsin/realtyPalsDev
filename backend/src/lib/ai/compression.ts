@@ -1,5 +1,6 @@
 // backend/src/lib/ai/compression.ts
 import Groq from 'groq-sdk'
+import { meteredClient } from './geminiMeter'
 import OpenAI from 'openai'
 import { GoogleGenAI } from '@google/genai'
 import { MODELS } from '../config'
@@ -45,7 +46,7 @@ export async function maybeCompress(
 
   try {
     if (process.env.GEMINI_API_KEY) {
-      const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      const client = meteredClient({ apiKey: process.env.GEMINI_API_KEY, endpoint: 'compression' })
       const res = await client.models.generateContent({
         model: MODELS.GEMINI_LITE,
         contents: [{ role: 'user', parts: [{ text: context }] }],

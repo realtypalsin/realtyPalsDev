@@ -3,6 +3,7 @@
 // Captures all 11 buyer decision dimensions from natural language
 
 import Groq from 'groq-sdk'
+import { meteredClient } from './geminiMeter'
 import OpenAI from 'openai'
 import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
@@ -430,7 +431,7 @@ async function extractWithGemini(
   console.log('[EXTENDED_INTENT] START extractWithGemini', Date.now())
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('No GEMINI_API_KEY')
-  const client = new GoogleGenAI({ apiKey })
+  const client = meteredClient({ apiKey, endpoint: 'extended-intent' })
 
   const userContent = previousIntent
     ? `Previous intent: ${JSON.stringify(previousIntent)}\n\nNew user message: ${message}`

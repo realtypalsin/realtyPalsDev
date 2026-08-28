@@ -2,6 +2,7 @@
 // Topic-separated compression: location, financial, timeline summaries
 
 import Groq from 'groq-sdk'
+import { meteredClient } from '../ai/geminiMeter'
 import OpenAI from 'openai'
 import { GoogleGenAI } from '@google/genai'
 import { MODELS } from '../config'
@@ -60,7 +61,7 @@ async function compressTopic(
 
   try {
     if (process.env.GEMINI_API_KEY) {
-      const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      const client = meteredClient({ apiKey: process.env.GEMINI_API_KEY, endpoint: 'summary-compression' })
       const res = await client.models.generateContent({
         model: MODELS.GEMINI_LITE,
         contents: [{ role: 'user', parts: [{ text: context }] }],
@@ -175,7 +176,7 @@ export async function generatePropertySummary(
   try {
     if (process.env.GEMINI_API_KEY) {
       const { GoogleGenAI } = await import('@google/genai')
-      const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      const client = meteredClient({ apiKey: process.env.GEMINI_API_KEY, endpoint: 'summary-compression' })
       const res = await client.models.generateContent({
         model: MODELS.GEMINI_LITE,
         contents: [{ role: 'user', parts: [{ text: context }] }],

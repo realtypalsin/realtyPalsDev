@@ -1,4 +1,5 @@
 import { prisma } from './db'
+import { meteredClient } from './ai/geminiMeter'
 import { GoogleGenAI } from '@google/genai'
 import { env } from './env'
 import { MODELS } from './config'
@@ -103,7 +104,7 @@ export async function classifyRejectionReason(
       return null
     }
 
-    const client = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
+    const client = meteredClient({ apiKey: env.GEMINI_API_KEY, endpoint: 'ghost-pool' })
 
     const transcript = messages
       .map(

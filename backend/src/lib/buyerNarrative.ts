@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai'
+import { meteredClient } from './ai/geminiMeter'
 import { env } from './env'
 import { MODELS } from './config'
 
@@ -19,7 +20,7 @@ export async function generateBuyerNarrative(messages: any[]): Promise<BuyerNarr
       return null
     }
 
-    const client = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
+    const client = meteredClient({ apiKey: env.GEMINI_API_KEY, endpoint: 'buyer-narrative' })
 
     const transcript = messages
       .map(

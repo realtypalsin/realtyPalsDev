@@ -3,7 +3,13 @@ import { Redis } from '@upstash/redis'
 
 let _redis: Redis | null = null
 
-function getRedis(): Redis | null {
+/**
+ * The shared Redis client, or null when Upstash is not configured.
+ *
+ * Exported so the answer cache uses this one lazily-constructed client rather
+ * than opening a second connection for the same credentials.
+ */
+export function getRedis(): Redis | null {
   if (_redis) return _redis
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
     _redis = new Redis({

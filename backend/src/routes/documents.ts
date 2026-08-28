@@ -3,6 +3,7 @@
 // GET  /documents?slug= — list docs for a project
 // POST /documents/ask   — ask a question about a stored document (rate limited)
 import { Router, Request, Response } from 'express'
+import { meteredClient } from '../lib/ai/geminiMeter'
 import { z } from 'zod'
 import multer from 'multer'
 import type { ChatCompletionContentPart } from 'groq-sdk/resources/chat/completions'
@@ -67,7 +68,7 @@ router.post('/ask', async (req: Request, res: Response) => {
   let answer: string
   try {
     if (!process.env.GEMINI_API_KEY) throw new Error('No GEMINI_API_KEY')
-    const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    const client = meteredClient({ apiKey: process.env.GEMINI_API_KEY, endpoint: 'documents' })
     const resp = await client.models.generateContent({
       model: MODELS.GEMINI_LITE,
       contents: [{ role: 'user', parts: [{ text: `DOCUMENT:\n${maxContext}\n\nQUESTION: ${question}` }] }],
@@ -172,7 +173,7 @@ router.post('/', requireAdmin, upload.single('file'), async (req: Request, res: 
     const extractPrompt = 'Extract all text from this real estate document. Return only the extracted text, nothing else.'
     try {
       if (!process.env.GEMINI_API_KEY) throw new Error('No GEMINI_API_KEY')
-      const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+      const client = meteredClient({ apiKey: process.env.GEMINI_API_KEY, endpoint: 'documents' })
       const resp = await client.models.generateContent({
         model: MODELS.GEMINI_LITE,
         contents: [{

@@ -1,5 +1,6 @@
 // backend/src/lib/ai/intent.ts
 import Groq from 'groq-sdk'
+import { meteredClient } from './geminiMeter'
 import OpenAI from 'openai'
 import { z } from 'zod'
 import { INTENT_EXTRACTION_PROMPT } from './prompts/index'
@@ -245,7 +246,53 @@ import { isKeyFailed, markKeyFailed } from './providerStatus'
 
 import { GoogleGenAI } from '@google/genai'
 
+/**
+ * True when regex extraction is as good as the model on this message, so the
+ * LLM round trip buys nothing.
+ *
+ * Intent extraction runs to completion before the answering call starts, and it
+ * measures p50 3.4s / p90 6.7s — a fifth to a third of total turn latency,
+ * spent in front of the buyer. Most of what it is asked to parse is a keyword
+ * phrase: "2 bhk in sector 75 noida", "property rates in noida extension".
+ * There is no ambiguity in those for a model to resolve.
+ *
+ * The bar is deliberately conservative, because everything the heuristic cannot
+ * see — a second constraint, a comparison, a stated life situation — is exactly
+ * what makes an answer good. A message qualifies only if it is short, has a
+ * single clause, and yielded at least one hard field. Anything else pays for
+ * the model.
+ */
+function heuristicIsSufficient(message: string, extracted: Intent, previous: Intent): boolean {
+  const words = message.trim().split(/\s+/).length
+  if (words > 10) return false
+
+  // Multi-clause, comparative or conversational phrasing needs the model:
+  // commas and "vs" carry constraints the regexes above do not look for, and a
+  // follow-up ("make that 2 crore") is only meaningful against previous intent.
+  if (/[,;?]|\bvs\b|\bversus\b|\bcompare\b|\bor\b|\band\b|\bbut\b|\bactually\b|\binstead\b|\bwhat about\b/i.test(message)) {
+    return false
+  }
+
+  // Refinement of an existing search is the model's job — the heuristic cannot
+  // tell "show me something bigger" from a fresh query.
+  if (Object.keys(previous).length > 0) return false
+
+  const gained =
+    (extracted.bhk?.length ?? 0) > 0 || !!extracted.sector || !!extracted.budgetMax
+  return gained
+}
+
 export async function extractIntent(message: string, previousIntent: Intent): Promise<IntentResult> {
+  // Fast path: skip the round trip when the regexes already have the whole
+  // message. See heuristicIsSufficient for why the bar is set where it is.
+  if (process.env.INTENT_FAST_PATH !== 'false') {
+    const heuristic = extractIntentHeuristic(message, previousIntent)
+    if (heuristicIsSufficient(message, heuristic, previousIntent)) {
+      console.log(`[INTENT:FAST_PATH] regex-only extraction for "${message.slice(0, 60)}"`)
+      return { intent: heuristic, degraded: false }
+    }
+  }
+
   // Intent extraction chain: prioritize Gemini Flash & fast, reliable models
   const intentChain = [
     // Tier 1: Gemini 3.6 Flash (Primary high-accuracy, lightning-fast)
@@ -272,7 +319,7 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
     try {
       if (config.provider === 'gemini') {
         console.log(`[INTENT] Trying Gemini (${config.model}) via ${config.envKey}`)
-        const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: config.timeout } })
+        const client = meteredClient({ apiKey, endpoint: 'intent', timeoutMs: config.timeout })
         const res = await client.models.generateContent({
           model: config.model || 'gemini-3.6-flash',
           contents: [{ role: 'user', parts: [{ text: `Previous intent: ${slimIntentForPrompt(previousIntent)}\n\nUser message: ${message}` }] }],

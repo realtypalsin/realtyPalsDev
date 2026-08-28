@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai'
+import { meteredClient } from '../geminiMeter'
 import OpenAI from 'openai'
 import Groq from 'groq-sdk'
 import { getGroq } from '../groq'
@@ -91,7 +92,7 @@ async function tryProvider(item: FallbackKeyConfig, systemPrompt: string, histor
       })
       raw = res.choices[0]?.message?.content?.trim() ?? ''
     } else if (item.provider === 'gemini') {
-      const client = new GoogleGenAI({ apiKey })
+      const client = meteredClient({ apiKey, endpoint: 'chips' })
       const res = await client.models.generateContent({
         model: MODELS.GEMINI_LITE,
         contents: [{ role: 'user', parts: [{ text: historyText }] }],
