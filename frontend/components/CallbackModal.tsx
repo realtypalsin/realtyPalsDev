@@ -132,7 +132,7 @@ export default function CallbackModal({ project, isDone, onClose }: CallbackModa
                   <button
                     onClick={onClose}
                     aria-label="Close"
-                    className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                    className="touch-target-min w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
                   >
                     <X className="w-4 h-4" />
                   </button>

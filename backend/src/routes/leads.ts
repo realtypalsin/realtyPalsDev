@@ -55,7 +55,17 @@ const SiteVisitSchema = z.object({
 router.post('/callback', async (req: Request, res: Response) => {
   // Callbacks work for anonymous users (guestToken) OR authenticated users
   const userId = (await verifyUser(req)) ?? undefined
-  const guestToken = (req.body as any).guestToken
+  // The header is the fallback the chat client already sets on every request.
+  //
+  // Taking this from the body alone meant a client that omitted it produced a
+  // lead with no user_id and no guest_token — 138 of 278 stored callbacks, half
+  // of them, unattributable to any conversation, user or session by
+  // construction. A name and a phone number with nothing behind them is a lead
+  // the sales team cannot prepare for.
+  const guestToken =
+    (req.body as { guestToken?: string }).guestToken ||
+    (req.headers['x-guest-token'] as string | undefined) ||
+    undefined
 
   // Rate limit by userId if authenticated, otherwise by guestToken or IP
   const rateLimitKey = userId ? `callback:${userId}` : guestToken ? `callback:guest:${guestToken}` : `callback:ip:${req.ip}`
@@ -94,6 +104,23 @@ router.post('/callback', async (req: Request, res: Response) => {
 
   // Load buyer profile once, reuse for the persisted lead and the webhook payload
   const profile = await loadLeadProfile(userId, guestToken)
+
+  // Resolve the conversation this lead came out of, server-side.
+  //
+  // session_id is optional on the request and nothing was sending it: 278 of
+  // 278 stored callbacks had chat_session_id null, so the transcript link the
+  // sales handoff is built on did not exist for a single lead. Depending on the
+  // client to pass an id it already implicitly has is not a guarantee, so it is
+  // resolved here from the identity we already trust.
+  let resolvedSessionId = session_id
+  if (!resolvedSessionId && (userId || guestToken)) {
+    const recent = await prisma.chatSession.findFirst({
+      where: userId ? { user_id: userId } : { guest_token: guestToken },
+      orderBy: { last_active: 'desc' },
+      select: { id: true },
+    })
+    resolvedSessionId = recent?.id
+  }
 
   // ─── ANALYTICS: Track conversion
   if (session_id && project) {
@@ -158,8 +185,8 @@ router.post('/callback', async (req: Request, res: Response) => {
       project_slug: finalProjectSlug,
       user_id: userId,
       guest_token: guestToken,
-      source_session: session_id || undefined,
-      chat_session_id: session_id || undefined, // Phase 5: link to full chat session for enrichment
+      source_session: resolvedSessionId || undefined,
+      chat_session_id: resolvedSessionId || undefined, // Phase 5: link to full chat session for enrichment
       intent_tier: intent_tier ?? null,
       loan_pre_approved: loanPreApproved,
       consent_given: consent_given ?? false,

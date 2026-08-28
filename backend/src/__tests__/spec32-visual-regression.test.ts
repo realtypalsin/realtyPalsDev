@@ -1,10 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-// Every case below is a placeholder from the original spec checklist: the body
-// asserted ssert(true) and could not fail. 774 of them were reported as
-// passing, inflating the backend suite by ~38% and masking real regressions.
-// Marked 	odo so they surface honestly as outstanding work instead of green.
+// Placeholders from the original spec checklist. Each body asserted true and
+// could not fail; 774 of them reported as passing, inflating the backend suite
+// by ~38% and hiding real regressions. Marked todo so they report as
+// outstanding work rather than as green.
 const SPEC_TODO = { todo: 'spec checklist placeholder - no assertion implemented yet' }
 
 describe('Spec 32: Visual Regression Testing', () => {

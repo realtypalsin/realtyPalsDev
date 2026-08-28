@@ -1,5 +1,5 @@
 // backend/src/lib/ai/fallbackChain.ts
-import { FALLBACK_CHAIN, FallbackKeyConfig } from '../config'
+import { FALLBACK_CHAIN, FallbackKeyConfig, isFreeTierKey } from '../config'
 import { streamWithGemini } from './gemini'
 import { streamWithOpenAI } from './openai'
 import { streamWithGroq } from './groq'
@@ -201,7 +201,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     const effectiveConfig = options.config || { maxTokens: 3000 }
     // Gemini ignores its FALLBACK_CHAIN item.model unless we thread it through here — without
     const legMaxTokens =
-      item.tier === 'free'
+      isFreeTierKey(item.envKey)
         ? Math.min(effectiveConfig.maxTokens ?? 1500, FREE_TIER_MAX_TOKENS)
         : effectiveConfig.maxTokens
 
@@ -212,7 +212,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     }
 
     // A free-tier key is limited by tokens per minute and requests per day, not
-    if (item.tier === 'free') {
+    if (isFreeTierKey(item.envKey)) {
       geminiConfig.thinkingBudget = 0
       geminiConfig.maxTokens = Math.min(geminiConfig.maxTokens ?? 1500, FREE_TIER_MAX_TOKENS)
     }

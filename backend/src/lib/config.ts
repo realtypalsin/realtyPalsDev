@@ -78,6 +78,24 @@ export interface FallbackKeyConfig {
  */
 export const GEMINI_TOOLS_ENABLED = process.env.ENABLE_GEMINI_TOOLS === 'true'
 
+/**
+ * Which Gemini keys are free-tier, by env-var name.
+ *
+ * A free key cannot hold a context cache, is limited per-minute rather than per
+ * dollar, and gets no thinking budget and a tighter reply ceiling. Hardcoding
+ * which key that is means topping up the OTHER key silently throttles it as
+ * though it were free. Set GEMINI_FREE_TIER_KEYS to flip it without a deploy.
+ */
+const FREE_TIER_KEYS = new Set(
+  (process.env.GEMINI_FREE_TIER_KEYS ?? 'GEMINI_API_KEY1')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+)
+
+/** True when this env var names a key we know to be on the free tier. */
+export const isFreeTierKey = (envKey: string): boolean => FREE_TIER_KEYS.has(envKey)
+
 /** True when OPENAI_BASE_URL still points at GitHub Models, which is retired. */
 const isRetiredGitHubModels = /models\.(inference\.ai\.azure|github\.ai)/.test(
   process.env.OPENAI_BASE_URL ?? '',
@@ -93,7 +111,7 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // Flash-Lite rather than Flash on the free key: the free tier's per-day
   // request allowance is far higher on the lite model, so this leg keeps
   // answering after a Flash-shaped one would be spent for the day.
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY1', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Free key)', tier: 'free' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY1', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Key 2)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: MISTRAL & CEREBRAS (High-Speed Failover Layer)

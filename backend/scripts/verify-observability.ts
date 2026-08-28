@@ -14,6 +14,17 @@
  */
 
 import 'dotenv/config'
+import { config as loadEnv } from 'dotenv'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+
+// The browser keys live in frontend/.env.local, not backend/.env. Loading only
+// the backend file made this script report NEXT_PUBLIC_POSTHOG_KEY and
+// NEXT_PUBLIC_SENTRY_DSN as missing when both were set — a verification tool
+// that reports working telemetry as broken is worse than no tool, because the
+// next person wires it a second time or stops trusting the check.
+const frontendEnv = join(__dirname, '..', '..', 'frontend', '.env.local')
+if (existsSync(frontendEnv)) loadEnv({ path: frontendEnv })
 import * as Sentry from '@sentry/node'
 import { PostHog } from 'posthog-node'
 
