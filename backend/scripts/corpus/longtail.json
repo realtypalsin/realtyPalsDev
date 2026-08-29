@@ -1,0 +1,842 @@
+[
+  {
+    "id": "lt001",
+    "query": "ace hanei launch date",
+    "class": "availability",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt002",
+    "query": "ace hanei brochure",
+    "class": "brochure",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt003",
+    "query": "ace hanei by owner",
+    "class": "builder",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt004",
+    "query": "ace hanei 4 bhk",
+    "class": "floorplan",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt005",
+    "query": "ace hanei floor plan",
+    "class": "floorplan",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt006",
+    "query": "ace hanei layout",
+    "class": "floorplan",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt007",
+    "query": "ace hanei construction update",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt008",
+    "query": "ace hanei housing com",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt009",
+    "query": "ace hanei project details",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt010",
+    "query": "ace hanei noida extension",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt011",
+    "query": "ace hanei sector 12 noida extension",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt012",
+    "query": "elara ace hanei",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt013",
+    "query": "ace hanei sample flat",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt014",
+    "query": "ace hanei flat for sale",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt015",
+    "query": "ace hanei greater noida west",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt016",
+    "query": "ace hanei greater noida",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt017",
+    "query": "ace hanei sector 12 greater noida",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt018",
+    "query": "ace hanei logo",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt019",
+    "query": "ace hanei land parcel",
+    "class": "general",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt020",
+    "query": "ace hanei address",
+    "class": "location",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt021",
+    "query": "ace hanei location",
+    "class": "location",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt022",
+    "query": "ace hanei payment plan",
+    "class": "payment_plan",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt023",
+    "query": "ace hanei possession date",
+    "class": "possession",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt024",
+    "query": "ace hanei current price",
+    "class": "price",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt025",
+    "query": "ace hanei flat price",
+    "class": "price",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt026",
+    "query": "ace hanei price list",
+    "class": "price",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt027",
+    "query": "ace hanei launch price",
+    "class": "price",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt028",
+    "query": "ace hanei price list pdf",
+    "class": "price",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt029",
+    "query": "ace hanei rera number",
+    "class": "rera",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt030",
+    "query": "ace hanei resale",
+    "class": "resale_rent",
+    "target": "ace_hanei",
+    "volume": 0
+  },
+  {
+    "id": "lt031",
+    "query": "county 107 amenities",
+    "class": "amenities",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt032",
+    "query": "county 107 launch date",
+    "class": "availability",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt033",
+    "query": "county 107 brochure pdf",
+    "class": "brochure",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt034",
+    "query": "county 107 brochure",
+    "class": "brochure",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt035",
+    "query": "county 107 by county group",
+    "class": "builder",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt036",
+    "query": "county 107 by county group sector 107 noida uttar pradesh",
+    "class": "builder",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt037",
+    "query": "county 107 by county group photos",
+    "class": "builder",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt038",
+    "query": "county 107 by county group reviews",
+    "class": "builder",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt039",
+    "query": "county 107 by county group noida",
+    "class": "builder",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt040",
+    "query": "county 107 3 bhk rent",
+    "class": "floorplan",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt041",
+    "query": "aba county 107",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt042",
+    "query": "county 107 apartment",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt043",
+    "query": "county 107 area",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt044",
+    "query": "county 107 apartment for sale",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt045",
+    "query": "county 107 architect",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt046",
+    "query": "county highway 107 amsterdam ny",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt047",
+    "query": "county 107 land area",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt048",
+    "query": "county 107 99 acres",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt049",
+    "query": "county 107 total area",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt050",
+    "query": "county 107 luxury apartments",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt051",
+    "query": "county 107 buy",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt052",
+    "query": "county 107 buy flat",
+    "class": "general",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt053",
+    "query": "county 107 address",
+    "class": "location",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt054",
+    "query": "county 107 noida address",
+    "class": "location",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt055",
+    "query": "county 107 chemist",
+    "class": "payment_plan",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt056",
+    "query": "county 107 completion date",
+    "class": "possession",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt057",
+    "query": "county 107 apartment price",
+    "class": "price",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt058",
+    "query": "county 107 3 bhk price",
+    "class": "price",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt059",
+    "query": "cameron county 107 district court",
+    "class": "rera",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt060",
+    "query": "county 107 apartment for rent",
+    "class": "resale_rent",
+    "target": "county_107",
+    "volume": 0
+  },
+  {
+    "id": "lt061",
+    "query": "amaatra homes sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt062",
+    "query": "ats sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt063",
+    "query": "achheja sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt064",
+    "query": "sector 10 noida extension authority flats",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt065",
+    "query": "sector 10 a noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt066",
+    "query": "ats happy trails sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt067",
+    "query": "ace sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt068",
+    "query": "arihant abode sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt069",
+    "query": "aangan vatika sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt070",
+    "query": "ats homekraft sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt071",
+    "query": "sector 10 noida extension pin code",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt072",
+    "query": "coco county sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt073",
+    "query": "crimson villa sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt074",
+    "query": "nirala diadem sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt075",
+    "query": "eldeco sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt076",
+    "query": "elite x sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt077",
+    "query": "elite sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt078",
+    "query": "sector 10 noida extension greater noida",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt079",
+    "query": "vaidpura sector 10 noida extension greater noida",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt080",
+    "query": "godrej sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt081",
+    "query": "sikka kaamya greens sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt082",
+    "query": "legacy homes sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt083",
+    "query": "urban homes sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt084",
+    "query": "imperial homes sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt085",
+    "query": "heritage villa sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt086",
+    "query": "villas in sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt087",
+    "query": "irish sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt088",
+    "query": "iris sector 10 noida extension",
+    "class": "general",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt089",
+    "query": "sector 10 noida extension distance",
+    "class": "location",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt090",
+    "query": "noida extension sector 10 distance from my location",
+    "class": "location",
+    "target": "sector_10_noida_extension",
+    "volume": 0
+  },
+  {
+    "id": "lt091",
+    "query": "sector 75 noida gym",
+    "class": "amenities",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt092",
+    "query": "sector 75 noida fire news",
+    "class": "availability",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt093",
+    "query": "sector 75 noida photos",
+    "class": "brochure",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt094",
+    "query": "gardenia gateway sector 75 noida reviews",
+    "class": "builder",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt095",
+    "query": "sector 75 noida 2 bhk rent",
+    "class": "floorplan",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt096",
+    "query": "sector 75 noida jm aroma",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt097",
+    "query": "sector 75 noida apartments",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt098",
+    "query": "golf avenue sector 75 noida",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt099",
+    "query": "sector 75 noida aqi",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt100",
+    "query": "sector 75 noida axis bank",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt101",
+    "query": "sector 75 noida accident",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt102",
+    "query": "sector 75 noida airbnb",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt103",
+    "query": "sector 75 noida apex athena",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt104",
+    "query": "sector 75 noida aqi today",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt105",
+    "query": "sector 75 noida amrapali",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt106",
+    "query": "ajnara sector 75 noida",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt107",
+    "query": "noida sector 75 apollo pharmacy",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt108",
+    "query": "axis bank ifsc code noida sector 75",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt109",
+    "query": "max bliss sector 75 noida",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt110",
+    "query": "bikaner sector 75 noida",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt111",
+    "query": "canara bank sector 75 noida",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt112",
+    "query": "barbeque sector 75 noida",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt113",
+    "query": "byob sector 75 noida",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt114",
+    "query": "hdfc bank noida sector 75",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt115",
+    "query": "bikanervala sector 75 noida",
+    "class": "general",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt116",
+    "query": "sector 75 noida to jewar airport distance",
+    "class": "location",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt117",
+    "query": "pnb sector 75 noida address",
+    "class": "location",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt118",
+    "query": "how to reach sector 75 noida by metro",
+    "class": "location",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt119",
+    "query": "spectrum mall sector 75 noida buffet price",
+    "class": "price",
+    "target": "sector_75_noida",
+    "volume": 0
+  },
+  {
+    "id": "lt120",
+    "query": "sector 75 noida flats for rent",
+    "class": "resale_rent",
+    "target": "sector_75_noida",
+    "volume": 0
+  }
+]

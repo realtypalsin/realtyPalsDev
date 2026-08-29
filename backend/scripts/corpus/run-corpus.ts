@@ -29,6 +29,7 @@ const ENDPOINT = process.env.CHAT_ENDPOINT || 'http://localhost:3001/api/v1/chat
 
 export type Grade =
   | 'pass'
+  | 'unavailable'
   | 'deflected'
   | 'clarifying_only'
   | 'too_short'
@@ -76,6 +77,24 @@ const DECLINE_MARKERS =
  */
 const CARRIES_DATA = /\||₹|\bcr\b|\bcrore\b|\blakh\b|\bsq\.?\s?ft\b|\bsector\s*\d+|\b20\d\d\b|\d{3,}/i
 
+/** The message shown when every provider in the chain has failed. */
+const PROVIDER_EXHAUSTED =
+  /currently experiencing high traffic|out of service|check back shortly/i
+
+/**
+ * Minimum useful length for a class this table does not name.
+ *
+ * `MIN_CHARS[entry.class]` returns undefined for any class added elsewhere, and
+ * `length < undefined` is false — so the length gate silently stopped running.
+ * The long-tail set added twelve new class names and scored 100%, with a
+ * 77-character answer passing a floor that never executed. A missing floor must
+ * fail closed.
+ */
+const DEFAULT_MIN_CHARS = 120
+
+const minChars = (cls: string): number =>
+  (MIN_CHARS as Record<string, number>)[cls] ?? DEFAULT_MIN_CHARS
+
 /** Minimum useful length per class. Below this the answer cannot carry a trade-off. */
 const MIN_CHARS: Record<QueryClass, number> = {
   market_fact: 200,
@@ -99,6 +118,13 @@ export function grade(entry: CorpusEntry, text: string, errored: boolean): Grade
   const answer = text.trim()
   if (!answer) return 'empty'
 
+  // The chain ran dry and the buyer was told to come back later. It is 190
+  // characters of polite prose, so every length check passes it — 30 of 120
+  // long-tail turns were graded `pass` while showing "our AI services are
+  // currently experiencing high traffic". A run that scores an outage as a
+  // success is measuring the wrong thing.
+  if (PROVIDER_EXHAUSTED.test(answer)) return 'unavailable'
+
   // Order matters: a deflection is a deflection even when it is long enough,
   // and an out-of-scope query answered with a deflection is still a deflection.
   if (DEFLECTION_OPENERS.some((r) => r.test(answer))) return 'deflected'
@@ -117,12 +143,12 @@ export function grade(entry: CorpusEntry, text: string, errored: boolean): Grade
   if (
     !CARRIES_DATA.test(answer) &&
     answer.trimEnd().endsWith('?') &&
-    answer.length < MIN_CHARS[entry.class]
+    answer.length < minChars(entry.class)
   ) {
     return 'clarifying_only'
   }
 
-  if (answer.length < MIN_CHARS[entry.class]) return 'too_short'
+  if (answer.length < minChars(entry.class)) return 'too_short'
   return 'pass'
 }
 
@@ -131,6 +157,15 @@ export function grade(entry: CorpusEntry, text: string, errored: boolean): Grade
 interface Turn {
   text: string
   sessionId: string | null
+  /**
+   * Chip labels offered after the answer, and the project cards rendered with it.
+   *
+   * Recorded because they are what the buyer can act on next: a run that keeps
+   * only the prose cannot tell whether the turn was useful. The first long-tail
+   * run graded 120 answers without capturing a single chip.
+   */
+  chips: string[]
+  cards: string[]
   ttftMs: number | null
   totalMs: number
   error?: string
@@ -170,7 +205,7 @@ async function askOnce(message: string, guestToken: string): Promise<Turn> {
       }),
     })
     if (!res.ok || !res.body) {
-      return { text: '', sessionId: null, ttftMs: null, totalMs: Date.now() - t0, error: `HTTP ${res.status}` }
+      return { text: '', sessionId: null, chips: [], cards: [], ttftMs: null, totalMs: Date.now() - t0, error: `HTTP ${res.status}` }
     }
 
     let raw = ''
@@ -183,6 +218,8 @@ async function askOnce(message: string, guestToken: string): Promise<Turn> {
 
     let text = ''
     let sessionId: string | null = null
+    let chips: string[] = []
+    const cards: string[] = []
     for (const line of raw.split('\n')) {
       if (!line.startsWith('data:')) continue
       const body = line.slice(5).trim()
@@ -192,15 +229,28 @@ async function askOnce(message: string, guestToken: string): Promise<Turn> {
         const piece = ev.token ?? ev.content ?? ev.text
         if (typeof piece === 'string') text += piece
         if (ev.sessionId) sessionId = ev.sessionId
+        // The last ui_state wins: chips are re-emitted as the turn progresses
+        // and only the final set is what the buyer is left looking at.
+        if (Array.isArray(ev.chips)) {
+          chips = (ev.chips as Array<{ label?: string }>).map((c) => c?.label ?? '').filter(Boolean)
+        }
+        for (const key of ['exactResults', 'nearbyResults', 'properties']) {
+          const list = (ev as Record<string, unknown>)[key]
+          if (Array.isArray(list)) {
+            for (const c of list as Array<{ name?: string }>) if (c?.name) cards.push(c.name)
+          }
+        }
       } catch {
         text += body
       }
     }
-    return { text, sessionId, ttftMs, totalMs: Date.now() - t0 }
+    return { text, sessionId, chips, cards: [...new Set(cards)], ttftMs, totalMs: Date.now() - t0 }
   } catch (err) {
     return {
       text: '',
       sessionId: null,
+      chips: [],
+      cards: [],
       ttftMs: null,
       totalMs: Date.now() - t0,
       error: err instanceof Error ? err.message : String(err),
@@ -225,6 +275,8 @@ interface Result {
   calls: number
   model: string
   answer: string
+  chips: string[]
+  cards: string[]
   error?: string
 }
 
@@ -255,7 +307,9 @@ async function main() {
   // running the full 321, which is mostly the same shapes repeated.
   // --top50 is demand-weighted: the queries to be confident about before a
   // launch. --demo is class-balanced: the set that finds bugs. Different jobs.
-  const source = process.argv.includes('--top50')
+  const source = process.argv.includes('--longtail')
+    ? 'longtail.json'
+    : process.argv.includes('--top50')
     ? 'top50.json'
     : process.argv.includes('--demo')
       ? 'demo-set.json'
@@ -337,6 +391,8 @@ async function main() {
       calls: u.calls,
       model: u.model,
       answer: turn.text.trim(),
+      chips: turn.chips,
+      cards: turn.cards,
       ...(turn.error ? { error: turn.error } : {}),
     }
   })

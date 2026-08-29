@@ -19,6 +19,12 @@
     "typecheck": "tsc --noEmit",
     "swagger:generate": "tsx scripts/sync-swagger.ts",
     "verify:observability": "tsx scripts/verify-observability.ts",
+    "verify:chain": "tsx scripts/verify-chain.ts",
+    "audit:retrieval": "tsx scripts/corpus/audit-retrieval.ts",
+    "audit:prices": "tsx scripts/fix-price-labels.ts",
+    "audit:data": "tsx scripts/audit-data.ts",
+    "audit:routing": "tsx scripts/corpus/route-check.ts",
+    "judge": "tsx scripts/corpus/judge-answers.ts",
     "check-all": "npm run lint && npm run typecheck && npm test",
     "health": "tsx scripts/health-check.ts"
   },
