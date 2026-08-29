@@ -1,0 +1,745 @@
+<title>Reference Study</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+  :root {
+    --ground:  #FBFAF8;
+    --surface: #FFFFFF;
+    --ink:     #0F1519;
+    --muted:   #6B7076;
+    --rule:    #E4E0D8;
+    --accent:  #1F5E56;
+    --ok:      #2F6F4F;
+    --warn:    #A8641B;
+    --risk:    #A33A31;
+    --meter-bg:#EAE7E0;
+
+    --serif: 'Newsreader', ui-serif, Georgia, serif;
+    --sans:  'Public Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono:  'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:  #0E1214;
+      --surface: #161B1E;
+      --ink:     #E8EDEF;
+      --muted:   #98A1A6;
+      --rule:    #262D31;
+      --accent:  #6FBFAF;
+      --ok:      #6FBF8F;
+      --warn:    #D9A055;
+      --risk:    #E08076;
+      --meter-bg:#232A2E;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:  #0E1214;
+    --surface: #161B1E;
+    --ink:     #E8EDEF;
+    --muted:   #98A1A6;
+    --rule:    #262D31;
+    --accent:  #6FBFAF;
+    --ok:      #6FBF8F;
+    --warn:    #D9A055;
+    --risk:    #E08076;
+    --meter-bg:#232A2E;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 clamp(1.15rem, 5vw, 2rem) 6rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .wrap { max-width: 62rem; margin: 0 auto; }
+  .prose { max-width: 40rem; }
+
+  /* ---------- masthead ---------- */
+
+  header.masthead {
+    padding: clamp(3rem, 9vw, 5.5rem) 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(2.4rem, 6.5vw, 3.6rem);
+    line-height: 1.06;
+    letter-spacing: -0.018em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    font-family: var(--serif);
+    font-size: clamp(1.05rem, 2.4vw, 1.24rem);
+    line-height: 1.5;
+    color: var(--muted);
+    max-width: 34rem;
+    margin: 0.5rem 0 0;
+  }
+
+  /* ---------- the figure ---------- */
+
+  .figure {
+    margin: clamp(2.5rem, 6vw, 3.5rem) 0 0;
+    padding: clamp(1.5rem, 4vw, 2rem);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1.25rem, 4vw, 3rem);
+    align-items: flex-start;
+  }
+
+  .figure-main { display: flex; align-items: baseline; gap: 0.55rem; }
+
+  .figure-num {
+    font-family: var(--serif);
+    font-size: clamp(3.6rem, 11vw, 5.2rem);
+    font-weight: 600;
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .figure-pct {
+    font-family: var(--serif);
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    color: var(--muted);
+  }
+
+  .figure-side { flex: 1 1 15rem; min-width: 13rem; padding-top: 0.3rem; }
+
+  .figure-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.7rem;
+  }
+
+  .track {
+    height: 3px;
+    background: var(--meter-bg);
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .track > i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 2px; display: block; }
+
+  .track-scale {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 0.45rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .delta {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--ok);
+    margin-top: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- sections ---------- */
+
+  section { margin-top: clamp(3rem, 7vw, 4.5rem); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(1.55rem, 3.6vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+    margin: 0 0 0.35rem;
+    text-wrap: balance;
+  }
+
+  .sec-note {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 1.6rem;
+    max-width: 38rem;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 2.2rem 0 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  p { margin: 0 0 1rem; }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--meter-bg);
+    padding: 0.1em 0.36em;
+    border-radius: 3px;
+  }
+
+  /* ---------- shipped list ---------- */
+
+  .shipped { display: grid; gap: 0; margin: 0; }
+
+  .item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .item:first-child { border-top: 1px solid var(--rule); }
+
+  .item-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .item-title { font-weight: 600; font-size: 0.97rem; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.12rem 0.4rem;
+    border-radius: 3px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .tag.sev  { color: var(--risk); }
+  .tag.perf { color: var(--accent); }
+  .tag.ux   { color: var(--warn); }
+
+  .item-why { color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+
+  /* ---------- scorecard ---------- */
+
+  .table-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 30rem; }
+  th {
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0 0.55rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  td { padding: 0.6rem 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+  td:first-child { font-weight: 500; padding-right: 1rem; }
+  th:nth-child(2), td:nth-child(2) { width: 3.2rem; text-align: right; padding-right: 0.7rem; }
+  th:nth-child(3), td:nth-child(3) { width: 6.5rem; }
+  td:nth-child(4) { color: var(--muted); font-size: 0.87rem; padding-left: 1rem; }
+
+  .score {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .s-hi  { color: var(--ok); }
+  .s-mid { color: var(--warn); }
+  .s-lo  { color: var(--risk); }
+
+  .bar { height: 2px; background: var(--meter-bg); position: relative; margin-top: 0.55rem; }
+  .bar > i { position: absolute; inset: 0 auto 0 0; display: block; }
+  .bar > i.hi  { background: var(--ok); }
+  .bar > i.mid { background: var(--warn); }
+  .bar > i.lo  { background: var(--risk); }
+
+  .up {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ok);
+    margin-left: 0.35rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- steps ---------- */
+
+  ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; }
+  ol.steps > li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 2.1rem 1fr;
+    gap: 0.9rem;
+    padding: 1.05rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  ol.steps > li:first-child { border-top: 1px solid var(--rule); }
+  ol.steps > li::before {
+    content: counter(s, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    padding-top: 0.15rem;
+  }
+  .step-title { font-weight: 600; margin-bottom: 0.15rem; }
+  .step-body { color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+  .step-cost {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- callout ---------- */
+
+  .callout {
+    border-left: 2px solid var(--accent);
+    padding: 0.15rem 0 0.15rem 1.1rem;
+    margin: 1.6rem 0;
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+  .callout strong { color: var(--ink); }
+
+  .terminal {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.75;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.9rem 1.1rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    white-space: pre;
+    color: var(--muted);
+    margin: 1.2rem 0;
+  }
+  .terminal b { color: var(--ink); font-weight: 700; }
+
+  footer {
+    margin-top: clamp(3.5rem, 8vw, 5rem);
+    padding-top: 1.3rem;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 0.83rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  footer .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 34rem) {
+    td:nth-child(4) { display: none; }
+    th:nth-child(4) { display: none; }
+    table { min-width: 0; }
+  }
+</style>
+<style>
+  .src { display: flex; flex-direction: column; gap: .9rem; margin: 1.4rem 0; }
+  .src-item { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); overflow: hidden; }
+  .src-head { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
+              padding: .65rem .9rem; border-bottom: 1px solid var(--rule); background: var(--ground); }
+  .src-who { font-weight: 600; font-size: .93rem; color: var(--ink); }
+  .src-file { font-family: var(--mono); font-size: .71rem; color: var(--muted); margin-left: auto; }
+  .src-body { padding: .85rem .9rem; }
+  .quote { font-family: var(--mono); font-size: .77rem; line-height: 1.55; color: var(--ink);
+           background: var(--meter-bg); border-radius: 6px; padding: .6rem .7rem; margin: 0 0 .7rem;
+           white-space: pre-wrap; overflow-x: auto; }
+  .take { font-size: .87rem; line-height: 1.6; color: var(--muted); }
+  .take b { color: var(--ink); font-weight: 600; }
+  .take p { margin: 0 0 .55rem; }
+  .take p:last-child { margin-bottom: 0; }
+  .verdict { display: inline-block; font-family: var(--mono); font-size: .66rem; font-weight: 700;
+             letter-spacing: .05em; text-transform: uppercase; padding: .16rem .45rem; border-radius: 4px; }
+  .v-taken { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+  .v-todo  { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+  .v-no    { background: color-mix(in srgb, var(--muted) 14%, transparent); color: var(--muted); }
+  .layman { background: color-mix(in srgb, var(--accent) 5%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+            padding: .85rem 1rem; margin: 1.1rem 0; border-radius: 8px; }
+  .layman b { color: var(--accent); }
+  .layman p { margin: 0; font-size: .89rem; line-height: 1.6; color: var(--ink); }
+  .layman p + p { margin-top: .5rem; }
+  .split { display: grid; gap: .9rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin: 1.2rem 0; }
+  .stat { border: 1px solid var(--rule); border-radius: 10px; padding: .8rem .9rem; background: var(--surface); }
+  .stat-n { font-family: var(--mono); font-size: 1.45rem; font-weight: 700; line-height: 1; color: var(--ink); }
+  .stat-l { font-size: .75rem; color: var(--muted); margin-top: .35rem; line-height: 1.4; }
+  .scan { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  .scan td { padding: .45rem .5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .scan td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .scan td:nth-child(2) { font-family: var(--mono); font-size: .74rem; color: var(--muted); white-space: nowrap; }
+  .scan td:last-child { color: var(--muted); line-height: 1.5; }
+  /* The shared scorecard rules squeeze column 2 to 3.2rem and right-align it,
+     which is right for a numeric score and wrong for a status word. */
+  .chaintbl td:nth-child(2), .chaintbl th:nth-child(2) { width: 6rem; text-align: left; padding-right: 1rem; }
+  .chaintbl td:nth-child(3), .chaintbl th:nth-child(3) { width: auto; }
+  .chaintbl td:nth-child(3) { color: var(--muted); font-size: .87rem; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Reference Study · Revision 3 · 14 sources + a live chain probe · 29 Aug 2026</div>
+    <h1>What the best assistants do that we did not</h1>
+    <p class="standfirst">Twenty vendor system prompts, an agent framework, a RAG platform, six property portals and eight more repositories — then a live test of every leg of our own fallback chain. Six ideas taken, six things built, and the cause of the outage found.</p>
+  </header>
+
+  <div class="split">
+    <div class="stat"><div class="stat-n">14</div><div class="stat-l">Sources read end to end</div></div>
+    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Ideas taken</div></div>
+    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Built and tested today</div></div>
+    <div class="stat"><div class="stat-n">6/10</div><div class="stat-l">Fallback legs actually answering</div></div>
+  </div>
+
+  <div class="callout">
+    <strong>Two headlines.</strong> Microsoft's promptflow gave us a rubric for scoring answers — running it over the last 120 real answers returns <strong>usefulness 1.40 out of 5</strong>, the "it reads like a database, not an advisor" problem, finally a number. And testing every leg of the fallback chain live found that <strong>half the tiers you named are down, and one was never loaded at all</strong>. That second finding is the outage.
+  </div>
+
+  <section>
+    <h2>The fallback chain, tested leg by leg</h2>
+    <p class="sec-note">Not read from config — every leg given a real call and timed.</p>
+
+    <div class="layman">
+      <p><b>In plain English:</b> we rent AI from six suppliers, in order. If the first cannot answer we drop to the second, and so on down. That list is the difference between a slow answer and no answer at all.</p>
+      <p>Nobody had ever checked that the list actually works. I gave every leg one tiny question and timed the reply. <b>Half of them cannot answer, and the last one — the safety net — was never even loaded.</b></p>
+    </div>
+
+    <div class="terminal">$ <b>npm run verify:chain</b>
+
+  ⚠ NO OPENAI LEGS IN THE CHAIN.
+
+  ✗  1. Gemini 3.6 Flash (Key 1)   GEMINI_API_KEY     <b>429 — prepayment credits depleted</b>
+  ✗  2. Gemini 3.5 Lite (Backup)   GEMINI_API_KEY     429 — same key, same problem
+  ✓  3. Gemini 3.5 Lite (Key 2)    GEMINI_API_KEY1    696ms  [free tier]
+  ✓  4. Mistral Small              MISTRAL_API_KEY    580ms
+  ✗  5. Cerebras (Key 1)           CEREBRAS_API_KEY   <b>402 — payment required</b>
+  ✗  6. Cerebras (Key 2)           CEREBRAS_API_KEY1  402 — payment required
+  ✓  7–10. Groq × 4 keys                              224–456ms
+
+  answering <b>6 / 10</b>   distinct providers: <b>3</b></div>
+
+    <div class="table-scroll">
+      <table class="chaintbl">
+        <thead><tr><th>The tier you named</th><th>Status</th><th>What is actually wrong</th></tr></thead>
+        <tbody>
+          <tr><td>1 · Gemini API key</td><td><span class="score s-lo">dead</span></td><td>Prepayment credits depleted. Tonight's top-up fixes it.</td></tr>
+          <tr><td>2 · Gemini API 1</td><td><span class="score s-hi">up</span></td><td>Free tier. Carrying the whole product today.</td></tr>
+          <tr><td>3 · Mistral</td><td><span class="score s-hi">up</span></td><td>—</td></tr>
+          <tr><td>4 · Cerebras</td><td><span class="score s-lo">dead</span></td><td>HTTP 402 on <strong>both</strong> keys. Separate billing problem.</td></tr>
+          <tr><td>5 · Groq</td><td><span class="score s-hi">up</span></td><td>Four keys, all answering, fastest legs in the chain.</td></tr>
+          <tr><td>6 · OpenAI / Azure</td><td><span class="score s-lo">absent</span></td><td><strong>Never loaded.</strong> Dropped at startup, silently.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">The safety net was removed without telling anyone</span><span class="tag sev">Fixed</span></div>
+        <div class="item-why"><code>OPENAI_BASE_URL</code> points at <code>models.inference.ai.azure.com</code> — the retired GitHub Models host, which no longer resolves. <code>config.ts</code> drops all four OpenAI legs when it sees that, which is <em>correct</em>: calling a dead host would only add latency. But it did it in silence, so a chain that had lost its last resort looked identical to a healthy one right up until everything above it was spent. <strong>That is the 25% outage.</strong> The drop now logs a warning at startup naming the URL, the consequence and both fixes.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">Intent extraction was walking a different chain</span><span class="tag sev">Fixed</span></div>
+        <div class="item-why">Every turn extracts intent before it answers, and that step kept its <em>own</em> hand-written copy of the provider order. The copy had drifted: it <strong>omitted <code>GEMINI_API_KEY1</code> entirely</strong>, so with the billed key out of credits — its state right now — intent extraction skipped the one working Gemini key and jumped to Mistral. It also asked Cerebras for a different model than the answer chain did, so the two could fail differently in the same outage. Now derived from <code>FALLBACK_CHAIN</code>, which is what CLAUDE.md required all along.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">A test caught the consequence immediately</span><span class="tag perf">Good</span></div>
+        <div class="item-why">Deriving the intent chain broke <code>intent-extraction-fallback.test.ts</code>: its helper removed 7 provider keys, but the derived chain has 13, so <code>GROQ_API_KEY2</code> survived, answered, and the test read a real provider call as the local fast path. The complete key list already existed beside it. This is what a test earning its place looks like — it failed for the right reason on a change that looked safe.</div>
+      </div>
+    </div>
+
+    <p class="prose"><strong>Three new tests lock the contract:</strong> every leg names a provider the intent path can actually call, at least three distinct providers remain in the chain, and no free-tier key ever ranks above a billed one — the ordering rule that exists because a free key at position two once caught every failure of the paid one and turned a recoverable stall into an empty reply.</p>
+  </section>
+
+  <section>
+    <h2>Everything I read</h2>
+    <p class="sec-note">Nothing skipped. What each one was, and whether it had anything for us.</p>
+
+    <div class="table-scroll">
+      <table class="scan">
+        <tbody>
+          <tr><td>Perplexity</td><td>3 prompts</td><td><strong>Taken ×2.</strong> Per-sentence citation discipline, and the most specific formatting rules of any vendor.</td></tr>
+          <tr><td>promptflow</td><td>4,064 files</td><td><strong>Taken.</strong> Microsoft's LLM evaluation framework. Separate 1–5 scores per axis rather than one blurred number.</td></tr>
+          <tr><td>search_with_lepton</td><td>66 files</td><td><strong>Taken ×2.</strong> A working Perplexity clone in 500 lines. Named phrase for missing data; standalone follow-ups.</td></tr>
+          <tr><td>Gemini cookbook</td><td>276 files</td><td><strong>Taken.</strong> Batch API — 50% cheaper, separate endpoint, separate quota.</td></tr>
+          <tr><td>Onyx</td><td>5,679 files</td><td>Confirmed ours. Conditional citation guidance, injected late — the architecture we already use.</td></tr>
+          <tr><td>OpenAI Agents SDK</td><td>135 files</td><td>Half ours. Input/output guardrails with a tripwire; we have the guardrails, not the tripwire.</td></tr>
+          <tr><td>Anthropic / OpenAI / Google / xAI / Meta / Mistral / Qwen / DeepSeek / Kimi / GLM</td><td>~200 prompts</td><td>Scanned for anti-hallucination language. Nothing beyond what Perplexity states more precisely.</td></tr>
+          <tr><td>Property portals ×6</td><td>538 files</td><td><strong>Taught by absence.</strong> 99acres, MagicBricks, Housing, Zillow, Airbnb, PropList — all render one price field.</td></tr>
+          <tr><td>budibase</td><td>4,522 files</td><td>Not applicable. Low-code app builder; its admin patterns assume generic CRUD, ours is a fixed domain.</td></tr>
+          <tr><td>astack</td><td>251 files</td><td>Not applicable. Composable agent framework; adopting it would be a rewrite, not a refinement.</td></tr>
+          <tr><td>librechat / lobehub / open-webui / clarityAI</td><td>20,506 files</td><td>Chat UI shells. Our constraint is answer correctness, not chat surface.</td></tr>
+          <tr><td>Gemini chatbots ×2, Twitter bio generator, multiModel, openAIResearchAgent</td><td>~280 files</td><td>Demo-scale. Nothing beyond patterns already covered above.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The six ideas taken</h2>
+
+    <div class="src">
+
+      <div class="src-item">
+        <div class="src-head">
+          <span class="src-who">1 · Score answers on separate axes</span>
+          <span class="verdict v-taken">Built</span>
+          <span class="src-file">promptflow/examples/flows/evaluation</span>
+        </div>
+        <div class="src-body">
+          <div class="quote">gpt_retrieval_score   1–5  are the retrieved documents relevant
+gpt_groundedness      1–10 is the answer supported by the context
+gpt_generation             does the answer address the question</div>
+          <div class="take">
+            <p><b>Why it applies.</b> Our corpus runner has said in its own header, for weeks, that grading there is mechanical and "leaves quality judgement to a separate judge pass". That pass never existed — so the only quality reading we ever had came from a person reading answers one at a time, which is exactly how 120 answers got reported as 100% correct on a day a quarter of them were outages.</p>
+            <p><b>What was built.</b> <code>npm run judge</code> scores a saved results file on three axes: relevance, usefulness, honesty. It runs against a file, never live, so it costs nothing until you choose and re-running is free to repeat. Outages are excluded — averaging them in makes the model look worse while hiding the availability problem behind a quality number.</p>
+            <p><b>What it found immediately.</b> Over the last real run: <b>relevance 3.60, usefulness 1.40, honesty 4.60.</b> It also caught something I had read as a good answer — <em>"asked for 4 BHK but provided 4.5 BHK layouts"</em>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="src-item">
+        <div class="src-head">
+          <span class="src-who">2 · Every claim traces to a source</span>
+          <span class="verdict v-taken">Built</span>
+          <span class="src-file">Perplexity/deep-research.md</span>
+        </div>
+        <div class="src-body">
+          <div class="quote">Add a citation to every sentence that includes information
+derived from tool outputs.</div>
+          <div class="take">
+            <p><b>Why it applies.</b> A citation rule is really a promise that every claim traces to something the system was handed. Our sources are database rows, and buyers would not read markers — but the underlying test is mechanical: a rupee figure, an area or a year in the reply that appears nowhere in the prompt is one the model supplied from memory.</p>
+            <p><b>What was built.</b> <code>groundingCheck.ts</code> pulls every figure out of an answer and looks for it in the exact prompt that produced it. Statutory rates are exempt — 7% stamp duty is UP law and needs no row behind it. It logs, never blocks: arithmetic we asked for legitimately produces figures absent from context, so the false-positive rate has to be measured first.</p>
+            <p><b>It caught its own author before it caught the product.</b> The first version anchored on <code>₹</code> immediately followed by a unit, so <code>₹1.25–1.85 Cr</code> — our own commonest price format — matched nothing and an invented range passed as grounded. Both ends of a range are now checked, with a test for that exact case.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="src-item">
+        <div class="src-head">
+          <span class="src-who">3 · Formatting rules, stated exactly</span>
+          <span class="verdict v-taken">Built</span>
+          <span class="src-file">Perplexity/perplexity-ai.md</span>
+        </div>
+        <div class="src-body">
+          <div class="quote">Always begin your final response with content, not a header.
+Markdown tables are not for summaries.
+All bullets must be top-level. Never indent bullets under other bullets.
+Do not add follow-up questions for other types of queries.</div>
+          <div class="take">
+            <p><b>Each line names something we measured.</b> Across 120 answers: 30 opened with a heading or a bare <code>| Parameter | Value |</code> table, 14 wrapped a single value in a three-line table, and follow-up questions were appended to plain factual replies. Perplexity restricts follow-ups to writing and rewriting requests — that is now our rule too.</p>
+            <p>All four are in the per-question output contract. The judge score above is the baseline they have to beat.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="src-item">
+        <div class="src-head">
+          <span class="src-who">4 · A named phrase for missing data</span>
+          <span class="verdict v-taken">Aligned</span>
+          <span class="src-file">search_with_lepton/search_with_lepton.py</span>
+        </div>
+        <div class="src-body">
+          <div class="quote">Say "information is missing on" followed by the related topic, if
+the given context do not provide sufficient information.</div>
+          <div class="take">
+            <p><b>This is the rule you asked for in your own words</b> — if we cannot get something, say so plainly rather than substituting a number. Lepton makes it a specific phrase the model must produce, which is stricter than a general instruction not to guess.</p>
+            <p>We already had the mechanism (<code>unverified()</code>, the four fact tiers, "Not recorded" in rendered cells). What we lacked was the model being told which words to use, so it improvised — sometimes well, sometimes with a spec dump. The contract now names the behaviour.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="src-item">
+        <div class="src-head">
+          <span class="src-who">5 · Follow-ups must stand alone</span>
+          <span class="verdict v-taken">Already fixed today</span>
+          <span class="src-file">search_with_lepton/search_with_lepton.py</span>
+        </div>
+        <div class="src-body">
+          <div class="quote">if the original question asks about "the Manhattan project", in the
+follow up question, do not just say "the project", but use the full
+name "the Manhattan project"</div>
+          <div class="take">
+            <p><b>This is precisely the chip bug.</b> A follow-up that says "this project" or "I need a 3 BHK" cannot be asked on its own — the buyer taps it and the system has lost what "this" meant. Lepton states the rule generally; we had found the symptom this morning and fixed it (chips now name the project, and a lone filter chip returns nothing at all).</p>
+            <p>Worth recording as independent confirmation that the fix was the right shape, and that the rule generalises beyond chips to anything we suggest.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="src-item">
+        <div class="src-head">
+          <span class="src-who">6 · Batch API for evaluation runs</span>
+          <span class="verdict v-todo">Recommended</span>
+          <span class="src-file">cookbook/quickstarts/Batch_mode.ipynb</span>
+        </div>
+        <div class="src-body">
+          <div class="quote">Cost savings: Batches are priced at a 50% discount compared to
+the standard API.
+Note: The Batch API is a separate endpoint that works independently
+from both generateContent and the Interactions API.
+Ideal for … running large-scale evaluations.</div>
+          <div class="take">
+            <p><b>This is aimed at exactly what you are paying for tonight.</b> Google's own words: ideal for large-scale evaluations. Half price, and — the part that matters more — a <em>separate endpoint with its own quota</em>. Our corpus runs would stop competing with real users for the same allowance.</p>
+            <p>I have not built the integration: it needs file upload, job polling and a 24-hour completion window, and shipping an untested API integration the night you plan to run the corpus is the wrong order. Recommended as the next infrastructure step, not tonight's.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>The thing the judge measured, in plain English</h2>
+
+    <div class="layman">
+      <p><b>What the three numbers mean.</b> Imagine grading an estate agent on three separate things instead of one overall mark.</p>
+      <p><b>Relevance 3.6/5</b> — did they answer the question you asked? Mostly yes.</p>
+      <p><b>Honesty 4.6/5</b> — did they only say things they actually knew? Almost always. This is the one that protects buyers, and it is our strongest score.</p>
+      <p><b>Usefulness 1.4/5</b> — did they help you decide, or just read the file out? <b>They read the file out.</b> This is the number behind every complaint you have had this week about answers looking like a database.</p>
+    </div>
+
+    <p class="prose">Grading them separately is the whole point of the promptflow approach. A single "quality: 65%" would have hidden this: the answers are <em>correct</em> and <em>honest</em> and still not <em>useful</em>, and only one of those three needs fixing. Averaging them would have pointed us at the wrong work.</p>
+
+    <div class="terminal">$ <b>npm run judge results-longtail2.json</b>
+
+  relevance   <b>3.60</b>   answers the question asked
+  usefulness  <b>1.40</b>   advises rather than dumps fields
+  honesty     <b>4.60</b>   claims only what it can know
+
+  [5/1/1] ace hanei construction update   Unverifiable construction data, bare table, no context
+  [3/1/5] ace hanei floor plan            Gives a price table instead of actual floor plan layouts
+  [3/5/5] ace hanei 4 bhk                 Asked for 4 BHK but provided 4.5 BHK layouts</div>
+
+    <p class="prose">Those scores are the <strong>baseline</strong>, measured on answers produced <em>before</em> today's fixes — before the invented price table was removed from the prompt and before the four formatting rules were added. Tonight's run is the comparison, and usefulness is the number to watch.</p>
+  </section>
+
+  <section>
+    <h2>What the study found by accident</h2>
+    <div class="callout">
+      <strong>The 25% outage is not a rate limit.</strong> The first judge run came back on every single call with: <em>"Your prepayment credits are depleted. Please go to AI Studio…"</em> — not a throttle, an empty account. That is a more precise diagnosis than the corpus run's 429s suggested, and it means topping up tonight genuinely fixes it, rather than merely raising a ceiling we would hit again.
+    </div>
+    <p class="prose">The judge itself now takes <code>JUDGE_GEMINI_KEY</code> so it can run on a spare or free-tier key — an evaluator should never compete with the product for the billed account.</p>
+  </section>
+
+  <section>
+    <h2>What the portals taught by having nothing to teach</h2>
+    <div class="layman">
+      <p><b>In plain English:</b> I looked at how six property sites show a price. Every one shows a single number, because on a portal a listing <em>is</em> one flat. We show a project — many flats at many prices — so one number is either wrong or meaningless.</p>
+      <p>That is not a gap in our design. It is the reason yesterday's work matters: quoting one price for a whole project is a portal habit that does not survive an advisor's job.</p>
+    </div>
+    <p class="prose">The relevant code in all six was one field rendered directly — <code>₹{price.toLocaleString()}</code>. No configuration-scoped pricing exists in any of them because none of them needs it. Our BHK-scoped price and the "this project has no 3 BHK" answer have <strong>no equivalent in any portal examined</strong>.</p>
+  </section>
+
+  <section>
+    <h2>What I deliberately did not take</h2>
+    <ul class="prose" style="line-height:1.75">
+      <li><strong>Inline <code>[1][2]</code> markers in answers.</strong> Perplexity's readers expect them; a home buyer reading advice does not. The check is worth having, the notation is not.</li>
+      <li><strong>Onyx's "use tables for structured information" default.</strong> Directly contrary to what we measured — tables were 53% of output tokens and the main reason answers read like a database. Their context is enterprise document search; ours is advice.</li>
+      <li><strong>Perplexity's personalisation block</strong> (demographics, lifestyle, shopping patterns). <code>IntentState</code> already carries the equivalent, scoped to what a property decision needs. Importing a general profile would collect more about a buyer than the job requires.</li>
+      <li><strong>astack and budibase as frameworks.</strong> Both are sound; adopting either is a rewrite, not a refinement, and you asked me not to disturb what works.</li>
+      <li><strong>The four chat UI shells.</strong> 20,506 files of chat interface. Our constraint is whether the answer is right, not what surrounds it.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Where we stand against the references</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Practice</th><th>Best-in-class does</th><th>We do</th></tr></thead>
+        <tbody>
+          <tr><td>Answers are scored, not eyeballed</td><td>Separate 1–5 per axis</td><td><strong>Built today</strong> — 3.6 / 1.4 / 4.6</td></tr>
+          <tr><td>Claims trace to a source</td><td>Inline citation per sentence</td><td><strong>Mechanical check, logged</strong>, not yet blocking</td></tr>
+          <tr><td>Guidance is conditional</td><td>Injected only when tools ran</td><td>Per-question contract, appended last ✓</td></tr>
+          <tr><td>Output guardrail</td><td>Tripwire blocks delivery</td><td>Choke-point sanitising ✓, tripwire pending</td></tr>
+          <tr><td>Formatting is ruled explicitly</td><td>Headers, tables, bullets, follow-ups</td><td>All four ruled ✓</td></tr>
+          <tr><td>Missing data has a named phrase</td><td>"information is missing on …"</td><td>Fact tiers + contract ✓</td></tr>
+          <tr><td>Follow-ups stand alone</td><td>Name the entity, never "it"</td><td>Chips name the project ✓</td></tr>
+          <tr><td>Evaluation runs off-peak and cheap</td><td>Batch endpoint, 50% off, own quota</td><td><strong>Not yet</strong> — recommended next</td></tr>
+          <tr><td>The provider chain proves itself</td><td>Health-checked, not assumed</td><td><strong>Built today</strong> — <code>verify:chain</code>, 6/10 answering</td></tr>
+          <tr><td>One chain, not two</td><td>Order defined once</td><td>Intent path now derives from it ✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Next, in order</h2>
+    <ol class="steps">
+      <li><div>
+        <div class="step-title">Restore the chain before spending anything</div>
+        <div class="step-body">Three separate things, all billing or configuration rather than code. <strong>Gemini</strong>: top up, that is the depleted account. <strong>Cerebras</strong>: a second, unrelated billing failure on both keys. <strong>OpenAI</strong>: point <code>OPENAI_BASE_URL</code> at a live Azure deployment, or unset it to use <code>api.openai.com</code> with a standard key. Then <code>npm run verify:chain</code> until it exits clean.</div>
+        <div class="step-cost">first · nothing else matters while the chain is half down</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Then re-run the corpus and the judge</div>
+        <div class="step-body">Run the corpus, then <code>npm run judge</code> on the result. <strong>Usefulness 1.40 is the baseline to beat</strong>, and it tells you within minutes whether the formatting work landed.</div>
+        <div class="step-cost">tonight · judge costs pennies</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Read the grounding log from that run</div>
+        <div class="step-body"><code>[CHAT:UNGROUNDED]</code> now records any figure that was not in the prompt, alongside the prompt itself. One run gives the false-positive rate — mostly EMI arithmetic, which is legitimate.</div>
+        <div class="step-cost">free, same run</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Turn the tripwire on for prices only</div>
+        <div class="step-body">Once the false-positive rate is known, an ungrounded <em>price</em> should never reach a buyer — it is the one claim type where every legitimate value is a row we hold. Prices first, dates later, arithmetic never.</div>
+        <div class="step-cost">2 hours, after measurement</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Move corpus runs to the Batch API</div>
+        <div class="step-body">Half price and a separate quota, so evaluation stops competing with real users. Needs file upload, polling and a 24-hour window — an integration to build calmly, not on a run night.</div>
+        <div class="step-cost">Half a day · halves every future eval</div>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>The bottom line</h2>
+    <p class="prose">The references confirmed more than they corrected. Our conditional output contract, our choke-point sanitising and our fact tiers all match what production systems arrived at independently.</p>
+    <p class="prose">Three genuine gaps, and they are the same gap wearing different clothes: <strong>nothing checked itself.</strong></p>
+    <p class="prose"><strong>Attribution</strong> — nothing required a claim to trace to a row, and the cost showed up as a hardcoded price table asserting figures wrong by more than half. <strong>Measurement</strong> — nothing scored an answer's usefulness, so the complaint you kept raising had no number and no way to prove it fixed. <strong>Availability</strong> — nothing ever asked the fallback chain whether it worked, so it quietly lost its safety net and looked healthy until the day everything above it ran out.</p>
+    <p class="prose">All three now have a command behind them that fails loudly. One found a fault in an answer I had personally graded as good; another found that half the providers you believed were standing behind this product are not.</p>
+  </section>
+
+  <footer>
+    <span>RealtyPals · reference study r3 · 14 sources · 20 vendor prompts · 35,000+ files · chain probed live</span>
+    <span class="mono">6 taken · 6 built · rel 3.6 / use 1.4 / hon 4.6 · chain 6/10</span>
+  </footer>
+
+</div>

@@ -1,0 +1,736 @@
+<title>Long-tail Answer Audit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+  :root {
+    --ground:  #FBFAF8;
+    --surface: #FFFFFF;
+    --ink:     #0F1519;
+    --muted:   #6B7076;
+    --rule:    #E4E0D8;
+    --accent:  #1F5E56;
+    --ok:      #2F6F4F;
+    --warn:    #A8641B;
+    --risk:    #A33A31;
+    --meter-bg:#EAE7E0;
+
+    --serif: 'Newsreader', ui-serif, Georgia, serif;
+    --sans:  'Public Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono:  'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:  #0E1214;
+      --surface: #161B1E;
+      --ink:     #E8EDEF;
+      --muted:   #98A1A6;
+      --rule:    #262D31;
+      --accent:  #6FBFAF;
+      --ok:      #6FBF8F;
+      --warn:    #D9A055;
+      --risk:    #E08076;
+      --meter-bg:#232A2E;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:  #0E1214;
+    --surface: #161B1E;
+    --ink:     #E8EDEF;
+    --muted:   #98A1A6;
+    --rule:    #262D31;
+    --accent:  #6FBFAF;
+    --ok:      #6FBF8F;
+    --warn:    #D9A055;
+    --risk:    #E08076;
+    --meter-bg:#232A2E;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 clamp(1.15rem, 5vw, 2rem) 6rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .wrap { max-width: 62rem; margin: 0 auto; }
+  .prose { max-width: 40rem; }
+
+  /* ---------- masthead ---------- */
+
+  header.masthead {
+    padding: clamp(3rem, 9vw, 5.5rem) 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(2.4rem, 6.5vw, 3.6rem);
+    line-height: 1.06;
+    letter-spacing: -0.018em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    font-family: var(--serif);
+    font-size: clamp(1.05rem, 2.4vw, 1.24rem);
+    line-height: 1.5;
+    color: var(--muted);
+    max-width: 34rem;
+    margin: 0.5rem 0 0;
+  }
+
+  /* ---------- the figure ---------- */
+
+  .figure {
+    margin: clamp(2.5rem, 6vw, 3.5rem) 0 0;
+    padding: clamp(1.5rem, 4vw, 2rem);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1.25rem, 4vw, 3rem);
+    align-items: flex-start;
+  }
+
+  .figure-main { display: flex; align-items: baseline; gap: 0.55rem; }
+
+  .figure-num {
+    font-family: var(--serif);
+    font-size: clamp(3.6rem, 11vw, 5.2rem);
+    font-weight: 600;
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .figure-pct {
+    font-family: var(--serif);
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    color: var(--muted);
+  }
+
+  .figure-side { flex: 1 1 15rem; min-width: 13rem; padding-top: 0.3rem; }
+
+  .figure-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.7rem;
+  }
+
+  .track {
+    height: 3px;
+    background: var(--meter-bg);
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .track > i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 2px; display: block; }
+
+  .track-scale {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 0.45rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .delta {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--ok);
+    margin-top: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- sections ---------- */
+
+  section { margin-top: clamp(3rem, 7vw, 4.5rem); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(1.55rem, 3.6vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+    margin: 0 0 0.35rem;
+    text-wrap: balance;
+  }
+
+  .sec-note {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 1.6rem;
+    max-width: 38rem;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 2.2rem 0 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  p { margin: 0 0 1rem; }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--meter-bg);
+    padding: 0.1em 0.36em;
+    border-radius: 3px;
+  }
+
+  /* ---------- shipped list ---------- */
+
+  .shipped { display: grid; gap: 0; margin: 0; }
+
+  .item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .item:first-child { border-top: 1px solid var(--rule); }
+
+  .item-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .item-title { font-weight: 600; font-size: 0.97rem; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.12rem 0.4rem;
+    border-radius: 3px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .tag.sev  { color: var(--risk); }
+  .tag.perf { color: var(--accent); }
+  .tag.ux   { color: var(--warn); }
+
+  .item-why { color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+
+  /* ---------- scorecard ---------- */
+
+  .table-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 30rem; }
+  th {
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0 0.55rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  td { padding: 0.6rem 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+  td:first-child { font-weight: 500; padding-right: 1rem; }
+  th:nth-child(2), td:nth-child(2) { width: 3.2rem; text-align: right; padding-right: 0.7rem; }
+  th:nth-child(3), td:nth-child(3) { width: 6.5rem; }
+  td:nth-child(4) { color: var(--muted); font-size: 0.87rem; padding-left: 1rem; }
+
+  .score {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .s-hi  { color: var(--ok); }
+  .s-mid { color: var(--warn); }
+  .s-lo  { color: var(--risk); }
+
+  .bar { height: 2px; background: var(--meter-bg); position: relative; margin-top: 0.55rem; }
+  .bar > i { position: absolute; inset: 0 auto 0 0; display: block; }
+  .bar > i.hi  { background: var(--ok); }
+  .bar > i.mid { background: var(--warn); }
+  .bar > i.lo  { background: var(--risk); }
+
+  .up {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ok);
+    margin-left: 0.35rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- steps ---------- */
+
+  ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; }
+  ol.steps > li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 2.1rem 1fr;
+    gap: 0.9rem;
+    padding: 1.05rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  ol.steps > li:first-child { border-top: 1px solid var(--rule); }
+  ol.steps > li::before {
+    content: counter(s, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    padding-top: 0.15rem;
+  }
+  .step-title { font-weight: 600; margin-bottom: 0.15rem; }
+  .step-body { color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+  .step-cost {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- callout ---------- */
+
+  .callout {
+    border-left: 2px solid var(--accent);
+    padding: 0.15rem 0 0.15rem 1.1rem;
+    margin: 1.6rem 0;
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+  .callout strong { color: var(--ink); }
+
+  .terminal {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.75;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.9rem 1.1rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    white-space: pre;
+    color: var(--muted);
+    margin: 1.2rem 0;
+  }
+  .terminal b { color: var(--ink); font-weight: 700; }
+
+  footer {
+    margin-top: clamp(3.5rem, 8vw, 5rem);
+    padding-top: 1.3rem;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 0.83rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  footer .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 34rem) {
+    td:nth-child(4) { display: none; }
+    th:nth-child(4) { display: none; }
+    table { min-width: 0; }
+  }
+</style>
+<style>
+  .qa { display: flex; flex-direction: column; gap: 1.1rem; margin: 1.5rem 0; }
+  .qa-item { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .qa-head { display: flex; align-items: baseline; gap: .7rem; flex-wrap: wrap;
+             padding: .7rem .95rem; border-bottom: 1px solid var(--rule); background: var(--ground); }
+  .qa-q { font-family: var(--mono); font-size: .84rem; font-weight: 600; color: var(--ink); }
+  .qa-body { padding: .9rem .95rem; font-size: .87rem; line-height: 1.55; color: var(--ink); }
+  .qa-body em { color: var(--muted); font-style: normal; }
+  .qa-said { font-family: var(--mono); font-size: .79rem; line-height: 1.5;
+             background: var(--meter-bg); border-radius: 6px; padding: .6rem .7rem; margin: 0 0 .7rem;
+             white-space: pre-wrap; overflow-x: auto; color: var(--ink); }
+  .qa-verdict { font-size: .85rem; line-height: 1.55; color: var(--muted); }
+  .qa-verdict b { color: var(--ink); font-weight: 600; }
+  .pill { font-family: var(--mono); font-size: .68rem; font-weight: 700; letter-spacing: .04em;
+          text-transform: uppercase; padding: .17rem .45rem; border-radius: 4px; white-space: nowrap; }
+  .p-good { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+  .p-mid  { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+  .p-bad  { background: color-mix(in srgb, var(--risk) 14%, transparent); color: var(--risk); }
+  .chips-row { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
+  .chip-demo { font-size: .74rem; border: 1px solid var(--rule); border-radius: 999px;
+               padding: .2rem .6rem; color: var(--muted); background: var(--ground); }
+  /* Set apart by ground and rule, not by a coloured bar down one edge. */
+  .layman { background: color-mix(in srgb, var(--accent) 5%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+            padding: .85rem 1rem; margin: 1.1rem 0; border-radius: 8px; }
+  .layman b { color: var(--accent); letter-spacing: .01em; }
+  .layman p { margin: 0; font-size: .89rem; line-height: 1.6; color: var(--ink); }
+  .split { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); margin: 1.3rem 0; }
+  .stat { border: 1px solid var(--rule); border-radius: 10px; padding: .85rem .9rem; background: var(--surface); }
+  .stat-n { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; line-height: 1; color: var(--ink); }
+  .stat-l { font-size: .76rem; color: var(--muted); margin-top: .35rem; line-height: 1.4; }
+  .wave { border: 1px solid var(--rule); border-radius: 10px; padding: .9rem 1rem; background: var(--surface); margin: .7rem 0; }
+  .wave-h { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; margin-bottom: .4rem; }
+  .wave-n { font-family: var(--mono); font-size: .72rem; font-weight: 700; color: var(--accent); }
+  .wave-t { font-weight: 600; font-size: .95rem; color: var(--ink); }
+  .wave-c { font-family: var(--mono); font-size: .72rem; color: var(--muted); margin-left: auto; }
+  .wave p { margin: .3rem 0 0; font-size: .86rem; line-height: 1.55; color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Long-tail Query Audit · Chips · Admin Plan · 29 Aug 2026</div>
+    <h1>What the chat actually answers</h1>
+    <p class="standfirst">I ran 120 real search queries from your keyword exports through the live AI, read every answer, and rated them. I reported 100% earlier today. That number was wrong, and this document explains exactly why.</p>
+  </header>
+
+  <div class="figure">
+    <div class="figure-main">
+      <span class="figure-num">58</span><span class="figure-pct">%</span>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">Genuinely good answers, of 120 real queries</div>
+      <div class="track"><i style="width:58%"></i></div>
+      <div class="track-scale"><span>I said 100 this morning</span><span></span><span>100</span></div>
+      <div class="delta">−42 · the first run's grader was broken</div>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">Where the other 42% went</div>
+      <div class="terminal" style="margin:0">pass          <b>70</b>   58%
+unavailable   <b>30</b>   25%  ← service outage
+too short     <b>20</b>   17%  ← one-line data dumps
+cost          <b>₹4.60</b> for all 120</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Answering your question directly.</strong> Yes — I ran them. I curated 120 from the 904 unique keywords in your <code>test</code> folder, covering both projects (Ace Hanei, County 107) and both sectors (Sector 10 Noida Extension, Sector 75 Noida), 30 each. But I never <em>rated</em> them, and the harness that said "100% pass" was itself broken in two ways. This document is the rating you asked for.
+  </div>
+
+  <section>
+    <h2>Why my first number was wrong</h2>
+    <p class="sec-note">Two defects, both mine, both introduced this morning.</p>
+
+    <div class="layman">
+      <p><b>In plain English:</b> think of the test harness as a marker grading exam papers. I gave it a new subject to mark, but forgot to give it a pass mark for that subject. With no pass mark, <em>every</em> paper passed — including a blank one. That's how a 6-character answer scored the same as a full one.</p>
+    </div>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">The length check never ran</span><span class="tag sev">Fixed</span></div>
+        <div class="item-why">The grader holds a minimum answer length per category. My long-tail set introduced twelve new category names — <code>price</code>, <code>rera</code>, <code>brochure</code> — none of which were in that table. Looking up a missing key returns <code>undefined</code>, and <code>length &lt; undefined</code> is always false in JavaScript. So the length gate silently stopped running for all 120. A 65-character answer passed a floor that never executed. It now fails closed with a default of 120 characters.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">An outage was scored as a success</span><span class="tag sev">Fixed</span></div>
+        <div class="item-why">30 of 120 turns returned <em>"Our AI services are currently experiencing high traffic or are out of service."</em> That message is 190 characters of polite prose, so it cleared every length check and was graded <strong>pass</strong>. A test suite that scores an outage as a win is measuring the wrong thing. There is now an <code>unavailable</code> grade.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">Chips were never recorded at all</span><span class="tag sev">Fixed</span></div>
+        <div class="item-why">You asked me to rate the chips. The harness captured only the prose — no chips, no property cards — so there was nothing to rate. It now records both, which is how the chip findings further down exist.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The single biggest problem: 25% of turns got no answer at all</h2>
+
+    <div class="layman">
+      <p><b>In plain English:</b> we rent our AI from Google. That rental has a speed limit. Three users at once, for ten minutes, and we hit it — Google starts refusing. We're supposed to fall back to a different supplier when that happens, and the fallback did not cover us. One in four people got an error page instead of an answer.</p>
+    </div>
+
+    <p class="prose">Measured, from the server log of the run: <strong>57 refusals from Gemini</strong>, 3 from Mistral, 1 from Groq, and <strong>616 fallback events</strong>. The chain rolled over as designed and still ran dry, because Gemini is doing nearly all the work and the paid key is rate-limited.</p>
+
+    <div class="split">
+      <div class="stat"><div class="stat-n">3</div><div class="stat-l">Concurrent users during the run — not 50, not 200. Three.</div></div>
+      <div class="stat"><div class="stat-n">25%</div><div class="stat-l">Turns that ended in "out of service"</div></div>
+      <div class="stat"><div class="stat-n">57</div><div class="stat-l">Gemini rate-limit refusals in ten minutes</div></div>
+      <div class="stat"><div class="stat-n">₹4.60</div><div class="stat-l">Total spend for all 120 queries</div></div>
+    </div>
+
+    <p class="prose"><strong>This is the concurrency risk I have been unable to measure for four audits, and it is now measured.</strong> Every previous audit said "concurrency unvalidated on a funded key". It is validated now, and the answer is that at three concurrent users we already fail a quarter of the time. A 50-user beta on this configuration will not hold.</p>
+  </section>
+
+  <section>
+    <h2>Every response type, rated</h2>
+    <p class="sec-note">Real transcripts from the run. My rating, and why.</p>
+
+    <div class="qa">
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"ace hanei payment plan"</span><span class="pill p-good">9 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">### Payment plans — Ace Hanei
+**Construction-Linked Plan (CLP)**
+| Stage | When | Share | Amount |
+| On Booking &amp; Allotment | Immediate | 10% | ₹31.1 Lakhs |
+| On Excavation &amp; Foundation Raft | Within 3 Months | 15% | ₹46.6 Lakhs |
+| On Superstructure &amp; Floor Slabs | Milestone Linked | 45% | ₹139.9 Lakhs |
+…then two paragraphs on the cash-flow trade-off between the two plans.</div>
+          <div class="qa-verdict"><b>The best answer in the set.</b> Full instalment schedule from our own rows, then genuine advice on which plan suits which buyer. This is what the product is supposed to be. It was broken this morning — returning two rows saying "Available" — and is now the benchmark.</div>
+          <div class="chips-row"><span class="chip-demo">Calculate Monthly EMI</span><span class="chip-demo">View Cost Sheet &amp; Taxes</span><span class="chip-demo">Schedule Site Visit</span></div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"ace hanei 4 bhk"</span><span class="pill p-good">9 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">Ace Hanei offers two distinct 4.5 BHK large-format layouts…
+| Configuration | Carpet Area | Super Area | Bathrooms | Key Layout Highlights |
+| 4.5 BHK Elite Grand | 1,950 sq.ft. | 3,150 sq.ft. | 4 | East-West-North facing… |</div>
+          <div class="qa-verdict">A table that <b>earns</b> its table — two configurations genuinely side by side, five columns of real data. Correctly notes 4.5 BHK rather than pretending a plain "4 BHK" exists.</div>
+          <div class="chips-row"><span class="chip-demo">What competes with Ace Hanei?</span><span class="chip-demo">Full cost of Ace Hanei</span><span class="chip-demo">Is Ace Hanei RERA clean?</span></div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"county 107 apartment for rent"</span><span class="pill p-good">8 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">Indicative monthly rent for a 2-3 BHK in Noida runs roughly ₹16,000 to ₹60,000. That is a market range from public listings data, not a RealtyPals figure — we track new-construction sales, not rentals, so treat it as a ballpark rather than a quote.</div>
+          <div class="qa-verdict"><b>Exactly right on an out-of-scope question.</b> Gives something useful, labels it as market data rather than ours, states the limitation, offers the next step. This is the honesty standard working. Marked down only because the range is so wide it is nearly uninformative.</div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"ace hanei rera number"</span><span class="pill p-mid">5 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">| Parameter | Value |
+|---|---|
+| RERA Number | UPRERAPRJ677887 |</div>
+          <div class="qa-verdict"><b>Correct, and robotic.</b> A three-line table holding one value. The right answer is one sentence: "The RERA number is UPRERAPRJ677887, valid to December 2031." <strong>30 of 120 answers open exactly like this</strong> — a bare <code>| Parameter | Value |</code> dump with no advice attached. It reads as a database, not an advisor, which is the opposite of what the product claims to be. I have tightened the output rule with a worked example; it needs a re-run to confirm.</div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"county 107 3 bhk price"</span><span class="pill p-bad">2 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">**County 107 – 3 BHK price**
+- Minimum price: **₹ 4.85 Crore** (as listed in the project data).</div>
+          <div class="qa-verdict"><b>Wrong, and confidently so.</b> County 107 has no 3 BHK — it builds 4 BHK and 5 BHK. The model took the project's minimum price and labelled it as the 3 BHK price. A buyer is told a flat exists at a price, and neither the flat nor the price is real. The card layer now handles this correctly (it says "No 3 BHK in this project" and offers alternatives nearby), but <strong>the prose path does not yet</strong>. This is the most serious open defect in the set.</div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"cameron county 107 district court"</span><span class="pill p-bad">1 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">### Verified Amenities &amp; Lifestyle: County 107 (Sector 107)
+**Verified Project Amenities:** • Swimming Pool &amp; Splash Pool • State-of-the-Art Gymnasium • Badminton Court…</div>
+          <div class="qa-verdict"><b>Fabricated relevance.</b> This is a query about a courthouse in Texas that landed in your keyword export because it shares the string "county 107". We answered it with a swimming pool. The word "Verified" makes it worse. It should say it does not understand the question.</div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"county 107 by county group" <em>(and 4 variants)</em></span><span class="pill p-bad">2 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">We do not hold any projects from county in Noida or Greater Noida, so there is nothing verified for me to show you about them.</div>
+          <div class="qa-verdict"><b>We denied a project we actually hold.</b> County 107 is in the database, built by ABA Corp. The builder-name extractor pulled the word "county" out of the project's own name, searched for a builder called "county", found none, and reported the project as uncovered. <strong>9 of 120 answers deny inventory we own</strong> — the worst possible failure for a search product, because the buyer leaves believing we have nothing.</div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"sector 10 noida extension pin code"</span><span class="pill p-bad">2 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">201301</div>
+          <div class="qa-verdict"><b>Wrong, and inconsistent between runs.</b> The first run answered 201306; the second answered 201301. Sector 10 Greater Noida West is 201306. The same question produced two different answers an hour apart, and one of them is incorrect — we are guessing at a fact rather than reading it. Nothing in our schema holds a PIN code, which is why.</div>
+          <div class="chips-row"><span class="chip-demo">I need a 3 BHK</span></div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-head"><span class="qa-q">"ace hanei construction update"</span><span class="pill p-bad">3 / 10</span></div>
+        <div class="qa-body">
+          <div class="qa-said">| Superstructure &amp; RCC Framing | Completed (100%) |
+| Possession &amp; Handover | In Progress (75%) |
+…while other answers for the same project state: Launch Date 2024-10-15 · Possession Date 2028-10-15 · Expected Handover Quarter Q4 2026</div>
+          <div class="qa-verdict"><b>Our own data contradicts itself, and we print both.</b> A project that launched in October 2024 cannot have a fully completed superstructure; and "handover Q4 2026" cannot sit beside "possession October 2028". Three fields disagree and nothing checks them. Separately, raw dates like <code>2028-10-15</code> are shown to buyers in 5 answers instead of "October 2028".</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Answer type</th><th>Count</th><th>Rating</th><th>The pattern</th></tr></thead>
+        <tbody>
+          <tr><td>Payment plans, floor plans, amenities</td><td>11</td><td><span class="score s-hi">9</span></td><td>Rendered from our own rows. Genuinely excellent</td></tr>
+          <tr><td>Out-of-scope, handled honestly</td><td>8</td><td><span class="score s-hi">8</span></td><td>Says what we don't hold, offers what we do</td></tr>
+          <tr><td>Project summaries in prose</td><td>14</td><td><span class="score s-mid">7</span></td><td>Price, status, one trade-off. Solid</td></tr>
+          <tr><td>Bare <code>| Parameter | Value |</code> dumps</td><td>30</td><td><span class="score s-mid">5</span></td><td>Correct data, zero advice. Reads as a database</td></tr>
+          <tr><td>Single-fact answers, too thin</td><td>20</td><td><span class="score s-mid">4</span></td><td>One line, no context, no next step</td></tr>
+          <tr><td>Denied inventory we hold</td><td>9</td><td><span class="score s-lo">2</span></td><td>Builder-name extraction eats the project name</td></tr>
+          <tr><td>Service unavailable</td><td>30</td><td><span class="score s-lo">0</span></td><td>Provider chain exhausted at 3 concurrent users</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The chips, rated</h2>
+    <p class="sec-note">Now measured for the first time — 120 turns, chips captured.</p>
+
+    <div class="figure" style="margin-bottom:1.2rem">
+      <div class="figure-main"><span class="figure-num">14</span></div>
+      <div class="figure-side">
+        <div class="figure-label">Distinct chip sets across 120 different questions</div>
+        <div class="delta">Rated <strong>4 / 10</strong></div>
+      </div>
+      <div class="figure-side">
+        <div class="terminal" style="margin:0">47×  View Payment Plans | Cost Sheet | EMI | Site Visit
+39×  I need a 3 BHK
+15×  Ready-to-move | What to check | Set a budget
+ 6×  <b>the adaptive chips I built</b></div>
+      </div>
+    </div>
+
+    <p class="prose"><strong>The same four generic chips appear on 47 of 120 turns</strong> — after a question about a brochure, about an address, about a construction update. They are not responses to anything. And on <strong>39 turns the only chip offered was "I need a 3 BHK"</strong>, which is a filter, not a next step, and is nonsense after "what is the RERA number".</p>
+
+    <p class="prose">The axis-based chips I built today — <em>"What competes with Ace Hanei?" / "Full cost of Ace Hanei" / "Is Ace Hanei RERA clean?"</em> — are the good ones, and they fired <strong>6 times out of 120</strong>. They are being overridden by hardcoded chip sets inside the individual topic handlers, which run earlier and win.</p>
+
+    <div class="layman">
+      <p><b>In plain English:</b> I rebuilt the buttons under each answer so they'd be about what you just asked. But there are older, hardcoded buttons buried in fourteen separate places in the code, and those fire first. My new ones only get a turn when none of the old ones do. Fixing this means deleting the hardcoded sets, not adding more logic.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>What to fix, in order</h2>
+    <ol class="steps">
+      <li><div>
+        <div class="step-title">Provider capacity — this blocks the beta</div>
+        <div class="step-body">25% failure at three concurrent users. Fund the paid Gemini key, or promote Mistral and Groq to carry real traffic instead of sitting as emergency backups. Until this is fixed, the number of users the product supports is roughly three.</div>
+        <div class="step-cost">blocking · nothing else matters more</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Stop denying projects we own</div>
+        <div class="step-body">9 of 120. The builder-name extractor takes a word out of the project's own name and concludes we have no coverage. Fix: never run a builder search when the same string already matched a project.</div>
+        <div class="step-cost">2 hours · worst failure type for a search product</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Never quote a price for a size that doesn't exist</div>
+        <div class="step-body">The card layer is fixed and now says "No 3 BHK in this project" with nearby alternatives. The prose path still answers "County 107 3 BHK price → ₹4.85 Cr" for a project with no 3 BHK. Same rule, second place.</div>
+        <div class="step-cost">3 hours · directly misleads a buyer</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Turn the data dumps into advice</div>
+        <div class="step-body">30 answers open with a bare parameter table and never say what it means. The output rule now carries a worked example rather than a prohibition; needs a re-run to confirm it took.</div>
+        <div class="step-cost">1 hour + a re-run · this is the product's whole voice</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Delete the hardcoded chip sets</div>
+        <div class="step-body">Fourteen topic handlers carry their own chips and override the adaptive ones. Remove them so the chips built from the answer actually reach the screen.</div>
+        <div class="step-cost">3 hours · the fix you asked for is built but blocked</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Add a data-consistency audit</div>
+        <div class="step-body">Possession October 2028 beside handover Q4 2026, on the same project. We have audits for retrieval and for prices; contradictions between date fields have none. Same pattern, third instance.</div>
+        <div class="step-cost">3 hours · prevents a class, not a case</div>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>The Admin, Builder and Partner plan</h2>
+    <p class="sec-note">Your existing plan, checked against the live database. One finding rewrites the sequence.</p>
+
+    <div class="layman">
+      <p><b>In plain English:</b> the plan said ten things "already exist, don't rebuild them". All ten exist as empty filing cabinets. Five have never had a single piece of paper put in them, and three have no machine anywhere that would ever file anything into them. Two of the planned dashboards read from those three. Built as written, they would open as blank screens.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Table the plan relies on</th><th>Rows today</th><th>Anything writing to it?</th></tr></thead>
+        <tbody>
+          <tr><td>ChatAnalytics</td><td>15,130</td><td>yes</td></tr>
+          <tr><td>QueryMetrics</td><td>7,684</td><td>yes</td></tr>
+          <tr><td>CallbackRequest</td><td>296</td><td>yes</td></tr>
+          <tr><td>PropertyEvent</td><td>257</td><td>yes</td></tr>
+          <tr><td>ChannelPartner</td><td>13</td><td>yes</td></tr>
+          <tr><td>BuilderAccount</td><td><strong>2</strong></td><td>yes — against 117 builders</td></tr>
+          <tr><td>WeeklyMetricsSummary</td><td><strong>0</strong></td><td><strong>nothing</strong></td></tr>
+          <tr><td>BuilderAnalytics</td><td><strong>0</strong></td><td><strong>nothing</strong></td></tr>
+          <tr><td>GhostPoolAnalysis</td><td><strong>0</strong></td><td><strong>nothing</strong></td></tr>
+          <tr><td>ResponseGrade</td><td><strong>0</strong></td><td>writer exists, never fires</td></tr>
+          <tr><td>PropertyFeedback</td><td><strong>0</strong></td><td>writer exists, never fires</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="prose">You asked me to keep all eight waves, so all eight are kept. But a <strong>Wave 0</strong> is added ahead of them, because three later waves cannot be delivered without it — and the whole thing is re-sequenced so that work which never depended on the backend stops waiting for it. <strong>Twelve working days instead of twenty</strong>, with nothing removed.</p>
+
+    <div class="wave">
+      <div class="wave-h"><span class="wave-n">WAVE 0</span><span class="wave-t">Make the empty tables produce rows</span><span class="wave-c">1.5 days · NEW</span></div>
+      <p>Funnel events emitted at the one place every UI update already passes through. A nightly job that fills the three empty tables. A backfill from the 15,130 conversations you already hold — without it, every chart reads "last 3 days" on launch day. No user interface: this exists so the waves that have one aren't built over a void.</p>
+    </div>
+    <div class="wave">
+      <div class="wave-h"><span class="wave-n">WAVE 1</span><span class="wave-t">Schema migration</span><span class="wave-c">0.5 days</span></div>
+      <p>Four additive objects, nothing dropped or retyped. API keys stored <strong>hashed</strong>, shown once — a plaintext key column is a credential store, and the first admin export written against it will dump the lot.</p>
+    </div>
+    <div class="wave">
+      <div class="wave-h"><span class="wave-n">WAVES 6 &amp; 7</span><span class="wave-t">Spec precision + mobile</span><span class="wave-c">2 days · moved earlier</span></div>
+      <p>Moved ahead of everything backend, because they never depended on it. Buyer-facing, visible, demo-safe. Every mobile fix gets an automated viewport check — "mobile polish" verified by a person is polish that regresses on the next layout change.</p>
+    </div>
+    <div class="wave">
+      <div class="wave-h"><span class="wave-n">WAVES 2 &amp; 3</span><span class="wave-t">Admin analytics, backend then UI</span><span class="wave-c">2.5 days</span></div>
+      <p>Every panel renders an explicit empty state naming its own source table, and a check fails the build if a panel is backed by an empty one. The panel to demo is budget-versus-supply: what buyers ask for against what we hold. It produces a decision, not a number.</p>
+    </div>
+    <div class="wave">
+      <div class="wave-h"><span class="wave-n">WAVE 4</span><span class="wave-t">Builder Portal</span><span class="wave-c">2.5 days · two blockers</span></div>
+      <p>2 accounts exist for 117 builders, so onboarding is a prerequisite rather than a follow-up. Both of its dashboards read tables Wave 0 fills — if Wave 0 slips, ship the portal <strong>without</strong> those two panels rather than with empty ones.</p>
+    </div>
+    <div class="wave">
+      <div class="wave-h"><span class="wave-n">WAVE 5</span><span class="wave-t">Channel Partner Hub</span><span class="wave-c">2 days · needs a schema decision</span></div>
+      <p>13 partners exist, none with an account, and <strong>lead assignment has no model at all</strong> — nothing connects a lead to a partner. That is a schema addition this wave owns, and the reason it follows Wave 4 rather than running beside it.</p>
+    </div>
+    <div class="wave">
+      <div class="wave-h"><span class="wave-n">WAVE 8</span><span class="wave-t">Regression, docs, release</span><span class="wave-c">1 day</span></div>
+      <p>Every audit green, both tenant-isolation suites passing, viewport checks passing, docs regenerated.</p>
+    </div>
+
+    <p class="prose"><strong>If the demo comes before twelve days:</strong> ship Waves 0, 1, 6, 7, 2 and 3 — six and a half days. That is admin analytics, spec precision and mobile, all of it buyer- or operator-facing. The Builder and Partner portals demo poorly to an audience that is neither.</p>
+  </section>
+
+  <section>
+    <h2>The honest bottom line</h2>
+    <p class="prose">The good answers are genuinely good. The payment schedule, the floor plans, the honest handling of a rental question — those are advisor-grade and no listings portal does them.</p>
+    <p class="prose">But <strong>58%</strong> is the real figure, and the gap is not subtle: a quarter of turns returned nothing at all because we outran our AI quota at <em>three</em> concurrent users, and another quarter answered like a database rather than an advisor.</p>
+    <p class="prose">The single most useful thing I did today was not a fix — it was discovering that my own test harness had been reporting success for failure. Everything above depends on that having been caught.</p>
+  </section>
+
+  <footer>
+    <span>RealtyPals · long-tail audit · 120 queries · ₹4.60 · 29 Aug 2026</span>
+    <span class="mono">58% pass · 25% unavailable · chips 4/10 · plan 12 days</span>
+  </footer>
+
+</div>

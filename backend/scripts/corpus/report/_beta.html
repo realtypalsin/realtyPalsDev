@@ -1,0 +1,177 @@
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Beta Readiness · Engineer to Engineer · No Hedging</div>
+    <h1>RealtyPals</h1>
+    <p class="standfirst">You asked me to roast it. The chat is genuinely good now. The things that will actually bite you in a 200-user beta are almost all somewhere else, and I only found them because I stopped testing the chat and started testing the server.</p>
+  </header>
+
+  <div class="figure">
+    <div class="figure-main">
+      <span class="figure-num">68</span><span class="figure-pct">%</span>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">Ready for a 50–200 user beta</div>
+      <div class="track"><i style="width:68%"></i></div>
+      <div class="track-scale"><span>0</span><span>answer quality 98</span><span>100</span></div>
+      <div class="delta">answer quality is not the bottleneck any more</div>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">Measured today</div>
+      <div class="terminal" style="margin:0">answers  <b>49/50</b>  ₹0.05/chat
+solo     <b>3.6s</b> p50
+8 users  <b>25–31s</b> each
+tests    <b>1522</b> pass · <b>774 todo</b></div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The headline, blunt.</strong> If you put 200 users on this tomorrow, the chat will answer them well and the server will probably stay up — but a handful will sit watching a spinner for thirty seconds, you will not be able to tell me what any of them did, and if one unhandled promise fires you would have lost the whole process. I fixed that last one an hour ago. The other two are open.
+  </div>
+
+  <section>
+    <h2>What I broke and fixed while auditing this</h2>
+    <p class="sec-note">Stated first, because it is the fairest measure of how much of this is verified rather than asserted.</p>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">I shipped two regressions this session and only caught them by re-running</span><span class="tag sev">Process</span></div>
+        <div class="item-why">The coverage lane went out with <code>"Sector 75, Noida"</code> failing an exact match against <code>"Sector 75"</code> — so it said we do not track a sector and then recommended that same sector one sentence later. And <code>"best 3 BHK projects"</code> captured <code>"bhk"</code>, a substring of <strong>Shu·bhk·amna</strong>, so a routine sector question was answered as a question about a builder nobody named. Pass rate went 96% → 80% → 98%. Both now have regression tests. The lesson is not that I fixed them; it is that a mechanical grader scored the broken version at 80% and I would have shipped it on that number alone.</div>
+      </div>
+      <div class="item">
+        <div class="item-head"><span class="item-title">I put the output sanitiser in the wrong place first</span><span class="tag sev">Process</span></div>
+        <div class="item-why">Emoji stripping went into the fallback chain. Emoji kept appearing, because the answer that carried them came through a topic handler writing to <code>send</code> directly. Same mistake, same shape, twice: the guarantee has to sit on the one function every token passes through, not on the path you happened to be looking at. Both the sanitiser and the payload strip now live there. 0 of 50 answers carry emoji or a competitor name.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Found by load-testing, not by reading</h2>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">97% of every response was internal scoring debris</span><span class="tag sev">Fixed</span></div>
+        <div class="item-why">A search response was <strong>122KB</strong>. Of that, 116KB was one <code>properties</code> event, and 51% of every project object inside it was <code>_multidimensional_rank</code> and friends — the ranker explaining itself, read by nothing on either side of the wire. Now stripped at the send choke point: <strong>122KB → 81KB</strong>. On Indian mobile data, for 200 users, several times a session, that is real money and real render time you were spending on debug output.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head"><span class="item-title">One unhandled rejection would have killed the server</span><span class="tag sev">Fixed</span></div>
+        <div class="item-why">There was no <code>unhandledRejection</code> or <code>uncaughtException</code> handler anywhere. Node terminates the process on an unhandled rejection by default, and this codebase deliberately fires promises without awaiting them — <code>recordUsage</code>, the Redis cache write, PostHog tracking. Each swallows its own errors, but one slipping through takes the process down and every in-flight conversation with it. Rejections are now logged and survived; an uncaught exception logs and routes into the existing graceful shutdown rather than pretending the process is healthy.</div>
+      </div>
+
+      <div class="item">
+        <div class="item-head"><span class="item-title">Eight concurrent users take 25–31 seconds each</span><span class="tag sev">Open · biggest unknown</span></div>
+        <div class="item-why">Solo p50 is 3.6s. At eight concurrent it is 25–31s, and a second run of the same test timed out past 90 seconds entirely. That is the free-tier key rate-limiting, so it should improve on the paid account — but <strong>I cannot tell you by how much, because I have never run this on a funded key.</strong> Every latency number in every audit I have given you was measured single-threaded. For a 200-user beta this is the single largest unvalidated risk, and it is a twenty-five minute test the day you top up.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The roast</h2>
+    <p class="sec-note">Specific, and mine to own where it is mine.</p>
+
+    <p class="prose"><strong>A third of your test suite is a lie of omission.</strong> <code>npm test</code> reports 2,297 tests. 1,522 pass. <strong>774 are <code>todo</code></strong> — empty placeholders that will never fail. Marking them todo instead of a green <code>assert(true)</code> was the right call and someone made it deliberately, but the honest reading is that you have roughly two-thirds of a safety net and it is concentrated in exactly the places I have been working. Nobody has written the tests for the parts nobody has touched.</p>
+
+    <p class="prose"><strong>Your quality gate cannot see wrongness.</strong> The harness I built scores shape: is it long enough, did it deflect, did it decline an out-of-scope question. It scored a four-sector brief that compared the two <em>workplaces</em> instead as a pass. It scored the 80% regression as 80% rather than as broken. Every quality number in this document that did not come from me reading answers one by one should be read as "well-formed", not "correct".</p>
+
+    <p class="prose"><strong>Nobody has clicked this in a browser in four weeks.</strong> That has been in three consecutive audits. Every mobile change, the filter dock, the card shelf, the chips I built today — none of it has been touched by a human on a phone. For a beta whose entire purpose is watching real users, shipping an unclicked interface is the highest-variance thing on this list.</p>
+
+    <p class="prose"><strong>Your rate limit is per-IP, not per-user.</strong> 100 requests a minute keyed on <code>global:${ip}</code>. Two beta users behind the same office NAT or the same mobile carrier gateway share that budget. At 50–200 users this is survivable; it is also the kind of thing that produces three confused bug reports you cannot reproduce.</p>
+
+    <p class="prose"><strong>And the one I keep coming back to:</strong> I have now written four audits, each correcting the last. Revision 3 told you your biggest blocker was 14-sector coverage. It was not — I was reading the wrong table, and <code>Project.sector</code> covered 61 all along. That correction was worth more than most of the fixes, and it only happened because I checked a number I had already published.</p>
+  </section>
+
+  <section>
+    <h2>Component scores</h2>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Component</th><th>Score</th><th></th><th>Beta risk</th></tr></thead>
+        <tbody>
+          <tr><td>Answer quality (measured)</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>49/50, read as well as scored</td></tr>
+          <tr><td>Cost control</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>₹0.05/chat, hard daily cap, fails closed</td></tr>
+          <tr><td>No-fabrication (tabular)</td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>Six renderers; a table cannot invent a column</td></tr>
+          <tr><td>Output hygiene<span class="up">new</span></td><td><span class="score s-hi">9</span></td><td><div class="bar"><i class="hi" style="width:90%"></i></div></td><td>0/50 emoji, 0/50 platform names, enforced in code</td></tr>
+          <tr><td>Crash resilience<span class="up">new</span></td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Guards added today. Never exercised in anger</td></tr>
+          <tr><td>Wire efficiency<span class="up">+4</span></td><td><span class="score s-hi">8</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>81KB/turn. Could halve again with IDs-not-records</td></tr>
+          <tr><td>Data coverage</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>280 projects, 100% on plans/costs/RERA. 41/61 sectors</td></tr>
+          <tr><td>Auth &amp; session</td><td><span class="score s-mid">7</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Ownership checked server-side; admin gated</td></tr>
+          <tr><td>Test suite</td><td><span class="score s-mid">6</span></td><td><div class="bar"><i class="mid" style="width:60%"></i></div></td><td>774 todo. Honest, and still a third missing</td></tr>
+          <tr><td>Beta instrumentation</td><td><span class="score s-lo">5</span></td><td><div class="bar"><i class="lo" style="width:50%"></i></div></td><td><strong>You cannot yet answer "what did user 47 do"</strong></td></tr>
+          <tr><td>Concurrency</td><td><span class="score s-lo">4</span></td><td><div class="bar"><i class="lo" style="width:40%"></i></div></td><td>25–31s at 8 users. Unvalidated on a funded key</td></tr>
+          <tr><td>Frontend / mobile</td><td><span class="score s-lo">4</span></td><td><div class="bar"><i class="lo" style="width:40%"></i></div></td><td>Four weeks unclicked. Highest variance item here</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The gap nobody has named yet: you cannot watch the beta</h2>
+
+    <p class="prose">You said the point of this beta is to see what users do, get feedback, and validate the product. That is the one requirement nothing in this codebase currently satisfies well.</p>
+
+    <p class="prose">What exists: PostHog is wired and no-ops when unconfigured, <code>ai_usage_events</code> records every model call with a session id, <code>ChatMessage</code> holds transcripts, and <code>CallbackRequest</code> captures leads with a tier and a score.</p>
+
+    <p class="prose">What does not: <strong>there is no query that answers "what happened in the beta".</strong> Which questions did users actually ask. Where did they stop. How many reached a lead. Which answers were followed by silence — the strongest negative signal you can get and the one nobody logs. The data is being written; nothing reads it back.</p>
+
+    <div class="callout">
+      <strong>This is a half-day of work and it is the difference between a beta and 200 wasted conversations.</strong> One script over <code>ChatMessage</code> and <code>ai_usage_events</code>: top queries, drop-off point per session, turns-to-lead, cost per lead, and every turn whose answer contained "not recorded" — the coverage gaps your real users find, which is worth more than the 321 queries I have been grading against.
+    </div>
+  </section>
+
+  <section>
+    <h2>Straight answers to your three questions</h2>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Question</th><th>Answer</th><th></th><th>Confidence</th></tr></thead>
+        <tbody>
+          <tr><td>How ready for production?</td><td><span class="score s-mid">68%</span></td><td><div class="bar"><i class="mid" style="width:68%"></i></div></td><td>For 50–200 users, gated on three things below</td></tr>
+          <tr><td>Answer quality?</td><td><span class="score s-hi">8/10</span></td><td><div class="bar"><i class="hi" style="width:80%"></i></div></td><td>Measured, read, and on a weaker model than production</td></tr>
+          <tr><td>Will it handle what comes?</td><td><span class="score s-mid">7/10</span></td><td><div class="bar"><i class="mid" style="width:70%"></i></div></td><td>Content yes. Concurrency unknown</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="prose" style="margin-top:1.4rem"><strong>Answer quality, honestly:</strong> 8, not 9, and the missing point is not fabrication — that is largely solved for anything tabular. It is that the hardest questions still get the shallowest treatment, and the model on the free key is not the model you will ship. A four-sector multi-constraint brief now routes correctly but I have not verified the answer it produces. That is your demo question and it is untested.</p>
+  </section>
+
+  <section>
+    <h2>Do these four things, in this order</h2>
+    <ol class="steps">
+      <li><div>
+        <div class="step-title">Top up, then load-test at 10 and 25 concurrent</div>
+        <div class="step-body">Not the 50-query quality run — a concurrency run. This is the only number standing between "we think it holds" and "it holds". If 25 concurrent is still 30 seconds, your beta is 20 users, not 200, and you need to know that before you invite them.</div>
+        <div class="step-cost">₹500 · 40 min · settles the largest unknown</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Click every screen on a real phone</div>
+        <div class="step-body">Four weeks overdue across three audits. Chips, cards, the filter dock, the drawer, a long comparison table on a 375px viewport. Nothing I have built today has been seen by a human.</div>
+        <div class="step-cost">1 hour · highest variance on the board</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Write the beta observability query</div>
+        <div class="step-body">Top queries, drop-off, turns-to-lead, cost per lead, and every "not recorded" answer. Without it the beta produces anecdotes instead of data, and you will be back here in a fortnight with opinions.</div>
+        <div class="step-cost">half a day · the reason you are running a beta</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Re-read fifty answers on the paid model</div>
+        <div class="step-body">The score cannot see wrongness. It scored a broken build at 80%. Forty-five minutes of your own eyes is worth more than any number in this document.</div>
+        <div class="step-cost">45 min</div>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>What I would tell an investor, and what I would not</h2>
+    <p class="prose"><strong>Show:</strong> two-sector comparison, a budget brief, a payment plan, a cost sheet, one named project. Every one is backed by a table rendered from your own database — it is structurally incapable of being wrong about a number, and that is a real differentiator from a chatbot on a listings site.</p>
+    <p class="prose"><strong>Do not show:</strong> anything with four sectors, a builder you do not stock, or a rental question, until you have re-run on the paid key. All three are fixed. None is verified on the model you will actually be running.</p>
+    <p class="prose"><strong>If asked about scale:</strong> the true answer is stronger than a bluff. You know your unit cost to four decimal places, you have a hard daily spend cap that fails closed, and you know your self-host break-even is around 4,750 chats a day. Founders who can say that are rarer than founders with a working demo.</p>
+  </section>
+
+  <footer>
+    <span>RealtyPals · beta readiness · audited, load-tested, and honest about the parts that were not</span>
+    <span class="mono">68% beta-ready · 49/50 answers · ₹0.05/chat · 774 todo</span>
+  </footer>
+
+</div>

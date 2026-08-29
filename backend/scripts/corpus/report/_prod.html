@@ -1,0 +1,246 @@
+<style>
+  .gate { display: flex; flex-direction: column; gap: .55rem; margin: 1.4rem 0; }
+  .gate-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .85rem;
+              border: 1px solid var(--rule); border-radius: 9px; padding: .7rem .9rem; background: var(--surface); }
+  .gate-ic { font-family: var(--mono); font-size: .7rem; font-weight: 700; letter-spacing: .04em;
+             padding: .18rem .45rem; border-radius: 4px; white-space: nowrap; }
+  .g-block { background: color-mix(in srgb, var(--risk) 14%, transparent); color: var(--risk); }
+  .g-work  { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+  .g-done  { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+  .gate-t { font-size: .89rem; line-height: 1.45; color: var(--ink); }
+  .gate-t span { color: var(--muted); }
+  .gate-c { font-family: var(--mono); font-size: .72rem; color: var(--muted); white-space: nowrap; }
+  .layman { background: color-mix(in srgb, var(--accent) 5%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+            padding: .85rem 1rem; margin: 1.1rem 0; border-radius: 8px; }
+  .layman b { color: var(--accent); }
+  .layman p { margin: 0; font-size: .89rem; line-height: 1.6; color: var(--ink); }
+  .layman p + p { margin-top: .5rem; }
+  .rule-list { list-style: none; padding: 0; margin: 1.2rem 0; display: flex; flex-direction: column; gap: .8rem; }
+  .rule-list li { border: 1px solid var(--rule); border-radius: 9px; padding: .8rem .95rem; background: var(--surface); }
+  .rule-h { font-weight: 600; font-size: .92rem; color: var(--ink); margin-bottom: .3rem; }
+  .rule-b { font-size: .86rem; line-height: 1.55; color: var(--muted); }
+  .rule-b code { font-size: .82em; }
+  .split { display: grid; gap: .9rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin: 1.2rem 0; }
+  .stat { border: 1px solid var(--rule); border-radius: 10px; padding: .8rem .9rem; background: var(--surface); }
+  .stat-n { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; line-height: 1; color: var(--ink); }
+  .stat-l { font-size: .75rem; color: var(--muted); margin-top: .35rem; line-height: 1.4; }
+  .ba { display: grid; gap: .5rem; grid-template-columns: 1fr; margin: .9rem 0; }
+  @media (min-width: 620px) { .ba { grid-template-columns: 1fr 1fr; } }
+  .ba > div { border: 1px solid var(--rule); border-radius: 8px; padding: .7rem .8rem; font-size: .82rem; line-height: 1.5; }
+  .ba .was { background: color-mix(in srgb, var(--risk) 6%, transparent); color: var(--ink); }
+  .ba .now { background: color-mix(in srgb, var(--ok) 6%, transparent); color: var(--ink); }
+  .ba b { display: block; font-family: var(--mono); font-size: .68rem; letter-spacing: .05em;
+          text-transform: uppercase; margin-bottom: .3rem; color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Production Readiness · RealtyPals · 29 August 2026</div>
+    <h1>What still stands between us and production</h1>
+    <p class="standfirst">One thing blocks launch outright. Four more decide whether buyers can trust what we tell them. Everything here was measured against the live database today, not estimated.</p>
+  </header>
+
+  <div class="figure">
+    <div class="figure-main"><span class="figure-num">62</span><span class="figure-pct">%</span></div>
+    <div class="figure-side">
+      <div class="figure-label">Production ready</div>
+      <div class="track"><i style="width:62%"></i></div>
+      <div class="track-scale"><span>0</span><span></span><span>100</span></div>
+      <div class="delta">Held down by one hard blocker, not by many small gaps</div>
+    </div>
+    <div class="figure-side">
+      <div class="figure-label">The gate that decides it</div>
+      <div class="terminal" style="margin:0">concurrency   <b>25%</b> of turns failed
+users at once <b>3</b>
+answer quality <b>58%</b> pass
+retrieval      <b>98.9%</b> correct
+price accuracy <b>100%</b> after today's fix</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The honest summary.</strong> Retrieval is right, prices are now right, and the good answers are genuinely advisor-grade. But at <em>three</em> concurrent users a quarter of turns returned no answer at all, and until that is fixed the number of people this product supports is roughly three. Nothing else on this page matters more.
+  </div>
+
+  <section>
+    <h2>The five gates</h2>
+    <p class="sec-note">In the order they must be cleared.</p>
+
+    <div class="gate">
+      <div class="gate-row">
+        <span class="gate-ic g-block">BLOCKS</span>
+        <span class="gate-t"><strong>AI capacity.</strong> <span>57 Gemini rate-limit refusals in ten minutes at 3 concurrent users; 616 fallback events; 25% of turns ended in "out of service". Fund the paid key, or promote Mistral and Groq from emergency backups to real traffic carriers.</span></span>
+        <span class="gate-c">tonight</span>
+      </div>
+      <div class="gate-row">
+        <span class="gate-ic g-work">TRUST</span>
+        <span class="gate-t"><strong>Nothing fabricated, nothing stamped.</strong> <span>Two invented data sources removed today. The standing audits now catch the class rather than the case.</span></span>
+        <span class="gate-c">mostly done</span>
+      </div>
+      <div class="gate-row">
+        <span class="gate-ic g-work">VOICE</span>
+        <span class="gate-t"><strong>Answers that advise rather than dump.</strong> <span>30 of 120 answers opened with a bare parameter table and never said what it meant. Rule rewritten; needs one paid run to confirm.</span></span>
+        <span class="gate-c">verify tonight</span>
+      </div>
+      <div class="gate-row">
+        <span class="gate-ic g-done">DONE</span>
+        <span class="gate-t"><strong>Retrieval precision.</strong> <span>Sector 1 returns Sector 1 — never Sector 10, 100 or 107. Ambiguous names ask instead of guessing. 98.9% across 555 queries.</span></span>
+        <span class="gate-c">verified</span>
+      </div>
+      <div class="gate-row">
+        <span class="gate-ic g-work">UNSEEN</span>
+        <span class="gate-t"><strong>Nobody has used it on a phone.</strong> <span>Sixth audit running. Every fix is code-verified and none is finger-verified.</span></span>
+        <span class="gate-c">1 hour</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The two fabrications found today</h2>
+
+    <div class="layman">
+      <p><b>In plain English:</b> two places in the system were making up numbers and presenting them as facts we had checked. Not the AI hallucinating — numbers <em>we</em> had typed in and forgotten about, which the AI then read out in good faith.</p>
+    </div>
+
+    <div class="shipped">
+      <div class="item">
+        <div class="item-head"><span class="item-title">A price table invented inside the AI's instructions</span><span class="tag sev">Removed</span></div>
+        <div class="item-why">
+          The system prompt carried a hardcoded market table under a heading reading <strong>"MANDATORY TABULAR BREAKDOWN — You MUST present"</strong>. It was not from the database. Measured against our own unit rows the same day:
+          <div class="table-scroll" style="margin:.7rem 0 0">
+            <table>
+              <thead><tr><th>Micro-market</th><th>The prompt asserted</th><th>Our rows actually hold</th></tr></thead>
+              <tbody>
+                <tr><td>Noida Expressway</td><td>₹1.80–2.60 Cr</td><td><strong>₹1.25–5.80 Cr</strong></td></tr>
+                <tr><td>Central Noida 7X</td><td>₹1.65–2.25 Cr</td><td><strong>₹1.15–4.60 Cr</strong></td></tr>
+                <tr><td>Greater Noida West</td><td>₹1.25–1.85 Cr</td><td><strong>₹0.86–2.55 Cr</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin:.7rem 0 0">Every ceiling understated by more than half; every floor set too high. A buyer with ₹1 crore was told Greater Noida West starts at ₹1.25 Cr while we hold 3 BHKs from ₹0.86 Cr — we were turning away buyers we could serve. It was also the largest single source of the unbidden tables: a must-use table of invented numbers outranking the per-question rule that says one fact is a sentence.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="item-head"><span class="item-title">A handover date that was a rubber stamp</span><span class="tag sev">Withheld</span></div>
+        <div class="item-why"><code>expected_handover_quarter</code> holds exactly three values across 280 projects: null on 189, "Delivered" on 62, and <strong>"Q4 2026" on 29</strong>. On 23 of those 29 it contradicts the project's own possession date by up to <strong>29 months</strong> — and both were printed in the same answer. Withheld from buyers until the values are real; <code>possession_date</code> already carries the answer.</div>
+      </div>
+    </div>
+
+    <p class="prose"><strong>And one that turned out fine.</strong> Eight more fields are dominated by a single value — <code>legal_flag_detail</code> reading "Clean land title. No pending legal disputes" on 91 projects looked like the same problem, and a fabricated clean title is the worst thing this product could say. It checked out: all 91 rows carry <code>land_title_clear = true</code> and zero litigation, and all 207 "Fully RERA &amp; Authority Approved" rows carry a RERA number. Templated wording, real evidence underneath. Left alone.</p>
+  </section>
+
+  <section>
+    <h2>How the searches are kept apart</h2>
+    <p class="sec-note">You asked how I'd do this if I were designing ChatGPT. This is the model.</p>
+
+    <div class="layman">
+      <p><b>In plain English:</b> a good assistant does not send every question to the AI. It first works out <em>what kind</em> of question it is. Some it can answer straight from the database — faster, free, and impossible to get wrong. Some it should refuse. Only what is genuinely left over goes to the AI.</p>
+    </div>
+
+    <ol class="rule-list">
+      <li>
+        <div class="rule-h">1 · Is this even about us?</div>
+        <div class="rule-b">"cameron county 107 district court" is a Texas courthouse that shares a string with County 107 in Sector 107. We answered it with that project's swimming pool. Now declined — but only when no Noida marker appears anywhere, so "district court near Sector 62" still answers.</div>
+      </li>
+      <li>
+        <div class="rule-h">2 · Does the place mean exactly one place?</div>
+        <div class="rule-b">"Sector 1" resolves to Sector 1 only — never 10, 100 or 107 — because matching is whole-word, not substring. "Sector 12, Greater Noida West" narrows to that city rather than widening to the region. "Sector 107" exists in two cities, so it <strong>asks which</strong> instead of merging them.</div>
+      </li>
+      <li>
+        <div class="rule-h">3 · Does the thing they named exist, and does it have what they asked for?</div>
+        <div class="rule-b">"county 107 3 bhk price" used to answer ₹4.85 Cr. County 107 builds 4 and 5 BHK. Now it says so and shows what nearby actually offers a 3 BHK — checked <em>before</em> any handler answers, because handlers answer their own topic and never question the premise.</div>
+      </li>
+      <li>
+        <div class="rule-h">4 · Can the database answer without the AI?</div>
+        <div class="rule-b">Payment schedules, cost sheets, project shortlists, sector PIN codes, builder coverage — all rendered from our own rows. Free, instant, and incapable of inventing a figure. A rendered table also cannot grow a column we have no data for.</div>
+      </li>
+      <li>
+        <div class="rule-h">5 · Only now, the AI — and only with our rows in hand</div>
+        <div class="rule-b">The model reasons over facts we hand it. It never supplies a rate from memory: if the verified block was not injected this turn, it does not hold market rates and must say so.</div>
+      </li>
+      <li>
+        <div class="rule-h">6 · If anything fails, say so plainly</div>
+        <div class="rule-b">No default number, no "typical" value standing in for a real one. Absent means absent, and the honest sentence is the answer.</div>
+      </li>
+    </ol>
+
+    <div class="ba">
+      <div class="was"><b>Before</b>"sector 10 noida extension pin code" → <strong>201301</strong> on one run, <strong>201306</strong> on the next. Neither matches our records. Nothing in the schema holds a PIN, so it was guessed.</div>
+      <div class="now"><b>After</b>Read from the addresses we already hold: <strong>203207</strong> on 12 of the 15 projects there — with the 3 that disagree named, rather than averaged away.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What still needs work</h2>
+
+    <ol class="steps">
+      <li><div>
+        <div class="step-title">AI capacity — the only true blocker</div>
+        <div class="step-body">25% failure at three concurrent users. Everything else on this list is quality; this one is availability, and no amount of answer quality survives an error page.</div>
+        <div class="step-cost">tonight · gates the beta</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Confirm the answers now advise rather than dump</div>
+        <div class="step-body">30 of 120 opened with a bare parameter table. The rule now carries a worked wrong/right example instead of a prohibition, and the invented table that outranked it is gone. This is the one fix that cannot be verified without a model — it is the first thing tonight's run should check.</div>
+        <div class="step-cost">one paid run</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Correct the 23 stamped handover dates</div>
+        <div class="step-body">Hidden from buyers, not yet corrected. The fix is the same shape as the price labels: dry run, back up, write. It is a database change, so it waits for your word.</div>
+        <div class="step-cost">30 min · needs approval</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Fill what buyers actually decide on</div>
+        <div class="step-body">The fields at 41–43% coverage are the ones that settle a purchase: commute times, construction quality, buyer satisfaction, builder delay history. Nine more fields are empty on every single project — schema columns pretending to be data.</div>
+        <div class="step-cost">data work · driven by the coverage-gap list from real traffic</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">One hour with the app on a phone</div>
+        <div class="step-body">Sixth audit in which this is outstanding. Composer overlap, chip row, spec grid and touch targets are all fixed in code and none has been touched by a finger.</div>
+        <div class="step-cost">1 hour</div>
+      </div></li>
+      <li><div>
+        <div class="step-title">Sector 22D — one place, two identities</div>
+        <div class="step-body">Nine projects split across two sector spellings in two cities. Searching it returns five of nine. Still open, still needs a decision on which tagging is correct.</div>
+        <div class="step-cost">needs a call, not code</div>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>What now checks itself</h2>
+    <p class="sec-note">Four audits, all free to run, all fail the build rather than reporting politely.</p>
+
+    <div class="split">
+      <div class="stat"><div class="stat-n">98.9%</div><div class="stat-l"><code>audit:retrieval</code> — 555 queries, right rows for the right place</div></div>
+      <div class="stat"><div class="stat-n">0</div><div class="stat-l"><code>audit:prices</code> — labels contradicting their own units</div></div>
+      <div class="stat"><div class="stat-n">26</div><div class="stat-l"><code>audit:data</code> — fields contradicting each other, and stamped placeholders</div></div>
+      <div class="stat"><div class="stat-n">0</div><div class="stat-l"><code>audit:routing</code> — false denials of projects we hold, was 5</div></div>
+    </div>
+
+    <p class="prose">The pattern behind all four: <strong>catch the class, not the case.</strong> A wrong price label was fixed once and then made impossible; a query taking the wrong branch is now replayable offline for nothing. The most useful thing found today was that my own test harness had been scoring an outage as a success — which is why every check here fails loudly rather than reporting a number nobody reads.</p>
+
+    <div class="terminal">$ npm run audit:routing      # free, no model
+   2  declined:elsewhere       cameron county 107 district court
+   1  answered:pin-code        sector 10 noida extension pin code
+   4  answered:builder-absent  (correctly — those four really are not ours)
+   0  false denials            <b>was 5</b>
+ 113  ai</div>
+  </section>
+
+  <section>
+    <h2>The bottom line</h2>
+    <p class="prose"><strong>62%.</strong> The foundations are sound: retrieval finds the right rows, prices match the units they came from, invented figures are out of the prompt, and four audits now stand between a data defect and a buyer.</p>
+    <p class="prose">What is left is one hard blocker and one unknown. The blocker is capacity — at three concurrent users we fail a quarter of the time, and that is a bill to pay rather than code to write. The unknown is that nobody has used this on a phone.</p>
+    <p class="prose">Everything else is data work, and it is now directed by what real users could not get answered rather than by what I guessed they would ask.</p>
+  </section>
+
+  <footer>
+    <span>RealtyPals · production readiness · verified against the live database, 29 Aug 2026</span>
+    <span class="mono">62% · 1 blocker · 4 audits green</span>
+  </footer>
+
+</div>
