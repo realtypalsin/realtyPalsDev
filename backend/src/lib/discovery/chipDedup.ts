@@ -48,8 +48,18 @@ export function markChipShown(sessionId: string, chipId: string, label?: string)
     if (cleanLabel.includes('stamp duty') || cleanLabel.includes('gst') || cleanLabel.includes('registration fee')) {
       set.add('topic:statutory_tax')
     }
+    // Money-planning chips are written a dozen ways — "Set my budget", "Help me
+    // set a budget", "Help me work out a realistic EMI budget". Exact-label
+    // dedup treats those as three different offers, so the buyer was asked to
+    // set a budget again two turns after setting one.
+    if (BUDGET_CHIP.test(cleanLabel)) {
+      set.add('topic:budget')
+    }
   }
 }
+
+/** Any chip whose real question is "what can you afford, monthly or in total". */
+const BUDGET_CHIP = /\bbudget\b|\bemi\b|afford|monthly (payment|outgo)|loan eligib/i
 
 export function suppressTopicChips(sessionId: string, topic: 'payment_plans' | 'amenities' | 'price' | 'builder' | 'ready_to_move' | 'rera' | 'cost_sheet'): void {
   const set = getShownChips(sessionId)
@@ -78,6 +88,7 @@ export function filterNewChips<T extends { id: string; label?: string }>(session
       if (shown.has('topic:rera') && (cleanLabel.includes('rera') || cleanLabel.includes('legal status'))) return false
       if (shown.has('topic:cost_sheet') && (cleanLabel.includes('cost sheet') || cleanLabel.includes('all-inclusive'))) return false
       if (shown.has('topic:statutory_tax') && (cleanLabel.includes('stamp duty') || cleanLabel.includes('tax rate'))) return false
+      if (shown.has('topic:budget') && BUDGET_CHIP.test(cleanLabel)) return false
     }
 
     return true

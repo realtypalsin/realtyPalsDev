@@ -115,7 +115,7 @@ export const paymentPlansHandler: ChatTopicHandler = {
 Verified Payment Plan Database Facts: ${planFactsJson}
 
 THE TABLE IS ALREADY ON SCREEN.
-The plans have just been rendered for the buyer from our own rows — plan name, booking amount, down payment, duration and the watch-out on each. Do not draw a table and do not restate its numbers.
+The plans have just been rendered for the buyer from our own rows — the instalment schedule of each, stage by stage, with the share and rupee amount due at every stage, plus any watch-out. Do not draw a table and do not restate its numbers.
 
 Write two short paragraphs and nothing else:
 1. The cash-flow trade-off across these schedules. Which one costs less in total, which one keeps more cash free, and why that difference matters for someone buying at this price.

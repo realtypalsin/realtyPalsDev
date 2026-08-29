@@ -14,7 +14,13 @@ describe('per-answer output contract', () => {
     // cost, so this is the expensive end of getting the format wrong.
     const p = build('2 bhk in noida')
     assert.match(p, /search phrase, not a question/)
-    assert.match(p, /No table/)
+    // The rule is that one fact is a sentence. It used to read "No table", and
+    // the model drew them anyway — 14 of 120 long-tail answers came back as a
+    // two-row table holding a single value ("| RERA Number | UPRERAPRJ677887 |").
+    // A worked wrong/right pair replaced the prohibition, so this asserts the
+    // guarantee rather than the wording.
+    assert.match(p, /at least two things to compare/)
+    assert.match(p, /One fact is a sentence/)
   })
 
   it('gives a comparison its table and its verdict', () => {

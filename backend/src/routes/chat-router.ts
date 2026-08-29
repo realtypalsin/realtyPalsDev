@@ -8,6 +8,7 @@ import { checkRateLimit, invalidateSessionList, getCached, setCached } from '../
 import { extractIntent } from '../lib/ai/intent'
 import { hydrateIntentFromMemory, persistIntentToMemory, trackPropertyReaction } from '../lib/ai/sessionMemory'
 import { gradeResponseAsync } from '../lib/ai/responseGrader'
+import { reportGrounding } from '../lib/ai/groundingCheck'
 import { IntentSchema, getIntentState, discoverProjects, getSectorContext, getAllSectorsOverview, isCityLevel } from '../lib/discovery'
 import { readLastProjectIds, readLastProjectCards } from '../lib/discovery/lastProjects'
 import type { Intent, ScoredProject } from '../lib/discovery'
@@ -75,12 +76,12 @@ import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monito
 import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
 import { inputGuardrail } from '../lib/ai/guardrails'
 import { profileFor, classifyShape } from '../lib/ai/inferenceProfile'
-import { renderMicroMarketTable, renderProjectTable, renderDerivedSectorTable, wantsMarketTable } from '../lib/ai/marketTable'
+import { renderMicroMarketTable, renderProjectTable, renderAlternativesTable, renderDerivedSectorTable, wantsMarketTable } from '../lib/ai/marketTable'
 import { deriveSectorsFromProjects } from '../lib/discovery/derivedSectors'
 import { buildAdaptiveChips } from '../lib/discovery/adaptiveChips'
 import { sanitizeOutput } from '../lib/ai/sanitizeOutput'
 import { stripInternalFields } from '../lib/projectRepository'
-import { builderCoverage, sectorCoverage } from '../lib/chat/coverageAnswer'
+import { builderCoverage, sectorCoverage, sectorPinCode } from '../lib/chat/coverageAnswer'
 import { rentalAnswer, isRentalQuestion } from '../lib/chat/rentalAnswer'
 import { TABLE_ALREADY_SHOWN } from '../lib/ai/prompts/base'
 import { STATIC_PREFIX_MARKER } from '../lib/ai/systemPromptCache'
@@ -349,6 +350,8 @@ router.post('/', async (req: Request, res: Response) => {
   let hydratedIntent: Intent = prevIntent as Intent // Phase 0: Persisted in finally
   let messageId: string | undefined // Phase 1: For grading
   let responseText: string = '' // Phase 1: Full response for grading
+  /** The prompt actually sent, kept for the post-answer grounding check. */
+  let promptForGrounding = ''
   let ownershipFailed = false
 
   try {
@@ -776,6 +779,11 @@ router.post('/', async (req: Request, res: Response) => {
       if (isRentalQuestion(message)) {
         coverage = await rentalAnswer(message, (intent as any)?.city || DEFAULT_CITY)
       }
+      // Ahead of the others: a postal-code question names a sector, and the
+      // sector lane would answer it with an inventory summary instead.
+      if (!coverage && intent.sector) {
+        coverage = await sectorPinCode(message, [intent.sector])
+      }
       if (!coverage) coverage = await builderCoverage(message)
       if (!coverage && intent.sector && !isCityLevel(intent.sector)) {
         coverage = await sectorCoverage(intent.sector)
@@ -1038,7 +1046,27 @@ For legal statutory schedules (UP Stamp Duty, GST, TDS) or verified property che
     }
 
     // 0. OUT-OF-SCOPE GUARDRAIL
-    const isOutOfScope = (/^(write|generate|explain|solve|tell me|what is)\s+(a\s+)?(python|javascript|typescript|java|c\+\+|sql query|algorithm|bubble sort|code|script|recipe|joke|poem|song|essay|weather)|who won\b|capital of\b|translate\b/i.test(message) || (/python|bubble sort|javascript|algorithm|recipe/i.test(message))) && !/real estate|property|flat|bhk|builder|rera|noida|sector|ncr/i.test(message)
+    /**
+     * The question is about a place we do not cover, or an institution that has
+     * no property reading at all.
+     *
+     * Long-tail keyword exports carry these: "cameron county 107 district
+     * court" and "county highway 107 amsterdam ny" arrive because they share a
+     * string with County 107 in Sector 107. We answered the courthouse one with
+     * that project's swimming pool under a "Verified Amenities" heading — the
+     * project name matched as a contiguous phrase, and nothing asked whether
+     * the rest of the sentence was about Noida at all.
+     *
+     * Kept to signals that cannot be a Noida property question: a US state
+     * beside a place name, a court, a highway, a postal-code system that is not
+     * ours. A Noida marker anywhere in the message overrides it, so "district
+     * court near Sector 62" is still answered.
+     */
+    const isForeignPlace =
+      /\b(district court|county court|county highway|state highway \d|zip ?code|amsterdam|texas|\bny\b|\bnj\b|\btx\b|\bca\b|\bfl\b|county clerk|dmv)\b/i.test(message) &&
+      !/\b(noida|greater noida|sector\s*\d|ncr|delhi|gurgaon|uttar pradesh|\bup\b)\b/i.test(message)
+
+    const isOutOfScope = isForeignPlace || ((/^(write|generate|explain|solve|tell me|what is)\s+(a\s+)?(python|javascript|typescript|java|c\+\+|sql query|algorithm|bubble sort|code|script|recipe|joke|poem|song|essay|weather)|who won\b|capital of\b|translate\b/i.test(message) || (/python|bubble sort|javascript|algorithm|recipe/i.test(message))) && !/real estate|property|flat|bhk|builder|rera|noida|sector|ncr/i.test(message))
     if (isOutOfScope && action.type === 'TEXT_MESSAGE') {
       const deflectionText = `### RealtyPals Advisory Scope
 
@@ -1102,21 +1130,40 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     }
 
     const sectorMatches = extractSectorsFromMessage(message)
-    const isSectorCompare = sectorMatches.length >= 2 && /compare|vs|versus|better|difference|which sector|between/i.test(message)
-    const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(message)
-    const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(message) || isSectorCompare
-    const isInventorySearch = /\b(\d\s*bhk|flats?|apartments?|villas?|penthouses?|show\s+me|find\s+me|options\s+in|available\s+in)\b/i.test(message) && !isCompareRequest && !isSectorCompare
-    const isPaymentPlanRequest = /\b(payment plan|payment schedule|construction linked|down payment|flexi plan|clp|plp)\b/i.test(message)
-    const isCostSheetRequest = /\b(cost sheet|price breakdown|all inclusive|other charges|possession charges|car parking charge)\b/i.test(message)
-    const isStatutoryTaxQuery = /(stamp duty|registration (charge|fee)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(message)
-    const isReraCheckQuery = /(blacklist|nclt|insolven|defaulter|check rera|verify rera|rera website|rera portal|rera status|is.*rera registered)/i.test(message) && (intent.projectNames?.length ?? 0) === 0
-    const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(message) && !isSectorCompare && (intent.projectNames?.length ?? 0) < 2
-    const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(message) && (sectorMatches.length === 0 || /which sector/i.test(message))
-    const isReadyToMoveQuery = !isInventorySearch && /\b(ready to move|rtm|occupancy certificate|which.*ready|ready property|ready flat)\b/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|club|gym|fitness|pool|swimming|snooker|billiards|table tennis|squash|tennis|badminton|cricket|playground|play area|kid'?s? play|creche|daycare|park|green cover|open space|ev charg|theatre|library|banquet|spa|sauna|jacuzzi|which society has the best|best amenit|lifestyle|court|jogging|skating|golf)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isConnectivityQuery = !isInventorySearch && /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(message) && !isPaymentPlanRequest
-    const isConfigurationQuery = !isInventorySearch && /(balcon|bedroom|bathroom|carpet area|super area|sqft|square feet|size of|how big|how many (balconies|rooms|bhk|bathrooms)|configuration|unit type|floor plan)/i.test(message) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isTotalOutflowQuery = /(total (price|cost|amount|outflow)|on.?road|all.?inclusive price|how much (in total|total will it cost)|with registry|final price)/i.test(message)
+
+    /**
+     * The message as the topic patterns below expect to see it.
+     *
+     * Every pattern here is written with spaces — `payment plan`, `cost sheet`,
+     * `ready to move`. Buyers and our own chips write those with hyphens too,
+     * and `\bpayment plan\b` does not match "payment-plan". "Show payment-plan
+     * options for Maxblis White House II?" fell through every handler to the
+     * generic path, which answered it with a two-row table reading "Available"
+     * while five stored instalments went unread.
+     *
+     * Normalising the subject once beats hyphenating fourteen patterns and
+     * remembering to do it in the fifteenth.
+     */
+    const topicText = message.replace(/[-_/]+/g, ' ').replace(/\s+/g, ' ')
+    const isSectorCompare = sectorMatches.length >= 2 && /compare|vs|versus|better|difference|which sector|between/i.test(topicText)
+    const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(topicText)
+    const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(topicText) || isSectorCompare
+    const isInventorySearch = /\b(\d\s*bhk|flats?|apartments?|villas?|penthouses?|show\s+me|find\s+me|options\s+in|available\s+in)\b/i.test(topicText) && !isCompareRequest && !isSectorCompare
+    // Plurals matter: `\bpayment plan\b` does not match "payment plans", which
+    // is how buyers and our own chips write it. "Show payment plans for Nirala
+    // Diadem" reached no handler at all and was answered as ordinary prose,
+    // with the stored milestone schedule never read.
+    const isPaymentPlanRequest = /\b(payment plans?|payment schedules?|construction linked|down payments?|flexi plans?|payment options?|clp|plp)\b/i.test(topicText)
+    const isCostSheetRequest = /\b(cost sheets?|price breakdowns?|all inclusive|other charges|possession charges|car parking charge)\b/i.test(topicText)
+    const isStatutoryTaxQuery = /(stamp duty|registration (charges?|fees?)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(topicText)
+    const isReraCheckQuery = /(blacklist|nclt|insolven|defaulter|check rera|verify rera|rera website|rera portal|rera status|is.*rera registered)/i.test(topicText) && (intent.projectNames?.length ?? 0) === 0
+    const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(topicText) && !isSectorCompare && (intent.projectNames?.length ?? 0) < 2
+    const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(topicText) && (sectorMatches.length === 0 || /which sector/i.test(topicText))
+    const isReadyToMoveQuery = !isInventorySearch && /\b(ready to move|rtm|occupancy certificates?|which.*ready|ready propert(y|ies)|ready flats?)\b/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|club|gym|fitness|pool|swimming|snooker|billiards|table tennis|squash|tennis|badminton|cricket|playground|play area|kid'?s? play|creche|daycare|park|green cover|open space|ev charg|theatre|library|banquet|spa|sauna|jacuzzi|which society has the best|best amenit|lifestyle|court|jogging|skating|golf)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isConnectivityQuery = !isInventorySearch && /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(topicText) && !isPaymentPlanRequest
+    const isConfigurationQuery = !isInventorySearch && /(balcon|bedroom|bathroom|carpet area|super area|sqft|square feet|size of|how big|how many (balconies|rooms|bhk|bathrooms)|configuration|unit type|floor plan)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isTotalOutflowQuery = /(total (price|cost|amount|outflow)|on.?road|all.?inclusive price|how much (in total|total will it cost)|with registry|final price)/i.test(topicText)
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
     // A project-specific RERA number question ("what is X's RERA number") is a
@@ -1179,6 +1226,66 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
           } catch (e) {
             // A card is an enhancement; never fail the answer over it.
             console.warn('[CHAT:TOPIC_CARDS]', e)
+          }
+        }
+
+        /**
+         * The buyer named a project and a configuration it does not build.
+         *
+         * This runs ahead of every topic handler because they answer their own
+         * topic and never check the premise. "county 107 3 bhk price" reached
+         * the price handler, which read the project's minimum and reported
+         * "3 BHK price: ₹4.85 Crore" — County 107 builds 4 and 5 BHK only, so
+         * neither the flat nor the price existed. The card path already refuses
+         * this; the prose path is where a buyer is actually told the number.
+         */
+        if ((intent.projectNames?.length ?? 0) === 1 && intent.bhk?.length) {
+          const askedSizes = [...new Set(intent.bhk)].sort((a, b) => a - b)
+          const named = allDbProjects.find(
+            (p) => p.name.toLowerCase() === String(intent.projectNames![0]).toLowerCase(),
+          )
+          if (named) {
+            const row = await prisma.project.findUnique({
+              where: { id: named.id },
+              select: { name: true, city: true, sector: true, unit_types: { select: { bhk: true } } },
+            })
+            const offered = [...new Set(row?.unit_types.map((u) => u.bhk) ?? [])].sort((a, b) => a - b)
+            const missing = askedSizes.filter((b) => !offered.includes(b))
+            if (row && offered.length > 0 && missing.length === askedSizes.length) {
+              const nearby = await prisma.project.findMany({
+                where: {
+                  city: row.city, sector: row.sector, name: { not: row.name },
+                  builder: { legal_flag: null },
+                  unit_types: { some: { bhk: { in: askedSizes } } },
+                },
+                select: {
+                  name: true, sector: true, status: true, possession_label: true,
+                  builder: { select: { name: true } },
+                  unit_types: { select: { bhk: true, price_min_cr: true, price_max_cr: true, carpet_area_sqft: true } },
+                },
+                take: 5,
+              })
+              const alt = renderAlternativesTable(nearby, askedSizes)
+              const sizes = missing.join('/')
+              send('token', {
+                token:
+                  `**${row.name} does not offer a ${sizes} BHK.** It builds ${offered.join('/')} BHK only, ` +
+                  `so there is no ${sizes} BHK price for it to quote.\n\n` +
+                  (alt
+                    ? `In ${row.sector} these projects do offer it:\n\n${alt}\n`
+                    : `We hold no other ${sizes} BHK project in ${row.sector}.\n`),
+              })
+              emitUiState({
+                stage: 'RESEARCH',
+                thinking: `${row.name} has no ${sizes} BHK:`,
+                chips: [],
+                missingFields: [],
+                confidence: 'HIGH',
+              })
+              send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+              res.end()
+              return
+            }
           }
         }
 
@@ -1601,12 +1708,27 @@ USING THE FACTS:
               { id: `chip_sec_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Explore Sector Flats', icon: 'building', analyticsId: 'chip_sector_sim', priority: 4, payload: { text: `Show other flats in ${detailedTargetProjects[0]?.sector || 'this sector'}` } }
             ]
           } else {
-            responseChips = [
-              { id: `chip_plans_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Payment Plans', icon: 'file-text', analyticsId: 'chip_plans', priority: 1, payload: { text: `Show payment plans for ${projName}` } },
-              { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_cost', priority: 2, payload: { text: `Show cost sheet and taxes for ${projName}` } },
-              { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 3, payload: { text: `Calculate EMI for ${projName}` } },
-              { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_visit', priority: 4, payload: { text: `Schedule a site visit for ${projName}` } }
-            ]
+            /**
+             * The catch-all for a project-fact answer.
+             *
+             * This branch used to emit the same four chips — payment plans,
+             * cost sheet, EMI, site visit — whatever had been asked. Measured
+             * over 120 long-tail queries it was **47 of them**: the identical
+             * row after a question about a brochure, an address, a construction
+             * update. Chips that never change are decoration, not navigation.
+             *
+             * The adaptive set is built from what this turn actually put on
+             * screen and offers one question per axis — what it costs, whether
+             * it is clean, what competes with it — so three chips are three
+             * different decisions rather than one repeated button.
+             */
+            responseChips = buildAdaptiveChips({
+              projects: detailedTargetProjects.slice(0, 4).map((p) => ({ id: p.id, name: p.name })),
+              sectors: detailedTargetProjects[0]?.sector ? [detailedTargetProjects[0].sector] : [],
+              rendered: null,
+              missingFields: [],
+              focusedProject: { name: projName },
+            })
           }
 
           emitUiState({
@@ -2417,17 +2539,35 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     // Phase 2: Use cached system prompt (static part cached, dynamic part injected)
     const multiDimContext = generateMultiDimensionalContext(projects)
 
-    // Micro-market block is fetched once and appended to whichever variant is built.
+    /**
+     * Is this a question about places and what they cost?
+     *
+     * Decided once, and it governs BOTH the city micro-market block in the
+     * prompt and the table we render from it. They must agree: the block lists
+     * every micro-market with its sectors, average rate, range and character,
+     * which is exactly the five-column table buyers kept seeing appear
+     * unbidden — the model was transcribing the block it had been handed.
+     *
+     * It was injected on every turn. "Show me 3 BHK in Sector 75" was answered
+     * with a Noida-wide corridor table, then the project cards; so was a
+     * question about what to check before buying. Nothing asked for it, and the
+     * prompt rule against drawing tables cannot beat data sitting in context
+     * begging to be tabulated. Don't send it unless the question is about it.
+     */
+    const wantsPriceContext = wantsMarketTable(message, (intent.projectNames?.length ?? 0) > 0)
+
     let microMarketsTail = ''
-    try {
-      const { buildCityMicroMarketsContext } = await import('../lib/discovery/sectorDataGateway')
-      const city = (intent as any)?.city || DEFAULT_CITY
-      const microMarketsBlock = await buildCityMicroMarketsContext(city)
-      if (microMarketsBlock) {
-        microMarketsTail = `\n\n${microMarketsBlock}`
+    if (wantsPriceContext) {
+      try {
+        const { buildCityMicroMarketsContext } = await import('../lib/discovery/sectorDataGateway')
+        const city = (intent as any)?.city || DEFAULT_CITY
+        const microMarketsBlock = await buildCityMicroMarketsContext(city)
+        if (microMarketsBlock) {
+          microMarketsTail = `\n\n${microMarketsBlock}`
+        }
+      } catch (e) {
+        console.warn('[CHAT:MICRO_MARKET_CONTEXT:WARN]', e)
       }
-    } catch (e) {
-      console.warn('[CHAT:MICRO_MARKET_CONTEXT:WARN]', e)
     }
 
     // ─── MARKET TABLE, RENDERED HERE RATHER THAN BY THE MODEL ──────────────────
@@ -2436,22 +2576,90 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     let renderedTableKind: 'projects' | 'micro-market' | null = null
     // A shortlist of real projects beats a city-wide table whenever discovery
     const cardsAreRendering = renderTarget === 'cards' || renderTarget === 'both'
+
+    /**
+     * Is the buyer asking us to list projects?
+     *
+     * Having projects in context is not the same as being asked for them. This
+     * condition used to be "we hold two or more", so "What should I check
+     * before buying a property in Noida?" — a general question, answered well
+     * in prose — opened with a five-column table of Aims Max Gardenia, JM Aroma
+     * and Maxblis White House II, because those happened to be the sector
+     * shortlist from three turns earlier. The buyer had not asked about them.
+     */
+    const wantsProjectList =
+      intent.queryKind === 'DISCOVERY' ||
+      intent.queryKind === 'RANKING' ||
+      (intent as { is_comparison_query?: boolean }).is_comparison_query === true
+
     if (
       message &&
       !cardsAreRendering &&
+      wantsProjectList &&
       trimmedProjects.length >= 2 &&
       (intent.projectNames?.length ?? 0) === 0
     ) {
       renderedTable = renderProjectTable(trimmedProjects as any)
       if (renderedTable) renderedTableKind = 'projects'
     }
-    // Price context. Wanted either because the question is about places and
-    // rates, or because the cards are carrying the projects and the one thing
-    // they cannot show is what this sector costs against its neighbours.
-    const wantsPriceContext =
-      wantsMarketTable(message, (intent.projectNames?.length ?? 0) > 0) ||
-      (cardsAreRendering && trimmedProjects.length > 0)
 
+    /**
+     * The buyer named a project and a size it does not build.
+     *
+     * Say so plainly — the alternative is a card quoting the project's other
+     * configurations, which reads as an answer until they open it and find no
+     * 3 BHK. Then show what nearby actually has that size, because "it doesn't
+     * exist here" on its own is a dead end, not advice.
+     */
+    const askedSizes = intent.bhk?.length ? [...new Set(intent.bhk)].sort((a, b) => a - b) : []
+    const focusLacksSize =
+      askedSizes.length > 0 &&
+      (intent.projectNames?.length ?? 0) === 1 &&
+      projects.length === 1 &&
+      (projects[0] as { missing_bhk?: number[] }).missing_bhk?.length === askedSizes.length
+
+    if (focusLacksSize && message) {
+      const focus = projects[0]
+      const sizes = askedSizes.join('/')
+      try {
+        const nearby = await prisma.project.findMany({
+          where: {
+            city: focus.city,
+            sector: focus.sector,
+            id: { not: focus.id },
+            builder: { legal_flag: null },
+            unit_types: { some: { bhk: { in: askedSizes } } },
+          },
+          select: {
+            name: true, sector: true, status: true, possession_label: true,
+            builder: { select: { name: true } },
+            unit_types: {
+              select: { bhk: true, price_min_cr: true, price_max_cr: true, carpet_area_sqft: true },
+            },
+          },
+          take: 5,
+        })
+        const alternatives = renderAlternativesTable(nearby, askedSizes)
+        send('token', {
+          token: alternatives
+            ? `**${focus.name} does not offer a ${sizes} BHK.** It builds ${[...new Set(focus.unit_types.map((u) => u.bhk))].sort((a, b) => a - b).join('/')} BHK only.\n\nIn ${focus.sector} these projects do:\n\n${alternatives}\n\n`
+            : `**${focus.name} does not offer a ${sizes} BHK.** It builds ${[...new Set(focus.unit_types.map((u) => u.bhk))].sort((a, b) => a - b).join('/')} BHK only, and we hold no other ${sizes} BHK project in ${focus.sector}.\n\n`,
+        })
+        if (alternatives) {
+          renderedTable = renderedTable || alternatives
+          renderedTableKind = renderedTableKind ?? 'projects'
+        }
+      } catch (e) {
+        console.warn('[CHAT:ALTERNATIVES] skipped:', e instanceof Error ? e.message : e)
+      }
+    }
+    // The rendered counterpart of the block above, under the same condition.
+    //
+    // This used to also fire on `cardsAreRendering && trimmedProjects.length > 0`
+    // — the reasoning being that cards cannot show what a sector costs against
+    // its neighbours. True, and irrelevant to most questions: every turn that
+    // rendered a card also got the Central Noida / Expressway / Greater Noida
+    // table, whether the buyer asked about amenities, possession or schools.
     if (!renderedTable && message && wantsPriceContext) {
       try {
         const { getCityMicroMarkets } = await import('../lib/discovery/sectorDataGateway')
@@ -2460,6 +2668,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           // A premium brief reads top-down, everything else bottom-up.
           order: /\bpremium|luxury|\b[2-9]\s*crore/i.test(message) ? 'price_desc' : 'price_asc',
         })
+        // Without this the chips never learned a market table went on screen,
+        // so the branch that follows one up has never run.
+        if (renderedTable) renderedTableKind = 'micro-market'
       } catch (e) {
         // A missing table costs the buyer nothing — the model still writes the
         // answer, it just writes it without the evidence block attached.
@@ -2502,6 +2713,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
     // Tool-less is the common path (Gemini is tier 1) — size and fact-check against it.
     const systemPrompt = buildPromptForProvider(false)
+    promptForGrounding = systemPrompt
 
     // Issue 4: trim message history if total token estimate exceeds safe ceiling
     // Phase 1: Aggressive trimming based on intent type (search=3, advisory=8)
@@ -2688,10 +2900,25 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       sectors: sectorMatches ?? [],
       rendered: renderedTableKind,
       missingFields: postSearchUiState.missingFields ?? [],
-      focusedProject:
-        (intent.projectNames?.length ?? 0) === 1 && projects[0]
-          ? { id: projects[0].id, name: projects[0].name }
-          : null,
+      /**
+       * The project the buyer named — matched by name, not taken from the top
+       * of the list.
+       *
+       * `projects[0]` is whatever ranked first, which is only the named project
+       * when discovery ran as a name lookup. Ask about Maxblis White House II
+       * while a Sector 75 shortlist is in context and `projects[0]` is Aims Max
+       * Gardenia, so every follow-up chip offered Aims Max — a project the
+       * buyer never mentioned. Falling back to null is right: no chip beats a
+       * chip about the wrong building.
+       */
+      focusedProject: (() => {
+        const named = intent.projectNames?.length === 1 ? intent.projectNames[0] : null
+        if (!named) return null
+        const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+        const hit = projects.find((p) => norm(p.name) === norm(named))
+          ?? projects.find((p) => norm(p.name).includes(norm(named)) || norm(named).includes(norm(p.name)))
+        return hit ? { id: hit.id, name: hit.name } : null
+      })(),
     })
     if (adaptiveChips.length > 0) {
       postSearchUiState.chips = adaptiveChips
@@ -3071,6 +3298,29 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       persistIntentToMemory(sessionId, userId, hydratedIntent).catch((err) => {
         console.error('[PHASE0:PERSIST] Error persisting intent:', err.message)
       })
+    }
+
+    /**
+     * Did the answer contain a figure we never gave it?
+     *
+     * Perplexity's research prompt requires a citation on every sentence drawn
+     * from tool output; the OpenAI Agents SDK wraps generation in an output
+     * guardrail. A buyer-facing answer cannot carry [1][2] markers, but the
+     * check those markers exist to enable is mechanical: a rupee figure, an
+     * area or a year in the reply that appears nowhere in the prompt is one the
+     * model supplied from memory.
+     *
+     * Logged, never blocking. Arithmetic we asked for — an EMI, a total outflow
+     * — legitimately produces figures absent from the context, so the false
+     * positive rate has to be measured before this can gate anything.
+     * `[CHAT:UNGROUNDED]` is the signal; `groundingRate()` is the number.
+     */
+    if (responseText && promptForGrounding) {
+      try {
+        reportGrounding(responseText, promptForGrounding, { sessionId, query: (message || '').slice(0, 80) })
+      } catch (e) {
+        console.warn('[CHAT:GROUNDING] check skipped:', e instanceof Error ? e.message : e)
+      }
     }
 
     // Phase 1: Grade response async (fire-and-forget, don't block)

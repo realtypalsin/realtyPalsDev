@@ -17,8 +17,40 @@ describe('adaptive chips', () => {
     // genuinely on screen, because we are the ones who put it there. The model
     // call this replaces was guessing from a transcript.
     const chips = buildAdaptiveChips(base({ focusedProject: { name: 'ACE Parkway' } }))
-    assert.ok(chips.every((c) => c.label.includes('ACE Parkway')))
-    assert.match(chips[0].label, /Full cost of ACE Parkway/)
+    assert.ok(chips.length > 0)
+    assert.ok(chips.some((c) => /Full cost of ACE Parkway/.test(c.label)))
+  })
+
+  it('asks three different questions about one project, not one question thrice', () => {
+    // Shipped bug: a focused project produced "Full cost of X", "Payment plans
+    // for X" and "Is X RERA clean?" — three taps, one subject, two of them the
+    // same subject. Cost, legal status and alternatives are three decisions.
+    const chips = buildAdaptiveChips(base({ focusedProject: { name: 'ACE Parkway' } }))
+    assert.ok(chips.some((c) => /cost/i.test(c.label)), 'no money question')
+    assert.ok(chips.some((c) => /rera/i.test(c.label)), 'no trust question')
+    assert.ok(
+      chips.some((c) => /competes|alternatives/i.test(c.label)),
+      'no alternatives question',
+    )
+  })
+
+  it('a shortlist never spends every chip on the first card', () => {
+    // Shipped bug: "Compare A and B" plus "Full cost of A" plus "Payment plans
+    // for A" — a buyer looking at six projects was offered three taps into one.
+    const chips = buildAdaptiveChips(
+      base({
+        projects: [{ name: 'Godrej Majesty' }, { name: 'ATS Pristine' }, { name: 'ACE Divino' }],
+        sectors: ['Sector 12'],
+        rendered: 'projects',
+      }),
+    )
+    const onlyAboutTheFirst = chips.filter(
+      (c) => c.label.includes('Godrej Majesty') && !c.label.includes('ATS Pristine'),
+    )
+    assert.ok(
+      onlyAboutTheFirst.length <= 1,
+      `${onlyAboutTheFirst.length} chips anchored on the first card alone: ${chips.map((c) => c.label).join(' / ')}`,
+    )
   })
 
   it('offers a comparison when there is a shortlist to compare', () => {
@@ -34,11 +66,13 @@ describe('adaptive chips', () => {
   })
 
   it('follows a sector comparison with what is for sale there', () => {
+    // One sector chip, not one per sector: two chips differing only in which
+    // sector they name are the same question asked twice.
     const chips = buildAdaptiveChips(
       base({ rendered: 'sector-comparison', sectors: ['Sector 150', 'Sector 128'] }),
     )
-    assert.match(chips[0].label, /What's for sale in Sector 150/)
-    assert.match(chips[1].label, /What's for sale in Sector 128/)
+    assert.ok(chips.some((c) => /What's for sale in Sector 150/.test(c.label)))
+    assert.equal(chips.filter((c) => /What's for sale in/.test(c.label)).length, 1)
   })
 
   it('follows a payment schedule with the EMI question', () => {

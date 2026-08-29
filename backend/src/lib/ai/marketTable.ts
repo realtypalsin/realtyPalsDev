@@ -1,4 +1,5 @@
 // backend/src/lib/ai/marketTable.ts
+import { priceLabelFor } from '../discovery/scoring'
 
 import type { MicroMarketSummary } from '../discovery/sectorDataGateway'
 
@@ -96,6 +97,8 @@ export interface ProjectRow {
   status?: string
   price_range_label?: string
   price_min_cr?: number | null
+  price_max_cr?: number | null
+  unit_types?: Array<{ price_min_cr?: number | null; price_max_cr?: number | null }> | null
   possession_label?: string
   builder?: { name: string } | null
 }
@@ -115,13 +118,70 @@ export function renderProjectTable(projects: ProjectRow[], limit = 6): string {
     '| :--- | :--- | :--- | :--- | :--- |'
 
   const body = rows.map((p) => {
+    // Units first: the stored label disagrees with them on over half our rows.
     const price =
-      p.price_range_label ??
-      (typeof p.price_min_cr === 'number' ? `from ₹${p.price_min_cr} Cr` : ABSENT)
+      priceLabelFor(p) !== 'Price on request'
+        ? priceLabelFor(p)
+        : (typeof p.price_min_cr === 'number' ? `from ₹${p.price_min_cr} Cr` : ABSENT)
     const status = p.possession_label ?? p.status ?? ABSENT
     return `| **${cell(p.name ?? '')}** | ${cell(p.builder?.name ?? '')} | ${cell(sectorName(p.sector))} | ${cell(price)} | ${cell(status)} |`
   })
 
+  return `${header}\n${body.join('\n')}`
+}
+
+/** A project offering the configuration the buyer asked for, and what it costs. */
+export interface AlternativeRow {
+  name?: string
+  sector?: string | { name: string }
+  builder?: { name: string } | null
+  possession_label?: string | null
+  status?: string
+  unit_types?: Array<{ bhk: number; price_min_cr?: number | null; price_max_cr?: number | null; carpet_area_sqft?: number | null }> | null
+}
+
+/**
+ * What else in the area actually has the size the buyer wanted.
+ *
+ * Shown when a named project does not build that configuration. "Ace Hanei has
+ * no 3 BHK" is the honest answer and a dead end; the same sentence with three
+ * nearby projects that do is an answer they can act on. Prices are for the
+ * asked-for size only — quoting a project's full spread here would repeat the
+ * mistake this table exists to correct.
+ */
+export function renderAlternativesTable(
+  projects: AlternativeRow[],
+  bhk: number[],
+  limit = 5,
+): string {
+  if (!projects?.length || !bhk.length) return ''
+
+  const rows = projects
+    .map((p) => {
+      const units = (p.unit_types ?? []).filter((u) => bhk.includes(u.bhk))
+      if (units.length === 0) return null
+      const mins = units.map((u) => u.price_min_cr).filter((n): n is number => n != null)
+      const maxs = units.map((u) => u.price_max_cr).filter((n): n is number => n != null)
+      const areas = units.map((u) => u.carpet_area_sqft).filter((n): n is number => n != null)
+      const price = mins.length
+        ? maxs.length && Math.max(...maxs) > Math.min(...mins)
+          ? `₹${Math.min(...mins).toFixed(2)}–${Math.max(...maxs).toFixed(2)} Cr`
+          : `₹${Math.min(...mins).toFixed(2)} Cr+`
+        : ABSENT
+      return { p, price, area: areas.length ? `${Math.min(...areas)} sqft` : ABSENT }
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null)
+    .slice(0, limit)
+
+  if (rows.length === 0) return ''
+
+  const size = [...new Set(bhk)].sort((a, b) => a - b).join('/')
+  const header =
+    `| Project | Sector | ${size} BHK price | Carpet | Possession |\n` +
+    '| :--- | :--- | ---: | ---: | :--- |'
+  const body = rows.map(({ p, price, area }) =>
+    `| **${cell(p.name ?? '')}** | ${cell(sectorName(p.sector))} | ${cell(price)} | ${cell(area)} | ${cell(p.possession_label ?? p.status ?? '')} |`,
+  )
   return `${header}\n${body.join('\n')}`
 }
 
@@ -143,11 +203,66 @@ export interface PaymentPlanRow {
 const humanPlanType = (t?: string | null) =>
   (t ?? '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim()
 
-/** The developer's payment plans, side by side. */
+/** One instalment of a developer's schedule, as stored on `PaymentPlan.milestones`. */
+interface Milestone {
+  stage?: string
+  milestone?: string
+  pct?: string | number
+  amt?: string | number
+  due?: string
+  timeline?: string
+}
+
+/** The rows are JSON, so nothing about their shape is guaranteed. */
+function milestonesOf(p: PaymentPlanRow): Milestone[] {
+  return Array.isArray(p.milestones) ? (p.milestones as Milestone[]) : []
+}
+
+const asText = (v: string | number | undefined): string =>
+  v === undefined || v === null || v === '' ? ABSENT : String(v)
+
+/**
+ * When the buyer has to pay, and how much.
+ *
+ * The first version of this listed only `booking_amount_lakh`,
+ * `down_payment_pct`, `total_duration_months` and `watch_out` — four summary
+ * columns that are null on most rows, while the schedule itself sat unread in
+ * `milestones`. A buyer asking for the payment plan of Maxblis White House II
+ * got two lines saying "Available", against five stored instalments naming the
+ * stage, the share and the rupee amount of each. The answer to "what is the
+ * payment plan" is the schedule; the summary is a footnote to it.
+ */
 export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): string {
   if (!plans || plans.length === 0) return ''
   const rows = plans.slice(0, limit)
+  const scheduled = rows.filter((p) => milestonesOf(p).length > 0)
 
+  if (scheduled.length > 0) {
+    const blocks = scheduled.map((p) => {
+      const name = p.plan_name || humanPlanType(p.plan_type) || 'Payment plan'
+      const summary = [
+        typeof p.booking_amount_lakh === 'number' ? `booking ₹${p.booking_amount_lakh} lakh` : '',
+        typeof p.total_duration_months === 'number' ? `over ${p.total_duration_months} months` : '',
+        typeof p.discount_offered_pct === 'number' ? `${p.discount_offered_pct}% discount` : '',
+      ].filter(Boolean).join(' · ')
+
+      const header =
+        '| Stage | When | Share | Amount |\n' +
+        '| :--- | :--- | ---: | ---: |'
+      const body = milestonesOf(p).map((m) => {
+        const stage = m.milestone || m.stage || ABSENT
+        const when = m.timeline || m.due || ABSENT
+        return `| ${cell(stage)} | ${cell(when)} | ${cell(asText(m.pct))} | ${cell(asText(m.amt))} |`
+      })
+
+      const watch = p.watch_out ? `\n\n_Watch out: ${p.watch_out}_` : ''
+      return `**${name}**${summary ? ` — ${summary}` : ''}\n\n${header}\n${body.join('\n')}${watch}`
+    })
+    return blocks.join('\n\n')
+  }
+
+  // No schedule stored. The summary columns are all we hold, and a cell that
+  // says "Not recorded" is the honest version of a plan we cannot detail.
   const header =
     '| Plan | Booking | Down payment | Duration | Watch out |\n' +
     '| :--- | :--- | ---: | ---: | :--- |'

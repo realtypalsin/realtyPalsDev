@@ -41,6 +41,13 @@ export interface ChipGroup {
   emphasis: 'primary' | 'secondary' | 'tertiary' // visual weight
 }
 
+/**
+ * What kind of next step a chip is, so the row reads as a set of choices
+ * rather than a row of identical pills. Purely presentational — a chip without
+ * one renders neutral, which is every chip built outside `adaptiveChips`.
+ */
+export type ChipTone = 'compare' | 'money' | 'trust' | 'place' | 'ask'
+
 export interface ChipAction {
   id: string
   actionType: ConversationActionType
@@ -50,6 +57,7 @@ export interface ChipAction {
   priority: number
   payload: Record<string, unknown>
   group?: ChipGroup
+  tone?: ChipTone
 }
 
 export interface ConversationStateOptions {
