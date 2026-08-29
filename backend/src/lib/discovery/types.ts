@@ -90,7 +90,18 @@ export interface ScoredProject {
   hero_image_url?: string | null
   price_min_cr?: number | null
   price_max_cr?: number | null
+  /**
+   * The price to show. Narrowed to the configuration the buyer asked for.
+   *
+   * Someone who said "3 BHK" is quoted the 3 BHK range, not the project's whole
+   * spread from its smallest 2 BHK to its largest penthouse — a span that can
+   * be 3x wide and answers a question they did not ask.
+   */
   price_range_label: string
+  /** "3 BHK" when the label above covers only that size; absent when it is the whole project. */
+  price_for_bhk?: string
+  /** Sizes the buyer asked for that this project does not offer at all. */
+  missing_bhk?: number[]
   floor_plan_count: number
   project_status?: string
   amenity_count: number

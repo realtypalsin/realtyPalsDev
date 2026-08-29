@@ -211,12 +211,36 @@ function regionFilter(region: 'noida' | 'greater_noida' | 'greater_noida_west'):
  * honest default: we hold what we hold, and an unrecognised phrase finds
  * nothing rather than quietly standing in for a guess.
  */
-export function buildHardFilters(intent: Intent, overrideSectors?: string[]): Prisma.ProjectWhereInput {
+export function buildHardFilters(
+  intent: Intent,
+  overrideSectors?: string[],
+  overrideCities?: string[],
+): Prisma.ProjectWhereInput {
   const where: Prisma.ProjectWhereInput = {}
+
+  /**
+   * The city the location phrase settled on, when it settled on one.
+   *
+   * "Sector 107" exists in both Noida and Greater Noida West. Resolving
+   * "Sector 107 Noida" to the right one and then filtering on the sector alone
+   * throws the answer away and mixes both cities' rows back together — the
+   * resolver knew, and nothing asked it.
+   */
+  if (overrideCities?.length) {
+    where.AND = [
+      ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+      { OR: overrideCities.map((c) => ({ city: { equals: c, mode: 'insensitive' as const } })) },
+    ]
+  }
 
   if (!overrideSectors && intent.sector && isCityLevel(intent.sector)) {
     const region = CITY_LEVEL_ALIASES[intent.sector.toLowerCase().trim()]
-    if (region) where.AND = [regionFilter(region)]
+    if (region) {
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        regionFilter(region),
+      ]
+    }
   }
 
   // Sector — whole-word match (case-insensitive) over the resolved sector set.
@@ -378,6 +402,53 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     intent
   )
 
+  /**
+   * The price this buyer is actually shopping for.
+   *
+   * ACE Parkway spans ₹1.55–7.48 Cr across a 2 BHK, a 3 BHK and a 4 BHK.
+   * Quoting that whole span to someone who asked for a 3 BHK answers a
+   * question they did not ask and makes the project look both cheaper and
+   * dearer than anything they can buy: the 3 BHK is ₹2.50–2.95 Cr.
+   *
+   * `price_for_bhk` is what makes this safe to show. A narrowed figure with no
+   * label reads as the project price, which would be a worse lie than the wide
+   * one — so the card is given the size the number belongs to, and only
+   * narrows when it has that label to print.
+   */
+  const askedBhk = intent.bhk?.length ? [...new Set(intent.bhk)].sort((a, b) => a - b) : []
+  const bhkPricing = ((): { price_range_label: string; price_for_bhk?: string; missing_bhk?: number[] } => {
+    if (askedBhk.length === 0) return { price_range_label: buildPriceRangeLabel(minP, maxP) }
+
+    const offered = new Set(p.unit_types.map((u) => u.bhk))
+    const missing = askedBhk.filter((b) => !offered.has(b))
+    // Nothing in the asked size: the whole-project range is the honest fallback,
+    // and `missing_bhk` is what lets the answer say so out loud.
+    if (relevantUnits.length === 0) {
+      return {
+        price_range_label: buildPriceRangeLabel(minP, maxP),
+        ...(missing.length ? { missing_bhk: missing } : {}),
+      }
+    }
+
+    const mins = relevantUnits.map((u) => u.price_min_cr).filter((n): n is number => n != null)
+    const maxs = relevantUnits.map((u) => u.price_max_cr).filter((n): n is number => n != null)
+    if (mins.length === 0) {
+      return {
+        price_range_label: buildPriceRangeLabel(minP, maxP),
+        ...(missing.length ? { missing_bhk: missing } : {}),
+      }
+    }
+
+    const floor = Math.min(...mins)
+    const ceiling = maxs.length ? Math.max(...maxs) : Math.max(...mins)
+    const sizes = [...new Set(relevantUnits.map((u) => u.bhk))].sort((a, b) => a - b)
+    return {
+      price_range_label: buildPriceRangeLabel(floor, ceiling > floor ? ceiling : null),
+      price_for_bhk: `${sizes.join('/')} BHK`,
+      ...(missing.length ? { missing_bhk: missing } : {}),
+    }
+  })()
+
   const sectorIntelligence = (p as { sector_intelligence?: { sector_stage: string; avg_price_per_sqft: number | null; price_5yr_cagr_pct: number | null } }).sector_intelligence // populated via dynamic SQL join if available
   let sectorTier: SectorTier | undefined
   if (sectorIntelligence) {
@@ -445,7 +516,7 @@ function mapToScored(raw: RawProject, intent: Intent): ScoredProject {
     hero_image_url: p.hero_image_url ?? null,
     price_min_cr: minP,
     price_max_cr: maxP,
-    price_range_label: buildPriceRangeLabel(minP, maxP),
+    ...bhkPricing,
     floor_plan_count: p.unit_types.length,
     project_status: String(p.status),
     amenity_count: p.amenities.length,
@@ -658,7 +729,16 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     ? await resolveLocationTerm(effectiveIntent.sector)
     : null
   /** The phrase named an area, not an address: several sectors, on purpose. */
-  const isAreaTerm = !!location && location.source !== 'literal' && location.sectors.length > 1
+  //
+  // Counted over DISTINCT sector names, not over resolved rows. "Sector 107"
+  // resolves to two rows — the Noida one and the Greater Noida West one — and
+  // counting rows read that as a corridor, which switched off the very
+  // disambiguation that exists to ask which city was meant. A belt is several
+  // different sectors; one sector in two cities is a question.
+  const isAreaTerm =
+    !!location &&
+    location.source !== 'literal' &&
+    new Set(location.sectors.map((s) => s.toLowerCase().trim())).size > 1
   if (location && location.source !== 'literal') {
     console.log('[DISCOVERY:LOC]', {
       term: effectiveIntent.sector, source: location.source, sectors: location.sectors.length,
@@ -744,7 +824,11 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
 
     const res: DiscoveryResult = {
       exactResults: byName.map((p) => ({
-        ...mapToScored(p, {}),
+        // The intent is passed rather than dropped: a buyer who named a project
+        // AND a size ("3 BHK in ACE Parkway") should be quoted the 3 BHK, and
+        // told when the project has none. An empty intent here made the direct
+        // lookup the one path that still answered with the whole spread.
+        ...mapToScored(p, effectiveIntent),
         matchScore: 100,
         matchReason: 'Directly requested',
         matchReasons: ['Directly requested'],
@@ -855,7 +939,14 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
   // ── Branch 3: primary hard-filter query ────────────────────────────────
   // Use effectiveIntent so budget/sector signals still apply even when
   // generic names were stripped from projectNames above.
-  const where = buildHardFilters(effectiveIntent, location?.sectors)
+  // The city constraint is only honoured when the phrase named one — a bare
+  // "Sector 107" stays open to both cities so the disambiguation guard below
+  // can still ask which was meant.
+  const where = buildHardFilters(
+    effectiveIntent,
+    location?.sectors,
+    location?.source === 'exact_in_city' ? location.cities : undefined,
+  )
 
   // Get total count and paginated results
   let totalCount = 0
@@ -921,10 +1012,22 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     // buyer can settle it.
     if (effectiveIntent.sector && !isCityLevel(effectiveIntent.sector) && !isAreaTerm) {
       // ── Check for CITY-LEVEL disambiguation first ──
-      // If user provided only a sector (no BHK/budget/etc) and it exists in multiple cities, ask which city
-      const isSectorOnly = !effectiveIntent.bhk?.length && !effectiveIntent.budgetMax && !effectiveIntent.builderName && !effectiveIntent.lifestyleKeywords?.length && !effectiveIntent.projectNames?.length
+      //
+      // "Sector 107" is a real sector in both Noida and Greater Noida West, and
+      // only the buyer knows which one they meant. Ask.
+      //
+      // This used to ask only when the sector arrived with nothing else
+      // attached — no BHK, no budget, no builder. The reasoning was that a
+      // richer query should get results rather than a question, but the effect
+      // was the opposite of asking: "2 BHK in Sector 107" quietly merged both
+      // cities and presented the mixture as the answer. Adding a filter is not
+      // evidence about which city, so it cannot settle the question.
+      //
+      // A named city already settles it upstream — `exact_in_city` constrains
+      // the search, so only one city's rows are here and this never fires.
+      const askedForOneCity = (location?.cities.length ?? 0) === 1
 
-      if (isSectorOnly) {
+      if (!askedForOneCity) {
         const projectsByCity = new Map<string, typeof rawProjects[0][]>()
         for (const p of rawProjects) {
           if (!projectsByCity.has(p.city)) {

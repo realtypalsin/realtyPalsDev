@@ -14,6 +14,37 @@ export function buildPriceRangeLabel(minP: number | null, maxP: number | null): 
 }
 
 /**
+ * The price to show for a project, computed from its own unit types.
+ *
+ * `Project.price_range_label` is a free-text column and it disagrees with the
+ * units on 150 of 280 rows. Nirala Diadem carried "₹115 Lakh onwards" while its
+ * cheapest unit is a 3 BHK at ₹1.45 Cr — not merely the wrong unit of measure,
+ * a different number, quoted 20% under the real floor. Search results were
+ * right because they build the label from units; every path that read the
+ * column instead was quoting a price we cannot honour.
+ *
+ * Units win. The stored label is the fallback for projects with no priced unit
+ * at all, which is the only case it is still the best thing we hold.
+ */
+export function priceLabelFor(project: {
+  price_range_label?: string | null
+  unit_types?: Array<{ price_min_cr?: number | null; price_max_cr?: number | null }> | null
+}): string {
+  const units = project.unit_types ?? []
+  const mins = units.map((u) => u.price_min_cr).filter((p): p is number => p != null)
+  const maxs = units.map((u) => u.price_max_cr).filter((p): p is number => p != null)
+  if (mins.length === 0) return project.price_range_label || 'Price on request'
+
+  const floor = Math.min(...mins)
+  // Where no unit carries a ceiling, the dearest unit's own floor is still a
+  // real upper bound on what we know: a project with a 2 BHK from ₹0.62 Cr and
+  // a 3 BHK from ₹1.25 Cr reads "₹0.62–1.25Cr", not "₹0.62Cr+", which throws
+  // away half of what we hold.
+  const ceiling = maxs.length > 0 ? Math.max(...maxs) : Math.max(...mins)
+  return buildPriceRangeLabel(floor, ceiling > floor ? ceiling : null)
+}
+
+/**
  * Derive budget status for a project against the intent ceiling.
  * Uses the lowest price_min_cr across the provided unit types.
  * Returns undefined when no budget intent or no price data.

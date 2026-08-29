@@ -16,6 +16,8 @@ import { DISCOVERY } from '../config'
  * Nothing here is a list of sectors. Every tier reads what we actually hold:
  *
  *   exact         the phrase IS a sector we have rows for
+ *   exact_in_city "Sector 12, Greater Noida West" — a sector we hold, plus the
+ *                 region saying which city's Sector 12 was meant
  *   numeric_band  "132 to 150" — parsed, then filtered against real sectors
  *   micro_market  SectorIntelligence.micro_market, the curated column that
  *                 already exists for exactly this ("Noida Expressway")
@@ -38,6 +40,7 @@ import { DISCOVERY } from '../config'
 
 export type LocationSource =
   | 'exact'
+  | 'exact_in_city'
   | 'numeric_band'
   | 'micro_market'
   | 'micro_market_geo'
@@ -75,7 +78,7 @@ const CORRIDOR_HALF_WIDTH_KM = 2.0
  * without this a deploy keeps answering with the previous version's reasoning —
  * which it did, silently, the first time I changed the ambiguity rule.
  */
-const CACHE_VERSION = 'v2'
+const CACHE_VERSION = 'v3'
 
 const SECTOR_INDEX_TTL = 3600
 const RESOLUTION_TTL = 3600
@@ -164,6 +167,59 @@ async function microMarketSeeds(term: string): Promise<SectorPoint[]> {
   return index.filter(p =>
     matched.some(m => norm(m.sector) === norm(p.sector) && norm(m.city) === norm(p.city)),
   )
+}
+
+/**
+ * Phrasings buyers use for a city we store under another name.
+ *
+ * Variants only — never a mapping onto a city we do not hold. Canonical names
+ * come from the sector index itself, so a fourth city added to the database is
+ * understood the day its first project lands, with nothing here to edit.
+ */
+const CITY_ALIASES: Record<string, string> = {
+  'noida extension': 'greater noida west',
+  'noida ext': 'greater noida west',
+  'gn west': 'greater noida west',
+  'gnw': 'greater noida west',
+}
+
+/**
+ * Split "Sector 12, Greater Noida West" into the sector and the city meant.
+ *
+ * A trailing region is the buyer being MORE specific, so it must never widen
+ * the search. It did: the phrase contains "greater noida west", the
+ * micro-market tier matched that by substring, and Sector 12 — twelve
+ * projects, Godrej Majesty and Bhutani Astrathum among them — was replaced by
+ * seven other sectors. Adding the city made the search less precise, and
+ * "nothing in Sector 12" was then reported honestly off the wrong rows.
+ *
+ * Longest name first, so "greater noida west" is never read as the "greater
+ * noida" it happens to start with.
+ */
+export function splitCityQualifier(
+  term: string,
+  cities: string[],
+): { core: string; city: string | null } {
+  const t = norm(term)
+  const candidates = [
+    ...cities.map(c => ({ match: norm(c), city: c })),
+    ...Object.entries(CITY_ALIASES).map(([alias, canonical]) => ({
+      match: alias,
+      city: cities.find(c => norm(c) === canonical) ?? '',
+    })),
+  ]
+    .filter(c => c.city)
+    .sort((a, b) => b.match.length - a.match.length)
+
+  for (const { match, city } of candidates) {
+    if (!t.endsWith(match)) continue
+    const core = t.slice(0, -match.length).trim()
+    // The term IS the city, not a place inside it. Leave it to the caller's own
+    // city-level handling rather than returning an empty sector.
+    if (!core) continue
+    return { core, city }
+  }
+  return { core: t, city: null }
 }
 
 /**
@@ -293,6 +349,19 @@ async function resolveUncached(term: string): Promise<LocationResolution> {
   // 1. The phrase is a sector we hold.
   const exact = index.filter(p => norm(p.sector) === t)
   if (exact.length > 0) return asResult(exact, 'exact')
+
+  // 1b. A sector we hold, plus the city saying which one. Specific beats
+  //     general, so this runs ahead of the micro-market tier — which would
+  //     otherwise match the city name by substring and widen the search to the
+  //     whole region, discarding the sector the buyer actually named.
+  const qualified = splitCityQualifier(term, [...new Set(index.map(p => p.city))])
+  if (qualified.city) {
+    const city = qualified.city
+    const inCity = index.filter(
+      p => norm(p.sector) === qualified.core && norm(p.city) === norm(city),
+    )
+    if (inCity.length > 0) return asResult(inCity, 'exact_in_city')
+  }
 
   // 2. A numeric band, filtered against sectors that exist.
   const band = parseNumericBand(term)

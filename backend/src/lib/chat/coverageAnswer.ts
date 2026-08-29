@@ -25,6 +25,80 @@ function normalise(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
 }
 
+/**
+ * A project we hold whose full name appears in the message.
+ *
+ * The match is the whole name as a contiguous run of words, not any word of it.
+ * "county 107 by county group" contains "county 107" and must never be answered
+ * as a coverage gap — we hold that project, built by ABA Corp, and the buyer
+ * was told we had nothing. But "amaatra homes" must still miss: matching on the
+ * loose word "homes" would find Amrapali Crystal Homes and answer a question
+ * about a different building entirely.
+ */
+async function namedProjectInMessage(message: string): Promise<{ name: string; builder: string | null } | null> {
+  const haystack = ` ${normalise(message)} `
+  const projects = await prisma.project.findMany({
+    select: { name: true, builder: { select: { name: true } } },
+  })
+  // Longest first: "ABA Cleo County" should win over "Cleo County".
+  const hit = projects
+    .map((p) => ({ p, n: normalise(p.name) }))
+    .filter(({ n }) => n.length >= 6 && haystack.includes(` ${n} `))
+    .sort((a, b) => b.n.length - a.n.length)[0]
+  return hit ? { name: hit.p.name, builder: hit.p.builder?.name ?? null } : null
+}
+
+/**
+ * The postal code of a sector, read from the addresses of projects standing in it.
+ *
+ * No column holds a PIN, so the model was inventing one: "sector 10 noida
+ * extension pin code" came back 201306 on one run and 201301 on the next, and
+ * neither is what our own rows say. The addresses do carry it — twelve of the
+ * fifteen projects in Sector 10, Greater Noida West read 203207 — so this is a
+ * fact we hold, just not in a field anyone had looked in.
+ *
+ * Where the addresses disagree the disagreement is reported rather than
+ * averaged away. A postal code is looked up to be used, and a confidently wrong
+ * one is worse than a qualified one.
+ */
+export async function sectorPinCode(
+  message: string,
+  sectors: string[],
+): Promise<CoverageAnswer | null> {
+  if (!/\b(pin ?code|postal code|pincode|zip)\b/i.test(message)) return null
+  const sector = sectors[0]
+  if (!sector) return null
+
+  const rows = await prisma.project.findMany({
+    where: { sector: { equals: sector, mode: 'insensitive' } },
+    select: { address: true, city: true },
+  })
+  const counts = new Map<string, number>()
+  for (const r of rows) {
+    const m = /\b(\d{6})\b/.exec(r.address ?? '')
+    if (m) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1)
+  }
+  if (counts.size === 0) return null
+
+  const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1])
+  const [pin, n] = ranked[0]
+  const total = ranked.reduce((s, [, c]) => s + c, 0)
+  const city = rows[0]?.city ?? ''
+  const others = ranked.slice(1)
+
+  return {
+    kind: 'sector_thin',
+    alternatives: [],
+    text:
+      `${sector}${city ? `, ${city}` : ''} reads **${pin}** on ${n} of the ${total} project addresses we hold there.` +
+      (others.length
+        ? ` ${others.length === 1 ? 'One other code appears' : 'Other codes appear'} in our records too — ` +
+          `${others.map(([p, c]) => `${p} on ${c}`).join(', ')} — so confirm it against the specific project's ` +
+          `registered address before you use it on anything official.`
+        : ''),
+  }
+}
+
 /** A builder named in the message that we hold no projects for. */
 export async function builderCoverage(message: string): Promise<CoverageAnswer | null> {
   const match = message.match(BUILDER_QUESTION)
@@ -33,6 +107,12 @@ export async function builderCoverage(message: string): Promise<CoverageAnswer |
   const raw = match[1].trim()
   const first = raw.split(/\s+/)[0]
   if (NOT_A_BUILDER.test(first)) return null
+
+  // The message names a project we hold. Whatever the buyer believes about who
+  // built it, the project is ours to answer about — so hand the turn back to
+  // the normal path rather than reporting a coverage gap over the top of it.
+  const named = await namedProjectInMessage(message)
+  if (named) return null
 
   const wanted = normalise(raw)
   // Four characters minimum: three-letter tokens are almost all generic.
