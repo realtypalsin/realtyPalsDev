@@ -19,6 +19,7 @@ import { track, trackPropertyEvent } from '@/lib/analytics'
 import { authHeaders } from '@/lib/authedFetch'
 import { resolveImgUrl } from '@/lib/utils'
 import { usePreferredImages } from '@/lib/hooks'
+import { sanitizePriceLabel } from '@/lib/format'
 
 
 interface Props {
@@ -215,7 +216,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
     e.stopPropagation()
     track('share_tapped', { project_slug: project.slug, project_name: project.name })
     const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/property/${project.slug}?ref=share`
-    const text = `${project.name} · ${project.sector} — ${project.price_range_label}. Reviewed with RealtyPal AI:`
+    const text = `${project.name} · ${project.sector} — ${sanitizePriceLabel(project.price_range_label)}. Reviewed with RealtyPal AI:`
     try {
       if (navigator.share) {
         await navigator.share({ title: project.name, text, url: shareUrl })
@@ -296,9 +297,14 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               </p>
             </div>
 
-            {/* Price */}
+            {/* Price — for the size asked for, when one was */}
             <p className="text-[16px] font-black text-gray-900 dark:text-white tracking-tight leading-none pt-0.5">
-              {project.price_range_label}
+              {sanitizePriceLabel(project.price_range_label)}
+              {project.price_for_bhk && (
+                <span className="ml-1.5 text-[10.5px] font-semibold text-gray-500 dark:text-gray-400 align-middle">
+                  {project.price_for_bhk}
+                </span>
+              )}
             </p>
 
             {/* BHK & Area summary line */}
@@ -609,12 +615,25 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
               <span className="truncate opacity-80 shrink-0">{project.sector}</span>
             </div>
 
-            {/* Price — big hero number */}
-            <div className="mb-3.5 min-h-[28px] flex items-center">
+            {/* Price — big hero number, for the size asked for when one was */}
+            <div className="mb-3.5 min-h-[28px] flex items-baseline gap-1.5 flex-wrap">
               <p className="text-[22px] sm:text-[24px] font-bold text-gray-900 dark:text-gray-50 tracking-tight leading-none">
-                {project.price_range_label}
+                {sanitizePriceLabel(project.price_range_label)}
               </p>
+              {project.price_for_bhk && (
+                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 leading-none">
+                  {project.price_for_bhk}
+                </span>
+              )}
             </div>
+            {/* The buyer asked for a size this project does not build. Saying so
+                on the card is the difference between a near-miss they can judge
+                and a result that looks like a match until they open it. */}
+            {project.missing_bhk && project.missing_bhk.length > 0 && (
+              <p className="-mt-2.5 mb-3 text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                No {project.missing_bhk.join('/')} BHK in this project
+              </p>
+            )}
 
             {/* Configurations — fixed-height slot, sized to its worst case.
                 It was capped at 56px with overflow-hidden, which fits two rows

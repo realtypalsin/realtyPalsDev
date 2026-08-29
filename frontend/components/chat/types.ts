@@ -45,7 +45,12 @@ export interface ChipAction {
   priority: number              // 1 = highest; chips sorted by priority
   payload: Record<string, unknown>
   group?: ChipGroup
+  tone?: ChipTone               // what kind of next step this is; absent renders neutral
 }
+
+// What kind of next step a chip offers. Set by the backend's adaptive chips so
+// a row of three reads as three different choices rather than three grey pills.
+export type ChipTone = 'compare' | 'money' | 'trust' | 'place' | 'ask'
 
 // ─── Conversation Stage ───────────────────────────────────────────────────────
 // Deterministic stage computed by the backend Conversation Engine.

@@ -88,6 +88,10 @@ export interface ProjectCard {
   price_min_cr?: number | null
   price_max_cr?: number | null
   price_range_label: string
+  /** "3 BHK" when the price above covers only that size, not the whole project. */
+  price_for_bhk?: string
+  /** Sizes the buyer asked for that this project does not offer. */
+  missing_bhk?: number[]
   unit_types: UnitTypeSummary[]
   top_amenities: AmenitySummary[]
   top_connectivity: ConnSummary[]

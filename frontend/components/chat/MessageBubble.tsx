@@ -1126,9 +1126,30 @@ function MessageBubbleInner({
             : `${totalCards} ${totalCards === 1 ? 'property' : 'properties'} in & around ${message.spatialContext?.anchorSector}`
         }
 
-        const headerSector = useNewFormat && !hasExact && hasNearby
-          ? expansion?.searchedSectors.join(', ')
-          : (rawExactList[0]?.sector || rawNearbyList[0]?.sector || rawLegacyList[0]?.sector)
+        /**
+         * The place this badge names.
+         *
+         * It used to read the sector off the FIRST CARD, which labels a whole
+         * result set by whichever project happened to rank top: a corridor
+         * search returning twenty projects across five sectors was announced as
+         * "20 properties found in Sector 1", because Ace Divino sorted first.
+         * The badge is about the search, so it takes the sector the search was
+         * anchored to; the cards below carry their own.
+         *
+         * Where several sectors were genuinely searched, say so rather than
+         * picking one of them.
+         */
+        const searchedSectors = expansion?.searchedSectors ?? []
+        const headerSector =
+          message.spatialContext?.anchorSector
+          || (searchedSectors.length > 0
+            ? searchedSectors.slice(0, 3).join(', ') + (searchedSectors.length > 3 ? '…' : '')
+            : undefined)
+          || (new Set(rawExactList.map(p => p.sector)).size === 1
+            ? rawExactList[0]?.sector
+            : undefined)
+          || rawNearbyList[0]?.sector
+          || rawLegacyList[0]?.sector
 
         return (
           <div className="hidden sm:block mt-2 w-full">

@@ -48,6 +48,20 @@ import {
 import { ChatPhase2Skeleton } from '@/components/skeletons';
 
 const DEBUG = process.env.NODE_ENV !== 'production'
+
+/**
+ * Height of the gradient that fades the conversation out behind the composer.
+ *
+ * Kept next to the class that paints it (`h-32 md:h-36`) because the padding
+ * that clears it is computed from this number — the two drifting apart is how
+ * the last message ends up under an opaque fade.
+ *
+ * The conversation clears whichever is taller, this or the composer island. The
+ * fade is opaque at its foot, so content beneath it is invisible even when
+ * nothing sits on top of it: chips cleared the input bar and were still washed
+ * out.
+ */
+const BOTTOM_FADE_PX = 144
 // A WELCOME_MESSAGE bubble used to be seeded here as chatHistory[0].
 //
 // It was never visible when it could have helped: until the buyer sends
@@ -395,6 +409,32 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
+  /**
+   * The composer island floats over the scroll area, so the conversation needs
+   * padding equal to its height or the last message hides underneath it.
+   *
+   * That padding used to be a fixed `pb-36` — 144px, guessed against an input
+   * on its own. It is not on its own: the filter dock sits under it and wraps
+   * to two or three rows as filters are added, the offline banner appears above
+   * it, and the on-screen keyboard moves it. Past 144px the suggestion chips on
+   * the last message went under the dock. Measure it instead of guessing.
+   */
+  const composerRef = useRef<HTMLDivElement>(null);
+  const [composerHeight, setComposerHeight] = useState(BOTTOM_FADE_PX);
+
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el) {
+      setComposerHeight(0);
+      return;
+    }
+    const observer = new ResizeObserver(([entry]) => {
+      setComposerHeight(Math.ceil(entry.contentRect.height));
+    });
+    observer.observe(el);
+    setComposerHeight(Math.ceil(el.getBoundingClientRect().height));
+    return () => observer.disconnect();
+  }, [isInputMinimized]);
   const userScrolledUp = useRef(false);
   const performResetRef = useRef<() => void>(() => { });
   // [TIMING] holds in-progress restore stage timestamps; cleared after summary printed
@@ -1674,7 +1714,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               aria-live="polite"
               aria-relevant="additions text"
               aria-label="Conversation with RealtyPal advisor"
-              className={`flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 ${currentIntent ? 'pt-2' : 'pt-14 sm:pt-16'} pb-36 relative z-10`}
+              // The session-title pill floats over this feed at z-30, sitting
+              // between 10px and 52px from the top. Top padding used to drop to
+              // pt-2 (8px) as soon as an intent existed — which is exactly when
+              // the pill appears — so the buyer's own first question scrolled
+              // under it. One padding that clears the pill, in both states.
+              className={`flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-14 sm:pt-16 relative z-10`}
+              style={{ paddingBottom: Math.max(composerHeight, BOTTOM_FADE_PX) + 16 }}
 
               onScroll={(e) => {
                 const el = e.currentTarget;
@@ -1800,6 +1846,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   animate={{ opacity: comparingMessageId ? 0.35 : 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
+                  ref={composerRef}
                   className={`absolute bottom-0 left-0 right-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-8 pointer-events-none bg-transparent ${keyboardOpen ? 'pb-safe' : ''} ${comparingMessageId ? 'opacity-35 pointer-events-none' : ''}`}
                   style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
                 >
