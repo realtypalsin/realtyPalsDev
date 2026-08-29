@@ -101,6 +101,26 @@ const isRetiredGitHubModels = /models\.(inference\.ai\.azure|github\.ai)/.test(
   process.env.OPENAI_BASE_URL ?? '',
 )
 
+/**
+ * Dropping the last resort must never be silent.
+ *
+ * OpenAI is the end of the chain: when Gemini, Mistral, Cerebras and Groq have
+ * all failed, it is the difference between a slow answer and "our AI services
+ * are out of service". With OPENAI_BASE_URL still pointing at the retired
+ * GitHub Models host, all four OpenAI legs are removed here — and a chain that
+ * quietly loses its backstop looks identical to a healthy one until the day
+ * everything above it is spent. On 29 Aug that day arrived and a quarter of
+ * turns returned an error.
+ */
+if (isRetiredGitHubModels) {
+  console.warn(
+    '[CONFIG:CHAIN] OpenAI legs removed — OPENAI_BASE_URL points at the retired GitHub Models host ' +
+    `(${process.env.OPENAI_BASE_URL}). The fallback chain now ends at Groq with no final backstop. ` +
+    'Point it at a live Azure OpenAI deployment, or unset it to use api.openai.com. ' +
+    'Run `npm run verify:chain` to see which legs actually answer.',
+  )
+}
+
 export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)

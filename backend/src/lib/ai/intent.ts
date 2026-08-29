@@ -5,7 +5,7 @@ import OpenAI from 'openai'
 import { z } from 'zod'
 import { INTENT_EXTRACTION_PROMPT } from './prompts/index'
 import type { Intent } from '../discovery'
-import { MODELS } from '../config'
+import { MODELS, FALLBACK_CHAIN } from '../config'
 import { IntentSchema } from '../discovery/intent'
 
 export function normalizeSectorName(rawSector?: string): string | undefined {
@@ -293,20 +293,26 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
     }
   }
 
-  // Intent extraction chain: prioritize Gemini Flash & fast, reliable models
-  const intentChain = [
-    // Tier 1: Gemini 3.6 Flash (Primary high-accuracy, lightning-fast)
-    { provider: 'gemini' as const, envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN || 'gemini-3.6-flash', timeout: 10000 },
-    // Tier 2: Mistral Small
-    { provider: 'mistral' as const, envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', timeout: 3000 },
-    // Tier 3: Groq
-    { provider: 'groq' as const, envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART, timeout: 3000 },
-    { provider: 'groq' as const, envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART, timeout: 3000 },
-    // Tier 4: Cerebras
-    { provider: 'cerebras' as const, envKey: 'CEREBRAS_API_KEY', model: 'llama3.3-70b', timeout: 3000 },
-    // Tier 5: OpenAI (Fallback)
-    { provider: 'openai' as const, envKey: 'OPENAI_API_KEY', model: MODELS.MAIN || 'gpt-4o', timeout: 2000 },
-  ]
+  /**
+   * Intent extraction walks the same chain the answer does.
+   *
+   * This used to be a second, hand-written copy of the provider order, and it
+   * had already drifted: it omitted `GEMINI_API_KEY1` entirely, so when the
+   * billed Gemini key ran out of credits — which is its state today — intent
+   * extraction skipped the working free-tier key and jumped to Mistral. It also
+   * asked Cerebras for `llama3.3-70b` while the answer chain asked for
+   * `gpt-oss-120b`, so the two could fail for different reasons on the same
+   * outage. CLAUDE.md says the chain lives in one place; this derives from it.
+   *
+   * Only the timeout is intent-specific: extraction sits in front of the
+   * answer, so a slow leg costs the buyer twice and is worth abandoning sooner.
+   */
+  const intentChain = FALLBACK_CHAIN.map((leg) => ({
+    provider: leg.provider,
+    envKey: leg.envKey,
+    model: leg.model,
+    timeout: leg.provider === 'gemini' ? 10_000 : 3_000,
+  }))
 
   for (const config of intentChain) {
     if (isKeyFailed(config.envKey)) {

@@ -119,16 +119,17 @@ describe('intent extraction fast path', () => {
  * chain giving up.
  */
 async function raceAgainstProvider(message: string, previous = {}): Promise<boolean> {
-  const saved: Record<string, string | undefined> = {}
-  for (const k of ['GEMINI_API_KEY', 'GEMINI_API_KEY1', 'MISTRAL_API_KEY', 'GROQ_API_KEY', 'GROQ_API_KEY1', 'CEREBRAS_API_KEY', 'OPENAI_API_KEY']) {
-    saved[k] = process.env[k]
-    delete process.env[k]
-  }
+  // Uses the same full key list as `removeAllProviderKeys`. This used to carry
+  // its own shorter list of seven, which held while the intent path had its own
+  // hand-written chain of six legs. Now that the chain is derived from
+  // FALLBACK_CHAIN, GROQ_API_KEY2 stayed in the environment, answered, and the
+  // test read a real provider call as the fast path.
+  const restore = removeAllProviderKeys()
   try {
     const result = await extractIntent(message, previous)
     return result.degraded === false
   } finally {
-    for (const [k, v] of Object.entries(saved)) if (v !== undefined) process.env[k] = v
+    restore()
   }
 }
 

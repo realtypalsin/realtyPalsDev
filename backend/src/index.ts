@@ -292,6 +292,31 @@ async function startup() {
     }
   })
 
+  /**
+   * A port clash is a silent-wrong-answer bug, not a startup nuisance.
+   *
+   * An older process holding the port keeps serving happily while the new one
+   * fails to bind. Everything looks live — the site responds, the logs of the
+   * old process scroll — but it is running whatever code it started with, so
+   * every fix since appears to have done nothing. That cost two rounds of
+   * debugging a search that was already correct on disk.
+   *
+   * So say exactly what is wrong and how to end it, and exit non-zero rather
+   * than lingering as a process that never served a request.
+   */
+  server.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') {
+      logger.error(
+        { port: PORT },
+        `port ${PORT} is already held by another process — THIS server did not start, and the one still running is serving older code. ` +
+        `Find it with:  npx kill-port ${PORT}   (or on Windows: netstat -ano | findstr :${PORT}  then  taskkill /PID <pid> /F)`,
+      )
+    } else {
+      logger.error({ err }, 'server failed to start')
+    }
+    process.exit(1)
+  })
+
   async function shutdown(signal: string) {
     logger.info({ signal }, 'draining connections')
     server.close(async () => {
