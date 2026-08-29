@@ -67,6 +67,10 @@ import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { loadMentionedProjectCards } from '../lib/chat/mentionedProjectCards'
 import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
+import {
+  isReraProcessQuestion as matchesReraProcessQuestion,
+  isPaymentPlanRequest as matchesPaymentPlanRequest,
+} from '../lib/chat/topicFlags'
 import { CHAT_TOPIC_HANDLERS } from '../lib/chat/handlers'
 import { generateMultiDimensionalContext, attachMultiDimensionalRecommendations } from '../lib/discovery/multidimensionalPromptEnricher'
 import { sanitizeUserMessage } from '../lib/ai/sanitize'
@@ -1153,11 +1157,15 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     // is how buyers and our own chips write it. "Show payment plans for Nirala
     // Diadem" reached no handler at all and was answered as ordinary prose,
     // with the stored milestone schedule never read.
-    const isPaymentPlanRequest = /\b(payment plans?|payment schedules?|construction linked|down payments?|flexi plans?|payment options?|clp|plp)\b/i.test(topicText)
+    const isPaymentPlanRequest = matchesPaymentPlanRequest(topicText)
     const isCostSheetRequest = /\b(cost sheets?|price breakdowns?|all inclusive|other charges|possession charges|car parking charge)\b/i.test(topicText)
     const isStatutoryTaxQuery = /(stamp duty|registration (charges?|fees?)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(topicText)
-    const isReraCheckQuery = /(blacklist|nclt|insolven|defaulter|check rera|verify rera|rera website|rera portal|rera status|is.*rera registered)/i.test(topicText) && (intent.projectNames?.length ?? 0) === 0
-    const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(topicText) && !isSectorCompare && (intent.projectNames?.length ?? 0) < 2
+    const isReraCheckQuery = matchesReraProcessQuestion(topicText) && (intent.projectNames?.length ?? 0) === 0
+    // `!isReraCheckQuery` is the fix, not a tidy-up. "rera complian" belongs to
+    // both readings — "is this builder RERA compliant" is a track-record
+    // question, "how do I verify a project is RERA compliant" is a process one —
+    // and this handler runs first, so without the guard it swallowed both.
+    const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(topicText) && !isSectorCompare && !isReraCheckQuery && (intent.projectNames?.length ?? 0) < 2
     const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(topicText) && (sectorMatches.length === 0 || /which sector/i.test(topicText))
     const isReadyToMoveQuery = !isInventorySearch && /\b(ready to move|rtm|occupancy certificates?|which.*ready|ready propert(y|ies)|ready flats?)\b/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
     const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|club|gym|fitness|pool|swimming|snooker|billiards|table tennis|squash|tennis|badminton|cricket|playground|play area|kid'?s? play|creche|daycare|park|green cover|open space|ev charg|theatre|library|banquet|spa|sauna|jacuzzi|which society has the best|best amenit|lifestyle|court|jogging|skating|golf)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest

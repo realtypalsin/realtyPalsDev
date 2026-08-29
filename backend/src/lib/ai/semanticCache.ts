@@ -153,7 +153,15 @@ function readLocal(key: string, countMiss = true): CachedEntry | null {
 // legs unchecked, so it holds answers naming projects that do not exist —
 // "Shriram Suites, Sector 137, OC issued" among them. Those entries outlive the
 // fix that stops them being produced, so the namespace is retired with it.
-const REDIS_PREFIX = 'ac:v3:'
+//
+// v4, same day: two topic flags were misrouting, so v3 holds answers to the
+// wrong question — "how do I verify a project is RERA compliant" answered with
+// the builder delivery scorecard. The key encodes the query, not which handler
+// answered it, so a routing fix cannot invalidate its own stale entries and the
+// reported query kept returning the reported bug. Any future routing change
+// needs this bumped too; the alternative is a routing version inside the key,
+// which is not worth building for a flush that costs a cold cache.
+const REDIS_PREFIX = 'ac:v4:'
 
 /** A read that takes longer than this is not worth waiting for — the LLM call it */
 const REDIS_READ_TIMEOUT_MS = Number(process.env.ANSWER_CACHE_READ_TIMEOUT_MS ?? 250)
