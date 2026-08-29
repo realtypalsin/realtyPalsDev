@@ -1552,9 +1552,15 @@ Verified facts: ${dbFactsJson}
 
 EXECUTIVE INSTRUCTIONS:
 1. Answer ONLY what the user explicitly asked for. Be extremely concise.
-2. Structure your answer with small bullet points or a concise 2-column Markdown Table (| Parameter | Value |).
+2. Give the answer as a sentence, then at most three supporting facts one line each.
+   A table needs at least two things to compare and at least two columns of substance.
+   One fact is a sentence, and a two-row table holding a single value is never right.
+     Wrong: | Parameter | Value |\\n| RERA Number | UPRERAPRJ677887 |
+     Right: The RERA number is UPRERAPRJ677887, valid to December 2031.
+   After the fact, add the one line that says what it means for the buyer.
 3. Do NOT output long text paragraphs or dump lists of unit types/payment plans unless the user explicitly requested them.
 4. Maintain a clean executive tone without decorative emojis.
+5. Do not end with a follow-up question. A factual answer ends when the fact is given.
 
 USING THE FACTS:
 5. The facts block carries every field we hold for these projects — maintenance,
