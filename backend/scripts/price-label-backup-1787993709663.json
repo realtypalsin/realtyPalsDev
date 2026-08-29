@@ -1,0 +1,1682 @@
+[
+  {
+    "id": "ecae9f5d-aabf-4ef0-b1b1-2f92dbb2af0b",
+    "name": "ABA Cherry County",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.95–2.35Cr"
+  },
+  {
+    "id": "147ee95e-d3a8-490e-b1ca-ff148089fd92",
+    "name": "ACE Parkway",
+    "was": "₹115 Lakh onwards",
+    "now": "₹1.55–7.48Cr"
+  },
+  {
+    "id": "56810c4e-ff3f-425a-8204-c929415a9324",
+    "name": "Ajnara Elements",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.48–0.68Cr"
+  },
+  {
+    "id": "3005cb76-c85b-4bc6-b049-6bdec60bc715",
+    "name": "Amrapali Aurum Towers",
+    "was": "₹48.15 Lakh - ₹96.08 Lakh",
+    "now": "₹0.96–1.84Cr"
+  },
+  {
+    "id": "193ac99f-9198-458e-a7d2-55810e151649",
+    "name": "Amrapali Crystal Homes",
+    "was": "₹2.17 Cr - ₹2.40 Cr",
+    "now": "₹1.85–2.82Cr"
+  },
+  {
+    "id": "85329d53-6771-46a5-9629-88321784ba86",
+    "name": "Amrapali Enchante",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.52–0.98Cr"
+  },
+  {
+    "id": "fafa768d-d3f6-4287-a1a5-7276942cc526",
+    "name": "Amrapali Silicon City",
+    "was": "₹1.01 Cr - ₹1.85 Cr",
+    "now": "₹0.96–3.50Cr"
+  },
+  {
+    "id": "1ccb48fa-d390-4574-8a4b-6ea712ac4381",
+    "name": "Arihant Seasons",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.75–1.40Cr"
+  },
+  {
+    "id": "29312f72-d638-4633-89aa-09d870aef169",
+    "name": "ATS Kingston Heath",
+    "was": "₹115 Lakh onwards",
+    "now": "₹4.30–6.01Cr"
+  },
+  {
+    "id": "74f76e86-4a57-471c-8bd7-1c51cd29f87b",
+    "name": "ATS Pious Orchards",
+    "was": "₹115 Lakh onwards",
+    "now": "₹3.28–6.90Cr"
+  },
+  {
+    "id": "ded88df5-eb6e-4af5-af42-867c22824976",
+    "name": "Bhutani Astrathum",
+    "was": "₹115 Lakh onwards",
+    "now": "₹1.20–2.40Cr"
+  },
+  {
+    "id": "40475b9e-f770-47ea-9171-bbabded828e0",
+    "name": "Cleo County",
+    "was": "₹2.57 Cr - ₹4.50 Cr",
+    "now": "₹1.45–3.10Cr"
+  },
+  {
+    "id": "d3251d89-7c12-4278-a810-1986425bafe8",
+    "name": "Eldeco Echoes of Eden",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.95–1.85Cr"
+  },
+  {
+    "id": "bdcd7845-9255-4382-9af6-40bc471ca5e6",
+    "name": "Eldeco Live By The Greens",
+    "was": "₹1.12 Cr - ₹1.68 Cr",
+    "now": "₹1.52–1.68Cr"
+  },
+  {
+    "id": "5487826c-2dac-4483-9d3f-b5f0a0a67954",
+    "name": "Godrej Nest",
+    "was": "₹115 Lakh onwards",
+    "now": "₹2.20–4.80Cr"
+  },
+  {
+    "id": "cdcde9ba-0f83-4565-b216-4232f7ed1870",
+    "name": "Godrej Nurture",
+    "was": "₹115 Lakh onwards",
+    "now": "₹1.48–3.59Cr"
+  },
+  {
+    "id": "4693a35a-346e-4dad-b3fa-c36e6e169cd3",
+    "name": "Greenbay The Monarque",
+    "was": "₹115 Lakh onwards",
+    "now": "₹1.85–3.50Cr"
+  },
+  {
+    "id": "87b14ab9-7ffe-4960-9080-7e154261e456",
+    "name": "Himalaya Pride",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.65–1.25Cr"
+  },
+  {
+    "id": "09f087b6-5288-488d-8482-e572f09e4181",
+    "name": "Jaypee Kensington Boulevard",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.58–1.98Cr"
+  },
+  {
+    "id": "77aac96e-faf2-4649-800f-fdf32006658b",
+    "name": "Jaypee Kosmos",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.75–2.10Cr"
+  },
+  {
+    "id": "b8d1a48b-9bb0-484d-b28f-249589b5e1a8",
+    "name": "Maxblis White House",
+    "was": "₹1.40 Cr - ₹1.85 Cr",
+    "now": "₹1.25–2.81Cr"
+  },
+  {
+    "id": "63ad787f-69e4-4a2e-825c-ba45d65a695c",
+    "name": "NBCC Leisure Valley",
+    "was": "₹115 Lakh onwards",
+    "now": "₹2.26–3.09Cr"
+  },
+  {
+    "id": "c0f5a640-4bad-4f1a-afb7-48c94e170e2d",
+    "name": "Nirala Diadem",
+    "was": "₹115 Lakh onwards",
+    "now": "₹1.45–2.85Cr"
+  },
+  {
+    "id": "ab208851-3bae-4fcb-a900-684c9774ec51",
+    "name": "Paramount Floraville",
+    "was": "₹115 Lakh onwards",
+    "now": "₹1.09–1.83Cr"
+  },
+  {
+    "id": "e98b34a4-33d5-4f2c-9f05-a45d77cd01a4",
+    "name": "Paras Tierea",
+    "was": "₹72 Lakh - ₹2.20 Cr",
+    "now": "₹0.44–2.45Cr"
+  },
+  {
+    "id": "96ddcbd7-3ea0-4396-9bf0-c2efdc63e98f",
+    "name": "Purvanchal Sunbliss",
+    "was": "₹115 Lakh onwards",
+    "now": "₹1.65–3.20Cr"
+  },
+  {
+    "id": "87b169a7-f43a-45f0-8b53-e973d8439067",
+    "name": "Saviour Greenarch",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.78–1.45Cr"
+  },
+  {
+    "id": "e61e7231-eafa-4791-8dce-18035ac71343",
+    "name": "Skytech Matrott",
+    "was": "₹71.05 Lakh - ₹1.64 Cr",
+    "now": "₹0.94–1.80Cr"
+  },
+  {
+    "id": "d76fa457-5ab4-4b35-8c87-100e5fa32d6c",
+    "name": "Supercity Mayfair",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.62–1.15Cr"
+  },
+  {
+    "id": "b4d99162-9e9d-4fa7-8f84-bba750ad5939",
+    "name": "Supertech Eco Suites",
+    "was": "₹115 Lakh onwards",
+    "now": "₹0.55–1.45Cr"
+  },
+  {
+    "id": "814100df-017d-4b02-b53a-d70e452b134b",
+    "name": "The Jewel of Noida",
+    "was": "₹118 Lakh - ₹2.26 Cr",
+    "now": "₹2.15–11.50Cr"
+  },
+  {
+    "id": "64137eb6-2e30-4e6d-8508-a9052bef101b",
+    "name": "3C Lotus 300",
+    "was": "₹565 Lakh - ₹9.00 Cr",
+    "now": "₹5.65–9.00Cr"
+  },
+  {
+    "id": "d2c48b0d-2110-4d23-b8e7-c19e7927b1b7",
+    "name": "3C Lotus Panache",
+    "was": "₹95 Lakh - ₹2.10 Cr",
+    "now": "₹0.95–2.30Cr"
+  },
+  {
+    "id": "74994caf-4ec0-436a-8688-9ca9f5ba42c3",
+    "name": "ABA Cleo County",
+    "was": "₹1.65–3.8 Cr",
+    "now": "₹1.65–3.80Cr"
+  },
+  {
+    "id": "fdd2de65-e073-47c0-a9cd-5ae72e532941",
+    "name": "ACE Arte",
+    "was": "₹3.10 Cr - ₹7.95 Cr",
+    "now": "₹3.10–7.95Cr"
+  },
+  {
+    "id": "21d94614-4671-4dd6-a3ec-de5f678a6f2f",
+    "name": "Ace Aspire",
+    "was": "₹0.92–1.75 Cr",
+    "now": "₹0.92–1.75Cr"
+  },
+  {
+    "id": "e3871eb3-edb5-4621-9e99-494fcd94a25b",
+    "name": "Ace City",
+    "was": "₹0.85–1.65 Cr",
+    "now": "₹0.85–1.65Cr"
+  },
+  {
+    "id": "38a5fb1c-0a7c-4432-b9a0-5812ad70a949",
+    "name": "Ace Divino",
+    "was": "₹1.15–2.45 Cr",
+    "now": "₹1.15–2.45Cr"
+  },
+  {
+    "id": "e0412f51-4650-4793-9ab7-9672d9d87a32",
+    "name": "Ace Hanei",
+    "was": "₹311 Lakh - ₹5.70 Cr",
+    "now": "₹3.11–5.70Cr"
+  },
+  {
+    "id": "359889f6-6174-4916-a326-97f0c08c62e8",
+    "name": "Ace Mahagun Medalleo",
+    "was": "₹4.24 Cr - ₹8.11 Cr",
+    "now": "₹4.25–9.80Cr"
+  },
+  {
+    "id": "863224f4-8cde-433e-bfb5-e138029b5091",
+    "name": "Ace Platinum",
+    "was": "₹0.88–1.75 Cr",
+    "now": "₹0.88–1.75Cr"
+  },
+  {
+    "id": "30df5cd8-7b2b-4f55-a05a-0d76d1b94795",
+    "name": "Ace Starlit",
+    "was": "₹1.85–3.85 Cr",
+    "now": "₹1.85–3.85Cr"
+  },
+  {
+    "id": "d54acc58-62ad-47a9-a522-9cc49ab299dd",
+    "name": "Aditya Celebrity Homes",
+    "was": "₹95 Lakh - ₹1.82 Cr",
+    "now": "₹0.95–1.82Cr"
+  },
+  {
+    "id": "bf1f8f50-f49b-48ba-8602-4bdfd3add664",
+    "name": "Aditya Urban Casa",
+    "was": "₹1.10 Cr - ₹2.25 Cr",
+    "now": "₹1.10–2.25Cr"
+  },
+  {
+    "id": "bd7ce502-3c2a-423f-bc9e-63f4e0941201",
+    "name": "AIMS Golf Avenue I",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "f7e44741-fec1-47ec-866b-eca41630536b",
+    "name": "AIMS Golf Avenue I & II",
+    "was": "₹106 Lakh - ₹2.58 Cr",
+    "now": "₹1.06–2.58Cr"
+  },
+  {
+    "id": "270c74d9-7873-4ad2-b5f3-0aa72e7e2c5e",
+    "name": "Aims Max Gardenia Golf City",
+    "was": "₹1 Cr - ₹2.81 Cr",
+    "now": "₹1.00–2.81Cr"
+  },
+  {
+    "id": "24b1661d-8688-464e-b9f0-58838020895a",
+    "name": "Ajnara Daffodil",
+    "was": "₹88 Lakh - ₹0.98 Cr",
+    "now": "₹0.88–0.98Cr"
+  },
+  {
+    "id": "7b8d12f6-1cb6-41e9-9438-05f55f2fc95e",
+    "name": "Ajnara Le Garden",
+    "was": "₹62.00 Lakh - ₹1.25 Cr",
+    "now": "₹0.62–1.25Cr"
+  },
+  {
+    "id": "0794fc2d-8f0c-47ad-ac2a-6f6d81378f56",
+    "name": "Ajnara The Belvedere",
+    "was": "₹101 Lakh - ₹1.98 Cr",
+    "now": "₹1.01–1.98Cr"
+  },
+  {
+    "id": "92cee7de-5fc8-4dfe-8f0c-dc5c5bfaaf6c",
+    "name": "Ambr Aspire",
+    "was": "₹88 Lakh - ₹1.69 Cr",
+    "now": "₹0.88–1.69Cr"
+  },
+  {
+    "id": "10c8ec88-175c-465a-add4-6cf2d483e025",
+    "name": "Ambr Mangolia",
+    "was": "₹84 Lakh - ₹1.62 Cr",
+    "now": "₹0.84–1.62Cr"
+  },
+  {
+    "id": "c270d881-50ed-454c-a300-8e9932012a9f",
+    "name": "Amrapali Eden Park",
+    "was": "₹1.85–3.4 Cr",
+    "now": "₹1.85–3.40Cr"
+  },
+  {
+    "id": "f160d5d5-c966-4730-86c3-7281ade3c0ec",
+    "name": "Amrapali Princely Estate",
+    "was": "₹92 Lakh - ₹1.77 Cr",
+    "now": "₹0.92–1.77Cr"
+  },
+  {
+    "id": "3bca4621-44df-4105-a728-a0e4ab13b8c1",
+    "name": "Amrapali Sapphire",
+    "was": "₹1.25–2.85 Cr",
+    "now": "₹1.25–2.85Cr"
+  },
+  {
+    "id": "4b1a3462-7aab-4988-a585-20ab1e848373",
+    "name": "Amrapali Zodiac",
+    "was": "₹75 Lakh - ₹1.55 Cr",
+    "now": "₹0.75–1.35Cr"
+  },
+  {
+    "id": "61578c3f-0f78-4a76-affb-94f40dfa4e43",
+    "name": "Antriksh Forest",
+    "was": "₹90 Lakh - ₹1.75 Cr",
+    "now": "₹0.90–1.75Cr"
+  },
+  {
+    "id": "5bb536ad-aecf-4595-9c4b-6e638f707211",
+    "name": "Antriksh Golf View",
+    "was": "₹130 Lakh - ₹1.65 Cr",
+    "now": "₹1.30–1.65Cr"
+  },
+  {
+    "id": "00d3c13f-f0f2-4429-afc0-ca01ad9550bd",
+    "name": "Antriksh Golf View I",
+    "was": "₹95 Lakh - ₹1.84 Cr",
+    "now": "₹0.95–1.84Cr"
+  },
+  {
+    "id": "990b4e59-a562-46b3-b26e-59d5e9dd11c2",
+    "name": "Antriksh Golf View II",
+    "was": "₹95 Lakh - ₹1.83 Cr",
+    "now": "₹0.95–1.83Cr"
+  },
+  {
+    "id": "4c364196-06ab-480e-8973-f5ec5ae67139",
+    "name": "Antriksh Kanball 3G",
+    "was": "₹90 Lakh - ₹1.76 Cr",
+    "now": "₹0.90–1.76Cr"
+  },
+  {
+    "id": "8efa2985-d105-4f4d-b2e8-b37498d46ad7",
+    "name": "Apex Athena",
+    "was": "₹160 Lakh - ₹3.68 Cr",
+    "now": "₹1.60–3.68Cr"
+  },
+  {
+    "id": "6d8a29b5-0ded-4241-864f-307a299bf707",
+    "name": "Apex Athena / Diamond Tower",
+    "was": "₹113 Lakh - ₹2.16 Cr",
+    "now": "₹1.13–2.16Cr"
+  },
+  {
+    "id": "b0d090b2-b4af-4b4b-acde-f30c0abf4b0e",
+    "name": "Apex Golf Avenue",
+    "was": "₹225 Lakh - ₹2.45 Cr",
+    "now": "₹2.25–2.45Cr"
+  },
+  {
+    "id": "6ecb28ab-48b6-4310-8b28-07f487b16628",
+    "name": "Arihant Abode",
+    "was": "₹89 Lakh - ₹1.71 Cr",
+    "now": "₹0.89–1.71Cr"
+  },
+  {
+    "id": "6a261a9e-d470-4813-b65f-8ff4e8ddcf84",
+    "name": "Arihant Arden",
+    "was": "₹85 Lakh - ₹1.75 Cr",
+    "now": "₹0.85–1.75Cr"
+  },
+  {
+    "id": "07923cce-1c9b-4619-a7a3-5396caeb6646",
+    "name": "Ashiana Amaltas",
+    "was": "₹99 Lakh - ₹1.95 Cr",
+    "now": "₹0.99–1.95Cr"
+  },
+  {
+    "id": "3c8b6d03-bdc7-4d22-84c8-2d6bcbbc730a",
+    "name": "Ashtech Presidential Towers",
+    "was": "₹113 Lakh - ₹2.16 Cr",
+    "now": "₹1.13–2.16Cr"
+  },
+  {
+    "id": "beb1b1d5-8256-469f-8cab-7902ae71f81d",
+    "name": "Assotech Windsor Court",
+    "was": "₹1.18 Cr - ₹2.45 Cr",
+    "now": "₹1.18–2.45Cr"
+  },
+  {
+    "id": "e31bf20e-aa1a-4e28-8d53-a7e58eff902d",
+    "name": "ATS Allure",
+    "was": "₹74 Lakh - ₹0.82 Cr",
+    "now": "₹0.74–0.82Cr"
+  },
+  {
+    "id": "1ee07889-22c5-4986-9174-063d5aaab4fc",
+    "name": "ATS Destinaire",
+    "was": "₹1.95–3.8 Cr",
+    "now": "₹1.95–3.80Cr"
+  },
+  {
+    "id": "19658ea6-e38b-44eb-9fea-b1176a11b612",
+    "name": "ATS Dolce",
+    "was": "₹1.15–2.1 Cr",
+    "now": "₹1.15–2.10Cr"
+  },
+  {
+    "id": "cba89104-e173-401a-ba0d-a1989e957fe2",
+    "name": "ATS Green Paradiso",
+    "was": "₹1.45–3.1 Cr",
+    "now": "₹1.45–3.10Cr"
+  },
+  {
+    "id": "7ba97604-813f-4924-9044-53936a3737ce",
+    "name": "ATS Greens Village",
+    "was": "₹2.4–4.8 Cr",
+    "now": "₹2.40–4.80Cr"
+  },
+  {
+    "id": "6e7aeac6-64e5-4a1d-b629-9519ae11ff6c",
+    "name": "ATS Happy Trails",
+    "was": "₹93 Lakh - ₹1.78 Cr",
+    "now": "₹0.93–1.78Cr"
+  },
+  {
+    "id": "7cd4bfd1-80e2-4fe1-8f5d-8188c32b4c64",
+    "name": "ATS Homekraft Happy Trails",
+    "was": "₹145 Lakh - ₹2.05 Cr",
+    "now": "₹1.45–2.05Cr"
+  },
+  {
+    "id": "122eaf91-013f-427f-9546-da52c5b69251",
+    "name": "ATS Knightsbridge",
+    "was": "₹12.5–25 Cr",
+    "now": "₹12.50–25.00Cr"
+  },
+  {
+    "id": "c4eb3274-c662-4bc7-b61b-27a0cc62c5e7",
+    "name": "ATS Le Grandiose",
+    "was": "₹1.96 Cr - ₹3.87 Cr",
+    "now": "₹1.96–4.45Cr"
+  },
+  {
+    "id": "0ffd4f5c-ee97-4650-b619-83052a9233f3",
+    "name": "ATS Nobility",
+    "was": "₹1.65–2.35 Cr",
+    "now": "₹1.65–2.35Cr"
+  },
+  {
+    "id": "1254753f-834d-4116-9ff1-c1b4119665b4",
+    "name": "ATS One Hamlet",
+    "was": "₹1.65 Cr - ₹3.20 Cr",
+    "now": "₹1.65–3.50Cr"
+  },
+  {
+    "id": "bdfafcd8-fd5c-44dc-ab46-e1cc2b372491",
+    "name": "ATS Picturesque Reprieves",
+    "was": "₹1.90 Cr - ₹4.25 Cr",
+    "now": "₹1.90–4.25Cr"
+  },
+  {
+    "id": "88319d1f-5049-410e-9c2a-2913c1f373b3",
+    "name": "ATS Pious Hideaways / Orchards",
+    "was": "₹1.85 Cr - ₹3.60 Cr",
+    "now": "₹1.85–3.60Cr"
+  },
+  {
+    "id": "c78b5e04-8e17-4961-bb1d-bda4b76b8491",
+    "name": "ATS Pristine",
+    "was": "₹248 Lakh - ₹4.90 Cr",
+    "now": "₹2.48–4.90Cr"
+  },
+  {
+    "id": "5c276485-53f8-4672-8edc-029d5ad13c42",
+    "name": "ATS Pristine & Golf Meadows",
+    "was": "₹2.2–4.8 Cr",
+    "now": "₹2.20–4.80Cr"
+  },
+  {
+    "id": "252a5492-5f1b-4e2c-af13-a71a6cb78123",
+    "name": "ATS Sovereign",
+    "was": "₹2.25 Cr - ₹4.10 Cr",
+    "now": "₹2.25–4.35Cr"
+  },
+  {
+    "id": "9e10f970-2a20-441b-949d-819a72309ab9",
+    "name": "ATS Village",
+    "was": "₹2.10 Cr - ₹4.10 Cr",
+    "now": "₹2.10–4.50Cr"
+  },
+  {
+    "id": "17b0c842-0887-415c-8c95-a1316cea1c8e",
+    "name": "AU Aspire",
+    "was": "₹96 Lakh - ₹1.84 Cr",
+    "now": "₹0.96–1.84Cr"
+  },
+  {
+    "id": "9836d171-28ff-4ffd-9b6c-cb9b9dd5b6df",
+    "name": "AVS Orchard",
+    "was": "₹1.23 Cr - ₹2.74 Cr",
+    "now": "₹1.23–2.74Cr"
+  },
+  {
+    "id": "4315ac08-c95c-4e50-8152-79967b6badfc",
+    "name": "Capital Athena",
+    "was": "₹82 Lakh - ₹1.45 Cr",
+    "now": "₹0.82–1.28Cr"
+  },
+  {
+    "id": "285960fb-e6ba-4d19-887e-647e3998230b",
+    "name": "Civitech Sampriti",
+    "was": "₹1.15 Cr - ₹2.35 Cr",
+    "now": "₹1.15–2.35Cr"
+  },
+  {
+    "id": "8e3670ab-ae14-4a85-b8f8-88322426c5e9",
+    "name": "Civitech Stadia",
+    "was": "₹1 Cr - ₹1.96 Cr",
+    "now": "₹1.00–1.96Cr"
+  },
+  {
+    "id": "6a46eba7-775b-44d7-a91b-72d96e9e820a",
+    "name": "Civitech Strings",
+    "was": "₹90 Lakh - ₹1.73 Cr",
+    "now": "₹0.90–1.73Cr"
+  },
+  {
+    "id": "16eaaa91-b8d8-420c-914d-a0625f62e264",
+    "name": "Coco County",
+    "was": "₹95 Lakh - ₹1.85 Cr",
+    "now": "₹0.95–1.85Cr"
+  },
+  {
+    "id": "8285b164-67cd-4831-89a0-c015df2878f6",
+    "name": "County 107",
+    "was": "₹4.85 Cr - ₹9.50 Cr",
+    "now": "₹4.85–9.50Cr"
+  },
+  {
+    "id": "cd749874-8da0-456d-9a2e-b31442d7fc24",
+    "name": "CRC Maesta",
+    "was": "₹232 Lakh - ₹3.70 Cr",
+    "now": "₹2.32–3.70Cr"
+  },
+  {
+    "id": "4bdbe391-8309-47c1-a3de-9ef13a4a72e3",
+    "name": "DASNAC Burj Noida",
+    "was": "₹147 Lakh - ₹2.82 Cr",
+    "now": "₹1.47–2.82Cr"
+  },
+  {
+    "id": "0630fb09-0f4c-4c31-8ea9-ad69973da58d",
+    "name": "Divine Meadows",
+    "was": "₹95 Lakh - ₹1.70 Cr",
+    "now": "₹0.95–1.48Cr"
+  },
+  {
+    "id": "d3fdbe07-a903-454a-b343-31215facdb6d",
+    "name": "Eldeco Aamantran",
+    "was": "₹1.15–2.35 Cr",
+    "now": "₹1.15–2.35Cr"
+  },
+  {
+    "id": "bc733a34-fb8d-4e23-9453-805ef64cadee",
+    "name": "Eldeco Ballads of Bliss",
+    "was": "₹111 Lakh - ₹2.56 Cr",
+    "now": "₹1.11–2.56Cr"
+  },
+  {
+    "id": "51007411-9117-4ff8-95b6-b5ac7fb9e2f7",
+    "name": "Eldeco Green Meadows",
+    "was": "₹1.1–2.2 Cr",
+    "now": "₹1.10–2.20Cr"
+  },
+  {
+    "id": "40ebe694-2e84-4df6-ab8c-ee5763d12d15",
+    "name": "Eldeco La Vida Bella",
+    "was": "₹113 Lakh - ₹2.16 Cr",
+    "now": "₹1.13–2.16Cr"
+  },
+  {
+    "id": "f143296c-a2f1-462c-be2d-850e0ca557bd",
+    "name": "Eldeco Mystic Greens",
+    "was": "₹1.05–2.15 Cr",
+    "now": "₹1.05–2.15Cr"
+  },
+  {
+    "id": "1c86a2b2-956b-486b-9003-22ac55cb0ae2",
+    "name": "Eldeco Utopia",
+    "was": "₹2.1–4.5 Cr",
+    "now": "₹2.10–4.50Cr"
+  },
+  {
+    "id": "6c7505f1-28af-4c9c-b41b-770fd557fa0b",
+    "name": "Elite Golf Greens",
+    "was": "₹1 Cr - ₹1.97 Cr",
+    "now": "₹1.00–1.97Cr"
+  },
+  {
+    "id": "fdf810a5-109c-4eac-a90c-92b1fb786f65",
+    "name": "Elite Homz",
+    "was": "₹97.13 Lakh - ₹1.66 Cr",
+    "now": "₹0.97–1.66Cr"
+  },
+  {
+    "id": "0bf0fd19-8393-44cf-835e-58f00433e0bc",
+    "name": "Elite X",
+    "was": "₹108 Lakh - ₹2.07 Cr",
+    "now": "₹1.08–2.07Cr"
+  },
+  {
+    "id": "5d09bdc0-6c37-4e7c-ad55-14b03f289765",
+    "name": "Eros Sampoornam",
+    "was": "₹0.72–1.35 Cr",
+    "now": "₹0.72–1.35Cr"
+  },
+  {
+    "id": "e3e6d203-17ae-44a5-a0ca-036277ad3219",
+    "name": "Exotica Fresco",
+    "was": "₹1.15 Cr - ₹2.20 Cr",
+    "now": "₹1.15–2.20Cr"
+  },
+  {
+    "id": "f1c17f37-ffc2-4056-b491-8816d7b60abd",
+    "name": "Express Astra",
+    "was": "₹99 Lakh - ₹1.10 Cr",
+    "now": "₹0.99–1.10Cr"
+  },
+  {
+    "id": "8d32dfd8-e4c5-46c8-b758-f694ebf181d1",
+    "name": "Express Zenith",
+    "was": "₹1.05 Cr - ₹2.15 Cr",
+    "now": "₹1.05–2.15Cr"
+  },
+  {
+    "id": "dcafe5f1-8eb8-469c-817d-f0c49245c11a",
+    "name": "Fusion Homes",
+    "was": "₹0.88–1.65 Cr",
+    "now": "₹0.88–1.65Cr"
+  },
+  {
+    "id": "415374b4-0da3-4d26-96ca-a6f26a38b9ba",
+    "name": "Fusion The Brook",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "90e1ef80-6fe5-461c-8fb4-90b6cbc7c7b4",
+    "name": "Gardenia Gateway",
+    "was": "₹110 Lakh - ₹2.13 Cr",
+    "now": "₹1.10–2.13Cr"
+  },
+  {
+    "id": "85141048-0d74-482b-9c00-ac6d8531b341",
+    "name": "Gardenia Glory",
+    "was": "₹1.05–2.1 Cr",
+    "now": "₹1.05–2.10Cr"
+  },
+  {
+    "id": "c9e935f2-7e3c-4a78-9596-49faa91310ae",
+    "name": "Gardenia Golf City",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "2557bef7-f83a-4a75-84b6-ad7afe154242",
+    "name": "Gardenia Golf City (AIMS Max)",
+    "was": "₹121 Lakh - ₹2.19 Cr",
+    "now": "₹1.21–2.19Cr"
+  },
+  {
+    "id": "0fe55cc4-643d-4715-b1b8-7594e40cb910",
+    "name": "Gaur City 1 - 1st Avenue",
+    "was": "₹65 Lakh - ₹95 Lakh",
+    "now": "₹0.65–1.05Cr"
+  },
+  {
+    "id": "267f086d-ba0f-4713-bb40-8639566ac99f",
+    "name": "Gaur City 1 - 5th Avenue",
+    "was": "₹68 Lakh - ₹1.05 Cr",
+    "now": "₹0.68–1.15Cr"
+  },
+  {
+    "id": "7b6f60dd-9d09-43a6-b6b7-6b31ffa91c68",
+    "name": "Gaur City 1 - 6th Avenue",
+    "was": "₹68 Lakh - ₹1.02 Cr",
+    "now": "₹0.68–1.12Cr"
+  },
+  {
+    "id": "d564f8ec-4b16-46e2-b120-8b52af97920c",
+    "name": "Gaur City 1 - 7th Avenue",
+    "was": "₹72 Lakh - ₹1.10 Cr",
+    "now": "₹0.72–1.20Cr"
+  },
+  {
+    "id": "50ac9d58-596e-4f84-b23d-ae492bf7ab92",
+    "name": "Gaur City 2 - 10th Avenue",
+    "was": "₹62 Lakh - ₹92 Lakh",
+    "now": "₹0.62–1.00Cr"
+  },
+  {
+    "id": "8a7aee75-7fdf-414d-9719-57169ab2dd13",
+    "name": "Gaur City 2 - 11th Avenue",
+    "was": "₹64 Lakh - ₹96 Lakh",
+    "now": "₹0.64–1.05Cr"
+  },
+  {
+    "id": "da63b3ac-404a-43c6-b598-7b1a12ab8ce6",
+    "name": "Gaur City 2 - 12th Avenue",
+    "was": "₹66 Lakh - ₹1.00 Cr",
+    "now": "₹0.66–1.10Cr"
+  },
+  {
+    "id": "d371a980-6774-4c92-ac23-f8a3fb9d372c",
+    "name": "Gaur City 2 - 14th Avenue",
+    "was": "₹58 Lakh - ₹88 Lakh",
+    "now": "₹0.58–0.96Cr"
+  },
+  {
+    "id": "ce35a68b-782d-410a-a619-d9e7241dfd84",
+    "name": "Gaur City 2 - 16th Avenue",
+    "was": "₹60 Lakh - ₹90 Lakh",
+    "now": "₹0.60–0.98Cr"
+  },
+  {
+    "id": "dea10d72-a329-43cb-aba1-0420c04f4a78",
+    "name": "Gaur Grandeur",
+    "was": "₹1.05–2.25 Cr",
+    "now": "₹1.05–2.25Cr"
+  },
+  {
+    "id": "13ae932e-f6ab-4471-9671-45c8a585f778",
+    "name": "Gaur Saundaryam",
+    "was": "₹1.35–2.85 Cr",
+    "now": "₹1.35–2.85Cr"
+  },
+  {
+    "id": "fdc5f12f-f5ec-47e5-9ec7-32099a0ed60f",
+    "name": "Gaur Saundaryam",
+    "was": "₹1.60 Cr - ₹3.40 Cr",
+    "now": "₹1.60–3.40Cr"
+  },
+  {
+    "id": "f5d74ff4-c35b-45f1-b9b8-55c2cc9b4e8b",
+    "name": "Gaur Sportswood",
+    "was": "₹1.45 Cr - ₹2.85 Cr",
+    "now": "₹1.45–2.85Cr"
+  },
+  {
+    "id": "28c22505-99b9-436d-82ca-0d8e5d8e9199",
+    "name": "Gaur Yamuna City (7th Parkview)",
+    "was": "₹0.65–1.45 Cr",
+    "now": "₹0.65–1.45Cr"
+  },
+  {
+    "id": "1470c33e-ad3f-42f6-9655-42a23ca7f54e",
+    "name": "Gaur Yamuna City 16th Park View",
+    "was": "₹85 Lakh - ₹0.95 Cr",
+    "now": "₹0.85–0.95Cr"
+  },
+  {
+    "id": "bb6b3c13-888c-4dfe-8e76-b0dfdf324a2f",
+    "name": "Gaurs Platinum Towers",
+    "was": "₹120 Lakh - ₹2.36 Cr",
+    "now": "₹1.20–2.36Cr"
+  },
+  {
+    "id": "63506755-89ce-440a-8d0b-8f2155e99fb5",
+    "name": "Godrej Golf Links & The Crest",
+    "was": "₹1.85–4.5 Cr",
+    "now": "₹1.85–4.50Cr"
+  },
+  {
+    "id": "e44fe1bf-f815-4088-870d-216dafc1a22c",
+    "name": "Godrej Jardinia",
+    "was": "₹3.2–6.8 Cr",
+    "now": "₹3.20–6.80Cr"
+  },
+  {
+    "id": "20a939d6-f338-410e-a3b9-fd9962e1038f",
+    "name": "Godrej Majesty",
+    "was": "₹3.47 Cr - ₹5.82 Cr",
+    "now": "₹3.47–5.82Cr"
+  },
+  {
+    "id": "c10a068e-0c5f-4baa-b820-bbd0f6e7a37f",
+    "name": "Godrej Palm Retreat",
+    "was": "₹2.10 Cr - ₹4.80 Cr",
+    "now": "₹2.10–4.80Cr"
+  },
+  {
+    "id": "65c203cb-59e2-489f-af59-4aa964fe4da1",
+    "name": "Godrej Tropical Isle",
+    "was": "₹3.20 Cr - ₹6.50 Cr",
+    "now": "₹3.20–6.50Cr"
+  },
+  {
+    "id": "e0a8ab69-4bf7-48dd-aac0-67b795ee06ea",
+    "name": "Godrej Woods",
+    "was": "₹2.10 Cr - ₹5.50 Cr",
+    "now": "₹2.10–5.50Cr"
+  },
+  {
+    "id": "42e2157b-ba9d-4cad-a48a-1ec52c820816",
+    "name": "Golden Palms",
+    "was": "₹72 Lakh - ₹1.25 Cr",
+    "now": "₹0.72–1.35Cr"
+  },
+  {
+    "id": "da59e665-8705-449c-a187-0b0efca4d396",
+    "name": "Golf Avenue II",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "0a5b22e6-19a2-4f68-a5ba-5e474bb9b203",
+    "name": "Grand Ajnara Heritage",
+    "was": "₹1.20 Cr - ₹3.10 Cr",
+    "now": "₹1.20–3.10Cr"
+  },
+  {
+    "id": "47eb6cfa-0c88-4dc4-a000-c11e9cb053e7",
+    "name": "Grand Omaxe",
+    "was": "₹1.35 Cr - ₹2.80 Cr",
+    "now": "₹1.35–2.80Cr"
+  },
+  {
+    "id": "5c26ca19-401f-43e8-aa74-9794058c1b1f",
+    "name": "Great Value Sharanam",
+    "was": "₹1.45 Cr - ₹3.20 Cr",
+    "now": "₹1.45–3.20Cr"
+  },
+  {
+    "id": "1765326b-4ec6-4662-aa98-e71ec6702c94",
+    "name": "Griha Pravesh",
+    "was": "₹1.12 Cr - ₹4.68 Cr",
+    "now": "₹1.12–4.68Cr"
+  },
+  {
+    "id": "96761ead-b4da-434e-b3ab-183bcac7f583",
+    "name": "Gulshan Botanica",
+    "was": "₹95 Lakh - ₹1.75 Cr",
+    "now": "₹0.95–1.48Cr"
+  },
+  {
+    "id": "1f113990-ef0f-4780-828c-91ff6f736cfc",
+    "name": "Gulshan Botnia",
+    "was": "₹1.35–2.45 Cr",
+    "now": "₹1.35–2.45Cr"
+  },
+  {
+    "id": "8f20e140-15db-4dd8-a0c1-2f9eb5a272a4",
+    "name": "Gulshan Dynasty",
+    "was": "₹6.5–10.5 Cr",
+    "now": "₹6.50–10.50Cr"
+  },
+  {
+    "id": "33857ae6-1ab5-4dda-9842-50893cb7cad3",
+    "name": "Gulshan Ikebana",
+    "was": "₹1.45 Cr - ₹2.35 Cr",
+    "now": "₹1.45–2.35Cr"
+  },
+  {
+    "id": "ff0c2a44-30f0-4283-8c8c-4d10f504923c",
+    "name": "Gulshan Vivante",
+    "was": "₹1.25 Cr - ₹2.45 Cr",
+    "now": "₹1.25–2.45Cr"
+  },
+  {
+    "id": "39010335-85dd-4cfd-89da-b86877d2809a",
+    "name": "Hawelia Valencia Homes",
+    "was": "₹0.7–1.28 Cr",
+    "now": "₹0.70–1.28Cr"
+  },
+  {
+    "id": "20a66666-3f28-4c0b-b4ce-1f31ad1d9a86",
+    "name": "Hilston by Urbtech",
+    "was": "₹99 Lakh - ₹1.94 Cr",
+    "now": "₹0.99–1.94Cr"
+  },
+  {
+    "id": "6546b2af-5148-408f-9831-0e28b7738da8",
+    "name": "Homes 121",
+    "was": "₹1.02–2.15 Cr",
+    "now": "₹1.02–2.15Cr"
+  },
+  {
+    "id": "66e3004e-5466-4b08-9376-c81e236523a5",
+    "name": "Hyde Park",
+    "was": "₹1.15–2.35 Cr",
+    "now": "₹1.15–2.35Cr"
+  },
+  {
+    "id": "73778a72-2460-400c-9315-6aed4b1ff616",
+    "name": "IBP Windsor Valley",
+    "was": "₹83 Lakh - ₹1.60 Cr",
+    "now": "₹0.83–1.60Cr"
+  },
+  {
+    "id": "732f90ee-c557-4d8f-9a3b-1856f3864383",
+    "name": "IITL Nimbus The Hyde Park",
+    "was": "₹115 Lakh - ₹2.05 Cr",
+    "now": "₹1.15–2.05Cr"
+  },
+  {
+    "id": "9600d0de-a36c-4813-85c7-b9da2bcbc227",
+    "name": "Indosam Iconic",
+    "was": "₹98 Lakh - ₹1.88 Cr",
+    "now": "₹0.98–1.88Cr"
+  },
+  {
+    "id": "5133278f-4550-432d-8971-816de544335e",
+    "name": "Irish Platinum",
+    "was": "₹103 Lakh - ₹1.97 Cr",
+    "now": "₹1.03–1.97Cr"
+  },
+  {
+    "id": "d3e5797e-fe37-45b6-a240-05713004a8ad",
+    "name": "IVY County",
+    "was": "₹3.15 Cr - ₹5.02 Cr",
+    "now": "₹3.15–5.40Cr"
+  },
+  {
+    "id": "ebe56ae7-de69-4289-913f-95f74e9af757",
+    "name": "Jaypee Aman",
+    "was": "₹69 Lakh - ₹0.76 Cr",
+    "now": "₹0.69–0.76Cr"
+  },
+  {
+    "id": "943bc6f8-51bc-4323-97af-c39f11d49f54",
+    "name": "Jaypee Greens Aman",
+    "was": "₹0.75–1.45 Cr",
+    "now": "₹0.75–1.45Cr"
+  },
+  {
+    "id": "092da15d-2dbf-49f9-83e0-42092ddb9f1e",
+    "name": "Jaypee Greens Golf Course Residences",
+    "was": "₹2.8–7.2 Cr",
+    "now": "₹2.80–7.20Cr"
+  },
+  {
+    "id": "36320546-8a3d-4d87-94bc-6c53df6bd641",
+    "name": "Jaypee Greens Kalypso Court",
+    "was": "₹2.4–5.2 Cr",
+    "now": "₹2.40–5.20Cr"
+  },
+  {
+    "id": "faa03642-1649-4f24-a91b-054f6d5cd4ba",
+    "name": "Jaypee Greens Kosmos",
+    "was": "₹0.85–1.65 Cr",
+    "now": "₹0.85–1.65Cr"
+  },
+  {
+    "id": "01e14266-bd55-432b-9489-59e502a9b633",
+    "name": "Jaypee Greens Pavilion Court",
+    "was": "₹1.45–2.85 Cr",
+    "now": "₹1.45–2.85Cr"
+  },
+  {
+    "id": "a917e8a5-8242-4252-8675-1a1b6f707328",
+    "name": "Jaypee Greens Wish Town Klassic",
+    "was": "₹0.95–2.1 Cr",
+    "now": "₹0.95–2.10Cr"
+  },
+  {
+    "id": "a1eb5e00-9037-40c7-8f96-39f939d77d25",
+    "name": "Jaypee Imperial Court",
+    "was": "₹387 Lakh - ₹4.20 Cr",
+    "now": "₹3.87–4.20Cr"
+  },
+  {
+    "id": "731c18b6-ff5d-46b3-ad6e-f8b5fdfa61d5",
+    "name": "Jaypee Kalypso Court",
+    "was": "₹259 Lakh - ₹3.80 Cr",
+    "now": "₹2.59–3.80Cr"
+  },
+  {
+    "id": "c19889f7-0991-4366-aeca-6ebc33a56797",
+    "name": "Jaypee Klassic",
+    "was": "₹248 Lakh - ₹2.70 Cr",
+    "now": "₹2.48–2.70Cr"
+  },
+  {
+    "id": "6968a821-5605-464c-9c76-3a3136d50a9d",
+    "name": "Jaypee Pavilion Court",
+    "was": "₹209 Lakh - ₹2.30 Cr",
+    "now": "₹2.09–2.30Cr"
+  },
+  {
+    "id": "38b353ee-e14f-40e3-9589-ef69e74794f7",
+    "name": "Jaypee Sports City (Kassia)",
+    "was": "₹0.65–1.45 Cr",
+    "now": "₹0.65–1.45Cr"
+  },
+  {
+    "id": "2d12577b-559f-4da6-b0a9-77d291dd341e",
+    "name": "JM Aroma",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "69eeb5c0-255f-43ff-a7b7-a851a2ffbc37",
+    "name": "JM Orchid",
+    "was": "₹95 Lakh - ₹1.82 Cr",
+    "now": "₹0.95–1.82Cr"
+  },
+  {
+    "id": "57437956-2873-457a-ae05-cd0ca93df4b1",
+    "name": "JM Solitaire",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "db03ae39-1a51-4851-a069-24308f2b59e2",
+    "name": "Kalpataru Vista",
+    "was": "₹4.95–8.9 Cr",
+    "now": "₹4.95–8.90Cr"
+  },
+  {
+    "id": "a2d6bae9-4e9a-4d9e-af2d-85509ccd03f2",
+    "name": "Logix Blossom County",
+    "was": "₹1.05 Cr - ₹2.10 Cr",
+    "now": "₹1.05–2.10Cr"
+  },
+  {
+    "id": "d2146fcc-7cc9-400d-8d4d-5355650f0c08",
+    "name": "Logix Blossom Zest",
+    "was": "₹41 Lakh - ₹0.98 Cr",
+    "now": "₹0.41–0.98Cr"
+  },
+  {
+    "id": "2dad69e6-eb91-436a-b5e7-e09b214a8597",
+    "name": "Lotus Arena",
+    "was": "₹162 Lakh - ₹3.47 Cr",
+    "now": "₹1.62–3.47Cr"
+  },
+  {
+    "id": "9521a90f-1ad2-4de1-bcc8-198a6e6f2713",
+    "name": "Lotus Boulevard",
+    "was": "₹110 Lakh - ₹1.60 Cr",
+    "now": "₹1.10–1.60Cr"
+  },
+  {
+    "id": "02efcac2-114b-47c2-b486-f9e73c3c6dd8",
+    "name": "Lotus Boulevard Espacia",
+    "was": "₹226 Lakh - ₹3.20 Cr",
+    "now": "₹2.26–3.20Cr"
+  },
+  {
+    "id": "c878d669-ba20-44d9-b699-f3e4c5098e3d",
+    "name": "Lotus Greens Arena",
+    "was": "₹101 Lakh - ₹1.98 Cr",
+    "now": "₹1.01–1.98Cr"
+  },
+  {
+    "id": "5c12f956-353f-439b-b3ad-ccafa5b2adac",
+    "name": "Lotus Greens Arena II",
+    "was": "₹98 Lakh - ₹1.92 Cr",
+    "now": "₹0.98–1.92Cr"
+  },
+  {
+    "id": "1b5153b7-2f1a-4130-b9c7-7eed248f0786",
+    "name": "Lotus Greens Yardscape",
+    "was": "₹97 Lakh - ₹1.90 Cr",
+    "now": "₹0.97–1.90Cr"
+  },
+  {
+    "id": "792ec6f4-45a3-4f73-b99b-84dee7828baf",
+    "name": "Mahagun Manorialle",
+    "was": "₹4.80 Cr - ₹11.50 Cr",
+    "now": "₹4.80–11.50Cr"
+  },
+  {
+    "id": "76bd9947-7a1a-48af-987b-de8ca19c240f",
+    "name": "Mahagun Mantraa 1 & 2",
+    "was": "₹75 Lakh - ₹1.44 Cr",
+    "now": "₹0.75–1.44Cr"
+  },
+  {
+    "id": "11c4a12a-6767-48f6-90b9-1e8d294a7406",
+    "name": "Mahagun Marvella",
+    "was": "₹2.12 Cr - ₹4.31 Cr",
+    "now": "₹2.12–4.31Cr"
+  },
+  {
+    "id": "2656d2d2-b542-40de-9d20-14661097df34",
+    "name": "Mahagun Meadows",
+    "was": "₹1.45 Cr - ₹3.65 Cr",
+    "now": "₹1.45–3.65Cr"
+  },
+  {
+    "id": "e16f502d-1c22-485e-bdbd-7c3fcc869634",
+    "name": "Mahagun Mezzaria",
+    "was": "₹2.80 Cr - ₹5.50 Cr",
+    "now": "₹2.80–5.50Cr"
+  },
+  {
+    "id": "2704c3f9-4d5b-4c65-9ce0-61049eb2f617",
+    "name": "Mahagun Mirabella",
+    "was": "₹1.65 Cr - ₹3.20 Cr",
+    "now": "₹1.65–3.20Cr"
+  },
+  {
+    "id": "a8e651ef-722a-4dd0-8d81-5ec53a19550b",
+    "name": "Mahagun Moderne",
+    "was": "₹1.25 Cr - ₹3.20 Cr",
+    "now": "₹1.25–3.20Cr"
+  },
+  {
+    "id": "292b0d9c-a096-4535-b68c-d482224eb148",
+    "name": "Mahagun My Laagoon",
+    "was": "₹113 Lakh - ₹2.16 Cr",
+    "now": "₹1.13–2.16Cr"
+  },
+  {
+    "id": "d9035a63-1702-4705-9d86-ded6bf526ff7",
+    "name": "Mahagun Mywoods",
+    "was": "₹65 Lakh - ₹1.35 Cr",
+    "now": "₹0.65–1.48Cr"
+  },
+  {
+    "id": "1c11ec96-8660-4ea3-94fc-499aaf4e5dcf",
+    "name": "Mahagun Mywoods",
+    "was": "₹0.85–1.85 Cr",
+    "now": "₹0.85–1.85Cr"
+  },
+  {
+    "id": "1d7984c8-5f82-4909-886c-aff2f18e150f",
+    "name": "Max Estate 128",
+    "was": "₹6.2–12.5 Cr",
+    "now": "₹6.20–12.50Cr"
+  },
+  {
+    "id": "f233b417-f624-4aee-a42a-c5cf6a1748c0",
+    "name": "Maxblis Grand Kingston",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "5282826d-b687-4520-854e-a38f2a5a2e0f",
+    "name": "Maxblis Grand Wellington",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "53f11fcb-e92e-47fc-be8e-424615e826a9",
+    "name": "Maxblis White House II",
+    "was": "₹1.40 Cr - ₹1.85 Cr",
+    "now": "₹1.40–1.95Cr"
+  },
+  {
+    "id": "f0dcff71-e26b-4aee-aa62-99fe95a5518c",
+    "name": "Migsun Ultimo",
+    "was": "₹0.82–1.55 Cr",
+    "now": "₹0.82–1.55Cr"
+  },
+  {
+    "id": "f815eae4-0c4a-4927-b422-77d2db9dbcd7",
+    "name": "Migsun Vilaasa",
+    "was": "₹0.72–1.45 Cr",
+    "now": "₹0.72–1.45Cr"
+  },
+  {
+    "id": "5c10b8e6-d026-454e-8de1-bcf7a048e8d8",
+    "name": "NBCC Aspire Dream Valley",
+    "was": "₹56 Lakh - ₹73 Lakh",
+    "now": "₹0.56–0.73Cr"
+  },
+  {
+    "id": "a907482a-bebb-4861-9d94-869aeab1c13b",
+    "name": "NBCC Aspire Eternia",
+    "was": "₹1.91 Cr - ₹2.70 Cr",
+    "now": "₹1.91–2.70Cr"
+  },
+  {
+    "id": "2467440e-86a6-4547-8fee-02b357f9a6d4",
+    "name": "Nimbus Express Park View 1 & 2",
+    "was": "₹0.95–1.85 Cr",
+    "now": "₹0.95–1.85Cr"
+  },
+  {
+    "id": "b16721eb-1ad1-4489-82c9-4fccd87d6e6d",
+    "name": "Nimbus Hyde Park",
+    "was": "₹105 Lakh - ₹1.85 Cr",
+    "now": "₹1.05–1.85Cr"
+  },
+  {
+    "id": "ddfc4a9e-0fd2-4d6a-8443-827049709a59",
+    "name": "Nimbus The Hyde Park",
+    "was": "₹97 Lakh - ₹1.88 Cr",
+    "now": "₹0.97–1.88Cr"
+  },
+  {
+    "id": "38e0616b-811c-4638-bfbe-d8772567f366",
+    "name": "Nirala Aspire",
+    "was": "₹0.68–1.25 Cr",
+    "now": "₹0.68–1.25Cr"
+  },
+  {
+    "id": "1b815e38-4003-43bd-9fba-eab47b06a907",
+    "name": "Nirala Estate Phase 1",
+    "was": "₹65 Lakh - ₹1.25 Cr",
+    "now": "₹0.65–1.25Cr"
+  },
+  {
+    "id": "22e34043-37b8-47fe-95a9-b8c43c1bea1d",
+    "name": "Nirala Estate Phase 1 & 2",
+    "was": "₹65 Lakh - ₹0.95 Cr",
+    "now": "₹0.65–0.95Cr"
+  },
+  {
+    "id": "00d89685-f2c1-462d-9716-66a4257dd85f",
+    "name": "NRI City Township",
+    "was": "₹1.25 Cr - ₹3.50 Cr",
+    "now": "₹1.25–3.50Cr"
+  },
+  {
+    "id": "12106c85-4f4d-4a2b-a870-5093262a9567",
+    "name": "Om Centrum Heights I",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "3728b828-938e-4f2d-b03c-68f2f3c8e02d",
+    "name": "Omaxe Forest Spa",
+    "was": "₹4.8–9.5 Cr",
+    "now": "₹4.80–9.50Cr"
+  },
+  {
+    "id": "dbfa1b3f-4ea5-434f-95f4-a1731cc3ebd7",
+    "name": "Orris Greenbay Golf Homes",
+    "was": "₹0.62–1.45 Cr",
+    "now": "₹0.62–1.45Cr"
+  },
+  {
+    "id": "f38b09ff-d5c6-4978-a95e-c47dc7a6bc1b",
+    "name": "Pan Oasis",
+    "was": "₹0.98–1.95 Cr",
+    "now": "₹0.98–1.95Cr"
+  },
+  {
+    "id": "fe71f569-d9af-4de9-81f3-6f9df8bb4865",
+    "name": "Panchsheel Greens 1",
+    "was": "₹60 Lakh - ₹95 Lakh",
+    "now": "₹0.60–0.96Cr"
+  },
+  {
+    "id": "09f7649b-8178-4d6d-a62e-fdcff904be7f",
+    "name": "Panchsheel Greens 1 & 2",
+    "was": "₹0.68–1.35 Cr",
+    "now": "₹0.68–1.35Cr"
+  },
+  {
+    "id": "40c9032a-fe11-48f2-bb75-d9039d11a04d",
+    "name": "Panchsheel Greens 2",
+    "was": "₹58 Lakh - ₹98 Lakh",
+    "now": "₹0.58–1.08Cr"
+  },
+  {
+    "id": "f9eb69e3-c4e8-4ba6-804e-7091778dd058",
+    "name": "Panchsheel Hynish",
+    "was": "₹0.75–1.45 Cr",
+    "now": "₹0.75–1.45Cr"
+  },
+  {
+    "id": "73098f39-bfd6-479a-a14c-d7cca26e0e19",
+    "name": "Panchsheel Pratishtha",
+    "was": "₹93 Lakh - ₹1.79 Cr",
+    "now": "₹0.93–1.79Cr"
+  },
+  {
+    "id": "a9c643f8-b05b-4e1b-aa6b-e58e641be355",
+    "name": "Paramount Golf Foreste",
+    "was": "₹0.85–2.1 Cr",
+    "now": "₹0.85–2.10Cr"
+  },
+  {
+    "id": "dad31a35-e72a-42c4-a359-52c5ff24238a",
+    "name": "Paras Seasons",
+    "was": "₹68 Lakh - ₹1.15 Cr",
+    "now": "₹0.68–1.25Cr"
+  },
+  {
+    "id": "83b13dc3-5eb6-45c0-b357-903276205582",
+    "name": "Parsvnath Prestige",
+    "was": "₹1.40 Cr - ₹2.85 Cr",
+    "now": "₹1.40–2.85Cr"
+  },
+  {
+    "id": "c74aa2c2-4d2d-4127-bb9b-2b4cd7b2d031",
+    "name": "Parx Laureate",
+    "was": "₹3.8–7.5 Cr",
+    "now": "₹3.80–7.50Cr"
+  },
+  {
+    "id": "3340c38e-6320-46b6-93a7-63365daac681",
+    "name": "Prateek Canary",
+    "was": "₹2.89 Cr - ₹5.70 Cr",
+    "now": "₹2.89–6.50Cr"
+  },
+  {
+    "id": "c9b44903-bff0-4f42-a75a-34479f8d8a3d",
+    "name": "Prateek Edifice",
+    "was": "₹2.40 Cr - ₹4.80 Cr",
+    "now": "₹2.40–4.80Cr"
+  },
+  {
+    "id": "f424b1a4-9ff4-4aa4-8638-8025103113ef",
+    "name": "Prateek Fedicia",
+    "was": "₹1.45–3.1 Cr",
+    "now": "₹1.45–3.10Cr"
+  },
+  {
+    "id": "26b10364-bb08-4580-b4c7-9dec37d8b5f6",
+    "name": "Prateek Laurel",
+    "was": "₹1.05–2.1 Cr",
+    "now": "₹1.05–2.10Cr"
+  },
+  {
+    "id": "324b7d3e-af83-4fc6-830c-845832ae2299",
+    "name": "Prateek Stylome",
+    "was": "₹2.3–4.8 Cr",
+    "now": "₹2.30–4.80Cr"
+  },
+  {
+    "id": "0a6e23a3-5401-4adb-a778-ec47d8e51766",
+    "name": "Prateek Wisteria",
+    "was": "₹1.07 Cr - ₹1.99 Cr",
+    "now": "₹1.07–2.64Cr"
+  },
+  {
+    "id": "06894481-6cd9-45c7-9c59-d9a9e8a775ab",
+    "name": "Purvanchal Royal City",
+    "was": "₹1.45–2.85 Cr",
+    "now": "₹1.45–2.85Cr"
+  },
+  {
+    "id": "4e9cfe37-04d5-496f-8b8d-2c91926cdc08",
+    "name": "Purvanchal Royal City",
+    "was": "₹1.05 Cr - ₹2.65 Cr",
+    "now": "₹1.05–2.45Cr"
+  },
+  {
+    "id": "53e12b17-015b-4afd-8731-41f01f1c5df9",
+    "name": "Purvanchal Royal Park",
+    "was": "₹128 Lakh - ₹1.85 Cr",
+    "now": "₹1.28–1.85Cr"
+  },
+  {
+    "id": "7a1ec30d-34d3-4461-875e-f313d2a68b9d",
+    "name": "Purvanchal Silver City 1 & 2",
+    "was": "₹1.15–2.35 Cr",
+    "now": "₹1.15–2.35Cr"
+  },
+  {
+    "id": "a9573feb-2420-4ddd-8878-3be364c9cf0f",
+    "name": "Renox Thrive",
+    "was": "₹88 Lakh - ₹1.69 Cr",
+    "now": "₹0.88–1.69Cr"
+  },
+  {
+    "id": "2383e720-762b-450b-b124-74bc37b16c48",
+    "name": "RG Luxury Homes",
+    "was": "₹0.72–1.35 Cr",
+    "now": "₹0.72–1.35Cr"
+  },
+  {
+    "id": "54a7b78a-888c-488c-a7b9-a069e276fc86",
+    "name": "RG Pleiaddes",
+    "was": "₹1.23 Cr - ₹2.09 Cr",
+    "now": "₹1.23–2.09Cr"
+  },
+  {
+    "id": "ed6dd269-a656-4efb-8f6a-8277f9d258a3",
+    "name": "RG Residency",
+    "was": "₹0.98–1.95 Cr",
+    "now": "₹0.98–1.95Cr"
+  },
+  {
+    "id": "966ab0fa-98a6-4460-8f29-4fddd698d124",
+    "name": "Salcon Verandas Noida",
+    "was": "₹303 Lakh - ₹3.35 Cr",
+    "now": "₹3.03–3.35Cr"
+  },
+  {
+    "id": "a292564e-6e1d-4984-b58f-c70cc98f4b64",
+    "name": "Samridhi Daksh Avenue",
+    "was": "₹1.85 Cr - ₹3.90 Cr",
+    "now": "₹1.85–3.90Cr"
+  },
+  {
+    "id": "18711f8b-2fad-47a1-9361-334d4699c75d",
+    "name": "Samridhi Luxuriate",
+    "was": "₹208 Lakh - ₹2.28 Cr",
+    "now": "₹2.08–2.28Cr"
+  },
+  {
+    "id": "8260119a-4865-439a-b3cd-d94c5287a274",
+    "name": "Samridhi Luxuriya Avenue",
+    "was": "₹1.35–2.65 Cr",
+    "now": "₹1.35–2.65Cr"
+  },
+  {
+    "id": "2ae87b71-476b-4432-a79f-030a634de437",
+    "name": "Saya Zion",
+    "was": "₹1.15–2.25 Cr",
+    "now": "₹1.15–2.25Cr"
+  },
+  {
+    "id": "3b615169-1a6f-43bf-bc7b-514d60c5f176",
+    "name": "Sethi Max Royal",
+    "was": "₹1.08–2.15 Cr",
+    "now": "₹1.08–2.15Cr"
+  },
+  {
+    "id": "b928e6fa-f939-4a26-8095-994ef7ada22f",
+    "name": "Shri Radha Sky Gardens",
+    "was": "₹68.50 Lakh - ₹1.35 Cr",
+    "now": "₹0.69–1.35Cr"
+  },
+  {
+    "id": "82d8fe1d-f69b-40c4-9a6a-2d0eef6dc257",
+    "name": "Shubhkamna Lords",
+    "was": "₹95 Lakh - ₹1.86 Cr",
+    "now": "₹0.95–1.86Cr"
+  },
+  {
+    "id": "15427615-3a81-4214-a172-6c847a91fc75",
+    "name": "Sikka Kaamna Greens",
+    "was": "₹82 Lakh - ₹1.80 Cr",
+    "now": "₹0.82–1.98Cr"
+  },
+  {
+    "id": "63aaae26-0fa8-4d4c-bc28-3d732ca4dba5",
+    "name": "Sikka Kaamna Greens",
+    "was": "₹0.95–1.95 Cr",
+    "now": "₹0.95–1.95Cr"
+  },
+  {
+    "id": "7154d9e3-3ac1-4097-82bb-40f111f456f1",
+    "name": "Sikka Kaamya Greens",
+    "was": "₹86 Lakh - ₹1.65 Cr",
+    "now": "₹0.86–1.65Cr"
+  },
+  {
+    "id": "bb92e434-cab2-43e0-ac50-1bd3e079f2e4",
+    "name": "Sikka Karmic Greens",
+    "was": "₹49.26 Lakh - ₹1.77 Cr",
+    "now": "₹0.49–1.77Cr"
+  },
+  {
+    "id": "bc6ef9d6-2f05-4e3b-80c0-be33fe6ff11e",
+    "name": "Sikka Kimaantra Greens",
+    "was": "₹99 Lakh - ₹1.95 Cr",
+    "now": "₹0.99–1.95Cr"
+  },
+  {
+    "id": "9636de44-4b7d-4b57-842a-ff5ba422e378",
+    "name": "Sikka Samrat Homes",
+    "was": "₹98 Lakh - ₹1.93 Cr",
+    "now": "₹0.98–1.93Cr"
+  },
+  {
+    "id": "4181e405-1425-4fb4-b114-4e73786a68f5",
+    "name": "Sindhuja Greens",
+    "was": "₹81 Lakh - ₹1.56 Cr",
+    "now": "₹0.81–1.56Cr"
+  },
+  {
+    "id": "87ed080b-2562-4539-b6ad-8058ee442847",
+    "name": "SKA Green Mansion",
+    "was": "₹88 Lakh - ₹1.69 Cr",
+    "now": "₹0.88–1.69Cr"
+  },
+  {
+    "id": "42d459db-357b-4286-93a5-b0a9f7e2fc1c",
+    "name": "SKA Orion",
+    "was": "₹1.25–2.3 Cr",
+    "now": "₹1.25–2.30Cr"
+  },
+  {
+    "id": "ce83530c-389f-4318-bcb3-e4aa83c4d5cd",
+    "name": "SKA Orion",
+    "was": "₹128 Lakh - ₹1.42 Cr",
+    "now": "₹1.28–1.42Cr"
+  },
+  {
+    "id": "ab5daea9-2e38-4f23-8db0-b955aa6a252c",
+    "name": "Solitairian City",
+    "was": "₹0.62–1.45 Cr",
+    "now": "₹0.62–1.45Cr"
+  },
+  {
+    "id": "a0a02e1e-3207-4ec2-a135-6999857022c3",
+    "name": "Spring Meadows",
+    "was": "₹0.65–1.15 Cr",
+    "now": "₹0.65–1.15Cr"
+  },
+  {
+    "id": "2e775551-cebc-48fe-abe2-d45c7e6b9420",
+    "name": "Stellar Jeevan",
+    "was": "₹75 Lakh - ₹1.55 Cr",
+    "now": "₹0.75–1.55Cr"
+  },
+  {
+    "id": "94fc9d31-52f3-41f6-9755-f1d85c98f367",
+    "name": "Stellar MI City Homes",
+    "was": "₹0.85–1.65 Cr",
+    "now": "₹0.85–1.65Cr"
+  },
+  {
+    "id": "c7a2614a-08c1-4fc8-b90e-3af3ee1bbe66",
+    "name": "Stellar Park",
+    "was": "₹95 Lakh - ₹1.75 Cr",
+    "now": "₹0.95–1.50Cr"
+  },
+  {
+    "id": "192d2b14-89dd-4be4-9f4c-c33138bbb866",
+    "name": "Sunshine Helios",
+    "was": "₹95 Lakh - ₹1.84 Cr",
+    "now": "₹0.95–1.84Cr"
+  },
+  {
+    "id": "628580dd-4101-4a33-b812-2cb69a78f96c",
+    "name": "Sunshine Solaris",
+    "was": "₹98 Lakh - ₹1.92 Cr",
+    "now": "₹0.98–1.92Cr"
+  },
+  {
+    "id": "4ea2df37-3090-400b-a6dd-3014d3ca4496",
+    "name": "Sunworld Arista",
+    "was": "₹88 Lakh - ₹1.85 Cr",
+    "now": "₹0.88–2.05Cr"
+  },
+  {
+    "id": "9a8d8561-6bbb-4027-a6b3-f5bd055cbedd",
+    "name": "Sunworld Vanalika",
+    "was": "₹1.35 Cr - ₹2.85 Cr",
+    "now": "₹1.35–2.85Cr"
+  },
+  {
+    "id": "91cd772a-6c30-4631-a62c-178d41a4b4c2",
+    "name": "Supertech Capetown",
+    "was": "₹0.95–2.45 Cr",
+    "now": "₹0.95–2.45Cr"
+  },
+  {
+    "id": "0ce4d314-683d-44ae-88b7-5a8e147bf95c",
+    "name": "Supertech Eco Village 1",
+    "was": "₹48 Lakh - ₹92 Lakh",
+    "now": "₹0.48–0.92Cr"
+  },
+  {
+    "id": "dab91118-7476-4537-b7b4-dcb9dc85e9a6",
+    "name": "Supertech Eco Village 2",
+    "was": "₹52 Lakh - ₹98 Lakh",
+    "now": "₹0.52–0.98Cr"
+  },
+  {
+    "id": "9d3863f6-dc9b-4d3a-a712-7effb6c60859",
+    "name": "Supertech Eco Village 3",
+    "was": "₹55 Lakh - ₹88 Lakh",
+    "now": "₹0.55–0.90Cr"
+  },
+  {
+    "id": "7533e111-ec22-4378-9af7-04c1280d7af7",
+    "name": "Supertech Ecociti",
+    "was": "₹85 Lakh - ₹2.25 Cr",
+    "now": "₹0.85–2.25Cr"
+  },
+  {
+    "id": "7bf755c6-e5d6-4a98-abc7-b1247886d229",
+    "name": "Supertech Emerald Court",
+    "was": "₹1.75 Cr - ₹3.50 Cr",
+    "now": "₹1.75–3.50Cr"
+  },
+  {
+    "id": "2da9ff8c-8632-42a4-9134-5963d89d3ba6",
+    "name": "Supertech Golf Country",
+    "was": "₹0.58–1.35 Cr",
+    "now": "₹0.58–1.35Cr"
+  },
+  {
+    "id": "33780dcc-b32b-4f78-b75e-330c26fae29f",
+    "name": "Supertech Orb",
+    "was": "₹1.65 Cr - ₹3.20 Cr",
+    "now": "₹1.65–3.20Cr"
+  },
+  {
+    "id": "6be84ef7-d53c-4415-8e06-ca7f3da8faa0",
+    "name": "Supertech Supernova",
+    "was": "₹1.85–7.5 Cr",
+    "now": "₹1.85–7.50Cr"
+  },
+  {
+    "id": "479f7942-1f6d-4ddb-869a-5d56d941cbd5",
+    "name": "Supertech Upcountry (Golf Village)",
+    "was": "₹0.55–1.65 Cr",
+    "now": "₹0.55–1.65Cr"
+  },
+  {
+    "id": "be9421d0-0314-41ab-965a-088fcfdfc3ed",
+    "name": "Tata Eureka Park",
+    "was": "₹1.45 Cr - ₹2.85 Cr",
+    "now": "₹1.45–2.85Cr"
+  },
+  {
+    "id": "25ce8ba2-2511-4801-842a-42cc48565620",
+    "name": "The Rivulet",
+    "was": "₹108 Lakh - ₹2.07 Cr",
+    "now": "₹1.08–2.07Cr"
+  },
+  {
+    "id": "d81009ea-e40e-4abf-9aa2-c106e4905bc8",
+    "name": "Trident Embassy",
+    "was": "₹0.68–1.25 Cr",
+    "now": "₹0.68–1.25Cr"
+  },
+  {
+    "id": "dc8427b3-0bfc-4f74-9d81-5aba9b232541",
+    "name": "Trinity Primus",
+    "was": "₹96 Lakh - ₹1.84 Cr",
+    "now": "₹0.96–1.84Cr"
+  },
+  {
+    "id": "b6c288b7-3fed-42d2-891c-f81b17eebb90",
+    "name": "Unitech Horizon",
+    "was": "₹72 Lakh - ₹1.35 Cr",
+    "now": "₹0.72–1.28Cr"
+  },
+  {
+    "id": "29c1d4d2-6dad-4be5-b68b-9c2dbfae211e",
+    "name": "Urbtech Hilston",
+    "was": "₹131 Lakh - ₹1.85 Cr",
+    "now": "₹1.31–1.85Cr"
+  },
+  {
+    "id": "0b5ee16e-31f8-4bd5-b248-cc110b5c2219",
+    "name": "Victory Central",
+    "was": "₹86 Lakh - ₹1.65 Cr",
+    "now": "₹0.86–1.65Cr"
+  },
+  {
+    "id": "0316458a-aae6-49e1-80bb-ab118376d5ec",
+    "name": "VVIP Addresses",
+    "was": "₹103 Lakh - ₹1.97 Cr",
+    "now": "₹1.03–1.97Cr"
+  },
+  {
+    "id": "86a06149-ffe1-48d7-b834-3de1ae3ae658",
+    "name": "VVIP Homes",
+    "was": "₹76 Lakh - ₹1.18 Cr",
+    "now": "₹0.76–1.18Cr"
+  }
+]

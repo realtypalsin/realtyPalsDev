@@ -99,7 +99,19 @@ export const PROJECT_PUBLIC_SELECT = {
   possession_label: true,
   possession_confidence: true,
   possession_confidence_note: true,
-  expected_handover_quarter: true,
+  /**
+   * Withheld: the column holds a placeholder, not a handover date.
+   *
+   * Across 280 projects it takes exactly three values — null on 189,
+   * "Delivered" on 62, and "Q4 2026" on 29. On 23 of those 29 it contradicts
+   * the project's own `possession_date` by up to 29 months, and both were being
+   * shown to the buyer in the same answer. `possession_date` and
+   * `possession_label` already carry the real answer.
+   *
+   * Set back to `true` once the values are real; `npm run audit:data` fails
+   * while any of them still disagree.
+   */
+  expected_handover_quarter: false,
   foundation_stone_date: true,
   average_builder_delay_months: true,
 
