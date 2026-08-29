@@ -149,7 +149,11 @@ function readLocal(key: string, countMiss = true): CachedEntry | null {
 // ── L2: Upstash ──────────────────────────────────────────────────────────────
 
 /** Namespace, so a key change is a cache flush rather than a wrong answer. */
-const REDIS_PREFIX = 'ac:v2:'
+// v3 (30 Aug 2026): v2 was written while the chain could fall onto tool-blind
+// legs unchecked, so it holds answers naming projects that do not exist —
+// "Shriram Suites, Sector 137, OC issued" among them. Those entries outlive the
+// fix that stops them being produced, so the namespace is retired with it.
+const REDIS_PREFIX = 'ac:v3:'
 
 /** A read that takes longer than this is not worth waiting for — the LLM call it */
 const REDIS_READ_TIMEOUT_MS = Number(process.env.ANSWER_CACHE_READ_TIMEOUT_MS ?? 250)

@@ -6,6 +6,30 @@ const COOLDOWN_MS = 5 * 60 * 1000
 /** Cooldown for a per-minute rate limit. */
 const RATE_LIMIT_COOLDOWN_MS = 65 * 1000
 
+/**
+ * Cooldown for a leg whose balance is gone.
+ *
+ * A depleted prepay balance does not refill on a timer — it refills when a
+ * human tops it up. Retrying it on the ordinary five-minute durable window
+ * cost two dead legs and ~1.2s at the head of nearly every turn across a
+ * 67-query run, and every one of those probes returned the same 429. An hour
+ * is long enough to stop paying that tax and short enough that a top-up is
+ * picked up without a restart; a leg that answers is trusted again at once
+ * via recordSuccess, so a manual top-up recovers on the first probe after it.
+ */
+const BALANCE_EXHAUSTED_COOLDOWN_MS = 60 * 60 * 1000
+
+/** A balance that a retry cannot restore, as opposed to a quota window. */
+const BALANCE_EXHAUSTED = [
+  'credits are depleted',
+  'prepayment',
+  'payment required',
+  'payment_required',
+  'insufficient_quota',
+  'exceeded your current quota',
+  'billing',
+]
+
 /** Quota windows are usually per-minute or per-day; five minutes splits it sensibly. */
 const cooldowns = new Map<string, { until: number; reason: string }>()
 
@@ -95,11 +119,20 @@ export function cooldownReason(key: string): string | null {
 export function recordFailure(key: string, error: unknown): FailureKind {
   const kind = classifyFailure(error)
   if (kind === 'durable' || kind === 'rate_limited') {
-    const reason = (error instanceof Error ? error.message : String(error ?? '')).slice(0, 120)
+    const full = error instanceof Error ? error.message : String(error ?? '')
+    const reason = full.slice(0, 120)
     // A per-minute limit clears on its own; a depleted balance does not. Cooling
     // a rate-limited free key for the full durable window would remove the only
     // fallback capacity available precisely when the paid key is also struggling.
-    const ms = kind === 'rate_limited' ? RATE_LIMIT_COOLDOWN_MS : COOLDOWN_MS
+    // Classified off the whole message, not the 120-char log slice: the
+    // depletion sentence sits behind a JSON envelope and can fall outside it.
+    const lower = full.toLowerCase()
+    const ms =
+      kind === 'rate_limited'
+        ? RATE_LIMIT_COOLDOWN_MS
+        : BALANCE_EXHAUSTED.some(needle => lower.includes(needle))
+          ? BALANCE_EXHAUSTED_COOLDOWN_MS
+          : COOLDOWN_MS
     cooldowns.set(key, { until: Date.now() + ms, reason })
   }
   return kind

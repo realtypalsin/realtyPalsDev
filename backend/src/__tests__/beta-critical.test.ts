@@ -288,16 +288,31 @@ describe('beta: the fallback chain is one chain', () => {
     assert.ok(providers.size >= 3, `only ${providers.size} provider(s): ${[...providers].join(', ')}`)
   })
 
-  it('puts the billed Gemini key ahead of the free one', () => {
-    const geminiLegs = FALLBACK_CHAIN.filter((l) => l.provider === 'gemini')
-    const firstFree = geminiLegs.findIndex((l) => isFreeTierKey(l.envKey))
-    assert.ok(firstFree > 0, 'a free-tier key leads the Gemini legs')
-    // Everything before the first free leg must be billed: a free key placed
-    // higher catches every failure of the paid one and turns a recoverable
-    // stall into an empty reply.
-    for (const leg of geminiLegs.slice(0, firstFree)) {
-      assert.equal(isFreeTierKey(leg.envKey), false, `${leg.envKey} is free but ranked above a free key`)
+  it('never ranks a tool-blind leg above a tool-capable one', () => {
+    // This replaced "puts the billed Gemini key ahead of the free one".
+    //
+    // That rule existed because a free key at position 2 caught every failure
+    // of the paid one and returned an empty reply — a cause now fixed at its
+    // root in fallbackChain, which forces thinkingBudget = 0 and a reply
+    // ceiling for any key isFreeTierKey() names.
+    //
+    // The invariant worth protecting is not which key is billed but which leg
+    // can look anything up. When the billed balance ran out on 30 Aug the chain
+    // fell straight onto supportsTools: false legs, and those legs invented
+    // projects and RERA numbers rather than admitting they could not check.
+    const firstBlind = FALLBACK_CHAIN.findIndex((l) => !l.supportsTools)
+    if (firstBlind === -1) return
+    for (const leg of FALLBACK_CHAIN.slice(firstBlind)) {
+      assert.equal(
+        leg.supportsTools,
+        false,
+        `${leg.label} can call tools but is ranked below a leg that cannot`,
+      )
     }
+  })
+
+  it('leads with a leg that can call tools', () => {
+    assert.ok(FALLBACK_CHAIN[0]?.supportsTools, `chain leads with tool-blind ${FALLBACK_CHAIN[0]?.label}`)
   })
 })
 

@@ -125,13 +125,31 @@ export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Key 1)' },
-  // The lite tier on the SAME billed key comes before the second key.
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Backup)' },
   // Flash-Lite rather than Flash on the free key: the free tier's per-day
   // request allowance is far higher on the lite model, so this leg keeps
   // answering after a Flash-shaped one would be spent for the day.
+  //
+  // This leg used to sit BELOW both billed legs, because at position 2 it
+  // caught every failure of the paid key and turned a recoverable stall into
+  // an empty reply. That cause is now fixed at its root rather than by
+  // ordering: fallbackChain forces thinkingBudget = 0 and a FREE_TIER_MAX_TOKENS
+  // reply ceiling for any key isFreeTierKey() names, so thinking can no longer
+  // consume the whole output budget and leave nothing to stream.
+  //
+  // What ordering buys instead: a tool-capable leg. On 30 Aug the billed key's
+  // prepay balance ran out, and every turn fell past both Gemini legs onto
+  // Mistral and Groq — which carry supportsTools: false. Over a 67-query run
+  // four answers invented projects, one invented UP-RERA registration numbers
+  // beside two competitor portals. A free-tier Gemini that can call
+  // sector_projects is worth more than a faster model that cannot.
+  //
+  // The billed legs stay directly below: the moment the balance is topped up,
+  // the free key's per-minute limit rolls onto Flash rather than onto a
+  // tool-blind provider.
   { provider: 'gemini', envKey: 'GEMINI_API_KEY1', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Key 2)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Key 1)' },
+  // The lite tier on the SAME billed key comes before any non-Gemini provider.
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Backup)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: MISTRAL & CEREBRAS (High-Speed Failover Layer)

@@ -323,9 +323,52 @@ the next rather than failing the turn.
 
 **The keys are not equivalent.** `GEMINI_API_KEY` is the billed account.
 `GEMINI_API_KEY1` is free-tier: it 429s on quota and cannot hold a context cache
-at all. It therefore sits *below* the paid account's lite tier in the chain —
-when it sat at position 2 it caught every failure of the paid key and turned a
-recoverable stall into an empty reply.
+at all. It used to sit *below* the paid account's lite tier, because at position
+2 it caught every failure of the paid key and turned a recoverable stall into an
+empty reply.
+
+**That ordering was reversed on 30 Aug 2026, and the empty-reply cause fixed at
+its root instead.** `fallbackChain` forces `thinkingBudget = 0` and a
+`FREE_TIER_MAX_TOKENS` reply ceiling for any key `isFreeTierKey()` names, so
+thinking can no longer eat the whole output budget. What ordering buys is a
+tool-capable leg: the billed prepay balance ran out, every turn fell past both
+Gemini legs onto Mistral and Groq, and those carry `supportsTools: false`. Over
+a 67-query corpus run four answers invented projects and one invented UP-RERA
+registration numbers beside two competitor portals. **A free-tier Gemini that
+can call `sector_projects` is worth more than a faster model that cannot.** The
+billed legs sit directly below, so a top-up is picked up on the free key's next
+per-minute limit.
+
+The invariant is now enforced in `beta-critical.test.ts`: **no tool-blind leg
+may rank above a tool-capable one, and the chain must lead with one that can
+call tools.** Ordering by which key is billed is not the property that matters.
+
+**A tool-blind leg that answers anyway is discarded.** `toolBlindGuard.ts`
+checks the finished answer of any `supportsTools: false` leg against the facts
+the prompt actually carried — a project name we did not supply, a
+registration-shaped number we did not supply, or a competitor portal fails the
+leg and rolls the turn to the next one.
+
+**It asks what a name IS, never what it is not.** The first version blocklisted
+words that open a heading, and could not be finished: every run produced labels
+it had not been told about — "Carpet Efficiency Gap", "Power Backup Tariffs",
+"Rental Yield Anchor" — and each one binned an honest answer. Three of eleven
+refusals in the 30 Aug run were that, not fabrication. A bolded phrase is read
+as a project claim only when it carries a place word (`PROJECT_WORD` — Heights,
+Greens, Estate, Vista…) or leads with a builder the prompt itself supplied.
+Measured on every string the run produced: **14/14 fabrications caught, 0/31
+labels flagged.** The deliberate ceiling is a fabricated name with neither
+signal ("Verdant Quartz"), which passes — missing one is the cheaper error than
+discarding a good answer, and there is a test pinning that choice. Those legs therefore buffer their whole
+answer rather than streaming it: the check has to run while the answer is still
+unsent. They lose their time-to-first-token; an answer that invents a project is
+worse than a slow one. `[FALLBACK:FABRICATED]` in the log names what was caught.
+
+A balance-exhaustion failure (`credits are depleted`, `payment required`) cools
+its leg down for an hour rather than the ordinary five minutes — a prepay
+balance refills when a human tops it up, not on a timer, and re-probing it cost
+two dead legs at the head of nearly every turn. `recordSuccess` clears the
+cooldown on the first probe that answers, so a top-up recovers without a restart.
 
 **Output is the bill, not input.** At verified pricing (3.6 Flash: $0.75 in /
 $3.75 out per 1M) a turn is ~$0.0023 of input — 78% of it served from Gemini's

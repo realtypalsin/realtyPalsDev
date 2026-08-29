@@ -18,7 +18,7 @@ export interface GuardrailResult {
   violations: GuardrailViolation[]
 }
 
-function extractFactsFromPrompt(systemPrompt: string): FactMap {
+export function extractFactsFromPrompt(systemPrompt: string): FactMap {
   const facts: FactMap = {
     projectNames: new Set(),
     projectPrices: new Map(),

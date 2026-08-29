@@ -48,6 +48,7 @@ import { adaptiveCapMessages, CONTEXT_TOKEN_CEILING } from './adaptiveMessaging'
 import { STATIC_PREFIX_MARKER } from './systemPromptCache'
 import { estimateTokensReal } from './tokenizer'
 import { createTableStripper, stripTables } from './stripTables'
+import { checkToolBlindAnswer } from './toolBlindGuard'
 import { sanitizeOutput } from './sanitizeOutput'
 
 /** Remove the prefix sentinel — it must never reach a provider. */
@@ -196,7 +197,13 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         : applyNoToolsBlock(systemPrompt, groqFallbackSuffix)
     // Validate against the prompt this provider actually received, not the
     // pre-variant one — otherwise the fact-check reads a different tool section.
-    const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, effectivePrompt, undefined, options.suppressTables === true)
+    // A leg that cannot look anything up has its whole answer held back rather
+    // than streamed, so checkToolBlindAnswer can reject it before the buyer has
+    // read a word of it. Costs this leg its time-to-first-token; it is the
+    // degraded path already, and an answer that invents a project is worse than
+    // a slow one. Tool-capable legs keep the ordinary 250-char failover window.
+    const bufferLimit = item.supportsTools ? undefined : Number.MAX_SAFE_INTEGER
+    const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, effectivePrompt, bufferLimit, options.suppressTables === true)
 
     const effectiveConfig = options.config || { maxTokens: 3000 }
     // Gemini ignores its FALLBACK_CHAIN item.model unless we thread it through here — without
@@ -243,6 +250,21 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         )
       } else if (item.provider === 'groq') {
         text = await streamWithGroq(effectivePrompt, cappedMessages, bufferedSend, userId, sessionId, apiKey, legMaxTokens)
+      }
+
+      // Checked BEFORE flushRemaining, which is the only moment a tool-blind
+      // leg's answer is complete and still unsent. Throwing here rolls the turn
+      // over to the next leg with no tokens delivered, exactly as a pre-token
+      // provider failure does.
+      if (!item.supportsTools && text.trim()) {
+        const violations = checkToolBlindAnswer(text, effectivePrompt)
+        if (violations.length > 0) {
+          console.warn(
+            `[FALLBACK:FABRICATED] ${item.label} could not look anything up and answered anyway — discarding: ` +
+            violations.map(v => `${v.kind}(${v.detail})`).join(', '),
+          )
+          throw new Error(`${item.label} fabricated ${violations[0].kind}: ${violations[0].detail}`)
+        }
       }
 
       flushRemaining()
