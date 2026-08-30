@@ -1,6 +1,7 @@
 // backend/src/lib/ai/mistral.ts
 import OpenAI from 'openai'
 import { recordUsage } from './cost'
+import { createInactivityGuard, type InactivityGuard } from './streamTimeout'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 type SendFn = (event: string, data: Record<string, unknown>) => void
@@ -23,38 +24,65 @@ export async function streamWithMistral(
     baseURL: 'https://api.mistral.ai/v1',
   })
 
+  const startedAt = Date.now()
   console.log('[MISTRAL] START stream completion...')
   const msgs: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: 'system', content: systemPrompt },
     ...messages.map((m) => ({ role: m.role, content: m.content })),
   ]
 
-  const stream = await client.chat.completions.create({
-    model: 'mistral-small-latest',
-    messages: msgs,
-    stream: true,
-    // Without this the stream carries no usage at all, so a turn answered here
-    stream_options: { include_usage: true },
-    // From the turn's cost profile rather than a fixed 1024.
-    max_tokens: maxTokens ?? 1024,
-    temperature: 0.7,
-  })
+  // Armed before create(), so a header stall and a mid-body stall share one
+  // window. Aborting tears down the fetch and the SDK throws where it stands.
+  // Explicitly typed: TypeScript only narrows on a never-returning call when the
+  // reference carries a declared type, and guard.rethrow() never returns.
+  const guard: InactivityGuard = createInactivityGuard('mistral')
+
+  let stream
+  try {
+    stream = await client.chat.completions.create(
+      {
+        model: 'mistral-small-latest',
+        messages: msgs,
+        stream: true,
+        // Without this the stream carries no usage at all, so a turn answered here
+        stream_options: { include_usage: true },
+        // From the turn's cost profile rather than a fixed 1024.
+        max_tokens: maxTokens ?? 1024,
+        temperature: 0.7,
+      },
+      { signal: guard.signal },
+    )
+  } catch (err) {
+    guard.rethrow(err)
+  }
+
+  // Headers arrived — re-arm for the body phase.
+  guard.reset()
 
   let fullText = ''
   let promptTokens = 0
   let completionTokens = 0
-  for await (const chunk of stream) {
-    // The usage chunk arrives last and carries no choices.
-    if (chunk.usage) {
-      promptTokens = chunk.usage.prompt_tokens ?? 0
-      completionTokens = chunk.usage.completion_tokens ?? 0
+  try {
+    for await (const chunk of stream) {
+      // Each chunk resets the timer — only genuine silence aborts, so a slow
+      // but progressing generation is never cut off mid-sentence.
+      guard.reset()
+      // The usage chunk arrives last and carries no choices.
+      if (chunk.usage) {
+        promptTokens = chunk.usage.prompt_tokens ?? 0
+        completionTokens = chunk.usage.completion_tokens ?? 0
+      }
+      const token = chunk.choices[0]?.delta?.content || ''
+      if (token) {
+        fullText += token
+        guard.markTokenSent()
+        send('token', { token })
+      }
     }
-    const token = chunk.choices[0]?.delta?.content || ''
-    if (token) {
-      fullText += token
-      send('token', { token })
-    }
+  } catch (err) {
+    guard.rethrow(err)
   }
+  guard.clear()
 
   if (promptTokens > 0 || completionTokens > 0) {
     void recordUsage({
@@ -68,7 +96,7 @@ export async function streamWithMistral(
     })
   }
 
-  console.log(`[MISTRAL:SUCCESS] Stream complete (${fullText.length} chars)`)
+  console.log(`[MISTRAL:SUCCESS] Stream complete (${fullText.length} chars in ${Date.now() - startedAt}ms)`)
   return fullText
 }
 

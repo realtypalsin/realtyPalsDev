@@ -349,6 +349,28 @@ the prompt actually carried — a project name we did not supply, a
 registration-shaped number we did not supply, or a competitor portal fails the
 leg and rolls the turn to the next one.
 
+**Every streaming leg has a stall timeout.** Gemini, Groq and OpenAI each grew
+their own; Mistral and Cerebras had none, so a stalled stream ran until the HTTP
+client gave up — and those two are the legs most turns land on while the Gemini
+balance is depleted. `streamTimeout.ts` is one implementation for both: 60
+seconds of **silence**, armed before `create()` so a header stall and a mid-body
+stall share one window, and reset by every chunk so a slow-but-progressing
+generation is never cut off mid-sentence. It rethrows an unrelated failure
+unchanged, because a 402 or 429 drives the cooldown classification and a stall
+error would cool the wrong way.
+
+**A bare `402 status code (no body)` is balance exhaustion.** That string is all
+the OpenAI SDK throws for a Cerebras payment failure — no message, no type — so
+matching only the words gave both Cerebras legs the five-minute cooldown and
+re-probed them all run. Two dead round-trips at the head of nearly every turn.
+With `402` in `BALANCE_EXHAUSTED` they cool for an hour: p99 90.5s → 46.9s.
+
+**What is left is generation time, not waiting.** The slowest single Mistral
+call in the run was 39.4s for a long comparison — the inactivity timer correctly
+never fired, because nothing stalled. Cutting that further means capping
+Mistral's `max_tokens`, which trades answer quality for latency; measure before
+doing it.
+
 **A tool-blind leg is skipped outright when the answer IS a list of named
 projects.** "best society in sector 137" needs rows. A leg that cannot fetch
 any, on a turn where retrieval found none, has two options — invent, or refuse

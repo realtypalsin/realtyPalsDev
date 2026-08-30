@@ -19,12 +19,21 @@ const RATE_LIMIT_COOLDOWN_MS = 65 * 1000
  */
 const BALANCE_EXHAUSTED_COOLDOWN_MS = 60 * 60 * 1000
 
-/** A balance that a retry cannot restore, as opposed to a quota window. */
+/**
+ * A balance that a retry cannot restore, as opposed to a quota window.
+ *
+ * `402 status code (no body)` is here because that is literally all the OpenAI
+ * SDK throws for a Cerebras payment failure — no message, no type. Matching
+ * only the words meant both Cerebras legs took the ordinary five-minute
+ * cooldown and were re-probed all run: two dead round-trips at the head of
+ * nearly every turn, which is most of what the answer chain was waiting on.
+ */
 const BALANCE_EXHAUSTED = [
   'credits are depleted',
   'prepayment',
   'payment required',
   'payment_required',
+  '402',
   'insufficient_quota',
   'exceeded your current quota',
   'billing',
