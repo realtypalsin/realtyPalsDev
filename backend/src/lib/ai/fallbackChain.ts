@@ -32,6 +32,35 @@ export interface FallbackChainOptions {
   suppressTables?: boolean
 }
 
+/**
+ * A question whose answer IS a list of named projects, builders or societies.
+ *
+ * Both halves are required. "best society in sector 137" asks for a thing we
+ * store rows about; "which sector has the best connectivity" and "what is the
+ * average price per sqft" do not, and are answered well from the rendered
+ * market tables with no project row in sight.
+ */
+const NAMED_INVENTORY_NOUN = /\b(societ(y|ies)|projects?|builders?|developers?|flats?|apartments?|towers?|properties)\b/i
+const ASKING_FOR_A_LIST = /\b(best|top|which|show|list|find|recommend|suggest|options?|good)\b/i
+
+/**
+ * True when this leg cannot answer the question honestly and should not try.
+ *
+ * "best society in sector 137 noida" needs rows. A leg with supportsTools:
+ * false and an empty facts block has none, so it has exactly two options —
+ * invent, or refuse. Measured on the demo corpus it invented, then the guard
+ * discarded the answer, then the next leg did the same: 40 to 100 seconds and
+ * two generations billed to arrive at the refusal it could have given at once.
+ * Four turns ran over a minute this way.
+ *
+ * Skipping is not a loss of capability. The answer at the end of that path was
+ * already the refusal; this only stops paying for the detour.
+ */
+function turnNeedsALookup(userMessage: string, retrievedRows: number): boolean {
+  if (retrievedRows > 0) return false
+  return NAMED_INVENTORY_NOUN.test(userMessage) && ASKING_FOR_A_LIST.test(userMessage)
+}
+
 export interface FallbackChainResult {
   text: string
   provider: string // Provider that succeeded (e.g. 'cerebras', 'mistral', 'groq', 'openai', 'gemini', 'database')
@@ -176,7 +205,19 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
     if (!enableGeminiFallback) console.log(`[FALLBACK:FEATURE_FLAG] Gemini fallback disabled`)
   }
 
+  // Computed once: it depends on the turn, not on the leg.
+  const needsALookup = turnNeedsALookup(userMessage, projects.length)
+
   for (const item of effectiveChainConfig) {
+    // Checked before the key and the cooldown, because it is a property of the
+    // question rather than of this leg's configuration.
+    if (needsALookup && !item.supportsTools) {
+      console.log(
+        `[FALLBACK:NO_LOOKUP] ${item.label} — skipping: the answer is a list of named projects, retrieval found none, and this leg cannot fetch any`,
+      )
+      continue
+    }
+
     const apiKey = process.env[item.envKey]
     if (!apiKey) {
       console.log(`[FALLBACK:SKIP] ${item.label} (${item.envKey}) — no API key configured`)

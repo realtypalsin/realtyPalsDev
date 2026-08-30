@@ -349,6 +349,24 @@ the prompt actually carried — a project name we did not supply, a
 registration-shaped number we did not supply, or a competitor portal fails the
 leg and rolls the turn to the next one.
 
+**A tool-blind leg is skipped outright when the answer IS a list of named
+projects.** "best society in sector 137" needs rows. A leg that cannot fetch
+any, on a turn where retrieval found none, has two options — invent, or refuse
+— and it invented, the guard discarded, the next leg did the same: 40 to 100
+seconds and two generations billed to reach the refusal it could have given at
+once. `[FALLBACK:NO_LOOKUP]` names each skip.
+
+**The rule is narrow because a broad one cost more than it saved.** The first
+version skipped whenever retrieval was empty and `queryKind` was
+DISCOVERY/RANKING/COMPARISON/DRILLDOWN. It fired 98 times on the demo set and
+took the pass rate from 89.6% to **71.6%** — sector comparisons, price
+questions and affordability turns answer from the rendered market tables and
+need no project row at all. The shipped rule requires an inventory noun
+(society, project, builder, flat…) **and** a list-asking word, and fires 14
+times: p50 8.8s → 4.5s, p90 39.9s → 16.8s, one extra refusal. Every query in
+both categories is pinned in `fallbackChain.test.ts`; widen the regex only with
+a corpus run to show it does not eat honest answers.
+
 **The reference set is the database, not the prompt.** Checking a name against
 the prompt's own facts block only works on a turn that retrieved projects. A
 `GATHERING` turn retrieves none, and on exactly such a turn Mistral answered an

@@ -88,3 +88,111 @@ describe('Multi-Provider Fallback Chain Engine', () => {
     assert.ok((events[0].data as any).token.includes('experiencing high traffic'))
   })
 })
+
+describe('a leg that cannot look anything up is skipped when the answer needs rows', () => {
+  // Two tool-blind legs and no key for either, so nothing can answer. What is
+  // asserted is which legs were CONSIDERED — a skipped leg never reaches the
+  // "no API key configured" branch, so the log distinguishes them.
+  const toolBlindChain: FallbackKeyConfig[] = [
+    { provider: 'mistral', envKey: 'NO_SUCH_KEY_A', model: 'm', supportsTools: false, label: 'Blind A' },
+    { provider: 'groq', envKey: 'NO_SUCH_KEY_B', model: 'g', supportsTools: false, label: 'Blind B' },
+  ]
+
+  const run = async (message: string, retrieved: Array<{ name: string }>) => {
+    const skipped: string[] = []
+    const original = console.log
+    console.log = (...args: unknown[]) => {
+      const line = args.map(String).join(' ')
+      if (line.includes('[FALLBACK:NO_LOOKUP]')) skipped.push(line)
+    }
+    try {
+      await executeWithFallbackChain({
+        systemPrompt: 'You are an advisor.',
+        messages: [{ role: 'user', content: message }],
+        send: () => {},
+        onToolCall: async () => ({}),
+        groqFallbackSuffix: '',
+        chainConfig: toolBlindChain,
+        userMessage: message,
+        projects: retrieved as never,
+      })
+    } finally {
+      console.log = original
+    }
+    return skipped
+  }
+
+  it('skips both blind legs on a DISCOVERY turn when nothing was retrieved', async () => {
+    assert.strictEqual((await run('best society in sector 137 noida', [])).length, 2)
+  })
+
+  it('does not skip a process question — it needs no rows', async () => {
+    assert.strictEqual((await run('How do I verify whether a project is RERA compliant?', [])).length, 0)
+  })
+
+  it('does not skip when retrieval found rows to answer from', async () => {
+    assert.strictEqual((await run('best society in sector 137 noida', [{ name: 'Ace Hanei' }])).length, 0)
+  })
+
+  it('does not skip a market question answered from the rendered tables', async () => {
+    // Every other call site omits it, and must keep its existing behaviour.
+    assert.strictEqual((await run('What is the average price per sqft in Noida right now?', [])).length, 0)
+  })
+})
+
+describe('the skip is narrow enough not to cost honest answers', () => {
+  // Every string here was answered well by a tool-blind leg on the demo corpus.
+  // A first, blunter version of this rule — retrieval empty AND queryKind in
+  // {DISCOVERY,RANKING,COMPARISON,DRILLDOWN} — skipped all twelve, taking the
+  // pass rate from 89.6% to 71.6%. They answer from the rendered market tables
+  // and statutory content, not from project rows.
+  const MUST_STILL_BE_TRIED = [
+    'Compare Sector 75, Sector 78, Sector 137 and Sector 150 and tell me which one you would choose',
+    'Noida Extension vs Noida: where should a first-time homebuyer buy a 2 BHK?',
+    'Which Noida sector gives me the best combination of connectivity and livability?',
+    'I earn ₹1.5 lakh per month and have ₹25 lakh available for a down payment. What should I consider?',
+    'What is the average property price per sq ft in Noida right now?',
+    'Is Sector 78 Noida better for living or investing?',
+    'Which is a better investment today: Sector 150 Noida or Noida Extension?',
+    'property dealers in sector 75 noida',
+  ]
+
+  const MUST_BE_SKIPPED = [
+    'best society in sector 137 noida',
+    'best society in noida extension',
+    'best builder in noida for apartments',
+  ]
+
+  const blindChain: FallbackKeyConfig[] = [
+    { provider: 'mistral', envKey: 'NO_SUCH_KEY_A', model: 'm', supportsTools: false, label: 'Blind A' },
+  ]
+
+  const skipped = async (message: string) => {
+    let hit = false
+    const original = console.log
+    console.log = (...args: unknown[]) => {
+      if (args.map(String).join(' ').includes('[FALLBACK:NO_LOOKUP]')) hit = true
+    }
+    try {
+      await executeWithFallbackChain({
+        systemPrompt: 'You are an advisor.',
+        messages: [{ role: 'user', content: message }],
+        send: () => {},
+        onToolCall: async () => ({}),
+        groqFallbackSuffix: '',
+        chainConfig: blindChain,
+        userMessage: message,
+      })
+    } finally {
+      console.log = original
+    }
+    return hit
+  }
+
+  for (const q of MUST_STILL_BE_TRIED) {
+    it(`still tries: ${q.slice(0, 48)}`, async () => assert.strictEqual(await skipped(q), false))
+  }
+  for (const q of MUST_BE_SKIPPED) {
+    it(`skips: ${q}`, async () => assert.strictEqual(await skipped(q), true))
+  }
+})
