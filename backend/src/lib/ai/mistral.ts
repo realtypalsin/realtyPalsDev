@@ -6,6 +6,31 @@ import { createInactivityGuard, type InactivityGuard } from './streamTimeout'
 type Message = { role: 'user' | 'assistant'; content: string }
 type SendFn = (event: string, data: Record<string, unknown>) => void
 
+/**
+ * Hard reply ceiling for this leg, below whatever the turn's profile asks for.
+ *
+ * This bounds a runaway generation; it is NOT the fix for slow turns, and the
+ * numbers say so. Measured over one demo run, Mistral's throughput varied
+ * eighteen-fold — 310 chars/sec on one call, 17 on another — and the 39.4s
+ * call that set the p99 emitted 2,144 chars, about 536 tokens, already far
+ * under the 1,800 its profile allowed. Length was never what made it slow.
+ *
+ * 900 was tried first, on the arithmetic that ~4 chars per token put it above
+ * every reply in the corpus. It truncated two answers mid-sentence, one of them
+ * mid-table-row: markdown tables tokenize far denser than prose — pipes,
+ * separators and digits — so 900 tokens came out around 2,400 characters, not
+ * 3,600. A cut-off table row is worse than a slow answer.
+ *
+ * 1,400 sits above the longest complete reply observed (3,658 chars) with
+ * headroom, and still bounds a generation that runs away. Move it only with a
+ * corpus run showing what the new value cuts.
+ */
+export const MISTRAL_MAX_TOKENS = Number(process.env.MISTRAL_MAX_TOKENS ?? 1400)
+
+/** The reply ceiling actually sent, after clamping the turn profile. */
+export const mistralReplyCeiling = (profileMaxTokens?: number): number =>
+  Math.min(profileMaxTokens ?? 1024, MISTRAL_MAX_TOKENS)
+
 export async function streamWithMistral(
   systemPrompt: string,
   messages: Message[],
@@ -46,8 +71,9 @@ export async function streamWithMistral(
         stream: true,
         // Without this the stream carries no usage at all, so a turn answered here
         stream_options: { include_usage: true },
-        // From the turn's cost profile rather than a fixed 1024.
-        max_tokens: maxTokens ?? 1024,
+        // From the turn's cost profile, then clamped: this leg is the one most
+        // turns land on while Gemini is depleted, and it is the slowest.
+        max_tokens: mistralReplyCeiling(maxTokens),
         temperature: 0.7,
       },
       { signal: guard.signal },

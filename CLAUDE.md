@@ -365,11 +365,23 @@ matching only the words gave both Cerebras legs the five-minute cooldown and
 re-probed them all run. Two dead round-trips at the head of nearly every turn.
 With `402` in `BALANCE_EXHAUSTED` they cool for an hour: p99 90.5s → 46.9s.
 
-**What is left is generation time, not waiting.** The slowest single Mistral
-call in the run was 39.4s for a long comparison — the inactivity timer correctly
-never fired, because nothing stalled. Cutting that further means capping
-Mistral's `max_tokens`, which trades answer quality for latency; measure before
-doing it.
+**Mistral carries its own reply ceiling, below the turn's profile.**
+`MISTRAL_MAX_TOKENS` (default 1,400) clamps whatever `inferenceProfile` asks
+for. 900 was tried first, on the arithmetic that ~4 chars per token put it above
+every reply in the corpus; it truncated answers mid-table-row, because markdown
+tables tokenize far denser than prose — 900 tokens came out around 2,400
+characters, not 3,600. Pass rate fell to 83.6%. At 1,400 it is back to 88.1%
+with p99 at 23.7s, the best of the session.
+
+**Do not read that as "length was the problem".** Mistral's throughput varied
+eighteen-fold across one run — 310 chars/sec on one call, 17 on another — and
+the 39.4s call that set the earlier p99 emitted only ~536 tokens. The ceiling
+bounds a runaway generation; it is not why the tail moved.
+
+**Known and pre-existing: about two answers per run end mid-sentence.** It
+shows in every run measured, capped and uncapped, on Gemini legs as well as
+Mistral — so it is the profile's own ceiling meeting a table-heavy answer, not
+this clamp. Not fixed here.
 
 **A tool-blind leg is skipped outright when the answer IS a list of named
 projects.** "best society in sector 137" needs rows. A leg that cannot fetch
