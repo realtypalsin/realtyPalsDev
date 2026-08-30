@@ -78,6 +78,7 @@ import { STATIC_PREFIX_MARKER } from './systemPromptCache'
 import { estimateTokensReal } from './tokenizer'
 import { createTableStripper, stripTables } from './stripTables'
 import { checkToolBlindAnswer } from './toolBlindGuard'
+import { endCleanly } from './endCleanly'
 import { sanitizeOutput } from './sanitizeOutput'
 
 /** Remove the prefix sentinel — it must never reach a provider. */
@@ -152,6 +153,11 @@ function createBufferedSend(
 
   const flushRemaining = () => {
     if (!flushed && buffer.length > 0) {
+      // Nothing has left for the client yet, so the whole answer is still
+      // editable. This is the only place a reply ceiling's mid-word cut can be
+      // repaired — on a streaming leg the fragment is already on screen. Raised
+      // ceilings in inferenceProfile.ts are the fix that covers both.
+      buffer = endCleanly(buffer)
       validateAndFlush()
     }
     // The stripper holds a partial line, and possibly a heading it has not yet
@@ -315,6 +321,10 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         throw new Error(`${item.label} returned no text`)
       }
 
+      // flushRemaining trimmed a dangling fragment off the buffered stream, so
+      // the transcript and the cache have to carry the same edit or the three
+      // disagree about what was said.
+      if (!item.supportsTools) text = endCleanly(text)
       // The buyer saw the stripped stream, so the returned copy has to match:
       if (options.suppressTables) text = stripTables(text)
       // The buyer read the sanitised stream; the transcript and cache must match.

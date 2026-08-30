@@ -24,16 +24,28 @@ const PROFILES: Record<QueryShape, Omit<InferenceProfile, 'shape'>> = {
   lookup: { model: MODELS.GEMINI_LITE, thinkingBudget: 0, maxTokens: 700 },
 
   // Enough to organise three facts and a trade-off, on the cheap tier.
-  factual: { model: MODELS.GEMINI_LITE, thinkingBudget: 256, maxTokens: 1000 },
+  factual: { model: MODELS.GEMINI_LITE, thinkingBudget: 256, maxTokens: 1200 },
 
   // Judgement questions get the smart model but a modest reasoning budget:
   // "is X good for Y" needs a position, not a plan.
-  advisory: { model: MODELS.GEMINI_MAIN, thinkingBudget: 512, maxTokens: 1200 },
+  advisory: { model: MODELS.GEMINI_MAIN, thinkingBudget: 512, maxTokens: 1600 },
 
   // The queries the product exists for. Four sectors, six constraints, a
   // five-year horizon. Spend here; this is what a buyer came for.
-  reasoning: { model: MODELS.GEMINI_MAIN, thinkingBudget: 1024, maxTokens: 1800 },
+  reasoning: { model: MODELS.GEMINI_MAIN, thinkingBudget: 1024, maxTokens: 2600 },
 }
+
+// Raised from 1000 / 1200 / 1800 on 30 Aug 2026, because roughly two answers
+// per corpus run ended mid-sentence — one mid-table-row — and the cut always
+// landed on a table-heavy reply. Markdown tables tokenize far denser than
+// prose (pipes, separators, digits), so a ceiling set by eyeballing character
+// counts is set too low for exactly the answers this product cares most about.
+//
+// This is close to free. maxTokens is a CEILING, not a target: an answer that
+// finishes on its own bills what it generated, so the 97% of turns that were
+// never truncated cost the same as before. Only the answers that were being
+// cut off pay more, and paying for the rest of a comparison a buyer asked for
+// is the trade this file exists to make.
 
 /** Anything that turns a question into a comparison or a multi-constraint brief. */
 const REASONING_RE =
