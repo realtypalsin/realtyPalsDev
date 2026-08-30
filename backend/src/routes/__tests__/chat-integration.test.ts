@@ -144,19 +144,38 @@ describe('FALLBACK_CHAIN shape', () => {
     }
   })
 
-  it('drops the OpenAI legs while OPENAI_BASE_URL points at retired GitHub Models', () => {
-    // models.inference.ai.azure.com no longer resolves and models.github.ai
-    // returns 410 github_models_retirement_brownout. Keeping those legs costs a
-    // failed request each, on every turn, before reaching a provider that answers.
-    const pointsAtGitHubModels = /models\.(inference\.ai\.azure|github\.ai)/.test(process.env.OPENAI_BASE_URL ?? '')
-    const hasOpenAiLeg = FALLBACK_CHAIN.some(i => i.provider === 'openai')
-    assert.equal(
-      hasOpenAiLeg,
-      !pointsAtGitHubModels,
-      pointsAtGitHubModels
-        ? 'OpenAI legs must be dropped while the base URL is GitHub Models'
-        : 'OpenAI legs should be present once a working base URL is configured',
+  it('keeps a tool-capable backstop in the chain', () => {
+    // This replaced "drops the OpenAI legs while OPENAI_BASE_URL points at
+    // retired GitHub Models". That rule existed for a stated reason — keeping a
+    // dead leg "costs a failed request each, on every turn, before reaching a
+    // provider that answers" — and that reason no longer holds: a 410 brownout
+    // is now classified as balance exhaustion and cools the leg for an hour, so
+    // it costs one probe an hour per key rather than one per turn.
+    //
+    // What dropping them cost instead was the only tool-capable backstop.
+    // Gemini's free keys are the only other legs that can call a lookup, and
+    // when their daily quota is spent the chain has nothing left that can read
+    // the database — which is exactly when fabrications appeared.
+    assert.ok(
+      FALLBACK_CHAIN.some(i => i.provider === 'openai'),
+      'the chain has no OpenAI-compatible leg, so Gemini is the only tool-capable provider',
     )
+    assert.ok(
+      FALLBACK_CHAIN.filter(i => i.supportsTools).length >= 2,
+      'fewer than two tool-capable legs: one provider outage leaves the chain unable to look anything up',
+    )
+  })
+
+  it('gives every key configured in the environment a chain entry', () => {
+    // The narrow version of this only checked three named keys. GEMINI_API_KEY2
+    // and MISTRAL_API_KEY1 were both set in .env and absent from the chain on
+    // 30 Aug — two working keys doing nothing while the chain ran dry.
+    const envKeys = new Set(FALLBACK_CHAIN.map(i => i.envKey))
+    const configuredButUnused = Object.keys(process.env)
+      .filter(k => /^(GEMINI|MISTRAL|GROQ|CEREBRAS|OPENAI)_API_KEY\d*$/.test(k))
+      .filter(k => (process.env[k] ?? '').length > 0)
+      .filter(k => !envKeys.has(k))
+    assert.deepEqual(configuredButUnused, [], `configured but never tried: ${configuredButUnused.join(', ')}`)
   })
 
   it('never points Cerebras at a model it no longer serves', () => {

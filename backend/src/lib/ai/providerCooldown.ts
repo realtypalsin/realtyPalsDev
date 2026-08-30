@@ -34,6 +34,12 @@ const BALANCE_EXHAUSTED = [
   'payment required',
   'payment_required',
   '402',
+  // GitHub Models answers 410 during its retirement brownout. Retrying that on
+  // the five-minute window costs four dead probes an hour per key for a
+  // service that comes back on someone else's schedule, not ours.
+  '410',
+  'brownout',
+  'retirement',
   'insufficient_quota',
   'exceeded your current quota',
   'billing',

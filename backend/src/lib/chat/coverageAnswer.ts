@@ -17,9 +17,28 @@ export interface CoverageAnswer {
 const BUILDER_QUESTION =
   /\b([a-z][a-z&.]{2,}(?:\s+[a-z][a-z&.]{2,})?)\s+(?:properties|projects|group|builders?|developers?|homes|infra|realty)\b/i
 
-/** Words that look like a brand but are ours, generic, or a place. */
+/**
+ * Words that look like a brand but are ours, generic, a place, or English.
+ *
+ * Checked against EVERY word of the captured phrase, not just the first. That
+ * was the bug: "are all properties in noida leasehold" captures "are all", the
+ * check looked only at "are", and the buyer was told "We do not hold any
+ * projects from **are all** in Noida". Five of the fifty demand-weighted
+ * queries came back that way on 30 Aug — including a due-diligence question
+ * about an unknown developer, answered as though "relatively unknown" were the
+ * developer's name.
+ *
+ * A builder name is an open class: "sarthi" has to pass even though we hold
+ * nothing for it, so there is no allowlist to check against. What can be
+ * enumerated is the closed class this phrase must NOT be made of — function
+ * words, quantifiers and comparatives. That is a much smaller set than the
+ * open-ended heading vocabulary a blocklist usually fails on.
+ */
 const NOT_A_BUILDER =
-  /^(the|new|best|top|all|any|noida|greater|delhi|ncr|sector|realtypals|ready|under|luxury|premium|residential|commercial|upcoming|verified|bhk|flat|flats|apartment|apartments|house|home|homes|good|cheap|affordable|these|those|such|more|other)$/i
+  /^(the|a|an|new|best|top|all|any|some|many|few|most|least|one|two|three|both|each|every|no|not|very|quite|this|that|these|those|my|your|our|their|its|is|are|was|were|be|been|being|do|does|did|has|have|had|can|could|should|would|will|shall|may|might|must|if|than|then|when|where|which|what|who|how|why|about|from|with|for|and|or|but|noida|greater|delhi|ncr|gurgaon|sector|realtypals|ready|under|luxury|premium|residential|commercial|upcoming|verified|bhk|flat|flats|apartment|apartments|house|home|homes|good|cheap|affordable|expensive|such|more|other|another|same|similar|comparable|different|unknown|reputed|reputable|reliable|trusted|small|big|large|local|nearby|near)$/i
+
+/** An adverb is never part of a builder's name — "relatively unknown builder". */
+const ADVERB = /ly$/i
 
 function normalise(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
@@ -105,8 +124,9 @@ export async function builderCoverage(message: string): Promise<CoverageAnswer |
   if (!match) return null
 
   const raw = match[1].trim()
-  const first = raw.split(/\s+/)[0]
-  if (NOT_A_BUILDER.test(first)) return null
+  // EVERY word, not just the first. See NOT_A_BUILDER.
+  const tokens = raw.split(/\s+/)
+  if (tokens.some((w) => NOT_A_BUILDER.test(w) || ADVERB.test(w))) return null
 
   // The message names a project we hold. Whatever the buyer believes about who
   // built it, the project is ours to answer about — so hand the turn back to

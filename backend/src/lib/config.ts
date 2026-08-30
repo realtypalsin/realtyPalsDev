@@ -87,7 +87,7 @@ export const GEMINI_TOOLS_ENABLED = process.env.ENABLE_GEMINI_TOOLS === 'true'
  * though it were free. Set GEMINI_FREE_TIER_KEYS to flip it without a deploy.
  */
 const FREE_TIER_KEYS = new Set(
-  (process.env.GEMINI_FREE_TIER_KEYS ?? 'GEMINI_API_KEY1')
+  (process.env.GEMINI_FREE_TIER_KEYS ?? 'GEMINI_API_KEY1,GEMINI_API_KEY2,GEMINI_API_KEY3')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
@@ -96,81 +96,93 @@ const FREE_TIER_KEYS = new Set(
 /** True when this env var names a key we know to be on the free tier. */
 export const isFreeTierKey = (envKey: string): boolean => FREE_TIER_KEYS.has(envKey)
 
-/** True when OPENAI_BASE_URL still points at GitHub Models, which is retired. */
-const isRetiredGitHubModels = /models\.(inference\.ai\.azure|github\.ai)/.test(
-  process.env.OPENAI_BASE_URL ?? '',
-)
-
 /**
- * Dropping the last resort must never be silent.
+ * The dead Azure host, as distinct from the current GitHub Models host.
  *
- * OpenAI is the end of the chain: when Gemini, Mistral, Cerebras and Groq have
- * all failed, it is the difference between a slow answer and "our AI services
- * are out of service". With OPENAI_BASE_URL still pointing at the retired
- * GitHub Models host, all four OpenAI legs are removed here — and a chain that
- * quietly loses its backstop looks identical to a healthy one until the day
- * everything above it is spent. On 29 Aug that day arrived and a quarter of
- * turns returned an error.
+ * `models.inference.ai.azure.com` no longer resolves — probing it returns a
+ * bare connection error. `models.github.ai/inference` is the live address and
+ * currently answers `410 … scheduled retirement brownout`, which is a service
+ * that may come back rather than an address that is wrong.
+ *
+ * So the two are treated differently: pointing at the dead address is a
+ * misconfiguration worth rewriting, while a brownout is an outage the cooldown
+ * already handles. Keys configured against the dead host are silently
+ * redirected to the live one rather than dropped, because a leg that might
+ * return is worth more at the end of the chain than no leg at all.
  */
-if (isRetiredGitHubModels) {
-  console.warn(
-    '[CONFIG:CHAIN] OpenAI legs removed — OPENAI_BASE_URL points at the retired GitHub Models host ' +
-    `(${process.env.OPENAI_BASE_URL}). The fallback chain now ends at Groq with no final backstop. ` +
-    'Point it at a live Azure OpenAI deployment, or unset it to use api.openai.com. ' +
-    'Run `npm run verify:chain` to see which legs actually answer.',
-  )
-}
+const DEAD_AZURE_HOST = /models\.inference\.ai\.azure\.com/
+const GITHUB_MODELS_HOST = 'https://models.github.ai/inference'
+
+export const OPENAI_BASE_URL = (() => {
+  const configured = process.env.OPENAI_BASE_URL?.trim()
+  if (!configured) return undefined // the SDK default, api.openai.com
+  if (DEAD_AZURE_HOST.test(configured)) {
+    console.warn(
+      `[CONFIG:CHAIN] OPENAI_BASE_URL points at ${configured}, which no longer resolves. ` +
+      `Using ${GITHUB_MODELS_HOST} instead — set OPENAI_BASE_URL to that, or to a live ` +
+      'Azure OpenAI deployment, to silence this.',
+    )
+    return GITHUB_MODELS_HOST
+  }
+  return configured
+})()
 
 export const FALLBACK_CHAIN: FallbackKeyConfig[] = [
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 1: GOOGLE GEMINI (Primary Premium Paid Provider — Max Priority)
+  // TIER 1 — GEMINI. The only legs that can call a tool.
   // ═══════════════════════════════════════════════════════════════════════════
-  // Flash-Lite rather than Flash on the free key: the free tier's per-day
-  // request allowance is far higher on the lite model, so this leg keeps
-  // answering after a Flash-shaped one would be spent for the day.
+  // Every leg above the first tool-blind one can run sector_projects,
+  // rera_check and the rest. That ordering is the difference between an answer
+  // built from our rows and one a tool-blind model reasons out from memory,
+  // which is where every fabrication in the 30 Aug corpus runs came from.
   //
-  // This leg used to sit BELOW both billed legs, because at position 2 it
-  // caught every failure of the paid key and turned a recoverable stall into
-  // an empty reply. That cause is now fixed at its root rather than by
-  // ordering: fallbackChain forces thinkingBudget = 0 and a FREE_TIER_MAX_TOKENS
-  // reply ceiling for any key isFreeTierKey() names, so thinking can no longer
-  // consume the whole output budget and leave nothing to stream.
+  // Free keys lead. Flash-Lite rather than Flash on them: the free tier's
+  // per-day request allowance is far higher on the lite model, so these legs
+  // keep answering after a Flash-shaped one is spent for the day. The empty
+  // replies that once made this ordering dangerous are fixed at the root —
+  // fallbackChain forces thinkingBudget = 0 and a FREE_TIER_MAX_TOKENS ceiling
+  // for any key isFreeTierKey() names.
   //
-  // What ordering buys instead: a tool-capable leg. On 30 Aug the billed key's
-  // prepay balance ran out, and every turn fell past both Gemini legs onto
-  // Mistral and Groq — which carry supportsTools: false. Over a 67-query run
-  // four answers invented projects, one invented UP-RERA registration numbers
-  // beside two competitor portals. A free-tier Gemini that can call
-  // sector_projects is worth more than a faster model that cannot.
-  //
-  // The billed legs stay directly below: the moment the balance is topped up,
-  // the free key's per-minute limit rolls onto Flash rather than onto a
-  // tool-blind provider.
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY1', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Key 2)' },
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.6 Flash (Key 1)' },
-  // The lite tier on the SAME billed key comes before any non-Gemini provider.
-  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Google Gemini 3.5 Flash Lite (Backup)' },
+  // Probed 30 Aug: KEY1 and KEY2 answer, KEY3 is not set yet and is skipped
+  // without cost, the billed KEY is out of prepay credit. It stays in place so
+  // that a top-up is picked up without a deploy.
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY1', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Gemini 3.5 Flash Lite (free 1)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY2', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Gemini 3.5 Flash Lite (free 2)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY3', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Gemini 3.5 Flash Lite (free 3)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_MAIN, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Gemini 3.6 Flash (billed)' },
+  { provider: 'gemini', envKey: 'GEMINI_API_KEY', model: MODELS.GEMINI_LITE, supportsTools: GEMINI_TOOLS_ENABLED, label: 'Gemini 3.5 Flash Lite (billed)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 2: MISTRAL & CEREBRAS (High-Speed Failover Layer)
+  // TIER 2 — OPENAI-COMPATIBLE, TOOL-CAPABLE.
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small' },
-  // `llama-3.3-70b` was returning 404 "Model does not exist or you do not have
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'gpt-oss-120b', supportsTools: false, label: 'Cerebras gpt-oss-120b (Key 1)' },
-  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY1', model: 'gpt-oss-120b', supportsTools: false, label: 'Cerebras gpt-oss-120b (Key 2)' },
+  // These sit above Mistral and Groq because they can call tools, not because
+  // they are faster. GitHub Models answers 410 during its retirement brownout
+  // today, so in practice each of these fails once and then cools for an hour;
+  // that is four cheap probes a day against the chance of a tool-capable
+  // backstop returning. Point OPENAI_BASE_URL at any live OpenAI-compatible
+  // deployment and they become real legs with no other change.
+  { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI-compatible (key 1)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI-compatible (key 2)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY2', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI-compatible (key 3)' },
+  { provider: 'openai', envKey: 'OPENAI_API_KEY3', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI-compatible (key 4)' },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  { provider: 'groq', envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 1)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 2)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY2', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 3)' },
-  { provider: 'groq', envKey: 'GROQ_API_KEY3', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (Key 4)' },
-  // GitHub Models (models.inference.ai.azure.com) is being retired — the endpoint
-  ...(isRetiredGitHubModels
-    ? []
-    : ([
-        { provider: 'openai', envKey: 'OPENAI_API_KEY', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI (Key 1)' },
-        { provider: 'openai', envKey: 'OPENAI_API_KEY1', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI (Key 2)' },
-        { provider: 'openai', envKey: 'OPENAI_API_KEY2', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI (Key 3)' },
-        { provider: 'openai', envKey: 'OPENAI_API_KEY3', model: MODELS.MAIN, supportsTools: true, label: 'OpenAI (Key 4)' },
-      ] as FallbackKeyConfig[])),
+  // TIER 3 — TOOL-BLIND. Prose only; toolBlindGuard checks whatever they write.
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Both Mistral keys answer (probed 30 Aug). Two keys rather than one matters:
+  // Mistral's free tier rate-limits per key, so the second is a full extra
+  // allowance rather than a duplicate.
+  { provider: 'mistral', envKey: 'MISTRAL_API_KEY', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small (key 1)' },
+  { provider: 'mistral', envKey: 'MISTRAL_API_KEY1', model: 'mistral-small-latest', supportsTools: false, label: 'Mistral Small (key 2)' },
+
+  // Four keys, four separate per-minute allowances. Groq is the fastest leg in
+  // the chain, so it carries the load when Gemini's free quota is spent.
+  { provider: 'groq', envKey: 'GROQ_API_KEY', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (key 1)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY1', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (key 2)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY2', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (key 3)' },
+  { provider: 'groq', envKey: 'GROQ_API_KEY3', model: MODELS.GROQ_SMART, supportsTools: false, label: 'Groq gpt-oss-120b (key 4)' },
+
+  // Last: both keys are unpaid (402, probed 30 Aug). One probe an hour each.
+  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY', model: 'gpt-oss-120b', supportsTools: false, label: 'Cerebras gpt-oss-120b (key 1)' },
+  { provider: 'cerebras', envKey: 'CEREBRAS_API_KEY1', model: 'gpt-oss-120b', supportsTools: false, label: 'Cerebras gpt-oss-120b (key 2)' },
 ]

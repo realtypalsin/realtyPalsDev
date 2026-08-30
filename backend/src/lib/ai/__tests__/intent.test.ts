@@ -140,8 +140,13 @@ describe('Intent: extractIntent (with SDK mocking)', () => {
   // case reached a live provider over the network — the suite passed or failed
   // on whichever key happened to be reachable that day, and took two seconds
   // doing it.
+  // Every envKey in FALLBACK_CHAIN — see the note in
+  // intent-extraction-fallback.test.ts. A key added to the chain and missed
+  // here stays live through the "no keys set" setup and the test reaches a
+  // real provider over the network.
   const PROVIDER_KEYS = [
-    'GEMINI_API_KEY', 'GEMINI_API_KEY1', 'MISTRAL_API_KEY',
+    'GEMINI_API_KEY', 'GEMINI_API_KEY1', 'GEMINI_API_KEY2', 'GEMINI_API_KEY3',
+    'MISTRAL_API_KEY', 'MISTRAL_API_KEY1',
     'GROQ_API_KEY', 'GROQ_API_KEY1', 'GROQ_API_KEY2', 'GROQ_API_KEY3',
     'CEREBRAS_API_KEY', 'CEREBRAS_API_KEY1',
     'OPENAI_API_KEY', 'OPENAI_API_KEY1', 'OPENAI_API_KEY2', 'OPENAI_API_KEY3',

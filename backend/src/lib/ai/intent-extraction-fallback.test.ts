@@ -135,8 +135,19 @@ async function raceAgainstProvider(message: string, previous = {}): Promise<bool
 
 /** Removes every provider key, returning a function that puts them all back. */
 function removeAllProviderKeys(): () => void {
+  // Must list EVERY envKey in FALLBACK_CHAIN. Adding GEMINI_API_KEY2 and
+  // MISTRAL_API_KEY1 to the chain on 30 Aug left them off this list, so two
+  // live keys survived the "all providers gone" setup, a provider answered,
+  // and the outage these tests describe never happened.
+  //
+  // Not derived from FALLBACK_CHAIN programmatically: extractIntent keeps a
+  // per-key circuit breaker, and deriving the list changed which keys were
+  // cleared and restored across the describes, which broke the later tests in
+  // a different way. An explicit list that beta-critical.test.ts can check
+  // against the chain is the safer shape here.
   const keys = [
-    'GEMINI_API_KEY', 'GEMINI_API_KEY1', 'MISTRAL_API_KEY',
+    'GEMINI_API_KEY', 'GEMINI_API_KEY1', 'GEMINI_API_KEY2', 'GEMINI_API_KEY3',
+    'MISTRAL_API_KEY', 'MISTRAL_API_KEY1',
     'GROQ_API_KEY', 'GROQ_API_KEY1', 'GROQ_API_KEY2', 'GROQ_API_KEY3',
     'CEREBRAS_API_KEY', 'CEREBRAS_API_KEY1',
     'OPENAI_API_KEY', 'OPENAI_API_KEY1', 'OPENAI_API_KEY2', 'OPENAI_API_KEY3',

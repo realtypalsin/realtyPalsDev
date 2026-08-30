@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { MODELS, AI_CONFIG } from '../config'
+import { MODELS, AI_CONFIG, OPENAI_BASE_URL as CONFIGURED_OPENAI_BASE_URL } from '../config'
 import { recordUsage } from './cost'
 import { toOpenAITools, validateToolArgs, capToolResult } from './tools'
 
@@ -25,7 +25,11 @@ export interface OpenAIProvider {
 // fallback keys (OPENAI_API_KEY1/2/3) — all use GitHub Models endpoint.
 function getOpenAIProvider(apiKeyOverride?: string): OpenAIProvider {
   const key = apiKeyOverride || process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY || ''
-  const baseURL = process.env.AZURE_OPENAI_ENDPOINT || process.env.OPENAI_BASE_URL || 'https://models.inference.ai.azure.com'
+  // OPENAI_BASE_URL from config, not from env: config rewrites the dead
+  // models.inference.ai.azure.com address to the live GitHub Models host.
+  // Reading the raw env var here sent every OpenAI leg to a hostname that no
+  // longer resolves, so they failed with a bare connection error.
+  const baseURL = process.env.AZURE_OPENAI_ENDPOINT || CONFIGURED_OPENAI_BASE_URL || 'https://api.openai.com/v1'
 
   // Determine provider name based on key source
   let name: 'azure' | 'openai' = 'openai'

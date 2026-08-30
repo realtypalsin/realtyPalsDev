@@ -67,6 +67,7 @@ import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { loadMentionedProjectCards } from '../lib/chat/mentionedProjectCards'
 import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
+import { isProximityQuestion, nearbyCoverage } from '../lib/discovery/nearby'
 import {
   isReraProcessQuestion as matchesReraProcessQuestion,
   isPaymentPlanRequest as matchesPaymentPlanRequest,
@@ -788,8 +789,17 @@ router.post('/', async (req: Request, res: Response) => {
       if (!coverage && intent.sector) {
         coverage = await sectorPinCode(message, [intent.sector])
       }
+      // Proximity, before the sector lane: it answers from coordinates we hold
+      // rather than treating the anchor sector as the subject of the question.
+      if (!coverage) {
+        coverage = await nearbyCoverage(message, (intent as { focus_project_id?: string | null })?.focus_project_id ?? null)
+      }
       if (!coverage) coverage = await builderCoverage(message)
-      if (!coverage && intent.sector && !isCityLevel(intent.sector)) {
+      // A proximity question names a sector as an ANCHOR, not as its subject.
+      // "I want a property near Sector 62" was being answered by the sector
+      // lane with "we hold one project in Sector 62" — true, and not what was
+      // asked. The nearby handler answers it from coordinates instead.
+      if (!coverage && intent.sector && !isCityLevel(intent.sector) && !isProximityQuestion(message)) {
         coverage = await sectorCoverage(intent.sector)
       }
 
