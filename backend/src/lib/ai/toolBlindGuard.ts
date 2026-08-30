@@ -22,6 +22,7 @@
 // Deliberately narrow. It does not judge advice, tone or completeness — only
 // whether a name, a registration number or a rival portal appeared from nowhere.
 import { extractFactsFromPrompt } from './guardrails-v2'
+import { prisma } from '../db'
 
 /** Named in the prompt's COMPETITOR BAN. Never ours to recommend, ever. */
 const COMPETITORS = [
@@ -103,12 +104,66 @@ function looksLikeAName(s: string, builders: string[]): boolean {
 }
 
 /**
+ * Every project and builder name we hold, cached in process.
+ *
+ * The prompt's own facts block is not enough to check against. A GATHERING turn
+ * retrieves no projects, so the block is empty — and on exactly such a turn
+ * Mistral answered an affordability question with six invented projects
+ * (Prateek Omni, Paramount Golfshire, Omaxe The Mayfair, Godrej Aristocrat…),
+ * four of them hung on builders we really do hold. Attaching a fictional
+ * project to a real developer is the most convincing fabrication available, and
+ * with an empty facts block there was nothing to catch it with.
+ *
+ * ~400 short strings, refreshed every ten minutes. A failure resolves to null
+ * and the check falls back to prompt facts alone: a guard that cannot read the
+ * database must not fail a turn the database would have cleared.
+ */
+const NAME_CACHE_TTL_MS = 10 * 60 * 1000
+let nameCache: { at: number; projects: string[]; builders: string[] } | null = null
+let nameCacheInFlight: Promise<void> | null = null
+
+async function loadKnownNames(): Promise<{ projects: string[]; builders: string[] } | null> {
+  if (nameCache && Date.now() - nameCache.at < NAME_CACHE_TTL_MS) return nameCache
+  // Concurrent turns share one query rather than each issuing their own.
+  if (!nameCacheInFlight) {
+    nameCacheInFlight = (async () => {
+      try {
+        const [projects, builders] = await Promise.all([
+          prisma.project.findMany({ select: { name: true } }),
+          prisma.builder.findMany({ select: { name: true } }),
+        ])
+        nameCache = {
+          at: Date.now(),
+          projects: projects.map(p => p.name).filter(Boolean),
+          builders: builders.map(b => b.name).filter(Boolean),
+        }
+      } catch (err) {
+        console.warn('[TOOL_BLIND_GUARD] could not load known names, falling back to prompt facts:', err)
+      } finally {
+        nameCacheInFlight = null
+      }
+    })()
+  }
+  await nameCacheInFlight
+  return nameCache
+}
+
+/**
+ * Test seam. Priming the snapshot keeps the unit tests off the database — they
+ * assert on the name rules, not on what happens to be in Postgres today.
+ * Passing null drops it so the next check loads for real.
+ */
+export function setKnownNamesForTest(v: { projects: string[]; builders: string[] } | null): void {
+  nameCache = v ? { at: Date.now(), ...v } : null
+}
+
+/**
  * Checks a finished answer from a leg that could not look anything up.
  *
  * Returns every violation found. An empty array means the answer said nothing
  * it was not given — it does NOT mean the answer is good.
  */
-export function checkToolBlindAnswer(text: string, systemPrompt: string): ToolBlindViolation[] {
+export async function checkToolBlindAnswer(text: string, systemPrompt: string): Promise<ToolBlindViolation[]> {
   const violations: ToolBlindViolation[] = []
   const lower = text.toLowerCase()
 
@@ -119,8 +174,11 @@ export function checkToolBlindAnswer(text: string, systemPrompt: string): ToolBl
   }
 
   const facts = extractFactsFromPrompt(systemPrompt)
-  const builderNames = [...facts.builders].map(n => n.trim()).filter(n => n.length >= 3)
-  const known = [...facts.projectNames, ...facts.builders]
+  const held = await loadKnownNames()
+  const builderNames = [...facts.builders, ...(held?.builders ?? [])]
+    .map(n => n.trim())
+    .filter(n => n.length >= 3)
+  const known = [...facts.projectNames, ...facts.builders, ...(held?.projects ?? []), ...(held?.builders ?? [])]
     .map(n => n.toLowerCase().trim())
     .filter(n => n.length >= 3)
 
@@ -137,9 +195,10 @@ export function checkToolBlindAnswer(text: string, systemPrompt: string): ToolBl
     if (!verified) violations.push({ kind: 'invented_rera', detail: claim })
   }
 
-  // With no names in the prompt there is nothing to compare against, and every
-  // bolded heading would read as a fabrication. The RERA and competitor checks
-  // above still ran, so this is a narrowing, not a bypass.
+  // Nothing to compare against — the prompt carried no facts AND the database
+  // could not be read. Anything flagged here would be flagged for want of a
+  // reference set, not for being wrong. The RERA and competitor checks above
+  // still ran, so this is a narrowing, not a bypass.
   if (known.length === 0) return violations
 
   const candidates = new Set<string>()

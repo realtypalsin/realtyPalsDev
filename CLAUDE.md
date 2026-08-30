@@ -349,6 +349,18 @@ the prompt actually carried — a project name we did not supply, a
 registration-shaped number we did not supply, or a competitor portal fails the
 leg and rolls the turn to the next one.
 
+**The reference set is the database, not the prompt.** Checking a name against
+the prompt's own facts block only works on a turn that retrieved projects. A
+`GATHERING` turn retrieves none, and on exactly such a turn Mistral answered an
+affordability question with six invented projects — four of them hung on
+builders we really hold, which is the most convincing fabrication available.
+Worse, the prompt-only version cut the other way too: it discarded answers for
+naming Gaur City 1, Nirala Estate Phase 1, Panchsheel Greens and Mahagun
+Moderne, all of which are real rows. The guard now compares against every
+project and builder name we hold, cached in process for ten minutes. A database
+failure resolves to the prompt facts alone — a guard that cannot read the
+database must not fail a turn the database would have cleared.
+
 **It asks what a name IS, never what it is not.** The first version blocklisted
 words that open a heading, and could not be finished: every run produced labels
 it had not been told about — "Carpet Efficiency Gap", "Power Backup Tariffs",

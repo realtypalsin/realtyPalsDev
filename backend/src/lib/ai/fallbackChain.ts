@@ -257,7 +257,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       // over to the next leg with no tokens delivered, exactly as a pre-token
       // provider failure does.
       if (!item.supportsTools && text.trim()) {
-        const violations = checkToolBlindAnswer(text, effectivePrompt)
+        const violations = await checkToolBlindAnswer(text, effectivePrompt)
         if (violations.length > 0) {
           console.warn(
             `[FALLBACK:FABRICATED] ${item.label} could not look anything up and answered anyway — discarding: ` +
