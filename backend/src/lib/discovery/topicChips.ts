@@ -92,27 +92,27 @@ const TOPICS: Topic[] = [
     name: 'flood-risk-legal',
     test: /\b(flood|waterlog|litigation|court|nclt|dispute|encumbrance|title|legal|rera|insolven|delay|stalled|risk)\b/i,
     build: ({ sector }) => [
-      ['trust', mk('topic_risk_clean', 'Which of these are clean?', 'Which projects do you hold with zero recorded litigation and a RERA registration you can show me?')],
-      ['place', mk('topic_risk_coverage', sector ? `What do you cover near ${sector}?` : 'Which areas do you cover?', sector ? `Which sectors near ${sector} do you actually hold projects in?` : `Which sectors do you actually hold projects in?`)],
-      ['ask', mk('topic_risk_method', 'How do you assess that?', 'How do you decide a project is risky — which fields is that judgement built from, and which of them are measured rather than assumed?')],
+      ['trust', mk('topic_risk_clean', 'Verified RERA Projects', 'Which projects have clean land titles, zero litigation, and verified RERA registration?')],
+      ['place', mk('topic_risk_coverage', sector ? `Clean Projects near ${sector}` : 'Explore Safe Sectors', sector ? `Which sectors near ${sector} have the safest delivery track record?` : 'Which sectors have the best track record for on-time delivery and clean titles?')],
+      ['ask', mk('topic_risk_method', 'How do you verify risk?', 'How do you audit project risk, builder track record, and legal clearances?')],
     ],
   },
   {
     name: 'connectivity',
     test: /\b(metro|aqua\s*line|blue\s*line|expressway|connectivity|commute|airport|jewar|igi|travel\s+time|how\s+far)\b/i,
     build: ({ sector }) => [
-      ['place', mk('topic_conn_near_metro', 'Projects nearest a metro', 'Which projects do you hold that are closest to a working metro station, and how far is each one?')],
-      ['compare', mk('topic_conn_airport', 'Distance to both airports', 'For the projects you just mentioned, how far is Jewar and how far is Delhi IGI — and say which one you are measuring.')],
-      ['money', mk('topic_conn_price', sector ? `Does ${sector} cost more for it?` : 'Do the connected sectors cost more?', sector ? `Does ${sector} carry a price premium for its connectivity compared with the sectors around it?` : 'Which of the sectors you cover charge a premium for metro access, and how much?')],
+      ['place', mk('topic_conn_near_metro', 'Projects Near Metro', 'Which projects are within walking distance or 5 minutes drive from an operational metro station?')],
+      ['compare', mk('topic_conn_airport', 'Distance to Jewar & IGI', 'What is the exact drive time and distance to Jewar International Airport and Delhi IGI Airport?')],
+      ['money', mk('topic_conn_price', sector ? `${sector} Price Comparison` : 'Metro Connectivity Premium', sector ? `How does pricing in ${sector} compare with adjacent sectors on the metro corridor?` : 'Which sectors offer the best metro connectivity at affordable prices?')],
     ],
   },
   {
     name: 'entity-brokerage',
     test: /\b(broker|brokerage|channel\s+partner|agent|consultan|clinic|realtor|investors?\s+clinic|wealth\s+clinic|firm|compan(?:y|ies)|legit|trustworthy|scam|reviews?|complaints?)\b/i,
     build: () => [
-      ['trust', mk('topic_entity_builders', 'Which builders do you verify?', 'Which builders do you hold verified records for, and what exactly is verified about them?')],
-      ['ask', mk('topic_entity_questions', 'What should I ask them?', 'What should I ask a broker or channel partner before I pay them anything, and what answers should make me walk away?')],
-      ['money', mk('topic_entity_fees', 'What do fees normally look like?', 'What does a buyer normally pay in brokerage and other charges on a new-build purchase in this market?')],
+      ['trust', mk('topic_entity_builders', 'Top Rated Builders', 'Which developers have the highest on-time delivery ratings and cleanest UP-RERA records?')],
+      ['ask', mk('topic_entity_questions', 'Buyer Checklist Before Booking', 'What critical legal and technical checks should I perform before paying a booking token to any builder?')],
+      ['money', mk('topic_entity_fees', 'Brokerage & Extra Charges Guide', 'What are standard brokerage policies, registry charges, and additional developer fees on new projects?')],
     ],
   },
   {
@@ -120,43 +120,38 @@ const TOPICS: Topic[] = [
     test: /\b(what\s+(?:do|have)\s+(?:you|i)|about\s+me|assum(?:e|ing|ption)|remember|told\s+you|so\s+far|my\s+(?:profile|preferences|requirements|budget|criteria))\b/i,
     build: ({ hasBudget }) => [
       ['ask', hasBudget
-        ? mk('topic_meta_change_budget', 'Change my budget', 'Change my budget — I want to look at a different range.')
-        : mk('topic_meta_set_budget', 'Set my budget', 'My budget is around 1.5 crore.')],
-      ['trust', mk('topic_meta_gaps', "What don't you know?", 'What are you still missing about me that would change what you recommend?')],
-      ['compare', mk('topic_meta_recommend', 'Recommend on what you have', 'Based on everything I have told you so far, recommend projects and say which of my requirements each one fails.')],
+        ? mk('topic_meta_change_budget', 'Update My Budget', 'I want to update my target budget and property requirements.')
+        : mk('topic_meta_set_budget', 'Set Budget to ₹1.5 Cr', 'My budget is around ₹1.5 Crore for a 3 BHK apartment.')],
+      ['trust', mk('topic_meta_gaps', 'What details do you need?', 'What additional preferences (possession timeline, preferred sectors, amenities) would help narrow down choices?')],
+      ['compare', mk('topic_meta_recommend', 'Personalized Shortlist', 'Based on my preferences so far, show me the top 3 best matching projects.')],
     ],
   },
   {
     name: 'sector-profile',
     test: /\b(posh|rich|richest|wealthy|affluent|upscale|cheapest|cheap|affordable\s+sector|best\s+sector|which\s+sector|posh\s+sector|posh\s+neighborhood|middle[- ]class|family\s+sector|safe\s+sector|liveab)\b/i,
     build: ({ sector, city }) => [
-      ['place', mk('topic_sector_inventory', sector ? `What's for sale in ${sector}` : `Where do you actually hold stock?`, sector ? `Show me the projects you hold in ${sector} with prices and possession dates.` : `Which sectors in ${city} do you hold the most projects in, and what do they cost?`)],
-      ['money', mk('topic_sector_cheapest', 'Cheapest sector you cover', 'Which of the sectors you cover has the lowest price per square foot, and what is the trade-off for buying there?')],
-      ['compare', mk('topic_sector_compare', 'Compare two sectors', 'Compare the two sectors you just mentioned on price, connectivity and what kind of buyer each suits.')],
+      ['place', mk('topic_sector_inventory', sector ? `Top Projects in ${sector}` : `Explore Projects in ${city}`, sector ? `Show me the top projects in ${sector} with prices and possession dates.` : `Which sectors in ${city} offer the best residential projects and livability?`)],
+      ['money', mk('topic_sector_cheapest', 'Most Affordable Sectors', 'Which sectors offer the best value per square foot and lowest entry pricing?')],
+      ['compare', mk('topic_sector_compare', 'Compare Top 2 Sectors', 'Compare the two best sectors in this budget on price, connectivity, and livability.')],
     ],
   },
   {
     name: 'coverage-gap',
     test: /\b(gurgaon|gurugram|delhi|dwarka|faridabad|ghaziabad|bangalore|bengaluru|mumbai|pune|hyderabad|chennai|resale|rent(?:al)?\s+(?:a|an|home|flat|house)|plot|commercial|office|shop)\b/i,
     build: ({ city }) => [
-      ['place', mk('topic_gap_coverage', 'What do you cover?', `Exactly which cities, sectors and property types do you cover, and what are you not able to help with?`)],
-      ['compare', mk('topic_gap_alternative', `Show me ${city} instead`, `Show me what you do hold in ${city} that comes closest to what I asked about.`)],
+      ['place', mk('topic_gap_coverage', `Explore ${city} Options`, `What are the best available residential developments in ${city} in this segment?`)],
+      ['compare', mk('topic_gap_alternative', `Top Alternatives in ${city}`, `Show me the closest matching projects in ${city} with prices and possession dates.`)],
     ],
   },
 ]
 
 /**
- * The two chips that are honest after any answer at all.
- *
- * The floor, not the ambition. They exist because a row of one chip reads as the
- * product having run out of ideas, and because a floor asserted in a rubric that
- * nothing enforces is not a floor. Both of these are answerable from our own
- * rows on every turn, so neither can become a promise we cannot keep.
+ * Clean fallback chips for general conversational turns.
  */
 function floorChips(city: string): Array<[Axis, ChipAction]> {
   return [
-    ['place', mk('floor_coverage', 'What do you cover?', `Which sectors in ${city} do you hold projects in, and how many in each?`, 5)],
-    ['ask', mk('floor_reasoning', 'How do you decide?', 'How do you decide what to recommend to me — what do you rank on, and what do you refuse to guess at?', 5)],
+    ['place', mk('floor_coverage', `Explore Top ${city} Sectors`, `Which are the top residential sectors in ${city} by livability and price appreciation?`, 5)],
+    ['money', mk('floor_emi', 'Calculate Home Loan EMI', 'How much would the monthly EMI and down payment be for a ₹1.5 Cr flat on a 20-year loan?', 5)],
   ]
 }
 

@@ -125,9 +125,33 @@ No headings. No emoji. Around 120 words.`
     })
 
     const costChips = [
-      { id: `chip_plans_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Payment Plans', icon: 'file-text', analyticsId: 'chip_plans', priority: 1, payload: { text: 'Show payment plans' } },
-      { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 2, payload: { text: 'Calculate EMI' } },
-      { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_site_visit', priority: 3, payload: { text: 'Schedule a site visit' } },
+      {
+        id: `chip_plans_${Date.now()}`,
+        actionType: 'TEXT_MESSAGE',
+        label: `${costProject?.name} Payment Plans`,
+        icon: 'file-text',
+        analyticsId: 'chip_plans',
+        priority: 1,
+        payload: { text: `What are the official payment plans and current offers for ${costProject?.name}?` },
+      },
+      {
+        id: `chip_emi_${Date.now()}`,
+        actionType: 'TEXT_MESSAGE',
+        label: `Calculate EMI for ${costProject?.name}`,
+        icon: 'calculator',
+        analyticsId: 'chip_emi',
+        priority: 2,
+        payload: { text: `Calculate monthly EMI for ${costProject?.name} on a 20-year loan at current rates` },
+      },
+      {
+        id: `chip_compare_${Date.now()}`,
+        actionType: 'TEXT_MESSAGE',
+        label: `Compare ${costProject?.name} vs Competitors`,
+        icon: 'scales',
+        analyticsId: 'chip_compare',
+        priority: 3,
+        payload: { text: `What other projects compete with ${costProject?.name}, and how do their prices differ?` },
+      },
     ]
 
     ctx.emitUiState({
